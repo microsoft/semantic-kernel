@@ -130,10 +130,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var textContent = await textGeneration.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-        IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
-        metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-        return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(metadata));
+        return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
     }
 
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
@@ -202,11 +199,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
-        foreach (var parameter in this._promptConfig.InputParameters)
+        foreach (var parameter in this._promptConfig.InputVariables)
         {
-            if (!arguments.ContainsName(parameter.Name) && parameter.DefaultValue != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
             {
-                arguments[parameter.Name] = parameter.DefaultValue;
+                arguments[parameter.Name] = parameter.Default;
             }
         }
     }

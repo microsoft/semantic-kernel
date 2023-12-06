@@ -377,13 +377,18 @@ public static class KernelExtensions
 
     #region InvokePromptAsync
     /// <summary>
-    /// Invoke a prompt function using the provided prompt template.
+    /// Invokes a prompt specified via a prompt template.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
-    /// <param name="arguments">The operation arguments</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>Function execution result</returns>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <returns>The result of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
@@ -404,14 +409,21 @@ public static class KernelExtensions
 
     #region InvokePromptStreamingAsync
     /// <summary>
-    /// Invoke a prompt function using the provided prompt template and stream the results.
+    /// Invokes a prompt specified via a prompt template and streams its results.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
-    /// <param name="arguments">The operation arguments</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Function execution result</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
     public static IAsyncEnumerable<StreamingContentBase> InvokePromptStreamingAsync(
         this Kernel kernel,
         string promptTemplate,
@@ -429,5 +441,51 @@ public static class KernelExtensions
 
         return function.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
     }
+    #endregion
+
+    #region InvokeAsync<T>
+    /// <summary>
+    /// Invokes the<see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The provided generic typed result value of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public static async Task<TResult?> InvokeAsync<TResult>(
+        this Kernel kernel,
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+        => (await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
+
+    /// <summary>
+    /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The provided generic typed result value of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// This behaves identically to using <see cref="IKernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public static async Task<TResult?> InvokeAsync<TResult>(
+        this Kernel kernel,
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+        => (await kernel.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
     #endregion
 }
