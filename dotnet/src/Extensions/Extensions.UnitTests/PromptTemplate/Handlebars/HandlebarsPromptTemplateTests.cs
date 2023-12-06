@@ -18,10 +18,9 @@ public sealed class HandlebarsPromptTemplateTests
 
     public HandlebarsPromptTemplateTests()
     {
-        this._factory = new HandlebarsPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._kernel = new Kernel();
-        this._arguments = new KernelArguments();
-        this._arguments["input"] = Guid.NewGuid().ToString("X");
+        this._factory = new(TestConsoleLogger.LoggerFactory);
+        this._kernel = new();
+        this._arguments = new(Guid.NewGuid().ToString("X"));
     }
 
     [Fact]
@@ -84,13 +83,13 @@ public sealed class HandlebarsPromptTemplateTests
         {
             Name = "bar",
             Description = "Bar",
-            DefaultValue = "Bar"
+            Default = "Bar"
         });
         promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "baz",
             Description = "Baz",
-            DefaultValue = "Baz"
+            Default = "Baz"
         });
         promptConfig.Template = "Foo {{bar}} {{baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
