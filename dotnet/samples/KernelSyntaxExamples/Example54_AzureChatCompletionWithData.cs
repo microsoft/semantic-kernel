@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletionWithData;
 
 /**
  * This example shows how to use Azure OpenAI Chat Completion with data.
@@ -122,9 +121,9 @@ public static class Example54_AzureChatCompletionWithData
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
             CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
-            DataSourceApiKey = TestConfiguration.ACS.ApiKey,
-            DataSourceIndex = TestConfiguration.ACS.IndexName
+            DataSourceEndpoint = TestConfiguration.AzureAISearch.Endpoint,
+            DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
+            DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
     }
 }

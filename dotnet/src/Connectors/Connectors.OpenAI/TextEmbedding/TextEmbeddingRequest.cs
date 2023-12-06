@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// A request to create embedding vector representing input text

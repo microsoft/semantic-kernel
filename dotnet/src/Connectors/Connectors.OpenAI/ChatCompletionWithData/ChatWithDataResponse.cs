@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletionWithData;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 

@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.TextGeneration;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text generation service.

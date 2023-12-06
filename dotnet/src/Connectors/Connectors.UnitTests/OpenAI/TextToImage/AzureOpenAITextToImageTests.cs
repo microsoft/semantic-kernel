@@ -5,12 +5,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.OpenAI.TextToImage;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
+namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextToImageTests"/> class.

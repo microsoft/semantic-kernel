@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// A response from an embedding request

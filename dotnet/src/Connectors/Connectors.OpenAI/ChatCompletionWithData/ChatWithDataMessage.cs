@@ -3,7 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletionWithData;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataMessage

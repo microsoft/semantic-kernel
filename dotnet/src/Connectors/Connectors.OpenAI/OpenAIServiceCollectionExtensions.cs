@@ -13,10 +13,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.AI.TextToImage;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletionWithData;
-using Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Connectors.OpenAI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.OpenAI.TextToImage;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function

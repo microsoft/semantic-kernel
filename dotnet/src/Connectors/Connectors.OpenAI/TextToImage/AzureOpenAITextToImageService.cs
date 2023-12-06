@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextToImage;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.TextToImage;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI text to image service
@@ -124,7 +124,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private async Task<string> StartTextToImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
-        if (width != height || (width != 256 && width != 512 && width != 1024))
+        if (width != height || width != 256 && width != 512 && width != 1024)
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }

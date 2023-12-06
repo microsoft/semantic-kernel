@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI text embedding service.

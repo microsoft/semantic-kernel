@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletionWithData;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
