@@ -33,7 +33,7 @@ public interface IChatThread
     Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Delete current thread.  Terminal state - Unable to peform any
+    /// Delete current thread.  Terminal state - Unable to perform any
     /// subsequent actions.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>

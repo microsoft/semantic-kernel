@@ -78,7 +78,7 @@ public interface IAssistant
     Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Delete current assistant.  Terminal state - Unable to peform any
+    /// Delete current assistant.  Terminal state - Unable to perform any
     /// subsequent actions.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
