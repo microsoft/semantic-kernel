@@ -425,12 +425,8 @@ public sealed class OpenAICompletionTests : IDisposable
             <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
         ");
 
-        var result = target.InvokeStreamingAsync<StreamingChatMessageContent>(prompt);
-
-        // Print the chat completions
         var fullContent = new StringBuilder();
-
-        await foreach (var content in result)
+        await foreach (var content in target.InvokeStreamingAsync<StreamingChatMessageContent>(prompt))
         {
             fullContent.Append(content);
         }
@@ -453,12 +449,8 @@ public sealed class OpenAICompletionTests : IDisposable
             <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
         ");
 
-        var result = target.InvokeStreamingAsync<StreamingTextContent>(prompt);
-
-        // Print the chat completions
         var fullContent = new StringBuilder();
-
-        await foreach (var content in result)
+        await foreach (var content in target.InvokeStreamingAsync<StreamingTextContent>(prompt))
         {
             fullContent.Append(content);
         }
