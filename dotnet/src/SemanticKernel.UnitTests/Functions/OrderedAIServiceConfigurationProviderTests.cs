@@ -84,7 +84,7 @@ public class OrderedAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
 
         // Assert
-        Assert.Equal(kernel.GetService<ITextGenerationService>("service2"), aiService);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
@@ -123,7 +123,7 @@ public class OrderedAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
 
         // Assert
-        Assert.Equal(kernel.GetService<ITextGenerationService>("service2"), aiService);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
         Assert.Null(defaultExecutionSettings);
     }
 
@@ -145,7 +145,7 @@ public class OrderedAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
 
         // Assert
-        Assert.Equal(kernel.GetService<ITextGenerationService>("service2"), aiService);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
@@ -166,7 +166,7 @@ public class OrderedAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
 
         // Assert
-        Assert.Equal(kernel.GetService<ITextGenerationService>("service2"), aiService);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
@@ -197,7 +197,7 @@ public class OrderedAIServiceConfigurationProviderTests
         (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
 
         // Assert
-        Assert.Equal(kernel.GetService<ITextGenerationService>(expectedServiceId), aiService);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>(expectedServiceId), aiService);
         if (!string.IsNullOrEmpty(defaultExecutionSettings!.ServiceId))
         {
             Assert.Equal(expectedServiceId, defaultExecutionSettings!.ServiceId);

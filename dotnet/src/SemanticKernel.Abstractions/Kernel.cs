@@ -123,9 +123,19 @@ public sealed class Kernel
     /// Gets the <see cref="ILoggerFactory"/> associated with this <see cref="Kernel"/>.
     /// </summary>
     /// <remarks>
-    /// This behaves the same as calling <see cref="GetService{ILoggerFactory}"/>.
+    /// This returns any <see cref="ILoggerFactory"/> in <see cref="Services"/>. If there is
+    /// none, it returns an <see cref="ILoggerFactory"/> that won't perform any logging.
     /// </remarks>
-    public ILoggerFactory LoggerFactory => this.GetService<ILoggerFactory>();
+    public ILoggerFactory LoggerFactory =>
+        this.Services.GetService<ILoggerFactory>() ??
+        NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
+    /// </summary>
+    public IAIServiceSelector ServiceSelector =>
+        this.Services.GetService<IAIServiceSelector>() ??
+        OrderedAIServiceSelector.Instance;
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -174,7 +184,7 @@ public sealed class Kernel
     /// if no key was specified and no service was found. If it's able to find the specified service, that service is returned.
     /// Otherwise, an exception is thrown.
     /// </remarks>
-    public T GetService<T>(string? serviceId = null) where T : class
+    public T GetRequiredService<T>(string? serviceId = null) where T : class
     {
         T? service = null;
 
@@ -183,7 +193,7 @@ public sealed class Kernel
             if (this.Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = this.Services.GetKeyedService<T>(serviceId);
+                service = this.Services.GetRequiredKeyedService<T>(serviceId);
             }
         }
         else
@@ -196,20 +206,6 @@ public sealed class Kernel
             if (service is null && this.Services is IKeyedServiceProvider)
             {
                 service = this.GetAllServices<T>().LastOrDefault();
-            }
-
-            // If no service could be found, special-case specific services to provide a default.
-            if (service is null)
-            {
-                if (typeof(T) == typeof(ILoggerFactory) || typeof(T) == typeof(NullLoggerFactory))
-                {
-                    return (T)(object)NullLoggerFactory.Instance;
-                }
-
-                if (typeof(T) == typeof(IAIServiceSelector) || typeof(T) == typeof(OrderedAIServiceSelector))
-                {
-                    return (T)(object)OrderedAIServiceSelector.Instance;
-                }
             }
         }
 
