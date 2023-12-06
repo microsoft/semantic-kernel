@@ -202,11 +202,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
-        foreach (var parameter in this._promptConfig.InputParameters)
+        foreach (var parameter in this._promptConfig.InputVariables)
         {
-            if (!arguments.ContainsName(parameter.Name) && parameter.DefaultValue != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
             {
-                arguments[parameter.Name] = parameter.DefaultValue;
+                arguments[parameter.Name] = parameter.Default;
             }
         }
     }

@@ -10,16 +10,16 @@
       "frequency_penalty": 0.0
     }
   ],
-  "input_parameters": [
+  "input_variables": [
     {
       "name": "input",
       "description": "Joke subject",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "style",
       "description": "Give a hint about the desired joke style",
-      "default_value": ""
+      "default": ""
     }
   ]
 }
