@@ -98,7 +98,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            arguments = this.EnrichFunctionArguments(arguments ?? new KernelArguments());
+            //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
+            arguments = this.EnrichFunctionArguments(arguments is null ? new KernelArguments() : new KernelArguments(arguments));
         }
         try
         {
@@ -143,9 +144,16 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
+    /// <summary>
+    /// Adds function arguments. If the first argument is not a named argument, it is added to the arguments collection as the 'input' argument.
+    /// Additionally, for the prompt expression - {{MyPlugin.MyFunction p1=$v1}}, the value of the v1 variable will be resolved from the original arguments collection.
+    /// Then, the new argument, p1, will be added to the arguments.
+    /// </summary>
+    /// <param name="arguments">The prompt rendering arguments.</param>
+    /// <returns>The function arguments.</returns>
+    /// <exception cref="KernelException">Occurs when any argument other than the first is not a named argument.</exception>
     private KernelArguments EnrichFunctionArguments(KernelArguments arguments)
     {
-        // Clone the context to avoid unexpected and hard to test input mutation
         var firstArg = this._tokens[1];
 
         // Sensitive data, logging as trace, disabled by default
