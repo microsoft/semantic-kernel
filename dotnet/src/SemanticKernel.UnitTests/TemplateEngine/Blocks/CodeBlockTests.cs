@@ -195,10 +195,10 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Empty(result);
+        Assert.Null(result);
         Assert.Equal(VarValue, canary);
     }
 
@@ -223,10 +223,10 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel);
+        var result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
-        Assert.Empty(result);
+        Assert.Null(result);
         Assert.Equal(Value, canary);
     }
 
@@ -260,12 +260,46 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
         Assert.Equal(FooValue, actualFoo);
         Assert.Equal(BobValue, actualBaz);
-        Assert.Empty(result);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ItReturnsArgumentValueAndTypeAsync()
+    {
+        // Arrange
+        object expectedValue = new();
+        object? canary = null;
+
+        var funcId = new FunctionIdBlock("p.f");
+        var varBlock = new VarBlock("$var");
+        var namedArgBlock = new NamedArgBlock("p1=$a1");
+
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
+        {
+            canary = p1;
+        }, "f") }));
+
+        // Act
+        var functionWithPositionedArgument = new CodeBlock(new List<Block> { funcId, varBlock }, "");
+        var functionWithNamedArgument = new CodeBlock(new List<Block> { funcId, namedArgBlock }, "");
+        var variable = new CodeBlock(new List<Block> { varBlock }, "");
+
+        // Assert function positional argument passed to the the function with no changes
+        await functionWithPositionedArgument.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
+        Assert.Same(expectedValue, canary); // Ensuring that the two variables point to the same object, as there is no other way to verify that the argument has not been transformed from object -> string -> object during the process.
+
+        // Assert function named argument passed to the the function with no changes
+        await functionWithNamedArgument.RenderCodeAsync(this._kernel, new() { ["a1"] = expectedValue });
+        Assert.Same(expectedValue, canary);
+
+        // Assert argument assigned to a variable with no changes
+        await variable.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
+        Assert.Same(expectedValue, canary);
     }
 
     [Fact]

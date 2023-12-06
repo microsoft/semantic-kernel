@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -258,5 +260,117 @@ public class TemplateTokenizerTests
             this._target.Tokenize(template);
         });
         Assert.Equal("Code tokenizer returned an incorrect first token type NamedArg", ex.Message);
+    }
+
+    [Fact]
+    public void ItRendersVariables1()
+    {
+        // Arrange
+        var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
+                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
+
+        // Act
+        var blocks = this._target.Tokenize(template);
+
+        var renderedBlocks = RenderBlocks(blocks);
+
+        // Assert
+        Assert.Equal(10, blocks.Count);
+        Assert.Equal(10, renderedBlocks.Count);
+
+        Assert.Equal("$x11", blocks[1].Content);
+        Assert.Equal("", renderedBlocks[1].Content);
+        Assert.Equal(BlockTypes.Variable, blocks[1].Type);
+        Assert.Equal(BlockTypes.Text, renderedBlocks[1].Type);
+
+        Assert.Equal("$x11", blocks[3].Content);
+        Assert.Equal("", renderedBlocks[3].Content);
+        Assert.Equal(BlockTypes.Variable, blocks[3].Type);
+        Assert.Equal(BlockTypes.Text, renderedBlocks[3].Type);
+
+        Assert.Equal("foo", blocks[5].Content);
+        Assert.Equal("foo", renderedBlocks[5].Content);
+        Assert.Equal(BlockTypes.Code, blocks[5].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[5].Type);
+
+        Assert.Equal("bar $a", blocks[6].Content);
+        Assert.Equal("bar $a", renderedBlocks[6].Content);
+        Assert.Equal(BlockTypes.Code, blocks[6].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[6].Type);
+
+        Assert.Equal("baz $_a", blocks[7].Content);
+        Assert.Equal("baz $_a", renderedBlocks[7].Content);
+        Assert.Equal(BlockTypes.Code, blocks[7].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[7].Type);
+
+        Assert.Equal("yay $x11", blocks[8].Content);
+        Assert.Equal("yay $x11", renderedBlocks[8].Content);
+        Assert.Equal(BlockTypes.Code, blocks[8].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[8].Type);
+
+        Assert.Equal("food a='b' c = $d", blocks[9].Content);
+        Assert.Equal("food a='b' c = $d", renderedBlocks[9].Content);
+        Assert.Equal(BlockTypes.Code, blocks[9].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[9].Type);
+
+        // Arrange
+        var arguments = new KernelArguments
+        {
+            ["x11"] = "x11 value",
+            ["a"] = "a value",
+            ["_a"] = "_a value",
+            ["c"] = "c value",
+            ["d"] = "d value"
+        };
+
+        // Act
+        blocks = this._target.Tokenize(template);
+        renderedBlocks = RenderBlocks(blocks, arguments);
+
+        // Assert
+        Assert.Equal(10, blocks.Count);
+        Assert.Equal(10, renderedBlocks.Count);
+
+        Assert.Equal("$x11", blocks[1].Content);
+        Assert.Equal("x11 value", renderedBlocks[1].Content);
+        Assert.Equal(BlockTypes.Variable, blocks[1].Type);
+        Assert.Equal(BlockTypes.Text, renderedBlocks[1].Type);
+
+        Assert.Equal("$x11", blocks[3].Content);
+        Assert.Equal("x11 value", renderedBlocks[3].Content);
+        Assert.Equal(BlockTypes.Variable, blocks[3].Type);
+        Assert.Equal(BlockTypes.Text, renderedBlocks[3].Type);
+
+        Assert.Equal("foo", blocks[5].Content);
+        Assert.Equal("foo", renderedBlocks[5].Content);
+        Assert.Equal(BlockTypes.Code, blocks[5].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[5].Type);
+
+        Assert.Equal("bar $a", blocks[6].Content);
+        Assert.Equal("bar $a", renderedBlocks[6].Content);
+        Assert.Equal(BlockTypes.Code, blocks[6].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[6].Type);
+
+        Assert.Equal("baz $_a", blocks[7].Content);
+        Assert.Equal("baz $_a", renderedBlocks[7].Content);
+        Assert.Equal(BlockTypes.Code, blocks[7].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[7].Type);
+
+        Assert.Equal("yay $x11", blocks[8].Content);
+        Assert.Equal("yay $x11", renderedBlocks[8].Content);
+        Assert.Equal(BlockTypes.Code, blocks[8].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[8].Type);
+
+        Assert.Equal("food a='b' c = $d", blocks[9].Content);
+        Assert.Equal("food a='b' c = $d", renderedBlocks[9].Content);
+        Assert.Equal(BlockTypes.Code, blocks[9].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[9].Type);
+    }
+
+    private static List<Block> RenderBlocks(IList<Block> blocks, KernelArguments? arguments = null)
+    {
+        return blocks.Select(block => block.Type != BlockTypes.Variable
+            ? block
+            : new TextBlock((string?)((ITextRendering)block).Render(arguments))).ToList();
     }
 }
