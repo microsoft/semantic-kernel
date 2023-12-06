@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import typing as t
+from typing import ClassVar
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
@@ -10,13 +11,13 @@ if t.TYPE_CHECKING:
 
 
 class TextMemorySkill(SKBaseModel):
-    COLLECTION_PARAM: str = "collection"
-    RELEVANCE_PARAM: str = "relevance"
-    KEY_PARAM: str = "key"
-    LIMIT_PARAM: str = "limit"
-    DEFAULT_COLLECTION: str = "generic"
-    DEFAULT_RELEVANCE: float = 0.75
-    DEFAULT_LIMIT: int = 1
+    COLLECTION_PARAM: ClassVar[str] = "collection"
+    RELEVANCE_PARAM: ClassVar[str] = "relevance"
+    KEY_PARAM: ClassVar[str] = "key"
+    LIMIT_PARAM: ClassVar[str] = "limit"
+    DEFAULT_COLLECTION: ClassVar[str] = "generic"
+    DEFAULT_RELEVANCE: ClassVar[float] = 0.75
+    DEFAULT_LIMIT: ClassVar[int] = 1
 
     # @staticmethod
     @sk_function(

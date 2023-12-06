@@ -209,7 +209,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, this.GetModelId()!, metadata);
+                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, this.GetModelId()!, new Dictionary<string, object?>(metadata));
             }
         }
     }
