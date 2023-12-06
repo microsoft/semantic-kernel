@@ -128,7 +128,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
         }
 
-        var textContent = await textGeneration.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
         IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
         metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
@@ -149,7 +149,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        await foreach (var content in textGeneration.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        await foreach (var content in textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
