@@ -49,16 +49,12 @@ public static class TextGenerationExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (textGenerationService is IChatCompletionService chatCompletion)
+        if (textGenerationService is IChatCompletionService chatCompletion
+            && XmlPromptParser.TryParse(prompt!, out var nodes)
+            && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
-            // Try to parse the text as a chat history
-            if (XmlPromptParser.TryParse(prompt!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
-            {
-                var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
-                return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
-            }
-
-            // No TextPromptParser found...
+            var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
         }
 
         //Otherwise, fallback to use the prompt as the chat system message
@@ -86,18 +82,16 @@ public static class TextGenerationExtensions
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (textGenerationService is IChatCompletionService chatCompletion)
+        if (textGenerationService is IChatCompletionService chatCompletion
+            && XmlPromptParser.TryParse(prompt!, out var nodes)
+            && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
-            // Try to parse the text as a chat history
-            if (XmlPromptParser.TryParse(prompt!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken))
             {
-                await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken))
-                {
-                    yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage, chatMessage.Encoding, chatMessage.Metadata);
-                }
-
-                yield break;
+                yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage, chatMessage.Encoding, chatMessage.Metadata);
             }
+
+            yield break;
         }
 
         // When using against text generations, the prompt will be used as is.
