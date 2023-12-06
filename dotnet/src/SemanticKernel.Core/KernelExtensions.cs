@@ -449,28 +449,6 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="executionSettings">Execution settings to apply, if relevant.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The provided generic typed result value of the function's execution.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    /// <remarks>
-    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
-    /// </remarks>
-    public static async Task<TResult?> InvokeAsync<TResult>(
-        this Kernel kernel,
-        KernelFunction function,
-        string? input,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-        => (await kernel.InvokeAsync(function, input, executionSettings, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The provided generic typed result value of the function's execution.</returns>

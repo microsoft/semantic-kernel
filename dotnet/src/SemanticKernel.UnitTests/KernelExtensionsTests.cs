@@ -20,11 +20,9 @@ public class KernelExtensionsTests
         var kernel = new Kernel();
         kernel.Plugins.Add(new KernelPlugin("Fake", new[] { testFunction }));
 
-        var resultValueInvokeSignature1 = await kernel.InvokeAsync<object>(testFunction, "input");
         var resultValueInvokeSignature2 = await kernel.InvokeAsync<object>(testFunction);
         var resultValueInvokeSignature3 = await kernel.InvokeAsync<object>("Fake", "Test");
 
-        Assert.Equal(expectedValue, resultValueInvokeSignature1);
         Assert.Equal(expectedValue, resultValueInvokeSignature2);
         Assert.Equal(expectedValue, resultValueInvokeSignature3);
     }
