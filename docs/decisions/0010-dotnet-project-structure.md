@@ -68,7 +68,7 @@ SK-dotnet
     ├── connectors/
     │   ├── Connectors.AI.OpenAI*
     │   ├── Connectors.AI.HuggingFace
-    │   ├── Connectors.Memory.AzureCognitiveSearch
+    │   ├── Connectors.Memory.AzureAISearch
     │   ├── Connectors.Memory.Qdrant
     │   ├── ...
     │   └── Connectors.UnitTests
@@ -130,7 +130,7 @@ SK-dotnet
     │   └── tests
     │ (Not shown but all projects will have src and tests subfolders)
     ├── Microsoft.SemanticKernel.Connectors.AI.HuggingFace
-    ├── Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch
+    ├── Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch
     ├── Microsoft.SemanticKernel.Connectors.Memory.Qdrant
     │
     ├── Microsoft.SemanticKernel.Planners*
