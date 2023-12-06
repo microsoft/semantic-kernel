@@ -36,6 +36,12 @@ public static class Example08_RetryHandler
         logger.LogInformation("Question: {Question}", Question);
         try
         {
+            // The InvokePromptAsync call will issue a request to OpenAI with an invalid API key.
+            // That will cause the request to fail with an HTTP status code 401. As the resilience
+            // handler is configured to retry on 401s, it'll reissue the request, and will do so
+            // multiple times until it hits the default retry limit, at which point this operation
+            // will throw an exception in response to the failure. All of the retries will be visible
+            // in the logging out to the console.
             logger.LogInformation("Answer: {Result}", await kernel.InvokePromptAsync(Question));
         }
         catch (Exception ex)
