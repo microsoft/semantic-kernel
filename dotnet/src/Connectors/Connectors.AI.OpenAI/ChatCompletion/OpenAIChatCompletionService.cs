@@ -20,11 +20,6 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
 {
     #region BreakingGlass Properties
     /// <summary>
-    /// Model Id for OpenAI or Deployment Name when using Azure OpenAI.
-    /// </summary>
-    public string DeploymentOrModelName => this._core.DeploymentOrModelName;
-
-    /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     /// <remarks>

@@ -21,11 +21,6 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
 {
     #region BreakingGlass Properties
     /// <summary>
-    /// Model Id for OpenAI or Deployment Name when using Azure OpenAI.
-    /// </summary>
-    public string DeploymentOrModelName => this._core.DeploymentOrModelName;
-
-    /// <summary>
     /// Gets the underlying <see cref="OpenAIClient"/> used by this <see cref="AzureOpenAIChatCompletionService"/> instance.
     /// </summary>
     /// <remarks>

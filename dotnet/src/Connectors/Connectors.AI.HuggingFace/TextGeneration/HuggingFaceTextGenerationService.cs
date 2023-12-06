@@ -31,11 +31,6 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 
     #region BreakingGlass Properties
     /// <summary>
-    /// Model Id.
-    /// </summary>
-    public string? ModelId => this.GetModelId();
-
-    /// <summary>
     /// Http Client used for the service call.
     /// </summary>
     /// <remarks>
