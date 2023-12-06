@@ -70,7 +70,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     /// <inheritdoc/>
-    public ValueTask<string> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    public ValueTask<object?> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -81,7 +81,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return this._tokens[0].Type switch
         {
-            BlockTypes.Value or BlockTypes.Variable => new ValueTask<string>(((ITextRendering)this._tokens[0]).Render(arguments)),
+            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this._tokens[0]).Render(arguments)),
             BlockTypes.FunctionId => this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, arguments),
             _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
@@ -92,7 +92,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async ValueTask<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments)
+    private async ValueTask<object?> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments)
     {
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
@@ -105,7 +105,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments).ConfigureAwait(false);
 
-            return result.ToString();
+            return result.Value;
         }
         catch (Exception ex)
         {
@@ -162,7 +162,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         var namedArgsStartIndex = 1;
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
-            string input = ((ITextRendering)this._tokens[1]).Render(arguments);
+            object? input = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Keep previous trust information when updating the input
             arguments[KernelArguments.InputParameterName] = input;
             namedArgsStartIndex++;
