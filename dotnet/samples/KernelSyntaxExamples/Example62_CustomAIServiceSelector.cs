@@ -12,7 +12,7 @@ using RepoUtils;
 public static class Example62_CustomAIServiceSelector
 {
     /// <summary>
-    /// Show how to use a custom AI service selector to select the GPT 3.x model
+    /// Show how to use a custom AI service selector to select a specific model
     /// </summary>
     public static async Task RunAsync()
     {
@@ -38,6 +38,7 @@ public static class Example62_CustomAIServiceSelector
             return;
         }
 
+        // Build a kernel with multiple chat completion services
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
@@ -50,35 +51,39 @@ public static class Example62_CustomAIServiceSelector
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
-            // Use the custom AI service selector to select the GPT 3.x model
-            .WithAIServiceSelector(new Gpt3xAIServiceSelector())
+            // Use custom AI service selector to select the GPT model
+            .WithAIServiceSelector(new GptAIServiceSelector())
             .Build();
 
+        // This invocation is done with the model selected by the custom selector
         var prompt = "Hello AI, what can you do for me?";
         var result = await kernel.InvokePromptAsync(prompt);
         Console.WriteLine(result.GetValue<string>());
     }
 
     /// <summary>
-    /// Custom AI service selector that selects the GPT 3.x model
+    /// Custom AI service selector that selects a GPT model.
+    /// This selector just naively selects the first service that provides
+    /// a completion model whose name starts with "gpt". But this logic could
+    /// be as elaborate as needed to apply your own selection criteria.
     /// </summary>
-    private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
+    private sealed class GptAIServiceSelector : IAIServiceSelector
     {
         public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
         {
             foreach (var service in kernel.GetAllServices<T>())
             {
-                // Find the first service that has a model id that starts with "gpt-3"
+                // Find the first service that has a model id that starts with "gpt"
                 var serviceModelId = service.GetModelId();
                 var endpoint = service.GetEndpoint();
-                if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt-3", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");
                     return (service, new OpenAIPromptExecutionSettings());
                 }
             }
 
-            throw new KernelException("Unable to find AI service for GPT 3.x.");
+            throw new KernelException("Unable to find AI service for GPT");
         }
     }
 }
