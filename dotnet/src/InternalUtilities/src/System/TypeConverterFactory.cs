@@ -53,21 +53,28 @@ internal static class TypeConverterFactory
             return converter;
         }
 
-        return new JsonSerializationTypeConverter();
+        return new JsonSerializationTypeConverter(type);
     }
 
     internal sealed class JsonSerializationTypeConverter : TypeConverter
     {
+        private Type type { get; }
+
+        public JsonSerializationTypeConverter(Type type)
+        {
+            this.type = type;
+        }
+
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
-            return JsonSerializer.Deserialize<object>((string)value);
+            return JsonSerializer.Deserialize((string)value, this.type);
         }
 
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
-            return JsonSerializer.Serialize(value);
+            return JsonSerializer.Serialize(value, this.type);
         }
     }
 }

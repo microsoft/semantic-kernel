@@ -37,7 +37,7 @@ public sealed class AssertTypeConverterFactory
         /// </summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
-            return new { Foo = "Bar" };
+            return new MyCustomTypeWithCustomConverter { Foo = "Bar" };
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ public sealed class AssertTypeConverterFactory
     public static void ItCanDeserializeCustomTypeUsingNativeConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomType));
-        Assert.Equal(new { Number = 1, Text = "test" }, typeConverter!.ConvertFromInvariantString("{\"Number\":1,\"Text\":\"test\"}"));
+        Assert.Equal(new MyCustomType { Number = 1, Text = "test" }.ToString(), typeConverter!.ConvertFromInvariantString("{\"Number\":1,\"Text\":\"test\"}").ToString());
     }
 
     /// <summary>
@@ -109,6 +109,6 @@ public sealed class AssertTypeConverterFactory
     public static void ItCanDeserializeCustomTypeUsingCustomConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomTypeWithCustomConverter));
-        Assert.Equal(new { Foo = "Bar" }, typeConverter!.ConvertFromInvariantString("{\"Foo\":\"Bar\"}"));
+        Assert.Equal(new MyCustomTypeWithCustomConverter { Foo = "Bar" }.ToString(), typeConverter!.ConvertFromInvariantString("{\"Foo\":\"Bar\"}").ToString());
     }
 }
