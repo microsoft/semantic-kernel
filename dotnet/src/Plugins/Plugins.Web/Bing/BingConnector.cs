@@ -31,8 +31,6 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
-        Justification = "A constant Uri cannot be defined, as required by this class")]
     public BingConnector(string apiKey, Uri? uri = null, ILoggerFactory? loggerFactory = null) :
         this(apiKey, HttpClientProvider.GetHttpClient(), uri, loggerFactory)
     {
