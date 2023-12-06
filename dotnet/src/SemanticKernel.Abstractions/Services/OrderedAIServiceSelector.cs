@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
-/// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
-/// Uses the service id to select the preferred service provider and then returns the service and associated model settings.
+/// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
+/// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
 /// </summary>
 internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 {
@@ -31,30 +32,30 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         else
         {
             PromptExecutionSettings? defaultExecutionSettings = null;
-            foreach (var model in executionSettings)
+            foreach (var settings in executionSettings)
             {
-                if (!string.IsNullOrEmpty(model.ServiceId))
+                if (!string.IsNullOrEmpty(settings.ServiceId))
                 {
                     var service = kernel.Services is IKeyedServiceProvider ?
-                        kernel.Services.GetKeyedService<T>(model.ServiceId) :
+                        kernel.Services.GetKeyedService<T>(settings.ServiceId) :
                         null;
                     if (service is not null)
                     {
-                        return (service, model);
+                        return (service, settings);
                     }
                 }
-                else if (!string.IsNullOrEmpty(model.ModelId))
+                else if (!string.IsNullOrEmpty(settings.ModelId))
                 {
-                    var service = this.GetServiceByModelId<T>(kernel, model.ModelId!);
+                    var service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
                     if (service is not null)
                     {
-                        return (service, model);
+                        return (service, settings);
                     }
                 }
                 else
                 {
                     // First execution settings with empty or null service id is the default
-                    defaultExecutionSettings ??= model;
+                    defaultExecutionSettings ??= settings;
                 }
             }
 
@@ -64,10 +65,18 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             }
         }
 
-        var names = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ServiceId).ToArray()) : null;
-        throw new KernelException(string.IsNullOrWhiteSpace(names) ?
-            $"Service of type {typeof(T)} not registered." :
-            $"Service of type {typeof(T)} and names {names} not registered.");
+        var serviceIds = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ServiceId).ToArray()) : null;
+        var modelIds = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ModelId).ToArray()) : null;
+        var message = new StringBuilder($"Required service of type {typeof(T)} not registered.");
+        if (!string.IsNullOrEmpty(serviceIds))
+        {
+            message.Append($" Expected serviceIds: {serviceIds}.");
+        }
+        if (!string.IsNullOrEmpty(modelIds))
+        {
+            message.Append($" Expected modelIds: {modelIds}.");
+        }
+        throw new KernelException(message.ToString());
     }
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
