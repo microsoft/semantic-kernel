@@ -4,6 +4,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using Xunit;
 
+using static Extensions.UnitTests.PromptTemplate.Handlebars.HandlebarsPromptTemplateTestUtils;
+
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
 public sealed class HandlebarsPromptTemplateFactoryTests
@@ -12,8 +14,7 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     public void ItCreatesHandlebarsPromptTemplate()
     {
         // Arrange
-        var templateString = "{{input}}";
-        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
+        var promptConfig = InitializeHbPromptConfig("{{input}}");
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act

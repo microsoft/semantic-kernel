@@ -68,19 +68,19 @@ public sealed class HandlebarsPlannerTests
 
         var chatMessage = new ChatMessageContent(AuthorRole.Assistant, testPlanString);
 
-        var chatCompletion = new Mock<IChatCompletionService>();
+        var chatCompletion = new Mock<IChatCompletion>();
         chatCompletion
             .Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>()))
+            .Setup(ss => ss.SelectAIService<IChatCompletion>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>()))
             .Returns((chatCompletion.Object, new PromptExecutionSettings()));
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
-        serviceCollection.AddSingleton<IChatCompletionService>(chatCompletion.Object);
+        serviceCollection.AddSingleton<IChatCompletion>(chatCompletion.Object);
 
         return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }

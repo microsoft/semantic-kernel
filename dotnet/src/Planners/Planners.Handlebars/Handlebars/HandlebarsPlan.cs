@@ -1,6 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading;
+<<<<<<< Updated upstream
+=======
+using System.Threading.Tasks;
+using HandlebarsDotNet;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -10,6 +16,14 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 public sealed class HandlebarsPlan
 {
     /// <summary>
+<<<<<<< Updated upstream
+=======
+    /// Error message for hallucinated helpers.
+    /// </summary>
+    private const string HallucinatedHelpersErrorMessage = "Template references a helper that cannot be resolved.";
+
+    /// <summary>
+>>>>>>> Stashed changes
     /// The handlebars template representing the plan.
     /// </summary>
     private readonly string _template;
@@ -46,11 +60,37 @@ public sealed class HandlebarsPlan
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
+<<<<<<< Updated upstream
     public string Invoke(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
+=======
+    public async Task<string> InvokeAsync(
+        Kernel kernel,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        var templateFactory = new HandlebarsPromptTemplateFactory(options: HandlebarsPlanner.PromptTemplateOptions);
+        var promptTemplateConfig = new PromptTemplateConfig()
+        {
+            Template = this._template,
+            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+            Name = "ExecutePlan",
+        };
+
+        var handlebarsTemplate = templateFactory.Create(promptTemplateConfig) as HandlebarsPromptTemplate;
+        try
+        {
+            return await handlebarsTemplate!.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HandlebarsRuntimeException ex) when (ex.Message.Contains(HallucinatedHelpersErrorMessage))
+        {
+            var hallucinatedHelpers = ex.Message.Substring(HallucinatedHelpersErrorMessage.Length + 1);
+            throw new KernelException($"The plan references hallucinated helpers: {hallucinatedHelpers}", ex);
+        }
+>>>>>>> Stashed changes
     }
 }

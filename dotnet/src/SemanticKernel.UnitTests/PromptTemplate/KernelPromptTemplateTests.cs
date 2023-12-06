@@ -225,7 +225,6 @@ public sealed class KernelPromptTemplateTests
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._arguments[KernelArguments.InputParameterName] = "INPUT-BAR";
-
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
@@ -282,7 +281,6 @@ public sealed class KernelPromptTemplateTests
 
         this._arguments[KernelArguments.InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
-
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 

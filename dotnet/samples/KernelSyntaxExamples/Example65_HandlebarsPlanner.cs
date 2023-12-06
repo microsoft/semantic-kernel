@@ -30,11 +30,11 @@ public static class Example65_HandlebarsPlanner
         // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
         await RunDictionaryWithBasicTypesSampleAsync();
-        await RunPoetrySampleAsync();
-        await RunBookSampleAsync();
+        // await RunPoetrySampleAsync();
+        // await RunBookSampleAsync();
 
-        // Using Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
+        // // Using Complex Types as inputs and outputs
+        // await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -114,7 +114,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 
@@ -127,7 +127,9 @@ public static class Example65_HandlebarsPlanner
             // Load additional plugins to enable planner but not enough for the given goal.
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
-        catch (KernelException e)
+        catch (KernelException ex) when (
+            ex.Message.Contains("The plan references hallucinated helpers", StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains("Unable to create plan for goal with available functions", StringComparison.CurrentCultureIgnoreCase))
         {
             /*
                 Unable to create plan for goal with available functions.
@@ -138,7 +140,7 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"{e.Message}\n");
+            Console.WriteLine($"\n\n{ex.Message}\n");
         }
     }
 

@@ -1,60 +1,72 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using HandlebarsDotNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
-internal sealed class HandlebarsPromptTemplate : IPromptTemplate
+/// <summary>
+/// Represents a Handlebars prompt template.
+/// </summary>
+public class HandlebarsPromptTemplate : IPromptTemplate
 {
     /// <summary>
-    /// Constructor for PromptTemplate.
+    /// Default options for built-in Handlebars helpers.
+    /// </summary>
+    /// TODO [@teresaqhoang]: Support override of default options
+    private readonly HandlebarsPromptTemplateOptions _options;
+
+    /// <summary>
+    /// Constructor for Handlebars PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
+    /// <param name="options">Handlebars promnpt template options</param>
+    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null, HandlebarsPromptTemplateOptions? options = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
+        this._options = options ?? new();
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
     {
-        var handlebars = HandlebarsDotNet.Handlebars.Create();
+        arguments = this.GetVariables(arguments);
+        var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
-        foreach (IKernelPlugin plugin in kernel.Plugins)
+        // Add helpers for kernel functions
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+
+        // Add built-in system helpers
+        KernelSystemHelpers.Register(handlebarsInstance, arguments, this._options);
+
+        // Register any custom helpers
+        if (this._options.RegisterCustomHelpers is not null)
         {
-            foreach (KernelFunction function in plugin)
-            {
-                handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
-                {
-                    var result = function.InvokeAsync(kernel, arguments).GetAwaiter().GetResult();
-                    writer.WriteSafeString(result.ToString());
-                });
-            }
+            this._options.RegisterCustomHelpers(handlebarsInstance, arguments);
         }
 
-        var template = handlebars.Compile(this._promptModel.Template);
+        var template = handlebarsInstance.Compile(this._promptModel.Template);
 
-        return template(this.GetVariables(arguments));
+        var prompt = template(arguments);
+
+        return await Task.FromResult(prompt).ConfigureAwait(false);
     }
 
     #region private
     private readonly ILoggerFactory _loggerFactory;
+
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
 
-    private Dictionary<string, object?> GetVariables(KernelArguments? arguments)
+    private KernelArguments GetVariables(KernelArguments? arguments)
     {
-        Dictionary<string, object?> result = new();
+        KernelArguments result = new();
 
         foreach (var p in this._promptModel.InputVariables)
         {

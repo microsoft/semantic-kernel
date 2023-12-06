@@ -6,8 +6,11 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using HandlebarsDotNet.Helpers.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -16,15 +19,41 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// </summary>
 public sealed class HandlebarsPlanner
 {
+    /// <summary>
+    /// Error message if kernel does not contain sufficient functions to create a plan.
+    /// </summary>
+    private const string InsufficientFunctionsError = "Additional helpers may be required";
+
+    /// <summary>
+    /// Represents static options for all Handlebars Planner prompt templates.
+    /// </summary>
+    public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
+    {
+        // Options for built-in Handlebars helpers
+        Categories = new Category[] { Category.Math },
+        UseCategoryPrefix = false,
+
+        // Custom helpers
+        RegisterCustomHelpers = HandlebarsPromptTemplateExtensions.RegisterCustomCreatePlanHelpers,
+    };
+
+    /// <summary>
+    /// Gets the stopwatch used for measuring planning time.
+    /// </summary>
+    public Stopwatch Stopwatch { get; } = new();
+
     private readonly HandlebarsPlannerConfig _config;
+
+    private HandlebarsPromptTemplateFactory _templateFactory { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
-    /// <param name="config">The configuration.</param>
+    /// <param name="config">The configuration for Planner.</param>
     public HandlebarsPlanner(HandlebarsPlannerConfig? config = default)
     {
         this._config = config ?? new HandlebarsPlannerConfig();
+        this._templateFactory = new HandlebarsPromptTemplateFactory(options: PromptTemplateOptions);
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
@@ -50,22 +79,22 @@ public sealed class HandlebarsPlanner
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
         var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
-        var createPlanPrompt = this.GetHandlebarsTemplate(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas).ConfigureAwait(false);
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletion>();
 
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
         MatchCollection matches = Regex.Matches(createPlanPrompt, pattern, RegexOptions.Singleline);
 
         // Add the chat history to the chat
-        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt, chatCompletionService);
+        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
         var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (completionResults.Content?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults.Content is not null && completionResults.Content.Contains(InsufficientFunctionsError))
         {
-            var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
+            var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
@@ -142,9 +171,9 @@ public sealed class HandlebarsPlanner
         {
             // Async return type - need to extract the actual return type and override ParameterType property
             var type = parameter.ParameterType;
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            if (type.TryGetTaskResultType(out var taskResultType))
             {
-                parameter = new(parameter) { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
+                parameter = new(parameter) { ParameterType = taskResultType }; // Actual Return Type
             }
 
             complexParameterTypes.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeMetadata());
@@ -164,7 +193,7 @@ public sealed class HandlebarsPlanner
         return parameter;
     }
 
-    private ChatHistory GetChatHistoryFromPrompt(string prompt, IChatCompletionService chatCompletionService)
+    private ChatHistory GetChatHistoryFromPrompt(string prompt)
     {
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
@@ -194,18 +223,19 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-    private string GetHandlebarsTemplate(
+    private async Task<string> GetHandlebarsTemplateAsync(
         Kernel kernel, string goal,
         List<KernelFunctionMetadata> availableFunctions,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
-        var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
+        var createPlanPrompt = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var arguments = new KernelArguments()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
-                { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
+                { "nameDelimiter", this._templateFactory.NameDelimiter},
+                { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
                 { "allowLoops", this._config.AllowLoops },
                 { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
                 { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
@@ -213,7 +243,16 @@ public sealed class HandlebarsPlanner
                 { "lastError", this._config.LastError }
             };
 
-        return HandlebarsTemplateEngineExtensions.Render(kernel, plannerTemplate, arguments);
+        var promptTemplateConfig = new PromptTemplateConfig()
+        {
+            Template = createPlanPrompt,
+            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+            Name = "CreatePlan",
+        };
+
+        var handlebarsTemplate = this._templateFactory.Create(promptTemplateConfig) as HandlebarsPromptTemplate;
+
+        return await handlebarsTemplate!.RenderAsync(kernel, arguments, CancellationToken.None).ConfigureAwait(true);
     }
 
     private static string MinifyHandlebarsTemplate(string template)
