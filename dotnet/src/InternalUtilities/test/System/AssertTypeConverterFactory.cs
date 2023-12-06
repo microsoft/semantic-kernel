@@ -27,7 +27,9 @@ public sealed class AssertTypeConverterFactory
         public string Foo { get; set; }
     }
 
+#pragma warning disable CA1815
     private sealed class MyCustomTypeConverter : TypeConverter
+#pragma warning restore CA1815
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
