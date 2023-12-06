@@ -67,22 +67,10 @@ public sealed class HandlebarsPlan
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        InvokeCoreDelegate invokeCoreDelegate = new(this.InvokeCore);
-        IAsyncResult asyncResult = invokeCoreDelegate.BeginInvoke(kernel, arguments, cancellationToken, null, null);
-        return await Task<string>.Factory.FromAsync(asyncResult, invokeCoreDelegate.EndInvoke).ConfigureAwait(false);
-    }
+        Task<string> task = Task.Run(
+            () => HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken),
+            cancellationToken);
 
-    private string InvokeCore(
-        Kernel kernel,
-        KernelArguments arguments,
-        CancellationToken cancellationToken = default)
-    {
-        return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
+        return await task.ConfigureAwait(false);
     }
-
-    /// <summary>Delegate to invoke the plan asynchronously.</summary>
-    private delegate string InvokeCoreDelegate(
-        Kernel kernel,
-        KernelArguments arguments,
-        CancellationToken cancellationToken = default);
 }
