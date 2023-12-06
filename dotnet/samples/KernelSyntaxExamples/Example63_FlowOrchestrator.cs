@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -225,8 +224,7 @@ The email should conform the regex: {EmailRegex}
 
 If I cannot answer, say that I don't know.
 Do not expose the regex unless asked.
-
-        ";
+";
 
         private readonly IChatCompletion _chat;
 
