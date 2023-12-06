@@ -18,20 +18,19 @@ public static class Example08_RetryHandler
 {
     public static async Task RunAsync()
     {
-        // Create a Kernel with a customized HttpClient
-        var kernel = new KernelBuilder().WithServices(c =>
+        // Create a Kernel with the HttpClient
+        KernelBuilder builder = new();
+        builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
+        builder.Services.ConfigureHttpClientDefaults(c =>
         {
-            c.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
-            c.ConfigureHttpClientDefaults(c =>
+            // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+            c.AddStandardResilienceHandler().Configure(o =>
             {
-                // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-                c.AddStandardResilienceHandler().Configure(o =>
-                {
-                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-                });
+                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
             });
-            c.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - Setting OpenAI.ApiKey to an invalid value to see the retry policy in play
-        }).Build();
+        });
+        builder.Services.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
+        Kernel kernel = builder.Build();
 
         var logger = kernel.LoggerFactory.CreateLogger(typeof(Example08_RetryHandler));
 
