@@ -225,4 +225,22 @@ public class NamedArgBlockTests
         Assert.True(target2.IsValid(out _));
         Assert.True(target3.IsValid(out _));
     }
+
+    [Fact]
+    public void ItReturnsArgumentsValueAndType()
+    {
+        // Arrange
+        var target = new NamedArgBlock("a=$var");
+        var arguments = new KernelArguments()
+        {
+            ["var"] = (double)28.2,
+        };
+
+        // Act
+        var result = target.GetValue(arguments);
+
+        // Assert
+        Assert.IsType<double>(result);
+        Assert.Equal(28.2, result);
+    }
 }
