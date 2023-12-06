@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 
 /// <summary>
-/// $$$
+/// Assistant specific <see cref="KernelException"/>.
 /// </summary>
 public class AssistantException : KernelException
 {
