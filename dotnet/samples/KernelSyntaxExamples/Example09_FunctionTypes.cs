@@ -16,7 +16,6 @@ public static class Example09_FunctionTypes
         Console.WriteLine("======== Method Function types ========");
 
         var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 

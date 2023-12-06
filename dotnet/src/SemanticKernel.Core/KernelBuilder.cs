@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
 
@@ -43,6 +41,12 @@ public sealed class KernelBuilder : IKernelBuilder
         this._services = services;
         this._supportsBuild = false;
     }
+
+    /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
+    public IServiceCollection Services => this._services ??= new ServiceCollection();
+
+    /// <summary>Gets a builder for plugins to be built as services into the <see cref="Kernel"/>.</summary>
+    public IKernelBuilderPlugins Plugins => this._plugins ??= new(this.Services);
 
     /// <summary>Constructs a new instance of <see cref="Kernel"/> using all of the settings configured on the builder.</summary>
     /// <returns>The new <see cref="Kernel"/> instance.</returns>
@@ -89,35 +93,6 @@ public sealed class KernelBuilder : IKernelBuilder
         }
 
         return new Kernel(serviceProvider);
-    }
-
-    /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
-    public IServiceCollection Services => this._services ??= new ServiceCollection();
-
-    /// <summary>Gets a builder for plugins to be built as services into the <see cref="Kernel"/>.</summary>
-    public IKernelBuilderPlugins Plugins => this._plugins ??= new(this.Services);
-
-    /// <summary>Configures the services to contain the specified singleton <see cref="ILoggerFactory"/>.</summary>
-    /// <param name="loggerFactory">The logger factory. If null, no logger factory will be registered.</param>
-    /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    /// <remarks>
-    /// This is functionally equivalent to calling adding the <paramref name="loggerFactory"/> to <see cref="Services"/>
-    /// as a non-keyed singleton.
-    /// </remarks>
-    public KernelBuilder WithLoggerFactory(ILoggerFactory? loggerFactory) => this.WithSingleton(loggerFactory);
-
-    /// <summary>Configures the services to contain the specified singleton.</summary>
-    /// <typeparam name="T">Specifies the service type.</typeparam>
-    /// <param name="instance">The singleton instance.</param>
-    /// <returns>This <see cref="KernelBuilder"/> instance.</returns>
-    private KernelBuilder WithSingleton<T>(T? instance) where T : class
-    {
-        if (instance is not null)
-        {
-            this.Services.AddSingleton(instance);
-        }
-
-        return this;
     }
 
     private sealed class KernelBuilderPlugins : IKernelBuilderPlugins

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example06_TemplateLanguage
@@ -28,7 +27,6 @@ public static class Example06_TemplateLanguage
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

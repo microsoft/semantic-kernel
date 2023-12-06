@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
@@ -170,7 +171,7 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region ImportPluginFromType
+    #region ImportPlugin/AddFromType
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -239,7 +240,7 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region ImportPluginFromObject
+    #region ImportPlugin/AddFromObject
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -332,17 +333,30 @@ public static class KernelExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
+        Verify.NotNull(kernel);
+
+        return CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services);
+    }
+
+    /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
+    private static KernelPlugin CreatePluginFromPromptDirectory(
+        string pluginDirectory,
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        IServiceProvider? services = null)
+    {
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
 
-        pluginName ??= new DirectoryInfo(pluginDirectory).Name;
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
         Verify.DirectoryExists(pluginDirectory);
+        pluginName ??= new DirectoryInfo(pluginDirectory).Name;
 
-        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
+        ILoggerFactory loggerFactory = services?.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         KernelPlugin plugin = new(pluginName);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
+        ILogger logger = loggerFactory.CreateLogger(typeof(Kernel));
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
         {
@@ -376,14 +390,14 @@ public static class KernelExtensions
                 logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
             }
 
-            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptConfig));
+            plugin.AddFunction(KernelFunctionFactory.CreateFromPrompt(promptTemplateInstance, promptConfig, loggerFactory));
         }
 
         return plugin;
     }
     #endregion
 
-    #region ImportPluginFromPromptDirectory
+    #region ImportPlugin/AddFromPromptDirectory
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
     /// and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -427,6 +441,54 @@ public static class KernelExtensions
         IKernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
+    }
+
+    /// <summary>
+    /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
+    /// and adds it into the plugin collection.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A plugin directory contains a set of subdirectories, one for each function in the form of a prompt.
+    /// This method accepts the path of the plugin directory. Each subdirectory's name is used as the function name
+    /// and may contain only alphanumeric chars and underscores.
+    /// </para>
+    /// <code>
+    /// The following directory structure, with pluginDirectory = "D:\plugins\OfficePlugin",
+    /// will create a plugin with three functions:
+    /// D:\plugins\
+    ///     |__ OfficePlugin\                 # pluginDirectory
+    ///         |__ ScheduleMeeting           #   function directory
+    ///             |__ skprompt.txt          #     prompt template
+    ///             |__ config.json           #     settings (optional file)
+    ///         |__ SummarizeEmailThread      #   function directory
+    ///             |__ skprompt.txt          #     prompt template
+    ///             |__ config.json           #     settings (optional file)
+    ///         |__ MergeWordAndExcelDocs     #   function directory
+    ///             |__ skprompt.txt          #     prompt template
+    ///             |__ config.json           #     settings (optional file)
+    /// </code>
+    /// <para>
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// </para>
+    /// </remarks>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
+    /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    public static IKernelBuilderPlugins AddFromPromptDirectory(
+        this IKernelBuilderPlugins plugins,
+        string pluginDirectory,
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton<IKernelPlugin>(services =>
+            CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, services));
+
+        return plugins;
     }
     #endregion
 

@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
@@ -29,7 +28,6 @@ public static class Example05_InlineFunctionDefinition
          */
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

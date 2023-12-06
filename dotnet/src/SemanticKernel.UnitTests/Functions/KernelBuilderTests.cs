@@ -26,33 +26,10 @@ public class KernelBuilderTests
     }
 
     [Fact]
-    public void ItReturnsItselfFromWitherMethods()
-    {
-        KernelBuilder builder = new();
-        Assert.Same(builder, builder.WithLoggerFactory(NullLoggerFactory.Instance));
-    }
-
-    [Fact]
     public void ItDefaultsDataToAnEmptyDictionary()
     {
         Kernel kernel = new KernelBuilder().Build();
         Assert.Empty(kernel.Data);
-    }
-
-    [Fact]
-    public void ItSupportsOverwritingLoggerFactory()
-    {
-        using ILoggerFactory loggerFactory1 = new LoggerFactory();
-        using ILoggerFactory loggerFactory2 = new LoggerFactory();
-
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(NullLoggerFactory.Instance)
-            .WithLoggerFactory(loggerFactory1)
-            .WithLoggerFactory(loggerFactory2)
-            .Build();
-
-        Assert.Same(loggerFactory2, kernel.GetService<ILoggerFactory>());
-        Assert.Same(loggerFactory2, kernel.LoggerFactory);
     }
 
     [Fact]
@@ -122,16 +99,6 @@ public class KernelBuilderTests
             .Build();
 
         Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
-    }
-
-    [Fact]
-    public void ItPermitsNullToWithers()
-    {
-        KernelBuilder builder = new();
-
-        builder.WithLoggerFactory(null);
-
-        builder.Build();
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextGeneration;
@@ -25,7 +26,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        var builder = new KernelBuilder().WithLoggerFactory(this._logger);
+        var builder = new KernelBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
         builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
         builder.Plugins.AddFromType<EmailPluginFake>();
         Kernel target = builder.Build();
@@ -42,7 +44,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        var builder = new KernelBuilder().WithLoggerFactory(this._logger);
+        var builder = new KernelBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
         builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
         builder.Plugins.AddFromType<EmailPluginFake>();
         Kernel target = builder.Build();

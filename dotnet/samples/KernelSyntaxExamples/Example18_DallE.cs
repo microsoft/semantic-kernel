@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextToImage;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
@@ -24,7 +23,6 @@ public static class Example18_DallE
         Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your text to image service
             .WithOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
@@ -93,7 +91,6 @@ public static class Example18_DallE
         Console.WriteLine("========Azure OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your text to image service
             .WithAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service

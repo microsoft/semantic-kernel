@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Services;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example62_CustomAIServiceSelector
@@ -40,7 +39,6 @@ public static class Example62_CustomAIServiceSelector
         }
 
         var builder = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,

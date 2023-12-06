@@ -2,10 +2,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example56_TemplateMethodFunctionsWithMultipleArguments
@@ -30,15 +31,15 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
-                deploymentName: deploymentName,
-                modelId: modelId,
-                endpoint: endpoint,
-                serviceId: serviceId,
-                apiKey: apiKey)
-            .Build();
+        KernelBuilder builder = new();
+        builder.Services.AddLogging(c => c.AddConsole());
+        builder.WithAzureOpenAIChatCompletion(
+            deploymentName: deploymentName,
+            modelId: modelId,
+            endpoint: endpoint,
+            serviceId: serviceId,
+            apiKey: apiKey);
+        Kernel kernel = builder.Build();
 
         var arguments = new KernelArguments();
         arguments["word2"] = " Potter";

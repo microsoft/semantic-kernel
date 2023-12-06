@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example11_WebSearchQueries
@@ -13,7 +12,7 @@ public static class Example11_WebSearchQueries
     {
         Console.WriteLine("======== WebSearchQueries ========");
 
-        Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         // Load native plugins
         var bing = kernel.ImportPluginFromType<SearchUrlPlugin>("search");

@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
-using RepoUtils;
 using Resources;
 
 // ReSharper disable once InconsistentNaming
@@ -56,7 +55,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
             }
         );
 
-        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         var openApiSpec = EmbeddedResource.Read("22-openapi.json");
         using var messageStub = new HttpMessageHandlerStub(openApiSpec);

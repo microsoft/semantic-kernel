@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using RepoUtils;
 
 /**
  * This example shows how to use GPT3.5 Chat model for prompts and prompt functions.
@@ -16,7 +15,6 @@ public static class Example27_PromptFunctionsUsingChatGPT
         Console.WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 

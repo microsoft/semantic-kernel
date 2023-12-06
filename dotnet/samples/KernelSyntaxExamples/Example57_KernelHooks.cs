@@ -43,7 +43,6 @@ public static class Example57_KernelHooks
         Console.WriteLine("\n======== Get Usage Data ========\n");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
@@ -89,7 +88,6 @@ public static class Example57_KernelHooks
         Console.WriteLine("\n======== Get Rendered Prompt ========\n");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
@@ -129,8 +127,7 @@ public static class Example57_KernelHooks
         Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletion(
+              .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -164,8 +161,7 @@ public static class Example57_KernelHooks
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletion(
+              .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();
@@ -200,8 +196,7 @@ public static class Example57_KernelHooks
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         Kernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletion(
+              .WithOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
            .Build();

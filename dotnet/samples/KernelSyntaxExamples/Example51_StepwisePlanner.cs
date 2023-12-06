@@ -213,7 +213,6 @@ public static class Example51_StepwisePlanner
         Console.WriteLine($"Model: {result.model} ({maxTokens})");
 
         var kernel = builder
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .Build();
 
         return kernel;

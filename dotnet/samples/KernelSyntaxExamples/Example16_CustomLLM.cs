@@ -88,7 +88,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
-        Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
         ITextGenerationService textGeneration = new MyTextGenerationService();
 
         var prompt = "Write one paragraph why AI is awesome";

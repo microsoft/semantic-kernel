@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example66_FunctionCallingStepwisePlanner
@@ -46,7 +45,6 @@ public static class Example66_FunctionCallingStepwisePlanner
     private static Kernel InitializeKernel()
     {
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
