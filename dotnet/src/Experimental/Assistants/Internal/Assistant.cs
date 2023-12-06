@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -53,6 +54,7 @@ internal sealed class Assistant : IAssistant
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
+    private bool _isDeleted;
 
     /// <summary>
     /// Create a new assistant.
@@ -70,9 +72,7 @@ internal sealed class Assistant : IAssistant
         IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        var resultModel =
-            await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException("Unexpected failure creating assistant: no result.");
+        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
 
         return new Assistant(resultModel, chatService, restContext, plugins);
     }
@@ -98,13 +98,28 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
     /// <inheritdoc/>
     public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+    }
+
+    public async Task DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        if (this._isDeleted)
+        {
+            return;
+        }
+
+        await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        this._isDeleted = true;
     }
 
     /// <summary>
@@ -130,5 +145,13 @@ internal sealed class Assistant : IAssistant
             };
 
         return JsonSerializer.Serialize(response);
+    }
+
+    private void ThrowIfDeleted()
+    {
+        if (this._isDeleted)
+        {
+            throw new AssistantException($"Assistant: {this.Id} has been deleted.");
+        }
     }
 }

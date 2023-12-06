@@ -71,4 +71,11 @@ public interface IAssistant
     /// <param name="id">The id of the existing chat thread.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete current assistant.  Terminal state - Unable to peform any
+    /// subsequent actions.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task DeleteAsync(CancellationToken cancellationToken = default);
 }

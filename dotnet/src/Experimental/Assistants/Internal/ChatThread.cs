@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
@@ -19,6 +20,7 @@ internal sealed class ChatThread : IChatThread
     public string Id { get; private set; }
 
     private readonly OpenAIRestContext _restContext;
+    private bool _isDeleted;
 
     /// <summary>
     /// Create a new thread.
@@ -28,9 +30,8 @@ internal sealed class ChatThread : IChatThread
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
     public static async Task<IChatThread> CreateAsync(OpenAIRestContext restContext, CancellationToken cancellationToken = default)
     {
-        var threadModel =
-            await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException("Unexpected failure creating thread: no result.");
+        // Common case is for failure exception to be raised by REST invocation.  Null result is a logical possibility, but unlikely edge case.
+        var threadModel = await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false);
 
         return new ChatThread(threadModel, messageListModel: null, restContext);
     }
@@ -44,13 +45,8 @@ internal sealed class ChatThread : IChatThread
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
     public static async Task<IChatThread> GetAsync(OpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
     {
-        var threadModel =
-            await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException($"Unexpected failure retrieving thread: no result. ({threadId})");
-
-        var messageListModel =
-            await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException($"Unexpected failure retrieving thread: no result. ({threadId})");
+        var threadModel = await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false);
+        var messageListModel = await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false);
 
         return new ChatThread(threadModel, messageListModel, restContext);
     }
@@ -58,6 +54,8 @@ internal sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         var messageModel =
             await this._restContext.CreateUserTextMessageAsync(
                 this.Id,
@@ -70,6 +68,8 @@ internal sealed class ChatThread : IChatThread
     /// <inheritdoc/>
     public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
     {
+        this.ThrowIfDeleted();
+
         var tools = assistant.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
 
@@ -85,15 +85,23 @@ internal sealed class ChatThread : IChatThread
     /// Delete an existing thread.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
-    public Task DeleteThreadAsync(CancellationToken cancellationToken)
+    public async Task DeleteAsync(CancellationToken cancellationToken)
     {
-        return this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken);
+        if (this._isDeleted)
+        {
+            return;
+        }
+
+        await this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        this._isDeleted = true;
     }
 
     private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
         IList<string> messageIds,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        this.ThrowIfDeleted();
+
         var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken).ConfigureAwait(false);
         foreach (var message in messages)
         {
@@ -111,5 +119,13 @@ internal sealed class ChatThread : IChatThread
     {
         this.Id = threadModel.Id;
         this._restContext = restContext;
+    }
+
+    private void ThrowIfDeleted()
+    {
+        if (this._isDeleted)
+        {
+            throw new AssistantException($"Assistant: {this.Id} has been deleted.");
+        }
     }
 }
