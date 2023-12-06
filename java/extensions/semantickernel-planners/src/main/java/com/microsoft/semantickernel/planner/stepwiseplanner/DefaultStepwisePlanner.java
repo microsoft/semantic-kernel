@@ -289,8 +289,8 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                 .invokeAsync(context)
                 .flatMap(
                         llmResponse -> {
-                            String actionText =
-                                    Objects.requireNonNull(llmResponse.getResult()).trim();
+                            String actionText = ((String)
+                                    Objects.requireNonNull(llmResponse.getResult())).trim();
                             LOGGER.trace("Response: " + actionText);
 
                             SystemStep nextStep = this.parseResult(actionText);
@@ -559,8 +559,8 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
                             LOGGER.trace(
                                     "Invoked {}. Result: {}",
                                     targetFunction.get().getName(),
-                                    result.getResult());
-                            return result.getResult();
+                                    String.valueOf(result.getResult()));
+                            return (String)result.getResult();
                         });
     }
 

@@ -8,7 +8,7 @@ import java.util.Collection;
 
 import com.microsoft.semantickernel.plugin.Plugin;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.aiservices.AIService;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -22,7 +22,7 @@ import com.microsoft.semantickernel.KernelConfig;
 
 import reactor.core.publisher.Mono;
 
-public class AssistantKernel implements Kernel, Plugin {
+public class AssistantKernel extends Plugin implements Kernel {
 
     public static AssistantKernel FromConfiguration(
         String configurationFile,
@@ -32,6 +32,10 @@ public class AssistantKernel implements Kernel, Plugin {
     ) {
 			return null;
     }
+
+	public AssistantKernel(String name, SKFunction... functions) {
+		super(name, functions);
+	}
 
 		public SKFunction getFunction(String skill, String function) {
 			return null;
@@ -82,7 +86,7 @@ public class AssistantKernel implements Kernel, Plugin {
 			return null;
 		}
 
-		public Collection<SKFunction> functions() {
+		public List<SKFunction> functions() {
 			return null;
 		}
 

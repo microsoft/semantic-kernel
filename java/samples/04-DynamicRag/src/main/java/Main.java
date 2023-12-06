@@ -1,6 +1,6 @@
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -57,7 +57,7 @@ public class Main {
         );  
         
         // Create the math plugin
-        Collection<SKFunction> mathFunctions = NativeFunction.getFunctionsFromObject(new Math());
+        List<SKFunction> mathFunctions = NativeFunction.getFunctionsFromObject(new Math());
         mathFunctions.add(SemanticFunction.fromYaml("/Plugins/MathPlugin/GenerateMathProblem.prompt.yaml"));
         Plugin math = new com.microsoft.semantickernel.plugin.Plugin(
             "Math",

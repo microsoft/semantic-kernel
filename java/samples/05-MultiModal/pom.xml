@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
    
     <parent>
-        <artifactId>sk-v1-samples</artifactId>
         <groupId>com.microsoft.semantic-kernel</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>samples</artifactId>
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,6 +16,31 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>aiservices-azureopenai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>aiservices-huggingface</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>aiservices-ollama</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>aiservices-openai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-ai-openai</artifactId>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

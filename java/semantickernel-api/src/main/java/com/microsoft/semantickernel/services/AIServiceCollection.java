@@ -16,7 +16,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-/** A collection that can hold AI services */
+/**
+ * A collection that can hold AI services 
+ * @deprecated Use {@code com.microsoft.semantickernel.aiservices.AIService}
+ */
+@Deprecated
 public class AIServiceCollection {
     // A constant key for the default service
     private static final String DefaultKey = "__DEFAULT__";

@@ -1,21 +1,20 @@
-package com.microsoft.semantickernel.aiservices.huggingface.fillmasktask;
+package com.microsoft.semantickernel.aiservices.huggingface.summarizationtask;
 
-import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 
+import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.aiservices.AIService;
 import com.microsoft.semantickernel.aiservices.responsetypes.BinaryFile;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 
 import reactor.core.publisher.Mono;
 
-public class HuggingFaceFillMaskTask implements AIService {
+public class HuggingFaceSummarizationTask implements AIService {
 
-    public HuggingFaceFillMaskTask(String modelId, String apiKey, HttpClient httpClient, String endpoint) {}
+    public HuggingFaceSummarizationTask(String modelId, String apiKey, HttpClient httpClient, String endpoint) {}
     
-
     @Override
     public String getModelId() {
         // TODO Auto-generated method stub

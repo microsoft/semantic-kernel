@@ -1,6 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner.actionplanner;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
@@ -14,14 +25,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 /// <summary>
@@ -114,9 +118,9 @@ public class ActionPlanner {
     private Plan parsePlan(String goal, SKContext result) {
         ActionPlanResponse planData;
         // Clean up the plan, removing any prompt and the stop sequence
-        Matcher matcher = CLEAN_PLAN.matcher(result.getResult());
+        Matcher matcher = CLEAN_PLAN.matcher((String)result.getResult());
 
-        String plan = result.getResult();
+        String plan = (String)result.getResult();
         if (matcher.matches()) {
             plan = matcher.group(1);
         }

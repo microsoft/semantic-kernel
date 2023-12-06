@@ -1,5 +1,4 @@
 
-import java.util.Collection;
 import java.util.List;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -41,7 +40,7 @@ public class Main {
                 .build();
 
         // Create the math plugin
-        Collection<SKFunction> mathFunctions = NativeFunction.getFunctionsFromObject(new Math());
+        List<SKFunction> mathFunctions = NativeFunction.getFunctionsFromObject(new Math());
         Plugin mathPlugin = new com.microsoft.semantickernel.plugin.Plugin(
             "Math",
             mathFunctions

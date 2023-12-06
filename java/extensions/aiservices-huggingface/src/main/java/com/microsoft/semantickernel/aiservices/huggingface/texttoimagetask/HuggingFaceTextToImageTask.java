@@ -1,21 +1,21 @@
-package com.microsoft.semantickernel.aiservices.huggingface.questionansweringtask;
+package com.microsoft.semantickernel.aiservices.huggingface.texttoimagetask;
 
-import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 
+import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.aiservices.AIService;
 import com.microsoft.semantickernel.aiservices.responsetypes.BinaryFile;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 
 import reactor.core.publisher.Mono;
 
-public class HuggingFaceQuestionAnsweringTask implements AIService {
+public class HuggingFaceTextToImageTask implements AIService {
 
-    public HuggingFaceQuestionAnsweringTask(String modelId, String apiKey, HttpClient httpClient, String endpoint) {}
-
-    @Override    
+    public HuggingFaceTextToImageTask(String modelId, String apiKey, HttpClient httpClient, String endpoint) {}
+    
+    @Override
     public String getModelId() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getModelId'");

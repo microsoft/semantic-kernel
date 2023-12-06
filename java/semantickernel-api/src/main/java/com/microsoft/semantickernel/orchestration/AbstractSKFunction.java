@@ -1,6 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
@@ -9,16 +17,11 @@ import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /** Abstract implementation of the SKFunction interface. */
-public abstract class AbstractSKFunction implements SKFunction, RegistrableSkFunction {
+public abstract class AbstractSkFunction implements SKFunction, RegistrableSkFunction {
 
     private final List<ParameterView> parameters;
     private final String skillName;
@@ -37,7 +40,7 @@ public abstract class AbstractSKFunction implements SKFunction, RegistrableSkFun
      * @param description The description of the function.
      * @param skillsSupplier The skill supplier.
      */
-    public AbstractSKFunction(
+    public AbstractSkFunction(
             List<ParameterView> parameters,
             String skillName,
             String functionName,
@@ -139,8 +142,10 @@ public abstract class AbstractSKFunction implements SKFunction, RegistrableSkFun
      * @return A mono of the context with the result.
      * @apiNote Breaking change: s/RequestConfiguration settings/Object settings/
      */
-    protected abstract Mono<SKContext> invokeAsyncInternal(
-            SKContext context, @Nullable Object settings);
+    protected Mono<SKContext> invokeAsyncInternal(
+            SKContext context, @Nullable Object settings) {
+                return Mono.error(new UnsupportedOperationException("Deprecated"));
+            }
 
     @Override
     public String getSkillName() {

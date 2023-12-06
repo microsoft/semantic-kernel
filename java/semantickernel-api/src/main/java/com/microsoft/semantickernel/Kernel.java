@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
+import com.microsoft.semantickernel.aiservices.AIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
@@ -16,7 +17,6 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.plugin.Plugin;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
@@ -25,7 +25,7 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import reactor.core.publisher.Mono;
 
 /** Interface for the semantic kernel. */
-public interface Kernel extends Buildable {
+public interface Kernel extends SkillExecutor, Buildable {
 
     /**
      * Settings required to execute functions, including details about AI dependencies, e.g.

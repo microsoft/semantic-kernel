@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -35,7 +36,9 @@ public interface SKFunction {
      */
     @CheckReturnValue
     @Deprecated
-    Mono<SKContext> invokeAsync(String input, SKContext context, Object settings);
+    default Mono<SKContext> invokeAsync(String input, SKContext context, Object settings) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
 
     /**
      * Invokes the function
@@ -67,7 +70,9 @@ public interface SKFunction {
      */
     @CheckReturnValue
     @Deprecated
-    Mono<SKContext> invokeAsync(SKContext context);
+    default Mono<SKContext> invokeAsync(SKContext context) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
 
     /**
      * The type of the configuration argument that will be provided when the function is invoked
@@ -84,7 +89,10 @@ public interface SKFunction {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming);
+    default Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
+
 
     /**
      * Invokes the function with the given context and settings
@@ -96,7 +104,9 @@ public interface SKFunction {
      */
     @CheckReturnValue
     @Deprecated
-    Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings);
+    default Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings) {
+        throw new UnsupportedOperationException("Deprecated");
+    }
 
     /**
      * @return The name of the skill that this function is within
@@ -134,6 +144,11 @@ public interface SKFunction {
      * @return A manual-friendly string for a function.
      */
     String toManualString(boolean includeOutputs);
+
+    @Deprecated
+    default Class<?> getType() {
+        throw new UnsupportedOperationException("Deprecated");
+    }
 
     /**
      * Invokes the function with the given input, context and settings

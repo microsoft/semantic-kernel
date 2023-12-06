@@ -6,13 +6,19 @@
     <modelVersion>4.0.0</modelVersion>
    
     <parent>
-        <artifactId>sk-v1-samples</artifactId>
         <groupId>com.microsoft.semantic-kernel</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>samples</artifactId>
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>02-PersonaChat</artifactId>
     <packaging>jar</packaging>
     
+    <dependencies>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-core</artifactId>
+        </dependency>
+    </dependencies>
 </project>

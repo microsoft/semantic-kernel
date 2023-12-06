@@ -1,6 +1,7 @@
 
 import java.io.IOException;
-import java.net.http.HttpClient;
+
+import com.azure.core.http.HttpClient;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -41,9 +42,9 @@ public class Main {
             .buildAsyncClient();
 
 
-        HuggingFaceFillMaskTask huggingFaceFillMaskTask = new HuggingFaceFillMaskTask("bert-base-uncased", HUGGING_FACE_API_KEY,  HttpClient.newHttpClient(), HUGGING_FACE_FILL_MASK_TASK_ENDPOINT);
-        HuggingFaceQuestionAnsweringTask huggingFaceQuestionAnsweringTask = new HuggingFaceQuestionAnsweringTask("deepset/roberta-base-squad2", HUGGING_FACE_API_KEY,  HttpClient.newHttpClient(), HUGGING_FACE_QUESTION_ANSWERING_TASK_ENDPOINT);
-        HuggingFaceSummarizationTask huggingFaceSummarizationTask = new HuggingFaceSummarizationTask("facebook/bart-large-cnn", HUGGING_FACE_API_KEY,  HttpClient.newHttpClient(), HUGGING_FACE_SUMMARIZATION_TASK_ENDPOINT);
+        HuggingFaceFillMaskTask huggingFaceFillMaskTask = new HuggingFaceFillMaskTask("bert-base-uncased", HUGGING_FACE_API_KEY,  HttpClient.createDefault(), HUGGING_FACE_FILL_MASK_TASK_ENDPOINT);
+        HuggingFaceQuestionAnsweringTask huggingFaceQuestionAnsweringTask = new HuggingFaceQuestionAnsweringTask("deepset/roberta-base-squad2", HUGGING_FACE_API_KEY,  HttpClient.createDefault(), HUGGING_FACE_QUESTION_ANSWERING_TASK_ENDPOINT);
+        HuggingFaceSummarizationTask huggingFaceSummarizationTask = new HuggingFaceSummarizationTask("facebook/bart-large-cnn", HUGGING_FACE_API_KEY,  HttpClient.createDefault(), HUGGING_FACE_SUMMARIZATION_TASK_ENDPOINT);
         OllamaGeneration ollamaGeneration = new OllamaGeneration("wizard-math");
 
         SKFunction fillMaskTaskFunction = SemanticFunction.fromYaml(CURRENT_DIRECTORY + "/Plugins/HuggingFace/FillMaskTask.prompt.yaml");
