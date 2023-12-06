@@ -92,7 +92,7 @@ internal sealed class ChatRun
         {
             int count = 0;
 
-			// Ignore model status when forced.
+            // Ignore model status when forced.
             while (force || s_pollingStates.Contains(this._model.Status))
             {
                 if (!force)
