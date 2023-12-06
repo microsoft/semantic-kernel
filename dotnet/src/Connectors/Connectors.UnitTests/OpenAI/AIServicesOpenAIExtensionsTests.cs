@@ -22,8 +22,8 @@ public class AIServicesOpenAIExtensionsTests
             .WithAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url", "key", "azure")
             .Build();
 
-        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("azure"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextEmbeddingGeneration>("azure"));
     }
 
     [Fact]
@@ -37,10 +37,10 @@ public class AIServicesOpenAIExtensionsTests
             .Build();
 
         // Assert
-        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("oai"));
-        Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
-        Assert.NotNull(targetKernel.GetService<ITextGenerationService>("oai"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("azure"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("oai"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextEmbeddingGeneration>("azure"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("oai"));
     }
 
     [Fact]

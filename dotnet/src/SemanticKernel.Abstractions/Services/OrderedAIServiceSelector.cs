@@ -61,7 +61,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
             if (defaultExecutionSettings is not null)
             {
-                return (kernel.GetService<T>(), defaultExecutionSettings);
+                return (kernel.GetRequiredService<T>(), defaultExecutionSettings);
             }
         }
 

@@ -51,7 +51,7 @@ public sealed class HandlebarsPlanner
     {
         var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
         var createPlanPrompt = this.GetHandlebarsTemplate(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
-        var chatCompletionService = kernel.GetService<IChatCompletionService>();
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Extract the chat history from the rendered prompt
         string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";

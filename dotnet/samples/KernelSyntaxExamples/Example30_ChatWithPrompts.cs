@@ -98,7 +98,7 @@ public static class Example30_ChatWithPrompts
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
-        var chatCompletion = kernel.GetService<IChatCompletionService>();
+        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the
