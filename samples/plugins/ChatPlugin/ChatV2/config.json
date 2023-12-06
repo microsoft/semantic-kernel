@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "A friendly chat where AI helps, avoiding bad topics",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 1000,
       "temperature": 0.4,

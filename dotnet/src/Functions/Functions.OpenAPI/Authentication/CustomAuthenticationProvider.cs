@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 
 /// <summary>
 /// Retrieves authentication content (scheme and value) via the provided delegate and applies it to HTTP requests.
@@ -29,7 +29,6 @@ public sealed class CustomAuthenticationProvider
     /// Applies the header and value to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <returns></returns>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         var header = await this._header().ConfigureAwait(false);

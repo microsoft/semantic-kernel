@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Generate an acronym for the given concept or phrase",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 100,
       "temperature": 0.5,

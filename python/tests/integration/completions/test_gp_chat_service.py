@@ -30,7 +30,7 @@ async def test_gp_chat_service_with_skills(
     print("* Service: Google PaLM Chat Completion")
     print("* Model: chat-bison-001")
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(
-        "models/chat-bison-001", api_key
+        ai_model_id="models/chat-bison-001", api_key=api_key
     )
     kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
 

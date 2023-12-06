@@ -28,9 +28,9 @@ public static class Example05_InlineFunctionDefinition
          *          function inline if you like.
          */
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -49,17 +49,17 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
+        var result = await kernel.InvokeAsync(excuseFunction, new("I missed the F1 final race"));
         Console.WriteLine(result.GetValue<string>());
 
-        result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
+        result = await kernel.InvokeAsync(excuseFunction, new("sorry I forgot your birthday"));
         Console.WriteLine(result.GetValue<string>());
 
-        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings() { MaxTokens = 100 });
+        var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.RunAsync(fixedFunction);
+        result = await kernel.InvokeAsync(fixedFunction);
         Console.WriteLine(result.GetValue<string>());
     }
 }

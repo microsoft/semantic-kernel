@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
-/// Represents an empty interface for AI services.
+/// Represents an AI service.
 /// </summary>
-[SuppressMessage("Design", "CA1040:Avoid empty interfaces")]
 public interface IAIService
 {
+    /// <summary>
+    /// Gets the AI service attributes.
+    /// </summary>
+    IReadOnlyDictionary<string, object?> Attributes { get; }
 }

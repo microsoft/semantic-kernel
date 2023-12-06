@@ -50,36 +50,37 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        await StartChatAsync(openAIChatCompletion);
+        await StartChatAsync(chatCompletionService);
     }
 
     private static async Task AzureOpenAIChatSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
-        AzureChatCompletion azureChatCompletion = new(
+        AzureOpenAIChatCompletionService chatCompletionService = new(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await StartChatAsync(azureChatCompletion);
+        await StartChatAsync(chatCompletionService);
     }
 
-    private static async Task StartChatAsync(IChatCompletion chatGPT)
+    private static async Task StartChatAsync(IChatCompletionService chatGPT)
     {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = chatGPT.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         await MessageOutputAsync(chatHistory);
 
@@ -88,7 +89,7 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message
-        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.AddAssistantMessage(reply);
         await MessageOutputAsync(chatHistory);
     }
@@ -98,7 +99,7 @@ public static class Example17_ChatGPT
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");

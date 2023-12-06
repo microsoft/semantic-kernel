@@ -23,32 +23,33 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
-        AzureChatCompletion azureChatCompletion = new(
+        AzureOpenAIChatCompletionService chatCompletionService = new(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await RunChatAsync(azureChatCompletion);
+        await RunChatAsync(chatCompletionService);
     }
 
     private static async Task OpenAIMultiChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        await RunChatAsync(openAIChatCompletion);
+        await RunChatAsync(chatCompletionService);
     }
 
-    private static async Task RunChatAsync(IChatCompletion chatCompletion)
+    private static async Task RunChatAsync(IChatCompletionService chatCompletionService)
     {
-        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIRequestSettings()
+        var chatExecutionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
@@ -58,10 +59,9 @@ public static class Example44_MultiChatCompletion
         };
 
         // First bot assistant message
-        foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatRequestSettings))
+        foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, chatExecutionSettings))
         {
-            ChatMessageBase chatMessage = await chatCompletionResult.GetChatMessageAsync();
-            chatHistory.Add(chatMessage);
+            chatHistory.AddMessage(chatMessageChoice!);
             await MessageOutputAsync(chatHistory);
         }
 
@@ -73,7 +73,7 @@ public static class Example44_MultiChatCompletion
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Web;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
 
 /// <summary>
 /// This class provides methods for serializing values of array parameters.
@@ -38,7 +38,7 @@ internal static class ArrayParameterValueSerializer
     /// <returns>A string containing the serialized parameter.</returns>
     public static string SerializeArrayAsDelimitedValues(JsonArray array, string delimiter)
     {
-        var values = new List<string>();
+        var values = new List<string?>();
 
         foreach (var item in array)
         {

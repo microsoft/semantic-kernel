@@ -15,7 +15,7 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
@@ -130,7 +130,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (result?.Value == null)
         {
-            throw new SKException("Memory read returned null");
+            throw new KernelException("Memory read returned null");
         }
 
         return result.Value.ToMemoryRecord();
@@ -272,7 +272,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         if (embeddingSize < 1)
         {
-            throw new SKException("Invalid embedding size: the value must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(embeddingSize), "Invalid embedding size: the value must be greater than zero.");
         }
 
         const string ProfileName = "searchProfile";
@@ -283,13 +283,13 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             Fields = new List<SearchField>
             {
                 new SimpleField(AzureCognitiveSearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
-                new SearchField(AzureCognitiveSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                new(AzureCognitiveSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
                     VectorSearchProfile = ProfileName
                 },
-                new SearchField(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
@@ -363,7 +363,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (result == null || result.Value.Results.Count == 0)
         {
-            throw new SKException("Memory write returned null or an empty set");
+            throw new KernelException("Memory write returned null or an empty set");
         }
 
         return result.Value.Results.Select(x => x.Key).ToList();
@@ -375,12 +375,13 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     /// to throw an error for edge cases not handled locally.
     /// </summary>
     /// <param name="indexName">Value to normalize</param>
+    /// <param name="parameterName">The name of the argument used with <paramref name="indexName"/>.</param>
     /// <returns>Normalized name</returns>
-    private string NormalizeIndexName(string indexName)
+    private string NormalizeIndexName(string indexName, [CallerArgumentExpression("indexName")] string? parameterName = null)
     {
         if (indexName.Length > 128)
         {
-            throw new SKException("The collection name is too long, it cannot exceed 128 chars.");
+            throw new ArgumentOutOfRangeException(parameterName, "The collection name is too long, it cannot exceed 128 chars.");
         }
 
 #pragma warning disable CA1308 // The service expects a lowercase string
@@ -399,7 +400,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     private SearchClient GetSearchClient(string indexName)
     {
         // Search an available client from the local cache
-        if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient client))
+        if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient? client))
         {
             client = this._adminClient.GetSearchClient(indexName);
             this._clientsByIndex[indexName] = client;
@@ -418,8 +419,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             Diagnostics =
             {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
+                ApplicationId = HttpHeaderValues.UserAgent,
             },
         };
     }

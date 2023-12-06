@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -22,28 +23,29 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
-        var chatCompletion = new AzureChatCompletion(
+        var chatCompletionService = new AzureOpenAIChatCompletionService(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(chatCompletion);
+        await ChatCompletionStreamAsync(chatCompletionService);
     }
 
     private static async Task OpenAIChatCompletionStreamAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        IChatCompletion chatCompletion = new OpenAIChatCompletion(
+        ITextGenerationService textGeneration = new OpenAIChatCompletionService(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await ChatCompletionStreamAsync(chatCompletion);
+        await ChatCompletionStreamAsync(textGeneration);
     }
 
-    private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
+    private static async Task ChatCompletionStreamAsync(ITextGenerationService textGeneration)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -53,14 +55,48 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
+        var consoleLinesPerResult = 10;
 
-        await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
-        {
-            Console.Write(message);
-        }
+        PrepareDisplay();
+        var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
+        await ProcessStreamAsyncEnumerableAsync(textGeneration, prompt, executionSettings, consoleLinesPerResult);
 
         Console.WriteLine();
+
+        Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Break enough lines as the current console window size to display the results
+    /// </summary>
+    private static void PrepareDisplay()
+    {
+        for (int i = 0; i < Console.WindowHeight - 2; i++)
+        {
+            Console.WriteLine();
+        }
+    }
+    private static async Task ProcessStreamAsyncEnumerableAsync(ITextGenerationService chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
+    {
+        var messagePerChoice = new Dictionary<int, string>();
+        await foreach (var textUpdate in chatCompletion.GetStreamingTextContentsAsync(prompt, executionSettings))
+        {
+            string newContent = string.Empty;
+            Console.SetCursorPosition(0, textUpdate.ChoiceIndex * consoleLinesPerResult);
+
+            if (textUpdate.Text is { Length: > 0 })
+            {
+                newContent += textUpdate.Text;
+            }
+
+            if (!messagePerChoice.ContainsKey(textUpdate.ChoiceIndex))
+            {
+                messagePerChoice.Add(textUpdate.ChoiceIndex, string.Empty);
+            }
+            messagePerChoice[textUpdate.ChoiceIndex] += newContent;
+
+            Console.Write(messagePerChoice[textUpdate.ChoiceIndex]);
+        }
     }
 }

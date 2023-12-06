@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 /// <summary>
 /// The REST API operation response.
@@ -21,13 +21,23 @@ public sealed class RestApiOperationResponse
     public string ContentType { get; }
 
     /// <summary>
+    /// The expected schema of the response as advertised in the OpenAPI operation.
+    /// </summary>
+    public KernelJsonSchema? ExpectedSchema { get; internal set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
     /// <param name="content">The content of the response.</param>
     /// <param name="contentType">The content type of the response.</param>
-    public RestApiOperationResponse(object content, string contentType)
+    /// <param name="expectedSchema">The schema against which the response body should be validated.</param>
+    public RestApiOperationResponse(object content, string contentType, KernelJsonSchema? expectedSchema = null)
     {
         this.Content = content;
         this.ContentType = contentType;
+        this.ExpectedSchema = expectedSchema;
     }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Content?.ToString() ?? string.Empty;
 }

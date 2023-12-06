@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "Given a scientific white paper abstract, rewrite it to make it more readable",
-  "models": [
+  "execution_settings": [
     {
       "max_tokens": 4000,
       "temperature": 0.0,

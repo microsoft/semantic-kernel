@@ -26,7 +26,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 var builder = new KernelBuilder();
 
-builder.WithAzureChatCompletionService(
+builder.WithAzureOpenAIChatCompletionService(
          "gpt-35-turbo",                      // Azure OpenAI Deployment Name
          "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
          "...your Azure OpenAI Key...");      // Azure OpenAI Key
@@ -42,7 +42,7 @@ var prompt = @"{{$input}}
 
 One line TLDR with the fewest words.";
 
-var summarize = kernel.CreateSemanticFunction(prompt, requestSettings: new OpenAIRequestSettings { MaxTokens = 100 });
+var summarize = kernel.CreateSemanticFunction(prompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
 
 string text1 = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -81,8 +81,8 @@ string summarizePrompt = @"{{$input}}
 
 Give me a TLDR with the fewest words.";
 
-var translator = kernel.CreateSemanticFunction(translationPrompt, requestSettings: new OpenAIRequestSettings { MaxTokens = 200 });
-var summarize = kernel.CreateSemanticFunction(summarizePrompt, requestSettings: new OpenAIRequestSettings { MaxTokens = 100 });
+var translator = kernel.CreateSemanticFunction(translationPrompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 200 });
+var summarize = kernel.CreateSemanticFunction(summarizePrompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
 
 string inputText = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -134,7 +134,7 @@ Packages included in **Microsoft.SemanticKernel**:
 1. **Microsoft.SemanticKernel.Core**: contains the core logic of SK, such as prompt
    engineering, semantic memory and semantic functions definition and orchestration.
 1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
-   OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
+   OpenAI, allowing to run semantic functions, chats, text to image with GPT3,
    GPT3.5, GPT4, DALL-E2.
 
 Other SK packages available at nuget.org:

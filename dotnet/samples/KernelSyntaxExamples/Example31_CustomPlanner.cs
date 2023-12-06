@@ -3,13 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -25,21 +26,21 @@ internal static class Example31_CustomPlanner
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
-        IDictionary<string, ISKFunction> qaPlugin = LoadQAPlugin(kernel);
-        SKContext context = CreateContextQueryContext(kernel);
+        IKernelPlugin qaPlugin = LoadQAPlugin(kernel);
+        var variables = CreateContextQueryContextVariables();
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportFunctions(new TextMemoryPlugin(memory));
+        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel, memory);
 
         // MarkupPlugin named "markup"
-        var markup = kernel.ImportFunctions(new MarkupPlugin(), "markup");
+        var markup = kernel.ImportPluginFromObject<MarkupPlugin>("markup");
 
         // contextQuery "Who is my president? Who was president 3 years ago? What should I eat for dinner" | markup
         // Create a plan to execute the ContextQuery and then run the markup plugin on the output
@@ -47,8 +48,8 @@ internal static class Example31_CustomPlanner
         plan.AddSteps(qaPlugin["ContextQuery"], markup["RunMarkup"]);
 
         // Execute plan
-        context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(context);
+        variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
+        var result = await plan.InvokeAsync(kernel, variables);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -74,24 +75,24 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-    private static SKContext CreateContextQueryContext(IKernel kernel)
+    private static ContextVariables CreateContextQueryContextVariables()
     {
-        var context = kernel.CreateNewContext();
-        context.Variables.Set("firstname", "Jamal");
-        context.Variables.Set("lastname", "Williams");
-        context.Variables.Set("city", "Tacoma");
-        context.Variables.Set("state", "WA");
-        context.Variables.Set("country", "USA");
-        context.Variables.Set("collection", "contextQueryMemories");
-        context.Variables.Set("limit", "5");
-        context.Variables.Set("relevance", "0.3");
-        return context;
+        var variables = new ContextVariables
+        {
+            ["firstname"] = "Jamal",
+            ["lastname"] = "Williams",
+            ["city"] = "Tacoma",
+            ["state"] = "WA",
+            ["country"] = "USA",
+            ["collection"] = "contextQueryMemories",
+            ["limit"] = "5",
+            ["relevance"] = "0.3",
+        };
+        return variables;
     }
 
-    private static async Task RememberFactsAsync(IKernel kernel, ISemanticTextMemory memory)
+    private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
-        kernel.ImportFunctions(new TextMemoryPlugin(memory));
-
         List<string> memoriesToSave = new()
         {
             "I like pizza and chicken wings.",
@@ -115,27 +116,27 @@ internal static class Example31_CustomPlanner
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
+    private static IKernelPlugin LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        kernel.ImportFunctions(bing, "bing");
+        kernel.ImportPluginFromObject(bing, "bing");
 
-        return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
+        return kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "QAPlugin"));
     }
 
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
         return new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureTextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -146,7 +147,7 @@ internal static class Example31_CustomPlanner
     {
         return new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureTextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -158,17 +159,17 @@ internal static class Example31_CustomPlanner
 // Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
-    [SKFunction, Description("Run Markup")]
-    public async Task<string> RunMarkupAsync(string docString, SKContext context)
+    [KernelFunction, Description("Run Markup")]
+    public async Task<string> RunMarkupAsync(string docString, Kernel kernel)
     {
-        var plan = docString.FromMarkup("Run a piece of xml markup", context);
+        var plan = docString.FromMarkup("Run a piece of xml markup", kernel);
 
         Console.WriteLine("Markup plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await context.Runner.RunAsync(plan);
-        return result.GetValue<string>()!;
+        var result = await plan.InvokeAsync(kernel);
+        return result?.GetValue<string>()! ?? string.Empty;
     }
 }
 
@@ -179,7 +180,7 @@ public static class XmlMarkupPlanParser
         { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
     };
 
-    public static Plan FromMarkup(this string markup, string goal, SKContext context)
+    public static Plan FromMarkup(this string markup, string goal, Kernel kernel)
     {
         Console.WriteLine("Markup:");
         Console.WriteLine(markup);
@@ -187,10 +188,10 @@ public static class XmlMarkupPlanParser
 
         var doc = new XmlMarkup(markup);
         var nodes = doc.SelectElements();
-        return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, context, goal);
+        return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, kernel, goal);
     }
 
-    private static Plan NodeListToPlan(XmlNodeList nodes, SKContext context, string description)
+    private static Plan NodeListToPlan(XmlNodeList nodes, Kernel kernel, string description)
     {
         Plan plan = new(description);
         for (var i = 0; i < nodes.Count; ++i)
@@ -209,31 +210,19 @@ public static class XmlMarkupPlanParser
 
             if (hasChildElements)
             {
-                plan.AddSteps(NodeListToPlan(node.ChildNodes, context, functionName));
+                plan.AddSteps(NodeListToPlan(node.ChildNodes, kernel, functionName));
             }
             else
             {
-                if (string.IsNullOrEmpty(pluginName)
-                        ? !context.Functions!.TryGetFunction(functionName, out var _)
-                        : !context.Functions!.TryGetFunction(pluginName, functionName, out var _))
-                {
-                    var planStep = new Plan(node.InnerText);
-                    planStep.Parameters.Update(node.InnerText);
-                    planStep.Outputs.Add($"markup.{functionName}.result");
-                    plan.Outputs.Add($"markup.{functionName}.result");
-                    plan.AddSteps(planStep);
-                }
-                else
-                {
-                    var command = string.IsNullOrEmpty(pluginName)
-                        ? context.Functions.GetFunction(functionName)
-                        : context.Functions.GetFunction(pluginName, functionName);
-                    var planStep = new Plan(command);
-                    planStep.Parameters.Update(node.InnerText);
-                    planStep.Outputs.Add($"markup.{functionName}.result");
-                    plan.Outputs.Add($"markup.{functionName}.result");
-                    plan.AddSteps(planStep);
-                }
+                Plan planStep = kernel.Plugins.TryGetFunction(pluginName, functionName, out KernelFunction? command) ?
+                    new Plan(command) :
+                    new Plan(node.InnerText);
+                planStep.PluginName = pluginName;
+
+                planStep.Parameters.Update(node.InnerText);
+                planStep.Outputs.Add($"markup.{functionName}.result");
+                plan.Outputs.Add($"markup.{functionName}.result");
+                plan.AddSteps(planStep);
             }
         }
 

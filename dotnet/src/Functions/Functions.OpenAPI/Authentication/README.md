@@ -17,9 +17,11 @@ This pattern was designed to be flexible enough to support a wide variety of aut
 ## Reference Authentication Providers
 
 ### [`BasicAuthenticationProvider`](./BasicAuthenticationProvider.cs)
+
 This class implements the HTTP "basic" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the user's credentials. When the `AuthenticateRequestAsync` method is called, it retrieves the credentials, encodes them as a UTF-8 encoded Base64 string, and adds them to the `HttpRequestMessage`'s authorization header.
 
 The following code demonstrates how to use this provider:
+
 ```csharp
 var basicAuthProvider = new BasicAuthenticationProvider(() =>
 {
@@ -28,19 +30,21 @@ var basicAuthProvider = new BasicAuthenticationProvider(() =>
         Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY")
     );
 });
-var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.Jira, new OpenApiPluginExecutionParameters { AuthCallback = basicAuthProvider.AuthenticateRequestAsync } );
+var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.Jira, new OpenApiFunctionExecutionParameters { AuthCallback = basicAuthProvider.AuthenticateRequestAsync } );
 ```
 
 ### [`BearerAuthenticationProvider`](./BearerAuthenticationProvider.cs)
-This class implements the HTTP "bearer" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the bearer token. When the `AuthenticateRequestAsync` method is called, it retrieves the token and adds it to the `HttpRequestMessage`'s authorization header. 
+
+This class implements the HTTP "bearer" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the bearer token. When the `AuthenticateRequestAsync` method is called, it retrieves the token and adds it to the `HttpRequestMessage`'s authorization header.
 
 The following code demonstrates how to use this provider:
+
 ```csharp
 var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
     return Task.FromResult(Env.Var("AZURE_KEYVAULT_TOKEN"));
 });
-var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.AzureKeyVault, new OpenApiPluginExecutionParameters { AuthCallback =  bearerAuthProvider.AuthenticateRequestAsync } )
+var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.AzureKeyVault, new OpenApiFunctionExecutionParameters { AuthCallback =  bearerAuthProvider.AuthenticateRequestAsync } )
 ```
 
 ### [`InteractiveMsalAuthenticationProvider`](./InteractiveMsalAuthenticationProvider.cs)
@@ -50,10 +54,11 @@ This class uses the [Microsoft Authentication Library (MSAL)](https://learn.micr
 Once the token is acquired, it is added to the HTTP authentication header via the `AuthenticateRequestAsync` method, which is inherited from `BearerAuthenticationProvider`.
 
 To construct this provider, the caller must specify:
-- *Client ID* – identifier of the calling application. This is acquired by [registering your application with the Microsoft Identity platform](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
-- *Tenant ID* – identifier of the target service tenant, or “common”
-- *Scopes* – permissions being requested
-- *Redirect URI* – for redirecting the user back to the application. (When running locally, this is typically  http://localhost.)
+
+- _Client ID_ – identifier of the calling application. This is acquired by [registering your application with the Microsoft Identity platform](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- _Tenant ID_ – identifier of the target service tenant, or “common”
+- _Scopes_ – permissions being requested
+- _Redirect URI_ – for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
 ```csharp
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
@@ -62,5 +67,5 @@ var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     new string[] { ".default" },        // scopes
     new Uri("http://localhost")         // redirectUri
 );
-var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.AzureKeyVault, new OpenApiPluginExecutionParameters { AuthCallback =  msalAuthProvider.AuthenticateRequestAsync } )
+var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.AzureKeyVault, new OpenApiFunctionExecutionParameters { AuthCallback =  msalAuthProvider.AuthenticateRequestAsync } )
 ```

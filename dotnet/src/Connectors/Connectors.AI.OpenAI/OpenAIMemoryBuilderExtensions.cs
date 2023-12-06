@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -18,30 +19,28 @@ public static class OpenAIMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static MemoryBuilder WithAzureTextEmbeddingGenerationService(
+    [Experimental("SKEXP0011")]
+    public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         string apiKey,
-        string? serviceId = null,
-        bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
-            new AzureTextEmbeddingGeneration(
+        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+            new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 apiKey,
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory));
-
-        return builder;
     }
 
     /// <summary>
@@ -50,30 +49,28 @@ public static class OpenAIMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static MemoryBuilder WithAzureTextEmbeddingGenerationService(
+    [Experimental("SKEXP0011")]
+    public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
+        string modelId,
         string endpoint,
         TokenCredential credential,
-        string? serviceId = null,
-        bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
-            new AzureTextEmbeddingGeneration(
+        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+            new AzureOpenAITextEmbeddingGeneration(
                 deploymentName,
+                modelId,
                 endpoint,
                 credential,
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory));
-
-        return builder;
     }
 
     /// <summary>
@@ -84,27 +81,22 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static MemoryBuilder WithOpenAITextEmbeddingGenerationService(
+    [Experimental("SKEXP0011")]
+    public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null,
-        bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithTextEmbeddingGeneration((loggerFactory, httpHandlerFactory) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             new OpenAITextEmbeddingGeneration(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory));
-
-        return builder;
     }
 }
