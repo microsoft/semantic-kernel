@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using RepoUtils;
 
 /* The files contains two examples about SK Semantic Memory.
  *
- * 1. Memory using Azure Cognitive Search.
+ * 1. Memory using Azure AI Search.
  * 2. Memory using a custom embedding generator and vector engine.
  *
  * Semantic Memory allows to store your data like traditional DBs,
@@ -27,19 +27,19 @@ public static class Example14_SemanticMemory
     public static async Task RunAsync()
     {
         Console.WriteLine("==============================================================");
-        Console.WriteLine("======== Semantic Memory using Azure Cognitive Search ========");
+        Console.WriteLine("======== Semantic Memory using Azure AI Search ========");
         Console.WriteLine("==============================================================");
 
-        /* This example leverages Azure Cognitive Search to provide SK with Semantic Memory.
+        /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
-         * Azure Cognitive Search automatically indexes your data semantically, so you don't
+         * Azure AI Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
 
         var memoryWithACS = new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
+            .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
             .Build();
 
         await RunExampleAsync(memoryWithACS);
@@ -128,7 +128,7 @@ public static class Example14_SemanticMemory
     {
         /* Store some data in the semantic memory.
          *
-         * When using Azure Cognitive Search the data is automatically indexed on write.
+         * When using Azure AI Search the data is automatically indexed on write.
          *
          * When using the combination of VolatileStore and Embedding generation, SK takes
          * care of creating and storing the index
