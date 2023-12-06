@@ -45,7 +45,7 @@ public static class Example66_FunctionCallingStepwisePlanner
     private static Kernel InitializeKernel()
     {
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,

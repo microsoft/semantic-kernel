@@ -27,7 +27,7 @@ public static class Example42_KernelBuilder
         // KernelBuilder provides a simple way to configure a Kernel. This constructs a kernel
         // with logging and an Azure OpenAI chat completion service configured.
         Kernel kernel1 = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey)
+            .AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey)
             .Build();
 
         // For greater flexibility and to incorporate arbitrary services, KernelBuilder.Services
@@ -68,7 +68,7 @@ public static class Example42_KernelBuilder
         services = new ServiceCollection();
         services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         services.AddHttpClient();
-        services.AddKernel().WithAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
+        services.AddKernel().AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
         services.AddSingleton<IKernelPlugin>(sp => KernelPluginFactory.CreateFromType<TimePlugin>(serviceProvider: sp));
         services.AddSingleton<IKernelPlugin>(sp => KernelPluginFactory.CreateFromType<HttpPlugin>(serviceProvider: sp));
         Kernel kernel6 = services.BuildServiceProvider().GetRequiredService<Kernel>();

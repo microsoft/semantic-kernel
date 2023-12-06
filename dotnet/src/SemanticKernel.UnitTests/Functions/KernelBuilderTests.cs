@@ -66,8 +66,8 @@ public class KernelBuilderTests
     public void ItBuildsServicesIntoKernel()
     {
         var builder = new KernelBuilder()
-            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .WithAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
 
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -88,14 +88,14 @@ public class KernelBuilderTests
     public void ItSupportsMultipleEqualNamedServices()
     {
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
             .Build();
 
         Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());

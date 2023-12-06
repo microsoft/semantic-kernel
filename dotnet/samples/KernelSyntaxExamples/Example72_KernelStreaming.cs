@@ -31,7 +31,7 @@ public static class Example72_KernelStreaming
         }
 
         var kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,

@@ -29,7 +29,7 @@ public static class Example58_ConfigureExecutionSettings
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,

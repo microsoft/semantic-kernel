@@ -96,7 +96,7 @@ public sealed class Program
         KernelBuilder builder = new();
 
         builder.Services.AddSingleton(loggerFactory);
-        builder.WithAzureOpenAIChatCompletion(
+        builder.AddAzureOpenAIChatCompletion(
             Env.Var("AzureOpenAI__ChatDeploymentName"),
             Env.Var("AzureOpenAI__ChatModelId"),
             Env.Var("AzureOpenAI__Endpoint"),

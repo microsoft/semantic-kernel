@@ -28,7 +28,7 @@ public static class Example05_InlineFunctionDefinition
          */
 
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();

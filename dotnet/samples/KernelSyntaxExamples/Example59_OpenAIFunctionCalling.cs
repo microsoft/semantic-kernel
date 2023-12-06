@@ -27,7 +27,7 @@ public static class Example59_OpenAIFunctionCalling
         KernelBuilder builder = new();
         builder.Plugins.AddFromType<TimePlugin>();
         builder.Plugins.AddFromType<WidgetPlugin>();
-        builder.WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 

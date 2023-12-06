@@ -15,7 +15,7 @@ public static class Example27_PromptFunctionsUsingChatGPT
         Console.WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         var func = kernel.CreateFunctionFromPrompt(

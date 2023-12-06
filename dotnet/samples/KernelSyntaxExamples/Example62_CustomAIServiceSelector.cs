@@ -39,13 +39,13 @@ public static class Example62_CustomAIServiceSelector
         }
 
         var builder = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
                 apiKey: azureApiKey)
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey);

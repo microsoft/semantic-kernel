@@ -24,7 +24,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithHuggingFaceTextGeneration(
+    public static IKernelBuilder AddHuggingFaceTextGeneration(
         this IKernelBuilder builder,
         string model,
         string? apiKey = null,
@@ -73,7 +73,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithHuggingFaceTextEmbeddingGeneration(
+    public static IKernelBuilder AddHuggingFaceTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string model,
         string? endpoint = null,

@@ -33,7 +33,7 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 
         KernelBuilder builder = new();
         builder.Services.AddLogging(c => c.AddConsole());
-        builder.WithAzureOpenAIChatCompletion(
+        builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,
             modelId: modelId,
             endpoint: endpoint,

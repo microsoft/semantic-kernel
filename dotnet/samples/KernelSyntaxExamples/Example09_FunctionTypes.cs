@@ -16,7 +16,7 @@ public static class Example09_FunctionTypes
         Console.WriteLine("======== Method Function types ========");
 
         var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates

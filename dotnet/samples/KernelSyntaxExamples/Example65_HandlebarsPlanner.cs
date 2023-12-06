@@ -56,7 +56,7 @@ public static class Example65_HandlebarsPlanner
         }
 
         var kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,

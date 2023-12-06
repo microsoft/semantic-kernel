@@ -37,13 +37,13 @@ public static class Example61_MultipleLLMs
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
                 apiKey: azureApiKey)
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)

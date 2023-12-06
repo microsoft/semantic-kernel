@@ -30,7 +30,7 @@ public static class Example64_MultiplePromptTemplates
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,

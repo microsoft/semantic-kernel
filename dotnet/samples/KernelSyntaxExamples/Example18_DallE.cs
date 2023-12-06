@@ -24,9 +24,9 @@ public static class Example18_DallE
 
         Kernel kernel = new KernelBuilder()
             // Add your text to image service
-            .WithOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         ITextToImageService dallE = kernel.GetService<ITextToImageService>();
@@ -92,9 +92,9 @@ public static class Example18_DallE
 
         Kernel kernel = new KernelBuilder()
             // Add your text to image service
-            .WithAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
-            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         ITextToImageService dallE = kernel.GetService<ITextToImageService>();

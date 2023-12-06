@@ -42,7 +42,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithAzureOpenAITextGeneration(
+    public static IKernelBuilder AddAzureOpenAITextGeneration(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -106,7 +106,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithAzureOpenAITextGeneration(
+    public static IKernelBuilder AddAzureOpenAITextGeneration(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -170,7 +170,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithAzureOpenAITextGeneration(
+    public static IKernelBuilder AddAzureOpenAITextGeneration(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -231,7 +231,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithOpenAITextGeneration(
+    public static IKernelBuilder AddOpenAITextGeneration(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
@@ -291,7 +291,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithOpenAITextGeneration(
+    public static IKernelBuilder AddOpenAITextGeneration(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient openAIClient,
@@ -350,7 +350,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
-    public static IKernelBuilder WithAzureOpenAITextEmbeddingGeneration(
+    public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -423,7 +423,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
-    public static IKernelBuilder WithAzureOpenAITextEmbeddingGeneration(
+    public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -495,7 +495,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
-    public static IKernelBuilder WithAzureOpenAITextEmbeddingGeneration(
+    public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -558,7 +558,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
-    public static IKernelBuilder WithOpenAITextEmbeddingGeneration(
+    public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
@@ -620,7 +620,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0011")]
-    public static IKernelBuilder WithOpenAITextEmbeddingGeneration(
+    public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient openAIClient,
@@ -679,7 +679,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithAzureOpenAIChatCompletion(
+    public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -762,7 +762,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithAzureOpenAIChatCompletion(
+    public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -844,7 +844,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithAzureOpenAIChatCompletion(
+    public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         string deploymentName,
         string modelId,
@@ -906,7 +906,7 @@ public static class OpenAIServiceCollectionExtensions
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
     /// </remarks>
     [Experimental("SKEXP0010")]
-    public static IKernelBuilder WithAzureOpenAIChatCompletion(
+    public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         AzureOpenAIChatCompletionWithDataConfig config,
         string? serviceId = null)
@@ -965,7 +965,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithOpenAIChatCompletion(
+    public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
@@ -1031,7 +1031,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static IKernelBuilder WithOpenAIChatCompletion(
+    public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient openAIClient,
@@ -1092,7 +1092,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IKernelBuilder WithAzureOpenAITextToImage(
+    public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
         string endpoint,
         string modelId,
@@ -1160,7 +1160,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IKernelBuilder WithOpenAITextToImage(
+    public static IKernelBuilder AddOpenAITextToImage(
         this IKernelBuilder builder,
         string apiKey,
         string? orgId = null,

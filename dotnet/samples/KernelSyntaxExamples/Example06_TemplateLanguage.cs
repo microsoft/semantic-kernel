@@ -27,7 +27,7 @@ public static class Example06_TemplateLanguage
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();

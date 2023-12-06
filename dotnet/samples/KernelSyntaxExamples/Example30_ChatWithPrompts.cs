@@ -60,7 +60,7 @@ public static class Example30_ChatWithPrompts
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
