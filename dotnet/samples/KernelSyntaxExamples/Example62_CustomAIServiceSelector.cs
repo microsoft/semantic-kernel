@@ -64,7 +64,7 @@ public static class Example62_CustomAIServiceSelector
     /// <summary>
     /// Custom AI service selector that selects a GPT model.
     /// This selector just naively selects the first service that provides
-    /// a completion model whose name stafts with "gpt". But this logic could
+    /// a completion model whose name starts with "gpt". But this logic could
     /// be as elaborate as needed to apply your own selection criteria.
     /// </summary>
     private sealed class GptAIServiceSelector : IAIServiceSelector
