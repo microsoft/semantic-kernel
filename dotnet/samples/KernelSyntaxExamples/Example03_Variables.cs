@@ -25,8 +25,20 @@ public static class Example03_Variables
             ["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture)
         };
 
-        var result = await kernel.InvokeAsync(textPlugin["AppendDay"], arguments);
+        // ** Different ways of executing function with arguments **
 
-        Console.WriteLine(result.GetValue<string>());
+        // Specify and get the value type as generic parameter
+        var resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
+        Console.WriteLine($"string -> {resultValue}");
+
+        // If you need to access the result metadata, you can use the non-generic version to get the FunctionResult
+        var functionResult = await kernel.InvokeAsync(textPlugin["AppendDay"], arguments);
+        var metadata = functionResult.Metadata;
+
+        // Specify the type from the FunctionResult
+        Console.WriteLine($"FunctionResult.GetValue<string>() -> {functionResult.GetValue<string>()}");
+
+        // FunctionResult.ToString() automatically converts the result to string
+        Console.WriteLine($"FunctionResult.ToString() -> {functionResult}");
     }
 }

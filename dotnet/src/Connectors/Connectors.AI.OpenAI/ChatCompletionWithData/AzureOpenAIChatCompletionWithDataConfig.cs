@@ -33,19 +33,19 @@ public class AzureOpenAIChatCompletionWithDataConfig
 
     /// <summary>
     /// Data source endpoint URL.
-    /// For Azure Cognitive Search, see <see href="https://learn.microsoft.com/en-us/azure/search/search-create-service-portal"/>
+    /// For Azure AI Search, see <see href="https://learn.microsoft.com/en-us/azure/search/search-create-service-portal"/>
     /// </summary>
     public string DataSourceEndpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// Data source API key.
-    /// For Azure Cognitive Search keys, see <see href="https://learn.microsoft.com/en-us/azure/search/search-security-api-keys#find-existing-keys"/>
+    /// For Azure AI Search keys, see <see href="https://learn.microsoft.com/en-us/azure/search/search-security-api-keys#find-existing-keys"/>
     /// </summary>
     public string DataSourceApiKey { get; set; } = string.Empty;
 
     /// <summary>
     /// Data source index name.
-    /// For Azure Cognitive Search indexes, see <see href="https://learn.microsoft.com/en-us/azure/search/search-how-to-create-search-index"/>
+    /// For Azure AI Search indexes, see <see href="https://learn.microsoft.com/en-us/azure/search/search-how-to-create-search-index"/>
     /// </summary>
     public string DataSourceIndex { get; set; } = string.Empty;
 }
