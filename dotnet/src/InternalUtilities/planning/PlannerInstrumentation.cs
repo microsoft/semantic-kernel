@@ -12,29 +12,26 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
 internal static partial class PlannerInstrumentation
 {
-    /// <summary><see cref="ActivitySource"/> for planning-related activities.</summary>
-    private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
-
-    /// <summary><see cref="Meter"/> for planner-related metrics.</summary>
-    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Planning");
-
     /// <summary><see cref="Histogram{T}"/> to record plan creation duration.</summary>
-    private static readonly Histogram<double> s_createPlanDuration = s_meter.CreateHistogram<double>(
-        name: "sk.planning.create_plan.duration",
-        unit: "s",
-        description: "Duration time of plan creation.");
+    private static readonly Histogram<double> s_createPlanDuration =
+        PlanningInstrumentation.Meter.CreateHistogram<double>(
+            name: "sk.planning.create_plan.duration",
+            unit: "s",
+            description: "Duration time of plan creation.");
 
     /// <summary><see cref="Counter{T}"/> to record planner invocation success counts.</summary>
-    private static readonly Counter<int> s_invocationSuccess = s_meter.CreateCounter<int>(
-        name: "sk.planning.create_plan.success",
-        unit: "{invocation}",
-        description: "Measures the number of successful planner executions");
+    private static readonly Counter<int> s_invocationSuccess =
+        PlanningInstrumentation.Meter.CreateCounter<int>(
+            name: "sk.planning.create_plan.success",
+            unit: "{invocation}",
+            description: "Measures the number of successful planner executions");
 
     /// <summary><see cref="Counter{T}"/> to record planner invocation failure counts.</summary>
-    private static readonly Counter<int> s_invocationFailure = s_meter.CreateCounter<int>(
-        name: "sk.planning.create_plan.failure",
-        unit: "{invocation}",
-        description: "Measures the number of failed planner executions");
+    private static readonly Counter<int> s_invocationFailure =
+        PlanningInstrumentation.Meter.CreateCounter<int>(
+            name: "sk.planning.create_plan.failure",
+            unit: "{invocation}",
+            description: "Measures the number of failed planner executions");
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
@@ -45,7 +42,7 @@ internal static partial class PlannerInstrumentation
     {
         string plannerName = planner.GetType().FullName;
 
-        using var _ = s_activitySource.StartActivity(plannerName);
+        using var _ = PlanningInstrumentation.ActivitySource.StartActivity(plannerName);
 
         logger.LogPlanCreationStarted();
         logger.LogGoal(goal);

@@ -177,7 +177,7 @@ private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? 
 1. New metrics names:
    | Meter | Metrics |
    |---|---|
-   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.create_plan.success</li><li>sk.planning.create_plan.failure</li></ul> |
+   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.create_plan.success</li><li>sk.planning.create_plan.failure</li><li>sk.planning.run_plan.success</li><li>sk.planning.run_plan.success</li><li>sk.planning.run_plan.success</li></ul> |
    |Microsoft.SemanticKernel| <ul><li>sk.function.invocation.success</li><li>sk.function.invocation.failure</li><li>sk.function.invocation.token_usage.prompt</li><li>sk.function.invocation.token_usage.completion</li></ul> |
 2. Instrumentation
 

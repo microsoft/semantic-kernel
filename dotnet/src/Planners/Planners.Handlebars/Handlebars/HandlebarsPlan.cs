@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -46,11 +49,40 @@ public sealed class HandlebarsPlan
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
-    public string Invoke(
+    public async Task<string> InvokeAsync(
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken = default)
+    {
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan));
+
+        return await PlanInstrumentation.InvokePlanAsync(
+            static (HandlebarsPlan plan, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+                => plan.InvokeCoreAsync(kernel, arguments, cancellationToken),
+            this, kernel, arguments, logger, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<string> InvokeCoreAsync(
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken = default)
+    {
+        InvokeCoreDelegate invokeCoreDelegate = new(this.InvokeCore);
+        IAsyncResult asyncResult = invokeCoreDelegate.BeginInvoke(kernel, arguments, cancellationToken, null, null);
+        return await Task<string>.Factory.FromAsync(asyncResult, invokeCoreDelegate.EndInvoke).ConfigureAwait(false);
+    }
+
+    private string InvokeCore(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
     }
+
+    /// <summary>Delegate to invoke the plan asynchronously.</summary>
+    private delegate string InvokeCoreDelegate(
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken = default);
 }

@@ -70,6 +70,9 @@ Available meters:
   - `sk.planning.create_plan.duration` (Histogram) - execution time of plan creation (in seconds)
   - `sk.planning.create_plan.success` (Counter) - number of successful plan creation
   - `sk.planning.create_plan.failure` (Counter) - number of failed plan creation
+  - `sk.planning.run_plan.duration` (Histogram) - execution time of plan execution (in seconds)
+  - `sk.planning.run_plan.success` (Counter) - number of successful plan execution
+  - `sk.planning.run_plan.failure` (Counter) - number of failed plan execution
 - _Microsoft.SemanticKernel_ - captures metrics for `KernelFunction`. List of metrics:
   - `sk.function.invocation.duration` (Histogram) - function execution time (in seconds)
   - `sk.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)

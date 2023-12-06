@@ -43,6 +43,21 @@ public sealed class FunctionCallingStepwisePlanner
         string question,
         CancellationToken cancellationToken = default)
     {
+        var logger = kernel.LoggerFactory.CreateLogger(this.GetType());
+
+        return await PlanInstrumentation.InvokePlanAsync(
+            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string question, CancellationToken cancellationToken)
+                => plan.ExecuteCoreAsync(kernel, question, cancellationToken),
+            this, kernel, question, logger, cancellationToken).ConfigureAwait(false);
+    }
+
+    #region private
+
+    private async Task<FunctionCallingStepwisePlannerResult> ExecuteCoreAsync(
+        Kernel kernel,
+        string question,
+        CancellationToken cancellationToken = default)
+    {
         Verify.NotNullOrWhiteSpace(question);
         Verify.NotNull(kernel);
         IChatCompletionService chatCompletion = kernel.GetService<IChatCompletionService>();
@@ -134,15 +149,13 @@ public sealed class FunctionCallingStepwisePlanner
         };
     }
 
-    #region private
-
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
-    ChatHistory chatHistory,
-    Kernel kernel,
-    IChatCompletionService chatCompletion,
-    OpenAIPromptExecutionSettings openAIExecutionSettings,
-    ILogger logger,
-    CancellationToken cancellationToken)
+        ChatHistory chatHistory,
+        Kernel kernel,
+        IChatCompletionService chatCompletion,
+        OpenAIPromptExecutionSettings openAIExecutionSettings,
+        ILogger logger,
+        CancellationToken cancellationToken)
     {
         openAIExecutionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
 

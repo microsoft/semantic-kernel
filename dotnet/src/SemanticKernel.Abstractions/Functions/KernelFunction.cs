@@ -23,7 +23,7 @@ public abstract class KernelFunction
     protected const string MeasurementFunctionTagName = "sk.function.name";
 
     /// <summary>The measurement tag name for the function error type.</summary>
-    protected const string MeasurementErrorTagName = "sk.function.error.type";
+    protected const string MeasurementErrorTagName = "error.type";
 
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
