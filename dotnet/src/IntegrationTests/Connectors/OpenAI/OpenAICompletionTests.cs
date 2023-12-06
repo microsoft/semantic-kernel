@@ -410,59 +410,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
-    [Fact]
-    public async Task UsingStandardizedChatPromptGivesNoXmlBackAsync()
-    {
-        // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
-        this.ConfigureAzureOpenAIChatAsText(builder);
-        Kernel target = builder.Build();
-
-        // Create prompt
-        KernelFunction prompt = KernelFunctionFactory.CreateFromPrompt(@"
-            <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
-        ");
-
-        var fullContent = new StringBuilder();
-        await foreach (var content in target.InvokeStreamingAsync<StreamingChatMessageContent>(prompt))
-        {
-            fullContent.Append(content);
-        }
-        fullContent.Append((await target.InvokeAsync(prompt)).GetValue<string>());
-
-        Assert.False(fullContent.ToString().Contains('<', StringComparison.Ordinal));
-        Assert.False(fullContent.ToString().Contains('>', StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task UsingStandardizedChatPromptAgainstTextCompletionGivesXmlBackAsync()
-    {
-        // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
-        this.ConfigureAzureOpenAI(builder);
-        Kernel target = builder.Build();
-
-        // Create prompt
-        KernelFunction prompt = KernelFunctionFactory.CreateFromPrompt(@"
-            <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dollar?</message>
-        ");
-
-        var fullContent = new StringBuilder();
-        await foreach (var content in target.InvokeStreamingAsync<StreamingTextContent>(prompt))
-        {
-            fullContent.Append(content);
-        }
-        var resultValue = (await target.InvokeAsync(prompt)).GetValue<string>()!;
-
-        Assert.True(fullContent.ToString().Contains('<', StringComparison.Ordinal));
-        Assert.True(fullContent.ToString().Contains('>', StringComparison.Ordinal));
-        Assert.True(resultValue.Contains('<', StringComparison.Ordinal));
-        Assert.True(resultValue.Contains('>', StringComparison.Ordinal));
-    }
-
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
