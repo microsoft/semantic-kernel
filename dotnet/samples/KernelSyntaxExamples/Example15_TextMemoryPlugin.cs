@@ -267,7 +267,7 @@ public static class Example15_TextMemoryPlugin
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemoryPlugin Recall in a Prompt Function
+        // PART 4: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
         // the text generation model to answer a natural language query.
@@ -294,6 +294,7 @@ Answer:
         result = await kernel.InvokeAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
         }, cancellationToken);
 
