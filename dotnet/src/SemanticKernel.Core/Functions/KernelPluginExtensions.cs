@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +14,7 @@ public static class KernelPluginExtensions
 {
     #region AddFunctionFromMethod
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="KernelPlugin"/>.
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
@@ -43,7 +41,7 @@ public static class KernelPluginExtensions
     }
 
     /// <summary>
-    /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
@@ -77,13 +75,13 @@ public static class KernelPluginExtensions
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
 
     /// <summary>
-    /// Creates a string-to-string semantic function, with no direct support for input context, and adds it to the <see cref="KernelPlugin"/>.
+    /// Creates a string-to-string prompt function, with no direct support for input context, and adds it to the <see cref="KernelPlugin"/>.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
     /// can only pass in a string in input and receive a string in output.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="executionSettings">Optional LLM request settings</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
+    /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
@@ -106,7 +104,7 @@ public static class KernelPluginExtensions
     }
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template, and adds it to the <see cref="KernelPlugin"/>.
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template, and adds it to the <see cref="KernelPlugin"/>.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
@@ -126,7 +124,7 @@ public static class KernelPluginExtensions
     }
 
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="plugin">The plugin to which the function should be added.</param>
     /// <param name="promptTemplate">Prompt template</param>

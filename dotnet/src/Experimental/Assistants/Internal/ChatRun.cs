@@ -6,9 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
@@ -129,31 +127,40 @@ internal sealed class ChatRun
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
+        var toolResult = result as string;
+        if (toolResult == null)
+        {
+            toolResult = JsonSerializer.Serialize(result);
+        }
 
         return
             new ToolResultModel
             {
                 CallId = callId,
-                Output = result,
+                Output = toolResult!,
             };
 
-        async Task<string> InvokeFunctionCallAsync()
+        async Task<object> InvokeFunctionCallAsync()
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
-            var variables = new ContextVariables();
+            var functionArguments = new KernelArguments();
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
                 foreach (var argument in arguments)
                 {
-                    variables[argument.Key] = argument.Value.ToString();
+                    functionArguments[argument.Key] = argument.Value.ToString();
                 }
             }
 
-            var results = await this._kernel.InvokeAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
+            if (result.ValueType == typeof(AssistantResponse))
+            {
+                return result.GetValue<AssistantResponse>()!;
+            }
 
-            return results.GetValue<string>() ?? string.Empty;
+            return result.GetValue<string>() ?? string.Empty;
         }
     }
 }

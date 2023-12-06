@@ -9,7 +9,6 @@ using System.Linq;
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
 #pragma warning disable CA1725 // Parameter names should match base declaration
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 
 namespace Microsoft.SemanticKernel;
 
@@ -38,15 +37,12 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
 
         if (plugins is KernelPluginCollection existing)
         {
-            this._plugins = new Dictionary<string, IKernelPlugin>(existing._plugins, StringComparer.OrdinalIgnoreCase);
+            this._plugins = new(existing._plugins, StringComparer.OrdinalIgnoreCase);
         }
         else
         {
             this._plugins = new(plugins is ICollection<IKernelPlugin> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
-            foreach (IKernelPlugin plugin in plugins)
-            {
-                this.Add(plugin);
-            }
+            this.AddRange(plugins);
         }
     }
 
@@ -125,7 +121,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         {
             if (!this.TryGetPlugin(name, out IKernelPlugin? plugin))
             {
-                throw new KeyNotFoundException($"Plugin {name} not found");
+                throw new KeyNotFoundException($"Plugin {name} not found.");
             }
 
             return plugin;

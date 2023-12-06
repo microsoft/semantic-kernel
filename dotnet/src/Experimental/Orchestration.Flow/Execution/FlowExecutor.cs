@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -35,7 +34,7 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// The logger
     /// </summary>
-    private readonly ILogger<FlowExecutor> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// The global plugin collection
@@ -100,7 +99,7 @@ internal class FlowExecutor : IFlowExecutor
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.LoggerFactory.CreateLogger<FlowExecutor>();
+        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor));
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;

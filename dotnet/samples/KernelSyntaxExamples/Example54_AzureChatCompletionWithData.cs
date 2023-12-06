@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /**
@@ -30,19 +31,18 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(GetCompletionWithDataConfig());
-        var chatHistory = chatCompletion.CreateNewChat();
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
+        var chatHistory = new ChatHistory();
 
         // First question without previous context based on uploaded content.
         var ask = "How did Emily and David meet?";
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory))[0];
-        var chatMessage = await chatResult.GetChatMessageAsync();
+        var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
         var response = chatMessage.Content;
-        var toolResponse = chatResult.ModelResult.GetResult<ChatWithDataModelResult>().ToolContent;
+        var toolResponse = chatMessage.ToolContent;
 
         // Output
         // Ask: How did Emily and David meet?
@@ -67,7 +67,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletion.GetStreamingContentAsync<string>(chatHistory))
+        await foreach (string word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             Console.Write(word);
         }
@@ -84,13 +84,13 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletionService(config: completionWithDataConfig)
+            .WithAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var response = await kernel.InvokeAsync(function, ask);
+        var response = await kernel.InvokeAsync(function, new(ask));
 
         // Output
         // Ask: How did Emily and David meet?
@@ -101,7 +101,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.InvokeAsync(function, ask);
+        response = await kernel.InvokeAsync(function, new(ask));
 
         // Output
         // Ask: What are Emily and David studying?

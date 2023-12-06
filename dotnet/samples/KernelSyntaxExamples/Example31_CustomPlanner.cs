@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -132,11 +132,11 @@ internal static class Example31_CustomPlanner
     {
         return new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureOpenAITextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
@@ -147,7 +147,7 @@ internal static class Example31_CustomPlanner
     {
         return new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAITextEmbeddingGenerationService(
+            .WithAzureOpenAITextEmbeddingGeneration(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)

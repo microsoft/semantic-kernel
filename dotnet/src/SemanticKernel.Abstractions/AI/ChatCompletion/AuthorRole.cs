@@ -32,11 +32,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public static AuthorRole Tool { get; } = new("tool");
 
     /// <summary>
-    /// The role that provides information about a function call result.
-    /// </summary>
-    public static AuthorRole Function { get; } = new("function");
-
-    /// <summary>
     /// Gets the label associated with this AuthorRole.
     /// </summary>
     /// <remarks>
@@ -47,7 +42,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// Creates a new AuthorRole instance with the provided label.
     /// </summary>
-    /// <param name="label"></param>
+    /// <param name="label">The label to associate with this AuthorRole.</param>
     [JsonConstructor]
     public AuthorRole(string label)
     {

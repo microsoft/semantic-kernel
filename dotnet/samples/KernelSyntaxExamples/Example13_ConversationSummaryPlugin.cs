@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -134,7 +133,7 @@ Jane: Goodbye!
         IKernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummaryPlugin["SummarizeConversation"], ChatTranscript);
+            conversationSummaryPlugin["SummarizeConversation"], new(ChatTranscript));
 
         Console.WriteLine("Generated Summary:");
         Console.WriteLine(summary.GetValue<string>());
@@ -148,7 +147,7 @@ Jane: Goodbye!
         IKernelPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummary["GetConversationActionItems"], ChatTranscript);
+            conversationSummary["GetConversationActionItems"], new(ChatTranscript));
 
         Console.WriteLine("Generated Action Items:");
         Console.WriteLine(summary.GetValue<string>());
@@ -162,7 +161,7 @@ Jane: Goodbye!
         IKernelPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummary["GetConversationTopics"], ChatTranscript);
+            conversationSummary["GetConversationTopics"], new(ChatTranscript));
 
         Console.WriteLine("Generated Topics:");
         Console.WriteLine(summary.GetValue<string>());
@@ -172,8 +171,9 @@ Jane: Goodbye!
     {
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
         .Build();

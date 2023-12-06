@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
@@ -63,8 +61,9 @@ after this event Caroline became his wife.""";
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -86,26 +85,27 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        var variables = new ContextVariables();
-        variables.Update(summaryText);
-        variables.Set("topic", "people and places");
-        variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
+        KernelArguments variables = new(summaryText)
+        {
+            ["topic"] = "people and places",
+            ["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
+        };
 
-        var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).GetValue<string>();
+        var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).ToString();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        variables.Update(extractionResult);
-        variables.Set("reference_context", GroundingText);
+        variables[KernelArguments.InputParameterName] = extractionResult;
+        variables["reference_context"] = GroundingText;
 
-        var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).GetValue<string>();
+        var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        variables.Update(summaryText);
-        variables.Set("ungrounded_entities", groundingResult);
+        variables[KernelArguments.InputParameterName] = summaryText;
+        variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
         Console.WriteLine("======== Excise Entities ========");
@@ -127,8 +127,9 @@ which are not grounded in the original.
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -139,13 +140,13 @@ which are not grounded in the original.
 
         kernel.ImportPluginFromObject<TextPlugin>();
 
-        var planner = new HandlebarsPlanner(kernel);
-        var plan = await planner.CreatePlanAsync(ask);
+        var planner = new HandlebarsPlanner();
+        var plan = await planner.CreatePlanAsync(kernel, ask);
 
         Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
 
-        var result = plan.Invoke(new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
-        Console.WriteLine(result.GetValue<string>());
+        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        Console.WriteLine(result);
     }
 }
 

@@ -4,26 +4,21 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planning;
-#pragma warning restore IDE0130
 
 public sealed class PlanTests : IDisposable
 {
     public PlanTests(ITestOutputHelper output)
     {
-        this._loggerFactory = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -567,35 +562,31 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = new KernelBuilder()
-            .WithLoggerFactory(this._loggerFactory)
-            .WithRetryBasic();
+        var kernel = new KernelBuilder().WithServices(c =>
+        {
+            if (useChatModel)
+            {
+                c.AddAzureOpenAIChatCompletion(
+                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
+            else
+            {
+                c.AddAzureOpenAITextGeneration(
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
 
-        if (useChatModel)
-        {
-            builder.WithAzureOpenAIChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-
-        if (useEmbeddings)
-        {
-            builder
-                .WithAzureOpenAITextEmbeddingGenerationService(
+            if (useEmbeddings)
+            {
+                c.AddAzureOpenAITextEmbeddingGeneration(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
-
-        var kernel = builder.Build();
+            }
+        }).Build();
 
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
@@ -604,31 +595,11 @@ public sealed class PlanTests : IDisposable
         return kernel;
     }
 
-    private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~PlanTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._loggerFactory is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 }

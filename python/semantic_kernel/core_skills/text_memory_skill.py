@@ -1,22 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import typing as t
+from typing import ClassVar
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class TextMemorySkill(PydanticField):
-    COLLECTION_PARAM = "collection"
-    RELEVANCE_PARAM = "relevance"
-    KEY_PARAM = "key"
-    LIMIT_PARAM = "limit"
-    DEFAULT_COLLECTION = "generic"
-    DEFAULT_RELEVANCE = 0.75
-    DEFAULT_LIMIT = 1
+class TextMemorySkill(SKBaseModel):
+    COLLECTION_PARAM: ClassVar[str] = "collection"
+    RELEVANCE_PARAM: ClassVar[str] = "relevance"
+    KEY_PARAM: ClassVar[str] = "key"
+    LIMIT_PARAM: ClassVar[str] = "limit"
+    DEFAULT_COLLECTION: ClassVar[str] = "generic"
+    DEFAULT_RELEVANCE: ClassVar[float] = 0.75
+    DEFAULT_LIMIT: ClassVar[int] = 1
 
     # @staticmethod
     @sk_function(

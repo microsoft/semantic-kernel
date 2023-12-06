@@ -9,10 +9,9 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -49,29 +48,21 @@ public static class Example52_ApimAuth
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
 
-        // Create logger factory with default level as warning
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            builder
-                .SetMinimumLevel(LogLevel.Warning)
-                .AddConsole();
-        });
-
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(loggerFactory)
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory) =>
-                new AzureOpenAIChatCompletion(deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient: openAIClient, loggerFactory: loggerFactory))
-            .Build();
+            c.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
+            c.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, openAIClient);
+        }).Build();
 
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var plugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
 
         // Run
         var result = await kernel.InvokeAsync(
-            plugin["Excuses"],
-            "I have no homework"
+            kernel.Plugins["FunPlugin"]["Excuses"],
+            new("I have no homework")
         );
         Console.WriteLine(result.GetValue<string>());
 

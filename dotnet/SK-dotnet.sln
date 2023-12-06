@@ -91,7 +91,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D794-4EC3-8E8F-F90D4D166420}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
-		src\InternalUtilities\test\FunctionHelpers.cs = src\InternalUtilities\test\FunctionHelpers.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
 EndProject
@@ -104,7 +103,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs = src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs
 		src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs = src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs
-		src\InternalUtilities\src\Diagnostics\HttpStatusCodeType.cs = src\InternalUtilities\src\Diagnostics\HttpStatusCodeType.cs
 		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
 		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 	EndProjectSection
@@ -114,16 +112,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0
 		src\InternalUtilities\src\Linq\AsyncEnumerable.cs = src\InternalUtilities\src\Linq\AsyncEnumerable.cs
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{DB950192-30F1-48B1-88D7-F43FECCA1A1C}"
-	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\src\Text\Json.cs = src\InternalUtilities\src\Text\Json.cs
-		src\InternalUtilities\src\Text\StringExtensions.cs = src\InternalUtilities\src\Text\StringExtensions.cs
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3573-4477-BF07-40180FCDE1BD}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Http\HttpClientProvider.cs = src\InternalUtilities\src\Http\HttpClientProvider.cs
-		src\InternalUtilities\src\Http\NonDisposableHttpClientHandler.cs = src\InternalUtilities\src\Http\NonDisposableHttpClientHandler.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144}"
@@ -138,10 +129,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TelemetryExample", "samples\TelemetryExample\TelemetryExample.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Polly", "src\Extensions\Reliability.Polly\Reliability.Polly.csproj", "{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Basic", "src\Extensions\Reliability.Basic\Reliability.Basic.csproj", "{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}"
 EndProject
@@ -163,7 +150,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Assistants.Uni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MongoDB", "src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj", "{6009CC87-32F1-4282-88BB-8E5A7BA12925}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.Handlebars", "src\Extensions\TemplateEngine.Handlebars\TemplateEngine.Handlebars.csproj", "{B0646036-0C50-4F66-B479-ADA9C1166816}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplate.Handlebars", "src\Extensions\PromptTemplate.Handlebars\PromptTemplate.Handlebars.csproj", "{B0646036-0C50-4F66-B479-ADA9C1166816}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Yaml", "src\Functions\Functions.Yaml\Functions.Yaml.csproj", "{4AD4E731-16E7-4A0E-B403-6C96459F989B}"
 EndProject
@@ -174,12 +161,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "planning", "planning", "{A7DAB812-81CF-4931-B38C-468A3261C4C8}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\planning\PlannerConfigBase.cs = src\InternalUtilities\planning\PlannerConfigBase.cs
+		src\InternalUtilities\planning\PlannerInstrumentation.cs = src\InternalUtilities\planning\PlannerInstrumentation.cs
 		src\InternalUtilities\planning\PlanningUtilities.props = src\InternalUtilities\planning\PlanningUtilities.props
 		src\InternalUtilities\planning\SemanticMemoryConfig.cs = src\InternalUtilities\planning\SemanticMemoryConfig.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349}"
 	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\planning\Extensions\ChatHistoryExtensions.cs = src\InternalUtilities\planning\Extensions\ChatHistoryExtensions.cs
 		src\InternalUtilities\planning\Extensions\KernelFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Extensions\KernelFunctionMetadataExtensions.cs
 		src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs = src\InternalUtilities\planning\Extensions\ReadOnlyFunctionCollectionPlannerExtensions.cs
 	EndProjectSection
@@ -374,18 +363,6 @@ Global
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}.Publish|Any CPU.Build.0 = Publish|Any CPU
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}.Publish|Any CPU.Build.0 = Publish|Any CPU
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -497,15 +474,12 @@ Global
 		{958AD708-F048-4FAF-94ED-D2F2B92748B9} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{29E7D971-1308-4171-9872-E8E4669A1134} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{B00AD427-0047-4850-BEF9-BA8237EA9D8B} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
-		{DB950192-30F1-48B1-88D7-F43FECCA1A1C} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{1C19D805-3573-4477-BF07-40180FCDE1BD} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
 		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
-		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
 		{A21FAC7C-0C09-4EAD-843B-926ACEF73C80} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}

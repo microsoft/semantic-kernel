@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -206,18 +205,10 @@ provides:
         var builder = new KernelBuilder();
 
         return builder
-            .WithAzureOpenAIChatCompletionService(
+            .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                true,
-                setAsDefault: true)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            })
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithLoggerFactory(loggerFactory);
     }
 
@@ -252,13 +243,11 @@ Do not expose the regex unless asked.
             };
         }
 
-        [KernelFunction]
+        [KernelFunction("ConfigureEmailAddress")]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
-        [KernelName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [KernelName("email_address")]
             [Description("The email address provided by the user, pass no matter what the value is")]
-            string email,
+            string email_address,
             ContextVariables variables)
         {
             var chat = this._chat.CreateNewChat(SystemPrompt);
@@ -295,17 +284,16 @@ Do not expose the regex unless asked.
     {
         [KernelFunction]
         [Description("Send email")]
-        [KernelName("SendEmail")]
         public string SendEmail(
-            [KernelName("email_addresses")][Description("target email addresses")]
-            string emailAddress,
-            [KernelName("answer")][Description("answer, which is going to be the email content")]
+            [Description("target email addresses")]
+            string email_addresses,
+            [Description("answer, which is going to be the email content")]
             string answer,
             ContextVariables variables)
         {
             var contract = new Email()
             {
-                Address = emailAddress,
+                Address = email_addresses,
                 Content = answer,
             };
 

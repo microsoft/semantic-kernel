@@ -34,7 +34,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
         Justification = "A constant Uri cannot be defined, as required by this class")]
     public BingConnector(string apiKey, Uri? uri = null, ILoggerFactory? loggerFactory = null) :
-        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, loggerFactory)
+        this(apiKey, HttpClientProvider.GetHttpClient(), uri, loggerFactory)
     {
     }
 

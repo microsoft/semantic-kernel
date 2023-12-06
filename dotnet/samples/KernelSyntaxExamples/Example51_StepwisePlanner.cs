@@ -45,7 +45,7 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                await RunTextCompletionAsync(question);
+                await RunTextGenerationAsync(question);
                 await RunChatCompletionAsync(question);
             }
         }
@@ -84,11 +84,11 @@ public static class Example51_StepwisePlanner
 
     private static readonly List<ExecutionResult> s_executionResults = new();
 
-    private static async Task RunTextCompletionAsync(string question)
+    private static async Task RunTextGenerationAsync(string question)
     {
-        Console.WriteLine("RunTextCompletion");
+        Console.WriteLine("RunTextGeneration");
         ExecutionResult currentExecutionResult = default;
-        currentExecutionResult.mode = "RunTextCompletion";
+        currentExecutionResult.mode = "RunTextGeneration";
         var kernel = GetKernel(ref currentExecutionResult);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
@@ -191,19 +191,17 @@ public static class Example51_StepwisePlanner
         var maxTokens = 0;
         if (useChat)
         {
-            builder.WithAzureOpenAIChatCompletionService(
+            builder.WithAzureOpenAIChatCompletion(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
-                setAsDefault: true);
+                TestConfiguration.AzureOpenAI.ApiKey);
 
             maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
         {
-            builder.WithAzureTextCompletionService(
+            builder.WithAzureOpenAITextGeneration(
                 model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
@@ -216,12 +214,6 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            })
             .Build();
 
         return kernel;

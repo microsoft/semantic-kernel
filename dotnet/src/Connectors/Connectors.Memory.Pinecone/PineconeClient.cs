@@ -36,7 +36,7 @@ public sealed class PineconeClient : IPineconeClient
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeClient)) : NullLogger.Instance;
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
@@ -258,7 +258,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new KernelException("Must provide at least one of ids, filter, or deleteAll");
+            throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();

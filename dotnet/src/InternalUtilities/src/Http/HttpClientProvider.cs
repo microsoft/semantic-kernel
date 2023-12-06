@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
+using Microsoft.Extensions.DependencyInjection;
+
+#pragma warning disable CA2215 // Dispose methods should call base class dispose
 
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
@@ -12,19 +14,55 @@ internal static class HttpClientProvider
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
-    /// <param name="httpHandlerFactory">The <see cref="IDelegatingHandlerFactory"/> to be used when the HttpClient is not provided already</param>
-    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient(IDelegatingHandlerFactory httpHandlerFactory, HttpClient? httpClient, ILoggerFactory? loggerFactory)
+    public static HttpClient GetHttpClient() => new(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+
+    /// <summary>
+    /// Retrieves an instance of HttpClient.
+    /// </summary>
+    /// <returns>An instance of HttpClient.</returns>
+    public static HttpClient GetHttpClient(HttpClient? httpClient = null) => httpClient ?? GetHttpClient();
+
+    /// <summary>
+    /// Retrieves an instance of HttpClient.
+    /// </summary>
+    /// <returns>An instance of HttpClient.</returns>
+    public static HttpClient GetHttpClient(IServiceProvider? serviceProvider = null) => GetHttpClient(serviceProvider?.GetService<HttpClient>());
+
+    /// <summary>
+    /// Retrieves an instance of HttpClient.
+    /// </summary>
+    /// <returns>An instance of HttpClient.</returns>
+    public static HttpClient GetHttpClient(HttpClient? httpClient, IServiceProvider serviceProvider) => httpClient ?? GetHttpClient(serviceProvider?.GetService<HttpClient>());
+
+    /// <summary>
+    /// Represents a singleton implementation of <see cref="HttpClientHandler"/> that is not disposable.
+    /// </summary>
+    private sealed class NonDisposableHttpClientHandler : HttpClientHandler
     {
-        if (httpClient is null)
+        /// <summary>
+        /// Private constructor to prevent direct instantiation of the class.
+        /// </summary>
+        private NonDisposableHttpClientHandler()
         {
-            var providedHttpHandler = httpHandlerFactory.Create(loggerFactory);
-            providedHttpHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
-            return new HttpClient(providedHttpHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
+            this.CheckCertificateRevocationList = true;
         }
 
-        return httpClient;
+        /// <summary>
+        /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/>.
+        /// </summary>
+        public static NonDisposableHttpClientHandler Instance { get; } = new();
+
+        /// <summary>
+        /// Disposes the underlying resources held by the <see cref="NonDisposableHttpClientHandler"/>.
+        /// This implementation does nothing to prevent unintended disposal, as it may affect all references.
+        /// </summary>
+        /// <param name="disposing">True if called from <see cref="Dispose"/>, false if called from a finalizer.</param>
+        protected override void Dispose(bool disposing)
+        {
+            // Do nothing if called explicitly from Dispose, as it may unintentionally affect all references.
+            // The base.Dispose(disposing) is not called to avoid invoking the disposal of HttpClientHandler resources.
+            // This implementation assumes that the HttpClientHandler is being used as a singleton and should not be disposed directly.
+        }
     }
 }

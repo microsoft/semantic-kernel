@@ -2,20 +2,21 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed through OpenAI's ChatGPT format.
 /// </summary>
-public static class KernelOpenAIPluginExtensions
+public static class OpenAIPluginKernelExtensions
 {
     private static readonly JsonSerializerOptions s_jsonOptionsOpenAIManifest =
         new()
@@ -28,7 +29,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -49,7 +50,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -70,7 +71,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -91,7 +92,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -109,7 +110,7 @@ public static class KernelOpenAIPluginExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
             cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
@@ -123,7 +124,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -140,12 +141,12 @@ public static class KernelOpenAIPluginExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(KernelOpenAIPluginExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,
@@ -162,7 +163,7 @@ public static class KernelOpenAIPluginExtensions
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
-    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
@@ -212,9 +213,9 @@ public static class KernelOpenAIPluginExtensions
         if (executionParameters?.AuthCallback is not null)
         {
             var callback = executionParameters.AuthCallback;
-            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request) =>
+            ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request, ct) =>
             {
-                await callback(request, pluginName, openAIAuthConfig).ConfigureAwait(false);
+                await callback(request, pluginName, openAIAuthConfig, ct).ConfigureAwait(false);
             };
         }
 

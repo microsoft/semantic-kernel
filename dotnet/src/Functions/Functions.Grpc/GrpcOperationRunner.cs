@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -13,10 +14,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 /// <summary>
 /// Runs gRPC operation runner.
@@ -48,12 +49,14 @@ internal sealed class GrpcOperationRunner
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation run.</returns>
-    public async Task<JsonObject> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public async Task<JsonObject> RunAsync(GrpcOperation operation, KernelArguments arguments, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(operation);
         Verify.NotNull(arguments);
 
-        var address = this.GetAddress(operation, arguments);
+        var stringArgument = CastToStringArguments(arguments, operation);
+
+        var address = this.GetAddress(operation, stringArgument);
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
@@ -74,12 +77,32 @@ internal sealed class GrpcOperationRunner
 
             var invoker = channel.CreateCallInvoker();
 
-            var request = this.GenerateOperationRequest(operation, requestType, arguments);
+            var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
 
             var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
 
             return ConvertResponse(response, responseType);
         }
+    }
+
+    /// <summary>
+    /// Casts argument values of type object to string.
+    /// </summary>
+    /// <param name="arguments">The kernel arguments to be cast.</param>
+    /// <param name="operation">The gRPC operation.</param>
+    /// <returns>A dictionary of arguments with string values.</returns>
+    /// <exception cref="KernelException">Thrown when an argument has an unsupported, non-string type.</exception>
+    private static Dictionary<string, string> CastToStringArguments(KernelArguments arguments, GrpcOperation operation)
+    {
+        return arguments.ToDictionary(item => item.Key, item =>
+        {
+            if (item.Value is string stringValue)
+            {
+                return stringValue;
+            }
+
+            throw new KernelException($"Non-string gRPC operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Name}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+        });
     }
 
     /// <summary>
@@ -105,7 +128,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="operation">The gRPC operation.</param>
     /// <param name="arguments">The gRPC operation arguments.</param>
     /// <returns>The channel address.</returns>
-    private string GetAddress(GrpcOperation operation, IDictionary<string, string> arguments)
+    private string GetAddress(GrpcOperation operation, Dictionary<string, string> arguments)
     {
         if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
         {
@@ -153,22 +176,18 @@ internal sealed class GrpcOperationRunner
     /// <param name="type">The operation request data type.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation request instance.</returns>
-    private object GenerateOperationRequest(GrpcOperation operation, Type type, IDictionary<string, string> arguments)
+    private object GenerateOperationRequest(GrpcOperation operation, Type type, Dictionary<string, string> arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
-        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out var payload))
+        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) ||
+            string.IsNullOrEmpty(payload))
         {
             throw new KernelException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
         }
 
         //Deserializing JSON payload to gRPC request message
-        var instance = JsonSerializer.Deserialize(payload, type, s_propertyCaseInsensitiveOptions);
-        if (instance == null)
-        {
-            throw new KernelException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
-        }
-
-        return instance;
+        return JsonSerializer.Deserialize(payload!, type, s_propertyCaseInsensitiveOptions) ??
+            throw new KernelException($"Unable to create gRPC request message for the '{operation.Name}' gRPC operation.");
     }
 
     /// <summary>
@@ -226,13 +245,8 @@ internal sealed class GrpcOperationRunner
         var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
-        var type = typeBuilder.CreateTypeInfo();
-        if (type == null)
-        {
+        return typeBuilder.CreateTypeInfo() ??
             throw new KernelException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
-        }
-
-        return type;
     }
 
     /// <summary>

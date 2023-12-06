@@ -3,8 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -16,15 +14,12 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planners.Sequential;
-#pragma warning restore IDE0130
 
 public sealed class SequentialPlannerTests : IDisposable
 {
     public SequentialPlannerTests(ITestOutputHelper output)
     {
-        this._logger = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -119,73 +114,48 @@ public sealed class SequentialPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = new KernelBuilder().WithLoggerFactory(this._logger);
-        builder.WithRetryBasic();
-
-        if (useChatModel)
+        return new KernelBuilder().WithServices(c =>
         {
-            builder.WithAzureOpenAIChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
+            if (useChatModel)
+            {
+                c.AddAzureOpenAIChatCompletion(
+                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
+            else
+            {
+                c.AddAzureOpenAITextGeneration(
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+            }
 
-        if (useEmbeddings)
-        {
-            builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
-
-        var kernel = builder.Build();
-
-        return kernel;
+            if (useEmbeddings)
+            {
+                c.AddAzureOpenAITextEmbeddingGeneration(
+                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+            }
+        }).Build();
     }
 
     private ISemanticTextMemory InitializeMemory(ITextEmbeddingGeneration textEmbeddingGeneration)
     {
         var builder = new MemoryBuilder();
 
-        builder.WithLoggerFactory(this._logger);
         builder.WithMemoryStore(new VolatileMemoryStore());
         builder.WithTextEmbeddingGeneration(textEmbeddingGeneration);
 
         return builder.Build();
     }
 
-    private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~SequentialPlannerTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._logger is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 }
