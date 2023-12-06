@@ -53,7 +53,7 @@ public class OrderedAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         }).Build();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedAIServiceSelector();
@@ -72,8 +72,8 @@ public class OrderedAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         }).Build();
 
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service2" };
@@ -94,8 +94,8 @@ public class OrderedAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         }).Build();
 
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service3" };
@@ -108,13 +108,13 @@ public class OrderedAIServiceConfigurationProviderTests
     }
 
     [Fact]
-    public void ItUsesDefaultServiceForEmptyModelSettings()
+    public void ItUsesDefaultServiceForNoExecutionSettings()
     {
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         }).Build();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedAIServiceSelector();
@@ -128,14 +128,14 @@ public class OrderedAIServiceConfigurationProviderTests
     }
 
     [Fact]
-    public void ItUsesDefaultServiceAndSettings()
+    public void ItUsesDefaultServiceAndSettingsForDefaultExecutionSettings()
     {
         // Arrange
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         }).Build();
         var executionSettings = new PromptExecutionSettings();
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
@@ -155,8 +155,8 @@ public class OrderedAIServiceConfigurationProviderTests
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         }).Build();
         var executionSettings = new PromptExecutionSettings() { ServiceId = "" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
@@ -175,14 +175,15 @@ public class OrderedAIServiceConfigurationProviderTests
     [InlineData(new string[] { "service2" }, "service2")]
     [InlineData(new string[] { "service3" }, "service3")]
     [InlineData(new string[] { "service4", "service1" }, "service1")]
+    [InlineData(new string[] { "service4", "" }, "service3")]
     public void ItGetsAIServiceConfigurationByOrder(string[] serviceIds, string expectedServiceId)
     {
         // Arrange
         var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id"));
-            c.AddKeyedSingleton<ITextGenerationService>("service3", new TextGenerationService("model_id"));
+            c.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+            c.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
+            c.AddKeyedSingleton<ITextGenerationService>("service3", new TextGenerationService("model_id_3"));
         }).Build();
         var executionSettings = new List<PromptExecutionSettings>();
         foreach (var serviceId in serviceIds)
@@ -197,7 +198,10 @@ public class OrderedAIServiceConfigurationProviderTests
 
         // Assert
         Assert.Equal(kernel.GetService<ITextGenerationService>(expectedServiceId), aiService);
-        Assert.Equal(expectedServiceId, defaultExecutionSettings!.ServiceId);
+        if (!string.IsNullOrEmpty(defaultExecutionSettings!.ServiceId))
+        {
+            Assert.Equal(expectedServiceId, defaultExecutionSettings!.ServiceId);
+        }
     }
 
     [Fact]
