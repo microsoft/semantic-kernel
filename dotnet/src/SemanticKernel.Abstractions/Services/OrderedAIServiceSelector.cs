@@ -8,8 +8,8 @@ using Microsoft.SemanticKernel.AI;
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
-/// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the settings settings.
-/// Uses the service id to select the preferred service provider and then returns the service and associated settings settings.
+/// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
+/// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
 /// </summary>
 internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 {
