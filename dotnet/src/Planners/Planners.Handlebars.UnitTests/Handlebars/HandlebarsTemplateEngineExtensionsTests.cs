@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Globalization;
 using HandlebarsDotNet;
-using Microsoft.SemanticKernel.Planning.Handlebars;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;

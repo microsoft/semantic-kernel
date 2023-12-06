@@ -30,11 +30,11 @@ public static class Example65_HandlebarsPlanner
         // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
         await RunDictionaryWithBasicTypesSampleAsync();
-        // await RunPoetrySampleAsync();
-        // await RunBookSampleAsync();
+        await RunPoetrySampleAsync();
+        await RunBookSampleAsync();
 
-        // // Using Complex Types as inputs and outputs
-        // await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
+        // Using Complex Types as inputs and outputs
+        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
     }
 
     private static void WriteSampleHeadingToConsole(string name)

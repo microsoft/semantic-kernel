@@ -14,7 +14,8 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     public void ItCreatesHandlebarsPromptTemplate()
     {
         // Arrange
-        var promptConfig = InitializeHbPromptConfig("{{input}}");
+        var templateString = "{{input}}";
+        var promptConfig = InitializeHbPromptConfig(templateString);
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act
