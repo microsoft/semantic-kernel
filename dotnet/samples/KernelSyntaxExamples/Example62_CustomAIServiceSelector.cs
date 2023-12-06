@@ -2,11 +2,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Services;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example62_CustomAIServiceSelector
@@ -39,21 +39,19 @@ public static class Example62_CustomAIServiceSelector
         }
 
         // Build a kernel with multiple chat completion services
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        var builder = new KernelBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
                 apiKey: azureApiKey)
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
-            // Use custom AI service selector to select the GPT model
-            .WithAIServiceSelector(new GptAIServiceSelector())
-            .Build();
+                apiKey: openAIApiKey);
+        builder.Services.AddSingleton<IAIServiceSelector>(new GptAIServiceSelector()); // Use the custom AI service selector to select the GPT model
+        Kernel kernel = builder.Build();
 
         // This invocation is done with the model selected by the custom selector
         var prompt = "Hello AI, what can you do for me?";
