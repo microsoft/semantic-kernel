@@ -21,6 +21,9 @@
     <Compile Remove="Planners\PlanTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="prompts\GenerateStoryHandlebars.yaml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
@@ -50,6 +53,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Extensions\PromptTemplate.Handlebars\PromptTemplate.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
@@ -75,5 +79,14 @@
     <Content Include="Plugins\instacart-ai-plugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="prompts/GenerateStory.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="prompts\GenerateStoryHandlebars.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
