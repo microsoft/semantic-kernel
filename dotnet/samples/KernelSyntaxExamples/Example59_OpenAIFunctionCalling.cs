@@ -12,6 +12,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 /**
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
  * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
@@ -30,8 +32,8 @@ public static class Example59_OpenAIFunctionCalling
             })
             .WithPlugins(plugins =>
             {
-                plugins.AddPluginFromType<TimePlugin>();
-                plugins.AddPluginFromType<WidgetPlugin>();
+                plugins.AddFromType<TimePlugin>();
+                plugins.AddFromType<WidgetPlugin>();
             })
             .Build();
 

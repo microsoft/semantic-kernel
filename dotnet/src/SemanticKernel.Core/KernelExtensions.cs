@@ -145,11 +145,10 @@ public static class KernelExtensions
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static IKernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
-        where T : new()
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromType<T>(pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromType<T>(pluginName, kernel.Services);
     }
     #endregion
 
@@ -182,7 +181,6 @@ public static class KernelExtensions
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
     public static IKernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
-        where T : new()
     {
         IKernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
@@ -199,10 +197,11 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddPluginFromType<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
-        where T : new()
+    public static IKernelPlugin AddFromType<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        Verify.NotNull(plugins);
+
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider);
         plugins.Add(plugin);
         return plugin;
     }
@@ -235,8 +234,10 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddPluginFromObject(this ICollection<IKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static IKernelPlugin AddFromObject(this ICollection<IKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
+        Verify.NotNull(plugins);
+
         IKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;

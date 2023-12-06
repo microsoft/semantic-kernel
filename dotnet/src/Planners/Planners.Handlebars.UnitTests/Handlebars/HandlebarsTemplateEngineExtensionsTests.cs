@@ -6,6 +6,8 @@ using HandlebarsDotNet;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Xunit;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsTemplateEngineExtensionsTests

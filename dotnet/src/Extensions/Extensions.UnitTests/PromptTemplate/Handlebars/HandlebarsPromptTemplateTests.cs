@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
 public sealed class HandlebarsPromptTemplateTests

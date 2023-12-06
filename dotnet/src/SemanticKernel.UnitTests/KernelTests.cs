@@ -620,7 +620,7 @@ public class KernelTests
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
         // Arrange
-        var mockTextCompletion = this.SetupStreamingMocks<StreamingContentBase>(
+        var mockTextCompletion = this.SetupStreamingMocks(
             new StreamingTextContent("chunk1"),
             new StreamingTextContent("chunk2"));
         var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextCompletion.Object)).Build();
@@ -649,7 +649,7 @@ public class KernelTests
         return (mockTextContent, mockTextCompletion);
     }
 
-    private Mock<ITextGenerationService> SetupStreamingMocks<T>(params StreamingTextContent[] streamingContents)
+    private Mock<ITextGenerationService> SetupStreamingMocks(params StreamingTextContent[] streamingContents)
     {
         var mockTextCompletion = new Mock<ITextGenerationService>();
         mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(streamingContents));

@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
 
 public sealed class KernelFunctionMetadataExtensionsTests
@@ -155,7 +157,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     {
         // Arrange
         var kernel = new KernelBuilder()
-            .WithPlugins(plugins => plugins.AddPluginFromType<MyPlugin>("MyPlugin"))
+            .WithPlugins(plugins => plugins.AddFromType<MyPlugin>("MyPlugin"))
             .Build();
 
         var functionView = kernel.Plugins["MyPlugin"].First().Metadata;
