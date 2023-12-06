@@ -3,8 +3,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -15,7 +13,7 @@ public interface IPromptTemplate
     /// <summary>
     /// Render the template using the information in the context
     /// </summary>
-    /// <param name="kernel">The Kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Prompt rendered to string</returns>

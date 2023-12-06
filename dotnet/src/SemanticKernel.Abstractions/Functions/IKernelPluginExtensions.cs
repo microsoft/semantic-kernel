@@ -3,9 +3,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable IDE0130
-
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides extension methods for working with <see cref="IKernelPlugin"/>s and collections of them.</summary>
@@ -59,7 +56,7 @@ public static class IKernelPluginExtensions
 
         if (!TryGetFunction(plugins, pluginName, functionName, out KernelFunction? function))
         {
-            throw new KeyNotFoundException("The plugin collection does not contain a plugin and/or function with the specified names.");
+            throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{pluginName}', function name - '{functionName}'.");
         }
 
         return function;

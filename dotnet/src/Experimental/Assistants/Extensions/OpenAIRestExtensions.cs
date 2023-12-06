@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 internal static partial class OpenAIRestExtensions
 {

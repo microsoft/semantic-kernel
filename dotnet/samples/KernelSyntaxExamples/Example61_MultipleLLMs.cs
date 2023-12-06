@@ -22,9 +22,9 @@ public static class Example61_MultipleLLMs
         string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (azureApiKey == null || azureDeploymentName == null || azureEndpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -64,10 +64,10 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           new PromptExecutionSettings()
+           new(new PromptExecutionSettings()
            {
                ServiceId = serviceId
-           });
+           }));
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -79,10 +79,10 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           executionSettings: new PromptExecutionSettings()
+           new(new PromptExecutionSettings()
            {
                ModelId = modelId
-           });
+           }));
         Console.WriteLine(result.GetValue<string>());
     }
 

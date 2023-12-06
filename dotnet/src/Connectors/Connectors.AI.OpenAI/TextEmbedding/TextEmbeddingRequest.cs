@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// <summary>
 /// A request to create embedding vector representing input text
 /// </summary>
+[Experimental("SKEXP0011")]
 public abstract class TextEmbeddingRequest
 {
     /// <summary>
@@ -20,6 +22,7 @@ public abstract class TextEmbeddingRequest
 /// <summary>
 /// An OpenAI embedding request
 /// </summary>
+[Experimental("SKEXP0011")]
 public sealed class OpenAITextEmbeddingRequest : TextEmbeddingRequest
 {
     /// <summary>
@@ -32,6 +35,7 @@ public sealed class OpenAITextEmbeddingRequest : TextEmbeddingRequest
 /// <summary>
 /// An Azure OpenAI embedding request
 /// </summary>
+[Experimental("SKEXP0011")]
 public sealed class AzureOpenAITextEmbeddingRequest : TextEmbeddingRequest
 {
 }

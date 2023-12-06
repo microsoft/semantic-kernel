@@ -85,7 +85,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new KernelArguments() { { "input", "blah blah blah" } });
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new("blah blah blah"));
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }
@@ -129,7 +129,7 @@ public class LocalExamplePlugin
     public FunctionResult Type10()
     {
         Console.WriteLine("Running function type 10");
-        return new FunctionResult(string.Empty);
+        return new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }));
     }
 
     [KernelFunction]
@@ -137,6 +137,6 @@ public class LocalExamplePlugin
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 10");
-        return new FunctionResult("result");
+        return new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }));
     }
 }

@@ -19,18 +19,18 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     api_key: constr(strip_whitespace=True, min_length=1)
 
-    def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):
+    def __init__(self, ai_model_id: str, api_key: str, log: Optional[Logger] = None):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
         Arguments:
-            model_id {str} -- GooglePalm model name, see
+            ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        super().__init__(model_id=model_id, api_key=api_key, log=log)
+        super().__init__(ai_model_id=ai_model_id, api_key=api_key, log=log)
 
     async def complete_async(
         self,
@@ -87,7 +87,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             )
         try:
             response = palm.generate_text(
-                model=self.model_id,
+                model=self.ai_model_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 max_output_tokens=request_settings.max_tokens,

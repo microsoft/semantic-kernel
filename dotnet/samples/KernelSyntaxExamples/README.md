@@ -130,9 +130,9 @@ AzureOpenAIEmbeddings__DeploymentName
 AzureOpenAIEmbeddings__Endpoint
 AzureOpenAIEmbeddings__ApiKey
 
-# Azure Cognitive Search
-ACS__Endpoint
-ACS__ApiKey
+# Azure AI Search
+AzureAISearch__Endpoint
+AzureAISearch__ApiKey
 
 # Qdrant
 Qdrant__Endpoint

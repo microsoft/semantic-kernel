@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
@@ -33,34 +29,22 @@ public static class Example43_GetModelResult
 
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
-        // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var functionResult = await myFunction.InvokeAsync(kernel, new KernelArguments(new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 })
-        {
-            [KernelArguments.InputParameterName] = "Sci-fi"
-        });
-
-        Console.WriteLine(functionResult.GetValue<string>());
-        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
-        Console.WriteLine();
-
         // Using the Kernel InvokeAsync
-        var result = await kernel.InvokeAsync(myFunction, "sorry I forgot your birthday");
-        var modelResults = result.GetModelResults() ?? Enumerable.Empty<ModelResult>();
-
+        var result = await kernel.InvokeAsync(myFunction, new("sorry I forgot your birthday"));
         Console.WriteLine(result.GetValue<string>());
-        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
-        var chatCompletion = new OpenAIChatCompletion(
+        var chatCompletionService = new OpenAIChatCompletionService(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        var textContent = await chatCompletionService.GetTextContentAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 }, kernel);
 
-        Console.WriteLine(await completionResults[0].GetCompletionAsync());
-        Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
+        Console.WriteLine(textContent);
+        Console.WriteLine(textContent.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
 
         // Getting the error details
@@ -72,7 +56,7 @@ public static class Example43_GetModelResult
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            await kernel.InvokeAsync(errorFunction, "sorry I forgot your birthday");
+            await kernel.InvokeAsync(errorFunction, new("sorry I forgot your birthday"));
         }
         catch (Exception ex)
         {

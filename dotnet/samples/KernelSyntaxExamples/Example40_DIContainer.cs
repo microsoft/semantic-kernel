@@ -16,7 +16,7 @@ public static class Example40_DIContainer
     {
         var collection = new ServiceCollection();
         collection.AddSingleton<ILoggerFactory>(ConsoleLogger.LoggerFactory);
-        collection.AddOpenAITextCompletion(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
+        collection.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
         collection.AddSingleton<Kernel>();
 
         // Registering class that uses Kernel to execute a plugin
@@ -55,7 +55,7 @@ public static class Example40_DIContainer
 
             var summarizePlugin = this._kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-            var result = await this._kernel.InvokeAsync(summarizePlugin["Summarize"], ask);
+            var result = await this._kernel.InvokeAsync(summarizePlugin["Summarize"], new(ask));
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }

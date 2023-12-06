@@ -31,11 +31,10 @@ public static class Example60_AdvancedMethodFunctions
 
         var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
 
-        var result = await kernel.InvokeAsync(functions["Function1"]);
-        var customType = result.GetValue<MyCustomType>()!;
+        var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
-        Console.WriteLine(customType.Number); // 2
-        Console.WriteLine(customType.Text); // From Function1 + From Function2
+        Console.WriteLine($"CustomType.Number: {customType!.Number}"); // 2
+        Console.WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
     }
 
     /// <summary>
@@ -45,12 +44,11 @@ public static class Example60_AdvancedMethodFunctions
     {
         public const string PluginName = nameof(FunctionsChainingPlugin);
 
-        [KernelFunction, KernelName("Function1")]
+        [KernelFunction]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
-            var result = await kernel.InvokeAsync(PluginName, "Function2");
-            var value = result?.GetValue<MyCustomType>()!;
+            var value = await kernel.InvokeAsync<MyCustomType>(PluginName, "Function2");
 
             return new MyCustomType
             {
@@ -59,7 +57,7 @@ public static class Example60_AdvancedMethodFunctions
             };
         }
 
-        [KernelFunction, KernelName("Function2")]
+        [KernelFunction]
         public static MyCustomType Function2()
         {
             return new MyCustomType
