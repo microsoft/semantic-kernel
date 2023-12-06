@@ -4,6 +4,8 @@ using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace Plugins;
 
 internal sealed class EmailPlugin

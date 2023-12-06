@@ -48,11 +48,10 @@ public static class Example52_ApimAuth
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
-            c.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, openAIClient);
-        }).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
+        builder.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, openAIClient);
+        Kernel kernel = builder.Build();
 
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();

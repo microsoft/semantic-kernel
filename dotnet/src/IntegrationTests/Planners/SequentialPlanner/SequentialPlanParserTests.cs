@@ -37,7 +37,7 @@ public class SequentialPlanParserTests
                 apiKey: azureOpenAIConfiguration.ApiKey,
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
-        kernel.ImportPluginFromObject<EmailPluginFake>("email");
+        kernel.ImportPluginFromType<EmailPluginFake>("email");
         TestHelpers.ImportSamplePlugins(kernel, "SummarizePlugin", "WriterPlugin");
 
         var planString =

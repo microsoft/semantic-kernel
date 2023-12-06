@@ -6,6 +6,8 @@ using HandlebarsDotNet;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Xunit;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsTemplateEngineExtensionsTests
@@ -155,7 +157,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "Foo {{Foo-Bar}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -171,7 +173,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine \"Bar\" \"Baz\"}}"; // Use positional arguments instead of hashed arguments
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -187,7 +189,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine x=\"Bar\" y=\"Baz\"}}"; // Use positional arguments instead of hashed arguments
         var variables = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, variables);
@@ -203,7 +205,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine x=\"Bar\"}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Assert
         Assert.Throws<KernelException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
@@ -216,7 +218,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-StringifyInt x=\"twelve\"}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
@@ -229,7 +231,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Random x=\"random\"}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Assert
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));

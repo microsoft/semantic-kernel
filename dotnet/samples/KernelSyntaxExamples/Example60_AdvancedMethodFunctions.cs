@@ -7,6 +7,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 /**
  * This example shows different ways how to define and execute method functions using custom and primitive types.
  */
@@ -27,9 +29,9 @@ public static class Example60_AdvancedMethodFunctions
     {
         Console.WriteLine("Running Method Function Chaining example...");
 
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
-        var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
+        var functions = kernel.ImportPluginFromType<FunctionsChainingPlugin>();
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 

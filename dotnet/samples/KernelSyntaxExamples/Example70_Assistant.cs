@@ -73,7 +73,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         // Call the common chat-loop
         await ChatAsync(

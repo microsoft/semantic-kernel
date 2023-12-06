@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextGeneration;
@@ -25,11 +26,11 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        Kernel target = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
-            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
-            .Build();
+        var builder = new KernelBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
@@ -43,11 +44,11 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        Kernel target = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
-            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
-            .Build();
+        var builder = new KernelBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 

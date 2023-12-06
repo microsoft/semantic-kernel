@@ -22,18 +22,16 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine("======== Describe all plugins and functions ========");
 
         var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Import a native plugin
-        var staticText = new StaticTextPlugin();
-        kernel.ImportPluginFromObject(staticText, "StaticTextPlugin");
+        kernel.ImportPluginFromType<StaticTextPlugin>();
 
         // Import another native plugin
-        var text = new TextPlugin();
-        kernel.ImportPluginFromObject(text, "AnotherTextPlugin");
+        kernel.ImportPluginFromType<TextPlugin>("AnotherTextPlugin");
 
         // Import a semantic plugin
         string folder = RepoFiles.SamplePluginsPath();

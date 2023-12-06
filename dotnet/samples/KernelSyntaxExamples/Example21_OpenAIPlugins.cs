@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example21_OpenAIPlugins
@@ -18,7 +17,7 @@ public static class Example21_OpenAIPlugins
 
     private static async Task RunOpenAIPluginAsync()
     {
-        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         //This HTTP client is optional. SK will fallback to a default internal one if omitted.
         using HttpClient httpClient = new();
@@ -38,7 +37,7 @@ public static class Example21_OpenAIPlugins
 
         //--------------- Example of using Klarna OpenAI plugin ------------------------
 
-        //var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        //Kernel kernel = new();
 
         //var plugin = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 

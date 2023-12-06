@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using RepoUtils;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
@@ -30,8 +29,7 @@ public static class Example07_BingAndGooglePlugins
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();

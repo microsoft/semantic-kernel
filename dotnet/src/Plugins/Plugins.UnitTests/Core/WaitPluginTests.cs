@@ -24,7 +24,7 @@ public class WaitPluginTests
     public void ItCanBeImported()
     {
         // Act - Assert no exception occurs e.g. due to reflection
-        Assert.NotNull(KernelPluginFactory.CreateFromObject<WaitPlugin>("wait"));
+        Assert.NotNull(KernelPluginFactory.CreateFromType<WaitPlugin>("wait"));
     }
 
     [Theory]
@@ -75,7 +75,7 @@ public class WaitPluginTests
     public async Task ItWaitSecondsWhenInvalidParametersFailsAsync(string textSeconds)
     {
         // Arrange
-        KernelFunction func = KernelPluginFactory.CreateFromObject<WaitPlugin>()["Seconds"];
+        KernelFunction func = KernelPluginFactory.CreateFromType<WaitPlugin>()["Seconds"];
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new(), new(textSeconds)));

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextToImage;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
@@ -24,11 +23,10 @@ public static class Example18_DallE
         Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your text to image service
-            .WithOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
@@ -93,11 +91,10 @@ public static class Example18_DallE
         Console.WriteLine("========Azure OpenAI Dall-E 2 Text To Image ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your text to image service
-            .WithAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
-            .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();

@@ -23,7 +23,7 @@ public class SearchUrlPluginTests
     public void ItCanBeImported()
     {
         // Act - Assert no exception occurs e.g. due to reflection
-        Assert.NotNull(KernelPluginFactory.CreateFromObject<SearchUrlPlugin>("search"));
+        Assert.NotNull(KernelPluginFactory.CreateFromType<SearchUrlPlugin>("search"));
     }
 
     [Fact]

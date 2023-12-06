@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
@@ -89,7 +91,7 @@ public sealed class RunHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
-        var gamePlugin = KernelPluginFactory.CreateFromObject<GuessingGame>();
+        var gamePlugin = KernelPluginFactory.CreateFromType<GuessingGame>();
 
         var assistant =
             await new AssistantBuilder()

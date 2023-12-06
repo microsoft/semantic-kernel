@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -16,13 +18,19 @@ public static class KernelPluginFactory
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceProvider">
+    /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
+    /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
+    /// </param>
     /// <remarks>
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static IKernelPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
-        CreateFromObject(new T(), pluginName, loggerFactory);
+    public static IKernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
+    {
+        serviceProvider ??= EmptyServiceProvider.Instance;
+        return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+    }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -52,13 +60,17 @@ public static class KernelPluginFactory
                 plugin.AddFunctionFromMethod(method, target, loggerFactory: loggerFactory);
             }
         }
+        if (plugin.FunctionCount == 0)
+        {
+            throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
+        }
 
         if (loggerFactory is not null)
         {
             ILogger logger = loggerFactory.CreateLogger(target.GetType());
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);
+                logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);
             }
         }
 

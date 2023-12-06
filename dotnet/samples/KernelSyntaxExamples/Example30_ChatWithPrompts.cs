@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 using Resources;
 
 /**
@@ -32,15 +31,6 @@ using Resources;
  *       Out of scope and not in the example: if needed, one could go further and use a semantic
  *       function (with extra cost) asking AI to generate the text to send to the Chat model.
  *
- * TLDR: how to render a prompt:
- *
- *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
- *      ... import plugins and functions ...
- *      var context = kernel.CreateNewContext();
- *      ... set variables ...
- *
- *      var promptRenderer = new KernelPromptTemplateEngine();
- *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
  */
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
@@ -61,13 +51,12 @@ public static class Example30_ChatWithPrompts
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         // Adding required arguments referenced by the prompt templates.
         var arguments = new KernelArguments
