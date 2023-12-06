@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -407,6 +408,37 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task UsingStandardizedChatPromptGivesNoXmlBack()
+    {
+        // Arrange
+        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this.ConfigureAzureOpenAI(builder);
+        Kernel target = builder.Build();
+
+        // Create prompt
+        KernelFunction prompt = KernelFunctionFactory.CreateFromPrompt(@"
+            <message role=""system"">You are a helpful assistant.</message>
+            <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
+        ");
+
+        ChatHistory chatMessages = [];
+        IChatCompletionService chatCompletionService = target.GetService<IChatCompletionService>();
+
+        var result = target.InvokeStreamingAsync<StreamingChatMessageContent>(prompt);
+
+        // Print the chat completions
+        var fullContent = new StringBuilder();
+
+        await foreach (var content in result)
+        {
+            fullContent.Append(content);
+        }
+
+        Assert.False(fullContent.ToString().Contains('<', StringComparison.Ordinal));
+        Assert.False(fullContent.ToString().Contains('>', StringComparison.Ordinal));
     }
 
     #region internals
