@@ -104,7 +104,6 @@ steps:
         Assert.NotNull(azureOpenAIConfiguration);
 
         return new KernelBuilder()
-            .his._logger)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
