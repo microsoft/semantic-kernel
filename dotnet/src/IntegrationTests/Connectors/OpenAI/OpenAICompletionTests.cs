@@ -447,7 +447,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Create prompt
         KernelFunction prompt = KernelFunctionFactory.CreateFromPrompt(@"
             <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dolar?</message>
+            <message role=""user"">How many 20 cents can I get from 1 dollar?</message>
         ");
 
         var fullContent = new StringBuilder();
