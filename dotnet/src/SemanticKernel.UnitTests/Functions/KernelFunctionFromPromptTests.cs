@@ -5,9 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
@@ -118,6 +117,6 @@ public class KernelFunctionFromPromptTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Required service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
+        Assert.Equal("Required service of type Microsoft.SemanticKernel.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
     }
 }

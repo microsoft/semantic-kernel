@@ -8,16 +8,16 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.AI.TextToImage;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
+using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function

@@ -6,10 +6,10 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletion;

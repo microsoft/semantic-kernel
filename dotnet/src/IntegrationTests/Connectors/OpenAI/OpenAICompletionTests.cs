@@ -10,7 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using SemanticKernel.IntegrationTests.TestSettings;

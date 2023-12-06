@@ -14,13 +14,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 

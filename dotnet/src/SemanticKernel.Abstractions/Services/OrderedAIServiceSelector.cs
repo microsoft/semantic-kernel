@@ -3,7 +3,6 @@
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Services;
 

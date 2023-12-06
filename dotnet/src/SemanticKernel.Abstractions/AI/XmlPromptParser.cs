@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Xml;
 
-namespace Microsoft.SemanticKernel.AI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class to parse text prompt from XML format.

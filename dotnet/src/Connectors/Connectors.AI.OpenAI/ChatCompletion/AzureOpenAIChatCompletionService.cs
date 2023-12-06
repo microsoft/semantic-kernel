@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
