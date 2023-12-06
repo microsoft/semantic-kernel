@@ -31,15 +31,6 @@ using Resources;
  *       Out of scope and not in the example: if needed, one could go further and use a semantic
  *       function (with extra cost) asking AI to generate the text to send to the Chat model.
  *
- * TLDR: how to render a prompt:
- *
- *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
- *      ... import plugins and functions ...
- *      var context = kernel.CreateNewContext();
- *      ... set variables ...
- *
- *      var promptRenderer = new KernelPromptTemplateEngine();
- *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
  */
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming

@@ -29,7 +29,7 @@ public static class Example60_AdvancedMethodFunctions
     {
         Console.WriteLine("Running Method Function Chaining example...");
 
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         var functions = kernel.ImportPluginFromType<FunctionsChainingPlugin>();
 

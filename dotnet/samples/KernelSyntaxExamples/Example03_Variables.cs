@@ -24,7 +24,7 @@ public static class Example03_Variables
         // ** Different ways of executing function with arguments **
 
         // Specify and get the value type as generic parameter
-        var resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
+        string? resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
         Console.WriteLine($"string -> {resultValue}");
 
         // If you need to access the result metadata, you can use the non-generic version to get the FunctionResult

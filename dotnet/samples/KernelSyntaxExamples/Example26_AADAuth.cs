@@ -47,7 +47,7 @@ public static class Example26_AADAuth
                 TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new DefaultAzureCredential(authOptions))
-        .Build();
+            .Build();
 
         IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
         var chatHistory = new ChatHistory();

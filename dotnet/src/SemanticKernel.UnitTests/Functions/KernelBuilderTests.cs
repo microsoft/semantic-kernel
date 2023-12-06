@@ -180,12 +180,15 @@ public class KernelBuilderTests
         KernelPlugin plugin2 = new("plugin2");
         KernelPlugin plugin3 = new("plugin3");
 
-        KernelPluginCollection plugins = new(new[] { plugin1, plugin2, plugin3 });
-
         KernelBuilder builder = new();
-        builder.Services.AddSingleton(plugins);
-        Kernel kernel = builder.Build();
+        builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));
 
-        Assert.Equal(3, kernel.Plugins.Count);
+        Kernel kernel1 = builder.Build();
+        Assert.Equal(3, kernel1.Plugins.Count);
+
+        Kernel kernel2 = builder.Build();
+        Assert.Equal(3, kernel2.Plugins.Count);
+
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
     }
 }

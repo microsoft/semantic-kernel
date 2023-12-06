@@ -51,12 +51,19 @@ public sealed class Kernel
         IServiceProvider? services = null,
         KernelPluginCollection? plugins = null)
     {
+        // Store the provided services, or an empty singleton if there aren't any.
         this.Services = services ?? EmptyServiceProvider.Instance;
 
+        // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
         if (this._plugins is null)
         {
+            // Otherwise, enumerate any plugins that may have been registered directly.
             IEnumerable<IKernelPlugin> e = this.Services.GetServices<IKernelPlugin>();
+
+            // It'll be common not to have any plugins directly registered as a service.
+            // If we can efficiently tell there aren't any, avoid proactively allocating
+            // the plugins collection.
             if (e is not ICollection<IKernelPlugin> c || c.Count != 0)
             {
                 this._plugins = new(e);

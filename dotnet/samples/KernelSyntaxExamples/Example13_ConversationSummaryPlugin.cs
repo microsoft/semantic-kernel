@@ -174,7 +174,7 @@ Jane: Goodbye!
                 TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-        .Build();
+            .Build();
 
         return kernel;
     }

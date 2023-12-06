@@ -67,14 +67,12 @@ public static class Example41_HttpClientUsage
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            var kernel = new KernelBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey,
-                httpClient: factory.CreateClient())
-            .Build();
-
-            return kernel;
+            return new KernelBuilder()
+                .AddOpenAIChatCompletion(
+                    modelId: TestConfiguration.OpenAI.ChatModelId,
+                    apiKey: TestConfiguration.OpenAI.ApiKey,
+                    httpClient: factory.CreateClient())
+                .Build();
         });
     }
 
@@ -98,14 +96,12 @@ public static class Example41_HttpClientUsage
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            var kernel = new KernelBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey,
-                httpClient: factory.CreateClient("test-client"))
-            .Build();
-
-            return kernel;
+            return new KernelBuilder()
+                .AddOpenAIChatCompletion(
+                    modelId: TestConfiguration.OpenAI.ChatModelId,
+                    apiKey: TestConfiguration.OpenAI.ApiKey,
+                    httpClient: factory.CreateClient("test-client"))
+                .Build();
         });
     }
 }

@@ -613,16 +613,26 @@ public static class KernelExtensions
     /// A <see cref="IKernelBuilder"/> that can be used to add additional services to the same <see cref="IServiceCollection"/>.
     /// </returns>
     /// <remarks>
-    /// The <see cref="KernelPluginCollection"/> is registered as a singleton.
-    /// The <see cref="Kernel"/> is registered as transient.
+    /// Both services are registered as transient, as both objects are mutable.
+    /// The builder returned from this method may be used to add additional plugins and services,
+    /// but it may not be used for <see cref="IKernelBuilder.Build"/>: doing so would build the
+    /// entire service provider from <paramref name="services"/>.
     /// </remarks>
     public static IKernelBuilder AddKernel(this IServiceCollection services)
     {
         Verify.NotNull(services);
 
-        services.AddSingleton<KernelPluginCollection>();
+        // Register a KernelPluginCollection to be populated with any IKernelPlugins that have been
+        // directly registered in DI. It's transient because the Kernel will store the collection
+        // directly, and we don't want two Kernel instances to hold on to the same mutable collection.
+        services.AddTransient<KernelPluginCollection>();
+
+        // Register the Kernel as transient. It's mutable and expected to be mutated by consumers,
+        // such as via adding event handlers, adding plugins, storing state in its Data collection, etc.
         services.AddTransient<Kernel>();
 
+        // Create and return a builder that can be used for adding services and plugins
+        // to the IServiceCollection.
         return new KernelBuilder(services);
     }
     #endregion
