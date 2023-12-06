@@ -19,7 +19,7 @@ public class AssistantResponse
     /// The assistant response.
     /// </summary>
     [JsonPropertyName("response")]
-    public string Response { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
 
     /// <summary>
     /// Instructions from assistant on next steps.

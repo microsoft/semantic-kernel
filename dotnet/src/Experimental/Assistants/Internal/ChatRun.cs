@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -69,7 +71,7 @@ internal sealed class ChatRun
         // Did fail?
         if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            throw new KernelException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
+            throw new AssistantException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
         var messageIds =
