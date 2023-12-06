@@ -334,11 +334,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             object? Process(object? value)
             {
                 //Converting string argument to target parameter type
-                if (value is string stringValue && value.GetType() != type && parser is Func<string?, CultureInfo, object>)
+                if (value?.GetType() != type && parser is Func<object?, CultureInfo, object>)
                 {
                     try
                     {
-                        return parser(stringValue, kernel.Culture);
+                        return parser(value, kernel.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
@@ -580,15 +580,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// Parsing is first attempted using the current culture, and if that fails, it tries again
     /// with the invariant culture. If both fail, an exception is thrown.
     /// </remarks>
-    private static Func<string?, CultureInfo, object?>? GetParser(Type targetType) =>
+    private static Func<object?, CultureInfo, object?>? GetParser(Type targetType) =>
         s_parsers.GetOrAdd(targetType, static targetType =>
         {
-            // Strings just parse to themselves.
-            if (targetType == typeof(string))
-            {
-                return (input, cultureInfo) => input;
-            }
-
             // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
             // as the underlying parser might not be expecting null.
             bool wasNullable = false;
@@ -598,8 +592,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 targetType = Nullable.GetUnderlyingType(targetType)!;
             }
 
-            // For enums, delegate to Enum.Parse, special-casing null if it was actually Nullable<EnumType>.
-            if (targetType.IsEnum)
+            // Finally, look up and use a type converter. Again, special-case null if it was actually Nullable<T>.
+            if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter)
             {
                 return (input, cultureInfo) =>
                 {
@@ -608,29 +602,46 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         return null!;
                     }
 
-                    return Enum.Parse(targetType, input, ignoreCase: true);
-                };
-            }
-
-            // Finally, look up and use a type converter. Again, special-case null if it was actually Nullable<T>.
-            if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter && converter.CanConvertFrom(typeof(string)))
-            {
-                return (input, cultureInfo) =>
-                {
-                    if (wasNullable && input is null)
+                    // Issue #1. Quick fix to prevent the exception thrown by ConvertTo method - System.ArgumentOutOfRangeException : Value cannot be null. (Parameter 'destinationType') (Parameter 'actual')
+                    // Context: UT - KernelFunctionTests2.ItSupportsArgumentsAsIsWithoutConvertingTheirTypeAsync, Line - await AssertParameterType<string?>(null);
+                    // For some reason, the target type that is "string?" in the method signature comes here as a string, and the above statement - 'if (wasNullable && input is null)' is not working.
+                    if (input is null)
                     {
-                        return null!;
+                        return null;
+                    }
+
+                    // Issue? #2. Quick fix to prevent the exception thrown by ConvertTo method - System.ArgumentOutOfRangeException : 'EnumConverter' is unable to convert 'System.DayOfWeek' to 'System.DayOfWeek'. (Parameter 'f')
+                    // Context: UT - KernelFunctionTests2.ItSupportsConvertingFromManyTypesAsync, Line - FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+                    // I think this is helpful logic and it should remain. At least I have not identified any drawbacks of it except of the exception above.
+                    if (targetType == input?.GetType())
+                    {
+                        return input;
+                    }
+
+                    // Just pure experimentation to see how data converters work
+                    object? InnerConvert(CultureInfo ci)
+                    {
+                        // Issue #3. This block can handle 'string' to type conversion but fails on type to type conversion - System.ArgumentOutOfRangeException : Int64Converter cannot convert from System.Int32. (Parameter 'b') exception thrown by the 'ConvertFrom' method.
+                        // Context: UT - KernelFunctionTests2.ItSupportsConvertingFromManyTypesAsync, Line - FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+                        if (converter.CanConvertFrom(input?.GetType()))
+                        {
+                            return converter.ConvertFrom(context: null, ci, input);
+                        }
+
+                        // Issue #4. This line can handle type -> type conversion but can't handle 'string' to type conversion - System.ArgumentException : Object of type 'System.String' cannot be converted to type 'System.Int32'.
+                        // Context: UT - KernelFunctionTests2.ItSupportsConvertingFromManyTypesAsync, Line - FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+                        return converter.ConvertTo(input, input?.GetType());
                     }
 
                     // First try to parse using the supplied culture (or current if none was supplied).
                     // If that fails, try with the invariant culture and allow any exception to propagate.
                     try
                     {
-                        return converter.ConvertFromString(context: null, cultureInfo, input);
+                        return InnerConvert(cultureInfo);
                     }
                     catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
                     {
-                        return converter.ConvertFromInvariantString(input);
+                        return InnerConvert(CultureInfo.InvariantCulture);
                     }
                 };
             }
@@ -652,7 +663,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<string?, CultureInfo, object?>?> s_parsers = new();
+    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
 
     #endregion
 }
