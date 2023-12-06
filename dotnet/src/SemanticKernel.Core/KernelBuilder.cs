@@ -19,25 +19,29 @@ public sealed class KernelBuilder : IKernelBuilder
     /// to call BuildServiceProvider, as that can lead to confusion around how other services
     /// registered in that service collection behave.
     /// </remarks>
-    private readonly bool _supportsBuild;
+    private readonly bool _supportsBuild = true;
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private IServiceCollection? _services;
     /// <summary>A facade on top of <see cref="_services"/> for adding plugins to the services collection.</summary>
     private KernelBuilderPlugins? _plugins;
-    /// <summary>The initial culture to be stored in the <see cref="Kernel"/>.</summary>
-    private CultureInfo? _culture;
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
-    public KernelBuilder() => _supportsBuild = true;
+    public KernelBuilder() { }
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     /// <param name="services">
     /// The <see cref="IServiceCollection"/> to wrap and use for building the <see cref="Kernel"/>.
     /// </param>
+    /// <remarks>
+    /// As the service collection is externally provided, <see cref="Build"/> is disabled
+    /// to avoid unexpected confusion with multiple builds of the same service collection.
+    /// </remarks>
     internal KernelBuilder(IServiceCollection services)
     {
         Verify.NotNull(services);
+
         this._services = services;
+        this._supportsBuild = false;
     }
 
     /// <summary>Constructs a new instance of <see cref="Kernel"/> using all of the settings configured on the builder.</summary>
@@ -84,13 +88,7 @@ public sealed class KernelBuilder : IKernelBuilder
             serviceProvider = EmptyServiceProvider.Instance;
         }
 
-        var instance = new Kernel(serviceProvider);
-        if (this._culture is not null)
-        {
-            instance.Culture = this._culture;
-        }
-
-        return instance;
+        return new Kernel(serviceProvider);
     }
 
     /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
@@ -98,20 +96,6 @@ public sealed class KernelBuilder : IKernelBuilder
 
     /// <summary>Gets a builder for plugins to be built as services into the <see cref="Kernel"/>.</summary>
     public IKernelBuilderPlugins Plugins => this._plugins ??= new(this.Services);
-
-    /// <summary>Sets a culture to be used by the <see cref="Kernel"/>.</summary>
-    /// <param name="culture">The culture.</param>
-    /// <remarks>
-    /// Using a <see cref="KernelBuilder"/> to set the culture onto the <see cref="Kernel"/> isn't required.
-    /// <see cref="Kernel.Culture"/> may be set any number of times onto the <see cref="Kernel"/> returned
-    /// from <see cref="Build"/>.
-    /// </remarks>
-    public KernelBuilder WithCulture(CultureInfo? culture)
-    {
-        this._culture = culture;
-
-        return this;
-    }
 
     /// <summary>Configures the services to contain the specified singleton <see cref="ILoggerFactory"/>.</summary>
     /// <param name="loggerFactory">The logger factory. If null, no logger factory will be registered.</param>

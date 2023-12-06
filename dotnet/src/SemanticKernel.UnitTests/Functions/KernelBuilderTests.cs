@@ -23,16 +23,12 @@ public class KernelBuilderTests
     {
         KernelBuilder builder = new();
         Assert.NotSame(builder.Build(), builder.Build());
-
-        builder.WithCulture(CultureInfo.InvariantCulture);
-        Assert.NotSame(builder.Build(), builder.Build());
     }
 
     [Fact]
     public void ItReturnsItselfFromWitherMethods()
     {
         KernelBuilder builder = new();
-        Assert.Same(builder, builder.WithCulture(CultureInfo.InvariantCulture));
         Assert.Same(builder, builder.WithLoggerFactory(NullLoggerFactory.Instance));
     }
 
@@ -41,43 +37,6 @@ public class KernelBuilderTests
     {
         Kernel kernel = new KernelBuilder().Build();
         Assert.Empty(kernel.Data);
-    }
-
-    [Fact]
-    public void ItSupportsResettingCulture()
-    {
-        CultureInfo last = new("fr-FR");
-
-        KernelBuilder builder = new KernelBuilder().WithCulture(CultureInfo.CurrentCulture);
-        Assert.Same(CultureInfo.CurrentCulture, builder.Build().Culture);
-
-        builder.WithCulture(null);
-        Assert.Same(CultureInfo.InvariantCulture, builder.Build().Culture);
-
-        builder.WithCulture(last);
-        Assert.Same(last, builder.Build().Culture);
-    }
-
-    [Fact]
-    public void ItSupportsOverwritingCulture()
-    {
-        CultureInfo last = new("fr-FR");
-
-        Kernel kernel = new KernelBuilder()
-            .WithCulture(CultureInfo.InvariantCulture)
-            .WithCulture(null)
-            .WithCulture(CultureInfo.CurrentCulture)
-            .WithCulture(last)
-            .Build();
-
-        Assert.Same(last, kernel.Culture);
-    }
-
-    [Fact]
-    public void ItDefaultsCultureToInvariantCulture()
-    {
-        Kernel kernel = new KernelBuilder().Build();
-        Assert.Same(CultureInfo.InvariantCulture, kernel.Culture);
     }
 
     [Fact]
@@ -171,7 +130,6 @@ public class KernelBuilderTests
         KernelBuilder builder = new();
 
         builder.WithLoggerFactory(null);
-        builder.WithCulture(null);
 
         builder.Build();
     }
