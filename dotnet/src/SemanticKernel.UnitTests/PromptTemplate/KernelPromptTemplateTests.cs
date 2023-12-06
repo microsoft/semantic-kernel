@@ -88,23 +88,126 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
-    public async Task ItCallsMethodWithEmptyStringAsArgumentIfNoArgumentProvidedForMethodParameterAsync()
+    public async Task ItInsertsEmptyStringIfNullArgumentProvidedForVariableAsync()
     {
         // Arrange
-        string Foo(string input) { return "Result is " + input; }
+        var template = "This is a test template that references variable that have null argument{{$foo}}.";
 
-        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod(Method(Foo), this, "bar") }));
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
+
+        this._arguments["foo"] = null;
+
+        // Act
+        var result = await target.RenderAsync(this._kernel, this._arguments);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("This is a test template that references variable that have null argument.", result);
+    }
+
+    [Fact]
+    public async Task ItCallsMethodWithNullAsArgumentIfNoArgumentProvidedForMethodParameterAsync()
+    {
+        // Arrange
+        string? canary = string.Empty; //It's empty here and not null because the method will be called with a null string as argument
+
+        void Foo(string input)
+        {
+            canary = input;
+        }
+
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") }));
 
         var template = "This is a test template that references variable that does not have argument. {{p.bar $foo}}.";
 
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._arguments); // rendering without arguments
+        await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
+        Assert.Null(canary);
+    }
+
+    [Fact]
+    public async Task ItCallsMethodWithNullAsArgumentIfNullArgumentProvidedForMethodParameterAsync()
+    {
+        // Arrange
+        string? canary = string.Empty; //It's empty here and not null because the method will be called with a null string as argument
+
+        void Foo(string input)
+        {
+            canary = input;
+        }
+
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") }));
+
+        var template = "This is a test template that references variable that have null argument{{p.bar $foo}}.";
+
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
+
+        this._arguments["foo"] = null;
+
+        // Act
+        await target.RenderAsync(this._kernel, this._arguments);
+
+        // Assert
+        Assert.Null(canary);
+    }
+
+    [Fact]
+    public async Task ItRendersPromptWithEmptyStringForVariableAndCallsMethodWithNullArgumentIfNullArgumentProvidedAsArgumentAsync()
+    {
+        // Arrange
+        string? canary = string.Empty; //It's empty here and not null because the method will be called with a null string as argument
+
+        void Foo(string input)
+        {
+            canary = input;
+        }
+
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") }));
+
+        var template = "This is a test template that {{$zoo}}references variables that have null arguments{{p.bar $foo}}.";
+
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
+
+        this._arguments["zoo"] = null;
+        this._arguments["foo"] = null;
+
+        // Act
+        var result = await target.RenderAsync(this._kernel, this._arguments);
+
+        // Assert
+        Assert.Null(canary);
         Assert.NotNull(result);
-        Assert.Equal("This is a test template that references variable that does not have argument. Result is .", result); // There's a space between the last "is" and the full stop.
+        Assert.Equal("This is a test template that references variables that have null arguments.", result);
+    }
+
+    [Fact]
+    public async Task ItRendersPromptWithEmptyStringForVariableAndCallsMethodWithNullArgumentIfNoArgumentProvidedAsArgumentAsync()
+    {
+        // Arrange
+        string? canary = string.Empty; //It's empty here and not null because the method will be called with a null string as argument
+
+        void Foo(string input)
+        {
+            canary = input;
+        }
+
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") }));
+
+        var template = "This is a test template that {{$zoo}}references variables that do not have arguments{{p.bar $foo}}.";
+
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
+
+        // Act
+        var result = await target.RenderAsync(this._kernel, this._arguments);
+
+        // Assert
+        Assert.Null(canary);
+        Assert.NotNull(result);
+        Assert.Equal("This is a test template that references variables that do not have arguments.", result);
     }
 
     [Fact]
@@ -122,6 +225,7 @@ public sealed class KernelPromptTemplateTests
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { func }));
 
         this._arguments[KernelArguments.InputParameterName] = "INPUT-BAR";
+
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
@@ -178,6 +282,7 @@ public sealed class KernelPromptTemplateTests
 
         this._arguments[KernelArguments.InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
+
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
@@ -191,6 +296,7 @@ public sealed class KernelPromptTemplateTests
     [Fact]
     public async Task ItHandlesSyntaxErrorsAsync()
     {
+        // Arrange
         this._arguments[KernelArguments.InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
@@ -198,6 +304,8 @@ public sealed class KernelPromptTemplateTests
 
         // Act
         var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
+
+        // Assert
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 

@@ -64,7 +64,7 @@ internal sealed class VarBlock : Block, ITextRendering
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
-        if (arguments == null) { return string.Empty; }
+        if (arguments == null) { return null; }
 
         if (string.IsNullOrEmpty(this.Name))
         {
@@ -75,12 +75,12 @@ internal sealed class VarBlock : Block, ITextRendering
 
         if (arguments.TryGetValue(this.Name, out object? value))
         {
-            return value ?? string.Empty;
+            return value;
         }
 
         this.Logger.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
 
-        return string.Empty;
+        return null;
     }
 
     private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");

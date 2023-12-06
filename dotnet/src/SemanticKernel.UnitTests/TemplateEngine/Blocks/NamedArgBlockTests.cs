@@ -243,4 +243,34 @@ public class NamedArgBlockTests
         Assert.IsType<double>(result);
         Assert.Equal(28.2, result);
     }
+
+    [Fact]
+    public void ItRendersToNullWithNoArgument()
+    {
+        // Arrange
+        var target = new NamedArgBlock("a=$var");
+
+        // Act
+        var result = target.GetValue(new KernelArguments());
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void ItRendersToNullIfArgumentIsNull()
+    {
+        // Arrange
+        var target = new NamedArgBlock("a=$var");
+        var arguments = new KernelArguments()
+        {
+            ["var"] = null
+        };
+
+        // Act
+        var result = target.GetValue(arguments);
+
+        // Assert
+        Assert.Null(result);
+    }
 }
