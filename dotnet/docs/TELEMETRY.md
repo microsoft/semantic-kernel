@@ -68,7 +68,7 @@ Available meters:
 
 - _Microsoft.SemanticKernel.Planning_ - contains all metrics related to planning. List of metrics:
   - `sk.planning.create_plan.duration` (Histogram) - execution time of plan creation (in seconds)
-  - `sk.planning.run_plan.duration` (Histogram) - execution time of plan execution (in seconds)
+  - `sk.planning.invoke_plan.duration` (Histogram) - execution time of plan execution (in seconds)
 - _Microsoft.SemanticKernel_ - captures metrics for `KernelFunction`. List of metrics:
   - `sk.function.invocation.duration` (Histogram) - function execution time (in seconds)
   - `sk.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)

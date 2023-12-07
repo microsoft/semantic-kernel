@@ -177,7 +177,7 @@ private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? 
 1. New metrics names:
    | Meter | Metrics |
    |---|---|
-   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.run_plan.duration</li></ul> |
+   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.invoke_plan.duration</li></ul> |
    |Microsoft.SemanticKernel| <ul><li>sk.function.invocation.token_usage.prompt</li><li>sk.function.invocation.token_usage.completion</li></ul> |
 2. Instrumentation
 
@@ -247,7 +247,7 @@ private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 /// <summary><see cref="Histogram{T}"/> to record plan execution duration.</summary>
 private static readonly Histogram<double> s_planExecutionDuration =
   s_meter.CreateHistogram<double>(
-    name: "sk.planning.run_plan.duration",
+    name: "sk.planning.invoke_plan.duration",
     unit: "s",
     description: "Duration time of plan execution.");
 

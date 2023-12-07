@@ -26,7 +26,7 @@ internal static partial class PlannerInstrumentation
 
     /// <summary><see cref="Histogram{T}"/> to record plan execution duration.</summary>
     private static readonly Histogram<double> s_planExecutionDuration = s_meter.CreateHistogram<double>(
-        name: "sk.planning.run_plan.duration",
+        name: "sk.planning.invoke_plan.duration",
         unit: "s",
         description: "Duration time of plan execution.");
 
