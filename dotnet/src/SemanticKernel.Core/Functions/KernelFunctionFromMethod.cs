@@ -84,30 +84,30 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-        if (functionResult.Value is T)
+        if (functionResult.Value is TResult)
         {
-            yield return (T)functionResult.Value;
+            yield return (TResult)functionResult.Value;
             yield break;
         }
 
         // Supports the following provided T types for Method streaming
-        if (typeof(T) == typeof(StreamingContentBase) ||
-            typeof(T) == typeof(StreamingMethodContent))
+        if (typeof(TResult) == typeof(StreamingContentBase) ||
+            typeof(TResult) == typeof(StreamingMethodContent))
         {
             if (functionResult.Value is not null)
             {
-                yield return (T)(object)new StreamingMethodContent(functionResult.Value);
+                yield return (TResult)(object)new StreamingMethodContent(functionResult.Value);
             }
             yield break;
         }
 
-        throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(T)}");
+        throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
 
         // We don't invoke the hook here as the InvokeCoreAsync will do that for us
     }
