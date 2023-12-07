@@ -177,8 +177,8 @@ private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? 
 1. New metrics names:
    | Meter | Metrics |
    |---|---|
-   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.create_plan.success</li><li>sk.planning.create_plan.failure</li><li>sk.planning.run_plan.duration</li><li>sk.planning.run_plan.success</li><li>sk.planning.run_plan.failure</li></ul> |
-   |Microsoft.SemanticKernel| <ul><li>sk.function.invocation.success</li><li>sk.function.invocation.failure</li><li>sk.function.invocation.token_usage.prompt</li><li>sk.function.invocation.token_usage.completion</li></ul> |
+   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.run_plan.duration</li></ul> |
+   |Microsoft.SemanticKernel| <ul><li>sk.function.invocation.token_usage.prompt</li><li>sk.function.invocation.token_usage.completion</li></ul> |
 2. Instrumentation
 
 ## Validation
@@ -244,14 +244,26 @@ Metrics will be used to record measurements overtime.
 /// <summary><see cref="Meter"/> for function-related metrics.</summary>
 private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
-/// <summary><see cref="Counter{T}"/> to keep track of the number of successful execution.</summary>
-private static readonly Counter<int> s_successCounter = s_meter.CreateCounter<int>(
-    name: "sk.function.invocation.success",
-    unit: "{invocation}",
-    description: "Number of successful function executions");
+/// <summary><see cref="Histogram{T}"/> to record plan execution duration.</summary>
+private static readonly Histogram<double> s_planExecutionDuration =
+  s_meter.CreateHistogram<double>(
+    name: "sk.planning.run_plan.duration",
+    unit: "s",
+    description: "Duration time of plan execution.");
 
-// Add a measurement with a custom dimension to categorize measurements based on function.
-s_successCounter.Add(1, new KeyValuePair<string, object>("sk.function.name", this.Name));
+TagList tags = new() { { "sk.plan.name", planName } };
+
+try
+{
+  ...
+}
+catch (Exception ex)
+{
+  // If a measurement is tagged with "error.type", then it's a failure.
+  tags.Add("error.type", ex.GetType().FullName);
+}
+
+s_planExecutionDuration.Record(duration.TotalSeconds, in tags);
 ```
 
 #### [Traces](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing)

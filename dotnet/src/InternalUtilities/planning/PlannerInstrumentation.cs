@@ -19,20 +19,6 @@ internal static partial class PlannerInstrumentation
             unit: "s",
             description: "Duration time of plan creation.");
 
-    /// <summary><see cref="Counter{T}"/> to record planner invocation success counts.</summary>
-    private static readonly Counter<int> s_invocationSuccess =
-        PlanningInstrumentation.Meter.CreateCounter<int>(
-            name: "sk.planning.create_plan.success",
-            unit: "{invocation}",
-            description: "Measures the number of successful planner executions");
-
-    /// <summary><see cref="Counter{T}"/> to record planner invocation failure counts.</summary>
-    private static readonly Counter<int> s_invocationFailure =
-        PlanningInstrumentation.Meter.CreateCounter<int>(
-            name: "sk.planning.create_plan.failure",
-            unit: "{invocation}",
-            description: "Measures the number of failed planner executions");
-
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
         Func<TPlanner, Kernel, string, CancellationToken, Task<TPlan>> createPlanAsync,
@@ -54,7 +40,6 @@ internal static partial class PlannerInstrumentation
             var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
             logger.LogPlanCreated();
             logger.LogPlan(plan);
-            s_invocationSuccess.Add(1, in tags);
 
             return plan;
         }
@@ -62,7 +47,6 @@ internal static partial class PlannerInstrumentation
         {
             logger.LogPlanCreationError(ex, ex.Message);
             tags.Add("error.type", ex.GetType().FullName);
-            s_invocationFailure.Add(1, in tags);
             throw;
         }
         finally

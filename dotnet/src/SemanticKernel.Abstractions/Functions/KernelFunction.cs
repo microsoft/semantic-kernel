@@ -47,18 +47,6 @@ public abstract class KernelFunction
         unit: "s",
         description: "Measures the duration of a function’s streaming execution");
 
-    /// <summary><see cref="Counter{T}"/> to record function invocation success counts.</summary>
-    private static readonly Counter<int> s_invocationSuccess = meter.CreateCounter<int>(
-        name: "sk.function.invocation.success",
-        unit: "{invocation}",
-        description: "Measures the number of successful function executions");
-
-    /// <summary><see cref="Counter{T}"/> to record function invocation failure counts.</summary>
-    private static readonly Counter<int> s_invocationFailure = meter.CreateCounter<int>(
-        name: "sk.function.invocation.failure",
-        unit: "{invocation}",
-        description: "Measures the number of failed function executions");
-
     /// <summary>
     /// Gets the name of the function.
     /// </summary>
@@ -169,7 +157,6 @@ public abstract class KernelFunction
             }
 
             logger.LogFunctionInvokedSuccess(functionResult.Value);
-            s_invocationSuccess.Add(1, in tags);
 
             return functionResult;
         }
@@ -283,7 +270,6 @@ public abstract class KernelFunction
                 }
             }
 
-            s_invocationSuccess.Add(1, in tags);
             // The FunctionInvoked hook is not used when streaming.
         }
         finally
@@ -324,7 +310,6 @@ public abstract class KernelFunction
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
-        s_invocationFailure.Add(1, in tags);
         logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException

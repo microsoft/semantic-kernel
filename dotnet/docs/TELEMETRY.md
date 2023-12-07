@@ -68,16 +68,10 @@ Available meters:
 
 - _Microsoft.SemanticKernel.Planning_ - contains all metrics related to planning. List of metrics:
   - `sk.planning.create_plan.duration` (Histogram) - execution time of plan creation (in seconds)
-  - `sk.planning.create_plan.success` (Counter) - number of successful plan creation
-  - `sk.planning.create_plan.failure` (Counter) - number of failed plan creation
   - `sk.planning.run_plan.duration` (Histogram) - execution time of plan execution (in seconds)
-  - `sk.planning.run_plan.success` (Counter) - number of successful plan execution
-  - `sk.planning.run_plan.failure` (Counter) - number of failed plan execution
 - _Microsoft.SemanticKernel_ - captures metrics for `KernelFunction`. List of metrics:
   - `sk.function.invocation.duration` (Histogram) - function execution time (in seconds)
   - `sk.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)
-  - `sk.function.invocation.success` (Counter) - number of successful function executions
-  - `sk.function.invocation.failure` (Counter) - number of failed function executions
   - `sk.function.invocation.token_usage.prompt` (Histogram) - number of prompt token usage (only for `KernelFunctionFromPrompt`)
   - `sk.function.invocation.token_usage.completion` (Histogram) - number of completion token usage (only for `KernelFunctionFromPrompt`)
 - _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:

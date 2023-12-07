@@ -19,20 +19,6 @@ internal static partial class PlanInstrumentation
             unit: "s",
             description: "Duration time of plan execution.");
 
-    /// <summary><see cref="Counter{T}"/> to record planner execution success counts.</summary>
-    private static readonly Counter<int> s_executionSuccess =
-        PlanningInstrumentation.Meter.CreateCounter<int>(
-            name: "sk.planning.run_plan.success",
-            unit: "{invocation}",
-            description: "Measures the number of successful plan executions");
-
-    /// <summary><see cref="Counter{T}"/> to record planner execution failure counts.</summary>
-    private static readonly Counter<int> s_executionFailure =
-        PlanningInstrumentation.Meter.CreateCounter<int>(
-            name: "sk.planning.run_plan.failure",
-            unit: "{invocation}",
-            description: "Measures the number of failed plan executions");
-
     // <summary>Invokes the supplied <paramref name="InvokePlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlanResult> InvokePlanAsync<TPlan, TPlanInput, TPlanResult>(
         Func<TPlan, Kernel, TPlanInput, CancellationToken, Task<TPlanResult>> InvokePlanAsync,
@@ -52,7 +38,6 @@ internal static partial class PlanInstrumentation
         {
             TPlanResult planResult = await InvokePlanAsync(plan, kernel, input, cancellationToken).ConfigureAwait(false);
 
-            s_executionSuccess.Add(1, in tags);
             logger.LogPlanExecutionSuccess();
             logger.LogPlanResult(planResult);
 
@@ -61,7 +46,6 @@ internal static partial class PlanInstrumentation
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
-            s_executionFailure.Add(1, in tags);
             logger.LogPlanExecutionError(ex, ex.Message);
             throw;
         }
