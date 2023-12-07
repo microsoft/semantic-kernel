@@ -28,12 +28,12 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPlugin ImportPluginFromGrpcDirectory(
+    public static KernelPluginBase ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
     {
-        KernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
+        KernelPluginBase plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -45,12 +45,12 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPlugin ImportPluginFromGrpcFile(
+    public static KernelPluginBase ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
     {
-        KernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
+        KernelPluginBase plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -62,12 +62,12 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPlugin ImportPluginFromGrpc(
+    public static KernelPluginBase ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
     {
-        KernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
+        KernelPluginBase plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -79,7 +79,7 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPlugin CreatePluginFromGrpcDirectory(
+    public static KernelPluginBase CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
@@ -111,7 +111,7 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPlugin CreatePluginFromGrpcFile(
+    public static KernelPluginBase CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
@@ -135,7 +135,7 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPlugin CreatePluginFromGrpc(
+    public static KernelPluginBase CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
@@ -148,7 +148,7 @@ public static class GrpcKernelExtensions
 
         var operations = parser.Parse(documentStream, pluginName);
 
-        var plugin = new DefaultKernelPlugin(pluginName);
+        var plugin = new KernelPlugin(pluginName);
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 

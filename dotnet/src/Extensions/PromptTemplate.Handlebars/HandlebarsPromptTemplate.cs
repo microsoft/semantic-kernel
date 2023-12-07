@@ -30,7 +30,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        foreach (KernelPlugin plugin in kernel.Plugins)
+        foreach (KernelPluginBase plugin in kernel.Plugins)
         {
             foreach (KernelFunction function in plugin)
             {

@@ -12,17 +12,17 @@ using System.Linq;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Provides a collection of <see cref="KernelPlugin"/>s.</summary>
+/// <summary>Provides a collection of <see cref="KernelPluginBase"/>s.</summary>
 /// <remarks>
 /// All plugins stored in the collection must have a unique, ordinal case-insensitive name.
 /// All name lookups are performed using ordinal case-insensitive comparisons.
 /// </remarks>
 [DebuggerDisplay("Count = {Count}")]
 [DebuggerTypeProxy(typeof(KernelPluginCollection.TypeProxy))]
-public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnlyKernelPluginCollection
+public sealed class KernelPluginCollection : ICollection<KernelPluginBase>, IReadOnlyKernelPluginCollection
 {
     /// <summary>The underlying dictionary of plugins.</summary>
-    private readonly Dictionary<string, KernelPlugin> _plugins;
+    private readonly Dictionary<string, KernelPluginBase> _plugins;
 
     /// <summary>Initializes a collection of plugins.</summary>
     public KernelPluginCollection() => this._plugins = new(StringComparer.OrdinalIgnoreCase);
@@ -31,7 +31,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <param name="plugins">The initial collection of plugins to populate this collection.</param>
     /// <exception cref="ArgumentNullException"><paramref name="plugins"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="plugins"/> contains multiple plugins with the same name.</exception>
-    public KernelPluginCollection(IEnumerable<KernelPlugin> plugins)
+    public KernelPluginCollection(IEnumerable<KernelPluginBase> plugins)
     {
         Verify.NotNull(plugins);
 
@@ -41,7 +41,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         }
         else
         {
-            this._plugins = new(plugins is ICollection<KernelPlugin> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
+            this._plugins = new(plugins is ICollection<KernelPluginBase> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
             this.AddRange(plugins);
         }
     }
@@ -52,9 +52,9 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <summary>Adds the plugin to the plugin collection.</summary>
     /// <param name="plugin">The plugin to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="plugin"/> is null.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="plugin"/>.<see cref="KernelPlugin.Name"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="plugin"/>.<see cref="KernelPluginBase.Name"/> is null.</exception>
     /// <exception cref="ArgumentException">A plugin with the same name already exists in the collection.</exception>
-    public void Add(KernelPlugin plugin)
+    public void Add(KernelPluginBase plugin)
     {
         Verify.NotNull(plugin);
 
@@ -68,13 +68,13 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <param name="plugins">The plugins to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="plugins"/> is null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="plugins"/> contains a null plugin.</exception>
-    /// <exception cref="ArgumentNullException">A plugin in <paramref name="plugins"/> has a null <see cref="KernelPlugin.Name"/>.</exception>
+    /// <exception cref="ArgumentNullException">A plugin in <paramref name="plugins"/> has a null <see cref="KernelPluginBase.Name"/>.</exception>
     /// <exception cref="ArgumentException">A plugin with the same name as a plugin in <paramref name="plugins"/> already exists in the collection.</exception>
-    public void AddRange(IEnumerable<KernelPlugin> plugins)
+    public void AddRange(IEnumerable<KernelPluginBase> plugins)
     {
         Verify.NotNull(plugins);
 
-        foreach (KernelPlugin plugin in plugins)
+        foreach (KernelPluginBase plugin in plugins)
         {
             this.Add(plugin);
         }
@@ -83,11 +83,11 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <summary>Removes the specified plugin from the collection.</summary>
     /// <param name="plugin">The plugin to remove.</param>
     /// <returns>true if <paramref name="plugin"/> was in the collection and could be removed; otherwise, false.</returns>
-    public bool Remove(KernelPlugin plugin)
+    public bool Remove(KernelPluginBase plugin)
     {
         Verify.NotNull(plugin);
 
-        if (this._plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && existing == plugin)
+        if (this._plugins.TryGetValue(plugin.Name, out KernelPluginBase? existing) && existing == plugin)
         {
             return this._plugins.Remove(plugin.Name);
         }
@@ -99,7 +99,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     public void Clear() => this._plugins.Clear();
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
-    public IEnumerator<KernelPlugin> GetEnumerator() => this._plugins.Values.GetEnumerator();
+    public IEnumerator<KernelPluginBase> GetEnumerator() => this._plugins.Values.GetEnumerator();
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
@@ -107,19 +107,19 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <summary>Gets whether the collection contains the specified plugin.</summary>
     /// <param name="plugin">The plugin.</param>
     /// <returns>true if the collection contains the plugin; otherwise, false.</returns>
-    public bool Contains(KernelPlugin plugin)
+    public bool Contains(KernelPluginBase plugin)
     {
         Verify.NotNull(plugin);
 
-        return this._plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && plugin == existing;
+        return this._plugins.TryGetValue(plugin.Name, out KernelPluginBase? existing) && plugin == existing;
     }
 
     /// <inheritdoc/>
-    public KernelPlugin this[string name]
+    public KernelPluginBase this[string name]
     {
         get
         {
-            if (!this.TryGetPlugin(name, out KernelPlugin? plugin))
+            if (!this.TryGetPlugin(name, out KernelPluginBase? plugin))
             {
                 throw new KeyNotFoundException($"Plugin {name} not found.");
             }
@@ -132,13 +132,13 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <param name="name">The name of the plugin.</param>
     /// <param name="plugin">The plugin if found in the collection.</param>
     /// <returns>true if the collection contains the plugin; otherwise, false.</returns>
-    public bool TryGetPlugin(string name, [NotNullWhen(true)] out KernelPlugin? plugin) =>
+    public bool TryGetPlugin(string name, [NotNullWhen(true)] out KernelPluginBase? plugin) =>
         this._plugins.TryGetValue(name, out plugin);
 
-    void ICollection<KernelPlugin>.CopyTo(KernelPlugin[] array, int arrayIndex) =>
-        ((IDictionary<string, KernelPlugin>)this._plugins).Values.CopyTo(array, arrayIndex);
+    void ICollection<KernelPluginBase>.CopyTo(KernelPluginBase[] array, int arrayIndex) =>
+        ((IDictionary<string, KernelPluginBase>)this._plugins).Values.CopyTo(array, arrayIndex);
 
-    bool ICollection<KernelPlugin>.IsReadOnly => false;
+    bool ICollection<KernelPluginBase>.IsReadOnly => false;
 
     /// <summary>Debugger type proxy for nicer interaction with the collection in a debugger.</summary>
     private sealed class TypeProxy
@@ -148,6 +148,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         public TypeProxy(KernelPluginCollection collection) => this._collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KernelPlugin[] Plugins => this._collection._plugins.Values.ToArray();
+        public KernelPluginBase[] Plugins => this._collection._plugins.Values.ToArray();
     }
 }

@@ -48,7 +48,7 @@ public partial class AssistantBuilder
     public static async Task<IAssistant> GetAssistantAsync(
         string apiKey,
         string assistantId,
-        IEnumerable<KernelPlugin>? plugins = null,
+        IEnumerable<KernelPluginBase>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);

@@ -88,16 +88,16 @@ public sealed class HandlebarsPlannerTests
     {
         return new()
         {
-            new DefaultKernelPlugin("email", new[]
+            new KernelPlugin("email", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
-            new DefaultKernelPlugin("WriterPlugin", new[]
+            new KernelPlugin("WriterPlugin", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
-            new DefaultKernelPlugin("SummarizePlugin", new[]
+            new KernelPlugin("SummarizePlugin", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })
