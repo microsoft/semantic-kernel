@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
+using ChatMessage = Microsoft.SemanticKernel.ChatCompletion.ChatMessage;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -214,7 +215,7 @@ internal abstract class ClientCore
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
-    internal async Task<IReadOnlyList<ChatCompletion.ChatMessage>> GetChatMessagesAsync(
+    internal async Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,

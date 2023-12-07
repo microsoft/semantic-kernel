@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
+using ChatMessage = Microsoft.SemanticKernel.ChatCompletion.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -85,7 +86,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatCompletion.ChatMessage>> GetChatMessagesAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatMessagesAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
