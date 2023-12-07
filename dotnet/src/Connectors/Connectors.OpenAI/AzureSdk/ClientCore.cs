@@ -62,7 +62,7 @@ internal abstract class ClientCore
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.AI.OpenAI");
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.OpenAI");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
