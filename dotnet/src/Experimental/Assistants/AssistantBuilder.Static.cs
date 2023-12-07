@@ -52,9 +52,7 @@ public partial class AssistantBuilder
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);
-        var resultModel =
-            await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
+        var resultModel = await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false);
 
         return new Assistant(resultModel, restContext, plugins);
     }
