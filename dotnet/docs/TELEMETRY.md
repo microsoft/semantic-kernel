@@ -74,7 +74,7 @@ Available meters:
   - `sk.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)
   - `sk.function.invocation.token_usage.prompt` (Histogram) - number of prompt token usage (only for `KernelFunctionFromPrompt`)
   - `sk.function.invocation.token_usage.completion` (Histogram) - number of completion token usage (only for `KernelFunctionFromPrompt`)
-- _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
+- _Microsoft.SemanticKernel.Connectors.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
   - `sk.connectors.openai.tokens.prompt` (Counter) - number of prompt tokens used.
   - `sk.connectors.openai.tokens.completion` (Counter) - number of completion tokens used.
   - `sk.connectors.openai.tokens.total` (Counter) - total number of tokens used.

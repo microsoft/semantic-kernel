@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 #pragma warning disable RCS1110 // Declare type inside namespace.
 #pragma warning disable CA1819 // Properties should not return arrays
