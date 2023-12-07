@@ -145,7 +145,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
-    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -159,13 +159,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 
         IAsyncEnumerable<StreamingContentBase>? asyncReference = null;
-        if (aiService is ITextGenerationService textGeneration)
-        {
-            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
-        }
-        else if (aiService is IChatCompletionService chatCompletion)
+        if (aiService is IChatCompletionService chatCompletion)
         {
             asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
+        }
+        else if (aiService is ITextGenerationService textGeneration)
+        {
+            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
         }
         else
         {
@@ -177,21 +177,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            yield return typeof(T) switch
+            yield return typeof(TResult) switch
             {
-                _ when typeof(T) == typeof(string)
-                    => (T)(object)content.ToString(),
+                _ when typeof(TResult) == typeof(string)
+                    => (TResult)(object)content.ToString(),
 
-                _ when content is T contentAsT
+                _ when content is TResult contentAsT
                     => contentAsT,
 
-                _ when content.InnerContent is T innerContentAsT
+                _ when content.InnerContent is TResult innerContentAsT
                     => innerContentAsT,
 
-                _ when typeof(T) == typeof(byte[])
-                    => (T)(object)content.ToByteArray(),
+                _ when typeof(TResult) == typeof(byte[])
+                    => (TResult)(object)content.ToByteArray(),
 
-                _ => throw new NotSupportedException($"The specific type {typeof(T)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
+                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
             };
         }
 
@@ -206,7 +206,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) : base(promptConfig.Name, promptConfig.Description, promptConfig.GetKernelParametersMetadata(), null, promptConfig.ExecutionSettings)
+        ILoggerFactory? loggerFactory = null) : base(
+            promptConfig.Name,
+            promptConfig.Description,
+            promptConfig.GetKernelParametersMetadata(),
+            promptConfig.GetKernelReturnParameterMetadata(),
+            promptConfig.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 

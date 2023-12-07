@@ -391,12 +391,9 @@ public class KernelFunctionFromPromptTests
             yield return new StreamingChatMessageContent(AuthorRole.Assistant, "Something");
         }
 
-        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
-            await foreach (var chat in this.GetStreamingChatMessageContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken))
-            {
-                yield return new StreamingTextContent(chat.Content, 0, "model", chat);
-            }
+            throw new NotImplementedException();
         }
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
