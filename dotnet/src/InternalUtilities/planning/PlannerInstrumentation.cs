@@ -39,7 +39,7 @@ internal static partial class PlannerInstrumentation
     {
         string plannerName = planner.GetType().FullName;
 
-        using var _ = s_activitySource.StartActivity(plannerName);
+        using var activity = s_activitySource.StartActivity(plannerName);
 
         logger.LogCreatePlanStarted();
         logger.LogGoal(goal);
@@ -56,8 +56,9 @@ internal static partial class PlannerInstrumentation
         }
         catch (Exception ex)
         {
-            logger.LogCreatePlanError(ex, ex.Message);
             tags.Add("error.type", ex.GetType().FullName);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            logger.LogCreatePlanError(ex, ex.Message);
             throw;
         }
         finally
@@ -77,7 +78,7 @@ internal static partial class PlannerInstrumentation
         where TPlanResult : class
     {
         string planName = plan.GetType().FullName;
-        using var _ = s_activitySource.StartActivity(planName);
+        using var activity = s_activitySource.StartActivity(planName);
 
         logger.LogInvokePlanStarted();
 
@@ -95,6 +96,7 @@ internal static partial class PlannerInstrumentation
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             logger.LogInvokePlanError(ex, ex.Message);
             throw;
         }

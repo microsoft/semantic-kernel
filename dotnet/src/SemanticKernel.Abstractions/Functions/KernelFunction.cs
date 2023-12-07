@@ -161,7 +161,7 @@ public abstract class KernelFunction
         }
         catch (Exception ex)
         {
-            HandleException(ex, logger, this, kernel, arguments, functionResult, ref tags);
+            HandleException(ex, logger, activity, this, kernel, arguments, functionResult, ref tags);
             throw;
         }
         finally
@@ -262,7 +262,7 @@ public abstract class KernelFunction
             }
             catch (Exception ex)
             {
-                HandleException(ex, logger, this, kernel, arguments, result: null, ref tags);
+                HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
                 throw;
             }
 
@@ -281,7 +281,7 @@ public abstract class KernelFunction
                     }
                     catch (Exception ex)
                     {
-                        HandleException(ex, logger, this, kernel, arguments, result: null, ref tags);
+                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
                         throw;
                     }
 
@@ -326,10 +326,18 @@ public abstract class KernelFunction
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(
-        Exception ex, ILogger logger, KernelFunction kernelFunction, Kernel kernel, KernelArguments arguments, FunctionResult? result, ref TagList tags)
+        Exception ex,
+        ILogger logger,
+        Activity? activity,
+        KernelFunction kernelFunction,
+        Kernel kernel,
+        KernelArguments arguments,
+        FunctionResult? result,
+        ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
         logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
