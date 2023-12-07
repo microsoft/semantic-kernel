@@ -674,9 +674,12 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
-        this.Logger.LogInformation(
-            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
-            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+        if (this.Logger.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+                usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+        }
 
         s_promptTokensCounter.Add(usage.PromptTokens);
         s_completionTokensCounter.Add(usage.CompletionTokens);
