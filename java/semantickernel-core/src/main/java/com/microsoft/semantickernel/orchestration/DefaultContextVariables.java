@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.CaseInsensitiveMap;
 import java.util.Collection;
 import java.util.Map;
@@ -46,23 +45,9 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     }
 
     @Override
-    public ContextVariables setVariable(String key, String content) {
-        return null;
-    }
-
-    @Override
-    public ContextVariables appendToVariable(
-        @NonNull String key, @NonNull ContextVariable<?> content) {
-        ContextVariable<?> existing = this.variables.get(key);
-
-        ContextVariable<?> newVal;
-        if (existing == null) {
-            newVal = content;
-        } else {
-            newVal = existing.append(content);
-        }
-
-        return setVariable(key, newVal);
+    public ContextVariables setVariable(String key, Object content) {
+        this.variables.put(key, ContextVariable.of(content));
+        return this;
     }
 
     /// <summary>
@@ -232,7 +217,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
         public Builder() {
             variables = new DefaultContextVariables();
-            this.variables.put(MAIN_KEY, StringVariable.of(""));
+            this.variables.put(MAIN_KEY, ContextVariable.of(""));
         }
 
         @Override

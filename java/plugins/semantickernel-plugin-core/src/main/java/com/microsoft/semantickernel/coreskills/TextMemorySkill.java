@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import java.util.List;
@@ -125,7 +124,7 @@ public class TextMemorySkill {
         return memory.saveInformationAsync(collection, info, key, null, null)
                 .map(
                         it -> {
-                            context.setVariable(TextMemorySkill.KEY_PARAM, StringVariable.of(it));
+                            context.setVariable(TextMemorySkill.KEY_PARAM, it);
                             return SKBuilders.context()
                                     .withVariables(context.getVariables())
                                     .withSkills(context.getSkills())

@@ -15,6 +15,7 @@ import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -46,6 +47,10 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
         this.executionSettings = executionSettings;
         this.promptTemplate = promptTemplate;
         this.inputParameters = inputParameters;
+    }
+
+    public static SemanticFunction fromYaml(Path filePath) throws IOException {
+        return fromYaml(filePath.toAbsolutePath().toString());
     }
 
     public static SemanticFunction fromYaml(String filePath) throws IOException {

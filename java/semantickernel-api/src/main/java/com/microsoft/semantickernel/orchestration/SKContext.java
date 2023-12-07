@@ -26,7 +26,7 @@ public interface SKContext extends Buildable {
      * @apiNote Breaking change: s/String/Object/
      */
     @Nullable
-    Object getResult();
+    ContextVariable<?> getResult();
 
     /**
      * Return a copy of all variables within the context
@@ -60,13 +60,13 @@ public interface SKContext extends Buildable {
     SKContext setVariable(String key, ContextVariable<?> content);
 
     /**
-     * Appends data to the given key
+     * Sets the given variable
      *
-     * @param key key to set
+     * @param key     if null defaults to the "input" key
      * @param content value to set
      * @return Context for fluent calls
      */
-    SKContext appendToVariable(String key, String content);
+    SKContext setVariable(String key, Object content);
 
     /**
      * Updates the input entry with the given data

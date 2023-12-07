@@ -114,9 +114,9 @@ public class ActionPlanner {
     private Plan parsePlan(String goal, SKContext result) {
         ActionPlanResponse planData;
         // Clean up the plan, removing any prompt and the stop sequence
-        Matcher matcher = CLEAN_PLAN.matcher(result.getResult().toString());
+        Matcher matcher = CLEAN_PLAN.matcher(result.getResult().toPromptString());
 
-        String plan = result.getResult().toString();
+        String plan = result.getResult().toPromptString();
         if (matcher.matches()) {
             plan = matcher.group(1);
         }

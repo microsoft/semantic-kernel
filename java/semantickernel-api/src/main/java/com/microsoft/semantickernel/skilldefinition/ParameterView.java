@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.orchestration.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 
 /// <summary>
 /// Class used to copy and export data from
@@ -30,7 +29,7 @@ public class ParameterView {
 
         this.name = name;
         this.description = description;
-        this.defaultValue = StringVariable.of(defaultValue);
+        this.defaultValue = ContextVariable.of(defaultValue);
     }
 
     public ParameterView(String name) {

@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
@@ -52,11 +51,11 @@ public class NativeSKFunctionTest {
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         ContextVariables variables = SKBuilders.variables().build();
 
-        variables = variables.writableClone().appendToVariable("input", StringVariable.of("foo"));
+        variables = variables.writableClone().setVariable("input", "foo");
         variables =
                 variables
                         .writableClone()
-                        .appendToVariable("secondInput", StringVariable.of("ignore"));
+                        .setVariable("secondInput", "ignore");
         skills.getFunction("doSomething").invokeWithCustomInputAsync(variables, null, null).block();
         Mockito.verify(skill, Mockito.times(1)).doSomething("foo", "ignore");
     }

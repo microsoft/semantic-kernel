@@ -171,7 +171,7 @@ public class SequentialPlanTest {
                           <function.Skills.Skill4/>
                         </plan><!-- END -->
                         """;
-        SKContext context = SKBuilders.context().build().setVariable("anarg", StringVariable.of("foo"));
+        SKContext context = SKBuilders.context().build().setVariable("anarg", "foo");
         SKContext result = makePlan(planString).invokeAsync(context).block();
         Assertions.assertEquals("foo::Skill4", result.getResult());
     }

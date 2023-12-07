@@ -6,7 +6,6 @@ import static com.microsoft.semantickernel.skilldefinition.annotations.SKFunctio
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.ai.AIException.ErrorCodes;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -368,7 +367,7 @@ public class NativeSKFunction extends AbstractSKFunction {
                 SKFunctionParameters annotation =
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
-                    arg = StringVariable.of(annotation.defaultValue());
+                    arg = ContextVariable.of(annotation.defaultValue());
 
                     if (NO_DEFAULT_VALUE.equals(arg)) {
                         if (!annotation.required()) {

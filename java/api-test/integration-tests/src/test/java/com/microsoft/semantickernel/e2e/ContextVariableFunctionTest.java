@@ -86,7 +86,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
 
   private Mono<SKContext> chat(String input, CompletionSKFunction chat, SKContext context)
       throws ExecutionException, InterruptedException, TimeoutException {
-    context = context.setVariable("user_input", StringVariable.of(input));
+    context = context.setVariable("user_input", input);
 
     LOGGER.info("User:\n" + input);
 

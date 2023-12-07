@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -27,8 +26,8 @@ public abstract class AbstractSKContext implements SKContext {
 
     @Nullable
     @Override
-    public String getResult() {
-        return getVariables().get(ContextVariables.MAIN_KEY).toString();
+    public ContextVariable<?> getResult() {
+        return getVariables().get(ContextVariables.MAIN_KEY);
     }
 
     /// <summary>
@@ -106,8 +105,14 @@ public abstract class AbstractSKContext implements SKContext {
     }
 
     @Override
+    public SKContext setVariable(@Nonnull String key, @Nonnull Object content) {
+        variables.setVariable(key, content);
+        return getThis();
+    }
+
+    @Override
     public SKContext update(@Nonnull String content) {
-        variables.update(StringVariable.of(content));
+        variables.update(ContextVariable.of(content));
         return getThis();
     }
 
