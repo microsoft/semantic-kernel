@@ -1,0 +1,113 @@
+---
+title: Chat & Text Models
+---
+classDiagram
+    %% Use https://mermaid.live/ to preview this diagram. The VS Code extension does not handle namespaces.
+    direction LR
+
+    namespace Microsoft_SemanticKernel {
+        class ContentBase {
+            <<abstract>>
+            +InnerContent : Object
+            +ModelId : String
+            +Metadata : IDictionary
+            +string(modelContent : ContentBase)
+        }
+
+        class StreamingContentBase {
+            <<abstract>>
+            +ChoiceIndex : Integer
+            +InnerContent : Object
+            +Metadata : IDictionary
+            +ToString()
+            +ToByteArray()
+            +string(modelContent : StreamingContentBase)
+        }
+    }
+
+    namespace Microsoft_SemanticKernel_TextGeneration {
+        class TextContent {
+            +Text : String
+            +Encoding : Encoding
+            +ToString()
+        }
+
+        class StreamingTextContent {
+            +Text : String
+            +Encoding : Encoding
+            +ToString()
+            +ToByteArray()
+        }
+    }
+
+    namespace Microsoft_SemanticKernel_ChatCompletion {
+        class ChatMessage {
+            +Role : AuthorRole
+            +Content : String
+            +Encoding : Encoding
+            +ToString()
+        }
+
+        class StreamingChatMessageContent {
+            +Content : String
+            +Role : AuthorRole
+            +Encoding : Encoding
+            +ToString()
+            +ToByteArray()
+        }
+
+        class ChatHistory {
+            +AddMessage(chatMessage : ChatMessage)
+            +AddMessage(authorRole : AuthorRole, content : String, encoding : Encoding, metadata : IDictionary)
+            +AddUserMessage(content : string)
+            +AddAssistantMessage(content : string)
+            +AddSystemMessage(content : string)
+        }
+    }
+
+    namespace Microsoft_SemanticKernel_Connectors_OpenAI {
+        class OpenAIChatMessage {
+            +FunctionCall : FunctionCall
+            +Name : Name
+            +GetOpenAIFunctionResponse()
+        }
+
+        class AzureOpenAIWithDataChatMessage {
+            +ToolContent : String
+        }
+
+        class OpenAIStreamingTextContent {
+            +ToByteArray()
+            +ToString()
+        }
+
+        class OpenAIStreamingChatMessageContent {
+            +Name : String
+            +FunctionName : String
+            +FunctionArgument : String
+            +ToByteArray()
+            +ToString()
+            +GetOpenAIStreamingFunctionResponse(fullContent : OpenAIStreamingChatMessageContent[])
+        }
+
+        class AzureOpenAIWithDataStreamingChatMessageContent {
+            +FunctionName : String
+            +FunctionArgument : String
+            -IsValidMessage(message : ChatWithDataStreamingMessage)
+        }
+
+        class OpenAIChatHistory {
+
+        }
+    }
+
+    ContentBase <|-- TextContent
+    ContentBase <|-- ChatMessage
+    ChatMessage <|-- OpenAIChatMessage
+    ChatMessage <|-- AzureOpenAIWithDataChatMessage
+    StreamingContentBase <|-- StreamingTextContent
+    StreamingTextContent <|-- OpenAIStreamingTextContent
+    StreamingContentBase <|-- StreamingChatMessageContent
+    StreamingChatMessageContent <|-- OpenAIStreamingChatMessageContent
+    StreamingChatMessageContent <|-- AzureOpenAIWithDataStreamingChatMessageContent
+    ChatHistory <|-- OpenAIChatHistory
