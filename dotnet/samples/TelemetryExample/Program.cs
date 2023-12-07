@@ -93,7 +93,7 @@ public sealed class Program
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(loggerFactory);
         builder.AddAzureOpenAIChatCompletion(
