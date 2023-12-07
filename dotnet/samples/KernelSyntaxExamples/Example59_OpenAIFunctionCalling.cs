@@ -60,7 +60,7 @@ public static class Example59_OpenAIFunctionCalling
 
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
-        chatHistory.AddAssistantMessage(await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel));
+        chatHistory.Add(await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel));
         Console.WriteLine($"Assistant response: {chatHistory[chatHistory.Count - 1].Content}");
     }
 
