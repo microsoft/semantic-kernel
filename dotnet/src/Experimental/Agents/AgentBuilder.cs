@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
@@ -118,8 +119,8 @@ public partial class AgentBuilder
         this._model.ExecutionSettings.DeploymentName = deploymentName;
         this._model.ExecutionSettings.Model = model;
 
-        this._kernelBuilder.WithAzureOpenAIChatCompletion(deploymentName, model, endpoint, apiKey);
-        this._kernelBuilder.WithAzureOpenAITextGeneration(deploymentName, model, endpoint, apiKey);
+        this._kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, model, endpoint, apiKey);
+        this._kernelBuilder.AddAzureOpenAITextGeneration(deploymentName, model, endpoint, apiKey);
         return this;
     }
 
@@ -183,7 +184,7 @@ public partial class AgentBuilder
     public AgentBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     {
         this._loggerFactory = loggerFactory;
-        this._kernelBuilder.WithLoggerFactory(loggerFactory);
+        this._kernelBuilder.Services.AddSingleton(loggerFactory);
 
         return this;
     }

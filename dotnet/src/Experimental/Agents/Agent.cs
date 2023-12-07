@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
