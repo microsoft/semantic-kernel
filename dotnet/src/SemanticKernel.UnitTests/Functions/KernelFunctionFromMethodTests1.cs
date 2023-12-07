@@ -852,12 +852,12 @@ public sealed class KernelFunctionFromMethodTests1
         //Arrange
         var arguments = new KernelArguments()
         {
-            ["l"] = (int)1,                 //Passed to parameter type: long
-            ["i"] = (byte)1,                //Passed to parameter type: int
-            ["d"] = (float)1.0,             //Passed to parameter type: double
-            ["f"] = (uint)1.0,              //Passed to parameter type: float
-            ["g"] = new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"),   //Passed to parameter type: string
-            ["dof"] = DayOfWeek.Thursday    //Passed to parameter type: int
+            ["l"] = (int)1,                 //Passed to parameter of type long
+            ["i"] = (byte)1,                //Passed to parameter of type int
+            ["d"] = (float)1.0,             //Passed to parameter of type double
+            ["f"] = (uint)1.0,              //Passed to parameter of type float
+            ["g"] = new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"),   //Passed to parameter of type string
+            ["dof"] = DayOfWeek.Thursday    //Passed to parameter of type int
         };
 
         var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f, string g, int dof) =>
