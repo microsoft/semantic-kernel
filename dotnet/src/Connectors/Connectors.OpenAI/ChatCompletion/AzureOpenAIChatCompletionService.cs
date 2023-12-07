@@ -85,7 +85,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ChatCompletion.ChatMessage>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>

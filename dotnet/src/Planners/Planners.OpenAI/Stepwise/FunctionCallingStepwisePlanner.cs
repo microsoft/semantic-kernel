@@ -136,7 +136,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     #region private
 
-    private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
+    private async Task<ChatMessage> GetCompletionWithFunctionsAsync(
     ChatHistory chatHistory,
     Kernel kernel,
     IChatCompletionService chatCompletion,
@@ -192,9 +192,9 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
-    private bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
+    private bool TryGetFunctionResponse(ChatMessage chatMessage, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
     {
-        OpenAIChatMessageContent? openAiChatMessage = chatMessage as OpenAIChatMessageContent;
+        OpenAIChatMessage? openAiChatMessage = chatMessage as OpenAIChatMessage;
         Verify.NotNull(openAiChatMessage, nameof(openAiChatMessage));
 
         functionResponse = null;

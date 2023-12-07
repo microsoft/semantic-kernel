@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// OpenAI specialized with data chat message content
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
+public sealed class AzureOpenAIWithDataChatMessage : ChatMessage
 {
     /// <summary>
     /// Content from data source, including citations.
@@ -21,12 +21,12 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
     public string? ToolContent { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
+    /// Initializes a new instance of the <see cref="OpenAIChatMessage"/> class.
     /// </summary>
     /// <param name="chatChoice">Azure Chat With Data Choice</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    internal AzureOpenAIWithDataChatMessageContent(ChatWithDataChoice chatChoice, string? modelId, IDictionary<string, object?>? metadata = null)
+    internal AzureOpenAIWithDataChatMessage(ChatWithDataChoice chatChoice, string? modelId, IDictionary<string, object?>? metadata = null)
         : base(default, string.Empty, modelId, chatChoice, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(1))
     {
         // An assistant message content must be present, otherwise the chat is not valid.

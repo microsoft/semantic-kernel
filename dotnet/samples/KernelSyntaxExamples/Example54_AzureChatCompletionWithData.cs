@@ -38,7 +38,7 @@ public static class Example54_AzureChatCompletionWithData
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
+        var chatMessage = (AzureOpenAIWithDataChatMessage)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
         var response = chatMessage.Content;
         var toolResponse = chatMessage.ToolContent;

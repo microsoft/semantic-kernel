@@ -214,7 +214,7 @@ internal abstract class ClientCore
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
-    internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+    internal async Task<IReadOnlyList<ChatCompletion.ChatMessage>> GetChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -247,13 +247,13 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, new(metadata))).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessage(chatChoice.Message, this.DeploymentOrModelName, new(metadata))).ToList();
             }
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
+            OpenAIChatMessage result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
             OpenAIFunctionResponse? functionCallResponse = null;
             try
             {
@@ -291,7 +291,7 @@ internal abstract class ClientCore
             string fqn = functionCallResponse.FullyQualifiedName;
 
             chatOptions.Messages.Add(resultChoice.Message);
-            chatOptions.Messages.Add(new ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
+            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
             chat.AddMessage(result);
             chat.AddFunctionMessage(serializedFunctionResult, fqn);
@@ -417,7 +417,7 @@ internal abstract class ClientCore
             string fqn = functionCallResponse.FullyQualifiedName;
 
             chatOptions.Messages.Add(new(streamedRole ?? default, contents) { FunctionCall = functionCall });
-            chatOptions.Messages.Add(new ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
+            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
             chat.AddAssistantMessage(contents, functionCall);
             chat.AddFunctionMessage(serializedFunctionResult, fqn);
@@ -612,15 +612,15 @@ internal abstract class ClientCore
 
         foreach (var message in chatHistory)
         {
-            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
+            var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
-            if (message is OpenAIChatMessageContent openAIChatContent)
+            if (message is OpenAIChatMessage openAIChatContent)
             {
                 azureMessage.FunctionCall = openAIChatContent.FunctionCall;
             }
-            else if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? name) is true)
+            else if (message.Metadata?.TryGetValue(OpenAIChatMessage.FunctionNameProperty, out object? name) is true)
             {
-                if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionArgumentsProperty, out object? arguments) is true)
+                if (message.Metadata?.TryGetValue(OpenAIChatMessage.FunctionArgumentsProperty, out object? arguments) is true)
                 {
                     azureMessage.FunctionCall = new FunctionCall(name?.ToString(), arguments?.ToString());
                 }

@@ -53,7 +53,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ChatMessage>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this.InternalGetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
@@ -110,7 +110,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         }
     }
 
-    private async Task<IReadOnlyList<ChatMessageContent>> InternalGetChatMessageContentsAsync(
+    private async Task<IReadOnlyList<ChatMessage>> InternalGetChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -126,7 +126,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         var metadata = GetResponseMetadata(chatWithDataResponse);
 
-        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessage(choice, this.GetModelId(), metadata)).ToList();
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)

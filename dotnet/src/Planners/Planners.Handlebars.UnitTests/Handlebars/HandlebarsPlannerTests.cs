@@ -65,12 +65,12 @@ public sealed class HandlebarsPlannerTests
     {
         plugins ??= new KernelPluginCollection();
 
-        var chatMessage = new ChatMessageContent(AuthorRole.Assistant, testPlanString);
+        var chatMessage = new ChatMessage(AuthorRole.Assistant, testPlanString);
 
         var chatCompletion = new Mock<IChatCompletionService>();
         chatCompletion
             .Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
+            .ReturnsAsync(new List<ChatMessage> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector

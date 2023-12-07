@@ -240,11 +240,11 @@ public class KernelFunctionFromPromptTests
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
         public ChatHistory? ChatHistory { get; private set; }
 
-        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ChatMessage>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             this.ChatHistory = chatHistory;
 
-            return Task.FromResult<IReadOnlyList<ChatMessageContent>>(new List<ChatMessageContent> { new(AuthorRole.Assistant, "Something") });
+            return Task.FromResult<IReadOnlyList<ChatMessage>>(new List<ChatMessage> { new(AuthorRole.Assistant, "Something") });
         }
 
 #pragma warning disable IDE0036 // Order modifiers

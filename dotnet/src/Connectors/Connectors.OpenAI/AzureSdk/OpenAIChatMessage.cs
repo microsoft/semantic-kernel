@@ -3,13 +3,14 @@
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using ChatMessage = Microsoft.SemanticKernel.ChatCompletion.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI specialized chat message content
 /// </summary>
-public sealed class OpenAIChatMessageContent : ChatMessageContent
+public sealed class OpenAIChatMessage : ChatMessage
 {
     /// <summary>
     /// The metadata key for the <see cref="FunctionCall"/> name property.
@@ -22,12 +23,12 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     public const string FunctionArgumentsProperty = $"{nameof(FunctionCall)}.Arguments";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
+    /// Initializes a new instance of the <see cref="OpenAIChatMessage"/> class.
     /// </summary>
     /// <param name="chatMessage">Azure SDK chat message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIChatMessageContent(ChatMessage chatMessage, string modelId, Dictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessage(Azure.AI.OpenAI.ChatMessage chatMessage, string modelId, Dictionary<string, object?>? metadata = null)
         : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(4))
     {
         this.FunctionCall = chatMessage.FunctionCall;

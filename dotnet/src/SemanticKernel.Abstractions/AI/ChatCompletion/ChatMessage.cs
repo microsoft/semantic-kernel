@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
-public class ChatMessageContent : ContentBase
+public class ChatMessage : ContentBase
 {
     /// <summary>
     /// Role of the author of the message
@@ -28,7 +28,7 @@ public class ChatMessageContent : ContentBase
     public Encoding Encoding { get; set; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
+    /// Creates a new instance of the <see cref="ChatMessage"/> class
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
@@ -37,7 +37,7 @@ public class ChatMessageContent : ContentBase
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     [JsonConstructor]
-    public ChatMessageContent(AuthorRole role, string content, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
+    public ChatMessage(AuthorRole role, string content, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
     {
         this.Role = role;
         this.Content = content;
