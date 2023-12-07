@@ -609,30 +609,25 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         return input;
                     }
 
-                    // Just pure experimentation to see how data converters work
-                    object? InnerConvert(CultureInfo ci)
+                    object? Convert(CultureInfo culture)
                     {
-                        // Issue #3. This block can handle 'string' to type conversion but fails on type to type conversion - System.ArgumentOutOfRangeException : Int64Converter cannot convert from System.Int32. (Parameter 'b') exception thrown by the 'ConvertFrom' method.
-                        // Context: UT - KernelFunctionTests2.ItSupportsConvertingFromManyTypesAsync, Line - FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
                         if (converter.CanConvertFrom(input?.GetType()))
                         {
-                            return converter.ConvertFrom(context: null, ci, input);
+                            return converter.ConvertFrom(context: null, culture, input);
                         }
 
-                        // Issue #4. This line can handle type -> type conversion but can't handle 'string' to type conversion - System.ArgumentException : Object of type 'System.String' cannot be converted to type 'System.Int32'.
-                        // Context: UT - KernelFunctionTests2.ItSupportsConvertingFromManyTypesAsync, Line - FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
-                        return converter.ConvertTo(input, input?.GetType());
+                        return converter.ConvertTo(context: null, culture, input, targetType);
                     }
 
                     // First try to parse using the supplied culture (or current if none was supplied).
                     // If that fails, try with the invariant culture and allow any exception to propagate.
                     try
                     {
-                        return InnerConvert(cultureInfo);
+                        return Convert(cultureInfo);
                     }
                     catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
                     {
-                        return InnerConvert(CultureInfo.InvariantCulture);
+                        return Convert(CultureInfo.InvariantCulture);
                     }
                 };
             }
