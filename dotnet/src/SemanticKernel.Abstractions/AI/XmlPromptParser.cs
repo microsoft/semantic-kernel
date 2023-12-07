@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Xml;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -27,14 +26,13 @@ internal static class XmlPromptParser
         // exception is thrown. Try to avoid it in the common case where the prompt is obviously not XML.
         // To be valid XML, at a minimum:
         // - the string would need to be non-null
-        // - it would need to contain a the start of a tag; we also focus on the specific expected XML format, which must have a "message" tag
+        // - it would need to contain a the start of a tag
         // - it would need to contain a closing tag, which could include either </ or />
-        const string Required = ChatPromptParser.RequiredTagOpeningToBeValid;
         int startPos;
         if (prompt is null ||
-            (startPos = prompt.IndexOf(Required, StringComparison.OrdinalIgnoreCase)) < 0 ||
-            (prompt.IndexOf("</", startPos + Required.Length, StringComparison.Ordinal) < 0 &&
-             prompt.IndexOf("/>", startPos + Required.Length, StringComparison.Ordinal) < 0))
+            (startPos = prompt.IndexOf('<')) < 0 ||
+            (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
+             prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0))
         {
             return false;
         }
