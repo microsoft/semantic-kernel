@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace SemanticKernel.IntegrationTests.Fakes;
 
 internal sealed class EmailPluginFake
