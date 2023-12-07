@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
-/// Showcase complex Open AI Assistant interactions using semantic kernel.
+/// Showcase complex Open AI Assistant collaboration using semantic kernel.
 /// </summary>
 public static class Example72_AssistantCollaboration
 {
@@ -16,7 +16,8 @@ public static class Example72_AssistantCollaboration
     /// Specific model is required that supports assistants and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-0613";
+    //private const string OpenAIFunctionEnabledModel = "gpt-4-0613";
+    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
 
     /// <summary>
     /// Show how to combine coordinate multiple assistants.
@@ -31,15 +32,18 @@ public static class Example72_AssistantCollaboration
             return;
         }
 
-        // $$$
-        await RunCollaborationAsync();
+        // Explicit collaboration
+        //await RunCollaborationAsync();
 
-        // $$$
-        await RunAsPluginsAsync();
+        // Coordinate collaboration as plugin agents (equivalent to previous case - shared thread)
+        //await RunAsPluginsSharedThreadAsync();
+
+        // Coordinate collaboration as plugin agents (not equivalent - delegate to separate thread)
+        await RunAsPluginsManagerModelAsync();
     }
 
     /// <summary>
-    /// $$$
+    /// Show how two assistants are able to collaborate as agents on a single thread.
     /// </summary>
     private static async Task RunCollaborationAsync()
     {
@@ -89,9 +93,9 @@ public static class Example72_AssistantCollaboration
     }
 
     /// <summary>
-    /// $$$
+    /// Show how assistants can collaborate as agents using the plug-in model.
     /// </summary>
-    private static async Task RunAsPluginsAsync()
+    private static async Task RunAsPluginsSharedThreadAsync()
     {
         Console.WriteLine("======== Run:AsPlugins ========");
         IAssistant? copyWriter = null;
@@ -109,7 +113,7 @@ public static class Example72_AssistantCollaboration
             coordinator =
                 await new AssistantBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .WithInstructions("Coordinate the repeated interaction between a copy-writer and an art-director on a single thread until the art-director approves the copy.  First call the copywriter, then have the art-director review the copy.  Respond with the copy when approved by the art-director and summarize why it is good.")
+                    .WithInstructions("Coordinate the repeated interaction between a copy-writer and an art-director on a single thread until the art-director approves the copy.  First call the copywriter.  After that, have the art-director review the copy.  Respond with the copy when approved by the art-director and summarize why it is good.")
                     .WithPlugin(copyWriter.AsPlugin())
                     .WithPlugin(artDirector.AsPlugin())
                     .BuildAsync();
@@ -137,7 +141,46 @@ public static class Example72_AssistantCollaboration
         }
     }
 
-    private static Task<IAssistant> CreateCopyWriterAsync()
+    /// <summary>
+    /// Show how assistants can collaborate as agents using the plug-in model.
+    /// </summary>
+    private static async Task RunAsPluginsManagerModelAsync()
+    {
+        Console.WriteLine("======== Run:AsPlugins ========");
+        IAssistant? copyWriter = null;
+        IAssistant? artDirector = null;
+        IChatThread? thread = null;
+
+        try
+        {
+            // Create art-director assistant to review ideas, provide feedback and final approval
+            artDirector = await CreateArtDirectorAsync();
+            // Create copy-writer assistant to generate ideas
+            copyWriter = await CreateCopyWriterAsync(artDirector);
+
+            // Create top-level thread.
+            thread = await artDirector.NewThreadAsync();
+            Console.WriteLine($"[{thread.Id}]");
+
+            // Add the user message
+            var messageUser = await thread.AddUserMessageAsync("maps made out of egg cartons.").ConfigureAwait(true);
+            DisplayMessage(messageUser);
+
+            // Retrieve the final response.  This drives the interaction between the copy-writer and the art-director.
+            var assistantMessages = await thread.InvokeAsync(artDirector).ConfigureAwait(true);
+            DisplayMessages(assistantMessages);
+        }
+        finally
+        {
+            // Clean-up (storage costs $)
+            await Task.WhenAll(
+                thread?.DeleteAsync() ?? Task.CompletedTask,
+                artDirector?.DeleteAsync() ?? Task.CompletedTask,
+                copyWriter?.DeleteAsync() ?? Task.CompletedTask);
+        }
+    }
+
+    private static Task<IAssistant> CreateCopyWriterAsync(IAssistant? assistant = null)
     {
         return
             new AssistantBuilder()
@@ -145,6 +188,7 @@ public static class Example72_AssistantCollaboration
                 .WithInstructions("You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
                 .WithName("Copywriter")
                 .WithDescription("Copywriter")
+                .WithPlugin(assistant?.AsPlugin())
                 .BuildAsync();
     }
 
