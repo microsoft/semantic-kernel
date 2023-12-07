@@ -291,7 +291,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     promptTokens, completionTokens);
 
         TagList tags = new() {
-            { MeasurementErrorTagName, this.Name },
+            { MeasurementFunctionTagName, this.Name },
             { MeasurementModelTagName, modelId }
         };
 
