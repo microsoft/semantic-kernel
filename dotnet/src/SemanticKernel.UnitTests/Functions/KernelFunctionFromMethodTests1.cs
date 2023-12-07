@@ -852,18 +852,21 @@ public sealed class KernelFunctionFromMethodTests1
         //Arrange
         var arguments = new KernelArguments()
         {
-            ["l"] = (int)1,     //Expected parameter type: long
-            ["i"] = (byte)1,    //Expected parameter type: int
-            ["d"] = (float)1.0, //Expected parameter type: double
-            ["f"] = (uint)1.0   //Expected parameter type: float
+            ["l"] = (int)1,                 //Passed to parameter type: long
+            ["i"] = (byte)1,                //Passed to parameter type: int
+            ["d"] = (float)1.0,             //Passed to parameter type: double
+            ["f"] = (uint)1.0,              //Passed to parameter type: float
+            ["g"] = new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"),   //Passed to parameter type: string
+            ["dof"] = DayOfWeek.Thursday    //Passed to parameter type: int
         };
 
-        var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f) =>
+        var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f, string g, int dof) =>
         {
             Assert.Equal(1, l);
             Assert.Equal(1, i);
             Assert.Equal(1.0, d);
-            Assert.Equal(1.0, f);
+            Assert.Equal("35626209-b0ab-458c-bfc4-43e6c7bd13dc", g);
+            Assert.Equal(4, dof);
         },
         functionName: "Test");
 

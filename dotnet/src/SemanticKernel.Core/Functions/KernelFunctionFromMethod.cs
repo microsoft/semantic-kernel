@@ -585,10 +585,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
             // as the underlying parser might not be expecting null.
-            bool wasNullable = false;
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                wasNullable = true;
                 targetType = Nullable.GetUnderlyingType(targetType)!;
             }
 
@@ -597,14 +595,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 return (input, cultureInfo) =>
                 {
-                    if (wasNullable && input is null)
-                    {
-                        return null!;
-                    }
-
-                    // Issue #1. Quick fix to prevent the exception thrown by ConvertTo method - System.ArgumentOutOfRangeException : Value cannot be null. (Parameter 'destinationType') (Parameter 'actual')
-                    // Context: UT - KernelFunctionTests2.ItSupportsArgumentsAsIsWithoutConvertingTheirTypeAsync, Line - await AssertParameterType<string?>(null);
-                    // For some reason, the target type that is "string?" in the method signature comes here as a string, and the above statement - 'if (wasNullable && input is null)' is not working.
                     if (input is null)
                     {
                         return null;
