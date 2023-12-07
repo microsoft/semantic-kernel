@@ -75,7 +75,10 @@ public class KernelBuilderTests
 
     private sealed class NopServiceSelector : IAIServiceSelector
     {
-        (T?, PromptExecutionSettings?) IAIServiceSelector.SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class =>
+#pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
+        bool IAIServiceSelector.TrySelectAIService<T>(
+#pragma warning restore CS8769
+            Kernel kernel, KernelFunction function, KernelArguments arguments, out T? service, out PromptExecutionSettings? serviceSettings) where T : class =>
             throw new NotImplementedException();
     }
 
