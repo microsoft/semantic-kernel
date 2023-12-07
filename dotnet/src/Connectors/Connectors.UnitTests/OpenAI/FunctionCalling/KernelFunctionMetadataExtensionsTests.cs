@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
 #pragma warning disable CA1812 // Uninstantiated internal types

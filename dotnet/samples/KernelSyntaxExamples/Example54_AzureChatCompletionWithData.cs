@@ -4,8 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /**
  * This example shows how to use Azure OpenAI Chat Completion with data.

@@ -76,7 +76,7 @@ Available meters:
   - `SK.<PluginName><FunctionName>.ExecutionTotal` - total number of function executions
   - `SK.<PluginName><FunctionName>.ExecutionSuccess` - number of successful function executions
   - `SK.<PluginName><FunctionName>.ExecutionFailure` - number of failed function executions
-- _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
+- _Microsoft.SemanticKernel.Connectors.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
   - `SK.Connectors.OpenAI.PromptTokens` - number of prompt tokens used.
   - `SK.Connectors.OpenAI.CompletionTokens` - number of completion tokens used.
   - `SK.Connectors.OpenAI.TotalTokens` - total number of tokens used.
