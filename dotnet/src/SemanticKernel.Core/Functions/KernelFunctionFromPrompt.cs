@@ -250,6 +250,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// </summary>
     private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? metadata, ILogger logger)
     {
+        if (!logger.IsEnabled(LogLevel.Information) &&
+            !s_invocationTokenUsageCompletion.Enabled &&
+            !s_invocationTokenUsagePrompt.Enabled)
+        {
+            // Bail early to avoid unnecessary work.
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(modelId))
         {
             logger.LogWarning("No model ID provided to capture usage details.");
@@ -270,25 +278,23 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var promptTokens = 0;
         var completionTokens = 0;
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
+            var jsonObject = JsonSerializer.SerializeToElement(usageObject);
             promptTokens = jsonObject.GetProperty("PromptTokens").GetInt32();
             completionTokens = jsonObject.GetProperty("CompletionTokens").GetInt32();
-        }
-        catch (Exception ex) when (ex is KeyNotFoundException)
-        {
-            logger.LogInformation("Usage details not found in model result.");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while parsing usage details from model result.");
-            throw;
+            return;
         }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         logger.LogInformation(
-                    "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
-                    promptTokens, completionTokens);
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+            promptTokens, completionTokens);
 
         TagList tags = new() {
             { MeasurementFunctionTagName, this.Name },

@@ -268,7 +268,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
         Assert.NotNull(usageObject);
 
-        var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
+        var jsonObject = JsonSerializer.SerializeToElement(usageObject);
         Assert.True(jsonObject.TryGetProperty("PromptTokens", out JsonElement promptTokens));
         Assert.NotEqual(0, promptTokens.GetInt32());
         Assert.True(jsonObject.TryGetProperty("CompletionTokens", out JsonElement completionTokens));
