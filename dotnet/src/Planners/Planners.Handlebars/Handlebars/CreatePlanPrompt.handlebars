@@ -183,6 +183,7 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 - There are no initial variables available to you. You must create them yourself using the `\{{set}}` helper and then access them using `\{{get}}`.
 - Do not make up values. Use the helpers to generate the data you need or extract it from the goal.
 - Keep data well-defined. Each variable should have a unique name. Create and assign each variable only once.
+- Do not pass raw data to helpers. Use variables instead.
 - Be extremely careful about types. For example, if you pass an array to a helper that expects a number, the template will error out.
 {{#if allowLoops}}- Avoid using loops. Try a solution without before you deploy a loop.{{/if}}
 - There is no need to check your results in the template.
@@ -194,7 +195,7 @@ Now take a deep breath and accomplish the task:
 1. Keep the template short and sweet. Be as efficient as possible.
 2. Do not use helpers or functions that were not provided to you, and be especially careful to not assume or make up any helpers or operations that were not explicitly defined already.
 3. If none of the available helpers can achieve the goal, respond with "Additional helpers may be required".
-4. The first steps should always be to initialize any variables you need.
+4. Always start by identifying any important values in the goal. Then, use the `\{{set}}` helper to create variables for each of these values.
 5. The template should use the \{{json}} helper at least once to output the result of the final step.
 6. Don't forget to use the tips and tricks otherwise the template will not work.
 7. Don't close the ``` handlebars block until you're done with all the steps.{{/message}}

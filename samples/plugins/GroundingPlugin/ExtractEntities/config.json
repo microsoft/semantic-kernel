@@ -14,12 +14,14 @@
     {
       "name": "input",
       "description": "The text from which the entities are to be extracted",
-      "default": ""
+      "default": "",
+      "is_required": true
     },
     {
       "name": "topic",
       "description": "The topic of interest; the extracted entities should be related to this topic",
-      "default": ""
+      "default": "",
+      "is_required": true
     },
     {
       "name": "example_entities",
