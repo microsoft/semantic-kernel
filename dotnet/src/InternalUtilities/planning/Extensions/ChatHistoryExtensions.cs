@@ -36,7 +36,8 @@ internal static class ChatHistoryExtensions
                     continue;
                 }
 
-                chars += chatHistory[i].Content?.Length ?? 0;
+                var chatMessageContent = chatHistory[i].GetContent<string>();
+                chars += chatMessageContent?.Length ?? 0;
 
                 // +1 for "\n" if there was a previous message
                 if (prevMsg)

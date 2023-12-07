@@ -47,7 +47,7 @@ public class ChatHistoryTests
         for (var i = 0; i < chatHistory.Count; i++)
         {
             Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialised[i].Role.Label);
-            Assert.Equal(chatHistory[i].Content, chatHistoryDeserialised[i].Content);
+            Assert.Equal(chatHistory[i].Content.ToString(), chatHistoryDeserialised[i].Content.ToString());
         }
     }
 }

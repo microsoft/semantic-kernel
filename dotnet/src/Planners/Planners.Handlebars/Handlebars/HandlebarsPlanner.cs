@@ -62,14 +62,15 @@ public sealed class HandlebarsPlanner
 
         // Get the chat completion results
         var completionResults = await chatCompletionService.GetChatMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var completionContent = completionResults.GetContent<string>();
 
-        if (completionResults.Content?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionContent?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
             throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
-        Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(completionContent, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
             throw new KernelException("Could not find the plan in the results");

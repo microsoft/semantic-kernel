@@ -460,7 +460,7 @@ internal abstract class ClientCore
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
         return (await this.GetChatMessagesAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat.ModelId, chat, Encoding.UTF8, chat.Metadata))
+            .Select(chat => new TextContent(chat.GetContent<string>(), chat.ModelId, chat, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
 
@@ -613,7 +613,7 @@ internal abstract class ClientCore
 
         foreach (var message in chatHistory)
         {
-            var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
+            var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.GetContent<string>());
 
             if (message is OpenAIChatMessage openAIChatContent)
             {

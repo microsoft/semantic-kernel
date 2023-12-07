@@ -64,7 +64,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         return (await this.GetChatMessagesAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat, chat.ModelId, Encoding.UTF8, chat.Metadata))
+            .Select(chat => new TextContent(chat.GetContent<string>(), chat, chat.ModelId, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
 
@@ -279,7 +279,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             .Select(message => new ChatWithDataMessage
             {
                 Role = message.Role.Label,
-                Content = message.Content
+                Content = message.GetContent<string>() ?? string.Empty
             })
             .ToList();
     }

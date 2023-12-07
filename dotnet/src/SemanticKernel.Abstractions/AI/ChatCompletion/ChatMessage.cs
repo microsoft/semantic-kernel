@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
-/// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
+/// Represents chat message return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
 public class ChatMessage : ContentBase
 {
@@ -19,7 +19,7 @@ public class ChatMessage : ContentBase
     /// <summary>
     /// Content of the message
     /// </summary>
-    public string Content { get; set; }
+    public object Content { get; set; }
 
     /// <summary>
     /// The encoding of the text content.
@@ -37,7 +37,7 @@ public class ChatMessage : ContentBase
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     [JsonConstructor]
-    public ChatMessage(AuthorRole role, string content, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
+    public ChatMessage(AuthorRole role, object content, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
     {
         this.Role = role;
         this.Content = content;
@@ -47,6 +47,6 @@ public class ChatMessage : ContentBase
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content ?? string.Empty;
+        return this.Content?.ToString() ?? string.Empty;
     }
 }

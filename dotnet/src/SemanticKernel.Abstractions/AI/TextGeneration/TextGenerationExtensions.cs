@@ -53,7 +53,8 @@ public static class TextGenerationExtensions
             && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
             var chatMessage = await chatCompletion.GetChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
-            return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
+
+            return new TextContent(chatMessage.GetContent<string>(), chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
         }
 
         // When using against text generations, the prompt will be used as is.
