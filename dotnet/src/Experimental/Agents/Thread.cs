@@ -94,6 +94,15 @@ public class Thread : IThread
     }
 
     /// <summary>
+    /// Adds the system message to the chat history.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    public void AddSystemMessage(string message)
+    {
+        this._chatHistory.AddSystemMessage(message);
+    }
+
+    /// <summary>
     /// Extracts the user intent from the chat history.
     /// </summary>
     /// <param name="userMessage">The user message.</param>

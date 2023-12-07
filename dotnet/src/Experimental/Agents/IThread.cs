@@ -18,6 +18,12 @@ public interface IThread
     Task<string> InvokeAsync(string userMessage);
 
     /// <summary>
+    /// Adds a system message.
+    /// </summary>
+    /// <param name="message">The message to add.</param>
+    void AddSystemMessage(string message);
+
+    /// <summary>
     /// Gets the chat messages.
     /// </summary>
     IReadOnlyList<ChatMessageContent> ChatMessages { get; }

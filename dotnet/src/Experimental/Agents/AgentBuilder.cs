@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
+using Microsoft.SemanticKernel.Experimental.Agents.RoomThread;
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
@@ -239,5 +240,16 @@ public partial class AgentBuilder
         }
 
         return agentBuilder.Build();
+    }
+
+    /// <summary>
+    /// Creates a new room thread for collaborative agents.
+    /// </summary>
+    /// <param name="instructions">The instructions.</param>
+    /// <param name="agents">The collaborative agents.</param>
+    /// <returns></returns>
+    public static IRoomThread CreateRoomThread(string instructions, params IAgent[] agents)
+    {
+        return new RoomThread.RoomThread(agents, instructions);
     }
 }

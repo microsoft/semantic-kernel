@@ -1,0 +1,10 @@
+﻿name: Auditor
+description: A spectator of this meeting.
+instructions: |
+  You are a spectator of a conversation between agents.
+  You have the access to all the conversation.
+  Regarding this conversation, you have to decide if this conversation is ended or not.
+  If the conversation is supposed to end, return only "True", otherwise simply return "False".
+execution_settings:
+  model: gpt-4
+  deployment_name: gpt-4-1106-preview

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -148,7 +149,7 @@ public class HarnessTests
         await this.AuditorTestsAsync(question, result, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 5% interest rate, the future value of the investment would be approximately $66,332.44.", true).ConfigureAwait(true);
 
         result = await thread.InvokeAsync("What if the rate is about 3.6%?").ConfigureAwait(true);
-        await this.AuditorTestsAsync(question + "\nWhat if the rate is about 3.6%?", result, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 3.6% interest rate, the future value of the investment would be approximately $50,714.85.", true).ConfigureAwait(true);        
+        await this.AuditorTestsAsync(question + "\nWhat if the rate is about 3.6%?", result, "If you start with $25,000 in the stock market and leave it to grow for 20 years at a 3.6% interest rate, the future value of the investment would be approximately $50,714.85.", true).ConfigureAwait(true);
     }
 
     [Theory]
@@ -176,5 +177,45 @@ public class HarnessTests
             $"Answer 1: {answer1}\n" +
             $"Answer 2: {answer2}")
                 .ConfigureAwait(true)));
+    }
+
+
+    [Theory]
+    [InlineData("What is the square of 16?")]
+    [InlineData("What is the square root of 16?")]
+    [InlineData("Help me to find the how I will have in my account in 2 years.")]
+
+
+    public async Task RoomMeetingSampleTestAsync(string prompt)
+    {
+        string azureOpenAIKey = TestConfig.AzureOpenAIAPIKey;
+        string azureOpenAIEndpoint = TestConfig.AzureOpenAIEndpoint;
+
+        var mathematician = AgentBuilder.FromTemplate("./Assistants/Mathematician.yaml",
+                azureOpenAIEndpoint,
+                azureOpenAIKey,
+                new[] {
+                    KernelPluginFactory.CreateFromObject(new MathPlugin(), "math")
+                });
+
+        var butler = AgentBuilder.FromTemplate("./Assistants/Butler.yaml",
+                           azureOpenAIEndpoint,
+                           azureOpenAIKey);
+
+        var logger = this._loggerFactory.CreateLogger("Tests");
+
+        var thread = AgentBuilder.CreateRoomThread("", butler, mathematician);
+
+        thread.OnMessageReceived += (object? sender, string message) =>
+        {
+            var agent = sender as IAgent;
+
+            this._output.WriteLine($"{agent.Name} > {message}");
+        };
+
+        this._output.WriteLine($"User > {prompt}");
+
+        await thread.AddUserMessageAsync(prompt)
+            .ConfigureAwait(true);
     }
 }
