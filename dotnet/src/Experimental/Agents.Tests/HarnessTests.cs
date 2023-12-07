@@ -209,7 +209,6 @@ public class HarnessTests
         thread.OnMessageReceived += (object? sender, string message) =>
         {
             var agent = sender as IAgent;
-
             this._output.WriteLine($"{agent.Name} > {message}");
         };
 
