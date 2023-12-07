@@ -264,19 +264,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (string.IsNullOrWhiteSpace(modelId))
         {
-            logger.LogWarning("No model ID provided to capture usage details.");
+            logger.LogInformation("No model ID provided to capture usage details.");
             return;
         }
 
         if (metadata is null)
         {
-            logger.LogWarning("No metadata provided to capture usage details.");
+            logger.LogInformation("No metadata provided to capture usage details.");
             return;
         }
 
         if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
         {
-            logger.LogWarning("No usage details provided to capture usage details.");
+            logger.LogInformation("No usage details provided to capture usage details.");
             return;
         }
 
@@ -291,7 +291,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while parsing usage details from model result.");
+            logger.LogWarning(ex, "Error while parsing usage details from model result.");
             return;
         }
 #pragma warning restore CA1031 // Do not catch general exception types
