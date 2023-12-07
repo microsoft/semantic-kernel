@@ -6,9 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.AI.TextGeneration;
+namespace Microsoft.SemanticKernel.TextGeneration;
 
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="ITextGenerationService" /> interface.

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 

@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings;
+namespace Microsoft.SemanticKernel.Embeddings;
 
 /// <summary>
 /// Represents a generator of text embeddings of type <c>float</c>.

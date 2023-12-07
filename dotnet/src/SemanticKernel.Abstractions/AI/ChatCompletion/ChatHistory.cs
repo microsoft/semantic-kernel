@@ -8,7 +8,7 @@ using System.Text;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Provides a history of chat messages from a chat conversation.

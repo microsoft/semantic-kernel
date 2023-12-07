@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.TextGeneration;
+namespace Microsoft.SemanticKernel.TextGeneration;
 
 /// <summary>
 /// Represents text content return from a <see cref="ITextGenerationService" /> service.

@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 

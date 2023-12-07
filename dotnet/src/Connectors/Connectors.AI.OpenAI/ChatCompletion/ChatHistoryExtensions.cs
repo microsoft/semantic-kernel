@@ -6,7 +6,7 @@ using System.Text;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// OpenAI-specific extensions to the <see cref="ChatHistory"/> class.

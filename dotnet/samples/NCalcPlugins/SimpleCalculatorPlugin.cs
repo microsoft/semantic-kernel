@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 
 namespace NCalcPlugins;
 

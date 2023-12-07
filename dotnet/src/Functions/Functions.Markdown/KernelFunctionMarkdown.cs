@@ -4,7 +4,6 @@ using System.Text.Json;
 using Markdig;
 using Markdig.Syntax;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel;
 

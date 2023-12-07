@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;

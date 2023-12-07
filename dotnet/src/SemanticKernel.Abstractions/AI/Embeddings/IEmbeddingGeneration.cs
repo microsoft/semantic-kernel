@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings;
+namespace Microsoft.SemanticKernel.Embeddings;
 
 /// <summary>
 /// Represents a generator of embeddings.
