@@ -69,7 +69,7 @@ public sealed class HandlebarsPlannerTests
 
         var chatCompletion = new Mock<IChatCompletionService>();
         chatCompletion
-            .Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .Setup(cc => cc.GetChatMessagesAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ChatMessage> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();

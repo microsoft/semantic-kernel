@@ -240,7 +240,7 @@ public class KernelFunctionFromPromptTests
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
         public ChatHistory? ChatHistory { get; private set; }
 
-        public Task<IReadOnlyList<ChatMessage>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             this.ChatHistory = chatHistory;
 

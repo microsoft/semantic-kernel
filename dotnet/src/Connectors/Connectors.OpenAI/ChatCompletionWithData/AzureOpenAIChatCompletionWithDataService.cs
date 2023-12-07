@@ -53,8 +53,8 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessage>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.InternalGetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+    public Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.InternalGetChatMessagesAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
@@ -63,7 +63,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     /// <inheritdoc/>
     public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatMessagesAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Select(chat => new TextContent(chat.Content, chat, chat.ModelId, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
@@ -110,7 +110,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         }
     }
 
-    private async Task<IReadOnlyList<ChatMessage>> InternalGetChatMessageContentsAsync(
+    private async Task<IReadOnlyList<ChatMessage>> InternalGetChatMessagesAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,

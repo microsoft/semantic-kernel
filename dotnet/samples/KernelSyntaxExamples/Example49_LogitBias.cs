@@ -43,14 +43,14 @@ public static class Example49_LogitBias
         chatHistory.AddUserMessage("Hi, I'm looking some suggestions");
         await MessageOutputAsync(chatHistory);
 
-        var replyMessage = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings);
+        var replyMessage = await chatCompletionService.GetChatMessageAsync(chatHistory, settings);
         chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
-        replyMessage = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings);
+        replyMessage = await chatCompletionService.GetChatMessageAsync(chatHistory, settings);
         chatHistory.AddAssistantMessage(replyMessage.Content);
         await MessageOutputAsync(chatHistory);
 

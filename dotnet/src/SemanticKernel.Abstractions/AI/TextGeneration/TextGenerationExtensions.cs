@@ -52,7 +52,7 @@ public static class TextGenerationExtensions
         if (textGenerationService is IChatCompletionService chatCompletion
             && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
-            var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var chatMessage = await chatCompletion.GetChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
             return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
         }
 

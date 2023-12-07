@@ -61,7 +61,7 @@ public sealed class HandlebarsPlanner
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt, chatCompletionService);
 
         // Get the chat completion results
-        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var completionResults = await chatCompletionService.GetChatMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (completionResults.Content?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {

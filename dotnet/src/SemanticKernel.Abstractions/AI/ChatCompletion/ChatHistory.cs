@@ -54,10 +54,10 @@ public class ChatHistory : IList<ChatMessage>, IReadOnlyList<ChatMessage>
     /// <summary>
     /// Add a message to the chat history
     /// </summary>
-    /// <param name="chatMessageContent">Chat message content</param>
-    public void AddMessage(ChatMessage chatMessageContent)
+    /// <param name="chatMessage">Chat message</param>
+    public void AddMessage(ChatMessage chatMessage)
     {
-        this.Add(chatMessageContent);
+        this.Add(chatMessage);
     }
 
     /// <summary>

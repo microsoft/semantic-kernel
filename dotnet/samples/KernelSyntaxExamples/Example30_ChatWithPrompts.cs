@@ -98,7 +98,7 @@ public static class Example30_ChatWithPrompts
         chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
-        var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
+        var answer = await chatCompletion.GetChatMessageAsync(chatHistory);
         Console.WriteLine($"------------------------------------\n{answer}");
 
         /*

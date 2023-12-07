@@ -72,7 +72,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         { Content = new StringContent(ChatCompletionResponse) };
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessagesAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -93,7 +93,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         this._executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(this._timepluginNow);
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessagesAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -113,7 +113,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         this._executionSettings.FunctionCallBehavior = null;
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessagesAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -133,7 +133,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessage.FunctionNameProperty, "John Doe" } });
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+        await chatCompletion.GetChatMessagesAsync(chatHistory, this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -154,7 +154,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessage.FunctionNameProperty, "SayHello" }, { OpenAIChatMessage.FunctionArgumentsProperty, "{ \"user\": \"John Doe\" }" } });
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+        await chatCompletion.GetChatMessagesAsync(chatHistory, this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -169,7 +169,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task ItGetChatMessageContentsShouldHaveModelIdDefinedAsync()
+    public async Task ItGetChatMessageShouldHaveModelIdDefinedAsync()
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
@@ -180,7 +180,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         chatHistory.AddMessage(AuthorRole.User, "Hello");
 
         // Act
-        var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, this._executionSettings);
+        var chatMessage = await chatCompletion.GetChatMessageAsync(chatHistory, this._executionSettings);
 
         // Assert
         Assert.NotNull(chatMessage.ModelId);
