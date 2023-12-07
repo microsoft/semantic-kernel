@@ -19,7 +19,7 @@ internal class RoomThread : IRoomThread
 
     public event EventHandler<string>? OnMessageReceived;
 
-    internal RoomThread(IEnumerable<IAgent> agents, string roomInstructions)
+    internal RoomThread(IEnumerable<IAgent> agents)
     {
         this._assistantThreads = agents.ToDictionary(agent => agent, agent =>
         {
@@ -37,8 +37,7 @@ internal class RoomThread : IRoomThread
         {
             var agent = sender as IAgent;
 
-            this.DispatchMessageRecievedAsync(agent!.Name!, message)
-                        .Wait();
+            this.DispatchMessageRecievedAsync(agent!.Name!, message); // TODO fix to run it synchronously
         };
     }
 

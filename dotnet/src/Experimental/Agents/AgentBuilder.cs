@@ -246,11 +246,10 @@ public partial class AgentBuilder
     /// <summary>
     /// Creates a new room thread for collaborative agents.
     /// </summary>
-    /// <param name="instructions">The instructions.</param>
     /// <param name="agents">The collaborative agents.</param>
     /// <returns></returns>
-    public static IRoomThread CreateRoomThread(string instructions, params IAgent[] agents)
+    public static IRoomThread CreateRoomThread(params IAgent[] agents)
     {
-        return new RoomThread.RoomThread(agents, instructions);
+        return new RoomThread.RoomThread(agents);
     }
 }

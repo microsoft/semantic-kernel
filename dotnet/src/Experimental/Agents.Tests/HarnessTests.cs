@@ -204,7 +204,7 @@ public class HarnessTests
 
         var logger = this._loggerFactory.CreateLogger("Tests");
 
-        var thread = AgentBuilder.CreateRoomThread("", butler, mathematician);
+        var thread = AgentBuilder.CreateRoomThread(butler, mathematician);
 
         thread.OnMessageReceived += (object? sender, string message) =>
         {
