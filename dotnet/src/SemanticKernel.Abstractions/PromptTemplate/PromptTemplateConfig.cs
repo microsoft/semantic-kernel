@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -85,8 +84,27 @@ public sealed class PromptTemplateConfig
         return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
-            DefaultValue = p.Default
+            DefaultValue = p.Default,
+            IsRequired = p.IsRequired,
+            Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
         }).ToList();
+    }
+
+    /// <summary>
+    /// Return the output variable metadata.
+    /// </summary>
+    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
+    {
+        if (this.OutputVariable is not null)
+        {
+            return new KernelReturnParameterMetadata
+            {
+                Description = this.OutputVariable.Description,
+                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema),
+            };
+        }
+
+        return null;
     }
 
     /// <summary>

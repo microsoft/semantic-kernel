@@ -6,9 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.AI.TextGeneration;
+namespace Microsoft.SemanticKernel.TextGeneration;
 
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="ITextGenerationService" /> interface.
@@ -50,8 +50,7 @@ public static class TextGenerationExtensions
         CancellationToken cancellationToken = default)
     {
         if (textGenerationService is IChatCompletionService chatCompletion
-            && XmlPromptParser.TryParse(prompt!, out var nodes)
-            && ChatPromptParser.TryParse(nodes, out var chatHistory))
+            && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
             var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
             return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
@@ -83,8 +82,7 @@ public static class TextGenerationExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (textGenerationService is IChatCompletionService chatCompletion
-            && XmlPromptParser.TryParse(prompt!, out var nodes)
-            && ChatPromptParser.TryParse(nodes, out var chatHistory))
+            && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
             await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken))
             {

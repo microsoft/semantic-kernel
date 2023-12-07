@@ -33,4 +33,13 @@ public sealed class InputVariable
     /// </summary>
     [JsonPropertyName("is_required")]
     public bool IsRequired { get; set; } = true;
+
+    /// <summary>
+    /// JsonSchema describing this variable.
+    /// </summary>
+    /// <remarks>
+    /// This string will be deserialized into an instance of <see cref="KernelJsonSchema"/>.
+    /// </remarks>
+    [JsonPropertyName("json_schema")]
+    public string? JsonSchema { get; set; }
 }

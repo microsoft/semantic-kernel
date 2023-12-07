@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel;
 
