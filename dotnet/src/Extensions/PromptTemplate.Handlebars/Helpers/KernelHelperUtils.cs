@@ -2,14 +2,12 @@
 
 using System;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.
 /// </summary>
-public static class KernelHelpersUtils
+internal static class KernelHelpersUtils
 {
     /// <summary>
     /// Determines whether the specified type is a numeric type.

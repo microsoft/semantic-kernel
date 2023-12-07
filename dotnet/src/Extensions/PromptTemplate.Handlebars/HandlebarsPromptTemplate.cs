@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 /// <summary>
 /// Represents a Handlebars prompt template.
 /// </summary>
-public class HandlebarsPromptTemplate : IPromptTemplate
+internal class HandlebarsPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Default options for built-in Handlebars helpers.
@@ -46,13 +46,9 @@ public class HandlebarsPromptTemplate : IPromptTemplate
         KernelSystemHelpers.Register(handlebarsInstance, arguments, this._options);
 
         // Register any custom helpers
-        if (this._options.RegisterCustomHelpers is not null)
-        {
-            this._options.RegisterCustomHelpers(handlebarsInstance, arguments);
-        }
+        this._options.RegisterCustomHelpers?.Invoke(handlebarsInstance, arguments);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-
         var prompt = template(arguments);
 
         return await Task.FromResult(prompt).ConfigureAwait(false);

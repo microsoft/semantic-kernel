@@ -67,7 +67,7 @@ public sealed class HandlebarsPlan
             Name = "ExecutePlan",
         };
 
-        var handlebarsTemplate = templateFactory.Create(promptTemplateConfig) as HandlebarsPromptTemplate;
+        var handlebarsTemplate = templateFactory.Create(promptTemplateConfig);
         try
         {
             return await handlebarsTemplate!.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
@@ -75,7 +75,7 @@ public sealed class HandlebarsPlan
         catch (HandlebarsRuntimeException ex) when (ex.Message.Contains(HallucinatedHelpersErrorMessage))
         {
             var hallucinatedHelpers = ex.Message.Substring(HallucinatedHelpersErrorMessage.Length + 1);
-            throw new KernelException($"The plan references hallucinated helpers: {hallucinatedHelpers}", ex);
+            throw new KernelException($"[{HandlebarsPlannerErrorCodes.HallucinatedHelpers}] The plan references hallucinated helpers: {hallucinatedHelpers}", ex);
         }
     }
 }

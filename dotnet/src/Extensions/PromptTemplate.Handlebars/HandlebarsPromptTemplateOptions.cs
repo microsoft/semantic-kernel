@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.Options;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 /// <summary>
 /// Configuration for Handlebars helpers.
@@ -21,16 +20,9 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     public string DefaultNameDelimiter { get; set; } = "-";
 
     /// <summary>
-    /// Delegate for registering custom helpers.
-    /// </summary>
-    /// <param name="handlebarsInstance">The Handlebars instance.</param>
-    /// <param name="executionContext">Arguments maintained in the template execution context.</param>
-    public delegate void RegisterCustomHelpersCallback(IHandlebars handlebarsInstance, KernelArguments executionContext);
-
-    /// <summary>
     /// Callback for registering custom helpers.
     /// </summary>
-    public RegisterCustomHelpersCallback? RegisterCustomHelpers { get; set; } = null;
+    public Action<IHandlebars, KernelArguments>? RegisterCustomHelpers { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateOptions"/> class.

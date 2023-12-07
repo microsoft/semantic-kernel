@@ -3,14 +3,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 /// <summary>
 /// Provides an <see cref="IPromptTemplateFactory"/> for the handlebars prompt template format.
 /// </summary>
-public class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
+public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 {
     /// <summary>The name of the Handlebars template format.</summary>
     public const string HandlebarsTemplateFormat = "handlebars";

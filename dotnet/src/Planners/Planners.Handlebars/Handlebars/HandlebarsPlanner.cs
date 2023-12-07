@@ -9,11 +9,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet.Helpers.Enums;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
+/// <summary>
+/// Enum error codes for Handlebars planner exceptions.
+/// </summary>
+public enum HandlebarsPlannerErrorCodes
+{
+    /// <summary>
+    /// Error code for hallucinated helpers.
+    /// </summary>
+    HallucinatedHelpers,
+
+    /// <summary>
+    /// Error code for invalid Handlebars template.
+    /// </summary>
+    InvalidTemplate,
+
+    /// <summary>
+    /// Error code for insufficient functions to complete the goal.
+    /// </summary>
+    InsufficientFunctionsForGoal,
+}
 
 /// <summary>
 /// Represents a Handlebars planner.
@@ -96,25 +116,18 @@ public sealed class HandlebarsPlanner
         if (completionResults.Content is not null && completionResults.Content.Contains(InsufficientFunctionsError))
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
-            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
+            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
         Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
-            throw new KernelException("Could not find the plan in the results");
+            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results");
         }
 
         var planTemplate = match.Groups[2].Value.Trim();
-
-        planTemplate = planTemplate.Replace("compare.equal", "equal");
-        planTemplate = planTemplate.Replace("compare.lessThan", "lessThan");
-        planTemplate = planTemplate.Replace("compare.greaterThan", "greaterThan");
-        planTemplate = planTemplate.Replace("compare.lessThanOrEqual", "lessThanOrEqual");
-        planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
-        planTemplate = planTemplate.Replace("compare.greaterThanOrEqual", "greaterThanOrEqual");
-
         planTemplate = MinifyHandlebarsTemplate(planTemplate);
+
         return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
 
@@ -251,7 +264,7 @@ public sealed class HandlebarsPlanner
             Name = "CreatePlan",
         };
 
-        var handlebarsTemplate = this._templateFactory.Create(promptTemplateConfig) as HandlebarsPromptTemplate;
+        var handlebarsTemplate = this._templateFactory.Create(promptTemplateConfig);
 
         return await handlebarsTemplate!.RenderAsync(kernel, arguments, CancellationToken.None).ConfigureAwait(true);
     }

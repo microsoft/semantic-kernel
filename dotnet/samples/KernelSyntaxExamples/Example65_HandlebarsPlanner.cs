@@ -25,10 +25,9 @@ public static class Example65_HandlebarsPlanner
     public static async Task RunAsync()
     {
         s_sampleIndex = 1;
-        bool shouldPrintPrompt = true;
 
         // Using Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
+        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt: true);
 
         // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
@@ -127,8 +126,8 @@ public static class Example65_HandlebarsPlanner
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
         catch (KernelException ex) when (
-            ex.Message.Contains("The plan references hallucinated helpers", StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains("Unable to create plan for goal with available functions", StringComparison.CurrentCultureIgnoreCase))
+            ex.Message.Contains(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal.ToString(), StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains(HandlebarsPlannerErrorCodes.HallucinatedHelpers.ToString(), StringComparison.CurrentCultureIgnoreCase))
         {
             /*
                 Unable to create plan for goal with available functions.
@@ -139,7 +138,7 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"\n\n{ex.Message}\n");
+            Console.WriteLine($"\n\n{ex.Message.Substring(ex.Message.IndexOf("]", StringComparison.InvariantCulture) + 1)}\n");
         }
     }
 

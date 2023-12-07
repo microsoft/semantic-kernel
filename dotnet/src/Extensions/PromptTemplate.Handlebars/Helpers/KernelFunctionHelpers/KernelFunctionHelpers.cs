@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Extension class to register Kernel functions as helpers.
+/// Utility class for registering kernel functions as helpers in Handlebars.
 /// </summary>
 public static class KernelFunctionHelpers
 {
@@ -32,10 +32,10 @@ public static class KernelFunctionHelpers
         string nameDelimiter,
         CancellationToken cancellationToken = default)
     {
-        kernel.Plugins.GetFunctionsMetadata().ToList()
-            .ForEach(function =>
-                RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, nameDelimiter, cancellationToken)
-            );
+        foreach (var function in kernel.Plugins.GetFunctionsMetadata())
+        {
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, nameDelimiter, cancellationToken);
+        }
     }
 
     #region private
@@ -53,7 +53,7 @@ public static class KernelFunctionHelpers
         handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments handlebarsArguments) =>
         {
             // Get the parameters from the template arguments
-            if (handlebarsArguments.Any())
+            if (handlebarsArguments.Length is not 0)
             {
                 if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
                 {
@@ -72,7 +72,7 @@ public static class KernelFunctionHelpers
             KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
-            return InvokeSKFunction(kernel, function, GetKernelArguments(executionContext), cancellationToken);
+            return InvokeKernelFunctionAsync(kernel, function, GetKernelArguments(executionContext), cancellationToken);
         });
     }
 
@@ -192,7 +192,7 @@ public static class KernelFunctionHelpers
     /// <summary>
     /// Invokes an SK function and returns a typed result, if specified.
     /// </summary>
-    private static object? InvokeSKFunction(
+    private static object? InvokeKernelFunctionAsync(
         Kernel kernel,
         KernelFunction function,
         KernelArguments? executionContext = null,
