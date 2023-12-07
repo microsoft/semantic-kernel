@@ -132,7 +132,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
     }
 
-    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -149,21 +149,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            yield return typeof(T) switch
+            yield return typeof(TResult) switch
             {
-                _ when typeof(T) == typeof(string)
-                    => (T)(object)content.ToString(),
+                _ when typeof(TResult) == typeof(string)
+                    => (TResult)(object)content.ToString(),
 
-                _ when content is T contentAsT
-                    => (T)contentAsT,
+                _ when content is TResult contentAsT
+                    => (TResult)contentAsT,
 
-                _ when content.InnerContent is T innerContentAsT
-                    => (T)innerContentAsT,
+                _ when content.InnerContent is TResult innerContentAsT
+                    => (TResult)innerContentAsT,
 
-                _ when typeof(T) == typeof(byte[])
-                    => (T)(object)content.ToByteArray(),
+                _ when typeof(TResult) == typeof(byte[])
+                    => (TResult)(object)content.ToByteArray(),
 
-                _ => throw new NotSupportedException($"The specific type {typeof(T)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
+                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
             };
         }
 

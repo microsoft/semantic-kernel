@@ -561,7 +561,7 @@ public static class KernelExtensions
 
     #region InvokeAsync<T>
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
+    /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
