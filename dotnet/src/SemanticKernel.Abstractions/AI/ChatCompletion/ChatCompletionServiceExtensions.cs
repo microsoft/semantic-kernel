@@ -33,7 +33,7 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
     {
         // Try to parse the text as a chat history
-        if (XmlPromptParser.TryParse(prompt!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        if (ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
             return chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
         }
@@ -96,7 +96,7 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
     {
         // Try to parse the text as a chat history
-        if (XmlPromptParser.TryParse(prompt!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        if (ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
             return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
         }
