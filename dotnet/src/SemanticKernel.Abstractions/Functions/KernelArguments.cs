@@ -135,11 +135,11 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     }
 
     /// <summary>
-    /// Gets the value associated with the <see cref="KernelArguments.InputParameterName"/> argument name as a string.
+    /// Gets the value associated with the <see cref="InputParameterName"/> argument name as a string.
     /// </summary>
-    public TValue? GetInput<TValue>() where TValue : class?
+    public TValue? GetInputValue<TValue>() where TValue : class?
     {
-        this.TryGetValue(KernelArguments.InputParameterName, out TValue? input);
+        this.TryGetValue(InputParameterName, out TValue? input);
         return input;
     }
 
