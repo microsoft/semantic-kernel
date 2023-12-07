@@ -87,6 +87,7 @@ dotnet user-secrets set "KeyVault:TenantId" "..."
 
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
+dotnet user-secrets set "HuggingFace:EmbeddingModelId" "..."
 
 dotnet user-secrets set "Pinecone:ApiKey" "..."
 dotnet user-secrets set "Pinecone:Environment" "..."
@@ -152,6 +153,7 @@ KeyVault__TenantId
 # Hugging Face
 HuggingFace__ApiKey
 HuggingFace__ModelId
+HuggingFace__EmbeddingModelId
 
 # Pinecone
 Pinecone__ApiKey
