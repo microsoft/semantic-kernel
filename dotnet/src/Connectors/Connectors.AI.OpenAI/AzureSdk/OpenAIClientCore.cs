@@ -80,6 +80,9 @@ internal sealed class OpenAIClientCore : ClientCore
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
+        if (this.Logger.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
+        }
     }
 }
