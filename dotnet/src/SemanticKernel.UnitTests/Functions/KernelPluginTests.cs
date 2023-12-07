@@ -13,7 +13,7 @@ public class KernelPluginTests
     [Fact]
     public void ItRoundTripsCtorArguments()
     {
-        KernelPlugin plugin;
+        DefaultKernelPlugin plugin;
 
         var functions = new[]
         {
@@ -22,23 +22,23 @@ public class KernelPluginTests
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         };
 
-        plugin = new KernelPlugin("name");
+        plugin = new DefaultKernelPlugin("name");
         Assert.Equal("name", plugin.Name);
         Assert.Equal("", plugin.Description);
         Assert.Equal(0, plugin.FunctionCount);
 
-        plugin = new KernelPlugin("name", functions);
+        plugin = new DefaultKernelPlugin("name", functions);
         Assert.Equal("name", plugin.Name);
         Assert.Equal("", plugin.Description);
         Assert.Equal(3, plugin.FunctionCount);
         Assert.All(functions, f => Assert.True(plugin.Contains(f)));
 
-        plugin = new KernelPlugin("name", "description");
+        plugin = new DefaultKernelPlugin("name", "description");
         Assert.Equal("name", plugin.Name);
         Assert.Equal("description", plugin.Description);
         Assert.Equal(0, plugin.FunctionCount);
 
-        plugin = new KernelPlugin("name", "description", functions);
+        plugin = new DefaultKernelPlugin("name", "description", functions);
         Assert.Equal("name", plugin.Name);
         Assert.Equal("description", plugin.Description);
         Assert.Equal(3, plugin.FunctionCount);
@@ -51,7 +51,7 @@ public class KernelPluginTests
         KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
         KernelFunction func2 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function2");
 
-        KernelPlugin plugin = new("name", new[] { func1, func2 });
+        DefaultKernelPlugin plugin = new("name", new[] { func1, func2 });
 
         foreach (KernelFunction func in new[] { func1, func2 })
         {
@@ -80,7 +80,7 @@ public class KernelPluginTests
         KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
         KernelFunction func2 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function2");
 
-        KernelPlugin plugin = new("name");
+        DefaultKernelPlugin plugin = new("name");
         Assert.Equal(0, plugin.FunctionCount);
 
         plugin.AddFunction(func1);
@@ -101,18 +101,18 @@ public class KernelPluginTests
     [Fact]
     public void ItThrowsForInvalidArguments()
     {
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin(null!));
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin(null!, ""));
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin(null!, "", Array.Empty<KernelFunction>()));
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin("name", "", new KernelFunction[] { null! }));
+        Assert.Throws<ArgumentNullException>(() => new DefaultKernelPlugin(null!));
+        Assert.Throws<ArgumentNullException>(() => new DefaultKernelPlugin(null!, ""));
+        Assert.Throws<ArgumentNullException>(() => new DefaultKernelPlugin(null!, "", Array.Empty<KernelFunction>()));
+        Assert.Throws<ArgumentNullException>(() => new DefaultKernelPlugin("name", "", new KernelFunction[] { null! }));
 
-        KernelPlugin plugin = new("name");
+        DefaultKernelPlugin plugin = new("name");
         Assert.Throws<ArgumentNullException>(() => plugin.AddFunction(null!));
         Assert.Throws<ArgumentNullException>(() => plugin.AddFunctions(null!));
         Assert.Throws<ArgumentNullException>(() => plugin[null!]);
         Assert.Throws<ArgumentNullException>(() => plugin.TryGetFunction(null!, out _));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((string)null!));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((KernelFunction)null!));
-        Assert.Throws<ArgumentNullException>(() => ((ReadOnlyKernelPlugin)null!).Contains("functionName"));
+        Assert.Throws<ArgumentNullException>(() => ((KernelPlugin)null!).Contains("functionName"));
     }
 }

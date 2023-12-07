@@ -48,7 +48,7 @@ internal sealed class Assistant : IAssistant
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
-    private ReadOnlyKernelPlugin? _assistantPlugin;
+    private KernelPlugin? _assistantPlugin;
     private bool _isDeleted;
 
     /// <summary>
@@ -62,7 +62,7 @@ internal sealed class Assistant : IAssistant
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
         AssistantModel assistantModel,
-        IEnumerable<ReadOnlyKernelPlugin>? plugins = null,
+        IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
@@ -76,7 +76,7 @@ internal sealed class Assistant : IAssistant
     internal Assistant(
         AssistantModel model,
         OpenAIRestContext restContext,
-        IEnumerable<ReadOnlyKernelPlugin>? plugins = null)
+        IEnumerable<KernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
@@ -91,7 +91,7 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    public ReadOnlyKernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
+    public KernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -157,9 +157,9 @@ internal sealed class Assistant : IAssistant
         return response;
     }
 
-    private ReadOnlyKernelPlugin DefinePlugin()
+    private KernelPlugin DefinePlugin()
     {
-        var assistantPlugin = new KernelPlugin(this.Name ?? this.Id);
+        var assistantPlugin = new DefaultKernelPlugin(this.Name ?? this.Id);
 
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
         assistantPlugin.AddFunction(functionAsk);

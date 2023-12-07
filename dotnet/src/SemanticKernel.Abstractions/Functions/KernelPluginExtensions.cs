@@ -5,14 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Provides extension methods for working with <see cref="ReadOnlyKernelPlugin"/>s and collections of them.</summary>
+/// <summary>Provides extension methods for working with <see cref="KernelPlugin"/>s and collections of them.</summary>
 public static class KernelPluginExtensions
 {
     /// <summary>Gets whether the plugin contains a function with the specified name.</summary>
     /// <param name="plugin">The plugin.</param>
     /// <param name="functionName">The name of the function.</param>
     /// <returns>true if the plugin contains the specified function; otherwise, false.</returns>
-    public static bool Contains(this ReadOnlyKernelPlugin plugin, string functionName)
+    public static bool Contains(this KernelPlugin plugin, string functionName)
     {
         Verify.NotNull(plugin);
         Verify.NotNull(functionName);
@@ -24,7 +24,7 @@ public static class KernelPluginExtensions
     /// <param name="plugin">The plugin.</param>
     /// <param name="function">The function.</param>
     /// <returns>true if the plugin contains the specified function; otherwise, false.</returns>
-    public static bool Contains(this ReadOnlyKernelPlugin plugin, KernelFunction function)
+    public static bool Contains(this KernelPlugin plugin, KernelFunction function)
     {
         Verify.NotNull(plugin);
         Verify.NotNull(function);
@@ -79,7 +79,7 @@ public static class KernelPluginExtensions
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            foreach (ReadOnlyKernelPlugin p in plugins)
+            foreach (KernelPlugin p in plugins)
             {
                 if (p.TryGetFunction(functionName, out func))
                 {
@@ -89,7 +89,7 @@ public static class KernelPluginExtensions
         }
         else
         {
-            if (plugins.TryGetPlugin(pluginName!, out ReadOnlyKernelPlugin? plugin) &&
+            if (plugins.TryGetPlugin(pluginName!, out KernelPlugin? plugin) &&
                 plugin.TryGetFunction(functionName, out func))
             {
                 return true;
@@ -103,12 +103,12 @@ public static class KernelPluginExtensions
     /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>
     /// <returns>A list of metadata over every function in the plugins collection</returns>
-    public static IList<KernelFunctionMetadata> GetFunctionsMetadata(this IEnumerable<ReadOnlyKernelPlugin> plugins)
+    public static IList<KernelFunctionMetadata> GetFunctionsMetadata(this IEnumerable<KernelPlugin> plugins)
     {
         Verify.NotNull(plugins);
 
         List<KernelFunctionMetadata> metadata = new();
-        foreach (ReadOnlyKernelPlugin plugin in plugins)
+        foreach (KernelPlugin plugin in plugins)
         {
             foreach (KernelFunction function in plugin)
             {

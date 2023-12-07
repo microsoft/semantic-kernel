@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// plugins and functions: a plugin may contain any number of functions, and a function may
 /// exist in any number of plugins.
 /// </remarks>
-public abstract class ReadOnlyKernelPlugin : IEnumerable<KernelFunction>
+public abstract class KernelPlugin : IEnumerable<KernelFunction>
 {
     /// <summary>Gets the name of the plugin.</summary>
     public string Name { get; }
@@ -31,7 +31,7 @@ public abstract class ReadOnlyKernelPlugin : IEnumerable<KernelFunction>
 
     /// <summary>Initializes the new plugin from the provided name.</summary>
     /// <param name="name">The name for the plugin.</param>
-    protected ReadOnlyKernelPlugin(string name) : this(name, description: null)
+    protected KernelPlugin(string name) : this(name, description: null)
     {
     }
 
@@ -40,7 +40,7 @@ public abstract class ReadOnlyKernelPlugin : IEnumerable<KernelFunction>
     /// <param name="description">A description of the plugin.</param>
     /// <exception cref="ArgumentException"><paramref name="name"/> if plugin name is invalid.</exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> if plugin with this name is already registered.</exception>
-    protected ReadOnlyKernelPlugin(string name, string? description)
+    protected KernelPlugin(string name, string? description)
     {
         Verify.ValidPluginName(name);
 

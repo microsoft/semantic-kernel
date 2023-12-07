@@ -73,7 +73,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        ReadOnlyKernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         // Call the common chat-loop
         await ChatAsync(
@@ -94,7 +94,7 @@ public static class Example70_Assistant
         Console.WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
-        var plugin = new KernelPlugin("spelling");
+        var plugin = new DefaultKernelPlugin("spelling");
         plugin.AddFunctionFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
@@ -159,7 +159,7 @@ public static class Example70_Assistant
     /// </summary>
     private static async Task ChatAsync(
         string resourcePath,
-        ReadOnlyKernelPlugin? plugin = null,
+        KernelPlugin? plugin = null,
         params string[] messages)
     {
         // Read assistant resource

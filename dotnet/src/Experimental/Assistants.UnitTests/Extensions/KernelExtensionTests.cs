@@ -20,7 +20,7 @@ public sealed class KernelExtensionTests
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
         var kernel = new Kernel();
-        kernel.Plugins.Add(new KernelPlugin("Fake", new[] { function }));
+        kernel.Plugins.Add(new DefaultKernelPlugin("Fake", new[] { function }));
 
         //Act
         var tool = kernel.GetAssistantTool(TwoPartToolName);
