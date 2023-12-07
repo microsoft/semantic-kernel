@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example24_OpenApiPlugin_Jira
@@ -32,7 +31,7 @@ public static class Example24_OpenApiPlugin_Jira
     /// </summary>
     public static async Task RunAsync()
     {
-        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
