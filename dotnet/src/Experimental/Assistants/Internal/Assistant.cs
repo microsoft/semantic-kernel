@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
@@ -46,8 +48,11 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
     public string Instructions => this._model.Instructions;
 
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
+
     private IKernelPlugin? _assistantPlugin;
     private bool _isDeleted;
 
@@ -136,16 +141,24 @@ internal sealed class Assistant : IAssistant
     /// Marshal thread run through <see cref="KernelFunction"/> interface.
     /// </summary>
     /// <param name="input">The user input</param>
+    /// <param name="threadId">The optional threadId</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
     private async Task<AssistantResponse> AskAsync(
         [Description("The user message provided to the assistant.")]
         string input,
+        [Description("The thread identifier to continue the chat.")]
+        string? threadId = null,
         CancellationToken cancellationToken = default)
     {
-        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        var thread =
+            string.IsNullOrWhiteSpace(threadId) ?
+                await this.NewThreadAsync(cancellationToken).ConfigureAwait(false) :
+                await this.GetThreadAsync(threadId!, cancellationToken).ConfigureAwait(false);
 
-        await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
+        var enhancedInput = $"{input}{Environment.NewLine}To continue this interaction, use threadId: {thread.Id}";
+        await thread.AddUserMessageAsync(enhancedInput, cancellationToken).ConfigureAwait(false);
+
         var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
         var response =
             new AssistantResponse
@@ -159,7 +172,8 @@ internal sealed class Assistant : IAssistant
 
     private IKernelPlugin DefinePlugin()
     {
-        var assistantPlugin = new KernelPlugin(this.Name ?? this.Id);
+        string pluginName = s_removeInvalidCharsRegex.Replace(this.Name ?? this.Id, string.Empty);
+        var assistantPlugin = new KernelPlugin(pluginName);
 
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
         assistantPlugin.AddFunction(functionAsk);

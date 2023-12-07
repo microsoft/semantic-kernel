@@ -143,6 +143,7 @@ public static class Example70_Assistant
         }
         finally
         {
+            // Clean-up (storage costs $)
             await Task.WhenAll(
                 assistant.DeleteThreadAsync(threadId),
                 assistant.DeleteAsync());
@@ -196,6 +197,7 @@ public static class Example70_Assistant
         }
         finally
         {
+            // Clean-up (storage costs $)
             await Task.WhenAll(
                 thread?.DeleteAsync() ?? Task.CompletedTask,
                 assistant.DeleteAsync());

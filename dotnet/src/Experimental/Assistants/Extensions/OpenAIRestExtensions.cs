@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 internal static partial class OpenAIRestExtensions
 {
-    private const string BaseUrl = "https://api.openai.com/v1/";
+    private const string BaseUrl = "https://api.openai.com/v1";
     private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
     private const string HeaderNameAuthorization = "Authorization";
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
@@ -55,6 +56,7 @@ internal static partial class OpenAIRestExtensions
         object? payload,
         CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"# {url}"); // $$$
         using var request = HttpRequest.CreatePostRequest(url, payload);
 
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");

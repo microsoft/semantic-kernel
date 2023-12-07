@@ -81,6 +81,7 @@ public static class Example71_AssistantDelegation
         }
         finally
         {
+            // Clean-up (storage costs $)
             await Task.WhenAll(
                 thread?.DeleteAsync() ?? Task.CompletedTask,
                 toolAssistant?.DeleteAsync() ?? Task.CompletedTask,
