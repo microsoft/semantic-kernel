@@ -19,6 +19,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 
+
 class OpenAIHandler(AIServiceClientBase, ABC):
     """Internal class for calls to OpenAI API's."""
 
@@ -83,21 +84,21 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         return response
 
     def _validate_request(
-            self, 
-            request_settings: Union[CompleteRequestSettings, ChatRequestSettings], 
-            prompt: str, 
-            messages: List[Dict[str, str]], 
-            chat_mode: OpenAIModelTypes,
-        ) -> None:
+        self,
+        request_settings: Union[CompleteRequestSettings, ChatRequestSettings],
+        prompt: str,
+        messages: List[Dict[str, str]],
+        chat_mode: OpenAIModelTypes,
+    ) -> None:
         """
         Validate the request, check if the settings are present and valid.
-        
+
         Arguments:
             request_settings {Union[CompleteRequestSettings, ChatRequestSettings]} -- The request settings.
             prompt {str} -- The prompt to complete.
             messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
             chat_mode {OpenAIModelTypes} -- The model type.
-        
+
         Raises:
             AIException: If the request settings are invalid.
 
@@ -112,7 +113,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             raise AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported, exc.args[0], exc
             ) from exc
-        
+
         try:
             assert request_settings, "The request settings cannot be `None`"
             assert (
@@ -130,13 +131,13 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ) from exc
 
     def _create_model_args(
-        self, 
-        request_settings: Union[CompleteRequestSettings, ChatRequestSettings], 
-        stream: bool, 
-        prompt: str, 
-        messages: Optional[List[Dict[str, str]]], 
-        functions: Optional[List[Dict[str, Any]]], 
-        chat_mode: bool
+        self,
+        request_settings: Union[CompleteRequestSettings, ChatRequestSettings],
+        stream: bool,
+        prompt: str,
+        messages: Optional[List[Dict[str, str]]],
+        functions: Optional[List[Dict[str, Any]]],
+        chat_mode: bool,
     ) -> Dict[str, Any]:
         """
         Create the model args.
@@ -196,9 +197,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         return model_args
 
     async def _send_embedding_request(
-        self, 
-        texts: List[str], 
-        batch_size: Optional[int] = None
+        self, texts: List[str], batch_size: Optional[int] = None
     ) -> ndarray:
         """
         Send the embedding request.

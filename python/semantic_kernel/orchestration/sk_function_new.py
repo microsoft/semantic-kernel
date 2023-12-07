@@ -3,7 +3,6 @@ from abc import abstractmethod
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.parameter_view import ParameterView as Parameter
 
-from typing import List
 
 class SKFunctionNew(SKBaseModel):
     name: str

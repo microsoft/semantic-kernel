@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 from logging import Logger
 from typing import (
     TYPE_CHECKING,
@@ -11,13 +12,14 @@ from typing import (
     Tuple,
     Union,
 )
-import time
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
+from openai.types.beta.threads.run import Run
+
 from semantic_kernel.connectors.ai import (
     ChatCompletionClientBase,
     OpenAIAssistantSettings,
 )
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
@@ -32,6 +34,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """
     The OpenAIChatCompletionBase class is the base class for OpenAI chat completion services.
     """
+
     async def complete_chat_async(
         self,
         messages: List[Dict[str, str]],
@@ -51,7 +54,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             Union[str, List[str]] -- The completion result(s).
         """
         if self.is_assistant:
-            return await self._handle_assistant_chat(messages)
+            return await self._handle_assistant_chat_async(messages)
         else:
             response = await self._send_request(
                 messages=messages, request_settings=settings, stream=False
@@ -61,7 +64,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 return response.choices[0].message.content
             else:
                 return [choice.message.content for choice in response.choices]
-
 
     async def complete_chat_with_functions_async(
         self,
@@ -74,7 +76,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         List[Tuple[Optional[str], Optional[FunctionCall]]],
     ]:
         """
-        Executes a chat completion request and returns the result.         
+        Executes a chat completion request and returns the result.
         Currently supports both assistant chat as well as regular chat.
 
         Arguments:
@@ -88,7 +90,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """
 
         if self.is_assistant:
-            return await self._handle_assistant_chat(messages)
+            return await self._handle_assistant_chat_async(
+                messages, functions=functions
+            )
         else:
             response = await self._send_request(
                 messages=messages,
@@ -101,9 +105,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 return _parse_message(response.choices[0].message, self.log)
             else:
                 return [
-                    _parse_message(choice.message, self.log) for choice in response.choices
+                    _parse_message(choice.message, self.log)
+                    for choice in response.choices
                 ]
-
 
     async def complete_chat_stream_async(
         self,
@@ -126,7 +130,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if self.is_assistant:
             raise AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,
-                f"complete_chat_stream_async for assistants is not currently supported.",
+                "complete_chat_stream_async for assistants is not currently supported.",
             )
 
         response = await self._send_request(
@@ -148,14 +152,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             else:
                 text, index = self._parse_choices(chunk.choices[0])
                 yield text
-    
 
     async def create_assistant_async(
-        self, 
+        self,
         assistant_settings: OpenAIAssistantSettings,
         overwrite: bool = True,
     ) -> None:
-        '''
+        """
         Create an assistant with the provided name, description, and instructions.
 
         Args:
@@ -165,19 +168,19 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         Returns:
             str: The ID of the created assistant
-        '''
+        """
         if not self.is_assistant:
             raise AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,
-                f"create_assistant_async is only supported for assistants.",
+                "create_assistant_async is only supported for assistants.",
             )
-        
+
         if assistant_settings is None:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
-                f"Please provide assistant settings.",
+                "Please provide assistant settings.",
             )
-        
+
         # Only create an assistant if it doesn't exist or if assistant exists and overwrite is True
         if self.assistant_id and not overwrite:
             return
@@ -191,77 +194,171 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self.assistant_id = assistant.id
 
         return
-    
 
-    async def _create_thread_async(self) -> None:
-        '''
-        Create a thread for the assistant.
+    # async def _handle_assistant_chat(
+    #     self,
+    #     messages: List[Dict[str, str]],
+    #     functions: Optional[List[Dict[str, Any]]] = None,
+    # ) -> List[str]:
+    #     """
+    #     Handle an assistant chat request.
 
-        Returns:
-            None
-        '''
-        if not self.is_assistant:
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                f"create_thread_async is only supported for assistants.",
-            )
-        
-        if not self.assistant_id:
-            raise AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                f"Please first create an assistant.",
-            )
+    #     Arguments:
+    #         messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
 
-        thread = await self.client.beta.threads.create()
-        self.thread_id = thread.id
-        return
+    #     Returns:
+    #         List[str] -- The completion result(s).
+    #     """
+    #     if not self.assistant_id:
+    #         raise AIException(
+    #             AIException.ErrorCodes.InvalidConfiguration,
+    #             "Please first create an assistant."
+    #         )
 
+    #     if not self.thread_id:
+    #         thread = await self.client.beta.threads.create(timeout=10)
+    #         self.thread_id = thread.id
 
-    async def _handle_assistant_chat(
-        self, 
-        messages: List[Dict[str, str]]
+    #     await self.client.beta.threads.messages.create(
+    #         thread_id=self.thread_id, role=messages[-1]["role"], content=messages[-1]["content"]
+    #     )
+
+    #     tools = []
+    #     if functions is not None:
+    #         tools = self._transform_function_definitions(functions)
+
+    #     run = await self.client.beta.threads.runs.create(
+    #         thread_id=self.thread_id,
+    #         assistant_id=self.assistant_id,
+    #         tools=tools,
+    #     )
+
+    #     while run.status == "queued" or run.status == "in_progress":
+    #         run = await self.client.beta.threads.runs.retrieve(
+    #             thread_id=self.thread_id,
+    #             run_id=run.id,
+    #         )
+    #         time.sleep(0.5)
+
+    #     if run.status == "requires_action" and run.required_action.type == "submit_tool_outputs":
+
+    #         # need to run the function here, how do we do that?
+
+    #         await self.client.beta.threads.runs.submit_tool_outputs(
+    #             run_id=run.id,
+    #             thread_id=self.thread_id,
+    #             tool_outputs=run.required_action.tool_outputs,
+    #         )
+
+    #     try:
+    #         while run.status == "queued" or run.status == "in_progress":
+    #             run = await self.client.beta.threads.runs.retrieve(
+    #                 thread_id=self.thread_id,
+    #                 run_id=run.id,
+    #             )
+    #             time.sleep(0.5)
+    #     except Exception as e:
+    #         print(e)
+
+    #     response = await self.client.beta.threads.messages.list(thread_id=self.thread_id, order="desc")
+    #     if hasattr(response, 'data'):
+    #         # Filtering to get only assistant messages
+    #         assistant_messages = [message for message in response.data if message.role == 'assistant']
+
+    #         if assistant_messages:
+    #             output = []
+    #             for assistant_message in assistant_messages:
+    #                 if assistant_message.content:
+    #                     output.append(assistant_message.content[0].text.value)
+    #             return " ".join(output)
+    #         else:
+    #             return []
+    #     else:
+    #         return []
+
+    async def _handle_assistant_chat_async(
+        self,
+        messages: List[Dict[str, str]],
+        functions: Optional[List[Dict[str, Any]]] = None,
     ) -> List[str]:
         """
         Handle an assistant chat request.
-
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-        
+            functions {Optional{List[Dict[str, Any]]}} -- The functions to use for the chat completion.
         Returns:
             List[str] -- The completion result(s).
         """
-        if not self.assistant_id:
+        if not self.assistant_id or not self.thread_id:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
-                "Please first create an assistant."
+                "Please first create an assistant.",
             )
 
         if not self.thread_id:
-            # This is failing
             thread = await self.client.beta.threads.create(timeout=10)
             self.thread_id = thread.id
 
+        last_message = messages[-1]
         await self.client.beta.threads.messages.create(
-            thread_id=self.thread_id, role=messages["role"], content=messages["content"]
-        )
-        run = self.client.beta.threads.runs.create(
             thread_id=self.thread_id,
-            assistant_id=self.assistant_id,
+            role=last_message["role"],
+            content=last_message["content"],
         )
 
-        while run.status == "queued" or run.status == "in_progress":
-            run = await self.client.beta.threads.runs.retrieve(
-                thread_id=thread.id,
-                run_id=run.id,
-            )
-            time.sleep(0.5)
+        tools = self._transform_function_definitions(functions) if functions else []
 
-        response = await self.client.beta.threads.messages.list(thread_id=thread.id, order="asc")
-        if hasattr(response, 'data'):
-            return response.data
-        else:
-            return []
-    
+        run = await self.client.beta.threads.runs.create(
+            thread_id=self.thread_id, assistant_id=self.assistant_id, tools=tools
+        )
+
+        run = await self._poll_on_run(run)
+
+        # Handle required action if necessary
+        if (
+            run.status == "requires_action"
+            and run.required_action.type == "submit_tool_outputs"
+        ):
+            # need to run the function here, how do we do that?
+            tool_outputs = None
+
+            await self.client.beta.threads.runs.submit_tool_outputs(
+                run_id=run.id,
+                thread_id=self.thread_id,
+                tool_outputs=tool_outputs,
+            )
+
+        try:
+            response = await self.client.beta.threads.messages.list(
+                thread_id=self.thread_id, order="desc"
+            )
+            if hasattr(response, "data"):
+                return [
+                    msg.content[0].text.value
+                    for msg in response.data
+                    if msg.role == "assistant" and msg.content
+                ]
+        except Exception as e:
+            print(f"Error retrieving chat responses: {e}")
+
+        return []
+
+    async def _poll_on_run(self, run: Run) -> Run:
+        while run.status in ["queued", "in_progress"]:
+            run = await self.client.beta.threads.runs.retrieve(
+                thread_id=self.thread_id, run_id=run.id
+            )
+            await asyncio.sleep(0.5)
+        return run
+
+    def _transform_function_definitions(self, functions):
+        transformed_functions = []
+
+        for func in functions:
+            transformed_function = {"type": "function", "function": func}
+            transformed_functions.append(transformed_function)
+
+        return transformed_functions
 
     @staticmethod
     def _parse_choices(choice) -> Tuple[str, int]:

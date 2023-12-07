@@ -6,6 +6,7 @@ from typing import Any
 import pybars
 from pybars import Compiler
 from pydantic import PrivateAttr
+
 from semantic_kernel.sk_pydantic import SKBaseModel
 
 
@@ -95,7 +96,8 @@ def _camel_case(this, *args, **kwargs):
 
 
 class RunThread(threading.Thread):
-    # TODO: replace with better solution and/or figure out why asyncio.run will not work, or move to handlebars implementation that van handle async
+    # TODO: replace with better solution and/or figure out why asyncio.run will not work,
+    # or move to handlebars implementation that van handle async
     def __init__(self, func, args, kwargs):
         self.func = func
         self.args = args
