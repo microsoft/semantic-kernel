@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,7 @@ public static class KernelPluginFactory
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static KernelPluginBase CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
@@ -42,7 +43,7 @@ public static class KernelPluginFactory
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static KernelPluginBase CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    public static KernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 
@@ -52,7 +53,7 @@ public static class KernelPluginFactory
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
         // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
-        KernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
+        DefaultKernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
@@ -75,5 +76,16 @@ public static class KernelPluginFactory
         }
 
         return plugin;
+    }
+
+    /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreateFromFunctions(string pluginName, string? description, IEnumerable<KernelFunction>? functions = null)
+    {
+        return new DefaultKernelPlugin(pluginName, description, functions);
     }
 }

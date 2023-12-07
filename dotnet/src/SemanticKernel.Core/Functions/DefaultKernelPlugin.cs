@@ -9,25 +9,25 @@ using System.Linq;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides an <see cref="KernelPluginBase"/> implementation around a collection of functions.
+/// Provides an <see cref="KernelPlugin"/> implementation around a collection of functions.
 /// </summary>
 [DebuggerDisplay("Name = {Name}, Functions = {FunctionCount}")]
-[DebuggerTypeProxy(typeof(KernelPlugin.TypeProxy))]
-public sealed class KernelPlugin : KernelPluginBase
+[DebuggerTypeProxy(typeof(DefaultKernelPlugin.TypeProxy))]
+internal sealed class DefaultKernelPlugin : KernelPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;
 
     /// <summary>Initializes the new plugin from the provided name.</summary>
     /// <param name="name">The name for the plugin.</param>
-    public KernelPlugin(string name) : this(name, description: null, functions: null)
+    internal DefaultKernelPlugin(string name) : this(name, description: null, functions: null)
     {
     }
 
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    public KernelPlugin(string name, IEnumerable<KernelFunction>? functions) : this(name, description: null, functions)
+    internal DefaultKernelPlugin(string name, IEnumerable<KernelFunction>? functions) : this(name, description: null, functions)
     {
     }
 
@@ -37,7 +37,7 @@ public sealed class KernelPlugin : KernelPluginBase
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public KernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null) : base(name, description)
+    internal DefaultKernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null) : base(name, description)
     {
         this._functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
         if (functions is not null)
@@ -92,9 +92,9 @@ public sealed class KernelPlugin : KernelPluginBase
     /// <summary>Debugger type proxy for the plugin.</summary>
     private sealed class TypeProxy
     {
-        private readonly KernelPlugin _plugin;
+        private readonly DefaultKernelPlugin _plugin;
 
-        public TypeProxy(KernelPlugin plugin) => this._plugin = plugin;
+        public TypeProxy(DefaultKernelPlugin plugin) => this._plugin = plugin;
 
         public string Name => this._plugin.Name;
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -28,12 +29,12 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPluginBase ImportPluginFromGrpcDirectory(
+    public static KernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
     {
-        KernelPluginBase plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
+        KernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -45,12 +46,12 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPluginBase ImportPluginFromGrpcFile(
+    public static KernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
     {
-        KernelPluginBase plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
+        KernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -62,12 +63,12 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPluginBase ImportPluginFromGrpc(
+    public static KernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
     {
-        KernelPluginBase plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
+        KernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -79,7 +80,7 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPluginBase CreatePluginFromGrpcDirectory(
+    public static KernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
@@ -111,7 +112,7 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPluginBase CreatePluginFromGrpcFile(
+    public static KernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
@@ -135,7 +136,7 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static KernelPluginBase CreatePluginFromGrpc(
+    public static KernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
@@ -148,7 +149,7 @@ public static class GrpcKernelExtensions
 
         var operations = parser.Parse(documentStream, pluginName);
 
-        var plugin = new KernelPlugin(pluginName);
+        var functions = new List<KernelFunction>();
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
@@ -162,7 +163,7 @@ public static class GrpcKernelExtensions
             try
             {
                 logger.LogTrace("Registering gRPC function {0}.{1}", pluginName, operation.Name);
-                plugin.AddFunction(CreateGrpcFunction(runner, operation, loggerFactory));
+                functions.Add(CreateGrpcFunction(runner, operation, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -172,7 +173,7 @@ public static class GrpcKernelExtensions
             }
         }
 
-        return plugin;
+        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
 
     #region private

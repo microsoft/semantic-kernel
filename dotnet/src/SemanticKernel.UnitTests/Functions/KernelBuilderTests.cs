@@ -82,8 +82,8 @@ public class KernelBuilderTests
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
     {
-        KernelPluginBase plugin1 = new KernelPlugin("plugin1");
-        KernelPluginBase plugin2 = new KernelPlugin("plugin2");
+        KernelPlugin plugin1 = new DefaultKernelPlugin("plugin1");
+        KernelPlugin plugin2 = new DefaultKernelPlugin("plugin2");
 
         KernelBuilder builder = new();
         builder.Plugins.Add(plugin1);
@@ -143,7 +143,7 @@ public class KernelBuilderTests
     [Fact]
     public void ItIsntNeededInDIContexts()
     {
-        KernelPluginCollection plugins = new() { new KernelPlugin("plugin1") };
+        KernelPluginCollection plugins = new() { new DefaultKernelPlugin("plugin1") };
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
@@ -190,14 +190,14 @@ public class KernelBuilderTests
     [Fact]
     public void ItFindsAllPluginsToPopulatePluginsCollection()
     {
-        KernelPlugin plugin1 = new("plugin1");
-        KernelPlugin plugin2 = new("plugin2");
-        KernelPlugin plugin3 = new("plugin3");
+        DefaultKernelPlugin plugin1 = new("plugin1");
+        DefaultKernelPlugin plugin2 = new("plugin2");
+        DefaultKernelPlugin plugin3 = new("plugin3");
 
         KernelBuilder builder = new();
-        builder.Services.AddSingleton<KernelPluginBase>(plugin1);
-        builder.Services.AddSingleton<KernelPluginBase>(plugin2);
-        builder.Services.AddSingleton<KernelPluginBase>(plugin3);
+        builder.Services.AddSingleton<KernelPlugin>(plugin1);
+        builder.Services.AddSingleton<KernelPlugin>(plugin2);
+        builder.Services.AddSingleton<KernelPlugin>(plugin3);
         Kernel kernel = builder.Build();
 
         Assert.Equal(3, kernel.Plugins.Count);
@@ -206,9 +206,9 @@ public class KernelBuilderTests
     [Fact]
     public void ItFindsPluginCollectionToUse()
     {
-        KernelPlugin plugin1 = new("plugin1");
-        KernelPlugin plugin2 = new("plugin2");
-        KernelPlugin plugin3 = new("plugin3");
+        DefaultKernelPlugin plugin1 = new("plugin1");
+        DefaultKernelPlugin plugin2 = new("plugin2");
+        DefaultKernelPlugin plugin3 = new("plugin3");
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));

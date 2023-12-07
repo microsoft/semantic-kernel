@@ -24,8 +24,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Handlebars.UnitTests" />
-    <InternalsVisibleTo Include="SemanticKernel.Experimental.Assistants.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,8 +37,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Plugins.OpenAPI" />
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Plugins.Grpc" />
   </ItemGroup>
 
 </Project>
