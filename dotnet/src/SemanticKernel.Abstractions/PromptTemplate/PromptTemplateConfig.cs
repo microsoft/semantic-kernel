@@ -97,7 +97,7 @@ public sealed class PromptTemplateConfig
     {
         if (this.OutputVariable is not null)
         {
-            return new KernelReturnParameterMetadata()
+            return new KernelReturnParameterMetadata
             {
                 Description = this.OutputVariable.Description,
                 Schema = string.IsNullOrEmpty(this.OutputVariable.JsonSchema) ? null : KernelJsonSchema.Parse(this.OutputVariable.JsonSchema!),

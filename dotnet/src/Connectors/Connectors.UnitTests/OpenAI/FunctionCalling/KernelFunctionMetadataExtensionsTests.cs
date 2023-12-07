@@ -182,8 +182,18 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             Description = "My sample function."
         };
-        promptTemplateConfig.InputVariables.Add(new InputVariable() { Name = "parameter1", Description = "String parameter", JsonSchema = "{\"type\":\"string\",\"description\":\"String parameter\"}" });
-        promptTemplateConfig.InputVariables.Add(new InputVariable() { Name = "parameter2", Description = "Enum parameter", JsonSchema = "{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}" });
+        promptTemplateConfig.InputVariables.Add(new InputVariable
+        {
+            Name = "parameter1",
+            Description = "String parameter",
+            JsonSchema = "{\"type\":\"string\",\"description\":\"String parameter\"}"
+        });
+        promptTemplateConfig.InputVariables.Add(new InputVariable
+        {
+            Name = "parameter2",
+            Description = "Enum parameter",
+            JsonSchema = "{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}"
+        });
         var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
         var functionMetadata = function.Metadata;
         var sut = functionMetadata.ToOpenAIFunction();
