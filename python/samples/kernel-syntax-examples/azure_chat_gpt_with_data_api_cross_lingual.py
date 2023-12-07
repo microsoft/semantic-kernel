@@ -4,11 +4,6 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import (
-    AzureAISearchDataSourceParameters,
-    AzureChatWithDataSettings,
-    DataSourceType,
-)
 
 kernel = sk.Kernel()
 
@@ -16,11 +11,13 @@ kernel = sk.Kernel()
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
-azure_chat_with_data_settings = AzureChatWithDataSettings(
-    data_source_type=DataSourceType.AZURE_AI_SEARCH,
-    data_source_parameters=AzureAISearchDataSourceParameters(
-        **sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
-    ),
+azure_aisearch_datasource_settings = (
+    sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
+)
+azure_chat_with_data_settings = sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    data_source_parameters=sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+        **azure_aisearch_datasource_settings
+    )
 )
 
 # Set index language
@@ -33,22 +30,28 @@ azure_chat_with_data_settings.data_source_parameters.indexLanguage = "en"
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
 
+chat_service = sk_oai.AzureChatCompletion(
+    base_url=f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment}/extensions",
+    deployment_name=deployment,
+    api_key=api_key,
+    endpoint=endpoint,
+    api_version="2023-12-01-preview",
+)
 kernel.add_chat_service(
     "chat-gpt",
-    sk_oai.AzureChatCompletionWithData(
-        deployment_name=deployment,
-        endpoint=endpoint,
-        api_key=api_key,
-        api_version="2023-12-01-preview",
-        data_source_settings=azure_chat_with_data_settings,
-    ),
+    chat_service,
 )
 
 prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.8, inputLanguage="fr", outputLanguage="de"
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    inputLanguage="fr",
+    outputLanguage="de",
+    data_source_settings=azure_chat_with_data_settings,
 )
 
-prompt_template = sk.ChatWithDataPromptTemplate(
+prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
 

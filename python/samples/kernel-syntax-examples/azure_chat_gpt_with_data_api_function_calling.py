@@ -6,13 +6,8 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_settings import (
-    AzureAISearchDataSourceParameters,
-    AzureChatWithDataSettings,
-    DataSourceType,
-)
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.azure_chat_with_data_prompt_template import (
-    AzureChatWithDataPromptTemplate,
+from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+    OpenAIChatPromptTemplate,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
@@ -26,11 +21,13 @@ kernel = sk.Kernel()
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
-azure_chat_with_data_settings = AzureChatWithDataSettings(
-    data_source_type=DataSourceType.AZURE_AI_SEARCH,
-    data_source_parameters=AzureAISearchDataSourceParameters(
-        **sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
-    ),
+azure_aisearch_datasource_settings = (
+    sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
+)
+azure_chat_with_data_settings = sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    data_source_parameters=sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+        **azure_aisearch_datasource_settings
+    )
 )
 
 # For example, AI Search index may contain the following document:
@@ -39,16 +36,16 @@ azure_chat_with_data_settings = AzureChatWithDataSettings(
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-
+chat_service = sk_oai.AzureChatCompletion(
+    base_url=f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment}/extensions",
+    deployment_name=deployment,
+    api_key=api_key,
+    endpoint=endpoint,
+    api_version="2023-12-01-preview",
+)
 kernel.add_chat_service(
     "chat-gpt",
-    sk_oai.AzureChatCompletionWithData(
-        deployment_name=deployment,
-        endpoint=endpoint,
-        api_key=api_key,
-        api_version="2023-12-01-preview",
-        data_source_settings=azure_chat_with_data_settings,
-    ),
+    chat_service,
 )
 
 skills_directory = os.path.join(__file__, "../../../../samples/skills")
@@ -63,10 +60,14 @@ kernel.import_skill(TimeSkill(), skill_name="time")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"
+prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    function_call="auto",
+    data_source_settings=azure_chat_with_data_settings,
 )
-prompt_template = AzureChatWithDataPromptTemplate(
+prompt_template = OpenAIChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
 prompt_template.add_user_message("Hi there, who are you?")

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from dataclasses import dataclass
-from typing import Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -14,6 +14,34 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
     class CompletionConfig(PromptTemplateConfig.CompletionConfig):
         inputLanguage: str = None
         outputLanguage: str = None
+        data_source_settings: Optional[
+            "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
+        ] = None
+
+    @dataclass
+    class AzureAISearchDataSourceParameters:
+        """Class to hold Azure AI Search data source parameters."""
+
+        indexName: str
+        endpoint: str
+        key: Optional[str] = None
+        indexLanguage: Optional[str] = None
+        fieldsMapping: Dict[str, Any] = field(default_factory=dict)
+        inScope: Optional[bool] = True
+        topNDocuments: Optional[int] = 5
+        queryType: Optional[str] = "simple"
+        semanticConfiguration: Optional[str] = None
+        roleInformation: Optional[str] = None
+
+    @dataclass
+    class AzureChatWithDataSettings:
+        """Class to hold Azure OpenAI Chat With Data settings,
+        which might include data source type and authentication information."""
+
+        data_source_type: str = "AzureCognitiveSearch"
+        data_source_parameters: "PromptTemplateConfig.AzureAISearchDataSourceParameters" = (
+            None
+        )
 
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateWithDataConfig":
@@ -40,6 +68,9 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         function_call: Optional[str] = None,
         inputLanguage: str = None,
         outputLanguage: str = None,
+        data_source_settings: Optional[
+            "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
+        ] = None,
     ) -> "PromptTemplateWithDataConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
@@ -54,4 +85,5 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         config.completion.function_call = function_call
         config.completion.inputLanguage = inputLanguage
         config.completion.outputLanguage = outputLanguage
+        config.completion.data_source_settings = data_source_settings
         return config

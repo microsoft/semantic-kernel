@@ -9,9 +9,6 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.azure_chat_with_data_request_settings import (
-    AzureChatWithDataRequestSettings,
-)
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -756,18 +753,11 @@ class Kernel:
                 else None,
             )
 
-            if function_config.has_chat_with_data_prompt:
-                function.set_chat_configuration(
-                    AzureChatWithDataRequestSettings.from_completion_config(
-                        function_config.prompt_template_config.completion
-                    )
+            function.set_chat_configuration(
+                ChatRequestSettings.from_completion_config(
+                    function_config.prompt_template_config.completion
                 )
-            else:
-                function.set_chat_configuration(
-                    ChatRequestSettings.from_completion_config(
-                        function_config.prompt_template_config.completion
-                    )
-                )
+            )
 
             if service is None:
                 raise AIException(

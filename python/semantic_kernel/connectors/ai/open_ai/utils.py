@@ -187,7 +187,7 @@ async def chat_completion_with_function_call(
 
 
 def _parse_message(
-    message: ChatCompletion, logger: Optional[Logger] = None
+    message: ChatCompletion, logger: Optional[Logger] = None, with_data: bool = False
 ) -> Tuple[Optional[str], Optional[FunctionCall]]:
     """
     Parses the message.
@@ -205,5 +205,14 @@ def _parse_message(
             name=function_call.name,
             arguments=function_call.arguments,
         )
+
+    tool_content = None
+    if message.model_extra and "context" in message.model_extra:
+        for m in message.model_extra["context"].get("messages", []):
+            if m["role"] == "tool":
+                tool_content = m.get("content", None)
+                break
+    if with_data:
+        return (content, tool_content, function_call)
 
     return (content, function_call)

@@ -13,6 +13,9 @@ from typing import (
 )
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
+    AzureChatWithDataStreamResponse,
+)
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
@@ -85,6 +88,43 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 _parse_message(choice.message, self.log) for choice in response.choices
             ]
 
+    async def complete_chat_with_data_async(
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: "ChatRequestSettings",
+        logger: Optional[Logger] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
+    ) -> Union[
+        Tuple[str, str],
+        List[Tuple[str, str]],
+        Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[str], Optional[FunctionCall]]],
+    ]:
+        """Executes a chat completion request with data (and optionally functions) and returns the result.
+
+        Arguments:
+            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            request_settings {ChatRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            functions {Optional[List[Dict[str, Any]]]} -- The functions to use for the chat completion. (Optional)
+
+        Returns:
+            The completion result(s) in the format (assistant_message, tool_message) or
+            (assistant_message, tool_message, function_call).
+            The tool message contains additional information about the data source including citations.
+        """
+        response = await self._send_request(
+            messages=messages,
+            request_settings=request_settings,
+            stream=False,
+            functions=functions,
+        )
+
+        if len(response.choices) == 1:
+            return _parse_message(response.choices[0].message, with_data=True)
+        else:
+            return [_parse_message(choice.message) for choice in response.choices]
+
     async def complete_chat_stream_async(
         self,
         messages: List[Dict[str, str]],
@@ -128,3 +168,25 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             message += choice.delta.content
 
         return message, choice.index
+
+    async def complete_chat_stream_with_data_async(
+        self,
+        messages: List[Dict[str, str]],
+        settings: "ChatRequestSettings",
+        logger: Optional[Logger] = None,
+    ) -> AsyncGenerator[Union[str, List[str]], None]:
+        """Executes a chat completion request with data and returns the result.
+
+        Arguments:
+            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            settings {ChatRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+
+        Returns:
+            Union[str, List[str]] -- The completion result(s).
+        """
+        response = await self._send_request(
+            messages=messages, request_settings=settings, stream=True
+        )
+
+        return AzureChatWithDataStreamResponse(response, settings)

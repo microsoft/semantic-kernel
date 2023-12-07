@@ -6,7 +6,7 @@ import sys
 import threading
 from enum import Enum
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -152,18 +152,28 @@ class SKFunction(SKFunctionBase):
                 log.warning("Function call is not None, but functions is None")
             try:
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
-                    outputs = await client.complete_chat_with_functions_async(
-                        messages, functions, request_settings
-                    )
-                    if function_config.has_chat_with_data_prompt:
-                        completion, tool_message, function_call = outputs
+                    if request_settings.data_source_settings is not None and hasattr(
+                        client, "complete_chat_with_data_async"
+                    ):
+                        (
+                            completion,
+                            tool_message,
+                            function_call,
+                        ) = await client.complete_chat_with_data_async(
+                            messages, request_settings, functions=functions
+                        )
                         if tool_message:
                             context.objects["tool_message"] = tool_message
                             as_chat_prompt.add_message(
                                 role="tool", message=tool_message
                             )
                     else:
-                        completion, function_call = outputs
+                        (
+                            completion,
+                            function_call,
+                        ) = await client.complete_chat_with_functions_async(
+                            messages, functions, request_settings
+                        )
 
                     as_chat_prompt.add_message(
                         "assistant", message=completion, function_call=function_call
@@ -173,14 +183,23 @@ class SKFunction(SKFunctionBase):
                     if function_call is not None:
                         context.objects["function_call"] = function_call
                 else:
-                    completion = await client.complete_chat_async(
-                        messages, request_settings
-                    )
-
-                    if isinstance(completion, Tuple):
-                        completion, tool_message = completion
+                    if request_settings.data_source_settings is not None and hasattr(
+                        client, "complete_chat_with_data_async"
+                    ):
+                        # third item is function_call, None in this case
+                        (
+                            completion,
+                            tool_message,
+                            _,
+                        ) = await client.complete_chat_with_data_async(
+                            messages, request_settings
+                        )
                         context.objects["tool_message"] = tool_message
                         as_chat_prompt.add_message(role="tool", message=tool_message)
+                    else:
+                        completion = await client.complete_chat_async(
+                            messages, request_settings
+                        )
 
                     as_chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
@@ -204,8 +223,10 @@ class SKFunction(SKFunctionBase):
                     messages = await chat_prompt.render_messages_async(context)
 
                     # With data case - stream and get the tool message for citations
-                    if function_config.has_chat_with_data_prompt:
-                        response = await client.complete_chat_stream_async(
+                    if request_settings.data_source_settings is not None and hasattr(
+                        client, "complete_chat_stream_with_data_async"
+                    ):
+                        response = await client.complete_chat_stream_with_data_async(
                             messages, request_settings
                         )
                         async for partial_content in response:

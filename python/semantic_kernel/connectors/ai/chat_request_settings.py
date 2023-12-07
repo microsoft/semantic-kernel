@@ -7,6 +7,9 @@ if TYPE_CHECKING:
     from semantic_kernel.semantic_functions.prompt_template_config import (
         PromptTemplateConfig,
     )
+    from semantic_kernel.semantic_functions.prompt_template_with_data_config import (
+        PromptTemplateWithDataConfig,
+    )
 
 
 @dataclass
@@ -19,7 +22,12 @@ class ChatRequestSettings:
     max_tokens: int = 256
     token_selection_biases: Dict[int, int] = field(default_factory=dict)
     stop_sequences: List[str] = field(default_factory=list)
-    function_call: Optional[str] = None
+    function_call: Optional[str] = (None,)
+    data_source_settings: Optional[
+        "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
+    ] = None
+    inputLanguage: Optional[str] = None
+    outputLanguage: Optional[str] = None
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
@@ -37,6 +45,12 @@ class ChatRequestSettings:
             if hasattr(completion_config, "function_call")
             else None
         )
+        if hasattr(completion_config, "data_source_settings"):
+            self.data_source_settings = completion_config.data_source_settings
+        if hasattr(completion_config, "inputLanguage"):
+            self.inputLanguage = completion_config.inputLanguage
+        if hasattr(completion_config, "outputLanguage"):
+            self.outputLanguage = completion_config.outputLanguage
 
     @staticmethod
     def from_completion_config(
