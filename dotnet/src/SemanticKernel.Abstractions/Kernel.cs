@@ -320,7 +320,7 @@ public sealed class Kernel
     #region InvokeAsync
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
+    /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -372,7 +372,7 @@ public sealed class Kernel
 
     #region InvokeStreamingAsync
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -394,7 +394,7 @@ public sealed class Kernel
     }
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>

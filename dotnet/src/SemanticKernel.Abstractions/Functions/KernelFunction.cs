@@ -96,7 +96,7 @@ public abstract class KernelFunction
     }
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
+    /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -167,7 +167,27 @@ public abstract class KernelFunction
     }
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
+    /// Invokes the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <typeparam name="TResult">Specifies the type of the result value of the function.</typeparam>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
+    public async Task<TResult?> InvokeAsync<TResult>(
+        Kernel kernel,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        return result.GetValue<TResult>();
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -184,18 +204,19 @@ public abstract class KernelFunction
         this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
+    /// <typeparam name="TResult">Specifies the type of the result values of the function.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{TResult}"/> for streaming the results of the function's invocation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <remarks>
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+    public async IAsyncEnumerable<TResult> InvokeStreamingAsync<TResult>(
         Kernel kernel,
         KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -212,7 +233,7 @@ public abstract class KernelFunction
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            IAsyncEnumerator<T> enumerator;
+            IAsyncEnumerator<TResult> enumerator;
             try
             {
                 // Quick check for cancellation after logging about function start but before doing any real work.
@@ -226,7 +247,7 @@ public abstract class KernelFunction
                 }
 
                 // Invoke the function and get its streaming enumerator.
-                enumerator = this.InvokeCoreStreamingAsync<T>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -277,7 +298,7 @@ public abstract class KernelFunction
     }
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
+    /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -289,13 +310,13 @@ public abstract class KernelFunction
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected abstract IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(Kernel kernel,
+    protected abstract IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
