@@ -38,7 +38,7 @@ public sealed class InputVariable
     /// JsonSchema describing this variable.
     /// </summary>
     /// <remarks>
-    /// This string will be deserialised into an instance of <see cref="KernelJsonSchema"/>.
+    /// This string will be deserialized into an instance of <see cref="KernelJsonSchema"/>.
     /// </remarks>
     [JsonPropertyName("json_schema")]
     public string? JsonSchema { get; set; }
