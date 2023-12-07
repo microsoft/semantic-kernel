@@ -7,8 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.TextGeneration;
 
 /**
  * The following example shows how to plug a custom text generation model into SK.
