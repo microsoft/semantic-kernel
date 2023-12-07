@@ -30,7 +30,7 @@ public interface IChatThread
     /// <param name="assistant">An assistant instance.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assistant message(s)</returns>
-    Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default); // $$$ FIX CARDINALITY
 
     /// <summary>
     /// Delete current thread.  Terminal state - Unable to perform any

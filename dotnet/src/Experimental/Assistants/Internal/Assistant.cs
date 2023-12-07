@@ -147,10 +147,12 @@ internal sealed class Assistant : IAssistant
     private async Task<AssistantResponse> AskAsync(
         [Description("The user message provided to the assistant.")]
         string input,
-        [Description("The thread identifier to continue the chat.")]
+        [Description("The optional OpenAI thread identifier to continue the chat.")]
         string? threadId = null,
         CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"$$$ {threadId ?? "new-thread"}");
+
         var thread =
             string.IsNullOrWhiteSpace(threadId) ?
                 await this.NewThreadAsync(cancellationToken).ConfigureAwait(false) :

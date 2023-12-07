@@ -32,7 +32,7 @@ public static class Example72_AssistantCollaboration
         }
 
         // $$$
-        //await RunCollaborationAsync();
+        await RunCollaborationAsync();
 
         // $$$
         await RunAsPluginsAsync();
@@ -49,22 +49,29 @@ public static class Example72_AssistantCollaboration
         IChatThread? thread = null;
         try
         {
+            // Create copy-writer assistant to generate ideas
             copyWriter = await CreateCopyWriterAsync();
+            // Create art-director assistant to review ideas, provide feedback and final approval
             artDirector = await CreateArtDirectorAsync();
+            // Create collaboration thread.
             thread = await copyWriter.NewThreadAsync();
 
+            // Add the user message
             var messageUser = await thread.AddUserMessageAsync("maps made out of egg cartons.");
             DisplayMessage(messageUser);
 
             bool isComplete = false;
             while (!isComplete)
             {
+                // Initiate copy-writer input
                 var assistantMessages = await thread.InvokeAsync(copyWriter);
                 DisplayMessages(assistantMessages);
 
+                // Initiate art-director input
                 assistantMessages = await thread.InvokeAsync(artDirector);
                 DisplayMessages(assistantMessages);
 
+                // Evaluate if goal is met.
                 if (assistantMessages.First().Content.Contains("PRINT IT", StringComparison.OrdinalIgnoreCase)) // $$$ BETTER
                 {
                     isComplete = true;
@@ -94,11 +101,11 @@ public static class Example72_AssistantCollaboration
 
         try
         {
+            // Create copy-writer assistant to generate ideas
             copyWriter = await CreateCopyWriterAsync();
+            // Create art-director assistant to review ideas, provide feedback and final approval
             artDirector = await CreateArtDirectorAsync();
-
-            thread = await copyWriter.NewThreadAsync(); // $$$ OTHER
-            Console.WriteLine($"[{thread.Id}]");
+            // Create coordinator assistant to oversee collaboration
             coordinator =
                 await new AssistantBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
@@ -107,11 +114,15 @@ public static class Example72_AssistantCollaboration
                     .WithPlugin(artDirector.AsPlugin())
                     .BuildAsync();
 
+            // Create top-level thread.
+            thread = await coordinator.NewThreadAsync();
+            Console.WriteLine($"[{thread.Id}]");
+
             // Add the user message
             var messageUser = await thread.AddUserMessageAsync("maps made out of egg cartons.").ConfigureAwait(true);
             DisplayMessage(messageUser);
 
-            // Retrieve the assistant response
+            // Retrieve the final response.  This drives the interaction between the copy-writer and the art-director.
             var assistantMessages = await thread.InvokeAsync(coordinator).ConfigureAwait(true);
             DisplayMessages(assistantMessages);
         }
