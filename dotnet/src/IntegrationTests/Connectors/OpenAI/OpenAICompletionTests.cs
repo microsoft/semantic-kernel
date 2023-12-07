@@ -251,7 +251,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIShouldReturnTokenUsageInMetadataAsync(bool useChatModel)
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
 
         if (useChatModel)
         {
