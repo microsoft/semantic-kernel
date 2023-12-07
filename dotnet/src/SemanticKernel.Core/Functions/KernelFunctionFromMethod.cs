@@ -610,10 +610,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         return null;
                     }
 
-                    // Issue? #2. Quick fix to prevent the exception thrown by ConvertTo method - System.ArgumentOutOfRangeException : 'EnumConverter' is unable to convert 'System.DayOfWeek' to 'System.DayOfWeek'. (Parameter 'f')
-                    // Context: UT - KernelFunctionTests2.ItSupportsConvertingFromManyTypesAsync, Line - FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
-                    // I think this is helpful logic and it should remain. At least I have not identified any drawbacks of it except of the exception above.
-                    if (targetType == input?.GetType())
+                    if (targetType == input.GetType())
                     {
                         return input;
                     }
