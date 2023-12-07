@@ -105,6 +105,9 @@ internal sealed class AzureOpenAIClientCore : ClientCore
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.DeploymentOrModelName);
+        if (this.Logger.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.DeploymentOrModelName);
+        }
     }
 }
