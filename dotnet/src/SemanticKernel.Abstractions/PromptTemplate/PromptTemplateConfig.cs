@@ -100,7 +100,7 @@ public sealed class PromptTemplateConfig
             return new KernelReturnParameterMetadata
             {
                 Description = this.OutputVariable.Description,
-                Schema = string.IsNullOrEmpty(this.OutputVariable.JsonSchema) ? null : KernelJsonSchema.Parse(this.OutputVariable.JsonSchema!),
+                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema),
             };
         }
 
