@@ -50,7 +50,7 @@ public static class TextGenerationExtensions
         CancellationToken cancellationToken = default)
     {
         if (textGenerationService is IChatCompletionService chatCompletion
-            && XmlPromptParser.TryParse(prompt!, out var nodes)
+            && XmlPromptParser.TryParse(prompt, out var nodes)
             && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
             var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -83,7 +83,7 @@ public static class TextGenerationExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (textGenerationService is IChatCompletionService chatCompletion
-            && XmlPromptParser.TryParse(prompt!, out var nodes)
+            && XmlPromptParser.TryParse(prompt, out var nodes)
             && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
             await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken))

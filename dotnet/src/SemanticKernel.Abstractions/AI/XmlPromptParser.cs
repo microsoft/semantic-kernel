@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -16,15 +19,30 @@ internal static class XmlPromptParser
     /// <param name="prompt">Text prompt to parse.</param>
     /// <param name="result">Parsing output as collection of <see cref="PromptNode"/> instances.</param>
     /// <returns>Returns true if parsing was successful, otherwise false.</returns>
-    public static bool TryParse(string prompt, out List<PromptNode> result)
+    public static bool TryParse(string prompt, [NotNullWhen(true)] out List<PromptNode>? result)
     {
-        result = new List<PromptNode>();
-        var xmlDocument = new XmlDocument();
-        var xmlString = $"<root>{prompt}</root>";
+        result = null;
 
+        // The below parsing is _very_ expensive, especially when the content is not valid XML and an
+        // exception is thrown. Try to avoid it in the common case where the prompt is obviously not XML.
+        // To be valid XML, at a minimum:
+        // - the string would need to be non-null
+        // - it would need to contain a the start of a tag; we also focus on the specific expected XML format, which must have a "message" tag
+        // - it would need to contain a closing tag, which could include either </ or />
+        const string Required = ChatPromptParser.RequiredTagOpeningToBeValid;
+        int startPos;
+        if (prompt is null ||
+            (startPos = prompt.IndexOf(Required, StringComparison.OrdinalIgnoreCase)) < 0 ||
+            (prompt.IndexOf("</", startPos + Required.Length, StringComparison.Ordinal) < 0 &&
+             prompt.IndexOf("/>", startPos + Required.Length, StringComparison.Ordinal) < 0))
+        {
+            return false;
+        }
+
+        var xmlDocument = new XmlDocument();
         try
         {
-            xmlDocument.LoadXml(xmlString);
+            xmlDocument.LoadXml($"<root>{prompt}</root>");
         }
         catch (XmlException)
         {
@@ -33,15 +51,13 @@ internal static class XmlPromptParser
 
         foreach (XmlNode node in xmlDocument.DocumentElement!.ChildNodes)
         {
-            var childPromptNode = GetPromptNode(node);
-
-            if (childPromptNode != null)
+            if (GetPromptNode(node) is { } childPromptNode)
             {
-                result.Add(childPromptNode);
+                (result ??= new()).Add(childPromptNode);
             }
         }
 
-        return result.Count != 0;
+        return result is not null;
     }
 
     /// <summary>

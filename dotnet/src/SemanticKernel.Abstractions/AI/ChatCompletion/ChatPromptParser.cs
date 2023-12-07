@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 internal static class ChatPromptParser
 {
+    internal const string RequiredTagOpeningToBeValid = "<message";
     private const string MessageTagName = "message";
     private const string RoleAttributeName = "role";
 
