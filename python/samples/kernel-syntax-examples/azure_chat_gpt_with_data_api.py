@@ -5,7 +5,6 @@ import asyncio
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
-
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings
