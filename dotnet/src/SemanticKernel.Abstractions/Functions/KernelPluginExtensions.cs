@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides extension methods for working with <see cref="IKernelPlugin"/>s and collections of them.</summary>
-public static class IKernelPluginExtensions
+public static class KernelPluginExtensions
 {
     /// <summary>Gets whether the plugin contains a function with the specified name.</summary>
     /// <param name="plugin">The plugin.</param>

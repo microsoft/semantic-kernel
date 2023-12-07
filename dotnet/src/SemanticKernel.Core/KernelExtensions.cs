@@ -15,7 +15,7 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
+/// <summary>Provides extension methods for interacting with <see cref="Kernel"/> and related types.</summary>
 public static class KernelExtensions
 {
     #region CreateFunctionFromMethod
@@ -559,52 +559,6 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region InvokeAsync<T>
-    /// <summary>
-    /// Invokes the <see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
-    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The provided generic typed result value of the function's execution.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    /// <remarks>
-    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
-    /// </remarks>
-    public static async Task<TResult?> InvokeAsync<TResult>(
-        this Kernel kernel,
-        KernelFunction function,
-        KernelArguments? arguments = null,
-        CancellationToken cancellationToken = default)
-        => (await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
-
-    /// <summary>
-    /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
-    /// <param name="functionName">The name of the function to invoke.</param>
-    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The provided generic typed result value of the function's execution.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    /// <remarks>
-    /// This behaves identically to using <see cref="IKernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
-    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
-    /// </remarks>
-    public static async Task<TResult?> InvokeAsync<TResult>(
-        this Kernel kernel,
-        string? pluginName,
-        string functionName,
-        KernelArguments? arguments = null,
-        CancellationToken cancellationToken = default)
-        => (await kernel.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
-    #endregion
-
     #region AddKernel for IServiceCollection
     /// <summary>Adds a <see cref="KernelPluginCollection"/> and <see cref="Kernel"/> services to the services collection.</summary>
     /// <param name="services">The service collection.</param>
@@ -633,6 +587,139 @@ public static class KernelExtensions
         // Create and return a builder that can be used for adding services and plugins
         // to the IServiceCollection.
         return new KernelBuilder(services);
+    }
+    #endregion
+
+    #region AddFunctionFromMethod
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="KernelPlugin"/>.
+    /// </summary>
+    /// <param name="plugin">The plugin to which the function should be added.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction AddFunctionFromMethod(
+        this KernelPlugin plugin,
+        Delegate method,
+        string? functionName = null,
+        string? description = null,
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(plugin);
+
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+        plugin.AddFunction(function);
+        return function;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method, and adds it to the <see cref="KernelPlugin"/>.
+    /// </summary>
+    /// <param name="plugin">The plugin to which the function should be added.</param>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction AddFunctionFromMethod(
+        this KernelPlugin plugin,
+        MethodInfo method,
+        object? target = null,
+        string? functionName = null,
+        string? description = null,
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(plugin);
+
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+        plugin.AddFunction(function);
+        return function;
+    }
+    #endregion
+
+    #region AddFunctionFromPrompt
+    // TODO: Revise these CreateFunctionFromPrompt method XML comments
+
+    /// <summary>
+    /// Creates a string-to-string prompt function, with no direct support for input context, and adds it to the <see cref="KernelPlugin"/>.
+    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
+    /// can only pass in a string in input and receive a string in output.
+    /// </summary>
+    /// <param name="plugin">The plugin to which the function should be added.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
+    /// <param name="executionSettings">Optional LLM execution settings</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>A function ready to use</returns>
+    public static KernelFunction AddFunctionFromPrompt(
+        this KernelPlugin plugin,
+        string promptTemplate,
+        PromptExecutionSettings? executionSettings = null,
+        string? functionName = null,
+        string? description = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(plugin);
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, loggerFactory);
+        plugin.AddFunction(function);
+        return function;
+    }
+
+    /// <summary>
+    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template, and adds it to the <see cref="KernelPlugin"/>.
+    /// </summary>
+    /// <param name="plugin">The plugin to which the function should be added.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public static KernelFunction AddFunctionFromPrompt(
+        this KernelPlugin plugin,
+        PromptTemplateConfig promptConfig,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(plugin);
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, loggerFactory);
+        plugin.AddFunction(function);
+        return function;
+    }
+
+    /// <summary>
+    /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
+    /// </summary>
+    /// <param name="plugin">The plugin to which the function should be added.</param>
+    /// <param name="promptTemplate">Prompt template</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>A function ready to use</returns>
+    public static KernelFunction AddFunctionFromPrompt(
+        this KernelPlugin plugin,
+        IPromptTemplate promptTemplate,
+        PromptTemplateConfig promptConfig,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(plugin);
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, loggerFactory);
+        plugin.AddFunction(function);
+        return function;
     }
     #endregion
 }

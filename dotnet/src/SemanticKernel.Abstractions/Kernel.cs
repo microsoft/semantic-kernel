@@ -353,7 +353,7 @@ public sealed class Kernel
     /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     /// <remarks>
-    /// This behaves identically to using <see cref="IKernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
     /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
     /// </remarks>
     public Task<FunctionResult> InvokeAsync(
@@ -368,6 +368,57 @@ public sealed class Kernel
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <typeparam name="TResult">Specifies the type of the result value of the function.</typeparam>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public async Task<TResult?> InvokeAsync<TResult>(
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false);
+        return result.GetValue<TResult>();
+    }
+
+    /// <summary>
+    /// Invokes a function from <see cref="Plugins"/> using the specified arguments.
+    /// </summary>
+    /// <typeparam name="TResult">Specifies the type of the result value of the function.</typeparam>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
+    /// <remarks>
+    /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public async Task<TResult?> InvokeAsync<TResult>(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        FunctionResult result = await this.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false);
+        return result.GetValue<TResult>();
+    }
+
     #endregion
 
     #region InvokeStreamingAsync
