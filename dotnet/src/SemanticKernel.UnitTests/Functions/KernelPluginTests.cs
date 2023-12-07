@@ -113,6 +113,6 @@ public class KernelPluginTests
         Assert.Throws<ArgumentNullException>(() => plugin.TryGetFunction(null!, out _));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((string)null!));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((KernelFunction)null!));
-        Assert.Throws<ArgumentNullException>(() => ((IKernelPlugin)null!).Contains("functionName"));
+        Assert.Throws<ArgumentNullException>(() => ((ReadOnlyKernelPlugin)null!).Contains("functionName"));
     }
 }

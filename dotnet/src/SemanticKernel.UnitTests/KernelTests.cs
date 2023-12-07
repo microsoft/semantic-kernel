@@ -71,7 +71,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IKernelPlugin plugin = new Kernel().ImportPluginFromType<MyPlugin>();
+        ReadOnlyKernelPlugin plugin = new Kernel().ImportPluginFromType<MyPlugin>();
 
         // Assert
         Assert.Equal(3, plugin.Count());

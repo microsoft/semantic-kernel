@@ -26,7 +26,7 @@ public static class KernelPluginFactory
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static IKernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static ReadOnlyKernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
@@ -42,7 +42,7 @@ public static class KernelPluginFactory
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static IKernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    public static ReadOnlyKernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 

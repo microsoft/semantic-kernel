@@ -83,8 +83,8 @@ public class KernelBuilderTests
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
     {
-        IKernelPlugin plugin1 = new KernelPlugin("plugin1");
-        IKernelPlugin plugin2 = new KernelPlugin("plugin2");
+        ReadOnlyKernelPlugin plugin1 = new KernelPlugin("plugin1");
+        ReadOnlyKernelPlugin plugin2 = new KernelPlugin("plugin2");
 
         KernelBuilder builder = new();
         builder.Plugins.Add(plugin1);
@@ -196,9 +196,9 @@ public class KernelBuilderTests
         KernelPlugin plugin3 = new("plugin3");
 
         KernelBuilder builder = new();
-        builder.Services.AddSingleton<IKernelPlugin>(plugin1);
-        builder.Services.AddSingleton<IKernelPlugin>(plugin2);
-        builder.Services.AddSingleton<IKernelPlugin>(plugin3);
+        builder.Services.AddSingleton<ReadOnlyKernelPlugin>(plugin1);
+        builder.Services.AddSingleton<ReadOnlyKernelPlugin>(plugin2);
+        builder.Services.AddSingleton<ReadOnlyKernelPlugin>(plugin3);
         Kernel kernel = builder.Build();
 
         Assert.Equal(3, kernel.Plugins.Count);

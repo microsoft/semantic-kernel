@@ -33,14 +33,14 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> ImportPluginFromOpenApiAsync(
+    public static async Task<ReadOnlyKernelPlugin> ImportPluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        IKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        ReadOnlyKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -54,14 +54,14 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> ImportPluginFromOpenApiAsync(
+    public static async Task<ReadOnlyKernelPlugin> ImportPluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        IKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        ReadOnlyKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -75,14 +75,14 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> ImportPluginFromOpenApiAsync(
+    public static async Task<ReadOnlyKernelPlugin> ImportPluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        IKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        ReadOnlyKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -96,7 +96,7 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> CreatePluginFromOpenApiAsync(
+    public static async Task<ReadOnlyKernelPlugin> CreatePluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
@@ -133,7 +133,7 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> CreatePluginFromOpenApiAsync(
+    public static async Task<ReadOnlyKernelPlugin> CreatePluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
@@ -174,7 +174,7 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> CreatePluginFromOpenApiAsync(
+    public static async Task<ReadOnlyKernelPlugin> CreatePluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
@@ -201,7 +201,7 @@ public static class OpenApiKernelExtensions
 
     #region private
 
-    private static async Task<IKernelPlugin> CreateOpenApiPluginAsync(
+    private static async Task<ReadOnlyKernelPlugin> CreateOpenApiPluginAsync(
         Kernel kernel,
         string pluginName,
         OpenApiFunctionExecutionParameters? executionParameters,

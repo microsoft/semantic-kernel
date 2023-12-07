@@ -73,7 +73,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        ReadOnlyKernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         // Call the common chat-loop
         await ChatAsync(
@@ -159,7 +159,7 @@ public static class Example70_Assistant
     /// </summary>
     private static async Task ChatAsync(
         string resourcePath,
-        IKernelPlugin? plugin = null,
+        ReadOnlyKernelPlugin? plugin = null,
         params string[] messages)
     {
         // Read assistant resource

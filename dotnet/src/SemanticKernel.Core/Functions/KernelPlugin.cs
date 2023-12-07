@@ -10,11 +10,11 @@ using System.Linq;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Provides an <see cref="IKernelPlugin"/> implementation around a collection of functions.
+/// Provides an <see cref="ReadOnlyKernelPlugin"/> implementation around a collection of functions.
 /// </summary>
 [DebuggerDisplay("Name = {Name}, Functions = {FunctionCount}")]
 [DebuggerTypeProxy(typeof(KernelPlugin.TypeProxy))]
-public sealed class KernelPlugin : IKernelPlugin
+public sealed class KernelPlugin : ReadOnlyKernelPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;

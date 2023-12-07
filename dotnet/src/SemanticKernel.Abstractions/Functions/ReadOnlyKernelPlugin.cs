@@ -9,11 +9,11 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>Represents a plugin that may be registered with a <see cref="Kernel"/>.</summary>
 /// <remarks>
-/// A plugin is named collection of functions. There is a many-to-many relationship between
+/// A plugin is named read-only collection of functions. There is a many-to-many relationship between
 /// plugins and functions: a plugin may contain any number of functions, and a function may
 /// exist in any number of plugins.
 /// </remarks>
-public interface IKernelPlugin : IEnumerable<KernelFunction>
+public interface ReadOnlyKernelPlugin : IEnumerable<KernelFunction>
 {
     /// <summary>Gets the name of the plugin.</summary>
     string Name { get; }

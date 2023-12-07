@@ -28,12 +28,12 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin ImportPluginFromGrpcDirectory(
+    public static ReadOnlyKernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
+        ReadOnlyKernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -45,12 +45,12 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin ImportPluginFromGrpcFile(
+    public static ReadOnlyKernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
+        ReadOnlyKernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -62,12 +62,12 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin ImportPluginFromGrpc(
+    public static ReadOnlyKernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
+        ReadOnlyKernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -79,7 +79,7 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin CreatePluginFromGrpcDirectory(
+    public static ReadOnlyKernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
@@ -111,7 +111,7 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin CreatePluginFromGrpcFile(
+    public static ReadOnlyKernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
@@ -135,7 +135,7 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin CreatePluginFromGrpc(
+    public static ReadOnlyKernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)

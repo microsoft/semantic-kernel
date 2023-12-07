@@ -144,7 +144,7 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
+    public static ReadOnlyKernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -162,7 +162,7 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static ReadOnlyKernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -180,9 +180,9 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
+    public static ReadOnlyKernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
-        IKernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
+        ReadOnlyKernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -197,11 +197,11 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddFromType<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static ReadOnlyKernelPlugin AddFromType<T>(this ICollection<ReadOnlyKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider);
+        ReadOnlyKernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider);
         plugins.Add(plugin);
         return plugin;
     }
@@ -219,7 +219,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(plugins);
 
-        plugins.Services.AddSingleton<IKernelPlugin>(serviceProvider => KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider));
+        plugins.Services.AddSingleton<ReadOnlyKernelPlugin>(serviceProvider => KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider));
 
         return plugins;
     }
@@ -228,7 +228,7 @@ public static class KernelExtensions
     /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
     /// <param name="plugin">The plugin to add.</param>
     /// <returns></returns>
-    public static IKernelBuilderPlugins Add(this IKernelBuilderPlugins plugins, IKernelPlugin plugin)
+    public static IKernelBuilderPlugins Add(this IKernelBuilderPlugins plugins, ReadOnlyKernelPlugin plugin)
     {
         Verify.NotNull(plugins);
         Verify.NotNull(plugin);
@@ -249,9 +249,9 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static ReadOnlyKernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
-        IKernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
+        ReadOnlyKernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -266,11 +266,11 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddFromObject(this ICollection<IKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static ReadOnlyKernelPlugin AddFromObject(this ICollection<ReadOnlyKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        ReadOnlyKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;
     }
@@ -326,7 +326,7 @@ public static class KernelExtensions
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
-    public static IKernelPlugin CreatePluginFromPromptDirectory(
+    public static ReadOnlyKernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
@@ -431,13 +431,13 @@ public static class KernelExtensions
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
-    public static IKernelPlugin ImportPluginFromPromptDirectory(
+    public static ReadOnlyKernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        IKernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
+        ReadOnlyKernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -484,7 +484,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(plugins);
 
-        plugins.Services.AddSingleton<IKernelPlugin>(services =>
+        plugins.Services.AddSingleton<ReadOnlyKernelPlugin>(services =>
             CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, services));
 
         return plugins;

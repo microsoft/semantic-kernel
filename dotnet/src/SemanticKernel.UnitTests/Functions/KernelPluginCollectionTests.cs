@@ -115,7 +115,7 @@ public class KernelPluginCollectionTests
         Assert.False(c.Contains(plugin2));
         Assert.False(c.Contains(plugin2.Name));
         Assert.False(c.Contains(plugin2.Name.ToUpperInvariant()));
-        Assert.Equal(Array.Empty<IKernelPlugin>(), c.ToArray());
+        Assert.Equal(Array.Empty<ReadOnlyKernelPlugin>(), c.ToArray());
 
         c.Add(plugin2);
         Assert.Equal(1, c.Count);
@@ -206,7 +206,7 @@ public class KernelPluginCollectionTests
     public void ItThrowsForInvalidArguments()
     {
         Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(null!));
-        Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(new IKernelPlugin[] { null! }));
+        Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(new ReadOnlyKernelPlugin[] { null! }));
 
         KernelPluginCollection c = new();
         Assert.Throws<ArgumentNullException>(() => c.Add(null!));
@@ -214,7 +214,7 @@ public class KernelPluginCollectionTests
         Assert.Throws<ArgumentNullException>(() => c.Contains(null!));
         Assert.Throws<ArgumentNullException>(() => c[null!]);
         Assert.Throws<ArgumentNullException>(() => c.TryGetPlugin(null!, out _));
-        Assert.Throws<ArgumentNullException>(() => ((ICollection<IKernelPlugin>)c).CopyTo(null!, 0));
+        Assert.Throws<ArgumentNullException>(() => ((ICollection<ReadOnlyKernelPlugin>)c).CopyTo(null!, 0));
 
         Assert.Throws<KeyNotFoundException>(() => c["Function1"]);
     }
@@ -222,11 +222,11 @@ public class KernelPluginCollectionTests
     [Fact]
     public void ItCopiesToDestinationArrayInCopyTo()
     {
-        IKernelPlugin plugin1 = new KernelPlugin("plugin1");
-        IKernelPlugin plugin2 = new KernelPlugin("plugin2");
-        ICollection<IKernelPlugin> c = new KernelPluginCollection(new[] { plugin1, plugin2 });
+        ReadOnlyKernelPlugin plugin1 = new KernelPlugin("plugin1");
+        ReadOnlyKernelPlugin plugin2 = new KernelPlugin("plugin2");
+        ICollection<ReadOnlyKernelPlugin> c = new KernelPluginCollection(new[] { plugin1, plugin2 });
 
-        var array = new IKernelPlugin[4];
+        var array = new ReadOnlyKernelPlugin[4];
 
         c.CopyTo(array, 0);
         Assert.Same(plugin1, array[0]);
