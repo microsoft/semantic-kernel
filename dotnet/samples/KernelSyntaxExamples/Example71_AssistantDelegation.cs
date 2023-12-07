@@ -33,44 +33,59 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        IAssistant? menuAssistant = null;
+        IAssistant? parrotAssistant = null;
+        IAssistant? toolAssistant = null;
+        IChatThread? thread = null;
 
-        var menuAssistant =
-            await new AssistantBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
-                .WithDescription("Answer questions about how the menu uses the tool.")
-                .WithPlugin(plugin)
-                .BuildAsync();
-
-        var parrotAssistant =
-            await new AssistantBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
-                .BuildAsync();
-
-        var toolAssistant =
-            await new AssistantBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
-                .WithPlugins(new[] { menuAssistant.AsPlugin(), parrotAssistant.AsPlugin() })
-                .BuildAsync();
-
-        var messages = new string[]
+        try
         {
+            var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+            menuAssistant =
+                await new AssistantBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                    .WithDescription("Answer questions about how the menu uses the tool.")
+                    .WithPlugin(plugin)
+                    .BuildAsync();
+
+            parrotAssistant =
+                await new AssistantBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
+                    .BuildAsync();
+
+            toolAssistant =
+                await new AssistantBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                    .WithPlugins(new[] { menuAssistant.AsPlugin(), parrotAssistant.AsPlugin() })
+                    .BuildAsync();
+
+            var messages = new string[]
+            {
             "What's on the menu?",
             "Can you talk like pirate?",
             "Thank you",
-        };
+            };
 
-        var thread = await toolAssistant.NewThreadAsync();
-        foreach (var message in messages)
+            thread = await toolAssistant.NewThreadAsync();
+            foreach (var message in messages)
+            {
+                var messageUser = await thread.AddUserMessageAsync(message);
+                DisplayMessage(messageUser);
+
+                var assistantMessages = await thread.InvokeAsync(toolAssistant);
+                DisplayMessages(assistantMessages);
+            }
+        }
+        finally
         {
-            var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
-            DisplayMessage(messageUser);
-
-            var assistantMessages = await thread.InvokeAsync(toolAssistant).ConfigureAwait(true);
-            DisplayMessages(assistantMessages);
+            await Task.WhenAll(
+                thread?.DeleteAsync() ?? Task.CompletedTask,
+                toolAssistant?.DeleteAsync() ?? Task.CompletedTask,
+                parrotAssistant?.DeleteAsync() ?? Task.CompletedTask,
+                menuAssistant?.DeleteAsync() ?? Task.CompletedTask);
         }
     }
 

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
+
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 internal static class AssistantsKernelExtensions
 {
@@ -13,7 +15,7 @@ internal static class AssistantsKernelExtensions
         return nameParts.Length switch
         {
             2 => kernel.Plugins.GetFunction(nameParts[0], nameParts[1]),
-            _ => throw new KernelException($"Unknown tool: {toolName}"),
+            _ => throw new AssistantException($"Unknown tool: {toolName}"),
         };
     }
 }
