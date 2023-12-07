@@ -19,15 +19,18 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 
-
 class OpenAIHandler(AIServiceClientBase, ABC):
     """Internal class for calls to OpenAI API's."""
 
     client: AsyncOpenAI
+    ai_model_id: str = Field(min_length=1, init_var=False)
     ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
     prompt_tokens: int = Field(0, init_var=False)
     completion_tokens: int = Field(0, init_var=False)
     total_tokens: int = Field(0, init_var=False)
+    is_assistant: bool = Field(False, init_var=False)
+    assistant_id: str = Field(None, init_var=False)
+    thread_id: str = Field(None, init_var=False)
 
     async def _send_request(
         self,
@@ -79,8 +82,28 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             self.total_tokens += response.usage.total_tokens
         return response
 
-    def _validate_request(self, request_settings, prompt, messages, chat_mode):
-        """Validate the request, check if the settings are present and valid."""
+    def _validate_request(
+            self, 
+            request_settings: Union[CompleteRequestSettings, ChatRequestSettings], 
+            prompt: str, 
+            messages: List[Dict[str, str]], 
+            chat_mode: OpenAIModelTypes,
+        ) -> None:
+        """
+        Validate the request, check if the settings are present and valid.
+        
+        Arguments:
+            request_settings {Union[CompleteRequestSettings, ChatRequestSettings]} -- The request settings.
+            prompt {str} -- The prompt to complete.
+            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
+            chat_mode {OpenAIModelTypes} -- The model type.
+        
+        Raises:
+            AIException: If the request settings are invalid.
+
+        Returns:
+            None
+        """
         try:
             assert (
                 self.ai_model_type != OpenAIModelTypes.EMBEDDING
@@ -89,6 +112,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             raise AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported, exc.args[0], exc
             ) from exc
+        
         try:
             assert request_settings, "The request settings cannot be `None`"
             assert (
@@ -106,8 +130,28 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ) from exc
 
     def _create_model_args(
-        self, request_settings, stream, prompt, messages, functions, chat_mode
-    ):
+        self, 
+        request_settings: Union[CompleteRequestSettings, ChatRequestSettings], 
+        stream: bool, 
+        prompt: str, 
+        messages: Optional[List[Dict[str, str]]], 
+        functions: Optional[List[Dict[str, Any]]], 
+        chat_mode: bool
+    ) -> Dict[str, Any]:
+        """
+        Create the model args.
+
+        Arguments:
+            request_settings {Union[CompleteRequestSettings, ChatRequestSettings]} -- The request settings.
+            stream {bool} -- Whether to stream the response.
+            prompt {str} -- The prompt to complete.
+            messages {Optional[List[Dict[str, str]]]} -- A list of tuples, where each tuple is a role and content set.
+            functions {Optional[List[Dict[str, Any]]]} -- A list of functions.
+            chat_mode {bool} -- The model type.
+
+        Returns:
+            Dict[str, Any] -- The model args.
+        """
         model_args = self.get_model_args()
         model_args.update(
             {
@@ -152,8 +196,23 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         return model_args
 
     async def _send_embedding_request(
-        self, texts: List[str], batch_size: Optional[int] = None
+        self, 
+        texts: List[str], 
+        batch_size: Optional[int] = None
     ) -> ndarray:
+        """
+        Send the embedding request.
+
+        Arguments:
+            texts {List[str]} -- The texts to embed.
+            batch_size {Optional[int]} -- The batch size.
+
+        Raises:
+            AIException: If the model type is not supported.
+
+        Returns:
+            ndarray -- The embeddings.
+        """
         if self.ai_model_type != OpenAIModelTypes.EMBEDDING:
             raise AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,

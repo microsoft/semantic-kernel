@@ -30,6 +30,7 @@ class OpenAIChatCompletion(
         ai_model_id: str,
         async_client: AsyncOpenAI,
         log: Optional[Logger] = None,
+        is_assistant: Optional[bool] = False,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -39,6 +40,7 @@ class OpenAIChatCompletion(
                 https://platform.openai.com/docs/models
             async_client {AsyncOpenAI} -- An existing client to use.
             log: The logger instance to use. (Optional)
+            is_assistant: Whether this is an assistant. (Optional)
         """
 
     @overload
@@ -49,6 +51,7 @@ class OpenAIChatCompletion(
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
+        is_assistant: Optional[bool] = False,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -64,6 +67,7 @@ class OpenAIChatCompletion(
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             log {Optional[Logger]} -- The logger instance to use. (Optional)
+            is_assistant: Whether this is an assistant. (Optional)
         """
 
     @overload
@@ -73,6 +77,7 @@ class OpenAIChatCompletion(
         api_key: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
+        is_assistant: Optional[bool] = False,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -85,6 +90,7 @@ class OpenAIChatCompletion(
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             log {Optional[Logger]} -- The logger instance to use. (Optional)
+            is_assistant: Whether this is an assistant. (Optional)
         """
 
     def __init__(
@@ -95,6 +101,7 @@ class OpenAIChatCompletion(
         default_headers: Optional[Mapping[str, str]] = None,
         log: Optional[Logger] = None,
         async_client: Optional[AsyncOpenAI] = None,
+        is_assistant: Optional[bool] = False,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -120,6 +127,7 @@ class OpenAIChatCompletion(
             default_headers=default_headers,
             log=log,
             async_client=async_client,
+            is_assistant=is_assistant,
         )
 
     @classmethod
@@ -132,9 +140,10 @@ class OpenAIChatCompletion(
         """
 
         return OpenAIChatCompletion(
-            ai_model_id=settings["ai_model_id"],
-            api_key=settings["api_key"],
+            ai_model_id=settings.get("ai_model_id"),
+            api_key=settings.get("api_key"),
             org_id=settings.get("org_id"),
             default_headers=settings.get("default_headers"),
             log=settings.get("log"),
+            is_assistant=settings.get("is_assistant"),
         )

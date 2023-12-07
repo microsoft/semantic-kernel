@@ -31,6 +31,7 @@ class OpenAIConfigBase(OpenAIHandler):
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
         log: Optional[Logger] = None,
+        is_assistant: Optional[bool] = False,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -49,7 +50,7 @@ class OpenAIConfigBase(OpenAIHandler):
             default_headers {Optional[Mapping[str, str]]} -- Default headers
                 for HTTP requests. (Optional)
             log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
-
+            is_assistant {Optional[bool]} -- Whether this is an assistant. (Optional)
         """
 
         # Merge APP_INFO into the headers if it exists
@@ -74,6 +75,7 @@ class OpenAIConfigBase(OpenAIHandler):
             client=async_client,
             log=log,
             ai_model_type=ai_model_type,
+            is_assistant=is_assistant,
         )
 
     def to_dict(self) -> Dict[str, str]:
