@@ -178,7 +178,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) : base(promptConfig.Name, promptConfig.Description, promptConfig.GetKernelParametersMetadata(), null, promptConfig.ExecutionSettings)
+        ILoggerFactory? loggerFactory = null) : base(
+            promptConfig.Name,
+            promptConfig.Description,
+            promptConfig.GetKernelParametersMetadata(),
+            promptConfig.GetKernelReturnParameterMetadata(),
+            promptConfig.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
