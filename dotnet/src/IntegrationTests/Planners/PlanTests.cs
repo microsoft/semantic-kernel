@@ -562,7 +562,7 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             if (useChatModel)
             {
@@ -573,7 +573,7 @@ public sealed class PlanTests : IDisposable
             }
             else
             {
-                c.AddAzureOpenAITextCompletion(
+                c.AddAzureOpenAITextGeneration(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);

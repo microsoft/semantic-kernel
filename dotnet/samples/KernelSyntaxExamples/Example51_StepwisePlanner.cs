@@ -45,7 +45,7 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                await RunTextCompletionAsync(question);
+                await RunTextGenerationAsync(question);
                 await RunChatCompletionAsync(question);
             }
         }
@@ -84,11 +84,11 @@ public static class Example51_StepwisePlanner
 
     private static readonly List<ExecutionResult> s_executionResults = new();
 
-    private static async Task RunTextCompletionAsync(string question)
+    private static async Task RunTextGenerationAsync(string question)
     {
-        Console.WriteLine("RunTextCompletion");
+        Console.WriteLine("RunTextGeneration");
         ExecutionResult currentExecutionResult = default;
-        currentExecutionResult.mode = "RunTextCompletion";
+        currentExecutionResult.mode = "RunTextGeneration";
         var kernel = GetKernel(ref currentExecutionResult);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
@@ -201,7 +201,7 @@ public static class Example51_StepwisePlanner
         }
         else
         {
-            builder.WithAzureOpenAITextCompletion(
+            builder.WithAzureOpenAITextGeneration(
                 model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
