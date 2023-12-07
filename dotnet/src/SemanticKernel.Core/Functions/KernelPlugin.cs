@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -38,13 +37,8 @@ public sealed class KernelPlugin : ReadOnlyKernelPlugin
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public KernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null)
+    public KernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null) : base(name, description)
     {
-        Verify.ValidPluginName(name);
-
-        this.Name = name;
-        this.Description = !string.IsNullOrWhiteSpace(description) ? description! : "";
-
         this._functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
         if (functions is not null)
         {
@@ -56,20 +50,14 @@ public sealed class KernelPlugin : ReadOnlyKernelPlugin
         }
     }
 
-    /// <inheritdoc/>
-    public string Name { get; }
-
-    /// <inheritdoc/>
-    public string Description { get; }
-
     /// <summary>Gets the number of functions in this plugin.</summary>
     public int FunctionCount => this._functions.Count;
 
     /// <inheritdoc/>
-    public KernelFunction this[string functionName] => this._functions[functionName];
+    public override KernelFunction this[string functionName] => this._functions[functionName];
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
+    public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
         this._functions.TryGetValue(name, out function);
 
     /// <summary>Adds a function to the plugin.</summary>
@@ -99,10 +87,7 @@ public sealed class KernelPlugin : ReadOnlyKernelPlugin
     }
 
     /// <inheritdoc/>
-    public IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
-
-    /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+    public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
 
     /// <summary>Debugger type proxy for the plugin.</summary>
     private sealed class TypeProxy
