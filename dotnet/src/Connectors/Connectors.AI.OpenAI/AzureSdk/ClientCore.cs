@@ -16,11 +16,10 @@ using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.TextGeneration;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -196,7 +195,7 @@ internal abstract class ClientCore
         {
             var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
-            Response<Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
+            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
             if (response.Value.Data.Count == 0)
             {
                 throw new KernelException("Text embedding not found");
@@ -674,9 +673,12 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
-        this.Logger.LogInformation(
-            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
-            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+        if (this.Logger.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+                usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+        }
 
         s_promptTokensCounter.Add(usage.PromptTokens);
         s_completionTokensCounter.Add(usage.CompletionTokens);

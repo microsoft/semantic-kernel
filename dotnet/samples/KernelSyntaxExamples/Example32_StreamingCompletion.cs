@@ -2,9 +2,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
+using Microsoft.SemanticKernel.TextGeneration;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming text completion.

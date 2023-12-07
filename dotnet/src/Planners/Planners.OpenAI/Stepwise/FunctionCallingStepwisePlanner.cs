@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Json.More;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
@@ -53,7 +53,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
-        clonedKernel.ImportPluginFromObject<UserInteraction>();
+        clonedKernel.ImportPluginFromType<UserInteraction>();
 
         // Create and invoke a kernel function to generate the initial plan
         var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);

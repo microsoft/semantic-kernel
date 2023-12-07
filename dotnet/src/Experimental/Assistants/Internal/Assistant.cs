@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -48,6 +49,7 @@ internal sealed class Assistant : IAssistant
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
     private IKernelPlugin? _assistantPlugin;
+    private bool _isDeleted;
 
     /// <summary>
     /// Create a new assistant.
@@ -63,9 +65,7 @@ internal sealed class Assistant : IAssistant
         IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        var resultModel =
-            await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException("Unexpected failure creating assistant: no result.");
+        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
 
         return new Assistant(resultModel, restContext, plugins);
     }
@@ -81,10 +81,9 @@ internal sealed class Assistant : IAssistant
         this._model = model;
         this._restContext = restContext;
 
-        this.Kernel =
-            new KernelBuilder()
-                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
-                .Build();
+        KernelBuilder builder = new();
+        builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
+        this.Kernel = builder.Build();
 
         if (plugins is not null)
         {
@@ -97,13 +96,40 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
     /// <inheritdoc/>
     public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteThreadAsync(string? id, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        if (this._isDeleted)
+        {
+            return;
+        }
+
+        await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        this._isDeleted = true;
     }
 
     /// <summary>
@@ -125,7 +151,7 @@ internal sealed class Assistant : IAssistant
             new AssistantResponse
             {
                 ThreadId = thread.Id,
-                Response = string.Concat(message.Select(m => m.Content)),
+                Message = string.Concat(message.Select(m => m.Content)),
             };
 
         return response;
@@ -139,5 +165,13 @@ internal sealed class Assistant : IAssistant
         assistantPlugin.AddFunction(functionAsk);
 
         return this._assistantPlugin = assistantPlugin;
+    }
+
+    private void ThrowIfDeleted()
+    {
+        if (this._isDeleted)
+        {
+            throw new AssistantException($"{nameof(Assistant)}: {this.Id} has been deleted.");
+        }
     }
 }
