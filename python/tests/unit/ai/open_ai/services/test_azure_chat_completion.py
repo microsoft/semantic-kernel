@@ -14,6 +14,9 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
@@ -42,6 +45,34 @@ def test_azure_chat_completion_init() -> None:
     assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
     assert azure_chat_completion.ai_model_id == deployment_name
     assert isinstance(azure_chat_completion, ChatCompletionClientBase)
+
+
+def test_azure_chat_completion_init_base_url() -> None:
+    deployment_name = "test_deployment"
+    base_url = "https://test-endpoint.com/openai/deployment/test_deployment"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    logger = Logger("test_logger")
+
+    # Custom header for testing
+    default_headers = {"X-Unit-Test": "test-guid"}
+
+    azure_chat_completion = AzureChatCompletion(
+        deployment_name=deployment_name,
+        base_url=base_url,
+        api_key=api_key,
+        api_version=api_version,
+        log=logger,
+        default_headers=default_headers,
+    )
+
+    assert azure_chat_completion.client is not None
+    assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
+    assert azure_chat_completion.ai_model_id == deployment_name
+    assert isinstance(azure_chat_completion, ChatCompletionClientBase)
+    for key, value in default_headers.items():
+        assert key in azure_chat_completion.client.default_headers
+        assert azure_chat_completion.client.default_headers[key] == value
 
 
 def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
@@ -106,6 +137,23 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
         AzureChatCompletion(
             deployment_name=deployment_name,
             endpoint=endpoint,
+            api_key=api_key,
+            api_version=api_version,
+            log=logger,
+        )
+
+
+def test_azure_chat_completion_init_with_base_url() -> None:
+    deployment_name = "test_deployment"
+    base_url = "http://test-endpoint.com/openai/deployment/test_deployment"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    logger = Logger("test_logger")
+
+    with pytest.raises(ValidationError, match="url"):
+        AzureChatCompletion(
+            deployment_name=deployment_name,
+            base_url=base_url,
             api_key=api_key,
             api_version=api_version,
             log=logger,
@@ -241,6 +289,7 @@ def test_azure_chat_completion_serialize() -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
+    default_headers = {"X-Test": "test"}
     logger = Logger("test_logger")
 
     settings = {
@@ -249,6 +298,7 @@ def test_azure_chat_completion_serialize() -> None:
         "api_key": api_key,
         "api_version": api_version,
         "log": logger,
+        "default_headers": default_headers,
     }
 
     azure_chat_completion = AzureChatCompletion.from_dict(settings)
@@ -257,6 +307,15 @@ def test_azure_chat_completion_serialize() -> None:
     assert settings["endpoint"] in str(dumped_settings["base_url"])
     assert settings["deployment_name"] in str(dumped_settings["base_url"])
     assert settings["api_key"] == dumped_settings["api_key"]
+    assert settings["api_version"] == dumped_settings["api_version"]
+
+    # Assert that the default header we added is present in the dumped_settings default headers
+    for key, value in default_headers.items():
+        assert key in dumped_settings["default_headers"]
+        assert dumped_settings["default_headers"][key] == value
+
+    # Assert that the 'User-agent' header is not present in the dumped_settings default headers
+    assert USER_AGENT not in dumped_settings["default_headers"]
 
 
 @pytest.mark.asyncio

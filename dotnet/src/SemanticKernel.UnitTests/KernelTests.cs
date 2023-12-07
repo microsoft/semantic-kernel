@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Events;
 using Moq;
@@ -26,13 +28,8 @@ public class KernelTests
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
-        var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddSingleton<ITextGenerationService>(factory.Object);
-        }).Build();
-
-        kernel.ImportPluginFromObject<MyPlugin>("mySk");
+        Kernel kernel = new();
+        kernel.Plugins.AddFromType<MyPlugin>("mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.NotNull(kernel.Plugins.GetFunction("mySk", "sayhello"));
@@ -46,7 +43,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        var functions = kernel.ImportPluginFromObject<MyPlugin>();
+        var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
@@ -60,7 +57,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        kernel.ImportPluginFromObject<MyPlugin>("mySk");
+        kernel.ImportPluginFromType<MyPlugin>("mySk");
 
         using CancellationTokenSource cts = new();
 
@@ -75,7 +72,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IKernelPlugin plugin = new Kernel().ImportPluginFromObject<MyPlugin>();
+        IKernelPlugin plugin = new Kernel().ImportPluginFromType<MyPlugin>();
 
         // Assert
         Assert.Equal(3, plugin.Count());
@@ -91,10 +88,10 @@ public class KernelTests
         var kernel = new Kernel();
 
         // Act - Assert no exception occurs
-        kernel.ImportPluginFromObject<MyPlugin>();
-        kernel.ImportPluginFromObject<MyPlugin>("plugin1");
-        kernel.ImportPluginFromObject<MyPlugin>("plugin2");
-        kernel.ImportPluginFromObject<MyPlugin>("plugin3");
+        kernel.ImportPluginFromType<MyPlugin>();
+        kernel.ImportPluginFromType<MyPlugin>("plugin1");
+        kernel.ImportPluginFromType<MyPlugin>("plugin2");
+        kernel.ImportPluginFromType<MyPlugin>("plugin3");
     }
 
     [Fact]
@@ -157,16 +154,16 @@ public class KernelTests
         };
 
         // Act
-        int chunksCount = 0;
-        await foreach (var chunk in kernel.InvokeStreamingAsync(function))
-        {
-            chunksCount++;
-        }
+        IAsyncEnumerable<StreamingContentBase> enumerable = kernel.InvokeStreamingAsync<StreamingContentBase>(function);
+        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
-        Assert.Equal(0, chunksCount);
+        Assert.Same(function, e.Function);
+        Assert.Same(kernel, e.Kernel);
+        Assert.Empty(e.Arguments);
     }
 
     [Fact]
@@ -174,7 +171,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        var functions = kernel.ImportPluginFromObject<MyPlugin>();
+        var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         var invoked = 0;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -188,9 +185,9 @@ public class KernelTests
         };
 
         // Act
-        await foreach (var chunk in kernel.InvokeStreamingAsync(functions["GetAnyValue"]))
-        {
-        }
+        IAsyncEnumerable<StreamingContentBase> enumerable = kernel.InvokeStreamingAsync<StreamingContentBase>(functions["GetAnyValue"]);
+        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
         Assert.Equal(0, invoked);
@@ -275,7 +272,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = new Kernel();
-        var functions = kernel.ImportPluginFromObject<MyPlugin>();
+        var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         var invoked = 0;
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -317,6 +314,32 @@ public class KernelTests
         // Assert
         Assert.Equal(1, functionInvocations);
         Assert.Equal(1, handlerInvocations);
+    }
+
+    [Fact]
+    public async Task InvokeAsyncHandlesPostInvocationWithServicesAsync()
+    {
+        // Arrange
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+
+        var invoked = 0;
+
+        kernel.FunctionInvoked += (sender, e) =>
+        {
+            invoked++;
+        };
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal(1, invoked);
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -375,21 +398,21 @@ public class KernelTests
     public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
         var kernel = new Kernel();
-        var function = KernelFunctionFactory.CreateFromMethod(() => { });
+        var function = KernelFunctionFactory.CreateFromMethod((string originalInput) => originalInput);
 
         var originalInput = "Importance";
         var newInput = "Problems";
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            originalInput = newInput;
+            e.Arguments[KernelArguments.InputParameterName] = newInput;
         };
 
         // Act
-        await kernel.InvokeAsync(function, originalInput);
+        var result = await kernel.InvokeAsync(function, new(originalInput));
 
         // Assert
-        Assert.Equal(newInput, originalInput);
+        Assert.Equal(newInput, result.GetValue<string>());
     }
 
     [Fact]
@@ -403,14 +426,14 @@ public class KernelTests
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            originalInput = newInput;
+            e.SetResultValue(newInput);
         };
 
         // Act
-        await kernel.InvokeAsync(function, originalInput);
+        var result = await kernel.InvokeAsync(function, new(originalInput));
 
         // Assert
-        Assert.Equal(newInput, originalInput);
+        Assert.Equal(newInput, result.GetValue<string>());
     }
 
     [Fact]
@@ -477,12 +500,9 @@ public class KernelTests
     public async Task ItCanFindAndRunFunctionAsync()
     {
         //Arrange
-        var serviceProvider = new Mock<IServiceProvider>();
-        var serviceSelector = new Mock<IAIServiceSelector>();
-
         var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
-        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
+        var kernel = new Kernel();
         kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
         //Act
@@ -589,6 +609,61 @@ public class KernelTests
         Assert.Empty(kernel4.Data);
         Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
         Assert.Empty(kernel4.Plugins);
+    }
+
+    [Fact]
+    public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
+    {
+        // Arrange
+        var mockTextCompletion = this.SetupStreamingMocks(
+            new StreamingTextContent("chunk1"),
+            new StreamingTextContent("chunk2"));
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
+        var variables = new KernelArguments("importance");
+
+        var chunkCount = 0;
+        // Act
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel, variables))
+        {
+            chunkCount++;
+        }
+
+        // Assert
+        Assert.Equal(2, chunkCount);
+        mockTextCompletion.Verify(m => m.GetStreamingTextContentsAsync(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
+    private (TextContent mockTextContent, Mock<ITextGenerationService> textCompletionMock) SetupMocks(string? completionResult = null)
+    {
+        var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
+
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        return (mockTextContent, mockTextCompletion);
+    }
+
+    private Mock<ITextGenerationService> SetupStreamingMocks(params StreamingTextContent[] streamingContents)
+    {
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(streamingContents));
+
+        return mockTextCompletion;
+    }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable IDE1006 // Naming Styles
+    private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    {
+        foreach (var enumerationItem in enumeration)
+        {
+            yield return enumerationItem;
+        }
     }
 
     public class MyPlugin

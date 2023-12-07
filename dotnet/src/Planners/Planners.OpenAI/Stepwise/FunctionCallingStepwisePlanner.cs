@@ -45,7 +45,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         Verify.NotNullOrWhiteSpace(question);
         Verify.NotNull(kernel);
-        IChatCompletionService chatCompletion = kernel.GetService<IChatCompletionService>();
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
         ILogger logger = loggerFactory.CreateLogger(this.GetType());
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
@@ -53,7 +53,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
-        clonedKernel.ImportPluginFromObject<UserInteraction>();
+        clonedKernel.ImportPluginFromType<UserInteraction>();
 
         // Create and invoke a kernel function to generate the initial plan
         var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
@@ -158,7 +158,7 @@ public sealed class FunctionCallingStepwisePlanner
     // Create and invoke a kernel function to generate the initial plan
     private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml, pluginName: StepwisePlannerPluginName);
+        var generatePlanFunction = kernel.CreateFunctionFromPromptYaml(this._generatePlanYaml);
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
         var generatePlanArgs = new KernelArguments
         {

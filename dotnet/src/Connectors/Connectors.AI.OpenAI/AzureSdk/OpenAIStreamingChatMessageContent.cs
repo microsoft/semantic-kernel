@@ -35,16 +35,19 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// </summary>
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
     /// <param name="choiceIndex">Index of the choice</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
     internal OpenAIStreamingChatMessageContent(
         StreamingChatCompletionsUpdate chatUpdate,
         int choiceIndex,
+        string modelId,
         Dictionary<string, object?>? metadata = null)
         : base(
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
             chatUpdate.ContentUpdate,
             chatUpdate,
             choiceIndex,
+            modelId,
             Encoding.UTF8,
             metadata)
     {
@@ -61,7 +64,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// <summary>
     /// Retrieve the resulting function from the chat result.
     /// </summary>
-    /// <param name="fullContent"></param>
+    /// <param name="fullContent">Full content of the chat</param>
     /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
     public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<OpenAIStreamingChatMessageContent> fullContent)
     {

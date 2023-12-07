@@ -10,11 +10,11 @@
       "frequency_penalty": 0.0
     }
   ],
-  "input_parameters": [
+  "input_variables": [
     {
       "name": "input",
       "description": "Text to summarize",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

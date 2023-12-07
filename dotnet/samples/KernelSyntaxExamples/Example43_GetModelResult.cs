@@ -19,7 +19,7 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
@@ -30,7 +30,7 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Using the Kernel InvokeAsync
-        var result = await kernel.InvokeAsync(myFunction, "sorry I forgot your birthday");
+        var result = await kernel.InvokeAsync(myFunction, new("sorry I forgot your birthday"));
         Console.WriteLine(result.GetValue<string>());
         Console.WriteLine(result.Metadata?["Usage"]?.AsJson());
         Console.WriteLine();
@@ -49,14 +49,14 @@ public static class Example43_GetModelResult
 
         // Getting the error details
         kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            await kernel.InvokeAsync(errorFunction, "sorry I forgot your birthday");
+            await kernel.InvokeAsync(errorFunction, new("sorry I forgot your birthday"));
         }
         catch (Exception ex)
         {

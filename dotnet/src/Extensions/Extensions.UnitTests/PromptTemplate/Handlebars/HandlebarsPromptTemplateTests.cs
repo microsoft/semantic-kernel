@@ -7,7 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
-using static Microsoft.SemanticKernel.PromptTemplateConfig;
+
+#pragma warning disable CA1812 // Uninstantiated internal types
 
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
@@ -19,10 +20,9 @@ public sealed class HandlebarsPromptTemplateTests
 
     public HandlebarsPromptTemplateTests()
     {
-        this._factory = new HandlebarsPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._kernel = new Kernel();
-        this._arguments = new KernelArguments();
-        this._arguments["input"] = Guid.NewGuid().ToString("X");
+        this._factory = new(TestConsoleLogger.LoggerFactory);
+        this._kernel = new();
+        this._arguments = new(Guid.NewGuid().ToString("X"));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportPluginFromObject<Foo>();
+        this._kernel.ImportPluginFromType<Foo>();
         var template = "Foo {{Foo_Bar}}";
         var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
@@ -61,7 +61,7 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItRendersAsyncFunctionsAsync()
     {
         // Arrange
-        this._kernel.ImportPluginFromObject<Foo>();
+        this._kernel.ImportPluginFromType<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
         var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
@@ -81,17 +81,17 @@ public sealed class HandlebarsPromptTemplateTests
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
         };
-        promptConfig.InputParameters.Add(new InputParameter()
+        promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "bar",
             Description = "Bar",
-            DefaultValue = "Bar"
+            Default = "Bar"
         });
-        promptConfig.InputParameters.Add(new InputParameter()
+        promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "baz",
             Description = "Baz",
-            DefaultValue = "Baz"
+            Default = "Baz"
         });
         promptConfig.Template = "Foo {{bar}} {{baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);

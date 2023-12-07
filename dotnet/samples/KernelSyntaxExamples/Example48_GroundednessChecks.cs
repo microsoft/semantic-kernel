@@ -60,8 +60,7 @@ after this event Caroline became his wife.""";
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
@@ -85,17 +84,18 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        var variables = new KernelArguments();
-        variables["input"] = summaryText;
-        variables["topic"] = "people and places";
-        variables["example_entities"] = "John, Jane, mother, brother, Paris, Rome";
+        KernelArguments variables = new(summaryText)
+        {
+            ["topic"] = "people and places",
+            ["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
+        };
 
         var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).ToString();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        variables["input"] = extractionResult;
+        variables[KernelArguments.InputParameterName] = extractionResult;
         variables["reference_context"] = GroundingText;
 
         var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
@@ -103,7 +103,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        variables["input"] = summaryText;
+        variables[KernelArguments.InputParameterName] = summaryText;
         variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
@@ -125,8 +125,7 @@ which are not grounded in the original.
         Console.WriteLine("======== Planning - Groundedness Checks ========");
 
         var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
@@ -137,7 +136,7 @@ which are not grounded in the original.
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
 
-        kernel.ImportPluginFromObject<TextPlugin>();
+        kernel.ImportPluginFromType<TextPlugin>();
 
         var planner = new HandlebarsPlanner();
         var plan = await planner.CreatePlanAsync(kernel, ask);
