@@ -125,6 +125,24 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         return this._arguments.TryGetValue(name, out value);
     }
 
+    /// <inheritdoc cref="KernelArguments.TryGetValue"/>
+    public bool TryGetValue<TValue>(string name, out TValue? value) where TValue : class?
+    {
+        Verify.NotNull(name);
+        bool result = this._arguments.TryGetValue(name, out object? objectValue);
+        value = objectValue as TValue;
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the value associated with the <see cref="KernelArguments.InputParameterName"/> argument name as a string.
+    /// </summary>
+    public TValue? GetInput<TValue>() where TValue : class?
+    {
+        this.TryGetValue(KernelArguments.InputParameterName, out TValue? input);
+        return input;
+    }
+
     /// <summary>Gets or sets the value associated with the specified argument name.</summary>
     /// <param name="name">The name of the argument value to get or set.</param>
     /// <exception cref="ArgumentNullException"><paramref name="name"/> is null.</exception>
