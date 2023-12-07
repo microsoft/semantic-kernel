@@ -894,6 +894,60 @@ public sealed class KernelFunctionFromMethodTests1
     }
 
     [Fact]
+    public async Task ItShouldMarshalArgumentsOfValueTypeAsync()
+    {
+        //Scenario #1 - passing int argument to a method that accepts int
+        object? actual = null;
+        var sut = KernelFunctionFactory.CreateFromMethod((int val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = 5 });
+        Assert.Equal(5, actual);
+
+        //Scenario #2 - passing null argument to a method that accepts int
+        sut = KernelFunctionFactory.CreateFromMethod((int val) => { actual = val; });
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.InvokeAsync(this._kernel, new() { ["val"] = null }));
+
+        //Scenario #3 - passing int argument to a method that accepts int?
+        actual = null;
+        sut = KernelFunctionFactory.CreateFromMethod((int? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = 5 });
+        Assert.Equal(5, actual);
+
+        //Scenario #4 - passing null argument to a method that accepts int?
+        actual = new();
+        sut = KernelFunctionFactory.CreateFromMethod((int? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public async Task ItShouldMarshalArgumentsOfReferenceTypeAsync()
+    {
+        //Scenario #1 - passing string argument to a method that accepts string
+        object? actual = null;
+        var sut = KernelFunctionFactory.CreateFromMethod((string val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = "5" });
+        Assert.Equal("5", actual);
+
+        //Scenario #2 - passing null argument to a method that accepts string
+        actual = new();
+        sut = KernelFunctionFactory.CreateFromMethod((string val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+        Assert.Null(actual);
+
+        //Scenario #3 - passing string argument to a method that accepts string?
+        actual = null;
+        sut = KernelFunctionFactory.CreateFromMethod((string? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = "5" });
+        Assert.Equal("5", actual);
+
+        //Scenario #4 - passing null argument to a method that accepts string?
+        actual = new();
+        sut = KernelFunctionFactory.CreateFromMethod((string? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+        Assert.Null(actual);
+    }
+
+    [Fact]
     public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
         // Arrange
