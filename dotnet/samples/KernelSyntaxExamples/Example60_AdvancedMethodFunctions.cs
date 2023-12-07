@@ -76,7 +76,7 @@ public static class Example60_AdvancedMethodFunctions
 
     /// <summary>
     /// In order to use custom types, a <see cref="TypeConverter"/> can be specified,
-    /// but is not required if the native serialiation provided by default is sufficient.
+    /// but is not required if the native serialization provided by default is sufficient.
     /// A <see cref="TypeConverter"/> will convert object instance to string representation.
     /// </summary>
     /// <remarks>
