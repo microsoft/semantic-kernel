@@ -14,12 +14,14 @@
     {
       "name": "input",
       "description": "The list of entities which are to be checked against the reference context.",
-      "default": ""
+      "default": "",
+      "is_required": true
     },
     {
       "name": "reference_context",
       "description": "The reference context to be used to ground the entities. Only those missing from the reference_context will be returned",
-      "default": ""
+      "default": "",
+      "is_required": true
     }
   ]
 }
