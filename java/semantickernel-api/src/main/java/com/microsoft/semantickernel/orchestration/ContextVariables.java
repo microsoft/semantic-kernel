@@ -58,7 +58,7 @@ public interface ContextVariables extends Buildable, Map<String, ContextVariable
      * @return content of the variable
      */
     @Nullable
-    <U, T extends ContextVariable<U>> T get(String key, Class<T> clazz);
+    <T> ContextVariable<T> get(String key, Class<T> clazz);
 
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(ContextVariables.Builder.class);

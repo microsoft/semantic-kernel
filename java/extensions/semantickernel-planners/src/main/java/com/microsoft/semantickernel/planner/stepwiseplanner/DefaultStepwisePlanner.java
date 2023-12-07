@@ -10,8 +10,6 @@ import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.NumberVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.StringVariable;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
@@ -196,8 +194,8 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         ContextVariables parameters =
                 SKBuilders.variables()
                         .withVariable(
-                                "functionDescriptions", StringVariable.of(functionDescriptions))
-                        .withVariable("question", StringVariable.of(goal))
+                                "functionDescriptions", ContextVariable.of(functionDescriptions))
+                        .withVariable("question", ContextVariable.of(goal))
                         .build();
         /*
             planStep.addOutputs(Arrays.asList("agentScratchPad", "stepCount", "skillCount", "stepsTaken"));
@@ -287,7 +285,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
             SKContext context, Integer stepIndex, ArrayList<SystemStep> stepsTaken) {
         String scratchPad = this.createScratchPad(stepsTaken);
 
-        context.setVariable("agentScratchPad", StringVariable.of(scratchPad));
+        context.setVariable("agentScratchPad", ContextVariable.of(scratchPad));
 
         return systemStepFunction
                 .invokeAsync(context)
@@ -360,7 +358,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
         context = context.update(nextStep.getFinalAnswer());
         String updatedScratchPlan = this.createScratchPad(stepsTaken);
-        context.setVariable("agentScratchPad", StringVariable.of(updatedScratchPlan));
+        context.setVariable("agentScratchPad", ContextVariable.of(updatedScratchPlan));
 
         // Add additional results to the context
         try {
@@ -442,9 +440,9 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
     private void addExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context)
             throws JsonProcessingException {
-        context.setVariable("stepCount", NumberVariable.of(stepsTaken.size()));
+        context.setVariable("stepCount", ContextVariable.of(stepsTaken.size()));
         context.setVariable(
-                "stepsTaken", StringVariable.of(new ObjectMapper().writeValueAsString(stepsTaken)));
+                "stepsTaken", ContextVariable.of(new ObjectMapper().writeValueAsString(stepsTaken)));
 
         Map<String, Integer> actionCounts = new HashMap<>();
 
@@ -470,7 +468,7 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
 
         context.setVariable(
                 "skillCount",
-                StringVariable.of(skillCallCountStr + " (" + skillCallListWithCounts + ")"));
+                ContextVariable.of(skillCallCountStr + " (" + skillCallListWithCounts + ")"));
     }
 
     private String createScratchPad(List<SystemStep> stepsTaken) {

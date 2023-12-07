@@ -10,7 +10,6 @@ import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
-import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
