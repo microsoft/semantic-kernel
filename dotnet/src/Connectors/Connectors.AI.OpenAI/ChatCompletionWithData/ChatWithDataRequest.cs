@@ -45,7 +45,10 @@ internal sealed class ChatWithDataRequest
 internal sealed class ChatWithDataSource
 {
     [JsonPropertyName("type")]
-    public string Type { get; set; } = ChatWithDataSourceType.AzureAISearch.ToString();
+    // The current API only supports "AzureCognitiveSearch" as name otherwise an error is returned.
+    // Validation error at #/dataSources/0: Input tag 'AzureAISearch' found using 'type' does not match any of
+    // the expected tags: 'AzureCognitiveSearch', 'Elasticsearch', 'AzureCosmosDB', 'Pinecone', 'AzureMLIndex', 'Microsoft365'
+    public string Type { get; set; } = "AzureCognitiveSearch";
 
     [JsonPropertyName("parameters")]
     public ChatWithDataSourceParameters Parameters { get; set; } = new ChatWithDataSourceParameters();
@@ -62,10 +65,4 @@ internal sealed class ChatWithDataSourceParameters
 
     [JsonPropertyName("indexName")]
     public string IndexName { get; set; } = string.Empty;
-}
-
-[Experimental("SKEXP0010")]
-internal enum ChatWithDataSourceType
-{
-    AzureAISearch
 }
