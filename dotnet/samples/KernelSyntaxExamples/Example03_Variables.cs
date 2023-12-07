@@ -3,22 +3,18 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Plugins;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
 {
-    private static readonly ILoggerFactory s_loggerFactory = ConsoleLogger.LoggerFactory;
-
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Variables ========");
 
-        Kernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
-        var textPlugin = kernel.ImportPluginFromObject<StaticTextPlugin>();
+        Kernel kernel = new();
+        var textPlugin = kernel.ImportPluginFromType<StaticTextPlugin>();
 
         var arguments = new KernelArguments("Today is: ")
         {
@@ -28,7 +24,7 @@ public static class Example03_Variables
         // ** Different ways of executing function with arguments **
 
         // Specify and get the value type as generic parameter
-        var resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
+        string? resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
         Console.WriteLine($"string -> {resultValue}");
 
         // If you need to access the result metadata, you can use the non-generic version to get the FunctionResult
