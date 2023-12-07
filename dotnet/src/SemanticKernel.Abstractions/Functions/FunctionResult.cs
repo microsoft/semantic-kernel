@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -62,6 +63,19 @@ public sealed class FunctionResult
         if (this.Value is T typedResult)
         {
             return typedResult;
+        }
+
+        if (this.Value is ContentBase content)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (T)(object)content.ToString();
+            }
+
+            if (content.InnerContent is T innerContent)
+            {
+                return innerContent;
+            }
         }
 
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
