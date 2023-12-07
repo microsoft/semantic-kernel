@@ -290,10 +290,29 @@ internal abstract class ClientCore
             // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
             // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
 
+            ChatRequestMessage? current = null;
+            if (result.Role == AuthorRole.System)
+            {
+                current = new ChatRequestSystemMessage(resultChoice.Message.Content);
+            }
+            if (result.Role == AuthorRole.Assistant)
+            {
+                current = new ChatRequestAssistantMessage(resultChoice.Message.Content);
+            }
+            if (result.Role == AuthorRole.User)
+            {
+                current = new ChatRequestUserMessage(resultChoice.Message.Content);
+            }
+            if (result.Role == AuthorRole.Tool)
+            {
+                current = new ChatRequestToolMessage(resultChoice.Message.Content, resultChoice.Message.ToolCalls.First().Id);
+            }
+                
             string fqn = functionCallResponse.FullyQualifiedName;
-
-            chatOptions.Messages.Add(resultChoice.Message);
-            chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
+            resultChoice.Message.
+            chatOptions.Messages.Add(new ChatRequestMessage(resultChoice.Message));
+            //chatOptions.Messages.Add(resultChoice.Message);
+            //chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
             chat.AddMessage(result);
             chat.AddFunctionMessage(serializedFunctionResult, fqn);
@@ -418,6 +437,7 @@ internal abstract class ClientCore
             string contents = contentBuilder?.ToString() ?? string.Empty;
             string fqn = functionCallResponse.FullyQualifiedName;
 
+            ChatRequestMessage requestMessage = 
             chatOptions.Messages.Add(new(streamedRole ?? default, contents) { FunctionCall = functionCall });
             chatOptions.Messages.Add(new Azure.AI.OpenAI.ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
 
