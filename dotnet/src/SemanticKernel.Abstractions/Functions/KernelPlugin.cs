@@ -29,18 +29,12 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <exception cref="KeyNotFoundException">The plugin does not contain a function with the specified name.</exception>
     public abstract KernelFunction this[string functionName] { get; }
 
-    /// <summary>Initializes the new plugin from the provided name.</summary>
-    /// <param name="name">The name for the plugin.</param>
-    protected KernelPlugin(string name) : this(name, description: null)
-    {
-    }
-
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <exception cref="ArgumentException"><paramref name="name"/> if plugin name is invalid.</exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> if plugin with this name is already registered.</exception>
-    protected KernelPlugin(string name, string? description)
+    protected KernelPlugin(string name, string? description = null)
     {
         Verify.ValidPluginName(name);
 
