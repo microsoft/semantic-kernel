@@ -32,6 +32,11 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public static AuthorRole Tool { get; } = new("tool");
 
     /// <summary>
+    /// The role that provides additional information and references for chat completions.
+    /// </summary>
+    public static AuthorRole Function { get; } = new("function");
+
+    /// <summary>
     /// Gets the label associated with this AuthorRole.
     /// </summary>
     /// <remarks>
