@@ -22,7 +22,7 @@ Copy and paste the following code into your project, with your Azure OpenAI key 
 
 ```csharp
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 var builder = new KernelBuilder();
 
@@ -133,7 +133,7 @@ Packages included in **Microsoft.SemanticKernel**:
    used by the core and other SK components.
 1. **Microsoft.SemanticKernel.Core**: contains the core logic of SK, such as prompt
    engineering, semantic memory and semantic functions definition and orchestration.
-1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
+1. **Microsoft.SemanticKernel.Connectors.OpenAI**: connectors to OpenAI and Azure
    OpenAI, allowing to run semantic functions, chats, text to image with GPT3,
    GPT3.5, GPT4, DALL-E2.
 
