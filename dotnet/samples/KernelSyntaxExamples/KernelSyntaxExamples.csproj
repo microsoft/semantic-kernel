@@ -43,6 +43,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Assistants\Experimental.Assistants.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplate.Handlebars\PromptTemplate.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
@@ -52,6 +62,7 @@
     <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Grpc\Functions.Grpc.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
