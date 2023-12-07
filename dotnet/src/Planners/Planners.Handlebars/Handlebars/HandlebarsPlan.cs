@@ -55,7 +55,7 @@ public sealed class HandlebarsPlan
     {
         var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan));
 
-        return PlanInstrumentation.InvokePlanAsync(
+        return PlannerInstrumentation.InvokePlanAsync(
             static (HandlebarsPlan plan, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
                 => plan.InvokeCoreAsync(kernel, arguments, cancellationToken),
             this, kernel, arguments, logger, cancellationToken);
