@@ -9,10 +9,10 @@ using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToImage;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function

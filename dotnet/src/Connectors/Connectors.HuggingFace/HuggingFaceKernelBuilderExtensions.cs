@@ -2,9 +2,9 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 namespace Microsoft.SemanticKernel;
 

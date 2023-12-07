@@ -6,8 +6,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;

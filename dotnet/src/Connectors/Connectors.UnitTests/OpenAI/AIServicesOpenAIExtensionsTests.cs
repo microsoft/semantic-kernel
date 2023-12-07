@@ -2,9 +2,9 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;

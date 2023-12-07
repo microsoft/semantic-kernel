@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion
