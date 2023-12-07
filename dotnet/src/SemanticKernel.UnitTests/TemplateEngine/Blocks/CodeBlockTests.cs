@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
-    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
+    private readonly Kernel _kernel = new();
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
@@ -195,10 +194,10 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
-        Assert.Empty(result);
+        Assert.Null(result);
         Assert.Equal(VarValue, canary);
     }
 
@@ -223,10 +222,10 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel);
+        var result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
-        Assert.Empty(result);
+        Assert.Null(result);
         Assert.Equal(Value, canary);
     }
 
@@ -240,7 +239,7 @@ public class CodeBlockTests
 
         var arguments = new KernelArguments();
         arguments["bob"] = BobValue;
-        arguments["input"] = Value;
+        arguments[KernelArguments.InputParameterName] = Value;
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
@@ -260,11 +259,73 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
-        string result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
+        var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
         Assert.Equal(FooValue, actualFoo);
         Assert.Equal(BobValue, actualBaz);
-        Assert.Empty(result);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ItReturnsArgumentValueAndTypeAsync()
+    {
+        // Arrange
+        object expectedValue = new();
+        object? canary = null;
+
+        var funcId = new FunctionIdBlock("p.f");
+        var varBlock = new VarBlock("$var");
+        var namedArgBlock = new NamedArgBlock("p1=$a1");
+
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
+        {
+            canary = p1;
+        }, "f") }));
+
+        // Act
+        var functionWithPositionedArgument = new CodeBlock(new List<Block> { funcId, varBlock }, "");
+        var functionWithNamedArgument = new CodeBlock(new List<Block> { funcId, namedArgBlock }, "");
+        var variable = new CodeBlock(new List<Block> { varBlock }, "");
+
+        // Assert function positional argument passed to the the function with no changes
+        await functionWithPositionedArgument.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
+        Assert.Same(expectedValue, canary); // Ensuring that the two variables point to the same object, as there is no other way to verify that the argument has not been transformed from object -> string -> object during the process.
+
+        // Assert function named argument passed to the the function with no changes
+        await functionWithNamedArgument.RenderCodeAsync(this._kernel, new() { ["a1"] = expectedValue });
+        Assert.Same(expectedValue, canary);
+
+        // Assert argument assigned to a variable with no changes
+        await variable.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
+        Assert.Same(expectedValue, canary);
+    }
+
+    [Fact]
+    public async Task ItDoesNotMutateOriginalArgumentsAsync()
+    {
+        // Arrange
+        const string Value = "value";
+        const string FooValue = "bar";
+        const string BobValue = "bob's value";
+
+        var arguments = new KernelArguments();
+        arguments["bob"] = BobValue;
+        arguments[KernelArguments.InputParameterName] = Value;
+
+        var funcId = new FunctionIdBlock("plugin.function");
+        var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
+        var namedArgBlock2 = new NamedArgBlock("baz=$bob");
+
+        var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) => { }, "function");
+
+        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        await codeBlock.RenderCodeAsync(this._kernel, arguments);
+
+        // Assert
+        Assert.Equal(2, arguments.Count);
     }
 }

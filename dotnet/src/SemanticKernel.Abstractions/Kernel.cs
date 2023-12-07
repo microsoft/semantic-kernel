@@ -51,8 +51,24 @@ public sealed class Kernel
         IServiceProvider? services = null,
         KernelPluginCollection? plugins = null)
     {
+        // Store the provided services, or an empty singleton if there aren't any.
         this.Services = services ?? EmptyServiceProvider.Instance;
-        this._plugins = plugins;
+
+        // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
+        this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+        if (this._plugins is null)
+        {
+            // Otherwise, enumerate any plugins that may have been registered directly.
+            IEnumerable<IKernelPlugin> e = this.Services.GetServices<IKernelPlugin>();
+
+            // It'll be common not to have any plugins directly registered as a service.
+            // If we can efficiently tell there aren't any, avoid proactively allocating
+            // the plugins collection.
+            if (e is not ICollection<IKernelPlugin> c || c.Count != 0)
+            {
+                this._plugins = new(e);
+            }
+        }
     }
 
     /// <summary>
@@ -123,9 +139,19 @@ public sealed class Kernel
     /// Gets the <see cref="ILoggerFactory"/> associated with this <see cref="Kernel"/>.
     /// </summary>
     /// <remarks>
-    /// This behaves the same as calling <see cref="GetService{ILoggerFactory}"/>.
+    /// This returns any <see cref="ILoggerFactory"/> in <see cref="Services"/>. If there is
+    /// none, it returns an <see cref="ILoggerFactory"/> that won't perform any logging.
     /// </remarks>
-    public ILoggerFactory LoggerFactory => this.GetService<ILoggerFactory>();
+    public ILoggerFactory LoggerFactory =>
+        this.Services.GetService<ILoggerFactory>() ??
+        NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
+    /// </summary>
+    public IAIServiceSelector ServiceSelector =>
+        this.Services.GetService<IAIServiceSelector>() ??
+        OrderedAIServiceSelector.Instance;
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -174,7 +200,7 @@ public sealed class Kernel
     /// if no key was specified and no service was found. If it's able to find the specified service, that service is returned.
     /// Otherwise, an exception is thrown.
     /// </remarks>
-    public T GetService<T>(string? serviceId = null) where T : class
+    public T GetRequiredService<T>(string? serviceId = null) where T : class
     {
         T? service = null;
 
@@ -183,7 +209,7 @@ public sealed class Kernel
             if (this.Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = this.Services.GetKeyedService<T>(serviceId);
+                service = this.Services.GetRequiredKeyedService<T>(serviceId);
             }
         }
         else
@@ -196,20 +222,6 @@ public sealed class Kernel
             if (service is null && this.Services is IKeyedServiceProvider)
             {
                 service = this.GetAllServices<T>().LastOrDefault();
-            }
-
-            // If no service could be found, special-case specific services to provide a default.
-            if (service is null)
-            {
-                if (typeof(T) == typeof(ILoggerFactory) || typeof(T) == typeof(NullLoggerFactory))
-                {
-                    return (T)(object)NullLoggerFactory.Instance;
-                }
-
-                if (typeof(T) == typeof(IAIServiceSelector) || typeof(T) == typeof(OrderedAIServiceSelector))
-                {
-                    return (T)(object)OrderedAIServiceSelector.Instance;
-                }
             }
         }
 
@@ -249,14 +261,6 @@ public sealed class Kernel
 
                 return Enumerable.Empty<T>();
             }
-        }
-
-        if (this.Services is EmptyServiceProvider)
-        {
-            // If the Kernel is created without a service provider, it uses a simple empty implementation.
-            // But the GetServices extension relies on the service provider special-casing enumerables.
-            // Since the empty provider doesn't do that, we need to special-case it here.
-            return Enumerable.Empty<T>();
         }
 
         return this.Services.GetServices<T>();
@@ -315,30 +319,6 @@ public sealed class Kernel
     #endregion
 
     #region InvokeAsync
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="executionSettings">Execution settings to apply, if relevant.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function's execution.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    /// <remarks>
-    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
-    /// </remarks>
-    public Task<FunctionResult> InvokeAsync(
-        KernelFunction function,
-        string? input,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(function);
-
-        return function.InvokeAsync(this, input, executionSettings: null, cancellationToken);
-    }
 
     /// <summary>
     /// Invokes the<see cref="KernelFunction"/>.
@@ -434,47 +414,6 @@ public sealed class Kernel
         Verify.NotNull(function);
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
-    }
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
-    /// </summary>
-    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-    /// <remarks>
-    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
-    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
-    /// </remarks>
-    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
-        KernelFunction function,
-        string? input,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(function);
-
-        return this.InvokeStreamingAsync<StreamingContentBase>(function, input, CancellationToken.None);
-    }
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
-    /// </summary>
-    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
-    /// <remarks>
-    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
-    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
-    /// </remarks>
-    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(KernelFunction function, string? input, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(function);
-
-        return function.InvokeStreamingAsync<T>(this, input, executionSettings: null, cancellationToken);
     }
     #endregion
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,33 +100,6 @@ public abstract class KernelFunction
     /// Invokes the<see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="executionSettings">Execution settings to apply, if relevant.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function's execution.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    public Task<FunctionResult> InvokeAsync(
-        Kernel kernel,
-        string? input,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
-        if (!string.IsNullOrEmpty(input))
-        {
-            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
-        }
-
-        return this.InvokeAsync(kernel, arguments, cancellationToken);
-    }
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
@@ -145,11 +117,7 @@ public abstract class KernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function invoking. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
-        }
+        logger.LogFunctionInvokingWithArguments(this.Name, arguments);
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -182,11 +150,7 @@ public abstract class KernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            if (logger.IsEnabled(LogLevel.Trace))
-            {
-                logger.LogTrace("Function succeeded. Result: {Result}", functionResult.Value);
-            }
-
+            logger.LogFunctionInvokedSuccess(functionResult.Value);
             return functionResult;
         }
         catch (Exception ex)
@@ -199,10 +163,7 @@ public abstract class KernelFunction
             // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Function completed. Duration: {Duration}s", duration.TotalSeconds);
-            }
+            logger.LogFunctionComplete(duration.TotalSeconds);
         }
     }
 
@@ -227,36 +188,6 @@ public abstract class KernelFunction
     /// Invokes the<see cref="KernelFunction"/> and streams its results.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="input">The single argument to pass to the function's invocation.</param>
-    /// <param name="executionSettings">Execution settings to apply, if relevant.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <remarks>
-    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
-    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
-    /// </remarks>
-    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
-        Kernel kernel,
-        string? input,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-
-        KernelArguments? arguments = executionSettings is not null ? new(executionSettings) : null;
-        if (!string.IsNullOrEmpty(input))
-        {
-            (arguments ??= new()).Add(KernelArguments.InputParameterName, input);
-        }
-
-        return this.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
-    }
-
-    /// <summary>
-    /// Invokes the<see cref="KernelFunction"/> and streams its results.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
@@ -276,11 +207,7 @@ public abstract class KernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
         arguments ??= new KernelArguments();
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("Function streaming. Arguments: {Arguments}", string.Join(", ", arguments.Select(v => $"{v.Key}:{v.Value}")));
-        }
+        logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -379,10 +306,7 @@ public abstract class KernelFunction
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add("error.type", ex.GetType().FullName);
-        if (logger.IsEnabled(LogLevel.Error))
-        {
-            logger.LogError(ex, "Function failed. Error: {Message}", ex.Message);
-        }
+        logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly

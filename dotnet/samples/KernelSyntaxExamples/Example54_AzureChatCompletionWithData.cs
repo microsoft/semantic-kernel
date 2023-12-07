@@ -84,13 +84,13 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(config: completionWithDataConfig)
+            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var response = await kernel.InvokeAsync(function, ask);
+        var response = await kernel.InvokeAsync(function, new(ask));
 
         // Output
         // Ask: How did Emily and David meet?
@@ -101,7 +101,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.InvokeAsync(function, ask);
+        response = await kernel.InvokeAsync(function, new(ask));
 
         // Output
         // Ask: What are Emily and David studying?
@@ -122,9 +122,9 @@ public static class Example54_AzureChatCompletionWithData
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
             CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
-            DataSourceApiKey = TestConfiguration.ACS.ApiKey,
-            DataSourceIndex = TestConfiguration.ACS.IndexName
+            DataSourceEndpoint = TestConfiguration.AzureAISearch.Endpoint,
+            DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
+            DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
     }
 }
