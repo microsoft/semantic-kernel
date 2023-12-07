@@ -17,6 +17,22 @@ public sealed class KernelJsonSchema
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a string.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
+    /// <remarks>
+    /// Id the jsonSchema is null or empty, null is returned.
+    /// </remarks>
+    public static KernelJsonSchema? ParseOrNull(string? jsonSchema)
+    {
+        if (string.IsNullOrEmpty(jsonSchema))
+        {
+            return null;
+        }
+
+        return new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!));
+    }
+
+    /// <summary>Parses a JSON Schema for a parameter type.</summary>
+    /// <param name="jsonSchema">The JSON Schema as a string.</param>
+    /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="ArgumentException"><paramref name="jsonSchema"/> is null.</exception>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(string jsonSchema) => new(JsonSerializer.Deserialize<JsonElement>(jsonSchema));

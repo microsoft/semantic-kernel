@@ -14,4 +14,13 @@ public sealed class OutputVariable
     /// </summary>
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// JsonSchema describing this variable.
+    /// </summary>
+    /// <remarks>
+    /// This string will be deserialised into an instance of <see cref="KernelJsonSchema"/>.
+    /// </remarks>
+    [JsonPropertyName("json_schema")]
+    public string? JsonSchema { get; set; }
 }
