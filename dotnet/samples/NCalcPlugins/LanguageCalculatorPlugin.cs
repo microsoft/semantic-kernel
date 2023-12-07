@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using NCalc;
 
 namespace NCalcPlugins;

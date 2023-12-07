@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /**

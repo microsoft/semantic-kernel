@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// OpenAI-specific extensions to the <see cref="ChatHistory"/> class.

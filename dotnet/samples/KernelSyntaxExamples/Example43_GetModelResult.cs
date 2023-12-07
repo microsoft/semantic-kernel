@@ -3,9 +3,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.TextGeneration;
 using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
