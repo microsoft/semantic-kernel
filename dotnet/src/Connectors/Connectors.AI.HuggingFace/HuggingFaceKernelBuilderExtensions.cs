@@ -24,8 +24,8 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithHuggingFaceTextGeneration(
-        this KernelBuilder builder,
+    public static IKernelBuilder AddHuggingFaceTextGeneration(
+        this IKernelBuilder builder,
         string model,
         string? apiKey = null,
         string? endpoint = null,
@@ -35,11 +35,10 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(builder);
         Verify.NotNull(model);
 
-        return builder.WithServices(c =>
-        {
-            c.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-                new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
-        });
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+            new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+
+        return builder;
     }
 
     /// <summary>
@@ -74,8 +73,8 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithHuggingFaceTextEmbeddingGeneration(
-        this KernelBuilder builder,
+    public static IKernelBuilder AddHuggingFaceTextEmbeddingGeneration(
+        this IKernelBuilder builder,
         string model,
         string? endpoint = null,
         string? serviceId = null,
@@ -84,11 +83,10 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(builder);
         Verify.NotNull(model);
 
-        return builder.WithServices(c =>
-        {
-            c.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-                new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
-        });
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
+            new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+
+        return builder;
     }
 
     /// <summary>

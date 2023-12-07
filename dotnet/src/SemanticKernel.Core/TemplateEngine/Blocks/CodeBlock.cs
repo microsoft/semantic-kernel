@@ -77,7 +77,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw new KernelException(error);
         }
 
-        this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
+        if (this.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
+        }
 
         return this._tokens[0].Type switch
         {
@@ -157,7 +160,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
         var firstArg = this._tokens[1];
 
         // Sensitive data, logging as trace, disabled by default
-        this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
+        if (this.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
+        }
 
         var namedArgsStartIndex = 1;
         if (firstArg.Type is not BlockTypes.NamedArg)
@@ -181,7 +187,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
             }
 
             // Sensitive data, logging as trace, disabled by default
-            this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
+            if (this.Logger.IsEnabled(LogLevel.Trace))
+            {
+                this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
+            }
 
             arguments[arg.Name] = arg.GetValue(arguments);
         }

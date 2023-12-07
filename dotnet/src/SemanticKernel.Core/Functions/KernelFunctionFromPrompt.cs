@@ -128,7 +128,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
         }
 
-        var textContent = await textGeneration.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
         return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
     }
@@ -146,7 +146,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        await foreach (var content in textGeneration.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        await foreach (var content in textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -210,7 +210,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
-        var serviceSelector = kernel.GetService<IAIServiceSelector>();
+        var serviceSelector = kernel.ServiceSelector;
         (var textGeneration, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         Verify.NotNull(textGeneration);
 
