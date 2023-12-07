@@ -143,7 +143,8 @@ Text:\n{GroundingText};
         var planner = new HandlebarsPlanner();
         var plan = await planner.CreatePlanAsync(kernel, ask);
 
-        Console.WriteLine($"======== Goal: ========\n{ask}\n======== Plan ========\n{plan}");
+        Console.WriteLine($"======== Goal: ========\n{ask}");
+        Console.WriteLine($"======== Plan ========\n{plan}");
 
         var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
 
