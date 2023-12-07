@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Prompt;
@@ -15,14 +15,14 @@ public class XmlPromptParserTests
     [Theory]
     [InlineData("This is plain prompt")]
     [InlineData("<message This is invalid chat prompt>")]
-    public void ItReturnsEmptyListWhenPromptIsPlainText(string prompt)
+    public void ItReturnsNullListWhenPromptIsPlainText(string prompt)
     {
         // Act
         var result = XmlPromptParser.TryParse(prompt, out var nodes);
 
         // Assert
         Assert.False(result);
-        Assert.Empty(nodes);
+        Assert.Null(nodes);
     }
 
     [Fact]

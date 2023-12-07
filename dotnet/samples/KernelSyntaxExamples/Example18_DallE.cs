@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextToImage;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.TextToImage;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
