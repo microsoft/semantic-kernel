@@ -24,7 +24,7 @@ We should update current implementation of `ChatMessageContent` class with `stri
 
 Some of the option variations can be combined.
 
-### Option #1: Naming updates and new data type for `chat message content`
+### Option #1: [Abstraction level] Naming updates and new data type for `chat message content`
 
 Since `chat message content` can be an object now instead of `string`, it requires reserved name for better understanding in domain.
 
@@ -141,7 +141,7 @@ foreach (var content in message.Contents)
 Diagram:
 ![Chat and Text models diagram - Option 1](diagrams/chat-text-models-option-1.png)
 
-### Option #2: Avoid renaming and new data type for `chat message content`
+### Option #2: [Abstraction level] Avoid renaming and new data type for `chat message content`
 
 Same as Option #1, but without naming changes. In order to differentiate actual `chat message` and `chat message content`:
 
