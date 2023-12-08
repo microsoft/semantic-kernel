@@ -96,7 +96,7 @@ def test_create_options():
         logit_bias={"1": 1},
         messages=[{"role": "system", "content": "Hello"}],
     )
-    options = settings.create_options()
+    options = settings.prepare_settings_dict()
     assert options["temperature"] == 0.5
     assert options["top_p"] == 0.5
     assert options["presence_penalty"] == 0.5

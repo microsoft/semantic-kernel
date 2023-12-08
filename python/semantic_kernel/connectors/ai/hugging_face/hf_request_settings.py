@@ -24,7 +24,7 @@ class HuggingFaceRequestSettings(AIRequestSettings):
             )
         )
 
-    def create_options(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         gen_config = self.get_generation_config()
         if "prompt" in kwargs and kwargs["prompt"] is not None:
             return {

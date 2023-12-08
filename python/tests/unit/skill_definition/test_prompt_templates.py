@@ -4,7 +4,9 @@ import json
 
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import OpenAIChatMessage
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
+    OpenAIChatMessage,
+)
 from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
     OpenAIChatRequestSettings,
 )
@@ -115,7 +117,9 @@ def test_custom_prompt_template_config_from_json():
         }
     }
     """
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(prompt_template_json)
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(
+        prompt_template_json
+    )
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
@@ -140,7 +144,9 @@ def test_chat_prompt_template():
 
 
 def test_chat_prompt_template_with_system_prompt():
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_completion_parameters(
+    prompt_template_config = PromptTemplateConfig[
+        OpenAIChatRequestSettings
+    ].from_completion_parameters(
         messages=[{"role": "system", "content": "Custom system prompt."}],
     )
 

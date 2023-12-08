@@ -102,6 +102,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
                     if text.strip():  # Exclude empty or whitespace-only text
                         yield text
 
-    def request_settings_factory(self) -> "AIRequestSettings":
+    def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return OpenAITextRequestSettings

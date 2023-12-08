@@ -15,7 +15,7 @@ class AIRequestSettings(SKBaseModel):
             if key in self.keys:
                 setattr(self, key, value)
 
-    def create_options(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         return self.model_dump(
             exclude={"service_id", "extension_data"},
             exclude_none=True,

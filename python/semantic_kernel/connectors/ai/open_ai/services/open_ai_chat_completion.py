@@ -147,6 +147,6 @@ class OpenAIChatCompletion(
             default_headers=settings.get("default_headers"),
         )
 
-    def request_settings_factory(self) -> "AIRequestSettings":
+    def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return OpenAIChatRequestSettings

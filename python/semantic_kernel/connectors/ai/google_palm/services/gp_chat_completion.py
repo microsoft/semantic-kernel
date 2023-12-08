@@ -198,7 +198,7 @@ class GooglePalmChatCompletion(
         try:
             if self._message_history is None:
                 response = palm.chat(  # Start a new conversation
-                    settings.create_options(
+                    settings.prepare_settings_dict(
                         model=self.ai_model_id, context=context, messages=messages
                     )
                 )

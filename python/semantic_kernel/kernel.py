@@ -33,10 +33,10 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -741,7 +741,7 @@ class Kernel:
             )
             req_settings_type = service.__closure__[
                 0
-            ].cell_contents.request_settings_factory()
+            ].cell_contents.get_request_settings_class()
 
             function.set_chat_configuration(
                 req_settings_type.from_ai_request(
@@ -767,9 +767,12 @@ class Kernel:
                 if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
+            req_settings_type = service.__closure__[
+                0
+            ].cell_contents.get_request_settings_class()
 
             function.set_ai_configuration(
-                AIRequestSettings.from_completion_config(
+                req_settings_type.from_completion_config(
                     function_config.prompt_template_config.completion
                 )
             )

@@ -27,7 +27,10 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_resp
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
     OpenAIChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.azure_open_ai_request_settings import (
+    AzureOpenAIChatRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -387,5 +390,6 @@ class AzureChatCompletion(
         return model_args
 
     def request_settings_factory(self) -> "AIRequestSettings":
+    def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
-        return OpenAIChatRequestSettings
+        return AzureOpenAIChatRequestSettings

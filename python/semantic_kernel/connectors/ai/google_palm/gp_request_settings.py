@@ -16,7 +16,7 @@ class GooglePalmRequestSettings(AIRequestSettings):
     context: Optional[str] = None
     prompt: Optional[MessagePromptOptions] = None
 
-    def create_options(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         settings = self.model_dump(
             exclude={"service_id", "extension_data"},
             exclude_unset=True,

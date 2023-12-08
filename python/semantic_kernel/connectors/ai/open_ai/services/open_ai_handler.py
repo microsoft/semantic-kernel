@@ -63,15 +63,11 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         try:
             response = await (
                 self.client.chat.completions.create(
-                    **request_settings.create_options(
-                        chat_mode=chat_mode, model=self.ai_model_id
-                    )
+                    **request_settings.prepare_settings_dict()
                 )
                 if chat_mode
                 else self.client.completions.create(
-                    **request_settings.create_options(
-                        chat_mode=chat_mode, model=self.ai_model_id
-                    )
+                    **request_settings.prepare_settings_dict()
                 )
             )
         except Exception as ex:
@@ -177,6 +173,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     def get_model_args(self) -> Dict[str, Any]:
         """Return the model args for the specific openai api."""
 
-    def request_settings_factory(self) -> "AIRequestSettings":
+    def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return OpenAIRequestSettings

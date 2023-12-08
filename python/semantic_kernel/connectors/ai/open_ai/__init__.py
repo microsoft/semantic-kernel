@@ -1,7 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.connectors.ai.open_ai.azure_open_ai_request_settings import (
+    AzureOpenAIChatRequestSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAIChatRequestSettings,
     OpenAIRequestSettings,
+    OpenAITextRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
     OpenAIChatPromptTemplateWithDataConfig,
@@ -27,6 +32,9 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 
 __all__ = [
     "OpenAIRequestSettings",
+    "OpenAIChatRequestSettings",
+    "OpenAITextRequestSettings",
+    "AzureOpenAIChatRequestSettings",
     "OpenAITextCompletion",
     "OpenAIChatCompletion",
     "OpenAITextEmbedding",
