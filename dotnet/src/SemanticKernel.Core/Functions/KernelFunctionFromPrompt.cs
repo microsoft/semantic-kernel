@@ -203,17 +203,17 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
     /// <summary>The measurement tag name for the model used.</summary>
-    private const string MeasurementModelTagName = "sk.function.model_id";
+    private const string MeasurementModelTagName = "semantic_kernel.function.model_id";
 
     /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
     private static readonly Histogram<int> s_invocationTokenUsagePrompt = meter.CreateHistogram<int>(
-        name: "sk.function.invocation.token_usage.prompt",
+        name: "semantic_kernel.function.invocation.token_usage.prompt",
         unit: "{token}",
         description: "Measures the prompt token usage");
 
     /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
     private static readonly Histogram<int> s_invocationTokenUsageCompletion = meter.CreateHistogram<int>(
-        name: "sk.function.invocation.token_usage.completion",
+        name: "semantic_kernel.function.invocation.token_usage.completion",
         unit: "{token}",
         description: "Measures the completion token usage");
 

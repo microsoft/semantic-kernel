@@ -67,17 +67,17 @@ Metering is implemented with `Meter` class from `System.Diagnostics.Metrics` nam
 Available meters:
 
 - _Microsoft.SemanticKernel.Planning_ - contains all metrics related to planning. List of metrics:
-  - `sk.planning.create_plan.duration` (Histogram) - execution time of plan creation (in seconds)
-  - `sk.planning.invoke_plan.duration` (Histogram) - execution time of plan execution (in seconds)
+  - `semantic_kernel.planning.create_plan.duration` (Histogram) - execution time of plan creation (in seconds)
+  - `semantic_kernel.planning.invoke_plan.duration` (Histogram) - execution time of plan execution (in seconds)
 - _Microsoft.SemanticKernel_ - captures metrics for `KernelFunction`. List of metrics:
-  - `sk.function.invocation.duration` (Histogram) - function execution time (in seconds)
-  - `sk.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)
-  - `sk.function.invocation.token_usage.prompt` (Histogram) - number of prompt token usage (only for `KernelFunctionFromPrompt`)
-  - `sk.function.invocation.token_usage.completion` (Histogram) - number of completion token usage (only for `KernelFunctionFromPrompt`)
+  - `semantic_kernel.function.invocation.duration` (Histogram) - function execution time (in seconds)
+  - `semantic_kernel.function.streaming.duration` (Histogram) - function streaming execution time (in seconds)
+  - `semantic_kernel.function.invocation.token_usage.prompt` (Histogram) - number of prompt token usage (only for `KernelFunctionFromPrompt`)
+  - `semantic_kernel.function.invocation.token_usage.completion` (Histogram) - number of completion token usage (only for `KernelFunctionFromPrompt`)
 - _Microsoft.SemanticKernel.Connectors.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
-  - `sk.connectors.openai.tokens.prompt` (Counter) - number of prompt tokens used.
-  - `sk.connectors.openai.tokens.completion` (Counter) - number of completion tokens used.
-  - `sk.connectors.openai.tokens.total` (Counter) - total number of tokens used.
+  - `semantic_kernel.connectors.openai.tokens.prompt` (Counter) - number of prompt tokens used.
+  - `semantic_kernel.connectors.openai.tokens.completion` (Counter) - number of completion tokens used.
+  - `semantic_kernel.connectors.openai.tokens.total` (Counter) - total number of tokens used.
 
 Measurements will be associated with tags that will allow data to be categorized for analysis:
 

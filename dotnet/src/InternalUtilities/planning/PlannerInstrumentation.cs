@@ -20,13 +20,13 @@ internal static partial class PlannerInstrumentation
 
     /// <summary><see cref="Histogram{T}"/> to record plan creation duration.</summary>
     private static readonly Histogram<double> s_createPlanDuration = s_meter.CreateHistogram<double>(
-        name: "sk.planning.create_plan.duration",
+        name: "semantic_kernel.planning.create_plan.duration",
         unit: "s",
         description: "Duration time of plan creation.");
 
     /// <summary><see cref="Histogram{T}"/> to record plan execution duration.</summary>
     private static readonly Histogram<double> s_planExecutionDuration = s_meter.CreateHistogram<double>(
-        name: "sk.planning.invoke_plan.duration",
+        name: "semantic_kernel.planning.invoke_plan.duration",
         unit: "s",
         description: "Duration time of plan execution.");
 
@@ -44,7 +44,7 @@ internal static partial class PlannerInstrumentation
         logger.LogCreatePlanStarted();
         logger.LogGoal(goal);
 
-        TagList tags = new() { { "sk.planner.name", plannerName } };
+        TagList tags = new() { { "semantic_kernel.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
@@ -82,7 +82,7 @@ internal static partial class PlannerInstrumentation
 
         logger.LogInvokePlanStarted();
 
-        TagList tags = new() { { "sk.plan.name", planName } };
+        TagList tags = new() { { "semantic_kernel.plan.name", planName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {

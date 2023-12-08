@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 public abstract class KernelFunction
 {
     /// <summary>The measurement tag name for the function name.</summary>
-    protected const string MeasurementFunctionTagName = "sk.function.name";
+    protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
     /// <summary>The measurement tag name for the function error type.</summary>
     protected const string MeasurementErrorTagName = "error.type";
@@ -32,7 +32,7 @@ public abstract class KernelFunction
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = meter.CreateHistogram<double>(
-        name: "sk.function.invocation.duration",
+        name: "semantic_kernel.function.invocation.duration",
         unit: "s",
         description: "Measures the duration of a function’s execution");
 
@@ -42,7 +42,7 @@ public abstract class KernelFunction
     /// spent in the consuming code between MoveNextAsync calls on the enumerator.
     /// </remarks>
     private static readonly Histogram<double> s_streamingDuration = meter.CreateHistogram<double>(
-        name: "sk.function.streaming.duration",
+        name: "semantic_kernel.function.streaming.duration",
         unit: "s",
         description: "Measures the duration of a function’s streaming execution");
 

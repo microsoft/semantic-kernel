@@ -161,8 +161,8 @@ private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? 
     promptTokens, completionTokens);
 
   TagList tags = new() {
-    { "sk.function.name", this.Name },
-    { "sk.function.model_id", modelId }
+    { "semantic_kernel.function.name", this.Name },
+    { "semantic_kernel.function.model_id", modelId }
   };
 
   s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
@@ -177,8 +177,9 @@ private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? 
 1. New metrics names:
    | Meter | Metrics |
    |---|---|
-   |Microsoft.SemanticKernel.Planning| <ul><li>sk.planning.invoke_plan.duration</li></ul> |
-   |Microsoft.SemanticKernel| <ul><li>sk.function.invocation.token_usage.prompt</li><li>sk.function.invocation.token_usage.completion</li></ul> |
+   |Microsoft.SemanticKernel.Planning| <ul><li>semantic_kernel.planning.invoke_plan.duration</li></ul> |
+   |Microsoft.SemanticKernel| <ul><li>semantic_kernel.function.invocation.token_usage.prompt</li><li>semantic_kernel.function.invocation.token_usage.completion</li></ul> |
+   > Note: we are also replacing the "sk" prefixes with "semantic_kernel" for all existing metrics to avoid ambiguity.
 2. Instrumentation
 
 ## Validation
@@ -247,11 +248,11 @@ private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 /// <summary><see cref="Histogram{T}"/> to record plan execution duration.</summary>
 private static readonly Histogram<double> s_planExecutionDuration =
   s_meter.CreateHistogram<double>(
-    name: "sk.planning.invoke_plan.duration",
+    name: "semantic_kernel.planning.invoke_plan.duration",
     unit: "s",
     description: "Duration time of plan execution.");
 
-TagList tags = new() { { "sk.plan.name", planName } };
+TagList tags = new() { { "semantic_kernel.plan.name", planName } };
 
 try
 {
