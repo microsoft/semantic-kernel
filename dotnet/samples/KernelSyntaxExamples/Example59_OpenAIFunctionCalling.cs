@@ -46,6 +46,8 @@ public static class Example59_OpenAIFunctionCalling
         executionSettings.FunctionCallBehavior = FunctionCallBehavior.AutoInvokeKernelFunctions;
         await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletionService, kernel, executionSettings);
 
+        // Reset chat history to avoid Token Limit Exceeded error (4K Context Models)
+        chatHistory = new ChatHistory();
         await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletionService, kernel, executionSettings);
 
         // This sample relies on the AI picking the correct color from an enum
@@ -60,7 +62,7 @@ public static class Example59_OpenAIFunctionCalling
 
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
-        chatHistory.AddAssistantMessage(await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel));
+        chatHistory.Add(await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel));
         Console.WriteLine($"Assistant response: {chatHistory[chatHistory.Count - 1].Content}");
     }
 
