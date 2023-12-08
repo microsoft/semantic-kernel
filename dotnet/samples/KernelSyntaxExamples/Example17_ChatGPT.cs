@@ -3,8 +3,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
@@ -80,8 +80,8 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
+        var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
 
         // Second user message
@@ -90,7 +90,7 @@ public static class Example17_ChatGPT
 
         // Second bot assistant message
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
+        chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
     }
 

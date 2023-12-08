@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Moq;
 using Xunit;
@@ -89,16 +88,16 @@ public sealed class HandlebarsPlannerTests
     {
         return new()
         {
-            new KernelPlugin("email", new[]
+            KernelPluginFactory.CreateFromFunctions("email", "Email functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
-            new KernelPlugin("WriterPlugin", new[]
+            KernelPluginFactory.CreateFromFunctions("WriterPlugin", "Writer functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
-            new KernelPlugin("SummarizePlugin", new[]
+            KernelPluginFactory.CreateFromFunctions("SummarizePlugin", "Summarize functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })

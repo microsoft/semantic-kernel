@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextToImage;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.TextToImage;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
@@ -57,9 +57,9 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
-        image = await dallE.GenerateImageAsync(reply, 256, 256);
+        var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
+        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -68,8 +68,8 @@ public static class Example18_DallE
         Console.WriteLine("User: " + msg);
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
-        image = await dallE.GenerateImageAsync(reply, 256, 256);
+        chatHistory.Add(reply);
+        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -124,9 +124,9 @@ public static class Example18_DallE
         chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
-        image = await dallE.GenerateImageAsync(reply, 256, 256);
+        var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
+        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -135,8 +135,8 @@ public static class Example18_DallE
         Console.WriteLine("User: " + msg);
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
-        image = await dallE.GenerateImageAsync(reply, 256, 256);
+        chatHistory.Add(reply);
+        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 

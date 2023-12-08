@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Json.More;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -71,7 +71,7 @@ public sealed class FunctionCallingStepwisePlanner
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
             var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
-            chatHistoryForSteps.AddAssistantMessage(chatResult);
+            chatHistoryForSteps.Add(chatResult);
 
             // Check for function response
             if (!this.TryGetFunctionResponse(chatResult, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))

@@ -7,10 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
@@ -29,7 +28,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddSingleton(factory.Object);
         Kernel kernel = builder.Build();
 
-        kernel.Plugins.Add(new KernelPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
@@ -117,7 +116,7 @@ public class KernelFunctionFromPromptTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Required service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
+        Assert.Equal("Required service of type Microsoft.SemanticKernel.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
     }
 
     [Fact]
@@ -195,7 +194,7 @@ public class KernelFunctionFromPromptTests
     }
 
     [Fact]
-    public async Task ItNotParsesStandardizedPromptWhenStreamingInServiceIsOnlyTextCompletionAsync()
+    public async Task ItNotParsesStandardizedPromptWhenStreamingWhenServiceIsOnlyTextCompletionAsync()
     {
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
@@ -221,6 +220,140 @@ public class KernelFunctionFromPromptTests
 
         await foreach (var chunk in kernel.InvokeStreamingAsync(function))
         {
+        }
+    }
+
+    [Fact]
+    public async Task InvokeAsyncReturnsTheConnectorResultWhenInServiceIsOnlyTextCompletionAsync()
+    {
+        var mockService = new Mock<ITextGenerationService>();
+        var mockResult = mockService.Setup(s => s.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TextContent>() { new("something") });
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        var result = await kernel.InvokeAsync(function);
+
+        Assert.Equal("something", result.GetValue<string>());
+        Assert.Equal("something", result.GetValue<TextContent>()!.Text);
+        Assert.Equal("something", result.GetValue<ContentBase>()!.ToString());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncReturnsTheConnectorChatResultWhenInServiceIsOnlyChatCompletionAsync()
+    {
+        var mockService = new Mock<IChatCompletionService>();
+        var mockResult = mockService.Setup(s => s.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "something") });
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockService.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        var result = await kernel.InvokeAsync(function);
+
+        Assert.Equal("something", result.GetValue<string>());
+        Assert.Equal("something", result.GetValue<ChatMessageContent>()!.Content);
+        Assert.Equal(AuthorRole.User, result.GetValue<ChatMessageContent>()!.Role);
+        Assert.Equal("something", result.GetValue<ContentBase>()!.ToString());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncReturnsTheConnectorChatResultWhenInServiceIsChatAndTextCompletionAsync()
+    {
+        var fakeService = new FakeChatAsTextService();
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        var result = await kernel.InvokeAsync(function);
+
+        Assert.Equal("Something", result.GetValue<string>());
+        Assert.Equal("Something", result.GetValue<ChatMessageContent>()!.Content);
+        Assert.Equal(AuthorRole.Assistant, result.GetValue<ChatMessageContent>()!.Role);
+        Assert.Equal("Something", result.GetValue<ContentBase>()!.ToString());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncOfTGivesBackTheExpectedResultTypeFromTheConnectorWhenStreamingWhenServiceIsOnlyTextCompletionAsync()
+    {
+        var expectedContent = new StreamingTextContent("something");
+        var mockService = new Mock<ITextGenerationService>();
+        var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .Returns(this.ToAsyncEnumerable<StreamingTextContent>(new List<StreamingTextContent>() { expectedContent }));
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        {
+            Assert.Equal(expectedContent, chunk);
+        }
+
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingTextContent>(function))
+        {
+            Assert.Equal(expectedContent, chunk);
+        }
+    }
+
+    [Fact]
+    public async Task InvokeAsyncOfTGivesBackTheExpectedResultTypeFromTheConnectorWhenStreamingWhenerviceIsOnlyChatCompletionAsync()
+    {
+        var expectedContent = new StreamingChatMessageContent(AuthorRole.Assistant, "Something");
+        var mockService = new Mock<IChatCompletionService>();
+        var mockResult = mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+            .Returns(this.ToAsyncEnumerable<StreamingChatMessageContent>(new List<StreamingChatMessageContent>() { expectedContent }));
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockService.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        {
+            Assert.Equal(expectedContent, chunk);
+            Assert.Equal("Something", chunk.ToString());
+        }
+
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingChatMessageContent>(function))
+        {
+            Assert.Equal(expectedContent, chunk);
+            Assert.Equal("Something", chunk.Content);
+            Assert.Equal(AuthorRole.Assistant, chunk.Role);
+        }
+    }
+
+    [Fact]
+    public async Task InvokeAsyncOfTGivesBackTheExpectedResultTypeFromTheConnectorWhenStreamingWhenServiceIsTextAndChatCompletionAsync()
+    {
+        var fakeService = new FakeChatAsTextService();
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
+
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        {
+            Assert.Equal("Something", chunk.ToString());
+        }
+
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingChatMessageContent>(function))
+        {
+            Assert.Equal(AuthorRole.Assistant, chunk.Role);
+            Assert.Equal("Something", chunk.Content);
         }
     }
 
