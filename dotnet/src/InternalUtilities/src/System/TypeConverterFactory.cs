@@ -53,6 +53,9 @@ internal static class TypeConverterFactory
             return converter;
         }
 
+        // If a `TypeConverter` is not found for the custom type, then we will fallback to using 
+        // `JsonSerializer` to serialize/deserialize the value. This allows for custom types to 
+        // be supported by default.
         return new JsonSerializationTypeConverter(type);
     }
 

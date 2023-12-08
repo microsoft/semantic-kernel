@@ -1117,8 +1117,9 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
-
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", @"{ ""Foo"": 42 }" } });
+
+        // Assert
         Assert.NotNull(result);
 
         var complexTypeResult = result.GetValue<ComplexType>();
@@ -1134,8 +1135,9 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
-
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
+
+        // Assert        
         Assert.NotNull(result);
 
         var stringResult = result.ToString();
@@ -1152,18 +1154,8 @@ public sealed class KernelFunctionFromMethodTests1
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
 
-        int count = 0;
-        try
-        {
-            await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
-            Assert.Fail("Should have thrown an ArgumentException since complex type cannot be marshalled to int");
-        }
-        catch (ArgumentException)
-        {
-            count++;
-        }
-
-        Assert.Equal(1, count);
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(async () => await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } }));
     }
 
     [Fact]
@@ -1174,22 +1166,11 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
-
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
+
+        // Assert
         Assert.NotNull(result);
-
-        int count = 0;
-        try
-        {
-            result.GetValue<double>();
-            Assert.Fail("Should have thrown an InvalidCastException since complex type cannot be cast to double");
-        }
-        catch (InvalidCastException)
-        {
-            count++;
-        }
-
-        Assert.Equal(1, count);
+        Assert.Throws<InvalidCastException>(() => result.GetValue<double>());
     }
 
     private static MethodInfo Method(Delegate method)
