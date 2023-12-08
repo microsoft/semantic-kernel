@@ -1104,6 +1104,94 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Same(expected, actual);
     }
 
+    public class ComplexType
+    {
+        public int Foo { get; set; }
+    }
+
+    [Fact]
+    public async Task ItSupportsMarshallingStringToComplexTypeAsync()
+    {
+        //Arrange
+        static ComplexType Test(ComplexType complexType) => complexType;
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+
+        FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", @"{ ""Foo"": 42 }" } });
+        Assert.NotNull(result);
+
+        var complexTypeResult = result.GetValue<ComplexType>();
+        Assert.NotNull(complexTypeResult);
+        Assert.Equal(42, complexTypeResult.Foo);
+    }
+
+    [Fact]
+    public async Task ItSupportsMarshallingComplexTypeToStringAsync()
+    {
+        //Arrange
+        static ComplexType Test(ComplexType complexType) => complexType;
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+
+        FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
+        Assert.NotNull(result);
+
+        var stringResult = result.ToString();
+        Assert.NotNull(stringResult);
+        Assert.Equal(@"{""Foo"":42}", stringResult);
+    }
+
+    [Fact]
+    public async Task ItThrowsWhenMarshallingComplexTypeToNonStringTypeAsync()
+    {
+        //Arrange
+        static int Test(int complexType) => complexType;
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+
+        int count = 0;
+        try
+        {
+            await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
+            Assert.Fail("Should have thrown an ArgumentException since complex type cannot be marshalled to int");
+        }
+        catch (ArgumentException)
+        {
+            count++;
+        }
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public async Task ItThrowsWhenMarshallingNonStringTypeToComplexTypeAsync()
+    {
+        //Arrange
+        static ComplexType Test(ComplexType complexType) => complexType;
+
+        // Act
+        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+
+        FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
+        Assert.NotNull(result);
+
+        int count = 0;
+        try
+        {
+            result.GetValue<double>();
+            Assert.Fail("Should have thrown an InvalidCastException since complex type cannot be cast to double");
+        }
+        catch (InvalidCastException)
+        {
+            count++;
+        }
+
+        Assert.Equal(1, count);
+    }
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;

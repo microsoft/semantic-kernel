@@ -12,7 +12,7 @@ namespace SemanticKernel.UnitTests;
 /// <summary>
 /// Represents a factory for asserting type converters.
 /// </summary>
-public sealed class AssertTypeConverterFactory
+public sealed class TypeConverterFactoryTests
 {
     private sealed class MyCustomType
     {
@@ -24,12 +24,12 @@ public sealed class AssertTypeConverterFactory
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomTypeWithCustomConverter
     {
-        public string Foo { get; set; }
+        public string Foo { get; set; } = string.Empty;
     }
 
-#pragma warning disable CA1815
+#pragma warning disable CA1812
     private sealed class MyCustomTypeConverter : TypeConverter
-#pragma warning restore CA1815
+#pragma warning restore CA1812
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
@@ -70,7 +70,7 @@ public sealed class AssertTypeConverterFactory
     public static void ItCanSerializeCustomTypeUsingNativeConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomType));
-        Assert.Equal("{\"Number\":1,\"Text\":\"test\"}", typeConverter!.ConvertToInvariantString(new MyCustomType { Number = 1, Text = "test" }));
+        Assert.Equal("{\"Number\":1,\"Text\":\"test\"}", typeConverter.ConvertToInvariantString(new MyCustomType { Number = 1, Text = "test" }));
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public sealed class AssertTypeConverterFactory
     public static void ItCanDeserializeCustomTypeUsingNativeConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomType));
-        Assert.Equal(new MyCustomType { Number = 1, Text = "test" }.ToString(), typeConverter!.ConvertFromInvariantString("{\"Number\":1,\"Text\":\"test\"}").ToString());
+        Assert.Equal(new MyCustomType { Number = 1, Text = "test" }.ToString(), typeConverter.ConvertFromInvariantString("{\"Number\":1,\"Text\":\"test\"}")!.ToString());
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public sealed class AssertTypeConverterFactory
     public static void ItCanSerializeCustomTypeUsingCustomConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomTypeWithCustomConverter));
-        Assert.Equal("{\"Foo\":\"Bar\"}", typeConverter!.ConvertToInvariantString(new MyCustomTypeWithCustomConverter { Foo = "Bar" }));
+        Assert.Equal("{\"Foo\":\"Bar\"}", typeConverter.ConvertToInvariantString(new MyCustomTypeWithCustomConverter { Foo = "Bar" }));
     }
 
     /// <summary>
@@ -111,6 +111,6 @@ public sealed class AssertTypeConverterFactory
     public static void ItCanDeserializeCustomTypeUsingCustomConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomTypeWithCustomConverter));
-        Assert.Equal(new MyCustomTypeWithCustomConverter { Foo = "Bar" }.ToString(), typeConverter!.ConvertFromInvariantString("{\"Foo\":\"Bar\"}").ToString());
+        Assert.Equal(new MyCustomTypeWithCustomConverter { Foo = "Bar" }.ToString(), typeConverter.ConvertFromInvariantString("{\"Foo\":\"Bar\"}")!.ToString());
     }
 }
