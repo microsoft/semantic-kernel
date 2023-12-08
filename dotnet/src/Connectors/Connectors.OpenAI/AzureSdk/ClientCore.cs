@@ -677,7 +677,13 @@ internal abstract class ClientCore
         }
         else if (message.Role == AuthorRole.User)
         {
-            requestMessage = new ChatRequestUserMessage(message.Content) { Name = openAIMessage?.Name };
+            var functionName = openAIMessage?.Name;
+            if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
+            {
+                functionName = functionNameFromMetadata?.ToString();
+            }
+
+            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName ?? string.Empty };
         }
         else if (message.Role == AuthorRole.Assistant)
         {
