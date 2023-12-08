@@ -6,10 +6,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletion;
@@ -152,7 +151,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
         var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.FunctionNameProperty, "SayHello" }, { OpenAIChatMessageContent.FunctionArgumentsProperty, "{ \"user\": \"John Doe\" }" } });
+        chatHistory.AddMessage(AuthorRole.Assistant, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.FunctionNameProperty, "SayHello" }, { OpenAIChatMessageContent.FunctionArgumentsProperty, "{ \"user\": \"John Doe\" }" } });
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);

@@ -17,7 +17,7 @@ template: |
   <message role=""user"">{{$goal}}</message>
 description:     Generate a step-by-step plan to satisfy a given goal
 name:            GeneratePlan
-input_parameters:
+input_variables:
   - name:          available_functions
     description:   A list of functions that can be used to generate the plan
   - name:          goal

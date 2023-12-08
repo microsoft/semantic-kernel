@@ -22,7 +22,7 @@ public class FileIOPluginTests
     public void ItCanBeImported()
     {
         // Act - Assert no exception occurs e.g. due to reflection
-        Assert.NotNull(KernelPluginFactory.CreateFromObject<FileIOPlugin>("fileIO"));
+        Assert.NotNull(KernelPluginFactory.CreateFromType<FileIOPlugin>("fileIO"));
     }
 
     [Fact]
