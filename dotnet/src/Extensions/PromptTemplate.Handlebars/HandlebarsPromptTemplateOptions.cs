@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// </summary>
 public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
 {
-    // TODO [@teresaqhoang]: Add Categories filter for KernelSystemHelpers (i.e., KernelHelperCategories)
+    // TODO [@teresaqhoang]: Issue #3947 Add Categories filter for KernelSystemHelpers (i.e., KernelHelperCategories)
 
     /// <summary>
     /// Default character to use for delimiting plugin name and function name in a Handlebars template.

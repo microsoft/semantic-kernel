@@ -265,7 +265,6 @@ public sealed class HandlebarsPlanner
         };
 
         var handlebarsTemplate = this._templateFactory.Create(promptTemplateConfig);
-
         return await handlebarsTemplate!.RenderAsync(kernel, arguments, CancellationToken.None).ConfigureAwait(true);
     }
 

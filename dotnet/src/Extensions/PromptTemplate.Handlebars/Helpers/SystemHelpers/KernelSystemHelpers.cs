@@ -50,7 +50,8 @@ public static class KernelSystemHelpers
         IHandlebars handlebarsInstance,
         KernelArguments variables)
     {
-        // TODO [@teresaqhoang]: Issue 3947 Isolate Handlebars Kernel System helpers in their own class
+        // TODO [@teresaqhoang]: Issue #3947 Isolate Handlebars Kernel System helpers in their own class
+        // Should also consider standardizing the naming conventions for these helpers, i.e., 'Message' instead of 'message'
         handlebarsInstance.RegisterHelper("message", (writer, options, context, arguments) =>
         {
             var parameters = arguments[0] as IDictionary<string, object>;
