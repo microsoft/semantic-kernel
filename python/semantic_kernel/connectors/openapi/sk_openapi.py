@@ -163,9 +163,9 @@ class OpenApiParser:
         self.logger = logger
 
     """
-    Import an OpenAPI file.
-    :param openapi_file: The path to the OpenAPI file which can be local or a URL.
-    :return: The parsed OpenAPI file
+    Import an OpenApi file.
+    :param openapi_file: The path to the OpenApi file which can be local or a URL.
+    :return: The parsed OpenApi file
     """
 
     def parse(self, openapi_document):
@@ -174,7 +174,7 @@ class OpenApiParser:
 
     """
     Creates a RestApiOperation object for each path/method combination
-    :param parsed_document: The parsed OpenAPI document
+    :param parsed_document: The parsed OpenApi document
     :return: A dictionary of RestApiOperation objects keyed by operationId
     """
 
@@ -249,10 +249,10 @@ class OpenApiRunner:
 
 
 """
-Registers a skill with the kernel that can run OpenAPI operations.
+Registers a skill with the kernel that can run OpenApi operations.
 :param kernel: The kernel to register the skill with
 :param skill_name: The name of the skill
-:param openapi_document: The OpenAPI document to register. Can be a filename or URL
+:param openapi_document: The OpenApi document to register. Can be a filename or URL
 :return: A dictionary of SKFunctions keyed by operationId
 """
 
@@ -311,7 +311,7 @@ def register_openapi_skill(
 
     for operation_id, operation in operations.items():
         kernel.logger.info(
-            f"Registering OpenAPI operation: {skill_name}.{operation_id}"
+            f"Registering OpenApi operation: {skill_name}.{operation_id}"
         )
         skill[operation_id] = create_run_operation_function(openapi_runner, operation)
     return kernel.import_skill(skill, skill_name)

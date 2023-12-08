@@ -24,7 +24,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     private readonly OpenApiDocumentParser _sut;
 
     /// <summary>
-    /// OpenAPI document stream.
+    /// OpenApi document stream.
     /// </summary>
     private readonly Stream _openApiDocument;
 

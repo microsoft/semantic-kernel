@@ -20,7 +20,7 @@ namespace SemanticKernel.Functions.UnitTests.OpenApi.OpenAI;
 public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
 {
     /// <summary>
-    /// OpenAPI document stream.
+    /// OpenApi document stream.
     /// </summary>
     private readonly Stream _openApiDocument;
 

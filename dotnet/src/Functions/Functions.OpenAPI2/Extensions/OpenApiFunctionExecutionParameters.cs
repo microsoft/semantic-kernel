@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// OpenAPI function execution parameters.
+/// OpenApi function execution parameters.
 /// </summary>
 public class OpenApiFunctionExecutionParameters
 {
@@ -56,7 +56,7 @@ public class OpenApiFunctionExecutionParameters
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
-    /// Optional list of HTTP operations to skip when importing the OpenAPI document.
+    /// Optional list of HTTP operations to skip when importing the OpenApi document.
     /// </summary>
     public IList<string> OperationsToExclude { get; set; }
 

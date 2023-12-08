@@ -237,7 +237,7 @@ public static class OpenAIPluginKernelExtensions
         string? apiUrl = pluginJson?["api"]?["url"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiUrl))
         {
-            throw new KernelException("No Open API spec URL found in Open AI manifest.");
+            throw new KernelException("No Open Api spec URL found in Open AI manifest.");
         }
 
         try
@@ -246,7 +246,7 @@ public static class OpenAIPluginKernelExtensions
         }
         catch (System.UriFormatException ex)
         {
-            throw new KernelException("Invalid Open API spec URI found in Open AI manifest.", ex);
+            throw new KernelException("Invalid Open Api spec URI found in Open AI manifest.", ex);
         }
     }
 
