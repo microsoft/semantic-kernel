@@ -287,17 +287,15 @@ internal abstract class ClientCore
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
             // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
             // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
-
-            string fqn = functionCallResponse.FullyQualifiedName;
-
             if (resultChoice.Message.Content is { Length: > 0 })
             {
                 chatOptions.Messages.Add(GetRequestMessage(resultChoice.Message));
                 chat.AddMessage(result);
             }
 
-            chatOptions.Messages.Add(new ChatRequestFunctionMessage(fqn, serializedFunctionResult));
-            chat.AddFunctionMessage(serializedFunctionResult, fqn);
+            string fullyQualifiedName = functionCallResponse.FullyQualifiedName;
+            chatOptions.Messages.Add(new ChatRequestFunctionMessage(fullyQualifiedName, serializedFunctionResult));
+            chat.AddFunctionMessage(serializedFunctionResult, fullyQualifiedName);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
             // it's not optional for the service: it needs to invoke it. And as such, if we leave it on the settings, we'll loop
@@ -311,7 +309,7 @@ internal abstract class ClientCore
                 //chatOptions.Functions = Array.Empty<FunctionDefinition>();
 
                 // Workaround for Null Pointer Exception in Azure SDK
-                chatOptions.Functions = new List<FunctionDefinition>(new[] { new FunctionDefinition("DontCallMe") { Parameters = BinaryData.FromString(@"{ ""type"": ""object"", ""properties"": {}, ""required"": [] }") } });
+                chatOptions.Functions = NoFunctionToCall();
             }
         }
     }
@@ -420,7 +418,6 @@ internal abstract class ClientCore
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
             // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
             // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
-
             string contents = contentBuilder?.ToString() ?? string.Empty;
             string fqn = functionCallResponse.FullyQualifiedName;
 
@@ -431,11 +428,6 @@ internal abstract class ClientCore
             }
 
             chatOptions.Messages.Add(new ChatRequestFunctionMessage(fqn, serializedFunctionResult));
-
-            //ChatRequestMessage requestMessage = 
-            //chatOptions.Messages.Add(new(streamedRole ?? default, contents) { FunctionCall = functionCall });
-            //chatOptions.Messages.Add(new ChatMessageR(ChatRole.Function, serializedFunctionResult) { Name = fqn });
-
             chat.AddFunctionMessage(serializedFunctionResult, fqn);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
@@ -450,7 +442,7 @@ internal abstract class ClientCore
                 //chatOptions.Functions = Array.Empty<FunctionDefinition>();
 
                 // Workaround for Null Pointer Exception in Azure SDK
-                chatOptions.Functions = new List<FunctionDefinition>(new[] { new FunctionDefinition("DontCallMe") { Parameters = BinaryData.FromString(@"{ ""type"": ""object"", ""properties"": {}, ""required"": [] }") } });
+                chatOptions.Functions = NoFunctionToCall();
             }
         }
     }
@@ -567,6 +559,11 @@ internal abstract class ClientCore
         }
 
         return options;
+    }
+
+    private static List<FunctionDefinition> NoFunctionToCall()
+    {
+        return new List<FunctionDefinition>(new[] { new FunctionDefinition("DontCallMe") { Parameters = BinaryData.FromString(@"{ ""type"": ""object"", ""properties"": {}, ""required"": [] }") } });
     }
 
     private static ChatCompletionsOptions CreateChatCompletionsOptions(
