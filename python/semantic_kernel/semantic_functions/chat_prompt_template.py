@@ -73,8 +73,10 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             message: The message to add, can include templating components.
             kwargs: can be used by inherited classes.
         """
+        concrete_message = self.model_fields["messages"].annotation.__args__[0]
+        print(concrete_message)
         self.messages.append(
-            ChatMessage(
+            concrete_message(
                 role=role,
                 content_template=PromptTemplate(
                     message, self.template_engine, self.prompt_config

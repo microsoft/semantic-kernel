@@ -18,12 +18,16 @@ from typing import (
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
     AzureChatWithDataStreamResponse,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAIChatRequestSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -381,3 +385,7 @@ class AzureChatCompletion(
             del model_args["frequency_penalty"]
 
         return model_args
+
+    def request_settings_factory(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return OpenAIChatRequestSettings

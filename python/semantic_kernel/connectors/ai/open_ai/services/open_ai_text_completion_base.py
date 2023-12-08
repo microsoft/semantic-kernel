@@ -6,6 +6,10 @@ from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 from openai.types.completion import Completion
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAITextRequestSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
@@ -34,7 +38,12 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        settings.prompt = prompt
+        if isinstance(settings, OpenAITextRequestSettings):
+            settings.prompt = prompt
+        else:
+            settings.messages = [{"role": "user", "content": prompt}]
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
 
         if isinstance(response, Completion):
@@ -92,3 +101,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
                     text = partial.choices[0].text
                     if text.strip():  # Exclude empty or whitespace-only text
                         yield text
+
+    def request_settings_factory(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return OpenAITextRequestSettings

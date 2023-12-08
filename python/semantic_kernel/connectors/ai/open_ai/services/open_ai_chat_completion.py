@@ -5,6 +5,10 @@ from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
 
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    OpenAIChatRequestSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
     OpenAIChatCompletionBase,
 )
@@ -142,3 +146,7 @@ class OpenAIChatCompletion(
             org_id=settings.get("org_id"),
             default_headers=settings.get("default_headers"),
         )
+
+    def request_settings_factory(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return OpenAIChatRequestSettings

@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+import json
 from typing import Generic, List, TypeVar
 
 from pydantic import Field
@@ -9,12 +9,6 @@ from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.parameter_view import ParameterView
 
 AIRequestSettingsT = TypeVar("AIRequestSettingsT", bound=AIRequestSettings)
-
-
-# class InputConfig(SKBaseModel):
-#     parameters: List[ParameterView] = Field(
-#         default_factory=list
-#     )
 
 
 class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
@@ -27,19 +21,19 @@ class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
 
     @classmethod
     def from_dict(cls, data: dict) -> "PromptConfig":
-        config = cls()
-        keys = ["schema", "type", "description"]
-        for key in keys:
-            if key in data:
-                setattr(config, key, data[key])
+        config = {
+            key: value
+            for key, value in data.items()
+            if key in ["schema", "type", "description"]
+        }
+        config["parameters"] = []
 
-        # Some skills may not have all completion parameters defined
         completion_dict = data["completion"]
-        if "service_id" in completion_dict:
-            service_id = completion_dict.pop("service_id")
-            config.completion = AIRequestSettings(
-                service_id=service_id, extension_data=completion_dict
-            )
+        service_id = completion_dict.pop("service_id", None)
+        concrete_type = cls.model_fields["completion"].annotation
+        config["completion"] = concrete_type(
+            service_id=service_id, extension_data=completion_dict
+        )
 
         # Some skills may not have input parameters defined
         if data.get("parameters") is not None:
@@ -48,25 +42,25 @@ class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
                     name = parameter["name"]
                 else:
                     raise Exception(
-                        f"The input parameter doesn't have a name (function: {config.description})"
+                        f"The input parameter doesn't have a name (function: {config['description']})"
                     )
 
                 if "description" in parameter:
                     description = parameter["description"]
                 else:
                     raise Exception(
-                        f"Input parameter '{name}' doesn't have a description (function: {config.description})"
+                        f"Input parameter '{name}' doesn't have a description (function: {config['description']})"
                     )
                 if "defaultValue" in parameter:
                     defaultValue = parameter["defaultValue"]
                 else:
                     raise Exception(
-                        f"Input parameter '{name}' doesn't have a default value (function: {config.description})"
+                        f"Input parameter '{name}' doesn't have a default value (function: {config['description']})"
                     )
                 type_ = parameter.get("type")
                 required = parameter.get("required")
 
-                config.parameters.append(
+                config["parameters"].append(
                     ParameterView(
                         name,
                         description,
@@ -75,39 +69,14 @@ class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
                         required,
                     )
                 )
-        return config
+        if "default_services" in data:
+            config["default_services"] = data["default_services"]
+        return cls(**config)
 
-    @staticmethod
-    def from_json(json_str: str) -> "PromptConfig":
-        import json
+    @classmethod
+    def from_json(cls, json_str: str) -> "PromptConfig":
+        return cls.from_dict(json.loads(json_str))
 
-        def keystoint(d):
-            return {int(k) if k.isdigit() else k: v for k, v in d.items()}
-
-        return PromptConfig.from_dict(json.loads(json_str, object_hook=keystoint))
-
-    # @staticmethod
-    # def from_completion_parameters(
-    #     temperature: float = 0.0,
-    #     top_p: float = 1.0,
-    #     presence_penalty: float = 0.0,
-    #     frequency_penalty: float = 0.0,
-    #     max_tokens: int = 256,
-    #     number_of_responses: int = 1,
-    #     stop_sequences: List[str] = [],
-    #     token_selection_biases: Dict[int, int] = {},
-    #     chat_system_prompt: str = None,
-    #     function_call: Optional[str] = None,
-    # ) -> "PromptTemplateConfig":
-    #     config = PromptTemplateConfig()
-    #     config.completion.temperature = temperature
-    #     config.completion.top_p = top_p
-    #     config.completion.presence_penalty = presence_penalty
-    #     config.completion.frequency_penalty = frequency_penalty
-    #     config.completion.max_tokens = max_tokens
-    #     config.completion.number_of_responses = number_of_responses
-    #     config.completion.stop_sequences = stop_sequences
-    #     config.completion.token_selection_biases = token_selection_biases
-    #     config.completion.chat_system_prompt = chat_system_prompt
-    #     config.completion.function_call = function_call
-    #     return config
+    @classmethod
+    def from_completion_parameters(cls, **kwargs) -> "PromptConfig":
+        return PromptConfig(completion=cls.model_fields["completion"].annotation(extension_data=kwargs))

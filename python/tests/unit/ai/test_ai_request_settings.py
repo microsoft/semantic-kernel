@@ -8,7 +8,7 @@ from semantic_kernel.connectors.ai import (
 def test_default_complete_request_settings():
     settings = AIRequestSettings()
     assert settings.service_id is None
-    assert settings.extension_data is None
+    assert settings.extension_data == {}
 
 
 def test_custom_complete_request_settings():

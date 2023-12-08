@@ -877,13 +877,7 @@ class Kernel:
         function_name: Optional[str] = None,
         skill_name: Optional[str] = None,
         description: Optional[str] = None,
-        max_tokens: int = 256,
-        temperature: float = 0.0,
-        top_p: float = 1.0,
-        presence_penalty: float = 0.0,
-        frequency_penalty: float = 0.0,
-        number_of_responses: int = 1,
-        stop_sequences: Optional[List[str]] = None,
+        **kwargs: Any,
     ) -> "SKFunctionBase":
         function_name = (
             function_name
@@ -898,15 +892,7 @@ class Kernel:
                 else "Generic function, unknown purpose"
             ),
             type="completion",
-            completion=PromptConfig.CompletionConfig(
-                temperature,
-                top_p,
-                presence_penalty,
-                frequency_penalty,
-                max_tokens,
-                number_of_responses,
-                stop_sequences if stop_sequences is not None else [],
-            ),
+            completion=AIRequestSettings(extension_data=kwargs),
         )
 
         validate_function_name(function_name)

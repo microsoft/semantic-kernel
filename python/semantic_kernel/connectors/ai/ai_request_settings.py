@@ -11,14 +11,16 @@ class AIRequestSettings(SKBaseModel):
 
     def __init__(self, **data: Dict[str, Any]):
         super().__init__(**data)
-        if self.service_id is None:
-            self.service_id = self.__class__.__name__
         for key, value in self.extension_data.items():
             if key in self.keys:
                 setattr(self, key, value)
 
     def create_options(self, **kwargs) -> Dict[str, Any]:
-        return self.model_dump(exclude={"service_id", "extension_data"})
+        return self.model_dump(
+            exclude={"service_id", "extension_data"},
+            exclude_none=True,
+            by_alias=True,
+        )
 
     @property
     def keys(self):
