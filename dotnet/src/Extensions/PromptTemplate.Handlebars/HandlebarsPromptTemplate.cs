@@ -34,7 +34,9 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         arguments = this.GetVariables(arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
@@ -49,9 +51,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         this._options.RegisterCustomHelpers?.Invoke(handlebarsInstance, arguments);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-        var prompt = template(arguments);
-
-        return await Task.FromResult(prompt).ConfigureAwait(false);
+        return template(arguments);
     }
 
     #region private
