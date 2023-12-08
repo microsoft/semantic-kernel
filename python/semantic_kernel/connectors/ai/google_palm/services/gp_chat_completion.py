@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple, Union
 
 import google.generativeai as palm
@@ -20,6 +20,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class GooglePalmChatCompletion(
     ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
@@ -32,7 +34,6 @@ class GooglePalmChatCompletion(
         ai_model_id: str,
         api_key: str,
         message_history: Optional[ChatResponse] = None,
-        log: Optional[Logger] = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -43,12 +44,10 @@ class GooglePalmChatCompletion(
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
             message_history {Optional[ChatResponse]} -- The message history to use for context. (Optional)
-            log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
-            log=log,
         )
         self._message_history = message_history
 
@@ -89,7 +88,6 @@ class GooglePalmChatCompletion(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
@@ -118,7 +116,6 @@ class GooglePalmChatCompletion(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
     ):
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"

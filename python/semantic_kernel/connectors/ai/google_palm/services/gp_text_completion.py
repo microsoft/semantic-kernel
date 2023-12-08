@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Union
 
 import google.generativeai as palm
@@ -15,11 +15,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     api_key: constr(strip_whitespace=True, min_length=1)
 
-    def __init__(self, ai_model_id: str, api_key: str, log: Optional[Logger] = None):
+    def __init__(self, ai_model_id: str, api_key: str):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
@@ -28,15 +30,13 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
-            log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        super().__init__(ai_model_id=ai_model_id, api_key=api_key, log=log)
+        super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def complete_async(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         response = await self._send_completion_request(prompt, request_settings)
 
@@ -48,7 +48,6 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
     ):
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"

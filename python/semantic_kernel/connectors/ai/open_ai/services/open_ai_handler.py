@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
@@ -18,6 +19,8 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIHandler(AIServiceClientBase, ABC):
@@ -78,7 +81,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
         if not isinstance(response, AsyncStream):
-            self.log.info(f"OpenAI usage: {response.usage}")
+            logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.completion_tokens += response.usage.completion_tokens
             self.total_tokens += response.usage.total_tokens
@@ -185,7 +188,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 # TODO: the openai response is cast to a list[float], could be used instead of nparray
                 raw_embeddings.extend([array(x.embedding) for x in response.data])
                 if response.usage:
-                    self.log.info(f"OpenAI usage: {response.usage}")
+                    logger.info(f"OpenAI usage: {response.usage}")
                     self.prompt_tokens += response.usage.prompt_tokens
                     self.total_tokens += response.usage.total_tokens
             return array(raw_embeddings)

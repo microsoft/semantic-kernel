@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
 
 from openai.types.completion import Completion
@@ -21,14 +20,12 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
-        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """Executes a completion request and returns the result.
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
             settings {CompleteRequestSettings} -- The settings to use for the completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
@@ -49,7 +46,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
-        logger: Optional[Logger] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
         Executes a completion request and streams the result.
@@ -58,7 +54,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
             settings {CompleteRequestSettings} -- The settings to use for the completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).

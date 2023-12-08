@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from threading import Thread
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -16,6 +16,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     task: Literal["summarization", "text-generation", "text2text-generation"]
@@ -27,7 +29,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         ai_model_id: str,
         task: Optional[str] = "text2text-generation",
         device: Optional[int] = -1,
-        log: Optional[Logger] = None,
         model_kwargs: Optional[Dict[str, Any]] = None,
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -46,7 +47,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 - text-generation: takes incomplete text and returns a set of completion candidates.
                 - text2text-generation (default): takes an input prompt and returns a completion.
                 text2text-generation is the default as it behaves more like GPT-3+.
-            log {Optional[Logger]} -- Logger instance.
             model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments
                 passed along to the model's `from_pretrained(..., **model_kwargs)` function.
             pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along
@@ -68,14 +68,12 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 model_kwargs=model_kwargs,
                 **pipeline_kwargs or {},
             ),
-            log=log,
         )
 
     async def complete_async(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         try:
             generation_config = transformers.GenerationConfig(
@@ -113,7 +111,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
     ):
         """
         Streams a text completion using a Hugging Face model.

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -28,14 +27,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
@@ -54,7 +51,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         messages: List[Dict[str, str]],
         functions: List[Dict[str, Any]],
         request_settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -65,7 +61,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             functions {List[Dict[str, Any]]} -- The functions to use for the chat completion.
             settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
@@ -79,24 +74,20 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         )
 
         if len(response.choices) == 1:
-            return _parse_message(response.choices[0].message, self.log)
+            return _parse_message(response.choices[0].message)
         else:
-            return [
-                _parse_message(choice.message, self.log) for choice in response.choices
-            ]
+            return [_parse_message(choice.message) for choice in response.choices]
 
     async def complete_chat_stream_async(
         self,
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from logging import Logger
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, Union
 
 from openai import AsyncAzureOpenAI
@@ -35,7 +34,6 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,
         default_headers: Union[Mapping[str, str], None] = None,
-        log: Optional[Logger] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
@@ -51,7 +49,6 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable
                 or coroutine function providing Azure AD tokens. (Optional)
             default_headers {Union[Mapping[str, str], None]} -- Default headers for HTTP requests. (Optional)
-            log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
 
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
@@ -95,7 +92,6 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 
         super().__init__(
             ai_model_id=deployment_name,
-            log=log,
             client=async_client,
             ai_model_type=ai_model_type,
         )
