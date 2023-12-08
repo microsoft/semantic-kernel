@@ -5,7 +5,7 @@ import platform
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
-from logging import Logger
+import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -35,13 +35,14 @@ from semantic_kernel.skill_definition.parameter_view import ParameterView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SKFunction(SKFunctionBase):
@@ -54,7 +55,6 @@ class SKFunction(SKFunctionBase):
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
     _skill_collection: Optional[ReadOnlySkillCollectionBase]
-    _log: Logger
     _ai_service: Optional[TextCompletionClientBase]
     _ai_request_settings: CompleteRequestSettings
     _chat_service: Optional[ChatCompletionClientBase]
@@ -62,7 +62,7 @@ class SKFunction(SKFunctionBase):
     _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
-    def from_native_method(method, skill_name="", log=None) -> "SKFunction":
+    def from_native_method(method, skill_name="") -> "SKFunction":
         if method is None:
             raise ValueError("Method cannot be `None`")
 
@@ -110,7 +110,6 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
-            log=log,
         )
 
     @staticmethod
@@ -118,7 +117,6 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
-        log: Optional[Logger] = None,
     ) -> "SKFunction":
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
@@ -149,7 +147,7 @@ class SKFunction(SKFunctionBase):
                 else None
             )
             if request_settings.function_call is not None and functions is None:
-                log.warning("Function call is not None, but functions is None")
+                logger.warning("Function call is not None, but functions is None")
             try:
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
                     if (
@@ -277,7 +275,6 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=function_name,
             is_semantic=True,
-            log=log,
             chat_prompt_template=function_config.prompt_template
             if function_config.has_chat_prompt
             else None,
@@ -320,7 +317,6 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
-        log: Optional[Logger] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -332,7 +328,6 @@ class SKFunction(SKFunctionBase):
         self._skill_name = skill_name
         self._name = function_name
         self._is_semantic = is_semantic
-        self._log = log if log is not None else NullLogger()
         self._stream_function = delegate_stream_function
         self._skill_collection = None
         self._ai_service = None
@@ -395,7 +390,6 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
     ) -> "SKContext":
         return self.invoke(
             input=input,
@@ -403,7 +397,6 @@ class SKFunction(SKFunctionBase):
             context=context,
             memory=memory,
             settings=settings,
-            log=log,
         )
 
     def invoke(
@@ -413,7 +406,6 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
 
@@ -422,7 +414,6 @@ class SKFunction(SKFunctionBase):
                 variables=ContextVariables("") if variables is None else variables,
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
-                logger=log if log is not None else self._log,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -464,7 +455,6 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
         **kwargs: Dict[str, Any],
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
@@ -474,7 +464,6 @@ class SKFunction(SKFunctionBase):
                 variables=ContextVariables("") if variables is None else variables,
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
-                logger=log if log is not None else self._log,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -539,7 +528,7 @@ class SKFunction(SKFunctionBase):
         if self._is_semantic:
             return
 
-        self._log.error("The function is not semantic")
+        logger.error("The function is not semantic")
         raise KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function",
@@ -549,7 +538,7 @@ class SKFunction(SKFunctionBase):
         if not self._is_semantic:
             return
 
-        self._log.error("The function is not native")
+        logger.error("The function is not native")
         raise KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a native function",
@@ -562,7 +551,6 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
     ):
         from semantic_kernel.orchestration.sk_context import SKContext
 
@@ -571,7 +559,6 @@ class SKFunction(SKFunctionBase):
                 variables=ContextVariables("") if variables is None else variables,
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
-                logger=log if log is not None else self._log,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -647,8 +634,8 @@ class SKFunction(SKFunctionBase):
 
         context.skills = self._skill_collection
 
-    def _trace_function_type_Call(self, type: Enum, log: Logger) -> None:
-        log.debug(f"Executing function type {type}: {type.name}")
+    def _trace_function_type_Call(self, type: Enum) -> None:
+        logger.debug(f"Executing function type {type}: {type.name}")
 
     """
     Async code wrapper to allow running async code inside external

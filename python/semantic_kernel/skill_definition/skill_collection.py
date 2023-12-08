@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from typing import (
     TYPE_CHECKING,
     ClassVar,
@@ -21,7 +20,6 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -32,11 +30,9 @@ class SkillCollection(SkillCollectionBase):
     read_only_skill_collection_: ReadOnlySkillCollection = Field(
         alias="read_only_skill_collection"
     )
-    _log: Logger = PrivateAttr()
 
     def __init__(
         self,
-        log: Optional[Logger] = None,
         skill_collection: Union[Dict[str, Dict[str, SKFunction]], None] = None,
         read_only_skill_collection_: Optional[ReadOnlySkillCollection] = None,
     ) -> None:
@@ -52,7 +48,6 @@ class SkillCollection(SkillCollectionBase):
         else:
             read_only_skill_collection = read_only_skill_collection_
         super().__init__(read_only_skill_collection=read_only_skill_collection)
-        self._log = log or NullLogger()
 
     @property
     def read_only_skill_collection(self) -> ReadOnlySkillCollectionBase:

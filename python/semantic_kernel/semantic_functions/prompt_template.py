@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from typing import TYPE_CHECKING, List, Optional
 
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
@@ -13,7 +12,6 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
@@ -22,7 +20,6 @@ if TYPE_CHECKING:
 class PromptTemplate(PromptTemplateBase):
     _template: str
     _template_engine: PromptTemplatingEngine
-    _log: Logger
     _prompt_config: PromptTemplateConfig
 
     def __init__(
@@ -30,12 +27,10 @@ class PromptTemplate(PromptTemplateBase):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Logger] = None,
     ) -> None:
         self._template = template
         self._template_engine = template_engine
         self._prompt_config = prompt_config
-        self._log = log if log is not None else NullLogger()
 
     def get_parameters(self) -> List[ParameterView]:
         seen = set()

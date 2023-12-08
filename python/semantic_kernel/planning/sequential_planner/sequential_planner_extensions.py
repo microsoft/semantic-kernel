@@ -2,6 +2,7 @@
 
 import itertools
 from typing import AsyncIterable, List
+import logging
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
@@ -11,6 +12,8 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
     SequentialPlannerConfig,
 )
 from semantic_kernel.skill_definition.function_view import FunctionView
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SequentialPlannerFunctionViewExtension:
@@ -180,7 +183,7 @@ class SequentialPlannerSKContextExtension:
                 None,
             )
             if function is not None:
-                context.log.debug(
+                logger.debug(
                     "Found relevant function. Relevance Score: {0}, Function: {1}".format(
                         memory_entry.relevance,
                         SequentialPlannerFunctionViewExtension.to_fully_qualified_name(

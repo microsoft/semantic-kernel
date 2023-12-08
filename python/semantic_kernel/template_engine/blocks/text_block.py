@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from typing import Optional, Tuple
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -15,10 +14,9 @@ class TextBlock(Block):
         text: Optional[str] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
-        log: Optional[Logger] = None,
     ):
         if text is None:
-            return cls(content="", log=log)
+            return cls(content="")
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
                 raise ValueError(
@@ -35,7 +33,7 @@ class TextBlock(Block):
         elif stop_index is not None:
             text = text[:stop_index]
 
-        return cls(content=text, log=log)
+        return cls(content=text)
 
     @property
     def type(self) -> BlockTypes:

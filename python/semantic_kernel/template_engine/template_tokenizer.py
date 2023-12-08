@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from typing import List, Optional
 
 from pydantic import PrivateAttr
@@ -12,7 +11,6 @@ from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
-from semantic_kernel.utils.null_logger import NullLogger
 
 
 # BNF parsed by TemplateTokenizer:
@@ -24,17 +22,11 @@ from semantic_kernel.utils.null_logger import NullLogger
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer(SKBaseModel):
-    _log: Optional[Logger] = PrivateAttr(default_factory=NullLogger)
     _code_tokenizer: CodeTokenizer = PrivateAttr()
 
-    def __init__(self, log: Logger = None):
+    def __init__(self):
         super().__init__()
-        self._log = log or NullLogger()
-        self._code_tokenizer = CodeTokenizer(log=self.log)
-
-    @property
-    def log(self) -> Logger:
-        return self._log
+        self._code_tokenizer = CodeTokenizer()
 
     def tokenize(self, text: str) -> List[Block]:
         # An empty block consists of 4 chars: "{{}}"
@@ -47,11 +39,11 @@ class TemplateTokenizer(SKBaseModel):
 
         # Render None/empty to ""
         if not text or text == "":
-            return [TextBlock.from_text("", log=self.log)]
+            return [TextBlock.from_text("")]
 
         # If the template is "empty" return it as a text block
         if len(text) < MIN_CODE_BLOCK_LENGTH:
-            return [TextBlock.from_text(text, log=self.log)]
+            return [TextBlock.from_text(text)]
 
         blocks = []
         end_of_last_block = 0
@@ -114,7 +106,6 @@ class TemplateTokenizer(SKBaseModel):
                                     text,
                                     end_of_last_block,
                                     block_start_pos,
-                                    log=self.log,
                                 )
                             )
 
@@ -130,11 +121,7 @@ class TemplateTokenizer(SKBaseModel):
                         if len(content_without_delimiters) == 0:
                             # If what is left is empty, consider the raw block
                             # a TextBlock
-                            blocks.append(
-                                TextBlock.from_text(
-                                    content_with_delimiters, log=self.log
-                                )
-                            )
+                            blocks.append(TextBlock.from_text(content_with_delimiters))
                         else:
                             code_blocks = self._code_tokenizer.tokenize(
                                 content_without_delimiters
@@ -169,7 +156,6 @@ class TemplateTokenizer(SKBaseModel):
                                     CodeBlock(
                                         content_without_delimiters,
                                         code_blocks,
-                                        self.log,
                                     )
                                 )
                             else:
@@ -183,9 +169,7 @@ class TemplateTokenizer(SKBaseModel):
 
         # If there is something left after the last block, capture it as a TextBlock
         if end_of_last_block < len(text):
-            blocks.append(
-                TextBlock.from_text(text, end_of_last_block, len(text), log=self.log)
-            )
+            blocks.append(TextBlock.from_text(text, end_of_last_block, len(text)))
 
         return blocks
 
