@@ -4,14 +4,15 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.12-alpha-SNAPSHOT</version>
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Semantic Kernel Samples Parent</name>
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
 
     <modules>
-        <module>sample-code</module>
-        <module>semantickernel-samples-guice</module>
+        <!-- <module>sample-code</module>
+        <module>semantickernel-samples-guice</module> -->
+        <module>sk-v1</module>
     </modules>
 
     <properties>

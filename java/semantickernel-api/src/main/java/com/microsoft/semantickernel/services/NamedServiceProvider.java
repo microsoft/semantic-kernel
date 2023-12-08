@@ -3,6 +3,9 @@ package com.microsoft.semantickernel.services;
 
 import javax.annotation.Nullable;
 
+/**
+ * @deprecated Use {@code com.microsoft.semantickernel.aiservices.NamedServiceProvider} instead
+ */
 public interface NamedServiceProvider<T> {
     /**
      * Gets the service of the specified type and name, or null if not found.

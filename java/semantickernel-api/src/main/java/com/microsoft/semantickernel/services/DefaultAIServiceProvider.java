@@ -4,7 +4,10 @@ package com.microsoft.semantickernel.services;
 import java.util.Map;
 import java.util.function.Supplier;
 
-/** Default implementation of {@link AIServiceProvider} */
+/** 
+ * Default implementation of {@link AIServiceProvider} 
+ * @deprecated Use {@code com.microsoft.semantickernel.aiservices.DefaultAIServiceProvider} instead
+ */
 public class DefaultAIServiceProvider extends DefaultNamedServiceProvider<AIService>
         implements AIServiceProvider {
     public DefaultAIServiceProvider(

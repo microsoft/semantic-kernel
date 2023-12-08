@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
+import com.microsoft.semantickernel.aiservices.AIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
@@ -11,25 +17,22 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.plugin.Plugin;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /** Interface for the semantic kernel. */
-public interface Kernel extends Buildable {
+public interface Kernel extends SkillExecutor, Buildable {
 
     /**
      * Settings required to execute functions, including details about AI dependencies, e.g.
      * endpoints and API keys.
      */
     @Deprecated
-    KernelConfig getConfig();
+    default KernelConfig getConfig() { throw new UnsupportedOperationException(); }
 
     /**
      * Reference to the engine rendering prompt templates
@@ -37,7 +40,7 @@ public interface Kernel extends Buildable {
      * @return Reference to the engine rendering prompt templates
      */
     @Deprecated
-    PromptTemplateEngine getPromptTemplateEngine();
+    default PromptTemplateEngine getPromptTemplateEngine() { throw new UnsupportedOperationException(); }
 
     /**
      * Get the SemanticTextMemory in use.
@@ -45,7 +48,7 @@ public interface Kernel extends Buildable {
      * @return the SemanticTextMemory in use
      */
     @Deprecated
-    SemanticTextMemory getMemory();
+    default SemanticTextMemory getMemory() { throw new UnsupportedOperationException(); }
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -55,7 +58,7 @@ public interface Kernel extends Buildable {
      * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
-    Mono<KernelResult> runAsync(SKFunction... pipeline);
+    default Mono<KernelResult> runAsync(SKFunction... pipeline) { throw new UnsupportedOperationException(); }
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -66,7 +69,7 @@ public interface Kernel extends Buildable {
      * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
      */
     @Deprecated
-    Mono<KernelResult> runAsync(String input, SKFunction... pipeline);
+    default Mono<KernelResult> runAsync(String input, SKFunction... pipeline) { throw new UnsupportedOperationException(); }
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -99,20 +102,21 @@ public interface Kernel extends Buildable {
      * @return The registered function
      */
     @Deprecated
-    CompletionSKFunction registerSemanticFunction(
-            String skillName, String functionName, SemanticFunctionConfig functionConfig);
+    default CompletionSKFunction registerSemanticFunction(
+            String skillName, String functionName, SemanticFunctionConfig functionConfig)
+        { throw new UnsupportedOperationException(); }
 
     /**
      * Get a completion function builder, functions created with this builder will be registered on
      * the kernel
      */
     @Deprecated
-    CompletionSKFunction.Builder getSemanticFunctionBuilder();
+    default CompletionSKFunction.Builder getSemanticFunctionBuilder() { throw new UnsupportedOperationException(); }
 
     /** Obtains the service with the given name and type */
     @Deprecated
-    <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
-            throws KernelException;
+    default <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
+            throws KernelException { throw new UnsupportedOperationException(); }
 
     /**
      * Registers a semantic function on this kernel
@@ -121,8 +125,8 @@ public interface Kernel extends Buildable {
      *     SKFunction>/<FunctionType extends SKFunction>/
      */
     @Deprecated
-    <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
-            FunctionType semanticFunctionDefinition);
+    default <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
+            FunctionType semanticFunctionDefinition) { throw new UnsupportedOperationException(); }
 
     /**
      * Obtains a semantic function with the given name
@@ -130,17 +134,17 @@ public interface Kernel extends Buildable {
      * @apiNote Breaking change: s/SKFunction/SKFunction/
      */
     @Deprecated
-    SKFunction getFunction(String skill, String function);
+    default SKFunction getFunction(String skill, String function) { throw new UnsupportedOperationException(); }
 
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Kernel.Builder.class);
     }
 
     @Deprecated
-    ReadOnlySkillCollection getSkills();
+    default ReadOnlySkillCollection getSkills() { throw new UnsupportedOperationException(); }
 
     @Deprecated
-    ReadOnlyFunctionCollection getSkill();
+    default ReadOnlyFunctionCollection getSkill() { throw new UnsupportedOperationException(); }
 
     interface Builder extends SemanticKernelBuilder<Kernel> {
         /**

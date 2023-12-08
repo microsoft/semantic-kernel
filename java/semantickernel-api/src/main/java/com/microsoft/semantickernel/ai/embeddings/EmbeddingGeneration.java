@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.ai.embeddings;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.aiservices.AIService;
 import java.util.List;
 import reactor.core.publisher.Mono;
 
