@@ -58,11 +58,11 @@ internal static class TypeConverterFactory
 
     internal sealed class JsonSerializationTypeConverter : TypeConverter
     {
-        private Type type { get; }
+        private readonly Type _type;
 
         public JsonSerializationTypeConverter(Type type)
         {
-            this.type = type;
+            this._type = type;
         }
 
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string);
@@ -74,7 +74,7 @@ internal static class TypeConverterFactory
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot convert from non-string value.");
             }
 
-            return JsonSerializer.Deserialize(value.ToString(), this.type);
+            return JsonSerializer.Deserialize(value.ToString(), this._type);
         }
 
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
@@ -84,7 +84,7 @@ internal static class TypeConverterFactory
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot convert from non-string value.");
             }
 
-            return JsonSerializer.Serialize(value, this.type);
+            return JsonSerializer.Serialize(value, this._type);
         }
     }
 }
