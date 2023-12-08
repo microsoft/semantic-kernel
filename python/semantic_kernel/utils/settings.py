@@ -4,6 +4,10 @@ from typing import Dict, Optional, Tuple, Union
 
 from dotenv import dotenv_values
 
+from semantic_kernel.semantic_functions.prompt_template_with_data_config import (
+    PromptTemplateWithDataConfig,
+)
+
 
 def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
@@ -231,29 +235,12 @@ def redis_settings_from_dot_env() -> str:
     return connection_string
 
 
-def azure_aisearch_settings_from_dot_env() -> Tuple[str, str]:
+def azure_aisearch_settings_from_dot_env() -> Tuple[str, str, str]:
     """
     Reads the Azure AI Search environment variables for the .env file.
 
     Returns:
         Tuple[str, str]: Azure AI Search API key, the Azure AI Search URL
-    """
-    config = dotenv_values(".env")
-    api_key = config.get("AZURE_AISEARCH_API_KEY", None)
-    url = config.get("AZURE_AISEARCH_URL", None)
-
-    assert url is not None, "Azure AI Search URL not found in .env file"
-    assert api_key is not None, "Azure AI Search API key not found in .env file"
-
-    return api_key, url
-
-
-def azure_aisearch_datasource_settings_from_dot_env() -> Tuple[str, str, str]:
-    """
-    Reads the Azure AI Search environment variables including index name from the .env file.
-
-    Returns:
-        Tuple[str, str, str]: Azure AI Search API key, the Azure AI Search URL, the Azure AI Search Index name
     """
     config = dotenv_values(".env")
     api_key = config.get("AZURE_AISEARCH_API_KEY", None)
@@ -267,12 +254,29 @@ def azure_aisearch_datasource_settings_from_dot_env() -> Tuple[str, str, str]:
     return api_key, url, index_name
 
 
-def azure_aisearch_datasource_settings_from_dot_env_as_dict() -> Dict[str, str]:
+def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     """
     Reads the Azure AI Search environment variables including index name from the .env file.
 
     Returns:
         Dict[str, str]: the Azure AI search environment variables
     """
-    api_key, url, index_name = azure_aisearch_datasource_settings_from_dot_env()
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env()
     return {"key": api_key, "endpoint": url, "indexName": index_name}
+
+
+def azure_aisearch_settings_from_dot_env_as_datasource() -> (
+    "PromptTemplateWithDataConfig.AzureAISearchDataSource"
+):
+    """
+    Reads the Azure AI Search environment variables including index name from the .env file.
+
+    Returns:
+        PromptTemplateWithDataConfig.AzureAISearchDataSource: the Azure AI search data source class.
+    """
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env()
+    return PromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+            indexName=index_name, endpoint=url, key=api_key
+        )
+    )

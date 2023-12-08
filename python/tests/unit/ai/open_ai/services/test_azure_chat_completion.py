@@ -332,13 +332,19 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     messages_in = [{"role": "user", "content": prompt}]
     messages_out = [{"role": "user", "content": prompt}]
 
-    azure_chat_with_data_settings = PromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        data_source_parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+    azure_aisearch_datasource = PromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName="test_index",
             endpoint="https://test-endpoint-search.com",
             key="test_key",
         )
     )
+    azure_chat_with_data_settings = (
+        PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+            dataSources=[azure_aisearch_datasource]
+        )
+    )
+
     complete_request_settings = ChatRequestSettings(
         data_source_settings=azure_chat_with_data_settings
     )
@@ -367,16 +373,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         # presence_penalty=complete_request_settings.presence_penalty,
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias={},
-        extra_body={
-            "dataSources": [
-                {
-                    "type": "AzureCognitiveSearch",
-                    "parameters": asdict(
-                        azure_chat_with_data_settings.data_source_parameters
-                    ),
-                }
-            ]
-        },
+        extra_body=asdict(azure_chat_with_data_settings),
     )
 
 
@@ -393,11 +390,16 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
 
-    azure_chat_with_data_settings = PromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        data_source_parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+    azure_aisearch_datasource = PromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName="test_index",
             endpoint="https://test-endpoint-search.com",
             key="test_key",
+        )
+    )
+    azure_chat_with_data_settings = (
+        PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+            dataSources=[azure_aisearch_datasource]
         )
     )
 
@@ -433,16 +435,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         # presence_penalty=complete_request_settings.presence_penalty,
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias=token_bias,
-        extra_body={
-            "dataSources": [
-                {
-                    "type": "AzureCognitiveSearch",
-                    "parameters": asdict(
-                        azure_chat_with_data_settings.data_source_parameters
-                    ),
-                }
-            ]
-        },
+        extra_body=asdict(azure_chat_with_data_settings),
         functions=functions,
         function_call=complete_request_settings.function_call,
     )
@@ -465,11 +458,16 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     stop = ["!"]
     complete_request_settings.stop_sequences = stop
 
-    azure_chat_with_data_settings = PromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        data_source_parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+    azure_aisearch_datasource = PromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName="test_index",
             endpoint="https://test-endpoint-search.com",
             key="test_key",
+        )
+    )
+    azure_chat_with_data_settings = (
+        PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+            dataSources=[azure_aisearch_datasource]
         )
     )
     complete_request_settings.data_source_settings = azure_chat_with_data_settings
@@ -496,14 +494,5 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         # presence_penalty=complete_request_settings.presence_penalty,
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias={},
-        extra_body={
-            "dataSources": [
-                {
-                    "type": "AzureCognitiveSearch",
-                    "parameters": asdict(
-                        azure_chat_with_data_settings.data_source_parameters
-                    ),
-                }
-            ]
-        },
+        extra_body=asdict(azure_chat_with_data_settings),
     )

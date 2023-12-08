@@ -11,12 +11,11 @@ kernel = sk.Kernel()
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
-azure_aisearch_datasource_settings = (
-    sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
-)
-azure_chat_with_data_settings = sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
-    data_source_parameters=sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-        **azure_aisearch_datasource_settings
+azure_aisearch_datasource = sk.azure_aisearch_settings_from_dot_env_as_datasource()
+
+azure_chat_with_data_settings = (
+    sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        dataSources=[azure_aisearch_datasource]
     )
 )
 
@@ -26,13 +25,13 @@ azure_chat_with_data_settings = sk.PromptTemplateWithDataConfig.AzureChatWithDat
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-
+# When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
-    base_url=f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment}/extensions",
     deployment_name=deployment,
     api_key=api_key,
     endpoint=endpoint,
     api_version="2023-12-01-preview",
+    use_extensions=True,
 )
 kernel.add_chat_service("chat-gpt", chat_service)
 

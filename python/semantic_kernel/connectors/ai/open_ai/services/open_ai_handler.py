@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from dataclasses import asdict
 from typing import Any, Dict, List, Optional, Union
 
 from numpy import array, ndarray
@@ -161,31 +160,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ]
             else:
                 model_args["functions"] = functions
-
-        if request_settings.data_source_settings is not None:
-            model_args["extra_body"] = {
-                "dataSources": [
-                    {
-                        "type": request_settings.data_source_settings.data_source_type,
-                        "parameters": asdict(
-                            request_settings.data_source_settings.data_source_parameters
-                        ),
-                    }
-                ]
-            }
-            if request_settings.inputLanguage is not None:
-                model_args["extra_body"][
-                    "inputLanguage"
-                ] = request_settings.inputLanguage
-            if request_settings.outputLanguage is not None:
-                model_args["extra_body"][
-                    "outputLanguage"
-                ] = request_settings.outputLanguage
-            # Remove args that are not supported by the with-data extensions API (yet).
-            del model_args["n"]
-            del model_args["logit_bias"]
-            del model_args["presence_penalty"]
-            del model_args["frequency_penalty"]
 
         return model_args
 

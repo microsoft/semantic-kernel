@@ -22,7 +22,7 @@ class ChatRequestSettings:
     max_tokens: int = 256
     token_selection_biases: Dict[int, int] = field(default_factory=dict)
     stop_sequences: List[str] = field(default_factory=list)
-    function_call: Optional[str] = (None,)
+    function_call: Optional[str] = None
     data_source_settings: Optional[
         "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
     ] = None

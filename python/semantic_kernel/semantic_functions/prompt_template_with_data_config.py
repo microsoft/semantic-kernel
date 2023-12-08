@@ -34,14 +34,20 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         roleInformation: Optional[str] = None
 
     @dataclass
+    class AzureAISearchDataSource:
+        """Class to hold Azure AI Search data source."""
+
+        type: str = "AzureCognitiveSearch"
+        parameters: "PromptTemplateConfig.AzureAISearchDataSourceParameters" = None
+
+    @dataclass
     class AzureChatWithDataSettings:
         """Class to hold Azure OpenAI Chat With Data settings,
-        which might include data source type and authentication information."""
+        each data source has a type and parameters."""
 
-        data_source_type: str = "AzureCognitiveSearch"
-        data_source_parameters: "PromptTemplateConfig.AzureAISearchDataSourceParameters" = (
-            None
-        )
+        dataSources: List[
+            "PromptTemplateWithDataConfig.AzureAISearchDataSource"
+        ] = field(default_factory=list)
 
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateWithDataConfig":
@@ -51,6 +57,14 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         for comp_key in completion_keys:
             if comp_key in data["completion"]:
                 setattr(config.completion, comp_key, data["completion"][comp_key])
+
+        if "data_source_settings" in data["completion"]:
+            config.completion.data_source_settings = (
+                PromptTemplateWithDataConfig.AzureChatWithDataSettings()
+            )
+            config.completion.data_source_settings.dataSources = data["completion"][
+                "data_source_settings"
+            ]["dataSources"]
 
         return config
 

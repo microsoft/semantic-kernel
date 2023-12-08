@@ -152,8 +152,9 @@ class SKFunction(SKFunctionBase):
                 log.warning("Function call is not None, but functions is None")
             try:
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
-                    if request_settings.data_source_settings is not None and hasattr(
-                        client, "complete_chat_with_data_async"
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and request_settings.data_source_settings is not None
                     ):
                         (
                             completion,
@@ -183,8 +184,9 @@ class SKFunction(SKFunctionBase):
                     if function_call is not None:
                         context.objects["function_call"] = function_call
                 else:
-                    if request_settings.data_source_settings is not None and hasattr(
-                        client, "complete_chat_with_data_async"
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and request_settings.data_source_settings is not None
                     ):
                         # third item is function_call, None in this case
                         (
@@ -229,13 +231,15 @@ class SKFunction(SKFunctionBase):
                         response = await client.complete_chat_stream_with_data_async(
                             messages, request_settings
                         )
-                        async for partial_content in response:
-                            completion += partial_content
-                            yield partial_content
+                        # Get the tool message
                         tool_message = await response.get_tool_message()
                         if tool_message:
                             chat_prompt.add_message(role="tool", message=tool_message)
                             context.objects["tool_message"] = tool_message
+                        # Get the completion
+                        async for partial_content in response:
+                            completion += partial_content
+                            yield partial_content
 
                     else:
                         async for partial_content in client.complete_chat_stream_async(

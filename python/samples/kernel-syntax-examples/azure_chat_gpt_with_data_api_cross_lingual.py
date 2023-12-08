@@ -11,17 +11,15 @@ kernel = sk.Kernel()
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
-azure_aisearch_datasource_settings = (
-    sk.azure_aisearch_datasource_settings_from_dot_env_as_dict()
-)
-azure_chat_with_data_settings = sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
-    data_source_parameters=sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-        **azure_aisearch_datasource_settings
+azure_aisearch_datasource = sk.azure_aisearch_settings_from_dot_env_as_datasource()
+# Set index language
+azure_aisearch_datasource.parameters.indexLanguage = "en"
+
+azure_chat_with_data_settings = (
+    sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        dataSources=[azure_aisearch_datasource]
     )
 )
-
-# Set index language
-azure_chat_with_data_settings.data_source_parameters.indexLanguage = "en"
 
 # For example, AI Search index may contain the following document:
 
@@ -66,12 +64,7 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 
 async def chat() -> bool:
     context_vars = sk.ContextVariables()
-    print(
-        "Welcome to the chat bot!\
-    \n  Type 'exit' to exit.\
-    \n  Type your question in French, and see the response in German. \
-    \n  For example, 'Où Emily et David se sont-ils rencontrés?'"
-    )
+
     try:
         user_input = input("User:> ")
         context_vars["user_input"] = user_input
@@ -100,6 +93,12 @@ async def chat() -> bool:
 
 async def main() -> None:
     chatting = True
+    print(
+        "Welcome to the chat bot!\
+    \n  Type 'exit' to exit.\
+    \n  Type your question in French, and see the response in German. \
+    \n  For example, 'Où Emily et David se sont-ils rencontrés?'"
+    )
     while chatting:
         chatting = await chat()
 

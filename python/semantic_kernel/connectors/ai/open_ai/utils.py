@@ -208,13 +208,13 @@ def _parse_message(
             arguments=function_call.arguments,
         )
 
-    tool_content = None
-    if message.model_extra and "context" in message.model_extra:
-        for m in message.model_extra["context"].get("messages", []):
-            if m["role"] == "tool":
-                tool_content = m.get("content", None)
-                break
-    if with_data:
+    if not with_data:
+        return (content, function_call)
+    else:
+        tool_content = None
+        if message.model_extra and "context" in message.model_extra:
+            for m in message.model_extra["context"].get("messages", []):
+                if m["role"] == "tool":
+                    tool_content = m.get("content", None)
+                    break
         return (content, tool_content, function_call)
-
-    return (content, function_call)
