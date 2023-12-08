@@ -179,7 +179,6 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         stream=False,
         temperature=complete_request_settings.temperature,
         top_p=complete_request_settings.top_p,
-        response_format="text",
         messages=messages,
     )
 
@@ -223,7 +222,6 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         presence_penalty=complete_request_settings.presence_penalty,
         frequency_penalty=complete_request_settings.frequency_penalty,
         logit_bias=token_bias,
-        response_format="text",
     )
 
 
@@ -265,7 +263,6 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
         presence_penalty=complete_request_settings.presence_penalty,
         frequency_penalty=complete_request_settings.frequency_penalty,
         logit_bias={},
-        response_format="text",
     )
 
 
