@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel;
 

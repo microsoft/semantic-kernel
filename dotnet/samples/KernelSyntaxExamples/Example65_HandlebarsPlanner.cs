@@ -126,8 +126,8 @@ public static class Example65_HandlebarsPlanner
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
         catch (KernelException ex) when (
-            ex.Message.Contains(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal.ToString(), StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains(HandlebarsPlannerErrorCodes.HallucinatedHelpers.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase))
         {
             /*
                 Unable to create plan for goal with available functions.
@@ -138,7 +138,7 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"\n\n{ex.Message.Substring(ex.Message.IndexOf("]", StringComparison.InvariantCulture) + 1)}\n");
+            Console.WriteLine($"\n\n{ex.Message}\n");
         }
     }
 

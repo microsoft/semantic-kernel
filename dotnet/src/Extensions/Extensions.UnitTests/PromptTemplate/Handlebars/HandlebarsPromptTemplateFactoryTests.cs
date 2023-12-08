@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
 
 using static Extensions.UnitTests.PromptTemplate.Handlebars.HandlebarsPromptTemplateTestUtils;

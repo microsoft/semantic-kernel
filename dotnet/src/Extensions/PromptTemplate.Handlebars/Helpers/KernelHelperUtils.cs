@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.

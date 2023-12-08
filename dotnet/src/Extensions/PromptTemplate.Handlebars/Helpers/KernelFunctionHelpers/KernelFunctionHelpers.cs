@@ -9,7 +9,7 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -72,7 +72,7 @@ public static class KernelFunctionHelpers
             KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
-            return InvokeKernelFunctionAsync(kernel, function, GetKernelArguments(executionContext), cancellationToken);
+            return InvokeKernelFunction(kernel, function, GetKernelArguments(executionContext), cancellationToken);
         });
     }
 
@@ -192,7 +192,7 @@ public static class KernelFunctionHelpers
     /// <summary>
     /// Invokes an SK function and returns a typed result, if specified.
     /// </summary>
-    private static object? InvokeKernelFunctionAsync(
+    private static object? InvokeKernelFunction(
         Kernel kernel,
         KernelFunction function,
         KernelArguments? executionContext = null,

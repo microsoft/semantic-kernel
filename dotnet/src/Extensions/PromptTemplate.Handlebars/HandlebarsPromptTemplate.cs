@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
-namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars prompt template.

@@ -5,7 +5,7 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.Options;
 
-namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 /// <summary>
 /// Configuration for Handlebars helpers.
