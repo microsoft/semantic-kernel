@@ -11,8 +11,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 #pragma warning disable RCS1110 // Declare type inside namespace.
+#pragma warning disable CA5394
 
-public static class Example73_Pipelining
+public static class Example74_Pipelining
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
@@ -20,13 +21,21 @@ public static class Example73_Pipelining
     /// </summary>
     public static async Task RunAsync()
     {
+        // Create a pipeline of functions that will parse a string into an int, multiply it by a double, truncate it to an int, and then humanize it.
         KernelFunction parseInt32 = KernelFunctionFactory.CreateFromMethod((string s) => double.Parse(s, CultureInfo.InvariantCulture), "parseInt32");
         KernelFunction multiplyByN = KernelFunctionFactory.CreateFromMethod((double i, double n) => i * n, "multiplyByN");
         KernelFunction truncate = KernelFunctionFactory.CreateFromMethod((double d) => (int)d, "truncate");
-
-        KernelFunction combined = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate }, "combined");
+        KernelFunction humanize = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig()
+        {
+            Template = "Spell out this number in English: {{$number}}",
+            InputVariables = new() { new() { Name = "number" } },
+        });
+        KernelFunction pipeline = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate, humanize }, "pipeline");
 
         KernelBuilder builder = new();
+        builder.AddOpenAIChatCompletion(
+            TestConfiguration.OpenAI.ChatModelId,
+            TestConfiguration.OpenAI.ApiKey);
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 
@@ -39,7 +48,7 @@ public static class Example73_Pipelining
         // - The parseInt32 function will be invoked, read "123.456" from the arguments, and parse it into (double)123.456.
         // - The multiplyByN function will be invoked, with i=123.456 and n=78.90, and return (double)9740.6784.
         // - The truncate function will be invoked, with d=9740.6784, and return (int)9740, which will be the final result.
-        Console.WriteLine(await combined.InvokeAsync(kernel, args));
+        Console.WriteLine(await pipeline.InvokeAsync(kernel, args));
     }
 }
 
