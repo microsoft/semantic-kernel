@@ -4,7 +4,7 @@ import glob
 import importlib
 import inspect
 import os
-from logging import Logger
+import logging
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
@@ -53,14 +53,14 @@ from semantic_kernel.template_engine.prompt_template_engine import PromptTemplat
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 T = TypeVar("T")
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class Kernel:
-    _log: Logger
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
@@ -70,16 +70,12 @@ class Kernel:
         skill_collection: Optional[SkillCollectionBase] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Logger] = None,
     ) -> None:
-        self._log = log if log else NullLogger()
         self._skill_collection = (
-            skill_collection if skill_collection else SkillCollection(self._log)
+            skill_collection if skill_collection else SkillCollection()
         )
         self._prompt_template_engine = (
-            prompt_template_engine
-            if prompt_template_engine
-            else PromptTemplateEngine(self._log)
+            prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
         )
         self._memory = memory if memory else NullMemory()
 
@@ -101,10 +97,6 @@ class Kernel:
 
         self._function_invoking_handlers = {}
         self._function_invoked_handlers = {}
-
-    @property
-    def logger(self) -> Logger:
-        return self._log
 
     @property
     def memory(self) -> SemanticTextMemoryBase:
@@ -157,7 +149,7 @@ class Kernel:
         validate_skill_name(skill_name)
         validate_function_name(function_name)
 
-        function = SKFunction.from_native_method(sk_function, skill_name, self.logger)
+        function = SKFunction.from_native_method(sk_function, skill_name)
 
         if self.skills.has_function(skill_name, function_name):
             raise KernelException(
@@ -466,11 +458,9 @@ class Kernel:
             if not hasattr(candidate, "__sk_function__"):
                 continue
 
-            functions.append(
-                SKFunction.from_native_method(candidate, skill_name, self.logger)
-            )
+            functions.append(SKFunction.from_native_method(candidate, skill_name))
 
-        self.logger.debug(f"Methods imported: {len(functions)}")
+        logger.debug(f"Methods imported: {len(functions)}")
 
         # Uniqueness check on function names
         function_names = [f.name for f in functions]
