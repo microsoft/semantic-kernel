@@ -28,7 +28,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddSingleton(factory.Object);
         Kernel kernel = builder.Build();
 
-        kernel.Plugins.Add(new KernelPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
