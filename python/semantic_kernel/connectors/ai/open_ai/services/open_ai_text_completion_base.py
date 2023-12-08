@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
+from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 
 from openai.types.completion import Completion
 

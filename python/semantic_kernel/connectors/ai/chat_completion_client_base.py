@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
+from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings

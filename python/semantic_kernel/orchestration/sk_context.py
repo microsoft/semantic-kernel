@@ -49,7 +49,6 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
         """
         # Local import to avoid circular dependency
-        from semantic_kernel import NullLogger
 
         if skill_collection is None:
             skill_collection = ReadOnlySkillCollection()

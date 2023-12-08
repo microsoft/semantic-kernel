@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 import platform
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
-import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (

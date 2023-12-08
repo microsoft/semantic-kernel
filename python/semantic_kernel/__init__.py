@@ -13,7 +13,6 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
     azure_aisearch_settings_from_dot_env,
     azure_aisearch_settings_from_dot_env_as_dict,
@@ -30,7 +29,6 @@ from semantic_kernel.utils.settings import (
 
 __all__ = [
     "Kernel",
-    "NullLogger",
     "azure_cosmos_db_settings_from_dot_env",
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",

@@ -2,7 +2,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
+from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.complete_request_settings import (

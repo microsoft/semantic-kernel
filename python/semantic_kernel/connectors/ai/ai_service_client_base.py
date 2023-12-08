@@ -1,12 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from typing import Optional
 
-from pydantic import Field, constr, field_validator
+from pydantic import constr
 
 from semantic_kernel.sk_pydantic import SKBaseModel
-from semantic_kernel.utils.null_logger import NullLogger
 
 
 class AIServiceClientBase(SKBaseModel, ABC):

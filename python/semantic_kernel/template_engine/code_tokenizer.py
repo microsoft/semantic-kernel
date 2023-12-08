@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Optional
-
-from pydantic import PrivateAttr
+from typing import List
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block

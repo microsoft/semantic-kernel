@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Optional, Union
+from typing import List, Union
 
 import google.generativeai as palm
 from pydantic import constr

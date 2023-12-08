@@ -8,7 +8,7 @@ from typing import (
     Union,
 )
 
-from pydantic import Field, PrivateAttr
+from pydantic import Field
 
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition import constants

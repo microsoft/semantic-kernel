@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
 from semantic_kernel.semantic_functions.prompt_template_config import (

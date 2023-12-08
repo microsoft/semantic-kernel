@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from copy import deepcopy
 import logging
-from typing import Dict, List, Optional, Tuple
+from copy import deepcopy
+from typing import Dict, List, Tuple
 
 from numpy import array, linalg, ndarray
 

@@ -2,8 +2,6 @@
 
 from typing import Optional, Tuple
 
-from pydantic import PrivateAttr
-
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 

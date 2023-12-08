@@ -118,7 +118,6 @@ async def chat_completion_with_function_call(
     chat_skill_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[SKFunctionBase] = None,
-    *,
     **kwargs: Dict[str, Any],
 ) -> SKContext:
     """Perform a chat completion with auto-executing function calling.

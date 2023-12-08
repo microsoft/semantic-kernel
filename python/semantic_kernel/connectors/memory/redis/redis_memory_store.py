@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import redis

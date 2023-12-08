@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Tuple
 
-from pydantic import ConfigDict, Field, PrivateAttr
+from pydantic import ConfigDict, Field
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.sk_function import SKFunction

@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import itertools
-from typing import AsyncIterable, List
 import logging
+from typing import AsyncIterable, List
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult

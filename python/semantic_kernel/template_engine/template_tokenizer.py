@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Optional
+from typing import List
 
 from pydantic import PrivateAttr
 

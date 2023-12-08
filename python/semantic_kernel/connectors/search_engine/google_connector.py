@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import urllib
 import logging
-from typing import List, Optional
+import urllib
+from typing import List
 
 import aiohttp
 
