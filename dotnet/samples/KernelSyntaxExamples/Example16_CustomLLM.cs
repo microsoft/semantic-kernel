@@ -9,9 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -52,20 +51,19 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
-        Kernel kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddSingleton(ConsoleLogger.LoggerFactory)
-            // Add your text generation service as a singleton instance
-            .AddKeyedSingleton<ITextGenerationService>("myService1", new MyTextGenerationService())
-            // Add your text generation service as a factory method
-            .AddKeyedSingleton<ITextGenerationService>("myService2", (_, _) => new MyTextGenerationService());
-        }).Build();
+        KernelBuilder builder = new();
+        builder.Services.AddSingleton(ConsoleLogger.LoggerFactory);
+        // Add your text generation service as a singleton instance
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("myService1", new MyTextGenerationService());
+        // Add your text generation service as a factory method
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("myService2", (_, _) => new MyTextGenerationService());
+        Kernel kernel = builder.Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 
         var textValidationFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
-        var result = await textValidationFunction.InvokeAsync(kernel, "I mised the training session this morning");
+        var result = await textValidationFunction.InvokeAsync(kernel, new("I mised the training session this morning"));
         Console.WriteLine(result.GetValue<string>());
 
         // Details of the my custom model response
@@ -89,7 +87,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
-        Kernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
         ITextGenerationService textGeneration = new MyTextGenerationService();
 
         var prompt = "Write one paragraph why AI is awesome";

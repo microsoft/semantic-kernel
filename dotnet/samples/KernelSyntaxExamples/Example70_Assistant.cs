@@ -73,7 +73,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         // Call the common chat-loop
         await ChatAsync(
@@ -94,12 +94,12 @@ public static class Example70_Assistant
         Console.WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
-        var plugin = new KernelPlugin("spelling");
-        plugin.AddFunctionFromPrompt(
+        var function = KernelFunctionFactory.CreateFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
               description: "Correct the spelling for the user input."
         );
+        var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
 
         // Call the common chat-loop
         await ChatAsync(
@@ -125,20 +125,28 @@ public static class Example70_Assistant
                 .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
                 .BuildAsync();
 
-        // Invoke assistant plugin function.
-        var arguments = new KernelArguments
+        string? threadId = null;
+        try
         {
-            ["input"] = "Practice makes perfect."
-        };
+            // Invoke assistant plugin function.
+            KernelArguments arguments = new("Practice makes perfect.");
 
-        var kernel = new Kernel();
-        var result = await kernel.InvokeAsync(assistant.AsPlugin().Single(), arguments);
+            var kernel = new Kernel();
+            var result = await kernel.InvokeAsync(assistant.AsPlugin().Single(), arguments);
 
-        // Display result
-        var response = result.GetValue<AssistantResponse>();
-        Console.WriteLine(
-            response?.Response ??
-            $"No response from assistant: {assistant.Id}");
+            // Display result
+            var response = result.GetValue<AssistantResponse>();
+            threadId = response?.ThreadId;
+            Console.WriteLine(
+                response?.Message ??
+                $"No response from assistant: {assistant.Id}");
+        }
+        finally
+        {
+            await Task.WhenAll(
+                assistant.DeleteThreadAsync(threadId),
+                assistant.DeleteAsync());
+        }
     }
 
     /// <summary>
@@ -151,36 +159,46 @@ public static class Example70_Assistant
     /// </summary>
     private static async Task ChatAsync(
         string resourcePath,
-        IKernelPlugin? plugin = null,
+        KernelPlugin? plugin = null,
         params string[] messages)
     {
         // Read assistant resource
         var definition = EmbeddedResource.Read(resourcePath);
 
         // Create assistant
-        var assistant =
+        IAssistant assistant =
             await new AssistantBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(definition)
                 .WithPlugin(plugin)
                 .BuildAsync();
 
-        // Display assistant identifier.
-        Console.WriteLine($"[{assistant.Id}]");
-
-        // Create chat thread.  Note: Thread is not bound to a single assistant.
-        var thread = await assistant.NewThreadAsync();
-
-        // Process each user message and assistant response.
-        foreach (var message in messages)
+        IChatThread? thread = null;
+        try
         {
-            // Add the user message
-            var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
-            DisplayMessage(messageUser);
+            // Display assistant identifier.
+            Console.WriteLine($"[{assistant.Id}]");
 
-            // Retrieve the assistant response
-            var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
-            DisplayMessages(assistantMessages);
+            // Create chat thread.  Note: Thread is not bound to a single assistant.
+            thread = await assistant.NewThreadAsync();
+
+            // Process each user message and assistant response.
+            foreach (var message in messages)
+            {
+                // Add the user message
+                var messageUser = await thread.AddUserMessageAsync(message);
+                DisplayMessage(messageUser);
+
+                // Retrieve the assistant response
+                var assistantMessages = await thread.InvokeAsync(assistant);
+                DisplayMessages(assistantMessages);
+            }
+        }
+        finally
+        {
+            await Task.WhenAll(
+                thread?.DeleteAsync() ?? Task.CompletedTask,
+                assistant.DeleteAsync());
         }
     }
 

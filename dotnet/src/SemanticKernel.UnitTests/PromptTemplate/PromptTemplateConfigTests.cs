@@ -3,8 +3,7 @@
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.PromptTemplate;
@@ -149,7 +148,7 @@ public class PromptTemplateConfigTests
         {
             ""name"": ""input variable name"",
             ""description"": ""input variable description"",
-            ""default_value"": ""default value"",
+            ""default"": ""default value"",
             ""is_required"": true
         }
     ]
@@ -164,7 +163,7 @@ public class PromptTemplateConfigTests
         Assert.Single(promptTemplateConfig.InputVariables);
         Assert.Equal("input variable name", promptTemplateConfig.InputVariables[0].Name);
         Assert.Equal("input variable description", promptTemplateConfig.InputVariables[0].Description);
-        Assert.Equal("default value", promptTemplateConfig.InputVariables[0].DefaultValue);
+        Assert.Equal("default value", promptTemplateConfig.InputVariables[0].Default);
         Assert.True(promptTemplateConfig.InputVariables[0].IsRequired);
     }
 

@@ -14,17 +14,17 @@
     {
       "name": "input",
       "description": "The input array or list",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "index",
       "description": "The index of the element to retrieve",
-      "default_value": ""
+      "default": ""
     },
     {
       "name": "count",
       "description": "The number of items in the input",
-      "default_value": ""
+      "default": ""
     }
   ]
 }

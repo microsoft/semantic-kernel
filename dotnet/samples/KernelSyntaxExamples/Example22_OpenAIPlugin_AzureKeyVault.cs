@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
-using RepoUtils;
 using Resources;
 
 // ReSharper disable once InconsistentNaming
@@ -56,7 +55,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
             }
         );
 
-        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         var openApiSpec = EmbeddedResource.Read("22-openapi.json");
         using var messageStub = new HttpMessageHandlerStub(openApiSpec);
@@ -79,7 +78,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         await GetSecretFromAzureKeyVaultWithRetryAsync(kernel, plugin);
     }
 
-    public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, IKernelPlugin plugin)
+    public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments
@@ -98,7 +97,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 
-    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, IKernelPlugin plugin)
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments();

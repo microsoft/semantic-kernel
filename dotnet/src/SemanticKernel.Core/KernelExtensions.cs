@@ -10,12 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
+/// <summary>Provides extension methods for interacting with <see cref="Kernel"/> and related types.</summary>
 public static class KernelExtensions
 {
     #region CreateFunctionFromMethod
@@ -134,7 +134,7 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region CreatePluginFromObject
+    #region CreatePluginFromType
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -144,14 +144,15 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin CreatePluginFromObject<T>(this Kernel kernel, string? pluginName = null)
-        where T : new()
+    public static KernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromObject<T>(pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromType<T>(pluginName, kernel.Services);
     }
+    #endregion
 
+    #region CreatePluginFromObject
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -161,7 +162,7 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -169,7 +170,7 @@ public static class KernelExtensions
     }
     #endregion
 
-    #region ImportPluginFromObject
+    #region ImportPlugin/AddFromType
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -179,10 +180,9 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin ImportPluginFromObject<T>(this Kernel kernel, string? pluginName = null)
-        where T : new()
+    public static KernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
-        IKernelPlugin plugin = CreatePluginFromObject<T>(kernel, pluginName);
+        KernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -197,14 +197,49 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddPluginFromObject<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
-        where T : new()
+    public static KernelPlugin AddFromType<T>(this ICollection<KernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        Verify.NotNull(plugins);
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider);
         plugins.Add(plugin);
         return plugin;
     }
 
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
+    /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// </param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelBuilderPlugins AddFromType<T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton<KernelPlugin>(serviceProvider => KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider));
+
+        return plugins;
+    }
+
+    /// <summary>Adds the <paramref name="plugin"/> to the <paramref name="plugins"/>.</summary>
+    /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
+    /// <param name="plugin">The plugin to add.</param>
+    /// <returns></returns>
+    public static IKernelBuilderPlugins Add(this IKernelBuilderPlugins plugins, KernelPlugin plugin)
+    {
+        Verify.NotNull(plugins);
+        Verify.NotNull(plugin);
+
+        plugins.Services.AddSingleton(plugin);
+
+        return plugins;
+    }
+    #endregion
+
+    #region ImportPlugin/AddFromObject
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -214,9 +249,9 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
-        IKernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
+        KernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -231,11 +266,47 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static IKernelPlugin AddPluginFromObject(this ICollection<IKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromObject(this ICollection<KernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        Verify.NotNull(plugins);
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;
+    }
+
+    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(plugins);
+
+        var plugin = new DefaultKernelPlugin(pluginName, description, functions);
+        plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="target">The instance of the class to be wrapped.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
+    /// </param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelBuilderPlugins AddFromObject(this IKernelBuilderPlugins plugins, object target, string? pluginName = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
+
+        return plugins;
     }
     #endregion
 
@@ -271,23 +342,36 @@ public static class KernelExtensions
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
-    public static IKernelPlugin CreatePluginFromPromptDirectory(
+    public static KernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
+        Verify.NotNull(kernel);
+
+        return CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services);
+    }
+
+    /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
+    private static KernelPlugin CreatePluginFromPromptDirectory(
+        string pluginDirectory,
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        IServiceProvider? services = null)
+    {
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
 
-        pluginName ??= new DirectoryInfo(pluginDirectory).Name;
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
         Verify.DirectoryExists(pluginDirectory);
+        pluginName ??= new DirectoryInfo(pluginDirectory).Name;
 
-        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
+        ILoggerFactory loggerFactory = services?.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
-        KernelPlugin plugin = new(pluginName);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
+
+        var functions = new List<KernelFunction>();
+        ILogger logger = loggerFactory.CreateLogger(typeof(Kernel));
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
         {
@@ -321,14 +405,14 @@ public static class KernelExtensions
                 logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
             }
 
-            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptConfig));
+            functions.Add(KernelFunctionFactory.CreateFromPrompt(promptTemplateInstance, promptConfig, loggerFactory));
         }
 
-        return plugin;
+        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
     #endregion
 
-    #region ImportPluginFromPromptDirectory
+    #region ImportPlugin/AddFromPromptDirectory
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
     /// and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -363,15 +447,63 @@ public static class KernelExtensions
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
-    public static IKernelPlugin ImportPluginFromPromptDirectory(
+    public static KernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        IKernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
+        KernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
+    }
+
+    /// <summary>
+    /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
+    /// and adds it into the plugin collection.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A plugin directory contains a set of subdirectories, one for each function in the form of a prompt.
+    /// This method accepts the path of the plugin directory. Each subdirectory's name is used as the function name
+    /// and may contain only alphanumeric chars and underscores.
+    /// </para>
+    /// <code>
+    /// The following directory structure, with pluginDirectory = "D:\plugins\OfficePlugin",
+    /// will create a plugin with three functions:
+    /// D:\plugins\
+    ///     |__ OfficePlugin\                 # pluginDirectory
+    ///         |__ ScheduleMeeting           #   function directory
+    ///             |__ skprompt.txt          #     prompt template
+    ///             |__ config.json           #     settings (optional file)
+    ///         |__ SummarizeEmailThread      #   function directory
+    ///             |__ skprompt.txt          #     prompt template
+    ///             |__ config.json           #     settings (optional file)
+    ///         |__ MergeWordAndExcelDocs     #   function directory
+    ///             |__ skprompt.txt          #     prompt template
+    ///             |__ config.json           #     settings (optional file)
+    /// </code>
+    /// <para>
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// </para>
+    /// </remarks>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
+    /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    public static IKernelBuilderPlugins AddFromPromptDirectory(
+        this IKernelBuilderPlugins plugins,
+        string pluginDirectory,
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton<KernelPlugin>(services =>
+            CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, services));
+
+        return plugins;
     }
     #endregion
 
@@ -440,6 +572,37 @@ public static class KernelExtensions
             promptTemplateFactory: promptTemplateFactory);
 
         return function.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
+    }
+    #endregion
+
+    #region AddKernel for IServiceCollection
+    /// <summary>Adds a <see cref="KernelPluginCollection"/> and <see cref="Kernel"/> services to the services collection.</summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>
+    /// A <see cref="IKernelBuilder"/> that can be used to add additional services to the same <see cref="IServiceCollection"/>.
+    /// </returns>
+    /// <remarks>
+    /// Both services are registered as transient, as both objects are mutable.
+    /// The builder returned from this method may be used to add additional plugins and services,
+    /// but it may not be used for <see cref="IKernelBuilder.Build"/>: doing so would build the
+    /// entire service provider from <paramref name="services"/>.
+    /// </remarks>
+    public static IKernelBuilder AddKernel(this IServiceCollection services)
+    {
+        Verify.NotNull(services);
+
+        // Register a KernelPluginCollection to be populated with any IKernelPlugins that have been
+        // directly registered in DI. It's transient because the Kernel will store the collection
+        // directly, and we don't want two Kernel instances to hold on to the same mutable collection.
+        services.AddTransient<KernelPluginCollection>();
+
+        // Register the Kernel as transient. It's mutable and expected to be mutated by consumers,
+        // such as via adding event handlers, adding plugins, storing state in its Data collection, etc.
+        services.AddTransient<Kernel>();
+
+        // Create and return a builder that can be used for adding services and plugins
+        // to the IServiceCollection.
+        return new KernelBuilder(services);
     }
     #endregion
 }

@@ -30,7 +30,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        foreach (IKernelPlugin plugin in kernel.Plugins)
+        foreach (KernelPlugin plugin in kernel.Plugins)
         {
             foreach (KernelFunction function in plugin)
             {
@@ -58,9 +58,9 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
         foreach (var p in this._promptModel.InputVariables)
         {
-            if (!string.IsNullOrEmpty(p.DefaultValue))
+            if (!string.IsNullOrEmpty(p.Default))
             {
-                result[p.Name] = p.DefaultValue;
+                result[p.Name] = p.Default;
             }
         }
 

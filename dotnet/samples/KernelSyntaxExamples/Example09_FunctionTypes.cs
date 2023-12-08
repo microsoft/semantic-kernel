@@ -16,12 +16,11 @@ public static class Example09_FunctionTypes
         Console.WriteLine("======== Method Function types ========");
 
         var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var plugin = kernel.ImportPluginFromObject<LocalExamplePlugin>("test");
+        var plugin = kernel.ImportPluginFromType<LocalExamplePlugin>("test");
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
@@ -85,7 +84,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new KernelArguments() { { "input", "blah blah blah" } });
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new("blah blah blah"));
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a single update to a streaming content.
@@ -68,14 +68,5 @@ public abstract class StreamingContentBase
         {
             this.Metadata = new Dictionary<string, object?>(metadata);
         }
-    }
-
-    /// <summary>
-    /// Implicit conversion to string
-    /// </summary>
-    /// <param name="modelContent">model Content</param>
-    public static implicit operator string(StreamingContentBase modelContent)
-    {
-        return modelContent.ToString();
     }
 }

@@ -4,8 +4,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using RepoUtils;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 // ReSharper disable once InconsistentNaming
 public static class Example58_ConfigureExecutionSettings
@@ -23,15 +22,14 @@ public static class Example58_ConfigureExecutionSettings
         string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (serviceId == null || apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI serviceId, modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,
@@ -77,8 +75,6 @@ public static class Example58_ConfigureExecutionSettings
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):
-Hello! As an AI language model, I can help you with a variety of
-
 Hello! As an AI language model, I can help you with a variety of tasks, such as:
 
 1. Answering general questions and providing information on a wide range of topics.

@@ -25,12 +25,21 @@ public sealed class InputVariable
     /// <summary>
     /// Default value when nothing is provided.
     /// </summary>
-    [JsonPropertyName("default_value")]
-    public string DefaultValue { get; set; } = string.Empty;
+    [JsonPropertyName("default")]
+    public string Default { get; set; } = string.Empty;
 
     /// <summary>
     /// True to indicate the input variable is required. True by default.
     /// </summary>
     [JsonPropertyName("is_required")]
     public bool IsRequired { get; set; } = true;
+
+    /// <summary>
+    /// JsonSchema describing this variable.
+    /// </summary>
+    /// <remarks>
+    /// This string will be deserialized into an instance of <see cref="KernelJsonSchema"/>.
+    /// </remarks>
+    [JsonPropertyName("json_schema")]
+    public string? JsonSchema { get; set; }
 }

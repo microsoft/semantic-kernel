@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.SemanticKernel;
@@ -66,12 +64,25 @@ public sealed class FunctionResult
             return typedResult;
         }
 
+        if (this.Value is ContentBase content)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (T)(object)content.ToString();
+            }
+
+            if (content.InnerContent is T innerContent)
+            {
+                return innerContent;
+            }
+        }
+
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
     /// <inheritdoc/>
     public override string ToString() =>
-        ConvertToString(this.Value, this.Culture) ?? string.Empty;
+        InternalTypeConverter.ConvertToString(this.Value, this.Culture) ?? string.Empty;
 
     /// <summary>
     /// Function result object.
@@ -82,41 +93,4 @@ public sealed class FunctionResult
     /// The culture configured on the Kernel that executed the function.
     /// </summary>
     internal CultureInfo Culture { get; }
-
-    private static string? ConvertToString(object? value, CultureInfo culture)
-    {
-        if (value == null) { return null; }
-
-        var sourceType = value.GetType();
-
-        var converterFunction = GetTypeConverterDelegate(sourceType);
-
-        return converterFunction == null
-            ? value.ToString()
-            : converterFunction(value, culture);
-    }
-
-    private static Func<object?, CultureInfo, string?>? GetTypeConverterDelegate(Type sourceType) =>
-        s_converters.GetOrAdd(sourceType, static sourceType =>
-        {
-            // Strings just render as themselves.
-            if (sourceType == typeof(string))
-            {
-                return (input, cultureInfo) => (string)input!;
-            }
-
-            // Look up and use a type converter.
-            if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
-            {
-                return (input, cultureInfo) =>
-                {
-                    return converter.ConvertToString(context: null, cultureInfo, input);
-                };
-            }
-
-            return null;
-        });
-
-    /// <summary>Converter functions for converting types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
 }

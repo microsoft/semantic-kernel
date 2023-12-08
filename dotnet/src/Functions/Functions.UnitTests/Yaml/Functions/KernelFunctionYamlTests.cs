@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -80,10 +80,10 @@ public class KernelFunctionYamlTests
     input_variables:
       - name:          name
         description:   The name of the person to greet
-        default_value: John
+        default:       John
       - name:          language
         description:   The language to generate the greeting in
-        default_value: English
+        default: English
 ";
 
     private readonly string _yaml = @"
@@ -94,10 +94,10 @@ public class KernelFunctionYamlTests
     input_variables:
       - name:          name
         description:   The name of the person to greet
-        default_value: John
+        default:       John
       - name:          language
         description:   The language to generate the greeting in
-        default_value: English
+        default: English
     execution_settings:
       - model_id:          gpt-4
         temperature:       1.0
@@ -123,10 +123,10 @@ public class KernelFunctionYamlTests
     input_variables:
       - name:          name
         description:   The name of the person to greet
-        default_value: John
+        default:       John
       - name:          language
         description:   The language to generate the greeting in
-        default_value: English
+        default: English
     execution_settings:
       - model_id:          gpt-4
         temperature:       1.0

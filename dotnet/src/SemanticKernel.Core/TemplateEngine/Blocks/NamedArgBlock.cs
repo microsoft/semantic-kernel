@@ -62,7 +62,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// </summary>
     /// <param name="arguments">Arguments to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
     /// <returns></returns>
-    internal string GetValue(KernelArguments? arguments)
+    internal object? GetValue(KernelArguments? arguments)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
@@ -80,7 +80,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     }
 
     /// <inheritdoc/>
-    public string Render(KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }
