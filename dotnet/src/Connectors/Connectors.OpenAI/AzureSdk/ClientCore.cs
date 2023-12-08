@@ -307,7 +307,7 @@ internal abstract class ClientCore
             {
                 chatOptions.FunctionCall = FunctionDefinition.None;
 
-                // Setting null or empty in this as is causing Null Pointer Exception in Azure SDK
+                // Setting null or empty in this as is causing Bad Request (functions too short) or NullPointer Exception in Azure SDK
                 //chatOptions.Functions = Array.Empty<FunctionDefinition>();
 
                 // Workaround for Null Pointer Exception in Azure SDK
@@ -446,7 +446,7 @@ internal abstract class ClientCore
             {
                 chatOptions.FunctionCall = FunctionDefinition.None;
 
-                // Setting null or empty in this as is causing Null Pointer Exception in Azure SDK
+                // Setting null or empty in this as is causing Bad Request (functions too short) or NullPointer Exception in Azure SDK
                 //chatOptions.Functions = Array.Empty<FunctionDefinition>();
 
                 // Workaround for Null Pointer Exception in Azure SDK
