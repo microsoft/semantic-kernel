@@ -11,7 +11,7 @@ namespace System;
 internal static class TypeExtensions
 {
     /// <summary>
-    /// Tries to get the result type from a generic parameter of type Task, Nullable, or ValueTask.
+    /// Tries to get the result type from a generic parameter.
     /// </summary>
     /// <param name="returnType">Return type.</param>
     /// <param name="resultType">The result type of the Nullable generic parameter.</param>
@@ -53,10 +53,10 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Tries to get the result type from a Nullable generic parameter.
+    /// Tries to get the result type from a Nullable parameter.
     /// </summary>
     /// <param name="returnType">Return type.</param>
-    /// <param name="resultType">The result type of the Nullable generic parameter.</param>
+    /// <param name="resultType">The result type of the Nullable Nullable parameter.</param>
     /// <returns><c>true</c> if the result type was successfully retrieved; otherwise, <c>false</c>.</returns>
     public static bool TryGetGenericNullableType(this Type? returnType, out Type resultType)
     {
