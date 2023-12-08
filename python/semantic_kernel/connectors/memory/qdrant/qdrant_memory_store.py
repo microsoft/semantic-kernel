@@ -6,7 +6,6 @@ The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving da
 """
 import asyncio
 import uuid
-from logging import Logger
 from typing import List, Optional, Tuple
 
 from numpy import ndarray
@@ -15,26 +14,19 @@ from qdrant_client import models as qdrant_models
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 
 class QdrantMemoryStore(MemoryStoreBase):
     _qdrantclient: QdrantClient
-    _logger: Logger
 
     def __init__(
         self,
         vector_size: int,
         url: Optional[str] = None,
         port: Optional[int] = 6333,
-        logger: Optional[Logger] = None,
         local: Optional[bool] = False,
     ) -> None:
-        """Initializes a new instance of the QdrantMemoryStore class.
-
-        Arguments:
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
-        """
+        """Initializes a new instance of the QdrantMemoryStore class."""
         if local:
             if url:
                 self._qdrantclient = QdrantClient(location=url)
@@ -43,7 +35,6 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             self._qdrantclient = QdrantClient(url=url, port=port)
 
-        self._logger = logger or NullLogger()
         self._default_vector_size = vector_size
 
     async def create_collection_async(self, collection_name: str) -> None:

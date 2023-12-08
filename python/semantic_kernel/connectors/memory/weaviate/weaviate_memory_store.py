@@ -2,7 +2,6 @@
 
 import asyncio
 from dataclasses import dataclass
-from logging import Logger
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -11,7 +10,6 @@ from weaviate.embedded import EmbeddedOptions
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 SCHEMA = {
     "class": "MemoryRecord",
@@ -115,8 +113,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             """
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-    def __init__(self, config: WeaviateConfig, logger: Optional[Logger] = None):
-        self._logger = logger or NullLogger()
+    def __init__(self, config: WeaviateConfig):
         self.config = config
         self.client = self._initialize_client()
 
