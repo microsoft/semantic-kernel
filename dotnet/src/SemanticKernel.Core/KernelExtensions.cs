@@ -275,6 +275,22 @@ public static class KernelExtensions
         return plugin;
     }
 
+    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(plugins);
+
+        var plugin = new DefaultKernelPlugin(pluginName, description, functions);
+        plugins.Add(plugin);
+        return plugin;
+    }
+
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -338,7 +354,7 @@ public static class KernelExtensions
     }
 
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
-    private static DefaultKernelPlugin CreatePluginFromPromptDirectory(
+    private static KernelPlugin CreatePluginFromPromptDirectory(
         string pluginDirectory,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
@@ -354,7 +370,7 @@ public static class KernelExtensions
 
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
-        DefaultKernelPlugin plugin = new(pluginName);
+        var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(Kernel));
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
@@ -389,10 +405,10 @@ public static class KernelExtensions
                 logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
             }
 
-            plugin.AddFunction(KernelFunctionFactory.CreateFromPrompt(promptTemplateInstance, promptConfig, loggerFactory));
+            functions.Add(KernelFunctionFactory.CreateFromPrompt(promptTemplateInstance, promptConfig, loggerFactory));
         }
 
-        return plugin;
+        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
     #endregion
 

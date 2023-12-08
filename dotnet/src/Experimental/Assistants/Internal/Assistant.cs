@@ -159,10 +159,8 @@ internal sealed class Assistant : IAssistant
 
     private KernelPlugin DefinePlugin()
     {
-        var assistantPlugin = new DefaultKernelPlugin(this.Name ?? this.Id);
-
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
-        assistantPlugin.AddFunction(functionAsk);
+        var assistantPlugin = KernelPluginFactory.CreateFromFunctions(this.Name ?? this.Id, this.Description, new[] { functionAsk });
 
         return this._assistantPlugin = assistantPlugin;
     }

@@ -84,7 +84,7 @@ public static class KernelPluginFactory
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreateFromFunctions(string pluginName, string? description, IEnumerable<KernelFunction>? functions = null)
+    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
     {
         return new DefaultKernelPlugin(pluginName, description, functions);
     }

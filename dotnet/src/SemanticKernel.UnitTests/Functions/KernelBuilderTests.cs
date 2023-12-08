@@ -82,8 +82,8 @@ public class KernelBuilderTests
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
     {
-        KernelPlugin plugin1 = new DefaultKernelPlugin("plugin1");
-        KernelPlugin plugin2 = new DefaultKernelPlugin("plugin2");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
 
         KernelBuilder builder = new();
         builder.Plugins.Add(plugin1);
@@ -143,7 +143,7 @@ public class KernelBuilderTests
     [Fact]
     public void ItIsntNeededInDIContexts()
     {
-        KernelPluginCollection plugins = new() { new DefaultKernelPlugin("plugin1") };
+        KernelPluginCollection plugins = new() { KernelPluginFactory.CreateFromFunctions("plugin1") };
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
@@ -190,9 +190,9 @@ public class KernelBuilderTests
     [Fact]
     public void ItFindsAllPluginsToPopulatePluginsCollection()
     {
-        DefaultKernelPlugin plugin1 = new("plugin1");
-        DefaultKernelPlugin plugin2 = new("plugin2");
-        DefaultKernelPlugin plugin3 = new("plugin3");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
 
         KernelBuilder builder = new();
         builder.Services.AddSingleton<KernelPlugin>(plugin1);
@@ -206,9 +206,9 @@ public class KernelBuilderTests
     [Fact]
     public void ItFindsPluginCollectionToUse()
     {
-        DefaultKernelPlugin plugin1 = new("plugin1");
-        DefaultKernelPlugin plugin2 = new("plugin2");
-        DefaultKernelPlugin plugin3 = new("plugin3");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));

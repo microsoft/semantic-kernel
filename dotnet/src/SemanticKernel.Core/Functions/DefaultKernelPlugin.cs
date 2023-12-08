@@ -2,34 +2,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides an <see cref="KernelPlugin"/> implementation around a collection of functions.
 /// </summary>
-[DebuggerDisplay("Name = {Name}, Functions = {FunctionCount}")]
-[DebuggerTypeProxy(typeof(DefaultKernelPlugin.TypeProxy))]
 internal sealed class DefaultKernelPlugin : KernelPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;
-
-    /// <summary>Initializes the new plugin from the provided name.</summary>
-    /// <param name="name">The name for the plugin.</param>
-    internal DefaultKernelPlugin(string name) : this(name, description: null, functions: null)
-    {
-    }
-
-    /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
-    /// <param name="name">The name for the plugin.</param>
-    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    internal DefaultKernelPlugin(string name, IEnumerable<KernelFunction>? functions) : this(name, description: null, functions)
-    {
-    }
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
@@ -50,11 +33,8 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
         }
     }
 
-    /// <summary>Gets the number of functions in this plugin.</summary>
-    public int FunctionCount => this._functions.Count;
-
     /// <inheritdoc/>
-    public override KernelFunction this[string functionName] => this._functions[functionName];
+    public override int FunctionCount => this._functions.Count;
 
     /// <inheritdoc/>
     public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
@@ -88,18 +68,4 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
 
     /// <inheritdoc/>
     public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
-
-    /// <summary>Debugger type proxy for the plugin.</summary>
-    private sealed class TypeProxy
-    {
-        private readonly DefaultKernelPlugin _plugin;
-
-        public TypeProxy(DefaultKernelPlugin plugin) => this._plugin = plugin;
-
-        public string Name => this._plugin.Name;
-
-        public string Description => this._plugin.Description;
-
-        public KernelFunction[] Functions => this._plugin._functions.Values.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray();
-    }
 }
