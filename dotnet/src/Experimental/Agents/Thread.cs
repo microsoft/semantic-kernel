@@ -132,8 +132,6 @@ public class Thread : IThread
 
     private async Task ExecutePlannerIfNeededAsync(string userMessage)
     {
-
-
         if (string.IsNullOrEmpty(this._agent.Planner))
         {
             return;
@@ -145,7 +143,6 @@ public class Thread : IThread
         var result = await this.ExecutePlannerAsync(userIntent).ConfigureAwait(false);
 
         this._chatHistory.AddFunctionMessage(result!.Trim(), this._agent.Name!);
-
     }
 
     private async Task<string?> ExecutePlannerAsync(string userIntent)
@@ -209,7 +206,6 @@ public class Thread : IThread
             MaxIterations = 15,
             MaxTokens = 4000,
         };
-
         var planner = new FunctionCallingStepwisePlanner(config);
 
         var result = await planner.ExecuteAsync(this._agent.Kernel, goal).ConfigureAwait(false);
