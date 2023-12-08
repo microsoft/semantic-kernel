@@ -27,13 +27,12 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <param name="chatMessage">Azure SDK chat message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    internal OpenAIChatMessageContent(ChatMessage chatMessage, string modelId, Dictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, Dictionary<string, object?>? metadata = null)
         : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(4))
     {
         this.FunctionCall = chatMessage.FunctionCall;
-        this.Name = chatMessage.Name;
-
-        this.Metadata!.Add(nameof(this.Name), chatMessage.Name);
+        this.ToolCalls = chatMessage.ToolCalls;
+        this.Metadata!.Add(nameof(this.ToolCalls), chatMessage.ToolCalls);
         this.Metadata.Add(nameof(this.FunctionCall), chatMessage.FunctionCall);
         this.Metadata.Add(FunctionNameProperty, chatMessage.FunctionCall?.Name);
         this.Metadata.Add(FunctionArgumentsProperty, chatMessage.FunctionCall?.Arguments);
@@ -45,11 +44,16 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     public FunctionCall FunctionCall { get; set; }
 
     /// <summary>
+    /// A list of the tools called by the model.
+    /// </summary>
+    public IReadOnlyList<ChatCompletionsToolCall> ToolCalls { get; }
+
+    /// <summary>
     /// The name of the author of this message. `name` is required if role is `function`,
     /// and it should be the name of the function whose response is in the `content`.
     /// May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64 characters.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.

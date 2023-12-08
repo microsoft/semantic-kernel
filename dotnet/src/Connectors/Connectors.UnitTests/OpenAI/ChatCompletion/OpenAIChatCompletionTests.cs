@@ -151,7 +151,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
         var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.FunctionNameProperty, "SayHello" }, { OpenAIChatMessageContent.FunctionArgumentsProperty, "{ \"user\": \"John Doe\" }" } });
+        chatHistory.AddMessage(AuthorRole.Assistant, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.FunctionNameProperty, "SayHello" }, { OpenAIChatMessageContent.FunctionArgumentsProperty, "{ \"user\": \"John Doe\" }" } });
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
