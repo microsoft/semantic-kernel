@@ -73,7 +73,7 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:WithMethodFunctions ========");
 
-        IKernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         // Call the common chat-loop
         await ChatAsync(
@@ -94,12 +94,12 @@ public static class Example70_Assistant
         Console.WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
-        var plugin = new KernelPlugin("spelling");
-        plugin.AddFunctionFromPrompt(
+        var function = KernelFunctionFactory.CreateFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
               description: "Correct the spelling for the user input."
         );
+        var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
 
         // Call the common chat-loop
         await ChatAsync(
@@ -159,7 +159,7 @@ public static class Example70_Assistant
     /// </summary>
     private static async Task ChatAsync(
         string resourcePath,
-        IKernelPlugin? plugin = null,
+        KernelPlugin? plugin = null,
         params string[] messages)
     {
         // Read assistant resource
