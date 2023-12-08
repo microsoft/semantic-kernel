@@ -126,6 +126,8 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     }
 
     /// <inheritdoc cref="KernelArguments.TryGetValue"/>
+    /// <typeparam name="T">Target type for result value casting.</typeparam>
+    /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
     public bool TryGetValue<T>(string name, out T? value)
     {
         Verify.NotNull(name);
