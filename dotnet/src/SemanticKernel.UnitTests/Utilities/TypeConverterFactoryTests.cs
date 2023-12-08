@@ -6,7 +6,7 @@ using System.Globalization;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests;
+namespace SemanticKernel.UnitTests.Utilities;
 
 /// <summary>
 /// Represents a factory for asserting type converters.
