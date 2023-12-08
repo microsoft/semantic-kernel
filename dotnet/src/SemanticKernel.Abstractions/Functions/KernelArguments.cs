@@ -126,21 +126,27 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     }
 
     /// <inheritdoc cref="KernelArguments.TryGetValue"/>
-    public bool TryGetValue<TValue>(string name, out TValue? value) where TValue : class?
+    public bool TryGetValue<T>(string name, out T? value)
     {
         Verify.NotNull(name);
         bool result = this._arguments.TryGetValue(name, out object? objectValue);
-        value = objectValue as TValue;
-        return result;
-    }
 
-    /// <summary>
-    /// Gets the value associated with the <see cref="InputParameterName"/> argument name as a string.
-    /// </summary>
-    public TValue? GetInputValue<TValue>() where TValue : class?
-    {
-        this.TryGetValue(InputParameterName, out TValue? input);
-        return input;
+        if (objectValue is null)
+        {
+            value = default;
+            return result;
+        }
+
+        if (objectValue is T typedValue)
+        {
+            value = typedValue;
+        }
+        else
+        {
+            throw new InvalidCastException($"Cannot cast {objectValue.GetType()} to {typeof(T)}");
+        }
+
+        return result;
     }
 
     /// <summary>Gets or sets the value associated with the specified argument name.</summary>
