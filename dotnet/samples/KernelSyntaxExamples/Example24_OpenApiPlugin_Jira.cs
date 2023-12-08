@@ -36,7 +36,7 @@ public static class Example24_OpenApiPlugin_Jira
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
 
-        IKernelPlugin jiraFunctions;
+        KernelPlugin jiraFunctions;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
