@@ -58,12 +58,12 @@ public sealed class Kernel
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
-            IEnumerable<IKernelPlugin> e = this.Services.GetServices<IKernelPlugin>();
+            IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
 
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
-            if (e is not ICollection<IKernelPlugin> c || c.Count != 0)
+            if (e is not ICollection<KernelPlugin> c || c.Count != 0)
             {
                 this._plugins = new(e);
             }
@@ -80,7 +80,7 @@ public sealed class Kernel
     /// The same <see cref="IServiceProvider"/> reference as is returned by the current instance's <see cref="Kernel.Services"/>.
     /// </item>
     /// <item>
-    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="IKernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="KernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
     /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
     /// </item>
     /// <item>

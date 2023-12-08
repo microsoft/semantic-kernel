@@ -173,7 +173,7 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugin(IKernelPlugin? plugin)
+    public AssistantBuilder WithPlugin(KernelPlugin? plugin)
     {
         if (plugin != null)
         {
@@ -187,7 +187,7 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugins(IEnumerable<IKernelPlugin> plugins)
+    public AssistantBuilder WithPlugins(IEnumerable<KernelPlugin> plugins)
     {
         this._plugins.AddRange(plugins);
 

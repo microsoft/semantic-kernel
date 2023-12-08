@@ -78,7 +78,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         await GetSecretFromAzureKeyVaultWithRetryAsync(kernel, plugin);
     }
 
-    public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, IKernelPlugin plugin)
+    public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments
@@ -97,7 +97,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 
-    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, IKernelPlugin plugin)
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments();

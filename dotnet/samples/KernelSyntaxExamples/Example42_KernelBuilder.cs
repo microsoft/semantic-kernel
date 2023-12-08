@@ -69,8 +69,8 @@ public static class Example42_KernelBuilder
         services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         services.AddHttpClient();
         services.AddKernel().AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
-        services.AddSingleton<IKernelPlugin>(sp => KernelPluginFactory.CreateFromType<TimePlugin>(serviceProvider: sp));
-        services.AddSingleton<IKernelPlugin>(sp => KernelPluginFactory.CreateFromType<HttpPlugin>(serviceProvider: sp));
+        services.AddSingleton<KernelPlugin>(sp => KernelPluginFactory.CreateFromType<TimePlugin>(serviceProvider: sp));
+        services.AddSingleton<KernelPlugin>(sp => KernelPluginFactory.CreateFromType<HttpPlugin>(serviceProvider: sp));
         Kernel kernel6 = services.BuildServiceProvider().GetRequiredService<Kernel>();
 
         return Task.CompletedTask;

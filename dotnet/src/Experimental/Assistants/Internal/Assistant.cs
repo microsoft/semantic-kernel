@@ -48,7 +48,7 @@ internal sealed class Assistant : IAssistant
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
-    private IKernelPlugin? _assistantPlugin;
+    private KernelPlugin? _assistantPlugin;
     private bool _isDeleted;
 
     /// <summary>
@@ -62,7 +62,7 @@ internal sealed class Assistant : IAssistant
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
         AssistantModel assistantModel,
-        IEnumerable<IKernelPlugin>? plugins = null,
+        IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
@@ -76,7 +76,7 @@ internal sealed class Assistant : IAssistant
     internal Assistant(
         AssistantModel model,
         OpenAIRestContext restContext,
-        IEnumerable<IKernelPlugin>? plugins = null)
+        IEnumerable<KernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
@@ -91,7 +91,7 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    public IKernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
+    public KernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -157,12 +157,10 @@ internal sealed class Assistant : IAssistant
         return response;
     }
 
-    private IKernelPlugin DefinePlugin()
+    private KernelPlugin DefinePlugin()
     {
-        var assistantPlugin = new KernelPlugin(this.Name ?? this.Id);
-
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
-        assistantPlugin.AddFunction(functionAsk);
+        var assistantPlugin = KernelPluginFactory.CreateFromFunctions(this.Name ?? this.Id, this.Description, new[] { functionAsk });
 
         return this._assistantPlugin = assistantPlugin;
     }
