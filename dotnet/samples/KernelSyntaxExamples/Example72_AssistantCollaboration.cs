@@ -38,7 +38,7 @@ public static class Example72_AssistantCollaboration
         await RunCollaborationAsync();
 
         // Coordinate collaboration as plugin agents (equivalent to previous case - shared thread)
-        await RunAsPluginsSharedThreadAsync();
+        await RunAsPluginsAsync();
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public static class Example72_AssistantCollaboration
     /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
     /// it is not using shared thread state for assistant interaction.
     /// </remarks>
-    private static async Task RunAsPluginsSharedThreadAsync()
+    private static async Task RunAsPluginsAsync()
     {
         Console.WriteLine("======== Run:AsPlugins ========");
         try
