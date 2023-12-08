@@ -33,8 +33,8 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
-from semantic_kernel.semantic_functions.prompt_config import (
-    PromptConfig,
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
 )
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
@@ -851,7 +851,7 @@ class Kernel:
             if not os.path.exists(prompt_path):
                 continue
 
-            config = PromptConfig()
+            config = PromptTemplateConfig()
             config_path = os.path.join(directory, CONFIG_FILE)
             with open(config_path, "r") as config_file:
                 config = config.from_json(config_file.read())
@@ -885,7 +885,7 @@ class Kernel:
             else f"f_{str(uuid4()).replace('-', '_')}"
         )
 
-        config = PromptConfig(
+        config = PromptTemplateConfig(
             description=(
                 description
                 if description is not None

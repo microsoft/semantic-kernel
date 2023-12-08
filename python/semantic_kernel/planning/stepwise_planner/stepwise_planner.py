@@ -16,8 +16,8 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
-from semantic_kernel.semantic_functions.prompt_config import (
-    PromptConfig,
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
 )
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
@@ -77,7 +77,7 @@ class StepwisePlanner:
         kernel: Kernel,
         config: StepwisePlannerConfig = None,
         prompt: str = None,
-        prompt_user_config: PromptConfig = None,
+        prompt_user_config: PromptTemplateConfig = None,
     ):
         assert isinstance(kernel, Kernel)
         self._kernel = kernel
@@ -85,11 +85,11 @@ class StepwisePlanner:
         self.config = config or StepwisePlannerConfig()
         self.config.excluded_skills.append(RESTRICTED_SKILL_NAME)
 
-        prompt_config = prompt_user_config or PromptConfig()
+        prompt_config = prompt_user_config or PromptTemplateConfig()
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
 
         if prompt_user_config is None:
-            prompt_config = PromptConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
+            prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
 
         prompt_config.completion.extension_data["max_tokens"] = self.config.max_tokens
 
@@ -422,7 +422,7 @@ class StepwisePlanner:
         kernel: Kernel,
         function_name: str,
         prompt_template: str,
-        config: PromptConfig = None,
+        config: PromptTemplateConfig = None,
     ) -> "SKFunctionBase":
         template = PromptTemplate(
             prompt_template, kernel.prompt_template_engine, config

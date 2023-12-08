@@ -32,7 +32,7 @@ req_settings = AIRequestSettings(
 )
 
 
-prompt_config = sk.PromptConfig(completion=req_settings)
+prompt_config = sk.PromptTemplateConfig(completion=req_settings)
 
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config

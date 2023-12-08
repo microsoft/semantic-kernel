@@ -3,10 +3,10 @@
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from semantic_kernel.semantic_functions.prompt_config import (
-    PromptConfig,
-)
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
+)
 from semantic_kernel.skill_definition.parameter_view import ParameterView
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
@@ -23,13 +23,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 class PromptTemplate(PromptTemplateBase):
     template: str
     template_engine: PromptTemplatingEngine
-    prompt_config: PromptConfig
-
+    prompt_config: PromptTemplateConfig
+    
     def __init__(
         self,
         template: str,
         template_engine: PromptTemplatingEngine,
-        prompt_config: PromptConfig,
+        prompt_config: PromptTemplateConfig,
         log: Optional[Any] = None,
     ) -> None:
         if log:

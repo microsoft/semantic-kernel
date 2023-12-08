@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
 from pydantic import Field
 
 from semantic_kernel.models.chat.chat_message import ChatMessage
-from semantic_kernel.semantic_functions.prompt_config import (
-    PromptConfig,
-)
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
+)
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
@@ -30,7 +30,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         self,
         template: str,
         template_engine: PromptTemplatingEngine,
-        prompt_config: PromptConfig,
+        prompt_config: PromptTemplateConfig,
         log: Optional[Any] = None,
     ) -> None:
         super().__init__(template, template_engine, prompt_config)
@@ -106,7 +106,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         messages: List[Dict[str, str]],
         template: str,
         template_engine: PromptTemplatingEngine,
-        prompt_config: PromptConfig,
+        prompt_config: PromptTemplateConfig,
         log: Optional[Any] = None,
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.

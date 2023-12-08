@@ -11,7 +11,7 @@ from semantic_kernel.skill_definition.parameter_view import ParameterView
 AIRequestSettingsT = TypeVar("AIRequestSettingsT", bound=AIRequestSettings)
 
 
-class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
+class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
     schema_: int = Field(default=1, alias="schema")
     type: str = "completion"
     description: str = ""
@@ -20,7 +20,7 @@ class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
     parameters: List[ParameterView] = Field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "PromptConfig":
+    def from_dict(cls, data: dict) -> "PromptTemplateConfig":
         config = {
             key: value
             for key, value in data.items()
@@ -74,9 +74,9 @@ class PromptConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         return cls(**config)
 
     @classmethod
-    def from_json(cls, json_str: str) -> "PromptConfig":
+    def from_json(cls, json_str: str) -> "PromptTemplateConfig":
         return cls.from_dict(json.loads(json_str))
 
     @classmethod
-    def from_completion_parameters(cls, **kwargs) -> "PromptConfig":
-        return PromptConfig(completion=cls.model_fields["completion"].annotation(extension_data=kwargs))
+    def from_completion_parameters(cls, **kwargs) -> "PromptTemplateConfig":
+        return PromptTemplateConfig(completion=cls.model_fields["completion"].annotation(extension_data=kwargs))
