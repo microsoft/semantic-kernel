@@ -305,13 +305,13 @@ internal abstract class ClientCore
             // the chat options' function call and functions, so that the service doesn't see them and doesn't invoke them.
             if (chatExecutionSettings.FunctionCallBehavior is FunctionCallBehavior.RequiredFunction)
             {
-                chatOptions.FunctionCall = null;
+                chatOptions.FunctionCall = FunctionDefinition.None;
 
-                // Setting null in this as is causing Null Pointer Exception in Azure SDK
-                // chatOptions.Functions = null;
-
-                // Setting empty is causing bad request functions [] too short.
+                // Setting null or empty in this as is causing Null Pointer Exception in Azure SDK
                 //chatOptions.Functions = Array.Empty<FunctionDefinition>();
+
+                // Workaround for Null Pointer Exception in Azure SDK
+                chatOptions.Functions = new List<FunctionDefinition>(new[] { new FunctionDefinition("DontCallMe") { Parameters = BinaryData.FromString(@"{ ""type"": ""object"", ""properties"": {}, ""required"": [] }") } });
             }
         }
     }
@@ -444,13 +444,13 @@ internal abstract class ClientCore
             // the chat options' function call and functions, so that the service doesn't see them and doesn't invoke them.
             if (chatExecutionSettings.FunctionCallBehavior is FunctionCallBehavior.RequiredFunction)
             {
-                chatOptions.FunctionCall = null;
+                chatOptions.FunctionCall = FunctionDefinition.None;
 
-                // Setting null in this as is causing Null Pointer Exception in Azure SDK
-                // chatOptions.Functions = null;
-
-                // Setting empty is causing bad request functions [] too short.
+                // Setting null or empty in this as is causing Null Pointer Exception in Azure SDK
                 //chatOptions.Functions = Array.Empty<FunctionDefinition>();
+
+                // Workaround for Null Pointer Exception in Azure SDK
+                chatOptions.Functions = new List<FunctionDefinition>(new[] { new FunctionDefinition("DontCallMe") { Parameters = BinaryData.FromString(@"{ ""type"": ""object"", ""properties"": {}, ""required"": [] }") } });
             }
         }
     }
