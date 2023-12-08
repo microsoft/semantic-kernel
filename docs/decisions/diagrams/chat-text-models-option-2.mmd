@@ -41,11 +41,15 @@ classDiagram
     }
 
     namespace Microsoft_SemanticKernel_ChatCompletion {
-        class ChatMessage {
+        class ChatMessageContent {
             +Role : AuthorRole
-            +Content : String
+            +Items : ChatMessageContentItem[]
             +Encoding : Encoding
             +ToString()
+        }
+
+        class ChatMessageContentItem {
+            +Type : ChatMessageContentItemType
         }
 
         class StreamingChatMessageContent {
@@ -57,22 +61,30 @@ classDiagram
         }
 
         class ChatHistory {
-            +AddMessage(chatMessage : ChatMessage)
-            +AddMessage(authorRole : AuthorRole, content : String, encoding : Encoding, metadata : IDictionary)
-            +AddUserMessage(content : string)
-            +AddAssistantMessage(content : string)
-            +AddSystemMessage(content : string)
+            +AddMessage(chatMessageContent : ChatMessageContent)
+            +AddMessage(authorRole : AuthorRole, item : ChatMessageContentItem, encoding : Encoding, metadata : IDictionary)
+            +AddUserMessage(item : ChatMessageContentItem)
+            +AddAssistantMessage(item : ChatMessageContentItem)
+            +AddSystemMessage(item : ChatMessageContentItem)
+        }
+
+        class ChatMessageTextContentItem {
+            +Text : String
+        }
+
+        class ChatMessageImageContentItem {
+            Uri : Uri
         }
     }
 
     namespace Microsoft_SemanticKernel_Connectors_OpenAI {
-        class OpenAIChatMessage {
+        class OpenAIChatMessageContent {
             +FunctionCall : FunctionCall
             +Name : Name
             +GetOpenAIFunctionResponse()
         }
 
-        class AzureOpenAIWithDataChatMessage {
+        class AzureOpenAIWithDataChatMessageContent {
             +ToolContent : String
         }
 
@@ -102,12 +114,15 @@ classDiagram
     }
 
     ContentBase <|-- TextContent
-    ContentBase <|-- ChatMessage
-    ChatMessage <|-- OpenAIChatMessage
-    ChatMessage <|-- AzureOpenAIWithDataChatMessage
+    ContentBase <|-- ChatMessageContent
+    ChatMessageContent <|-- OpenAIChatMessageContent
+    ChatMessageContent <|-- AzureOpenAIWithDataChatMessageContent
     StreamingContentBase <|-- StreamingTextContent
     StreamingTextContent <|-- OpenAIStreamingTextContent
     StreamingContentBase <|-- StreamingChatMessageContent
     StreamingChatMessageContent <|-- OpenAIStreamingChatMessageContent
     StreamingChatMessageContent <|-- AzureOpenAIWithDataStreamingChatMessageContent
     ChatHistory <|-- OpenAIChatHistory
+    ChatMessageContent <-- ChatMessageContentItem
+    ChatMessageContentItem <|-- ChatMessageTextContentItem
+    ChatMessageContentItem <|-- ChatMessageImageContentItem
