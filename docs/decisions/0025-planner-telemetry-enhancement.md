@@ -1,5 +1,5 @@
 ---
-status: { proposed }
+status: { accepted }
 contact: { TaoChenOSU }
 date: { 2023-11-21 }
 deciders: alliscode, dmytrostruk, markwallace, SergeyMenshykh, stephentoub

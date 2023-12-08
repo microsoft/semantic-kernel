@@ -82,7 +82,7 @@ Available meters:
 Measurements will be associated with tags that will allow data to be categorized for analysis:
 
 ```csharp
-TagList tags = new() { { "sk.function.name", this.Name } };
+TagList tags = new() { { "semantic_kernel.function.name", this.Name } };
 s_invocationDuration.Record(duration.TotalSeconds, in tags);
 ```
 
@@ -107,7 +107,7 @@ Tracing is implemented with `Activity` class from `System.Diagnostics` namespace
 
 Available activity sources:
 
-- _"Microsoft.SemanticKernel.Planning"_ - creates activities for all planners.
+- _Microsoft.SemanticKernel.Planning_ - creates activities for all planners.
 - _Microsoft.SemanticKernel_ - creates activities for `KernelFunction`.
 
 ### Examples
