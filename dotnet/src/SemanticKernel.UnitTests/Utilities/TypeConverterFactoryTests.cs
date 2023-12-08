@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel;
 using Xunit;
-using static Microsoft.SemanticKernel.TypeConverterFactory;
 
 namespace SemanticKernel.UnitTests;
 
@@ -50,17 +49,6 @@ public sealed class TypeConverterFactoryTests
         {
             return "{\"Foo\":\"Bar\"}";
         }
-    }
-
-    /// <summary>
-    /// Asserts the custom type type converter.
-    /// </summary>
-    [Fact]
-    public static void ItCanCreateNativeConverterForCustomType()
-    {
-        var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomType));
-        Assert.NotNull(typeConverter);
-        Assert.IsType<JsonSerializationTypeConverter>(typeConverter);
     }
 
     /// <summary>
