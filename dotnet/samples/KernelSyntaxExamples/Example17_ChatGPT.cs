@@ -80,8 +80,8 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        string reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
+        var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
 
         // Second user message
@@ -90,7 +90,7 @@ public static class Example17_ChatGPT
 
         // Second bot assistant message
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
+        chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
     }
 
