@@ -693,7 +693,7 @@ internal abstract class ClientCore
                 Name = openAIMessage?.Name
             };
         }
-        else if (message.Role == AuthorRole.Function)
+        else if (string.Equals(message.Role.Label, "function", StringComparison.OrdinalIgnoreCase))
         {
             var functionName = openAIMessage?.Name;
 
