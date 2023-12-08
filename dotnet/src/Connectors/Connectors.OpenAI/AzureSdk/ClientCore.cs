@@ -287,14 +287,15 @@ internal abstract class ClientCore
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
             // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
             // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
+            if (resultChoice.Message.Content is { Length: > 0 })
+            {
+                chatOptions.Messages.Add(GetRequestMessage(resultChoice.Message));
+                chat.AddMessage(result);
+            }
 
-            string fqn = functionCallResponse.FullyQualifiedName;
-
-            chatOptions.Messages.Add(resultChoice.Message);
-            chatOptions.Messages.Add(new ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
-
-            chat.AddMessage(result);
-            chat.AddFunctionMessage(serializedFunctionResult, fqn);
+            string fullyQualifiedName = functionCallResponse.FullyQualifiedName;
+            chatOptions.Messages.Add(new ChatRequestFunctionMessage(fullyQualifiedName, serializedFunctionResult));
+            chat.AddFunctionMessage(serializedFunctionResult, fullyQualifiedName);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
             // it's not optional for the service: it needs to invoke it. And as such, if we leave it on the settings, we'll loop
@@ -302,8 +303,13 @@ internal abstract class ClientCore
             // the chat options' function call and functions, so that the service doesn't see them and doesn't invoke them.
             if (chatExecutionSettings.FunctionCallBehavior is FunctionCallBehavior.RequiredFunction)
             {
-                chatOptions.FunctionCall = null;
-                chatOptions.Functions = null;
+                chatOptions.FunctionCall = FunctionDefinition.None;
+
+                // Setting null or empty in this as is causing Bad Request (functions too short) or NullPointer Exception in Azure SDK
+                //chatOptions.Functions = Array.Empty<FunctionDefinition>();
+
+                // Workaround for Null Pointer Exception in Azure SDK
+                chatOptions.Functions = NoFunctionToCall();
             }
         }
     }
@@ -412,14 +418,16 @@ internal abstract class ClientCore
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
             // context is available for future use by the LLM. If the caller doesn't want them, they can remove them,
             // e.g. by storing the chat history's count prior to the call and then removing back to that after the call.
-
             string contents = contentBuilder?.ToString() ?? string.Empty;
             string fqn = functionCallResponse.FullyQualifiedName;
 
-            chatOptions.Messages.Add(new(streamedRole ?? default, contents) { FunctionCall = functionCall });
-            chatOptions.Messages.Add(new ChatMessage(ChatRole.Function, serializedFunctionResult) { Name = fqn });
+            if (contents.Length > 0)
+            {
+                chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, contents, functionCall));
+                chat.AddAssistantMessage(contents, functionCall);
+            }
 
-            chat.AddAssistantMessage(contents, functionCall);
+            chatOptions.Messages.Add(new ChatRequestFunctionMessage(fqn, serializedFunctionResult));
             chat.AddFunctionMessage(serializedFunctionResult, fqn);
 
             // Most function call behaviors are optional for the service. However, if the caller has specified a required function,
@@ -428,8 +436,13 @@ internal abstract class ClientCore
             // the chat options' function call and functions, so that the service doesn't see them and doesn't invoke them.
             if (chatExecutionSettings.FunctionCallBehavior is FunctionCallBehavior.RequiredFunction)
             {
-                chatOptions.FunctionCall = null;
-                chatOptions.Functions = null;
+                chatOptions.FunctionCall = FunctionDefinition.None;
+
+                // Setting null or empty in this as is causing Bad Request (functions too short) or NullPointer Exception in Azure SDK
+                //chatOptions.Functions = Array.Empty<FunctionDefinition>();
+
+                // Workaround for Null Pointer Exception in Azure SDK
+                chatOptions.Functions = NoFunctionToCall();
             }
         }
     }
@@ -548,6 +561,11 @@ internal abstract class ClientCore
         return options;
     }
 
+    private static List<FunctionDefinition> NoFunctionToCall()
+    {
+        return new List<FunctionDefinition>(new[] { new FunctionDefinition("DontCallMe") { Parameters = BinaryData.FromString(@"{ ""type"": ""object"", ""properties"": {}, ""required"": [] }") } });
+    }
+
     private static ChatCompletionsOptions CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
@@ -612,28 +630,128 @@ internal abstract class ClientCore
 
         foreach (var message in chatHistory)
         {
-            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
-
-            if (message is OpenAIChatMessageContent openAIChatContent)
-            {
-                azureMessage.FunctionCall = openAIChatContent.FunctionCall;
-            }
-            else if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? name) is true)
-            {
-                if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionArgumentsProperty, out object? arguments) is true)
-                {
-                    azureMessage.FunctionCall = new FunctionCall(name?.ToString(), arguments?.ToString());
-                }
-                else
-                {
-                    azureMessage.Name = name?.ToString();
-                }
-            }
-
-            options.Messages.Add(azureMessage);
+            options.Messages.Add(GetRequestMessage(message));
         }
 
         return options;
+    }
+
+    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, FunctionCall functionCall)
+    {
+        if (chatRole == ChatRole.User)
+        {
+            return new ChatRequestUserMessage(contents);
+        }
+
+        if (chatRole == ChatRole.System)
+        {
+            return new ChatRequestSystemMessage(contents);
+        }
+
+        if (chatRole == ChatRole.Assistant)
+        {
+            return new ChatRequestAssistantMessage(contents)
+            {
+                FunctionCall = functionCall
+            };
+        }
+
+        if (chatRole == ChatRole.Function)
+        {
+            return new ChatRequestFunctionMessage(functionCall.Name, contents);
+        }
+
+        throw new NotImplementedException($"Role {chatRole} is not implemented");
+    }
+
+    private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)
+    {
+        ChatRequestMessage? requestMessage;
+        var openAIMessage = message as OpenAIChatMessageContent;
+        if (message.Role == AuthorRole.System)
+        {
+            requestMessage = new ChatRequestSystemMessage(message.Content);
+        }
+        else if (message.Role == AuthorRole.User)
+        {
+            var functionName = openAIMessage?.Name;
+            if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
+            {
+                functionName = functionNameFromMetadata?.ToString();
+            }
+
+            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName };
+        }
+        else if (message.Role == AuthorRole.Assistant)
+        {
+            requestMessage = new ChatRequestAssistantMessage(message.Content)
+            {
+                FunctionCall = openAIMessage?.FunctionCall,
+                Name = openAIMessage?.Name
+            };
+        }
+        else if (string.Equals(message.Role.Label, "function", StringComparison.OrdinalIgnoreCase))
+        {
+            var functionName = openAIMessage?.Name;
+
+            if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
+            {
+                functionName = functionNameFromMetadata?.ToString();
+            }
+            else
+            {
+                throw new ArgumentException($"Function name was is not provided for {message.Role} role");
+            }
+
+            requestMessage = new ChatRequestFunctionMessage(functionName, message.Content);
+        }
+        else
+        {
+            // Tool and Custom Roles are not implemented yet
+            throw new NotImplementedException($"Role {message.Role} is not implemented");
+        }
+
+        if (openAIMessage is null
+            && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? name) is true
+            && requestMessage is ChatRequestAssistantMessage assistantMessage)
+        {
+            if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionArgumentsProperty, out object? arguments) is true)
+            {
+                assistantMessage.FunctionCall = new FunctionCall(name?.ToString(), arguments?.ToString());
+            }
+            else
+            {
+                assistantMessage.Name = name?.ToString();
+            }
+        }
+
+        return requestMessage;
+    }
+
+    private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message)
+    {
+        if (message.Role == ChatRole.System)
+        {
+            return new ChatRequestSystemMessage(message.Content);
+        }
+
+        if (message.Role == ChatRole.Assistant)
+        {
+            return new ChatRequestAssistantMessage(message.Content);
+        }
+
+        if (message.Role == ChatRole.User)
+        {
+            return new ChatRequestUserMessage(message.Content);
+        }
+
+        if (message.Role == ChatRole.Function)
+        {
+            return new ChatRequestFunctionMessage(message.FunctionCall.Name, message.Content);
+        }
+
+        // TODO: Functin/Tool Calling
+        throw new NotImplementedException($"Role {message.Role} is not implemented");
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
