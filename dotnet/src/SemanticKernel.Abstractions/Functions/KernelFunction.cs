@@ -28,10 +28,10 @@ public abstract class KernelFunction
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
-    protected static readonly Meter meter = new("Microsoft.SemanticKernel");
+    private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
-    private static readonly Histogram<double> s_invocationDuration = meter.CreateHistogram<double>(
+    private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.invocation.duration",
         unit: "s",
         description: "Measures the duration of a function’s execution");
@@ -41,7 +41,7 @@ public abstract class KernelFunction
     /// As this metric spans the full async iterator's lifecycle, it is inclusive of any time
     /// spent in the consuming code between MoveNextAsync calls on the enumerator.
     /// </remarks>
-    private static readonly Histogram<double> s_streamingDuration = meter.CreateHistogram<double>(
+    private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.streaming.duration",
         unit: "s",
         description: "Measures the duration of a function’s streaming execution");

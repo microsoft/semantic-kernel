@@ -206,13 +206,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private const string MeasurementModelTagName = "semantic_kernel.function.model_id";
 
     /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
-    private static readonly Histogram<int> s_invocationTokenUsagePrompt = meter.CreateHistogram<int>(
+    private static readonly Histogram<int> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<int>(
         name: "semantic_kernel.function.invocation.token_usage.prompt",
         unit: "{token}",
         description: "Measures the prompt token usage");
 
     /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
-    private static readonly Histogram<int> s_invocationTokenUsageCompletion = meter.CreateHistogram<int>(
+    private static readonly Histogram<int> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<int>(
         name: "semantic_kernel.function.invocation.token_usage.completion",
         unit: "{token}",
         description: "Measures the completion token usage");
@@ -280,33 +280,38 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             return;
         }
 
-        var promptTokens = 0;
-        var completionTokens = 0;
-#pragma warning disable CA1031 // Do not catch general exception types
+        var jsonObject = default(JsonElement);
         try
         {
-            var jsonObject = JsonSerializer.SerializeToElement(usageObject);
-            promptTokens = jsonObject.GetProperty("PromptTokens").GetInt32();
-            completionTokens = jsonObject.GetProperty("CompletionTokens").GetInt32();
+            jsonObject = JsonSerializer.SerializeToElement(usageObject);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is NotSupportedException)
         {
             logger.LogWarning(ex, "Error while parsing usage details from model result.");
             return;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
 
-        logger.LogInformation(
-            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
-            promptTokens, completionTokens);
+        if (jsonObject.TryGetProperty("PromptTokens", out var promptTokensJson) &&
+            promptTokensJson.TryGetInt32(out int promptTokens) &&
+            jsonObject.TryGetProperty("CompletionTokens", out var completionTokensJson) &&
+            completionTokensJson.TryGetInt32(out int completionTokens))
+        {
+            logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+                promptTokens, completionTokens);
 
-        TagList tags = new() {
-            { MeasurementFunctionTagName, this.Name },
-            { MeasurementModelTagName, modelId }
-        };
+            TagList tags = new() {
+                { MeasurementFunctionTagName, this.Name },
+                { MeasurementModelTagName, modelId }
+            };
 
-        s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
-        s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
+            s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
+            s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
+        }
+        else
+        {
+            logger.LogWarning("Unable to get token details from model result.");
+        }
     }
 
     #endregion
