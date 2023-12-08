@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-
-import pkg_resources
+from importlib.metadata import version
 
 TELEMETRY_DISABLED_ENV_VAR = "AZURE_TELEMETRY_DISABLED"
 
@@ -15,7 +14,7 @@ HTTP_USER_AGENT = "Semantic-Kernel"
 APP_INFO = (
     {
         "name": HTTP_USER_AGENT,
-        "version": pkg_resources.get_distribution("semantic-kernel").version,
+        "version": version("semantic-kernel"),
         "url": "",
     }
     if IS_TELEMETRY_ENABLED
