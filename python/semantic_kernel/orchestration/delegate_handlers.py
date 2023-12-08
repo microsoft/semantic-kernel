@@ -131,6 +131,30 @@ class DelegateHandlers(SKBaseModel):
         return context
 
     @staticmethod
+    @_handles(DelegateTypes.OutAsyncGenerator)
+    async def handle_out_async_generator(function, context):
+        async for partial in function():
+            yield partial
+
+    @staticmethod
+    @_handles(DelegateTypes.InStringOutAsyncGenerator)
+    async def handle_in_string_out_async_generator(function, context):
+        async for partial in function(context.variables.input):
+            yield partial
+
+    @staticmethod
+    @_handles(DelegateTypes.InContextOutAsyncGenerator)
+    async def handle_in_context_out_async_generator(function, context):
+        async for partial in function(context):
+            yield partial
+
+    @staticmethod
+    @_handles(DelegateTypes.InStringAndContextOutAsyncGenerator)
+    async def handle_in_string_and_context_out_async_generator(function, context):
+        async for partial in function(context.variables.input, context):
+            yield partial
+
+    @staticmethod
     @_handles(DelegateTypes.Unknown)
     async def handle_unknown(function, context):
         raise KernelException(
