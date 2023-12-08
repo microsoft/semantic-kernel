@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -53,7 +55,7 @@ internal sealed class Assistant : IAssistant
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
 
-    private IKernelPlugin? _assistantPlugin;
+    private IAssistantPlugin? _assistantPlugin;
     private bool _isDeleted;
 
     /// <summary>
@@ -96,7 +98,7 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    public IKernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
+    public IAssistantPlugin AsPlugin() => this._assistantPlugin ??= this.DefinePlugin();
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -141,46 +143,51 @@ internal sealed class Assistant : IAssistant
     /// Marshal thread run through <see cref="KernelFunction"/> interface.
     /// </summary>
     /// <param name="input">The user input</param>
-    /// <param name="threadId">The optional threadId</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
     private async Task<AssistantResponse> AskAsync(
         [Description("The user message provided to the assistant.")]
         string input,
-        [Description("The optional OpenAI thread identifier to continue the chat.")]
-        string? threadId = null,
+        //[Description("The optional OpenAI thread identifier to continue the chat.")]
+        //string? threadId = null,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"$$$ {threadId ?? "new-thread"}");
+        //Console.WriteLine($"INPUT: {this.Name}: {input}");
 
-        var thread =
-            string.IsNullOrWhiteSpace(threadId) ?
-                await this.NewThreadAsync(cancellationToken).ConfigureAwait(false) :
-                await this.GetThreadAsync(threadId!, cancellationToken).ConfigureAwait(false);
+        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            //var thread = 
+            //    string.IsNullOrWhiteSpace(threadId) ?
+            //        await this.NewThreadAsync(cancellationToken).ConfigureAwait(false) :
+            //        await this.GetThreadAsync(threadId!, cancellationToken).ConfigureAwait(false);
 
-        var enhancedInput = $"{input}{Environment.NewLine}To continue this interaction, use threadId: {thread.Id}";
-        await thread.AddUserMessageAsync(enhancedInput, cancellationToken).ConfigureAwait(false);
+            //var enhancedInput = $"{input}{Environment.NewLine}To continue this interaction, use threadId: {thread.Id}";
+            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
 
-        var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
-        var response =
-            new AssistantResponse
-            {
-                ThreadId = thread.Id,
-                Message = string.Concat(message.Select(m => m.Content)),
-            };
+            var messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var response =
+                new AssistantResponse
+                {
+                    ThreadId = thread.Id,
+                    Message = string.Concat(messages.Select(m => m.Content)),
+                };
 
-        return response;
+            //Console.WriteLine($"OUTPUT:{Environment.NewLine}{this.Name}: {response.Message}");
+
+            return response;
+        }
+        finally
+        {
+            await thread.DeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
-    private IKernelPlugin DefinePlugin()
+    private AssistantPlugin DefinePlugin()
     {
-        string pluginName = s_removeInvalidCharsRegex.Replace(this.Name ?? this.Id, string.Empty);
-        var assistantPlugin = new KernelPlugin(pluginName);
-
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
-        assistantPlugin.AddFunction(functionAsk);
 
-        return this._assistantPlugin = assistantPlugin;
+        return new AssistantPlugin(this, functionAsk);
     }
 
     private void ThrowIfDeleted()
@@ -188,6 +195,46 @@ internal sealed class Assistant : IAssistant
         if (this._isDeleted)
         {
             throw new AssistantException($"{nameof(Assistant)}: {this.Id} has been deleted.");
+        }
+    }
+
+    private class AssistantPlugin(Assistant assistant, KernelFunction functionAsk) : IAssistantPlugin
+    {
+        public KernelFunction this[string functionName] =>
+            this.TryGetFunction(functionName, out var function) ?
+             function! :
+             throw new AssistantException($"Unknown function: {functionName}");
+
+        public string Name { get; } = s_removeInvalidCharsRegex.Replace(assistant.Name ?? assistant.Id, string.Empty);
+
+        public string Description => assistant.Description ?? assistant.Instructions;
+
+        public KernelFunction FunctionAsk => functionAsk;
+
+        Assistant IAssistantPlugin.Assistant => assistant;
+
+        private static readonly string s_functionName = nameof(Assistant.AskAsync).Substring(0, nameof(Assistant.AskAsync).Length - 5);
+
+        public IEnumerator<KernelFunction> GetEnumerator()
+        {
+            yield return this.FunctionAsk;
+        }
+
+        public bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
+        {
+            function = null;
+
+            if (s_functionName.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                function = this.FunctionAsk;
+            }
+
+            return function != null;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
         }
     }
 }

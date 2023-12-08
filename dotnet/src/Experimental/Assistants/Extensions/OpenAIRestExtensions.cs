@@ -56,7 +56,6 @@ internal static partial class OpenAIRestExtensions
         object? payload,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"# {url}"); // $$$
         using var request = HttpRequest.CreatePostRequest(url, payload);
 
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");

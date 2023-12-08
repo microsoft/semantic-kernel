@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +31,16 @@ public interface IChatThread
     /// <param name="assistant">An assistant instance.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assistant message(s)</returns>
-    Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default); // $$$ FIX CARDINALITY
+    IAsyncEnumerable<IChatMessage> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Advance the thread with the specified assistant.
+    /// </summary>
+    /// <param name="assistant">An assistant instance.</param>
+    /// <param name="userMessage">The user message</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>The resulting assistant message(s)</returns>
+    IAsyncEnumerable<IChatMessage> InvokeAsync(IAssistant assistant, string userMessage, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete current thread.  Terminal state - Unable to perform any
