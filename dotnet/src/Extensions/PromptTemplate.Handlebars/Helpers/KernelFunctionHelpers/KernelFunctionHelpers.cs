@@ -88,14 +88,16 @@ public static class KernelFunctionHelpers
     /// <param name="argument">Handlebar argument.</param>
     private static bool IsExpectedParameterType(KernelParameterMetadata parameterType, object argument)
     {
-        bool parameterIsNumeric = KernelHelpersUtils.IsNumericType(parameterType.ParameterType)
+        var actualParameterType = parameterType.ParameterType.TryGetGenericNullableType(out var nullableType) ? nullableType : parameterType.ParameterType;
+
+        bool parameterIsNumeric = KernelHelpersUtils.IsNumericType(actualParameterType)
             || (parameterType.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number");
 
         bool argIsNumeric = KernelHelpersUtils.IsNumericType(argument?.GetType())
             || KernelHelpersUtils.TryParseAnyNumber(argument?.ToString());
 
-        return parameterType.ParameterType is null
-            || parameterType.ParameterType == argument?.GetType()
+        return actualParameterType is null
+            || actualParameterType == argument?.GetType()
             || (parameterIsNumeric && argIsNumeric);
     }
 
@@ -204,7 +206,7 @@ public static class KernelFunctionHelpers
 
         // If return type is complex, serialize the object so it can be deserialized with expected class properties.
         // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
-        var returnType = function.Metadata.ReturnParameter.ParameterType.TryGetTaskResultType(out var taskResultType) ? taskResultType : function.Metadata.ReturnParameter.ParameterType;
+        var returnType = function.Metadata.ReturnParameter.ParameterType.TryGetGenericResultType(out var taskResultType) ? taskResultType : function.Metadata.ReturnParameter.ParameterType;
         var resultAsObject = result.GetValue<object?>();
 
         if (returnType is not null && !(returnType.IsPrimitive || returnType == typeof(string)))

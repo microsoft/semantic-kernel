@@ -185,7 +185,7 @@ public sealed class HandlebarsPlanner
         {
             // Async return type - need to extract the actual return type and override ParameterType property
             var type = parameter.ParameterType;
-            if (type.TryGetTaskResultType(out var taskResultType))
+            if (type.TryGetGenericResultType(out var taskResultType))
             {
                 parameter = new(parameter) { ParameterType = taskResultType }; // Actual Return Type
             }

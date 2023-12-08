@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace System;
@@ -10,12 +11,12 @@ namespace System;
 internal static class TypeExtensions
 {
     /// <summary>
-    /// Tries to get the result type from a Task generic parameter.
+    /// Tries to get the result type from a generic parameter of type Task, Nullable, or ValueTask.
     /// </summary>
-    /// <param name="returnType"></param>
-    /// <param name="resultType">The result type of the Task generic parameter.</param>
+    /// <param name="returnType">Return type.</param>
+    /// <param name="resultType">The result type of the Nullable generic parameter.</param>
     /// <returns><c>true</c> if the result type was successfully retrieved; otherwise, <c>false</c>.</returns>
-    public static bool TryGetTaskResultType(this Type? returnType, out Type resultType)
+    public static bool TryGetGenericResultType(this Type? returnType, out Type resultType)
     {
         resultType = typeof(object);
         if (returnType is null)
@@ -23,7 +24,49 @@ internal static class TypeExtensions
             return false;
         }
 
-        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+        if (returnType.IsGenericType)
+        {
+            Type genericTypeDef = returnType.GetGenericTypeDefinition();
+
+            if (genericTypeDef == typeof(Task<>)
+                || genericTypeDef == typeof(Nullable<>)
+                || genericTypeDef == typeof(ValueTask<>))
+            {
+                resultType = returnType.GetGenericArguments()[0];
+            }
+            else if (genericTypeDef == typeof(IEnumerable<>)
+                || genericTypeDef == typeof(IList<>)
+                || genericTypeDef == typeof(ICollection<>))
+            {
+                resultType = typeof(List<>).MakeGenericType(returnType.GetGenericArguments()[0]);
+            }
+            else if (genericTypeDef == typeof(IDictionary<,>))
+            {
+                Type[] genericArgs = returnType.GetGenericArguments();
+                resultType = typeof(Dictionary<,>).MakeGenericType(genericArgs[0], genericArgs[1]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Tries to get the result type from a Nullable generic parameter.
+    /// </summary>
+    /// <param name="returnType">Return type.</param>
+    /// <param name="resultType">The result type of the Nullable generic parameter.</param>
+    /// <returns><c>true</c> if the result type was successfully retrieved; otherwise, <c>false</c>.</returns>
+    public static bool TryGetGenericNullableType(this Type? returnType, out Type resultType)
+    {
+        resultType = typeof(object);
+        if (returnType is null)
+        {
+            return false;
+        }
+
+        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
             resultType = returnType.GetGenericArguments()[0];
             return true;

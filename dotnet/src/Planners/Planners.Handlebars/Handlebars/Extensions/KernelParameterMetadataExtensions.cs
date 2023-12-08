@@ -35,7 +35,7 @@ internal static class KernelParameterMetadataExtensions
     public static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type)
     {
         var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
-        if (type.TryGetTaskResultType(out var taskResultType))
+        if (type.TryGetGenericResultType(out var taskResultType))
         {
             var resultTypeProperties = taskResultType.GetProperties();
             if (!IsPrimitiveOrStringType(taskResultType) && resultTypeProperties.Length is not 0)
