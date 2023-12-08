@@ -53,15 +53,15 @@ public static class KernelPluginFactory
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
         // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
-        DefaultKernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
+        var functions = new List<KernelFunction>();
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
             {
-                plugin.AddFunctionFromMethod(method, target, loggerFactory: loggerFactory);
+                functions.Add(KernelFunctionFactory.CreateFromMethod(method, target, loggerFactory: loggerFactory));
             }
         }
-        if (plugin.FunctionCount == 0)
+        if (functions.Count == 0)
         {
             throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
         }
@@ -71,11 +71,13 @@ public static class KernelPluginFactory
             ILogger logger = loggerFactory.CreateLogger(target.GetType());
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);
+                logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
             }
         }
 
-        return plugin;
+        var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
