@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import urllib
-from logging import Logger
+import logging
 from typing import List, Optional
 
 import aiohttp
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class BingConnector(ConnectorBase):
@@ -17,9 +18,8 @@ class BingConnector(ConnectorBase):
 
     _api_key: str
 
-    def __init__(self, api_key: str, logger: Optional[Logger] = None) -> None:
+    def __init__(self, api_key: str) -> None:
         self._api_key = api_key
-        self._logger = logger if logger else NullLogger()
 
         if not self._api_key:
             raise ValueError(
@@ -57,7 +57,7 @@ class BingConnector(ConnectorBase):
         if offset < 0:
             raise ValueError("offset must be greater than 0.")
 
-        self._logger.info(
+        logger.info(
             f"Received request for bing web search with \
                 params:\nquery: {query}\nnum_results: {num_results}\noffset: {offset}"
         )
@@ -65,7 +65,7 @@ class BingConnector(ConnectorBase):
         _base_url = "https://api.bing.microsoft.com/v7.0/search"
         _request_url = f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}"
 
-        self._logger.info(f"Sending GET request to {_request_url}")
+        logger.info(f"Sending GET request to {_request_url}")
 
         headers = {"Ocp-Apim-Subscription-Key": self._api_key}
 
@@ -76,9 +76,9 @@ class BingConnector(ConnectorBase):
                 if response.status == 200:
                     data = await response.json()
                     pages = data["webPages"]["value"]
-                    self._logger.info(pages)
+                    logger.info(pages)
                     result = list(map(lambda x: x["snippet"], pages))
-                    self._logger.info(result)
+                    logger.info(result)
                     return result
                 else:
                     return []
