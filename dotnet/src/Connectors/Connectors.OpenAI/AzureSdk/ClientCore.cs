@@ -680,7 +680,7 @@ internal abstract class ClientCore
                 functionName = functionNameFromMetadata?.ToString();
             }
 
-            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName ?? string.Empty };
+            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName };
         }
         else if (message.Role == AuthorRole.Assistant)
         {
