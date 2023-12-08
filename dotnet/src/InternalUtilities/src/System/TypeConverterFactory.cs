@@ -79,6 +79,11 @@ internal static class TypeConverterFactory
 
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
+            if (destinationType != typeof(string))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot convert from non-string value.");
+            }
+
             return JsonSerializer.Serialize(value, this.type);
         }
     }
