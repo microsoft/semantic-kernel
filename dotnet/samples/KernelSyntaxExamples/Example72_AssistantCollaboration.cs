@@ -147,7 +147,7 @@ public static class Example72_AssistantCollaboration
             Track(
                 await new AssistantBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the begining.  If copy is acceptable and meets your criteria, say: PRINT IT.")
+                    .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
                     .WithName("Art Director")
                     .WithDescription("Art Director")
                     .BuildAsync());
