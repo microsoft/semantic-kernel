@@ -148,21 +148,11 @@ internal sealed class Assistant : IAssistant
     private async Task<AssistantResponse> AskAsync(
         [Description("The user message provided to the assistant.")]
         string input,
-        //[Description("The optional OpenAI thread identifier to continue the chat.")]
-        //string? threadId = null,
         CancellationToken cancellationToken = default)
     {
-        //Console.WriteLine($"INPUT: {this.Name}: {input}");
-
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            //var thread = 
-            //    string.IsNullOrWhiteSpace(threadId) ?
-            //        await this.NewThreadAsync(cancellationToken).ConfigureAwait(false) :
-            //        await this.GetThreadAsync(threadId!, cancellationToken).ConfigureAwait(false);
-
-            //var enhancedInput = $"{input}{Environment.NewLine}To continue this interaction, use threadId: {thread.Id}";
             await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
 
             var messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
@@ -172,8 +162,6 @@ internal sealed class Assistant : IAssistant
                     ThreadId = thread.Id,
                     Message = string.Concat(messages.Select(m => m.Content)),
                 };
-
-            //Console.WriteLine($"OUTPUT:{Environment.NewLine}{this.Name}: {response.Message}");
 
             return response;
         }

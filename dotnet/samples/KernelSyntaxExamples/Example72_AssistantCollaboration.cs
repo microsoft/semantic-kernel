@@ -16,8 +16,7 @@ public static class Example72_AssistantCollaboration
     /// Specific model is required that supports assistants and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
-    //private const string OpenAIFunctionEnabledModel = "gpt-4-0613";
-    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
+    private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-0613";
 
     // Track assistants for clean-up
     private static readonly List<IAssistant> s_assistants = new();
@@ -39,7 +38,7 @@ public static class Example72_AssistantCollaboration
         await RunCollaborationAsync();
 
         // Coordinate collaboration as plugin agents (equivalent to previous case - shared thread)
-        //await RunAsPluginsSharedThreadAsync();
+        await RunAsPluginsSharedThreadAsync();
     }
 
     /// <summary>
@@ -92,6 +91,10 @@ public static class Example72_AssistantCollaboration
     /// <summary>
     /// Show how assistants can collaborate as agents using the plug-in model.
     /// </summary>
+    /// <remarks>
+    /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
+    /// it is not using shared thread state for assistant interaction.
+    /// </remarks>
     private static async Task RunAsPluginsSharedThreadAsync()
     {
         Console.WriteLine("======== Run:AsPlugins ========");
