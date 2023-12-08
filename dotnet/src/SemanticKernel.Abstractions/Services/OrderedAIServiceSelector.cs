@@ -23,9 +23,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         var executionSettings = function.ExecutionSettings;
         if (executionSettings is null || executionSettings.Count == 0)
         {
-            service = kernel.Services is IKeyedServiceProvider ?
-                kernel.GetAllServices<T>().LastOrDefault() : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
-                kernel.Services.GetService<T>();
+            service = GetAnyService(kernel);
             if (service is not null)
             {
                 serviceSettings = null;
@@ -64,15 +62,24 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
             if (defaultExecutionSettings is not null)
             {
-                service = kernel.GetRequiredService<T>();
-                serviceSettings = defaultExecutionSettings;
-                return true;
+                service = GetAnyService(kernel);
+                if (service is not null)
+                {
+                    serviceSettings = defaultExecutionSettings;
+                    return true;
+                }
             }
         }
 
         service = null;
         serviceSettings = null;
         return false;
+
+        // Get's a non-required service, regardless of service key
+        static T? GetAnyService(Kernel kernel) =>
+            kernel.Services is IKeyedServiceProvider ?
+                kernel.GetAllServices<T>().LastOrDefault() : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
+                kernel.Services.GetService<T>();
     }
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
