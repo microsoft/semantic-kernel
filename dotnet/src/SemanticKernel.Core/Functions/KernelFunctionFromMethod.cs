@@ -182,14 +182,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter,
-                ref hasFuncParam,
-                ref hasKernelParam,
-                ref hasFunctionArgumentsParam,
-                ref hasCancellationTokenParam,
-                ref hasLoggerParam,
-                ref hasCultureParam);
-
+                ref sawFirstParameter, ref hasFuncParam, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasCultureParam);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -205,39 +198,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Create the func
         ValueTask<FunctionResult> Function(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
-            // Check if the first parameter was provided
-            object?[]? args = null;
-            if (parameterFuncs.Length != 0)
+            // Create the arguments.
+            object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
+            for (int i = 0; i < args.Length; i++)
             {
-                var magicFirstParameter = stringParameterViews.Any(view => view.Name == KernelArguments.FirstParameterName);
-
-                var totalParameters = (magicFirstParameter) ? parameterFuncs.Length - 1 : parameterFuncs.Length;
-
-                // Create the arguments.
-                args = parameterFuncs.Length != 0 ? new object?[totalParameters] : Array.Empty<object?>();
-                int magicFirstParameterIndex = -1;
-                for (int i = 0; i < parameterFuncs.Length; i++)
-                {
-                    if (stringParameterViews[i].Name == KernelArguments.FirstParameterName)
-                    {
-                        magicFirstParameterIndex = i;
-                        // Magic parameter does not count as additional parameter
-                        continue;
-                    }
-
-                    args[i] = parameterFuncs[i](function, kernel, arguments, cancellationToken);
-                }
-
-                // If a magic first parameter is provided, ensure it overrides the first parameter value
-                if (magicFirstParameter && magicFirstParameterIndex >= 0 && totalParameters > 0)
-                {
-                    // Overrides the first parameter with the magic first parameter name
-                    args[0] = parameterFuncs[magicFirstParameterIndex](function, kernel, arguments, cancellationToken);
-                }
-            }
-            else
-            {
-                args = Array.Empty<object?>();
+                args[i] = parameterFuncs[i](function, kernel, arguments, cancellationToken);
             }
 
             // Invoke the method.
@@ -336,7 +301,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Handle the other types. These can each show up multiple times in the method signature.
 
         string name = SanitizeMetadataName(parameter.Name ?? "");
-        bool nameIsInput = name.Equals(KernelArguments.FirstParameterName, StringComparison.OrdinalIgnoreCase);
+        bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
         ThrowForInvalidSignatureIf(string.IsNullOrWhiteSpace(name), method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
         ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
@@ -361,7 +326,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // 3. Otherwise, use "input" if this is the first (or only) parameter.
             if (fallBackToInput)
             {
-                arguments.TryGetValue(KernelArguments.FirstParameterName, out object? input);
+                arguments.TryGetValue(KernelArguments.InputParameterName, out object? input);
                 return Process(input);
             }
 

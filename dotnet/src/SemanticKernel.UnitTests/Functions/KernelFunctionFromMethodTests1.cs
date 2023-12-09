@@ -793,7 +793,7 @@ public sealed class KernelFunctionFromMethodTests1
         await AssertResult((TimeSpan input) => TimeSpan.FromTicks(input.Ticks * 2), TimeSpan.FromDays(2), "2.00:00:00");
         await AssertResult((TimeSpan? input) => (int?)null, null, "");
 
-        arguments[KernelArguments.FirstParameterName] = "http://example.com/semantic";
+        arguments[KernelArguments.InputParameterName] = "http://example.com/semantic";
         await AssertResult((Uri input) => new Uri(input, "kernel"), new Uri("http://example.com/kernel"), "http://example.com/kernel");
     }
 
@@ -900,25 +900,25 @@ public sealed class KernelFunctionFromMethodTests1
         // Act/Assert
 
         this._kernel.Culture = new CultureInfo("fr-FR");
-        arguments[KernelArguments.FirstParameterName] = "12,34"; // tries first to parse with the specified culture
+        arguments[KernelArguments.InputParameterName] = "12,34"; // tries first to parse with the specified culture
         result = await func.InvokeAsync(this._kernel, arguments);
         Assert.Equal(24.68, result.GetValue<double>());
         Assert.Equal("24,68", result.ToString());
 
         this._kernel.Culture = new CultureInfo("fr-FR");
-        arguments[KernelArguments.FirstParameterName] = "12.34"; // falls back to invariant culture
+        arguments[KernelArguments.InputParameterName] = "12.34"; // falls back to invariant culture
         result = await func.InvokeAsync(this._kernel, arguments);
         Assert.Equal(24.68, result.GetValue<double>());
         Assert.Equal("24,68", result.ToString());
 
         this._kernel.Culture = new CultureInfo("en-US");
-        arguments[KernelArguments.FirstParameterName] = "12.34"; // works with current culture
+        arguments[KernelArguments.InputParameterName] = "12.34"; // works with current culture
         result = await func.InvokeAsync(this._kernel, arguments);
         Assert.Equal(24.68, result.GetValue<double>());
         Assert.Equal("24.68", result.ToString());
 
         this._kernel.Culture = new CultureInfo("en-US");
-        arguments[KernelArguments.FirstParameterName] = "12,34"; // not parsable with current or invariant culture
+        arguments[KernelArguments.InputParameterName] = "12,34"; // not parsable with current or invariant culture
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(this._kernel, arguments));
     }
 

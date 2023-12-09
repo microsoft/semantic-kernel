@@ -24,7 +24,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// The main input parameter name.
     /// </summary>
-    internal const string FirstParameterName = "reserved_first_parameter";
+    public const string InputParameterName = "input";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -56,11 +56,11 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains a single input argument.
     /// </summary>
-    /// <param name="input">A string input value to use as the first argument.</param>
+    /// <param name="input">A string input value to use as the <see cref="InputParameterName"/> argument.</param>
     /// <param name="executionSettings">The prompt execution settings.</param>
     public KernelArguments(string? input, PromptExecutionSettings? executionSettings = null)
     {
-        this._arguments = new(1, StringComparer.OrdinalIgnoreCase) { [FirstParameterName] = input };
+        this._arguments = new(1, StringComparer.OrdinalIgnoreCase) { [InputParameterName] = input };
         this.ExecutionSettings = executionSettings;
     }
 
