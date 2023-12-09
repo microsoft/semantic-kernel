@@ -25,7 +25,7 @@ public static class OpenApiKernelExtensions
     // TODO: Revise XML comments
 
     /// <summary>
-    /// Creates a plugin from an OpenApi v3 endpoint and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -46,7 +46,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenApi v3 endpoint and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -67,7 +67,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenApi v3 endpoint and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -88,7 +88,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenApi v3 endpoint.
+    /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -125,7 +125,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenApi v3 endpoint.
+    /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -166,7 +166,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenApi v3 endpoint.
+    /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -256,7 +256,7 @@ public static class OpenApiKernelExtensions
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Function execution parameters.</param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
+    /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>

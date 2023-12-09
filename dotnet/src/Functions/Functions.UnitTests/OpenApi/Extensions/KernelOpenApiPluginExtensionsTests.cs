@@ -25,7 +25,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     private readonly OpenApiDocumentParser _sut;
 
     /// <summary>
-    /// OpenApi document stream.
+    /// OpenAPI document stream.
     /// </summary>
     private readonly Stream _openApiDocument;
 

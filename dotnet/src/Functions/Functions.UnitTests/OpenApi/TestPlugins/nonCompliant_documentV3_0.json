@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Azure Key Vault [Sample]",
-    "description": "This document does not follow the OpenApi 3.0 specification and sets the 'required' attribute on the property level instead of the object level, as specified in the OpenApi specification. For more details, please refer to the following link: https://swagger.io/docs/specification/data-models/data-types/",
+    "description": "This document does not follow the OpenAPI 3.0 specification and sets the 'required' attribute on the property level instead of the object level, as specified in the OpenAPI specification. For more details, please refer to the following link: https://swagger.io/docs/specification/data-models/data-types/",
     "version": "1.0"
   },
   "servers": [

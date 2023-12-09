@@ -9,14 +9,14 @@ using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
 
 /// <summary>
-/// Interface for OpenApi document parser classes.
+/// Interface for OpenAPI document parser classes.
 /// </summary>
 internal interface IOpenApiDocumentParser
 {
     /// <summary>
-    /// Parses OpenApi document.
+    /// Parses OpenAPI document.
     /// </summary>
-    /// <param name="stream">Stream containing OpenApi document to parse.</param>
+    /// <param name="stream">Stream containing OpenAPI document to parse.</param>
     /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
     /// If set to true, the parser will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate parsing results.</param>

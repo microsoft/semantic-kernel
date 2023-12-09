@@ -21,7 +21,7 @@ public sealed class RestApiOperationResponse
     public string ContentType { get; }
 
     /// <summary>
-    /// The expected schema of the response as advertised in the OpenApi operation.
+    /// The expected schema of the response as advertised in the OpenAPI operation.
     /// </summary>
     public KernelJsonSchema? ExpectedSchema { get; internal set; }
 

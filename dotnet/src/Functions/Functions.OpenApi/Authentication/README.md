@@ -1,16 +1,16 @@
-# Authentication for the OpenApi Functions
+# Authentication for the OpenAPI Functions
 
-The Semantic Kernel OpenApi Function enables developers to take any REST API that follows the OpenApi specification and import it as a plugin to the Semantic Kernel. However, the Kernel needs to be able to authenticate outgoing requests per the requirements of the target API. This document outlines the authentication model for the OpenApi plugin as well as the reference implementations provided by the Semantic Kernel.
+The Semantic Kernel OpenAPI Function enables developers to take any REST API that follows the OpenAPI specification and import it as a plugin to the Semantic Kernel. However, the Kernel needs to be able to authenticate outgoing requests per the requirements of the target API. This document outlines the authentication model for the OpenAPI plugin as well as the reference implementations provided by the Semantic Kernel.
 
 ## The `AuthenticateRequestAsyncCallback` delegate
 
-[`AuthenticateRequestAsyncCallback`](AuthenticateRequestAsyncCallback.cs) is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenApi plugin.
+[`AuthenticateRequestAsyncCallback`](AuthenticateRequestAsyncCallback.cs) is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
 ```csharp
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
 
-Developers may optionally provide an implementation of this delegate when importing an OpenApi plugin to the Kernel. The delegate is then passed through to the `RestApiOperationRunner`, which is responsible for building the HTTP payload and sending the request for each REST API operation. Before the API request is sent, the delegate is executed with the HTTP request message as the parameter, allowing the request message to be updated with any necessary authentication information.
+Developers may optionally provide an implementation of this delegate when importing an OpenAPI plugin to the Kernel. The delegate is then passed through to the `RestApiOperationRunner`, which is responsible for building the HTTP payload and sending the request for each REST API operation. Before the API request is sent, the delegate is executed with the HTTP request message as the parameter, allowing the request message to be updated with any necessary authentication information.
 
 This pattern was designed to be flexible enough to support a wide variety of authentication frameworks. Developers can provide the delegate function directly or define a class or interface that exposes one or more implementations. They have the option of writing their own custom implementation or using one of the Semantic Kernel's reference authentication providers as a starting point.
 
