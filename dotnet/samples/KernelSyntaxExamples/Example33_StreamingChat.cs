@@ -22,7 +22,7 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
-        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(new() { ModelId = TestConfiguration.OpenAI.ChatModelId, ApiKey = TestConfiguration.OpenAI.ApiKey });
 
         await StartStreamingChatAsync(chatCompletionService);
     }
@@ -32,10 +32,13 @@ public static class Example33_StreamingChat
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
-           TestConfiguration.AzureOpenAI.ChatDeploymentName,
-           TestConfiguration.AzureOpenAI.ChatModelId,
-           TestConfiguration.AzureOpenAI.Endpoint,
-           TestConfiguration.AzureOpenAI.ApiKey);
+            new()
+            {
+                DeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                ModelId = TestConfiguration.AzureOpenAI.ChatModelId,
+                Endpoint = TestConfiguration.AzureOpenAI.Endpoint,
+                ApiKey = TestConfiguration.AzureOpenAI.ApiKey
+            });
 
         await StartStreamingChatAsync(chatCompletionService);
     }

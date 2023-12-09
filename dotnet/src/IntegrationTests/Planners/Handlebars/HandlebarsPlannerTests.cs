@@ -81,27 +81,36 @@ public sealed class HandlebarsPlannerTests : IDisposable
         if (useChatModel)
         {
             builder.Services.AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                new()
+                {
+                    DeploymentName = azureOpenAIConfiguration.ChatDeploymentName!,
+                    ModelId = azureOpenAIConfiguration.ChatModelId!,
+                    Endpoint = azureOpenAIConfiguration.Endpoint,
+                    ApiKey = azureOpenAIConfiguration.ApiKey
+                });
         }
         else
         {
             builder.Services.AddAzureOpenAITextGeneration(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                modelId: azureOpenAIConfiguration.ModelId,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                new()
+                {
+                    DeploymentName = azureOpenAIConfiguration.DeploymentName,
+                    ModelId = azureOpenAIConfiguration.ModelId,
+                    Endpoint = azureOpenAIConfiguration.Endpoint,
+                    ApiKey = azureOpenAIConfiguration.ApiKey
+                });
         }
 
         if (useEmbeddings)
         {
             builder.Services.AddAzureOpenAITextEmbeddingGeneration(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                new()
+                {
+                    DeploymentName = azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    ModelId = azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
+                    Endpoint = azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    ApiKey = azureOpenAIEmbeddingsConfiguration.ApiKey
+                });
         }
 
         return builder.Build();

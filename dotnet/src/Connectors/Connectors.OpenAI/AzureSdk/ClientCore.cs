@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -476,12 +477,28 @@ internal abstract class ClientCore
             .ToList();
     }
 
-    internal void AddAttribute(string key, string? value)
+    /// <summary>
+    /// Add a service attribute if the value is not null or empty
+    /// </summary>
+    /// <param name="key">Attribute key</param>
+    /// <param name="value">Attribute value</param>
+    private protected void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
         {
             this.Attributes.Add(key, value!);
         }
+    }
+
+    /// <summary>
+    /// Set the service attributes.
+    /// </summary>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
+    internal void SetAttributes(OpenAIServiceConfig serviceConfig)
+    {
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, serviceConfig.Endpoint);
+        this.AddAttribute(OpenAIClientCore.OrganizationKey, serviceConfig.Organization);
     }
 
     /// <summary>Gets options to use for an OpenAIClient</summary>

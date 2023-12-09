@@ -14,7 +14,7 @@ public static class Example49_LogitBias
 {
     public static async Task RunAsync()
     {
-        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(new() { ModelId = TestConfiguration.OpenAI.ChatModelId, ApiKey = TestConfiguration.OpenAI.ApiKey });
 
         // To use Logit Bias you will need to know the token ids of the words you want to use.
         // Getting the token ids using the GPT Tokenizer: https://platform.openai.com/tokenizer

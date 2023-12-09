@@ -35,9 +35,7 @@ public static class Example43_GetModelResult
         Console.WriteLine();
 
         // Using Chat Completion directly
-        var chatCompletionService = new OpenAIChatCompletionService(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(new() { ModelId = TestConfiguration.OpenAI.ChatModelId, ApiKey = TestConfiguration.OpenAI.ApiKey });
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
         var textContent = await chatCompletionService.GetTextContentAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 }, kernel);

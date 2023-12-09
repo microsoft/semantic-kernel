@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -22,38 +21,38 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="apiKey">OpenAI API Key</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletionService(
-        string modelId,
-        string apiKey,
-        string? organization = null,
+        OpenAIServiceConfig serviceConfig,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+        Verify.NotNullOrWhiteSpace(serviceConfig.ModelId);
+        Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
+        this._core = new(serviceConfig.ModelId, serviceConfig.ApiKey, serviceConfig.Organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+
+        this._core.SetAttributes(serviceConfig);
     }
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
-    /// <param name="modelId">Model name</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletionService(
-        string modelId,
+        OpenAIServiceConfig serviceConfig,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+        Verify.NotNullOrWhiteSpace(serviceConfig.ModelId);
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(serviceConfig.ModelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+
+        this._core.SetAttributes(serviceConfig);
     }
 
     /// <inheritdoc/>

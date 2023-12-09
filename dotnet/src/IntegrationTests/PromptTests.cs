@@ -100,10 +100,13 @@ public sealed class PromptTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
         kernelBuilder.AddAzureOpenAITextGeneration(
-            deploymentName: azureOpenAIConfiguration.DeploymentName,
-            modelId: azureOpenAIConfiguration.ModelId,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey,
+            new()
+            {
+                DeploymentName = azureOpenAIConfiguration.DeploymentName,
+                ModelId = azureOpenAIConfiguration.ModelId,
+                Endpoint = azureOpenAIConfiguration.Endpoint,
+                ApiKey = azureOpenAIConfiguration.ApiKey,
+            },
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
     #endregion

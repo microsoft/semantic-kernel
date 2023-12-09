@@ -97,10 +97,13 @@ public sealed class Program
 
         builder.Services.AddSingleton(loggerFactory);
         builder.AddAzureOpenAIChatCompletion(
-            Env.Var("AzureOpenAI__ChatDeploymentName"),
-            Env.Var("AzureOpenAI__ChatModelId"),
-            Env.Var("AzureOpenAI__Endpoint"),
-            Env.Var("AzureOpenAI__ApiKey"));
+            new()
+            {
+                DeploymentName = Env.Var("AzureOpenAI__ChatDeploymentName"),
+                ModelId = Env.Var("AzureOpenAI__ChatModelId"),
+                Endpoint = Env.Var("AzureOpenAI__Endpoint"),
+                ApiKey = Env.Var("AzureOpenAI__ApiKey")
+            });
 
         builder.Plugins.AddFromObject(webSearchEnginePlugin, "WebSearch");
         builder.Plugins.AddFromType<LanguageCalculatorPlugin>("advancedCalculator");

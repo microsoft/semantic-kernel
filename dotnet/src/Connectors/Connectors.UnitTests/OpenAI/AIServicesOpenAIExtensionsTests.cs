@@ -18,8 +18,8 @@ public class AIServicesOpenAIExtensionsTests
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
         Kernel targetKernel = Kernel.CreateBuilder()
-            .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", "azure")
-            .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url", "key", "azure")
+            .AddAzureOpenAITextGeneration(new() { DeploymentName = "depl", ModelId = "model", Endpoint = "https://url", ApiKey = "key" }, "azure")
+            .AddAzureOpenAITextEmbeddingGeneration(new() { DeploymentName = "depl2", ModelId = "model2", Endpoint = "https://url2", ApiKey = "key" }, "azure")
             .Build();
 
         Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("azure"));
@@ -30,9 +30,9 @@ public class AIServicesOpenAIExtensionsTests
     public void ItTellsIfAServiceIsAvailable()
     {
         Kernel targetKernel = Kernel.CreateBuilder()
-            .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", serviceId: "azure")
+            .AddAzureOpenAITextGeneration(new() { DeploymentName = "depl", ModelId = "model", Endpoint = "https://url", ApiKey = "key" }, serviceId: "azure")
             .AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "oai")
-            .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url2", "key", serviceId: "azure")
+            .AddAzureOpenAITextEmbeddingGeneration(new() { DeploymentName = "depl2", ModelId = "model2", Endpoint = "https://url2", ApiKey = "key" }, serviceId: "azure")
             .AddOpenAITextEmbeddingGeneration(new() { ModelId = "model2", ApiKey = "apikey2" }, serviceId: "oai2")
             .Build();
 
@@ -50,23 +50,23 @@ public class AIServicesOpenAIExtensionsTests
         // Act - Assert no exception occurs
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
-        builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAITextGeneration(new() { DeploymentName = "dep", ModelId = "model", Endpoint = "https://localhost", ApiKey = "key" }, serviceId: "one");
+        builder.Services.AddAzureOpenAITextGeneration(new() { DeploymentName = "dep", ModelId = "model", Endpoint = "https://localhost", ApiKey = "key" }, serviceId: "one");
 
         builder.Services.AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "one");
         builder.Services.AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "one");
 
-        builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
-        builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAITextEmbeddingGeneration(new() { DeploymentName = "dep", ModelId = "model", Endpoint = "https://localhost", ApiKey = "key" }, serviceId: "one");
+        builder.Services.AddAzureOpenAITextEmbeddingGeneration(new() { DeploymentName = "dep", ModelId = "model", Endpoint = "https://localhost", ApiKey = "key" }, serviceId: "one");
 
         builder.Services.AddOpenAITextEmbeddingGeneration(new() { ModelId = "model", ApiKey = "key" }, serviceId: "one");
         builder.Services.AddOpenAITextEmbeddingGeneration(new() { ModelId = "model", ApiKey = "key" }, serviceId: "one");
 
-        builder.Services.AddAzureOpenAIChatCompletion("dep", "model", "https://localhost", "key", serviceId: "one");
-        builder.Services.AddAzureOpenAIChatCompletion("dep", "model", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAIChatCompletion(new() { DeploymentName = "dep", ModelId = "model", Endpoint = "https://localhost", ApiKey = "key" }, serviceId: "one");
+        builder.Services.AddAzureOpenAIChatCompletion(new() { DeploymentName = "dep", ModelId = "model", Endpoint = "https://localhost", ApiKey = "key" }, serviceId: "one");
 
-        builder.Services.AddOpenAIChatCompletion("model", "key", serviceId: "one");
-        builder.Services.AddOpenAIChatCompletion("model", "key", serviceId: "one");
+        builder.Services.AddOpenAIChatCompletion(new() { ModelId = "model", ApiKey = "key" }, serviceId: "one");
+        builder.Services.AddOpenAIChatCompletion(new() { ModelId = "model", ApiKey = "key" }, serviceId: "one");
 
         builder.Services.AddOpenAITextToImage("model", "key", serviceId: "one");
         builder.Services.AddOpenAITextToImage("model", "key", serviceId: "one");

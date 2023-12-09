@@ -21,11 +21,14 @@ public static class Example36_MultiCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
-        var chatCompletionService = new AzureOpenAIChatCompletionService(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.ChatModelId,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+        AzureOpenAIChatCompletionService chatCompletionService = new(
+            new()
+            {
+                DeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                ModelId = TestConfiguration.AzureOpenAI.ChatModelId,
+                Endpoint = TestConfiguration.AzureOpenAI.Endpoint,
+                ApiKey = TestConfiguration.AzureOpenAI.ApiKey
+            });
 
         await ChatCompletionAsync(chatCompletionService);
     }
@@ -34,9 +37,7 @@ public static class Example36_MultiCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        var chatCompletionService = new OpenAIChatCompletionService(
-            TestConfiguration.OpenAI.ChatModelId,
-            TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(new() { ModelId = TestConfiguration.OpenAI.ChatModelId, ApiKey = TestConfiguration.OpenAI.ApiKey });
 
         await ChatCompletionAsync(chatCompletionService);
     }

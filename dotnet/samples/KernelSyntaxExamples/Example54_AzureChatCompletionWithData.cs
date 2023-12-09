@@ -83,7 +83,7 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
+            .AddAzureOpenAIChatCompletionWithData(serviceConfig: completionWithDataConfig)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");

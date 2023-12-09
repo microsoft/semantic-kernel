@@ -108,8 +108,8 @@ public class KernelBuilderTests
     public void ItBuildsServicesIntoKernel()
     {
         var builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
+            .AddOpenAIChatCompletion(new() { ModelId = "abcd", ApiKey = "efg" }, serviceId: "openai")
+            .AddAzureOpenAITextGeneration(new() { DeploymentName = "hijk", ModelId = "qrs", Endpoint = "https://lmnop", ApiKey = "tuv" }, serviceId: "azureopenai");
 
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -130,14 +130,14 @@ public class KernelBuilderTests
     public void ItSupportsMultipleEqualNamedServices()
     {
         Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddOpenAIChatCompletion(new() { ModelId = "abcd", ApiKey = "efg" }, serviceId: "openai")
+            .AddOpenAIChatCompletion(new() { ModelId = "abcd", ApiKey = "efg" }, serviceId: "openai")
+            .AddOpenAIChatCompletion(new() { ModelId = "abcd", ApiKey = "efg" }, serviceId: "openai")
+            .AddOpenAIChatCompletion(new() { ModelId = "abcd", ApiKey = "efg" }, serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(new() { DeploymentName = "hijk", ModelId = "lmnop", Endpoint = "https://qrs", ApiKey = "tuv" }, serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(new() { DeploymentName = "hijk", ModelId = "lmnop", Endpoint = "https://qrs", ApiKey = "tuv" }, serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(new() { DeploymentName = "hijk", ModelId = "lmnop", Endpoint = "https://qrs", ApiKey = "tuv" }, serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(new() { DeploymentName = "hijk", ModelId = "lmnop", Endpoint = "https://qrs", ApiKey = "tuv" }, serviceId: "openai")
             .Build();
 
         Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
@@ -149,10 +149,10 @@ public class KernelBuilderTests
         KernelPluginCollection plugins = new() { KernelPluginFactory.CreateFromFunctions("plugin1") };
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai1");
-        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai2");
+        serviceCollection.AddAzureOpenAIChatCompletion(new() { DeploymentName = "abcd", ModelId = "efg", Endpoint = "https://hijk", ApiKey = "lmnop" });
+        serviceCollection.AddAzureOpenAIChatCompletion(new() { DeploymentName = "abcd", ModelId = "efg", Endpoint = "https://hijk", ApiKey = "lmnop" });
+        serviceCollection.AddAzureOpenAIChatCompletion(new() { DeploymentName = "abcd", ModelId = "efg", Endpoint = "https://hijk", ApiKey = "lmnop" }, serviceId: "azureopenai1");
+        serviceCollection.AddAzureOpenAIChatCompletion(new() { DeploymentName = "abcd", ModelId = "efg", Endpoint = "https://hijk", ApiKey = "lmnop" }, serviceId: "azureopenai2");
         serviceCollection.AddSingleton(plugins);
         serviceCollection.AddSingleton<Kernel>();
 

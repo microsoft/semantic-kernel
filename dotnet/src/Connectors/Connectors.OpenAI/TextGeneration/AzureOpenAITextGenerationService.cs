@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -38,7 +37,8 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
 
         this._core = new(serviceConfig.DeploymentName, serviceConfig.Endpoint, serviceConfig.ApiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
+
+        this._core.SetAttributes(serviceConfig);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
 
         this._core = new(serviceConfig.DeploymentName, serviceConfig.Endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
+        this._core.SetAttributes(serviceConfig);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
 
         this._core = new(serviceConfig.DeploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
+        this._core.SetAttributes(serviceConfig);
     }
 
     /// <inheritdoc/>

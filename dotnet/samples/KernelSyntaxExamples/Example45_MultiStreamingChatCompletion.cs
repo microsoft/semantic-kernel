@@ -25,10 +25,13 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.ChatModelId,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+            new()
+            {
+                DeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                ModelId = TestConfiguration.AzureOpenAI.ChatModelId,
+                Endpoint = TestConfiguration.AzureOpenAI.Endpoint,
+                ApiKey = TestConfiguration.AzureOpenAI.ApiKey
+            });
 
         await StreamingChatCompletionAsync(chatCompletionService, 3);
     }
@@ -37,9 +40,7 @@ public static class Example45_MultiStreamingChatCompletion
     {
         Console.WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
-        OpenAIChatCompletionService chatCompletionService = new(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(new() { ModelId = TestConfiguration.OpenAI.ChatModelId, ApiKey = TestConfiguration.OpenAI.ApiKey });
 
         await StreamingChatCompletionAsync(chatCompletionService, 3);
     }
