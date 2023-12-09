@@ -70,6 +70,10 @@ public sealed class Kernel
         }
     }
 
+    /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
+    /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
+    public static IKernelBuilder CreateBuilder() => new KernelBuilder();
+
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
     /// </summary>
