@@ -164,7 +164,7 @@ public sealed class RestApiOperation
 
             // Try to find default value for the parameter
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
-            if (parameterMetadata?.DefaultValue == null)
+            if (parameterMetadata?.DefaultValue is null)
             {
                 throw new KernelException($"No argument or value is provided for the '{parameterName}' parameter of the operation - '{this.Id}'.");
             }
