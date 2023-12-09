@@ -147,7 +147,7 @@ Other SK packages available at nuget.org:
    OpenXML, etc.
 4. **Microsoft.SemanticKernel.Plugins.MsGraph**: Microsoft Graph Plugin: access your
    tenant data, schedule meetings, send emails, etc.
-5. **Microsoft.SemanticKernel.Plugins.OpenAPI**: OpenAPI Plugin.
+5. **Microsoft.SemanticKernel.Plugins.OpenApi**: OpenAPI Plugin.
 6. **Microsoft.SemanticKernel.Plugins.Web**: Web Plugin: search the web, download
    files, etc.
 7. **Microsoft.SemanticKernel.Reliability.Polly**: Extension for http resiliency.

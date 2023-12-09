@@ -48,7 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136
 		nuget\NUGET.md = nuget\NUGET.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenAPI", "src\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj", "{F2A1F81E-700E-4C0E-B021-B9EF29AA20BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenApi", "src\Functions\Functions.OpenApi\Functions.OpenApi.csproj", "{F2A1F81E-700E-4C0E-B021-B9EF29AA20BD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", "{0247C2C9-86C3-45BA-8873-28B0948EDC0C}"
 EndProject
