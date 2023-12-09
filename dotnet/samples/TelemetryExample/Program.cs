@@ -81,7 +81,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result);
@@ -93,7 +93,7 @@ public sealed class Program
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(loggerFactory);
         builder.AddAzureOpenAIChatCompletion(

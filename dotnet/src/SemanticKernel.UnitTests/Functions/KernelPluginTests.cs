@@ -91,6 +91,27 @@ public class KernelPluginTests
     }
 
     [Fact]
+    public void ItExposesFunctionMetadataForAllFunctions()
+    {
+        Assert.Empty(KernelPluginFactory.CreateFromFunctions("plugin1").GetFunctionsMetadata());
+
+        IList<KernelFunctionMetadata> metadata = KernelPluginFactory.CreateFromFunctions("plugin2", "description1", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
+        }).GetFunctionsMetadata();
+
+        Assert.NotNull(metadata);
+        Assert.Equal(2, metadata.Count);
+
+        Assert.Equal("plugin2", metadata[0].PluginName);
+        Assert.Equal("Function1", metadata[0].Name);
+
+        Assert.Equal("plugin2", metadata[1].PluginName);
+        Assert.Equal("Function2", metadata[1].Name);
+    }
+
+    [Fact]
     public void ItThrowsForInvalidArguments()
     {
         Assert.Throws<ArgumentNullException>(() => KernelPluginFactory.CreateFromFunctions(null!));
