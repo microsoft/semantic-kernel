@@ -20,9 +20,15 @@ internal static partial class PlannerInstrumentation
 
     /// <summary><see cref="Histogram{T}"/> to record plan creation duration.</summary>
     private static readonly Histogram<double> s_createPlanDuration = s_meter.CreateHistogram<double>(
-        name: "sk.planning.create_plan.duration",
+        name: "semantic_kernel.planning.create_plan.duration",
         unit: "s",
         description: "Duration time of plan creation.");
+
+    /// <summary><see cref="Histogram{T}"/> to record plan execution duration.</summary>
+    private static readonly Histogram<double> s_planExecutionDuration = s_meter.CreateHistogram<double>(
+        name: "semantic_kernel.planning.invoke_plan.duration",
+        unit: "s",
+        description: "Duration time of plan execution.");
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
@@ -33,12 +39,12 @@ internal static partial class PlannerInstrumentation
     {
         string plannerName = planner.GetType().FullName;
 
-        using var _ = s_activitySource.StartActivity(plannerName);
+        using var activity = s_activitySource.StartActivity(plannerName);
 
-        logger.LogPlanCreationStarted();
+        logger.LogCreatePlanStarted();
         logger.LogGoal(goal);
 
-        TagList tags = new() { { "sk.planner.name", plannerName } };
+        TagList tags = new() { { "semantic_kernel.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
@@ -50,24 +56,64 @@ internal static partial class PlannerInstrumentation
         }
         catch (Exception ex)
         {
-            logger.LogPlanCreationError(ex, ex.Message);
             tags.Add("error.type", ex.GetType().FullName);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            logger.LogCreatePlanError(ex, ex.Message);
             throw;
         }
         finally
         {
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-            logger.LogPlanCreationDuration(duration.TotalSeconds);
+            logger.LogCreatePlanDuration(duration.TotalSeconds);
             s_createPlanDuration.Record(duration.TotalSeconds, in tags);
         }
     }
 
-    #region Logging helpers
+    // <summary>Invokes the supplied <paramref name="InvokePlanAsync"/> delegate, surrounded by logging and metrics.</summary>
+    public static async Task<TPlanResult> InvokePlanAsync<TPlan, TPlanInput, TPlanResult>(
+        Func<TPlan, Kernel, TPlanInput, CancellationToken, Task<TPlanResult>> InvokePlanAsync,
+        TPlan plan, Kernel kernel, TPlanInput input, ILogger logger, CancellationToken cancellationToken)
+        where TPlan : class
+        where TPlanInput : class
+        where TPlanResult : class
+    {
+        string planName = plan.GetType().FullName;
+        using var activity = s_activitySource.StartActivity(planName);
+
+        logger.LogInvokePlanStarted();
+
+        TagList tags = new() { { "semantic_kernel.plan.name", planName } };
+        long startingTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            TPlanResult planResult = await InvokePlanAsync(plan, kernel, input, cancellationToken).ConfigureAwait(false);
+
+            logger.LogInvokePlanSuccess();
+            logger.LogPlanResult(planResult);
+
+            return planResult;
+        }
+        catch (Exception ex)
+        {
+            tags.Add("error.type", ex.GetType().FullName);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            logger.LogInvokePlanError(ex, ex.Message);
+            throw;
+        }
+        finally
+        {
+            TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+            logger.LogInvokePlanDuration(duration.TotalSeconds);
+            s_planExecutionDuration.Record(duration.TotalSeconds, in tags);
+        }
+    }
+
+    #region CreatePlan Logging helpers
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
         Message = "Plan creation started.")]
-    static partial void LogPlanCreationStarted(this ILogger logger);
+    static partial void LogCreatePlanStarted(this ILogger logger);
 
     [LoggerMessage(
         EventId = 1,
@@ -91,13 +137,46 @@ internal static partial class PlannerInstrumentation
         EventId = 4,
         Level = LogLevel.Error,
         Message = "Plan creation failed. Error: {Message}")]
-    static partial void LogPlanCreationError(this ILogger logger, Exception exception, string message);
+    static partial void LogCreatePlanError(this ILogger logger, Exception exception, string message);
 
     [LoggerMessage(
         EventId = 5,
         Level = LogLevel.Information,
         Message = "Plan creation duration: {Duration}s.")]
-    static partial void LogPlanCreationDuration(this ILogger logger, double duration);
+    static partial void LogCreatePlanDuration(this ILogger logger, double duration);
+
+    #endregion
+
+    #region InvokePlan Logging helpers
+    [LoggerMessage(
+        EventId = 6,
+        Level = LogLevel.Information,
+        Message = "Plan execution started.")]
+    static partial void LogInvokePlanStarted(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 7,
+        Level = LogLevel.Information,
+        Message = "Plan executed successfully.")]
+    static partial void LogInvokePlanSuccess(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 8,
+        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
+        Message = "Plan result: {PlanResult}")]
+    static partial void LogPlanResult(this ILogger logger, object planResult);
+
+    [LoggerMessage(
+        EventId = 9,
+        Level = LogLevel.Error,
+        Message = "Plan creation failed. Error: {Message}")]
+    static partial void LogInvokePlanError(this ILogger logger, Exception exception, string message);
+
+    [LoggerMessage(
+        EventId = 10,
+        Level = LogLevel.Information,
+        Message = "Plan creation duration: {Duration}s.")]
+    static partial void LogInvokePlanDuration(this ILogger logger, double duration);
 
     #endregion
 }
