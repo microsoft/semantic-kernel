@@ -586,7 +586,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(builder);
 
-        if (builder is KernelBuilder kb && !kb._allowBuild)
+        if (builder is KernelBuilder kb && !kb.AllowBuild)
         {
             throw new InvalidOperationException(
                 "Build is not permitted on instances returned from AddKernel. " +
