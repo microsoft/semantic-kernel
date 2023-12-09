@@ -584,8 +584,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
             // as the underlying parser might not be expecting null.
-            bool wasNullable = false;
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            bool wasNullable = !targetType.IsValueType;
+            if (!wasNullable && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
                 targetType = Nullable.GetUnderlyingType(targetType)!;
@@ -598,7 +598,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 {
                     // This if block returns null if the target ValueType is nullable, or if the target type is a ReferenceType, which is inherently nullable.
                     // This prevents null from being handled by converters below, which may fail when converting from nulls or to the target type from nulls.
-                    if (input is null && (wasNullable || !targetType.IsValueType))
+                    if (input is null && wasNullable)
                     {
                         return null;
                     }
@@ -612,9 +612,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                     {
                         if (converter.CanConvertFrom(input?.GetType()))
                         {
+                            // This line performs string to type conversion 
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 
+                        // This line performs implicit type conversion, e.g., int to long, byte to int, Guid to string, etc. 
                         return converter.ConvertTo(context: null, culture, input, targetType);
                     }
 
