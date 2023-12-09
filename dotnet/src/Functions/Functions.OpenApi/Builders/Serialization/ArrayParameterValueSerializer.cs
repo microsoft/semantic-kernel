@@ -35,14 +35,15 @@ internal static class ArrayParameterValueSerializer
     /// </summary>
     /// <param name="array">The array containing the items to be serialized.</param>
     /// <param name="delimiter">The delimiter used to separate items.</param>
+    /// <param name="encode">Flag specifying whether to encode items or not.</param>
     /// <returns>A string containing the serialized parameter.</returns>
-    public static string SerializeArrayAsDelimitedValues(JsonArray array, string delimiter)
+    public static string SerializeArrayAsDelimitedValues(JsonArray array, string delimiter, bool encode = true)
     {
         var values = new List<string?>();
 
         foreach (var item in array)
         {
-            values.Add(HttpUtility.UrlEncode(item?.ToString()));
+            values.Add(encode ? HttpUtility.UrlEncode(item?.ToString()) : item?.ToString());
         }
 
         return string.Join(delimiter, values);

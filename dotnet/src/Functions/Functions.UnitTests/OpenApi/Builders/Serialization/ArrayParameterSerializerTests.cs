@@ -92,7 +92,7 @@ public class ArrayParameterSerializerTests
     public void ItShouldEncodeSpecialSymbolsInSeparateParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var array = new JsonArray($"{specialSymbol}");
+        var array = new JsonArray(specialSymbol);
 
         // Act
         var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, delimiter: "&");
@@ -111,7 +111,7 @@ public class ArrayParameterSerializerTests
     public void ItShouldEncodeSpecialSymbolsInDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var array = new JsonArray($"{specialSymbol}");
+        var array = new JsonArray(specialSymbol);
 
         // Act
         var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20");
@@ -120,5 +120,24 @@ public class ArrayParameterSerializerTests
         Assert.NotNull(result);
 
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(":", ":")]
+    [InlineData("/", "/")]
+    [InlineData("?", "?")]
+    [InlineData("#", "#")]
+    public void ItShouldNotEncodeSpecialSymbolsInDelimitedParameterValuesIfEncodingDisabled(string specialSymbol, string expectedValue)
+    {
+        // Arrange
+        var array = new JsonArray(specialSymbol);
+
+        // Act
+        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.EndsWith(expectedValue, result, StringComparison.Ordinal);
     }
 }
