@@ -267,7 +267,7 @@ public class TemplateTokenizerTests
     {
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
-                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d{{food 'abc' p1=$p2}}";
+                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
 
         // Act
         var blocks = this._target.Tokenize(template);
