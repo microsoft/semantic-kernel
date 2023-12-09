@@ -49,11 +49,6 @@ public sealed class RestApiOperation
     public Uri? ServerUrl { get; }
 
     /// <summary>
-    /// The operation headers.
-    /// </summary>
-    public IDictionary<string, string> Headers { get; }
-
-    /// <summary>
     /// The operation parameters.
     /// </summary>
     public IList<RestApiOperationParameter> Parameters { get; }
@@ -77,7 +72,6 @@ public sealed class RestApiOperation
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="parameters">The operation parameters.</param>
-    /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
     public RestApiOperation(
@@ -87,7 +81,6 @@ public sealed class RestApiOperation
         HttpMethod method,
         string description,
         IList<RestApiOperationParameter> parameters,
-        IDictionary<string, string> headers,
         RestApiOperationPayload? payload = null,
         IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
@@ -97,7 +90,6 @@ public sealed class RestApiOperation
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
-        this.Headers = headers;
         this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
@@ -127,43 +119,24 @@ public sealed class RestApiOperation
     {
         var headers = new Dictionary<string, string>();
 
-        foreach (var header in this.Headers)
-        {
-            var headerName = header.Key;
-            var headerValue = header.Value;
+        var headersMetadata = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
 
-            //A try to resolve header value in arguments.
+        foreach (var headerMetadata in headersMetadata)
+        {
+            var headerName = headerMetadata.Name;
+
+            // A try to resolve header value in arguments.
             if (arguments.TryGetValue(headerName, out string? value) && value is not null)
             {
                 headers.Add(headerName, value!);
                 continue;
             }
 
-            //Header value is already supplied.
-            if (!string.IsNullOrEmpty(headerValue))
-            {
-                headers.Add(headerName, headerValue!);
-                continue;
-            }
-
-            //Getting metadata for the header
-            var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                                 ?? throw new KernelException($"No argument or value is provided for the '{headerName}' header of the operation - '{this.Id}'.");
-
-            //If parameter is required it's value should always be provided.
+            //If a parameter is required, its value should always be provided.
             if (headerMetadata.IsRequired)
             {
                 throw new KernelException($"No argument or value is provided for the '{headerName}' required header of the operation - '{this.Id}'.'");
             }
-
-            //Parameter is not required and no default value provided.
-            if (string.IsNullOrEmpty(headerMetadata.DefaultValue))
-            {
-                continue;
-            }
-
-            //Using default value.
-            headers.Add(headerName, headerMetadata.DefaultValue!);
         }
 
         return headers;
