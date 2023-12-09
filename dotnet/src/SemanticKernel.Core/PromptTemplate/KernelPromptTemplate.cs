@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,11 +35,11 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
+        loggerFactory ??= NullLoggerFactory.Instance;
+        this._logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
         this._promptModel = promptConfig;
         this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
-        this._tokenizer = new TemplateTokenizer(this._loggerFactory);
+        this._tokenizer = new TemplateTokenizer(loggerFactory);
     }
 
     /// <inheritdoc/>
@@ -48,7 +49,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     #region private
-    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
@@ -93,11 +93,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <returns>The prompt template ready to be used for an AI request.</returns>
     private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
-        }
-
         var result = new StringBuilder();
         foreach (var block in blocks)
         {
@@ -112,21 +107,12 @@ public sealed class KernelPromptTemplate : IPromptTemplate
                     break;
 
                 default:
-                    const string Error = "Unexpected block type, the block doesn't have a rendering method";
-                    this._logger.LogError(Error);
-                    throw new KernelException(Error);
+                    Debug.Fail($"Unexpected block type {block?.GetType()}, the block doesn't have a rendering method");
+                    break;
             }
         }
 
-        string resultString = result.ToString();
-
-        // Sensitive data, logging as trace, disabled by default
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Rendered prompt: {0}", resultString);
-        }
-
-        return resultString;
+        return result.ToString();
     }
 
     #endregion
