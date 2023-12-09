@@ -183,13 +183,13 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
             // Gets the function first parameter name
-            positionalParameterName = functionMetadata.Parameters?[0].Name;
+            positionalParameterName = functionMetadata.Parameters[0].Name;
 
             positionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Type check is avoided and marshalling is done by the function itself
 
             // Keep previous trust information when updating the input
-            arguments[positionalParameterName!] = positionalInputValue;
+            arguments[positionalParameterName] = positionalInputValue;
             namedArgsStartIndex++;
         }
 
