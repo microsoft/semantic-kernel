@@ -565,9 +565,21 @@ class SKFunction(SKFunctionBase):
             yield stream_msg
 
     async def _invoke_native_stream_async(self, context):
-        result = await self._invoke_native_async(context)
+        self._verify_is_native()
 
-        yield result
+        self._ensure_context_has_skills(context)
+
+        delegate = DelegateHandlers.get_handler(self._delegate_type)
+        # for python3.9 compatibility (staticmethod is not callable)
+        if not hasattr(delegate, "__call__"):
+            delegate = delegate.__func__
+
+        completion = ""
+        async for partial in delegate(self._function, context):
+            completion += partial
+            yield partial
+
+        context.variables.update(completion)
 
     def _ensure_context_has_skills(self, context) -> None:
         if context.skills is not None:

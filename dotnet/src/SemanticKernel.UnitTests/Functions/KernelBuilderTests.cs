@@ -75,15 +75,18 @@ public class KernelBuilderTests
 
     private sealed class NopServiceSelector : IAIServiceSelector
     {
-        (T?, PromptExecutionSettings?) IAIServiceSelector.SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class =>
+#pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
+        bool IAIServiceSelector.TrySelectAIService<T>(
+#pragma warning restore CS8769
+            Kernel kernel, KernelFunction function, KernelArguments arguments, out T? service, out PromptExecutionSettings? serviceSettings) where T : class =>
             throw new NotImplementedException();
     }
 
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
     {
-        IKernelPlugin plugin1 = new KernelPlugin("plugin1");
-        IKernelPlugin plugin2 = new KernelPlugin("plugin2");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
 
         KernelBuilder builder = new();
         builder.Plugins.Add(plugin1);
@@ -143,7 +146,7 @@ public class KernelBuilderTests
     [Fact]
     public void ItIsntNeededInDIContexts()
     {
-        KernelPluginCollection plugins = new() { new KernelPlugin("plugin1") };
+        KernelPluginCollection plugins = new() { KernelPluginFactory.CreateFromFunctions("plugin1") };
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
@@ -190,14 +193,14 @@ public class KernelBuilderTests
     [Fact]
     public void ItFindsAllPluginsToPopulatePluginsCollection()
     {
-        KernelPlugin plugin1 = new("plugin1");
-        KernelPlugin plugin2 = new("plugin2");
-        KernelPlugin plugin3 = new("plugin3");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
 
         KernelBuilder builder = new();
-        builder.Services.AddSingleton<IKernelPlugin>(plugin1);
-        builder.Services.AddSingleton<IKernelPlugin>(plugin2);
-        builder.Services.AddSingleton<IKernelPlugin>(plugin3);
+        builder.Services.AddSingleton<KernelPlugin>(plugin1);
+        builder.Services.AddSingleton<KernelPlugin>(plugin2);
+        builder.Services.AddSingleton<KernelPlugin>(plugin3);
         Kernel kernel = builder.Build();
 
         Assert.Equal(3, kernel.Plugins.Count);
@@ -206,9 +209,9 @@ public class KernelBuilderTests
     [Fact]
     public void ItFindsPluginCollectionToUse()
     {
-        KernelPlugin plugin1 = new("plugin1");
-        KernelPlugin plugin2 = new("plugin2");
-        KernelPlugin plugin3 = new("plugin3");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));
