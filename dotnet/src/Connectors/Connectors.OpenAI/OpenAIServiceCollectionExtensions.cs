@@ -461,6 +461,25 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0011")]
+    public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
+        this IKernelBuilder builder,
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null) => AddOpenAIChatCompletion(builder, new() { ModelId = modelId, ApiKey = apiKey, Organization = orgId }, serviceId, httpClient);
+
+    /// <summary>
+    /// Adds the OpenAI text embeddings service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>

@@ -152,7 +152,7 @@ public static class Example15_TextMemoryPlugin
     {
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration(new() { ModelId = TestConfiguration.OpenAI.EmbeddingModelId, ApiKey = TestConfiguration.OpenAI.ApiKey })
+            .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Create an embedding generator to use for semantic memory.
