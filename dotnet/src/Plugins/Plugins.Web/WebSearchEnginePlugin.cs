@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,9 +56,16 @@ public sealed class WebSearchEnginePlugin
         {
             throw new InvalidOperationException("Failed to get a response from the web search engine.");
         }
+        var hasNonAscii = results.Any(result => result.Any(c => c > 127));
 
+        var jso = new JsonSerializerOptions
+        {
+            Encoder = hasNonAscii
+                     ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                     : JavaScriptEncoder.Default
+        };
         return count == 1
             ? results.FirstOrDefault() ?? string.Empty
-            : JsonSerializer.Serialize(results);
+            : JsonSerializer.Serialize(results, jso);
     }
 }
