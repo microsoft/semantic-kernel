@@ -1,7 +1,7 @@
 ﻿name: GenerateStory
 template: |
-  Tell a story about {{topic}} that is {{length}} sentences long.
-template_format: handlebars
+  Tell a story about {{$topic}} that is {{$length}} sentences long.
+template_format: semantic-kernel
 description: A function that generates a story about a topic.
 input_variables:
   - name: topic
@@ -13,8 +13,4 @@ input_variables:
 output_variable:
   description: The generated story.
 execution_settings:
-  - model_id: gpt-4
-    temperature: 0.6
-  - model_id: gpt-3.5-turbo
-    temperature: 0.4  
-  - temperature: 0.5
+  - temperature: 0.6
