@@ -172,10 +172,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
         var namedArgsStartIndex = 1;
 
         // Get the function metadata
-        var function = kernel.Plugins.GetFunction(fBlock.PluginName, fBlock.FunctionName);
+        var functionMetadata = kernel.Plugins.GetFunction(fBlock.PluginName, fBlock.FunctionName).Metadata;
 
         // Check if the function has parameters to be set
-        if (function.Metadata.Parameters.Count == 0)
+        if (functionMetadata.Parameters.Count == 0)
         {
             throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} has no parameters.");
         }
@@ -183,7 +183,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
             // Gets the function first parameter name
-            positionalParameterName = function.Metadata.Parameters?[0].Name;
+            positionalParameterName = functionMetadata.Parameters?[0].Name;
 
             positionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Type check is avoided and marshalling is done by the function itself
