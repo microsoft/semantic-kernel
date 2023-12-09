@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.TextToImage;
+namespace Microsoft.SemanticKernel.TextToImage;
 
 /// <summary>
 /// Interface for text to image services

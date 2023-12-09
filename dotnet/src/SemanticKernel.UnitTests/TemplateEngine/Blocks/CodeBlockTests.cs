@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
-    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
+    private readonly Kernel _kernel = new();
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
@@ -31,7 +30,7 @@ public class CodeBlockTests
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
 
         var target = new CodeBlock("plugin.function");
 
@@ -191,7 +190,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "");
@@ -219,7 +218,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
@@ -256,7 +255,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
@@ -279,7 +278,7 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$var");
         var namedArgBlock = new NamedArgBlock("p1=$a1");
 
-        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("p", "description", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
         {
             canary = p1;
         }, "f") }));
@@ -320,7 +319,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) => { }, "function");
 
-        this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");

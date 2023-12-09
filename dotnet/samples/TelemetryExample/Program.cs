@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
@@ -80,7 +81,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result);
@@ -92,23 +93,22 @@ public sealed class Program
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(loggerFactory)
-            .WithAzureOpenAIChatCompletion(
-                Env.Var("AzureOpenAI__ChatDeploymentName"),
-                Env.Var("AzureOpenAI__ChatModelId"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
-            .Build();
+        KernelBuilder builder = new();
 
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+        builder.Services.AddSingleton(loggerFactory);
+        builder.AddAzureOpenAIChatCompletion(
+            Env.Var("AzureOpenAI__ChatDeploymentName"),
+            Env.Var("AzureOpenAI__ChatModelId"),
+            Env.Var("AzureOpenAI__Endpoint"),
+            Env.Var("AzureOpenAI__ApiKey"));
 
-        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
-        kernel.ImportPluginFromObject<TimePlugin>();
+        builder.Plugins.AddFromObject(webSearchEnginePlugin, "WebSearch");
+        builder.Plugins.AddFromType<LanguageCalculatorPlugin>("advancedCalculator");
+        builder.Plugins.AddFromType<TimePlugin>();
+        builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        return kernel;
+        return builder.Build();
     }
 
     private static HandlebarsPlanner CreatePlanner(int maxTokens = 1024)

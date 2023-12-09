@@ -2,16 +2,16 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.AI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Execution settings for an AI request.
 /// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend this
 /// if the service they are calling supports additional properties. For an example please reference
-/// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIPromptExecutionSettings implementation.
+/// the Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIPromptExecutionSettings implementation.
 /// </summary>
 public class PromptExecutionSettings
 {

@@ -3,9 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /**
  * This example shows how to use Azure OpenAI Chat Completion with data.
@@ -67,7 +66,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
+        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             Console.Write(word);
         }
@@ -84,7 +83,7 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(config: completionWithDataConfig)
+            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
