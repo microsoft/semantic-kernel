@@ -25,62 +25,50 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using API Key auth
     /// </summary>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAITextGenerationService(
-        string deploymentName,
-        string modelId,
-        string endpoint,
-        string apiKey,
+        OpenAIServiceConfig serviceConfig,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(serviceConfig.DeploymentName, serviceConfig.Endpoint, serviceConfig.ApiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
     }
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance supporting AAD auth
     /// </summary>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAITextGenerationService(
-        string deploymentName,
-        string endpoint,
+        OpenAIServiceConfig serviceConfig,
         TokenCredential credential,
-        string modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
+        this._core = new(serviceConfig.DeploymentName, serviceConfig.Endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
     }
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using the specified OpenAIClient
     /// </summary>
-    /// <param name="deploymentName">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAITextGenerationService(
-        string deploymentName,
+        OpenAIServiceConfig serviceConfig,
         OpenAIClient openAIClient,
-        string modelId,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
+        this._core = new(serviceConfig.DeploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
     }
 
     /// <inheritdoc/>

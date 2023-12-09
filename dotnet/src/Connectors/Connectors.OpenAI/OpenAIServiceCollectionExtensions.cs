@@ -54,7 +54,7 @@ public static class OpenAIServiceCollectionExtensions
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
-            return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextGenerationService(new() { DeploymentName = deploymentName, ModelId = modelId }, client, serviceProvider.GetService<ILoggerFactory>());
         });
 
         return builder;
@@ -86,7 +86,7 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
-            return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextGenerationService(new() { DeploymentName = deploymentName, ModelId = modelId }, client, serviceProvider.GetService<ILoggerFactory>());
         });
     }
 
@@ -119,7 +119,7 @@ public static class OpenAIServiceCollectionExtensions
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
-            return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextGenerationService(new() { DeploymentName = deploymentName, ModelId = modelId }, client, serviceProvider.GetService<ILoggerFactory>());
         });
 
         return builder;
@@ -152,7 +152,7 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, serviceProvider.GetService<HttpClient>());
-            return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextGenerationService(new() { DeploymentName = deploymentName, ModelId = modelId }, client, serviceProvider.GetService<ILoggerFactory>());
         });
     }
 
@@ -179,9 +179,8 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextGenerationService(
-                deploymentName,
+                new() { DeploymentName = deploymentName, ModelId = modelId },
                 openAIClient,
-                modelId,
                 serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
@@ -210,9 +209,8 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextGenerationService(
-                deploymentName,
+                new() { DeploymentName = deploymentName, ModelId = modelId },
                 openAIClient,
-                modelId,
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
