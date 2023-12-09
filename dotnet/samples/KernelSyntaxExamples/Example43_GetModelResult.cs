@@ -17,7 +17,7 @@ public static class Example43_GetModelResult
     {
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
@@ -47,7 +47,7 @@ public static class Example43_GetModelResult
         Console.WriteLine();
 
         // Getting the error details
-        kernel = new KernelBuilder()
+        kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);

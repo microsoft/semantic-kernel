@@ -81,7 +81,7 @@ internal sealed class Assistant : IAssistant
         this._model = model;
         this._restContext = restContext;
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
         this.Kernel = builder.Build();
 
