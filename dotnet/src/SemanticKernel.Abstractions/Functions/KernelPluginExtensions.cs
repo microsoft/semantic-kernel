@@ -86,10 +86,7 @@ public static class KernelPluginExtensions
         List<KernelFunctionMetadata> metadata = new();
         foreach (KernelPlugin plugin in plugins)
         {
-            foreach (KernelFunction function in plugin)
-            {
-                metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = plugin.Name });
-            }
+            metadata.AddRange(plugin.GetFunctionsMetadata());
         }
 
         return metadata;
