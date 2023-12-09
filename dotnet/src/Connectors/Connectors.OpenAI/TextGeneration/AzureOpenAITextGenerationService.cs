@@ -33,6 +33,10 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(serviceConfig.DeploymentName);
+        Verify.NotNullOrWhiteSpace(serviceConfig.Endpoint);
+        Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
+
         this._core = new(serviceConfig.DeploymentName, serviceConfig.Endpoint, serviceConfig.ApiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
     }
@@ -50,6 +54,9 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(serviceConfig.DeploymentName);
+        Verify.NotNullOrWhiteSpace(serviceConfig.Endpoint);
+
         this._core = new(serviceConfig.DeploymentName, serviceConfig.Endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
@@ -66,6 +73,8 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(serviceConfig.DeploymentName);
+
         this._core = new(serviceConfig.DeploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);

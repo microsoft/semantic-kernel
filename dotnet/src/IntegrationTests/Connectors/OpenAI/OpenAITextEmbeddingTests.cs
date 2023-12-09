@@ -39,7 +39,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGeneration(new() { ModelId = openAIConfiguration.ModelId, ApiKey = openAIConfiguration.ApiKey });
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);

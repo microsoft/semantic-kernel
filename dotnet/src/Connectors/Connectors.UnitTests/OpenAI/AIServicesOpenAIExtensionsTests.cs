@@ -33,7 +33,7 @@ public class AIServicesOpenAIExtensionsTests
             .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", serviceId: "azure")
             .AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "oai")
             .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url2", "key", serviceId: "azure")
-            .AddOpenAITextEmbeddingGeneration("model2", "apikey2", serviceId: "oai2")
+            .AddOpenAITextEmbeddingGeneration(new() { ModelId = "model2", ApiKey = "apikey2" }, serviceId: "oai2")
             .Build();
 
         // Assert
@@ -59,8 +59,8 @@ public class AIServicesOpenAIExtensionsTests
         builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
         builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
 
-        builder.Services.AddOpenAITextEmbeddingGeneration("model", "key", serviceId: "one");
-        builder.Services.AddOpenAITextEmbeddingGeneration("model", "key", serviceId: "one");
+        builder.Services.AddOpenAITextEmbeddingGeneration(new() { ModelId = "model", ApiKey = "key" }, serviceId: "one");
+        builder.Services.AddOpenAITextEmbeddingGeneration(new() { ModelId = "model", ApiKey = "key" }, serviceId: "one");
 
         builder.Services.AddAzureOpenAIChatCompletion("dep", "model", "https://localhost", "key", serviceId: "one");
         builder.Services.AddAzureOpenAIChatCompletion("dep", "model", "https://localhost", "key", serviceId: "one");

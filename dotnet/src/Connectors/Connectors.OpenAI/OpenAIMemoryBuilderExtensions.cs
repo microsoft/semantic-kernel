@@ -77,24 +77,18 @@ public static class OpenAIMemoryBuilderExtensions
     /// See https://platform.openai.com/docs for service details.
     /// </summary>
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
     [Experimental("SKEXP0011")]
     public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
-        string modelId,
-        string apiKey,
-        string? orgId = null,
+        OpenAIServiceConfig serviceConfig,
         HttpClient? httpClient = null)
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             new OpenAITextEmbeddingGeneration(
-                modelId,
-                apiKey,
-                orgId,
+                serviceConfig,
                 HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory));
     }

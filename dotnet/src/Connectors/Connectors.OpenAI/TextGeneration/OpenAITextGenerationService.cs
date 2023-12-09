@@ -31,6 +31,9 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(serviceConfig.ModelId);
+        Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
+
         this._core = new(serviceConfig.ModelId, serviceConfig.ApiKey, serviceConfig.Organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.SetAttributes(serviceConfig);
@@ -47,6 +50,8 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(serviceConfig.ModelId);
+
         this._core = new(serviceConfig.ModelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.SetAttributes(serviceConfig);
