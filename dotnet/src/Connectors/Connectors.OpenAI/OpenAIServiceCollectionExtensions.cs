@@ -699,7 +699,7 @@ public static class OpenAIServiceCollectionExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        HttpClient? httpClient = null) => AddAzureOpenAIChatCompletion(builder, new() { DeploymentName = deploymentName, ModelId = modelId, Endpoint = endpoint }, credentials, serviceId, httpClient);
+        HttpClient? httpClient = null) => AddAzureOpenAIChatCompletion(builder, new() { DeploymentName = deploymentName, Endpoint = endpoint }, credentials, serviceId, httpClient);
 
     /// <summary>
     /// Adds the Azure OpenAI chat completion service to the list.
