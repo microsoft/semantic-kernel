@@ -5,10 +5,10 @@ the Semantic Kernel. The notebooks are organized in order of increasing complexi
 
 To run the notebooks, we recommend the following steps:
 
-- [Install .NET 7](https://dotnet.microsoft.com/download/dotnet/7.0)
+- [Install .NET 8](https://dotnet.microsoft.com/download/dotnet/7.0)
 - [Install Visual Studio Code (VS Code)](https://code.visualstudio.com)
 - Launch VS Code and [install the "Polyglot" extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
-  Min version required: v1.0.4102020 (Feb 2022).
+  Min version required: v1.0.4606021 (Dec 2023).
 
 The steps above should be sufficient, you can now **open all the C# notebooks in VS Code**.
 
@@ -57,11 +57,13 @@ For a quick dive, look at the [getting started notebook](00-getting-started.ipyn
 1. [Loading and configuring Semantic Kernel](01-basic-loading-the-kernel.ipynb)
 2. [Running AI prompts from file](02-running-prompts-from-file.ipynb)
 3. [Creating Semantic Functions at runtime (i.e. inline functions)](03-semantic-function-inline.ipynb)
-4. [Using Context Variables to Build a Chat Experience](04-context-variables-chat.ipynb)
+4. [Using Kernel Arguments to Build a Chat Experience](04-kernel-arguments-chat.ipynb)
 5. [Creating and Executing Plans](05-using-the-planner.ipynb)
 6. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
 7. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
 8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)
+9. [Building Semantic Memory with Chroma](09-memory-with-chroma.ipynb)
+10. [BingSearch using Kernel](10-BingSearch-using-kernel.ipynb)
 
 # Run notebooks in the browser with JupyterLab
 
