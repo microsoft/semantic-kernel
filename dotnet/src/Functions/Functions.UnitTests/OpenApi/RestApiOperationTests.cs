@@ -158,7 +158,7 @@ public class RestApiOperationTests
         // Arrange
         var parameters = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "fake_header_one",
                 type: "string",
                 isRequired: true,
@@ -166,7 +166,7 @@ public class RestApiOperationTests
                 location: RestApiOperationParameterLocation.Header,
                 style: RestApiOperationParameterStyle.Simple),
 
-            new RestApiOperationParameter(
+            new(
                 name: "fake_header_two",
                 type: "string",
                 isRequired: true,
