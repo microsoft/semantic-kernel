@@ -38,7 +38,22 @@ public sealed class FunctionCallingStepwisePlanner
     /// <param name="question">The question to answer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result containing the model's response message and chat history.</returns>
-    public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
+    public Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
+        Kernel kernel,
+        string question,
+        CancellationToken cancellationToken = default)
+    {
+        var logger = kernel.LoggerFactory.CreateLogger(this.GetType());
+
+        return PlannerInstrumentation.InvokePlanAsync(
+            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string question, CancellationToken cancellationToken)
+                => plan.ExecuteCoreAsync(kernel, question, cancellationToken),
+            this, kernel, question, logger, cancellationToken);
+    }
+
+    #region private
+
+    private async Task<FunctionCallingStepwisePlannerResult> ExecuteCoreAsync(
         Kernel kernel,
         string question,
         CancellationToken cancellationToken = default)
@@ -134,15 +149,13 @@ public sealed class FunctionCallingStepwisePlanner
         };
     }
 
-    #region private
-
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
-    ChatHistory chatHistory,
-    Kernel kernel,
-    IChatCompletionService chatCompletion,
-    OpenAIPromptExecutionSettings openAIExecutionSettings,
-    ILogger logger,
-    CancellationToken cancellationToken)
+        ChatHistory chatHistory,
+        Kernel kernel,
+        IChatCompletionService chatCompletion,
+        OpenAIPromptExecutionSettings openAIExecutionSettings,
+        ILogger logger,
+        CancellationToken cancellationToken)
     {
         openAIExecutionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
 
