@@ -24,7 +24,7 @@ public static class Example59_OpenAIFunctionCalling
     public static async Task RunAsync()
     {
         // Create kernel with chat completions service and plugins
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Plugins.AddFromType<TimePlugin>();
         builder.Plugins.AddFromType<WidgetPlugin>();
         builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);

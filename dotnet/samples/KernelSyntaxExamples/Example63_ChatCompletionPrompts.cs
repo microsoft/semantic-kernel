@@ -18,7 +18,7 @@ public static class Example63_ChatCompletionPrompts
             <message role=""system"">Respond with JSON.</message>
         ";
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)

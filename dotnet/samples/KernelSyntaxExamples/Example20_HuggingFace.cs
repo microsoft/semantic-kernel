@@ -23,7 +23,7 @@ public static class Example20_HuggingFace
     {
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
                 model: TestConfiguration.HuggingFace.ModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
@@ -57,7 +57,7 @@ public static class Example20_HuggingFace
         // HuggingFace local HTTP server endpoint
         const string Endpoint = "http://localhost:5000/completions";
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
                 model: Model,
                 endpoint: Endpoint,

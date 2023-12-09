@@ -19,7 +19,7 @@ public static class Example08_RetryHandler
     public static async Task RunAsync()
     {
         // Create a Kernel with the HttpClient
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         builder.Services.ConfigureHttpClientDefaults(c =>
         {

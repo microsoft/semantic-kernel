@@ -17,7 +17,7 @@ public class AIServicesOpenAIExtensionsTests
     [Fact]
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
-        Kernel targetKernel = new KernelBuilder()
+        Kernel targetKernel = Kernel.CreateBuilder()
             .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", "azure")
             .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url", "key", "azure")
             .Build();
@@ -29,7 +29,7 @@ public class AIServicesOpenAIExtensionsTests
     [Fact]
     public void ItTellsIfAServiceIsAvailable()
     {
-        Kernel targetKernel = new KernelBuilder()
+        Kernel targetKernel = Kernel.CreateBuilder()
             .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", serviceId: "azure")
             .AddOpenAITextGeneration("model", "apikey", serviceId: "oai")
             .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url2", "key", serviceId: "azure")
@@ -48,7 +48,7 @@ public class AIServicesOpenAIExtensionsTests
     {
         // Arrange
         // Act - Assert no exception occurs
-        var builder = new KernelBuilder();
+        var builder = Kernel.CreateBuilder();
 
         builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
         builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");

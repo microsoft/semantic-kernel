@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 /// </summary>
 public class FlowOrchestrator
 {
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
 
     private readonly IFlowStatusProvider _flowStatusProvider;
 

@@ -25,7 +25,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        var builder = new KernelBuilder();
+        var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(this._logger);
         builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
         builder.Plugins.AddFromType<EmailPluginFake>();
@@ -43,7 +43,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        var builder = new KernelBuilder();
+        var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(this._logger);
         builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
         builder.Plugins.AddFromType<EmailPluginFake>();

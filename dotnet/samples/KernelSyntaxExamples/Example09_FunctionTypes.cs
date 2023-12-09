@@ -15,7 +15,7 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Method Function types ========");
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 

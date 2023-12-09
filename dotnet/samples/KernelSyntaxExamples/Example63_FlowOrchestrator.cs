@@ -202,7 +202,7 @@ provides:
 
     private static KernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
-        var builder = new KernelBuilder();
+        var builder = Kernel.CreateBuilder();
 
         return builder
             .WithAzureOpenAIChatCompletion(
