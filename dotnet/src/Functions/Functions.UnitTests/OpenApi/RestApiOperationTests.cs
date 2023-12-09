@@ -258,10 +258,10 @@ public class RestApiOperationTests
             ["h2"] = "[1,2,3]"
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
-        var headers = operation.RenderHeaders(arguments);
+        var headers = sut.RenderHeaders(arguments);
 
         // Assert
         Assert.NotNull(headers);
@@ -287,10 +287,10 @@ public class RestApiOperationTests
             ["h2"] = "true"
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
-        var headers = operation.RenderHeaders(arguments);
+        var headers = sut.RenderHeaders(arguments);
 
         // Assert
         Assert.NotNull(headers);
@@ -316,10 +316,10 @@ public class RestApiOperationTests
             ["h2"] = "false"
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
-        var headers = operation.RenderHeaders(arguments);
+        var headers = sut.RenderHeaders(arguments);
 
         // Assert
         Assert.NotNull(headers);
