@@ -135,7 +135,7 @@ public class KernelPluginCollectionTests
     }
 
     [Fact]
-    public void ItExposesFunctionViewsOfAllFunctions()
+    public void ItExposesFunctionMetadataForAllFunctions()
     {
         var c = new KernelPluginCollection()
         {

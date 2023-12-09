@@ -76,6 +76,19 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <returns>true if the function was found in the plugin; otherwise, false.</returns>
     public abstract bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function);
 
+    /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in this plugin.</summary>
+    /// <returns>A list of metadata over every function in this plugin.</returns>
+    public IList<KernelFunctionMetadata> GetFunctionsMetadata()
+    {
+        List<KernelFunctionMetadata> metadata = new(this.FunctionCount);
+        foreach (KernelFunction function in this)
+        {
+            metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = this.Name });
+        }
+
+        return metadata;
+    }
+
     /// <inheritdoc/>
     public abstract IEnumerator<KernelFunction> GetEnumerator();
 
