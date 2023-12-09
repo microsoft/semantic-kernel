@@ -328,4 +328,67 @@ public class CodeBlockTests
         // Assert
         Assert.Equal(2, arguments.Count);
     }
+
+    [Fact]
+    public async Task ItThrowsWhenArgumentsAreProvidedToAParameterlessFunctionAsync()
+    {
+        // Arrange
+        const string Value = "value";
+        const string FooValue = "foo's value";
+        const string BobValue = "bob's value";
+
+        var arguments = new KernelArguments();
+        arguments["bob"] = BobValue;
+        arguments[KernelArguments.InputParameterName] = Value;
+
+        var funcId = new FunctionIdBlock("plugin.function");
+        var namedArgBlock1 = new ValBlock($"'{FooValue}'");
+        var namedArgBlock2 = new NamedArgBlock("foo=$foo");
+
+        var actualFoo = string.Empty;
+        var actualBaz = string.Empty;
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
+
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await codeBlock.RenderCodeAsync(this._kernel, arguments));
+        Assert.Contains("has no parameters", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItThrowsWhenArgumentsAreAmbiguousAsync()
+    {
+        // Arrange
+        const string Value = "value";
+        const string FooValue = "foo's value";
+        const string BobValue = "bob's value";
+
+        var arguments = new KernelArguments();
+        arguments["bob"] = BobValue;
+        arguments[KernelArguments.InputParameterName] = Value;
+
+        var funcId = new FunctionIdBlock("plugin.function");
+        var namedArgBlock1 = new ValBlock($"'{FooValue}'");
+        var namedArgBlock2 = new NamedArgBlock("foo=$foo");
+
+        var actualFoo = string.Empty;
+        var actualBaz = string.Empty;
+
+        var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) =>
+        {
+            actualFoo = foo;
+            actualBaz = baz;
+        },
+        "function");
+
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await codeBlock.RenderCodeAsync(this._kernel, arguments));
+        Assert.Contains(FooValue, exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

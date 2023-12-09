@@ -214,7 +214,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Check if the positional parameter clashes with a named parameter
             if (positionalParameterName is not null && string.Equals(positionalParameterName, arg.Name, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional parameter: '{positionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
+                throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{positionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
             arguments[arg.Name] = arg.GetValue(arguments);
