@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Xunit;
 

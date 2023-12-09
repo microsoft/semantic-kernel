@@ -149,6 +149,45 @@ public sealed class RestApiOperation
         return headers;
     }
 
+    /// <summary>
+    /// Builds operation query string.
+    /// </summary>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <returns>The rendered request headers.</returns>
+    public string BuildQueryString(IDictionary<string, string> arguments)
+    {
+        var segments = new List<string>();
+
+        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Query);
+
+        foreach (var parameter in parameters)
+        {
+            if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
+            {
+                //Throw an exception if the parameter is a required one but no value is provided.
+                if (parameter.IsRequired)
+                {
+                    throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+                }
+
+                //Skipping not required parameter if no argument provided for it.
+                continue;
+            }
+
+            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Form;
+
+            if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
+            {
+                throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
+            }
+
+            //Serializing the parameter and adding it to the query string if there's an argument for it.
+            segments.Add(serializer.Invoke(parameter, argument));
+        }
+
+        return string.Join("&", segments);
+    }
+
     #region private
 
     /// <summary>
@@ -218,6 +257,9 @@ public sealed class RestApiOperation
     private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_parameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
 
     # endregion
