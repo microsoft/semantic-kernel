@@ -379,9 +379,9 @@ internal sealed class RestApiOperationRunner
             "number" => long.TryParse(propertyValue, out var intValue) ? JsonValue.Create(intValue) : JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture)),
             "boolean" => JsonValue.Create(bool.Parse(propertyValue)),
             "integer" => JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture)),
-            "array" => JsonArray.Parse(propertyValue) as JsonArray ?? throw new KernelException($"Can't convert OpenApi property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array."),
+            "array" => JsonArray.Parse(propertyValue) as JsonArray ?? throw new KernelException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array."),
             "string" => JsonValue.Create(propertyValue),
-            _ => throw new KernelException($"Unexpected OpenApi data type - {propertyMetadata.Type}"),
+            _ => throw new KernelException($"Unexpected OpenAPI data type - {propertyMetadata.Type}"),
         };
 
     /// <summary>

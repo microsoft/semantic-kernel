@@ -84,9 +84,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
-    /// This class relies on Microsoft.OpenApiNET library to work with OpenAPI documents.
+    /// This class relies on Microsoft.OpenAPI.NET library to work with OpenAPI documents.
     /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
-    /// There's an open issue tracking the support progress - https://github.com/microsoft/OpenApiNET/issues/795
+    /// There's an open issue tracking the support progress - https://github.com/microsoft/OpenAPI.NET/issues/795
     /// This method should be removed/revised as soon the support is added.
     /// </summary>
     /// <param name="stream">The original OpenAPI document stream.</param>
@@ -123,7 +123,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
     /// <summary>
     /// Converts YAML content to JSON content.
-    /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.OpenApiNET library.
+    /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.OpenAPI.NET library.
     /// Should be replaced later when there's more convenient way to convert YAML content to JSON one.
     /// </summary>
     /// <param name="stream">The YAML/JSON content stream.</param>
