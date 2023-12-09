@@ -28,7 +28,7 @@ public static class Example07_BingAndGooglePlugins
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
