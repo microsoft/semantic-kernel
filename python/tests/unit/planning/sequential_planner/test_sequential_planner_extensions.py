@@ -195,7 +195,6 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
         memory=memory,
         skill_collection=skills,
     )
-    context._logger = Mock()
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 

@@ -27,7 +27,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections"""
 
-    __slots__ = ("_mongo_client", "_logger", "__database_name")
+    __slots__ = ("_mongo_client", "__database_name")
 
     _mongo_client: motor_asyncio.AsyncIOMotorClient
     __database_name: str

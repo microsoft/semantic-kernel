@@ -216,7 +216,7 @@ class TestCodeBlock:
         variables["var1"] = "uno"
         variables["var2"] = "due"
 
-        # Create a context with the variables, memory, skill collection, and logger
+        # Create a context with the variables, memory, and skill collection
         context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
@@ -283,7 +283,7 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables[VAR_NAME] = VAR_VALUE
 
-        # Create a context with the variables, memory, skill collection, and logger
+        # Create a context with the variables, memory, and skill collection
         context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
@@ -336,7 +336,7 @@ class TestCodeBlock:
         # Define a value to be used in the test
         VALUE = "value"
 
-        # Create a context with empty variables, memory, skill collection, and logger
+        # Create a context with empty variables, memory, and skill collection
         context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
