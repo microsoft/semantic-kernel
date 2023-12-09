@@ -73,9 +73,11 @@ public sealed class HandlebarsPlannerTests
             .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
+        IChatCompletionService resultService = chatCompletion.Object;
+        PromptExecutionSettings resultSettings = new();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>()))
-            .Returns((chatCompletion.Object, new PromptExecutionSettings()));
+            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
+            .Returns(true);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);

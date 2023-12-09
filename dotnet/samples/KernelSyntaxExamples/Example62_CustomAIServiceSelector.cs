@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -66,21 +67,27 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class GptAIServiceSelector : IAIServiceSelector
     {
-        public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
+        public bool TrySelectAIService<T>(
+            Kernel kernel, KernelFunction function, KernelArguments arguments,
+            [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
         {
-            foreach (var service in kernel.GetAllServices<T>())
+            foreach (var serviceToCheck in kernel.GetAllServices<T>())
             {
                 // Find the first service that has a model id that starts with "gpt"
-                var serviceModelId = service.GetModelId();
-                var endpoint = service.GetEndpoint();
+                var serviceModelId = serviceToCheck.GetModelId();
+                var endpoint = serviceToCheck.GetEndpoint();
                 if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");
-                    return (service, new OpenAIPromptExecutionSettings());
+                    service = serviceToCheck;
+                    serviceSettings = new OpenAIPromptExecutionSettings();
+                    return true;
                 }
             }
 
-            throw new KernelException("Unable to find AI service for GPT");
+            service = null;
+            serviceSettings = null;
+            return false;
         }
     }
 }
