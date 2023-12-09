@@ -687,6 +687,24 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds the Azure OpenAI chat completion service to the list.
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddAzureOpenAIChatCompletion(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? serviceId = null,
+        HttpClient? httpClient = null) => AddAzureOpenAIChatCompletion(builder, new() { DeploymentName = deploymentName, ModelId = modelId, Endpoint = endpoint }, credentials, serviceId, httpClient);
+
+    /// <summary>
+    /// Adds the Azure OpenAI chat completion service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
