@@ -262,21 +262,20 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
-        PromptExecutionSettings? defaultExecutionSettings;
 
-        //TODO: Revisit if SelectAIService implementation should return null when no service is found
-
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        // Try to use IChatCompletionService.
+        if (serviceSelector.TrySelectAIService<IChatCompletionService>(
+            kernel, this, arguments,
+            out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
         {
-            (aiService, defaultExecutionSettings) = serviceSelector.SelectAIService<IChatCompletionService>(kernel, this, arguments);
+            aiService = chatService;
         }
-        catch
+        else
         {
-            // Fallback to text generation service, if the selector don't finds it, will throw.
+            // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
+            // throwing if it's not available.
             (aiService, defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
 
         Verify.NotNull(aiService);
 
