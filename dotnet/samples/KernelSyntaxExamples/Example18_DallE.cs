@@ -22,7 +22,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             // Add your text to image service
             .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
@@ -90,7 +90,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("========Azure OpenAI Dall-E 2 Text To Image ========");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             // Add your text to image service
             .AddAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service

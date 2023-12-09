@@ -39,7 +39,7 @@ public static class Example62_CustomAIServiceSelector
         }
 
         // Build a kernel with multiple chat completion services
-        var builder = new KernelBuilder()
+        var builder = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
