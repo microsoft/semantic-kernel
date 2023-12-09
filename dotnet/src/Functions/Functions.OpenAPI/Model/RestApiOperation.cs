@@ -125,14 +125,14 @@ public sealed class RestApiOperation
         {
             var headerName = headerMetadata.Name;
 
-            // A try to resolve header value in arguments.
+            // Try to resolve header value in arguments.
             if (arguments.TryGetValue(headerName, out string? value) && value is not null)
             {
                 headers.Add(headerName, value!);
                 continue;
             }
 
-            //If a parameter is required, its value should always be provided.
+            // If a parameter is required, its value should always be provided.
             if (headerMetadata.IsRequired)
             {
                 throw new KernelException($"No argument or value is provided for the '{headerName}' required header of the operation - '{this.Id}'.'");
@@ -156,13 +156,13 @@ public sealed class RestApiOperation
         {
             var parameterName = match.Groups[1].Value;
 
-            //A try to find parameter value in arguments
+            // Try to find parameter value in arguments
             if (arguments.TryGetValue(parameterName, out string? value) && value is not null)
             {
                 return value;
             }
 
-            //A try to find default value for the parameter
+            // Try to find default value for the parameter
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
@@ -197,7 +197,7 @@ public sealed class RestApiOperation
                 throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
 
-        // make sure base url ends with trailing slash
+        // Make sure base url ends with trailing slash
         if (!serverUrlString.EndsWith("/", StringComparison.OrdinalIgnoreCase))
         {
             serverUrlString += "/";
