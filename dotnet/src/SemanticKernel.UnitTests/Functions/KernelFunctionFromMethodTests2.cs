@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -139,6 +141,35 @@ public sealed class KernelFunctionFromMethodTests2
         // Assert
         Assert.Equal(variableOutsideTheFunction, result.GetValue<string>());
         Assert.Equal(variableOutsideTheFunction, result.ToString());
+    }
+
+    [Fact]
+    public async Task ItFlowsSpecialArgumentsIntoFunctionsAsync()
+    {
+        KernelBuilder builder = new();
+        builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning));
+        Kernel kernel = builder.Build();
+        kernel.Culture = new CultureInfo("fr-FR");
+        KernelArguments args = new();
+        using CancellationTokenSource cts = new();
+
+        bool invoked = false;
+        KernelFunction func = null!;
+        func = KernelFunctionFactory.CreateFromMethod(
+            (Kernel kernelArg, KernelFunction funcArg, KernelArguments argsArg, ILoggerFactory loggerArg, CultureInfo cultureArg, CancellationToken cancellationToken) =>
+            {
+                Assert.Same(kernel, kernelArg);
+                Assert.Same(func, funcArg);
+                Assert.Same(args, argsArg);
+                Assert.Same(kernel.LoggerFactory, loggerArg);
+                Assert.Same(kernel.Culture, cultureArg);
+                Assert.Equal(cts.Token, cancellationToken);
+                invoked = true;
+            });
+
+        await func.InvokeAsync(kernel, args, cts.Token);
+
+        Assert.True(invoked);
     }
 
     private sealed class InvalidPlugin
