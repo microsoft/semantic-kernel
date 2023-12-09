@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Provides extension methods for importing plugins exposed as OpenApi v3 endpoints.
+/// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
 /// </summary>
 public static class OpenApiKernelExtensions
 {
