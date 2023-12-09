@@ -85,4 +85,15 @@ internal sealed class OpenAIClientCore : ClientCore
             this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
         }
     }
+
+    /// <summary>
+    /// Set the service attributes.
+    /// </summary>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
+    internal void SetAttributes(OpenAIServiceConfig serviceConfig)
+    {
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, serviceConfig.Endpoint);
+        this.AddAttribute(OpenAIClientCore.OrganizationKey, serviceConfig.Organization);
+    }
 }

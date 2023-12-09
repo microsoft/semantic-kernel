@@ -56,8 +56,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Kernel target = this._kernelBuilder
             .AddOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
-                modelId: openAIConfiguration.ModelId,
-                apiKey: openAIConfiguration.ApiKey)
+                serviceConfig: new() { ModelId = openAIConfiguration.ModelId, ApiKey = openAIConfiguration.ApiKey })
             .Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
@@ -185,8 +184,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder
             .AddOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
-                modelId: openAIConfiguration.ModelId,
-                apiKey: "INVALID_KEY"); // Use an invalid API key to force a 401 Unauthorized response
+                serviceConfig: new() { ModelId = openAIConfiguration.ModelId, ApiKey = "INVALID_KEY" }); // Use an invalid API key to force a 401 Unauthorized response
         this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
@@ -293,8 +291,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder
             .AddOpenAITextGeneration(
-                modelId: openAIConfiguration.ModelId,
-                apiKey: "INVALID_KEY",
+                serviceConfig: new() { ModelId = openAIConfiguration.ModelId, ApiKey = "INVALID_KEY" }, // Use an invalid API key to force a 401 Unauthorized response
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 

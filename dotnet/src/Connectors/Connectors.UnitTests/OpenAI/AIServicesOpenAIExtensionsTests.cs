@@ -31,7 +31,7 @@ public class AIServicesOpenAIExtensionsTests
     {
         Kernel targetKernel = new KernelBuilder()
             .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", serviceId: "azure")
-            .AddOpenAITextGeneration("model", "apikey", serviceId: "oai")
+            .AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "oai")
             .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url2", "key", serviceId: "azure")
             .AddOpenAITextEmbeddingGeneration("model2", "apikey2", serviceId: "oai2")
             .Build();
@@ -53,8 +53,8 @@ public class AIServicesOpenAIExtensionsTests
         builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
         builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
 
-        builder.Services.AddOpenAITextGeneration("model", "key", serviceId: "one");
-        builder.Services.AddOpenAITextGeneration("model", "key", serviceId: "one");
+        builder.Services.AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "one");
+        builder.Services.AddOpenAITextGeneration(new() { ModelId = "model", ApiKey = "apikey" }, serviceId: "one");
 
         builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
         builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
@@ -71,17 +71,17 @@ public class AIServicesOpenAIExtensionsTests
         builder.Services.AddOpenAITextToImage("model", "key", serviceId: "one");
         builder.Services.AddOpenAITextToImage("model", "key", serviceId: "one");
 
-        builder.Services.AddSingleton(new OpenAITextGenerationService("model", "key"));
-        builder.Services.AddSingleton(new OpenAITextGenerationService("model", "key"));
+        builder.Services.AddSingleton(new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
+        builder.Services.AddSingleton(new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
 
-        builder.Services.AddSingleton((_) => new OpenAITextGenerationService("model", "key"));
-        builder.Services.AddSingleton((_) => new OpenAITextGenerationService("model", "key"));
+        builder.Services.AddSingleton((_) => new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
+        builder.Services.AddSingleton((_) => new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
 
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", new OpenAITextGenerationService("model", "key"));
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", new OpenAITextGenerationService("model", "key"));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
 
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", (_, _) => new OpenAITextGenerationService("model", "key"));
-        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", (_, _) => new OpenAITextGenerationService("model", "key"));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", (_, _) => new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("one", (_, _) => new OpenAITextGenerationService(new() { ModelId = "model", ApiKey = "apikey" }));
 
         builder.Build();
     }

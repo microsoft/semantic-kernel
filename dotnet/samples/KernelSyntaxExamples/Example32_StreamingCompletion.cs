@@ -41,7 +41,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textGeneration = new OpenAITextGenerationService("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
+        var textGeneration = new OpenAITextGenerationService(new() { ModelId = "text-davinci-003", ApiKey = TestConfiguration.OpenAI.ApiKey });
 
         await TextGenerationStreamAsync(textGeneration);
     }

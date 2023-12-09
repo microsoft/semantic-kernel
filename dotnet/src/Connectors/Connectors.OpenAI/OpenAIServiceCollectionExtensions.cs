@@ -220,29 +220,22 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAITextGeneration(
         this IKernelBuilder builder,
-        string modelId,
-        string apiKey,
-        string? orgId = null,
+        OpenAIServiceConfig serviceConfig,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNull(serviceConfig);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextGenerationService(
-                modelId,
-                apiKey,
-                orgId,
+                serviceConfig,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
 
@@ -253,27 +246,20 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAITextGeneration(
         this IServiceCollection services,
-        string modelId,
-        string apiKey,
-        string? orgId = null,
+        OpenAIServiceConfig serviceConfig,
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNull(serviceConfig);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextGenerationService(
-                modelId,
-                apiKey,
-                orgId,
+                serviceConfig,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -282,23 +268,23 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAITextGeneration(
         this IKernelBuilder builder,
-        string modelId,
+        OpenAIServiceConfig serviceConfig,
         OpenAIClient openAIClient,
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(serviceConfig);
         Verify.NotNull(openAIClient);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextGenerationService(
-                modelId,
+                serviceConfig,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
 
@@ -309,22 +295,22 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAITextGeneration(this IServiceCollection services,
-        string modelId,
+        OpenAIServiceConfig serviceConfig,
         OpenAIClient openAIClient,
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(serviceConfig);
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextGenerationService(
-                modelId,
+                serviceConfig,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
     }
