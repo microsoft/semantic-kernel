@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
@@ -217,7 +216,7 @@ public sealed class RestApiOperation
 
     private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_parameterSerializers = new()
     {
-        { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.Simple, Builders.Serialization.SimpleStyleParameterSerializer.Serialize },
     };
 
     # endregion
