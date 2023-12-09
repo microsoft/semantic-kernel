@@ -239,7 +239,7 @@ public class CodeBlockTests
 
         var arguments = new KernelArguments();
         arguments["bob"] = BobValue;
-        arguments[KernelArguments.InputParameterName] = Value;
+        //arguments[KernelArguments.InputParameterName] = Value;
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
@@ -311,7 +311,7 @@ public class CodeBlockTests
 
         var arguments = new KernelArguments();
         arguments["bob"] = BobValue;
-        arguments[KernelArguments.InputParameterName] = Value;
+        arguments[KernelArguments.FirstParameterName] = Value;
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");

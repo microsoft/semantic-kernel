@@ -404,7 +404,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Arguments[KernelArguments.InputParameterName] = newInput;
+            e.Arguments[KernelArguments.FirstParameterName] = newInput;
         };
 
         // Act
