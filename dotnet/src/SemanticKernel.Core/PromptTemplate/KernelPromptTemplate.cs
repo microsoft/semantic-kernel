@@ -146,7 +146,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         variableNames.AddRange(codeVariableNames);
 
         // Variables from named arguments e.g. "{{p.bar b = $b}}"
-        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg).Select(block => ((NamedArgBlock)block).Name).ToList();
+        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg && ((NamedArgBlock)block).VarBlock is not null).Select(block => ((NamedArgBlock)block).VarBlock!.Name).ToList();
         variableNames.AddRange(codeNamedArgs);
 
         // Add distinct variables found in the template that are not in the prompt config

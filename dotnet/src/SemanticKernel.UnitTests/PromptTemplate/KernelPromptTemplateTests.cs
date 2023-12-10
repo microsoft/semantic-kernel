@@ -40,14 +40,13 @@ public sealed class KernelPromptTemplateTests
         var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
 
         // Assert
-        Assert.Equal(7, promptTemplateConfig.InputVariables.Count);
+        Assert.Equal(6, promptTemplateConfig.InputVariables.Count);
         Assert.Equal("x11", promptTemplateConfig.InputVariables[0].Name);
         Assert.Equal("a", promptTemplateConfig.InputVariables[1].Name);
         Assert.Equal("missing", promptTemplateConfig.InputVariables[2].Name);
         Assert.Equal("b", promptTemplateConfig.InputVariables[3].Name);
-        Assert.Equal("c", promptTemplateConfig.InputVariables[4].Name);
-        Assert.Equal("d", promptTemplateConfig.InputVariables[5].Name);
-        Assert.Equal("ename", promptTemplateConfig.InputVariables[6].Name);
+        Assert.Equal("d", promptTemplateConfig.InputVariables[4].Name);
+        Assert.Equal("e", promptTemplateConfig.InputVariables[5].Name);
     }
 
     [Fact]
