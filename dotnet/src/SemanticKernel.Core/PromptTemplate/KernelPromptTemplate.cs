@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,9 +37,11 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._promptModel = promptConfig;
+        this._promptConfig = promptConfig;
         this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
+
+        this.AddMissingInputVariables();
     }
 
     /// <inheritdoc/>
@@ -50,7 +53,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptModel;
+    private readonly PromptTemplateConfig _promptConfig;
     private readonly TemplateTokenizer _tokenizer;
     private readonly Lazy<List<Block>> _blocks;
 
@@ -129,5 +132,32 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return resultString;
     }
 
+    private void AddMissingInputVariables()
+    {
+        // Distinct variables from the prompt template config
+        var inputVariableNames = new HashSet<string>(this._promptConfig.InputVariables.Select(p => p.Name).ToList(), StringComparer.OrdinalIgnoreCase);
+
+        // Variables from variable blocks e.g. "{{$a}}"
+        var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+
+        // Variables from code blocks e.g. "{{p.bar $b}}"
+        var codeTokenBlocks = this._blocks.Value.Where(block => block.Type == BlockTypes.Code).SelectMany(block => ((CodeBlock)block).Blocks).ToList();
+        var codeVariableNames = codeTokenBlocks.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+        variableNames.AddRange(codeVariableNames);
+
+        // Variables from named arguments e.g. "{{p.bar b = $b}}"
+        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg && ((NamedArgBlock)block).VarBlock is not null).Select(block => ((NamedArgBlock)block).VarBlock!.Name).ToList();
+        variableNames.AddRange(codeNamedArgs);
+
+        // Add distinct variables found in the template that are not in the prompt config
+        var uniqueVariableNames = new HashSet<string>(variableNames.Distinct().ToList(), StringComparer.OrdinalIgnoreCase);
+        foreach (var variableName in uniqueVariableNames)
+        {
+            if (!string.IsNullOrEmpty(variableName) && !inputVariableNames.Contains(variableName!))
+            {
+                this._promptConfig.InputVariables.Add(new InputVariable { Name = variableName });
+            }
+        }
+    }
     #endregion
 }
