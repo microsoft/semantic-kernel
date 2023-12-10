@@ -68,7 +68,7 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "sk.connectors.openai.tokens.prompt",
+            name: "semantic_kernel.connectors.openai.tokens.prompt",
             unit: "{token}",
             description: "Number of prompt tokens used");
 
@@ -77,7 +77,7 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "sk.connectors.openai.tokens.completion",
+            name: "semantic_kernel.connectors.openai.tokens.completion",
             unit: "{token}",
             description: "Number of completion tokens used");
 
@@ -86,7 +86,7 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "sk.connectors.openai.tokens.total",
+            name: "semantic_kernel.connectors.openai.tokens.total",
             unit: "{token}",
             description: "Number of tokens used");
 
