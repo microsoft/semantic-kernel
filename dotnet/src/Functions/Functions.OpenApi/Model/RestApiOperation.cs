@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
@@ -119,24 +120,30 @@ public sealed class RestApiOperation
     {
         var headers = new Dictionary<string, string>();
 
-        var headersMetadata = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
 
-        foreach (var headerMetadata in headersMetadata)
+        foreach (var parameter in parameters)
         {
-            var headerName = headerMetadata.Name;
-
-            // Try to resolve header value in arguments.
-            if (arguments.TryGetValue(headerName, out string? value) && value is not null)
+            if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
             {
-                headers.Add(headerName, value!);
+                // Throw an exception if the parameter is a required one but no value is provided.
+                if (parameter.IsRequired)
+                {
+                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+                }
+
+                // Skipping not required parameter if no argument provided for it.
                 continue;
             }
 
-            // If a parameter is required, its value should always be provided.
-            if (headerMetadata.IsRequired)
+            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+
+            if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                throw new KernelException($"No argument or value is provided for the '{headerName}' required header of the operation - '{this.Id}'.'");
+                throw new KernelException($"The headers parameter '{parameterStyle}' serialization style is not supported.");
             }
+
+            headers.Add(parameter.Name, serializer.Invoke(parameter, argument));
         }
 
         return headers;
@@ -207,6 +214,11 @@ public sealed class RestApiOperation
     }
 
     private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
+
+    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_parameterSerializers = new()
+    {
+        { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+    };
 
     # endregion
 }

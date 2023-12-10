@@ -2,17 +2,18 @@
 
 using System;
 using System.Text.Json.Nodes;
+using System.Web;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'PipeDelimited' style.
+/// Serializes REST API operation parameter of the 'Form' style.
 /// </summary>
-internal static class PipeDelimitedStyleParameterSerializer
+internal static class FormStyleParameterSerializer
 {
     /// <summary>
-    /// Serializes a REST API operation `PipeDelimited` style parameter.
+    /// Serializes a REST API operation `Form` style parameter.
     /// </summary>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
@@ -23,17 +24,19 @@ internal static class PipeDelimitedStyleParameterSerializer
 
         Verify.NotNull(parameter);
 
-        if (parameter.Style != RestApiOperationParameterStyle.PipeDelimited)
+        if (parameter.Style != RestApiOperationParameterStyle.Form)
         {
-            throw new ArgumentException($"Unexpected Rest API operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
+            throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
         }
 
-        if (parameter.Type != ArrayType)
+        // Handling parameters of array type.
+        if (parameter.Type == ArrayType)
         {
-            throw new ArgumentException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.PipeDelimited}` style parameters. Parameter name `{parameter.Name}`.", nameof(parameter));
+            return SerializeArrayParameter(parameter, argument);
         }
 
-        return SerializeArrayParameter(parameter, argument);
+        // Handling parameters of primitive - integer, string, etc type.
+        return $"{parameter.Name}={HttpUtility.UrlEncode(argument)}";
     }
 
     /// <summary>
@@ -46,7 +49,7 @@ internal static class PipeDelimitedStyleParameterSerializer
     {
         if (JsonNode.Parse(argument) is not JsonArray array)
         {
-            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array.");
+            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
         }
 
         if (parameter.Expand)
@@ -54,6 +57,6 @@ internal static class PipeDelimitedStyleParameterSerializer
             return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); //id=1&id=2&id=3
         }
 
-        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "|")}"; //id=1|2|3
+        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",")}"; //id=1,2,3
     }
 }
