@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
@@ -49,11 +50,6 @@ public sealed class RestApiOperation
     public Uri? ServerUrl { get; }
 
     /// <summary>
-    /// The operation headers.
-    /// </summary>
-    public IDictionary<string, string> Headers { get; }
-
-    /// <summary>
     /// The operation parameters.
     /// </summary>
     public IList<RestApiOperationParameter> Parameters { get; }
@@ -77,7 +73,6 @@ public sealed class RestApiOperation
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="parameters">The operation parameters.</param>
-    /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
     public RestApiOperation(
@@ -87,7 +82,6 @@ public sealed class RestApiOperation
         HttpMethod method,
         string description,
         IList<RestApiOperationParameter> parameters,
-        IDictionary<string, string> headers,
         RestApiOperationPayload? payload = null,
         IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
@@ -97,7 +91,6 @@ public sealed class RestApiOperation
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
-        this.Headers = headers;
         this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
@@ -127,43 +120,30 @@ public sealed class RestApiOperation
     {
         var headers = new Dictionary<string, string>();
 
-        foreach (var header in this.Headers)
+        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+
+        foreach (var parameter in parameters)
         {
-            var headerName = header.Key;
-            var headerValue = header.Value;
-
-            //A try to resolve header value in arguments.
-            if (arguments.TryGetValue(headerName, out string? value) && value is not null)
+            if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
             {
-                headers.Add(headerName, value!);
+                // Throw an exception if the parameter is a required one but no value is provided.
+                if (parameter.IsRequired)
+                {
+                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+                }
+
+                // Skipping not required parameter if no argument provided for it.
                 continue;
             }
 
-            //Header value is already supplied.
-            if (!string.IsNullOrEmpty(headerValue))
+            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+
+            if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                headers.Add(headerName, headerValue!);
-                continue;
+                throw new KernelException($"The headers parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            //Getting metadata for the header
-            var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                                 ?? throw new KernelException($"No argument or value is provided for the '{headerName}' header of the operation - '{this.Id}'.");
-
-            //If parameter is required it's value should always be provided.
-            if (headerMetadata.IsRequired)
-            {
-                throw new KernelException($"No argument or value is provided for the '{headerName}' required header of the operation - '{this.Id}'.'");
-            }
-
-            //Parameter is not required and no default value provided.
-            if (string.IsNullOrEmpty(headerMetadata.DefaultValue))
-            {
-                continue;
-            }
-
-            //Using default value.
-            headers.Add(headerName, headerMetadata.DefaultValue!);
+            headers.Add(parameter.Name, serializer.Invoke(parameter, argument));
         }
 
         return headers;
@@ -183,15 +163,15 @@ public sealed class RestApiOperation
         {
             var parameterName = match.Groups[1].Value;
 
-            //A try to find parameter value in arguments
+            // Try to find parameter value in arguments
             if (arguments.TryGetValue(parameterName, out string? value) && value is not null)
             {
                 return value;
             }
 
-            //A try to find default value for the parameter
+            // Try to find default value for the parameter
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
-            if (parameterMetadata?.DefaultValue == null)
+            if (parameterMetadata?.DefaultValue is null)
             {
                 throw new KernelException($"No argument or value is provided for the '{parameterName}' parameter of the operation - '{this.Id}'.");
             }
@@ -224,7 +204,7 @@ public sealed class RestApiOperation
                 throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
 
-        // make sure base url ends with trailing slash
+        // Make sure base url ends with trailing slash
         if (!serverUrlString.EndsWith("/", StringComparison.OrdinalIgnoreCase))
         {
             serverUrlString += "/";
@@ -234,6 +214,11 @@ public sealed class RestApiOperation
     }
 
     private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
+
+    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_parameterSerializers = new()
+    {
+        { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+    };
 
     # endregion
 }
