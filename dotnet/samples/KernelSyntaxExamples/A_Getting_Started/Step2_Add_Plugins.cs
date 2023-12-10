@@ -17,7 +17,7 @@ public static class Step2_Add_Plugins
     public static async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        KernelBuilder kernelBuilder = new();
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);

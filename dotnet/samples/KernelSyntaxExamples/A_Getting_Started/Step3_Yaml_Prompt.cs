@@ -19,7 +19,7 @@ public static class Step3_Yaml_Prompt
     public static async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
