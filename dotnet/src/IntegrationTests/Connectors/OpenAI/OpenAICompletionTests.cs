@@ -24,7 +24,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAICompletionTests : IDisposable
 {
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
 
     public OpenAICompletionTests(ITestOutputHelper output)
@@ -41,7 +41,7 @@ public sealed class OpenAICompletionTests : IDisposable
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
 
-        this._kernelBuilder = new KernelBuilder();
+        this._kernelBuilder = Kernel.CreateBuilder();
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -75,7 +75,7 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        KernelBuilder builder = this._kernelBuilder;
+        IKernelBuilder builder = this._kernelBuilder;
 
         this.ConfigureChatOpenAI(builder);
 
@@ -95,7 +95,7 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Note: we use OpenAI Chat Completion and GPT 3.5 Turbo
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        KernelBuilder builder = this._kernelBuilder;
+        IKernelBuilder builder = this._kernelBuilder;
         this.ConfigureChatOpenAI(builder);
 
         Kernel target = builder.Build();
@@ -212,7 +212,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
-        KernelBuilder builder = this._kernelBuilder;
+        IKernelBuilder builder = this._kernelBuilder;
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -483,7 +483,7 @@ public sealed class OpenAICompletionTests : IDisposable
         }
     }
 
-    private void ConfigureChatOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureChatOpenAI(IKernelBuilder kernelBuilder)
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
@@ -498,7 +498,7 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: openAIConfiguration.ServiceId);
     }
 
-    private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -515,7 +515,7 @@ public sealed class OpenAICompletionTests : IDisposable
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
-    private void ConfigureInvalidAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureInvalidAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -531,7 +531,7 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}");
     }
 
-    private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAIChatAsText(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 

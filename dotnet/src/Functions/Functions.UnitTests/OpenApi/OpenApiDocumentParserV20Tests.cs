@@ -208,12 +208,15 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.True(operations.Any());
 
         var operation = operations.Single(o => o.Id == "SetSecret");
-        Assert.NotNull(operation.Headers);
-        Assert.Equal(3, operation.Headers.Count);
 
-        Assert.True(operation.Headers.ContainsKey("Accept"));
-        Assert.True(operation.Headers.ContainsKey("X-API-Version"));
-        Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
+        var headerParameters = operation.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+
+        Assert.NotNull(headerParameters);
+        Assert.Equal(3, headerParameters.Count());
+
+        Assert.Contains(headerParameters, (p) => p.Name == "Accept");
+        Assert.Contains(headerParameters, (p) => p.Name == "X-API-Version");
+        Assert.Contains(headerParameters, (p) => p.Name == "X-Operation-Csv-Ids");
     }
 
     [Fact]

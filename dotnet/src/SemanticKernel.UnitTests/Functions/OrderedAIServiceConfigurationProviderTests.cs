@@ -31,7 +31,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleAIService()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<IAIService>("service1", new AIService());
         Kernel kernel = builder.Build();
 
@@ -50,7 +50,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleTextGeneration()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         Kernel kernel = builder.Build();
 
@@ -69,7 +69,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextGenerationByServiceId()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         Kernel kernel = builder.Build();
@@ -90,7 +90,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         Kernel kernel = builder.Build();
@@ -108,7 +108,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceForNoExecutionSettings()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         Kernel kernel = builder.Build();
@@ -127,7 +127,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceAndSettingsForDefaultExecutionSettings()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         Kernel kernel = builder.Build();
@@ -148,7 +148,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         Kernel kernel = builder.Build();
@@ -174,7 +174,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationByOrder(string[] serviceIds, string expectedServiceId)
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service3", new TextGenerationService("model_id_3"));
@@ -203,7 +203,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextGenerationByModelId()
     {
         // Arrange
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton<ITextGenerationService>(null, new TextGenerationService("model1"));
         builder.Services.AddKeyedSingleton<ITextGenerationService>(null, new TextGenerationService("model2"));
         Kernel kernel = builder.Build();

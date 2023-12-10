@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -69,6 +68,10 @@ public sealed class Kernel
             }
         }
     }
+
+    /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
+    /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
+    public static IKernelBuilder CreateBuilder() => new KernelBuilder();
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
