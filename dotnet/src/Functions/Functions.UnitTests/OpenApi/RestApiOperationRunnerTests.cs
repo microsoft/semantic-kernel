@@ -181,7 +181,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var parameters = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
             name: "fake-header",
             type: "string",
             isRequired: true,
@@ -222,7 +222,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var parameters = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
             name: "fake-header",
             type: "string",
             isRequired: true,
