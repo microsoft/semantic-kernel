@@ -30,10 +30,80 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
+    public void ItAddsMissingVariables()
+    {
+        // Arrange
+        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal \"c\"' d = $d}} and {{p.baz ename=$e}}";
+        var promptTemplateConfig = new PromptTemplateConfig(template);
+
+        // Act
+        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
+
+        // Assert
+        Assert.Equal(6, promptTemplateConfig.InputVariables.Count);
+        Assert.Equal("x11", promptTemplateConfig.InputVariables[0].Name);
+        Assert.Equal("a", promptTemplateConfig.InputVariables[1].Name);
+        Assert.Equal("missing", promptTemplateConfig.InputVariables[2].Name);
+        Assert.Equal("b", promptTemplateConfig.InputVariables[3].Name);
+        Assert.Equal("d", promptTemplateConfig.InputVariables[4].Name);
+        Assert.Equal("e", promptTemplateConfig.InputVariables[5].Name);
+    }
+
+    [Fact]
+    public void ItAllowsSameVariableInMultiplePositions()
+    {
+        // Arrange
+        var template = "This {{$a}} {{$a}} and {{p.bar $a}} and {{p.baz a=$a}}";
+        var promptTemplateConfig = new PromptTemplateConfig(template);
+
+        // Act
+        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
+
+        // Assert
+        Assert.Single(promptTemplateConfig.InputVariables);
+        Assert.Equal("a", promptTemplateConfig.InputVariables[0].Name);
+    }
+
+    [Fact]
+    public void ItAllowsSameVariableInMultiplePositionsCaseInsensitive()
+    {
+        // Arrange
+        var template = "{{$a}} {{$A}} and {{p.bar $a}} and {{p.baz A=$a}}";
+        var promptTemplateConfig = new PromptTemplateConfig(template);
+
+        // Act
+        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
+
+        // Assert
+        Assert.Single(promptTemplateConfig.InputVariables);
+        Assert.Equal("a", promptTemplateConfig.InputVariables[0].Name);
+    }
+
+    [Fact]
+    public void ItDoesNotDuplicateExistingParameters()
+    {
+        // Arrange
+        var template = "This {{$A}} and {{p.bar $B}} and {{p.baz C=$C}}";
+        var promptTemplateConfig = new PromptTemplateConfig(template);
+        promptTemplateConfig.InputVariables.Add(new InputVariable { Name = "a" });
+        promptTemplateConfig.InputVariables.Add(new InputVariable { Name = "b" });
+        promptTemplateConfig.InputVariables.Add(new InputVariable { Name = "c" });
+
+        // Act
+        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
+
+        // Assert
+        Assert.Equal(3, promptTemplateConfig.InputVariables.Count);
+        Assert.Equal("a", promptTemplateConfig.InputVariables[0].Name);
+        Assert.Equal("b", promptTemplateConfig.InputVariables[1].Name);
+        Assert.Equal("c", promptTemplateConfig.InputVariables[2].Name);
+    }
+
+    [Fact]
     public async Task ItRendersVariablesValuesAndFunctionsAsync()
     {
         // Arrange
-        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='argument \"c\"' d = $d}}";
+        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='literal \"c\"' d = $d}}";
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("p", "description", new[]
         {
@@ -53,7 +123,7 @@ public sealed class KernelPromptTemplateTests
         var renderedPrompt = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
-        Assert.Equal("This is a test template with function that accepts the positional argument 'input' and another one with argument \"c\" and 'd'", renderedPrompt);
+        Assert.Equal("This is a test template with function that accepts the positional argument 'input' and another one with literal \"c\" and 'd'", renderedPrompt);
     }
 
     [Fact]
@@ -293,16 +363,15 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
-    public async Task ItHandlesSyntaxErrorsAsync()
+    public void ItHandlesSyntaxErrors()
     {
         // Arrange
         this._arguments[KernelArguments.InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
+        var result = Assert.Throws<KernelException>(() => this._factory.Create(new PromptTemplateConfig(template)));
 
         // Assert
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
