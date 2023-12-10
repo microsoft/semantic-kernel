@@ -23,7 +23,7 @@ public class KernelFunctionFromPromptTests
     public void ItAddsMissingVariablesForPrompt()
     {
         // Arrange & Act
-        var function = KernelFunctionFromPrompt.Create("This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='argument \"c\"' d = $d}} and {{p.baz ename=$e}}");
+        var function = KernelFunctionFromPrompt.Create("This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal \"c\"' d = $d}} and {{p.baz ename=$e}}");
 
         // Assert
         Assert.NotNull(function);
