@@ -40,7 +40,6 @@ public static class Example61_MultipleLLMs
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId,
                 apiKey: azureApiKey)
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,

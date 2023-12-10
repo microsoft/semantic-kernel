@@ -20,12 +20,11 @@ public static class Example62_CustomAIServiceSelector
 
         string azureApiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string azureDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureEndpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -44,7 +43,6 @@ public static class Example62_CustomAIServiceSelector
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId,
                 apiKey: azureApiKey)
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,

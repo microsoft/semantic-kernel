@@ -60,6 +60,9 @@ public static class OpenAIServiceCollectionExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNull(serviceConfig);
+        Verify.NotNull(serviceConfig.DeploymentName);
+        Verify.NotNull(serviceConfig.Endpoint);
+        Verify.NotNull(serviceConfig.ApiKey);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {

@@ -22,12 +22,11 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string deploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
+        if (apiKey == null || deploymentName == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -35,7 +34,6 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
         builder.Services.AddLogging(c => c.AddConsole());
         builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,
-            modelId: modelId,
             endpoint: endpoint,
             serviceId: serviceId,
             apiKey: apiKey);
