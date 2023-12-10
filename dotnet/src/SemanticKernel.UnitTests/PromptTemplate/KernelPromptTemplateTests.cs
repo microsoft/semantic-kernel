@@ -66,7 +66,7 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
-    public void ItAllowsSameVariableInMultiplePositionsCaseInsenstive()
+    public void ItAllowsSameVariableInMultiplePositionsCaseInsensitive()
     {
         // Arrange
         var template = "{{$a}} {{$A}} and {{p.bar $a}} and {{p.baz A=$a}}";
