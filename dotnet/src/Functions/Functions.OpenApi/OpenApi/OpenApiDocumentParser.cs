@@ -192,7 +192,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 new HttpMethod(method),
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                CreateRestApiOperationHeaders(operationItem.Parameters)!,
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );
@@ -242,16 +241,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Creates REST API operation headers.
-    /// </summary>
-    /// <param name="parameters">The OpenAPI parameters</param>
-    /// <returns>The headers.</returns>
-    private static Dictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
-    {
-        return parameters.Where(p => p.In == ParameterLocation.Header).ToDictionary(p => p.Name, p => string.Empty);
     }
 
     /// <summary>
