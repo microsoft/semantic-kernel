@@ -95,8 +95,6 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.DeploymentOrModelName = deploymentName;
         this.Client = openAIClient;
-
-        this.AddAttribute(DeploymentNameKey, deploymentName);
     }
 
     /// <summary>

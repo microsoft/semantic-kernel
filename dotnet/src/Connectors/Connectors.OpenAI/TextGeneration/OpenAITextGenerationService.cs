@@ -31,6 +31,7 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(serviceConfig);
         Verify.NotNullOrWhiteSpace(serviceConfig.ModelId);
         Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
 

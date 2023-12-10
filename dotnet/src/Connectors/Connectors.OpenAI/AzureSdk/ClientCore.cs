@@ -482,7 +482,7 @@ internal abstract class ClientCore
     /// </summary>
     /// <param name="key">Attribute key</param>
     /// <param name="value">Attribute value</param>
-    private protected void AddAttribute(string key, string? value)
+    private void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -498,6 +498,7 @@ internal abstract class ClientCore
     {
         this.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
         this.AddAttribute(AIServiceExtensions.EndpointKey, serviceConfig.Endpoint);
+        this.AddAttribute(AIServiceExtensions.ApiVersionKey, serviceConfig.ApiVersion);
         this.AddAttribute(OpenAIClientCore.OrganizationKey, serviceConfig.Organization);
     }
 

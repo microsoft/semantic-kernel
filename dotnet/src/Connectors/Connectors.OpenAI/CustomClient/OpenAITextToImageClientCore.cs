@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -81,12 +82,24 @@ internal sealed class OpenAITextToImageClientCore
     /// </summary>
     /// <param name="key">Attribute key</param>
     /// <param name="value">Attribute value</param>
-    internal void AddAttribute(string key, string? value)
+    private void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
         {
             this.Attributes.Add(key, value!);
         }
+    }
+
+    /// <summary>
+    /// Set the service attributes.
+    /// </summary>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
+    internal void SetAttributes(OpenAIServiceConfig serviceConfig)
+    {
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, serviceConfig.ModelId);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, serviceConfig.Endpoint);
+        this.AddAttribute(AIServiceExtensions.ApiVersionKey, serviceConfig.ApiVersion);
+        this.AddAttribute(OpenAIClientCore.OrganizationKey, serviceConfig.Organization);
     }
 
     /// <summary>

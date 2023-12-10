@@ -9,7 +9,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -56,37 +55,34 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <summary>
     /// Create a new instance of Azure OpenAI text to image service
     /// </summary>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceConfig">Service configuration <see cref="OpenAIServiceConfig"/></param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the text to image operation result.</param>
-    /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAITextToImageService(
-        string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
+        OpenAIServiceConfig serviceConfig,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null,
+        int? maxRetryCount = null)
     {
-        Verify.NotNullOrWhiteSpace(apiKey);
-        Verify.NotNull(modelId);
+        Verify.NotNull(serviceConfig);
+        Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
 
-        if (httpClient?.BaseAddress == null && string.IsNullOrEmpty(endpoint))
+        if (httpClient?.BaseAddress == null && string.IsNullOrEmpty(serviceConfig.Endpoint))
         {
-            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(serviceConfig.Endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
         // Defaults if not supplied
         maxRetryCount ??= 5;
-        apiVersion ??= "2023-06-01-preview";
 
         this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)));
 
-        this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
-        this._apiKey = apiKey;
+        this._endpoint = !string.IsNullOrEmpty(serviceConfig.Endpoint) ? serviceConfig.Endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
+        this._apiKey = serviceConfig.ApiKey;
         this._maxRetryCount = maxRetryCount.Value;
-        this._apiVersion = apiVersion;
-        this._core.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-        this._core.AddAttribute(AIServiceExtensions.ApiVersionKey, apiVersion);
+        this._apiVersion = serviceConfig.ApiVersion ??= "2023-06-01-preview";
+        this._core.SetAttributes(serviceConfig);
 
         this._core.RequestCreated += (_, request) => request.Headers.Add("api-key", this._apiKey);
     }

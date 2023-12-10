@@ -32,4 +32,9 @@ public sealed class OpenAIServiceConfig
     /// OpenAI organization id, see <see href="https://platform.openai.com/docs/api-reference/authentication"/>
     /// </summary>
     public string? Organization { get; set; }
+
+    /// <summary>
+    /// Azure OpenAI API version , see <see href="https://learn.microsoft.com/azure/cognitive-services/openai/quickstart"/>
+    /// </summary>
+    public string? ApiVersion { get; set; }
 }
