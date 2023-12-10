@@ -528,7 +528,6 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles
     private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
