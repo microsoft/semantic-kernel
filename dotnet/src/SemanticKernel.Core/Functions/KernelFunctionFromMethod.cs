@@ -303,7 +303,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         bool fallBackToInput = !sawFirstParameter && !nameIsInput;
 
-        var parser = GetParser(type);
+        var converter = GetConverter(type);
 
         object? parameterFunc(Kernel kernel, KernelArguments arguments, CancellationToken _)
         {
@@ -332,12 +332,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             object? Process(object? value)
             {
-                //Converting string argument to target parameter type
-                if (value?.GetType() != type && parser is Func<object?, CultureInfo, object>)
+                if (!type.IsAssignableFrom(value?.GetType()) && converter is Func<object?, CultureInfo, object>)
                 {
                     try
                     {
-                        return parser(value, kernel.Culture);
+                        return converter(value, kernel.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
@@ -570,16 +569,16 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <summary>
-    /// Gets a TypeConverter-based parser for parsing a string as the target type.
+    /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
     /// </summary>
-    /// <param name="targetType">Specifies the target type into which a string should be parsed.</param>
-    /// <returns>The parsing function if the target type is supported; otherwise, null.</returns>
+    /// <param name="targetType">Specifies the target type into which a source type should be converted.</param>
+    /// <returns>The converter function if the target type is supported; otherwise, null.</returns>
     /// <remarks>
-    /// The parsing function uses whatever TypeConverter is registered for the target type.
-    /// Parsing is first attempted using the current culture, and if that fails, it tries again
+    /// The conversion function uses whatever TypeConverter is registered for the target type.
+    /// Conversion is first attempted using the current culture, and if that fails, it tries again
     /// with the invariant culture. If both fail, an exception is thrown.
     /// </remarks>
-    private static Func<object?, CultureInfo, object?>? GetParser(Type targetType) =>
+    private static Func<object?, CultureInfo, object?>? GetConverter(Type targetType) =>
         s_parsers.GetOrAdd(targetType, static targetType =>
         {
             // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
@@ -603,11 +602,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         return null;
                     }
 
-                    if (targetType == input?.GetType())
-                    {
-                        return input;
-                    }
-
                     object? Convert(CultureInfo culture)
                     {
                         if (converter.CanConvertFrom(input?.GetType()))
@@ -616,8 +610,27 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 
-                        // This line performs implicit type conversion, e.g., int to long, byte to int, Guid to string, etc. 
-                        return converter.ConvertTo(context: null, culture, input, targetType);
+                        // This line performs implicit type conversion, e.g., int to long, byte to int, Guid to string, etc.
+                        if (converter.CanConvertTo(targetType))
+                        {
+                            return converter.ConvertTo(context: null, culture, input, targetType);
+                        }
+
+                        // EnumConverter cannot convert integer, so we verify manually
+                        if (targetType.IsEnum &&
+                            (input is int ||
+                            input is uint ||
+                            input is long ||
+                            input is ulong ||
+                            input is short ||
+                            input is ushort ||
+                            input is byte ||
+                            input is sbyte))
+                        {
+                            return Enum.ToObject(targetType, input);
+                        }
+
+                        throw new InvalidOperationException($"No converter found to convert from {targetType} to {input?.GetType()}.");
                     }
 
                     // First try to parse using the supplied culture (or current if none was supplied).

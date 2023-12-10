@@ -745,6 +745,30 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("84", result.ToString());
     }
 
+    [Theory]
+    [InlineData((int)0, DayOfWeek.Sunday)]
+    [InlineData((uint)1, DayOfWeek.Monday)]
+    [InlineData((long)2, DayOfWeek.Tuesday)]
+    [InlineData((ulong)3, DayOfWeek.Wednesday)]
+    [InlineData((short)4, DayOfWeek.Thursday)]
+    [InlineData((ushort)5, DayOfWeek.Friday)]
+    [InlineData((byte)6, DayOfWeek.Saturday)]
+    [InlineData((sbyte)0, DayOfWeek.Sunday)]
+
+    public async Task ItSupportsConvertingAllIntegerTypesToEnumAsync(object argument, DayOfWeek expected)
+    {
+        // Assert
+        object? actual = null;
+
+        var function = KernelFunctionFactory.CreateFromMethod((DayOfWeek dow) => actual = dow);
+
+        // Act
+        var result = await function.InvokeAsync(this._kernel, new() { ["dow"] = argument });
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
