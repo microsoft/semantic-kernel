@@ -679,7 +679,7 @@ internal abstract class ClientCore
     {
         if (message.Items is { Count: > 0 })
         {
-            var contentItems = message.Items.Select(GetChatMessageContentItem).ToList();
+            var contentItems = message.Items.Select(GetChatMessageContentItem);
             return new ChatRequestUserMessage(contentItems) { Name = functionName };
         }
 
