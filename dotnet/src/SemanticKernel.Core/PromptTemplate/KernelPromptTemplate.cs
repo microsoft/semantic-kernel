@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,9 +37,11 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._promptModel = promptConfig;
+        this._promptConfig = promptConfig;
         this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
+
+        this.AddMissingInputVariables();
     }
 
     /// <inheritdoc/>
@@ -50,7 +53,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptModel;
+    private readonly PromptTemplateConfig _promptConfig;
     private readonly TemplateTokenizer _tokenizer;
     private readonly Lazy<List<Block>> _blocks;
 
@@ -129,5 +132,25 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return resultString;
     }
 
+    private void AddMissingInputVariables()
+    {
+        // Variables from the prompt template config
+        var inputVariableNames = this._promptConfig.InputVariables.Select(p => p.Name).ToList();
+
+        // Variables from the template
+        var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+        var codeTokenBlocks = this._blocks.Value.Where(block => block.Type == BlockTypes.Code).SelectMany(block => ((CodeBlock)block).Blocks).ToList();
+        var codeVariableNames = codeTokenBlocks.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg).Select(block => ((NamedArgBlock)block).Name).ToList();
+        variableNames.AddRange(codeVariableNames);
+        variableNames.AddRange(codeNamedArgs);
+        foreach (var variableName in variableNames)
+        {
+            if (!string.IsNullOrEmpty(variableName) && !inputVariableNames.Contains(variableName!))
+            {
+                this._promptConfig.InputVariables.Add(new InputVariable { Name = variableName });
+            }
+        }
+    }
     #endregion
 }

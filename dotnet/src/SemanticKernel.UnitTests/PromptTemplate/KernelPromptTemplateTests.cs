@@ -30,6 +30,26 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
+    public void ItAddsMissingVariables()
+    {
+        // Arrange
+        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='argument \"c\"' d = $d}}";
+        var promptTemplateConfig = new PromptTemplateConfig(template);
+
+        // Act
+        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
+
+        // Assert
+        Assert.Equal(6, promptTemplateConfig.InputVariables.Count);
+        Assert.Equal("x11", promptTemplateConfig.InputVariables[0].Name);
+        Assert.Equal("a", promptTemplateConfig.InputVariables[1].Name);
+        Assert.Equal("missing", promptTemplateConfig.InputVariables[2].Name);
+        Assert.Equal("b", promptTemplateConfig.InputVariables[3].Name);
+        Assert.Equal("c", promptTemplateConfig.InputVariables[4].Name);
+        Assert.Equal("d", promptTemplateConfig.InputVariables[5].Name);
+    }
+
+    [Fact]
     public async Task ItRendersVariablesValuesAndFunctionsAsync()
     {
         // Arrange
@@ -293,16 +313,17 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
-    public async Task ItHandlesSyntaxErrorsAsync()
+    public void ItHandlesSyntaxErrors()
     {
         // Arrange
         this._arguments[KernelArguments.InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
-        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
+        //var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
         // Act
-        var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
+        var result = Assert.Throws<KernelException>(() => this._factory.Create(new PromptTemplateConfig(template)));
+        //var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
 
         // Assert
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
