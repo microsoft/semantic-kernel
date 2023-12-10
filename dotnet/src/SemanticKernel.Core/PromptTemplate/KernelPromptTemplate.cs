@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,51 +34,43 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._promptConfig = promptConfig;
-        this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
-        this._tokenizer = new TemplateTokenizer(this._loggerFactory);
+        loggerFactory ??= NullLoggerFactory.Instance;
+        this._logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
 
-        this.AddMissingInputVariables();
+        this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
+        AddMissingInputVariables(this._blocks, promptConfig);
     }
 
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        return this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken);
+        return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
     }
 
     #region private
-    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptConfig;
-    private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<List<Block>> _blocks;
+    private readonly List<Block> _blocks;
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
     /// </summary>
-    /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
-    /// <param name="validate">Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code</param>
     /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
-    private List<Block> ExtractBlocks(string? templateText, bool validate = true)
+    private List<Block> ExtractBlocks(PromptTemplateConfig config, ILoggerFactory loggerFactory)
     {
+        string templateText = config.Template;
+
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
             this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
         }
 
-        var blocks = this._tokenizer.Tokenize(templateText);
+        var blocks = new TemplateTokenizer(loggerFactory).Tokenize(templateText);
 
-        if (validate)
+        foreach (var block in blocks)
         {
-            foreach (var block in blocks)
+            if (!block.IsValid(out var error))
             {
-                if (!block.IsValid(out var error))
-                {
-                    throw new KernelException(error);
-                }
+                throw new KernelException(error);
             }
         }
 
@@ -132,30 +123,55 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return resultString;
     }
 
-    private void AddMissingInputVariables()
+    /// <summary>
+    /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
+    /// not already contained there but that are referenced in the prompt template.
+    /// </summary>
+    private static void AddMissingInputVariables(List<Block> blocks, PromptTemplateConfig config)
     {
-        // Distinct variables from the prompt template config
-        var inputVariableNames = new HashSet<string>(this._promptConfig.InputVariables.Select(p => p.Name).ToList(), StringComparer.OrdinalIgnoreCase);
-
-        // Variables from variable blocks e.g. "{{$a}}"
-        var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-
-        // Variables from code blocks e.g. "{{p.bar $b}}"
-        var codeTokenBlocks = this._blocks.Value.Where(block => block.Type == BlockTypes.Code).SelectMany(block => ((CodeBlock)block).Blocks).ToList();
-        var codeVariableNames = codeTokenBlocks.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-        variableNames.AddRange(codeVariableNames);
-
-        // Variables from named arguments e.g. "{{p.bar b = $b}}"
-        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg && ((NamedArgBlock)block).VarBlock is not null).Select(block => ((NamedArgBlock)block).VarBlock!.Name).ToList();
-        variableNames.AddRange(codeNamedArgs);
-
-        // Add distinct variables found in the template that are not in the prompt config
-        var uniqueVariableNames = new HashSet<string>(variableNames.Distinct().ToList(), StringComparer.OrdinalIgnoreCase);
-        foreach (var variableName in uniqueVariableNames)
+        // Add all of the existing input variables to our known set. We'll avoid adding any
+        // dynamically discovered input variables with the same name.
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (InputVariable iv in config.InputVariables)
         {
-            if (!string.IsNullOrEmpty(variableName) && !inputVariableNames.Contains(variableName!))
+            seen.Add(iv.Name);
+        }
+
+        // Enumerate every block in the template, adding any variables that are referenced.
+        foreach (Block block in blocks)
+        {
+            switch (block.Type)
             {
-                this._promptConfig.InputVariables.Add(new InputVariable { Name = variableName });
+                case BlockTypes.Variable:
+                    // Add all variables from variable blocks, e.g. "{{$a}}".
+                    AddIfMissing(((VarBlock)block).Name);
+                    break;
+
+                case BlockTypes.Code:
+                    foreach (Block codeBlock in ((CodeBlock)block).Blocks)
+                    {
+                        switch (codeBlock.Type)
+                        {
+                            case BlockTypes.Variable:
+                                // Add all variables from code blocks, e.g. "{{p.bar $b}}".
+                                AddIfMissing(((VarBlock)codeBlock).Name);
+                                break;
+
+                            case BlockTypes.NamedArg when ((NamedArgBlock)codeBlock).VarBlock is { } varBlock:
+                                // Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
+                                AddIfMissing(varBlock.Name);
+                                break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        void AddIfMissing(string variableName)
+        {
+            if (!string.IsNullOrEmpty(variableName) && seen.Add(variableName))
+            {
+                config.InputVariables.Add(new InputVariable { Name = variableName });
             }
         }
     }
