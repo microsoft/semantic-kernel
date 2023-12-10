@@ -893,7 +893,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <summary>
     /// Adds the Azure OpenAI chat completion with data service to the list.
     /// </summary>
-    /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance.</param>
     /// <param name="config">Required configuration for Azure OpenAI chat completion with data.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
