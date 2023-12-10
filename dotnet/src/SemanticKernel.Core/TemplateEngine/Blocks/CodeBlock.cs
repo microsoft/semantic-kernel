@@ -177,7 +177,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         // Check if the function has parameters to be set
         if (functionMetadata.Parameters.Count == 0)
         {
-            throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} has no parameters.");
+            throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} does not take any arguments but it is being called in the template with {this._tokens.Count - 1} arguments.");
         }
 
         if (firstArg.Type is not BlockTypes.NamedArg)
