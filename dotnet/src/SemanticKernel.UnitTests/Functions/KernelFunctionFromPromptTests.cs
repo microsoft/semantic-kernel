@@ -23,19 +23,20 @@ public class KernelFunctionFromPromptTests
     public void ItAddsMissingVariablesForPrompt()
     {
         // Arrange & Act
-        var function = KernelFunctionFromPrompt.Create("This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='argument \"c\"' d = $d}}");
+        var function = KernelFunctionFromPrompt.Create("This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='argument \"c\"' d = $d}} and {{p.baz ename=$e}}");
 
         // Assert
         Assert.NotNull(function);
         Assert.NotNull(function.Metadata);
         Assert.NotNull(function.Metadata.Parameters);
-        Assert.Equal(6, function.Metadata.Parameters.Count);
+        Assert.Equal(7, function.Metadata.Parameters.Count);
         Assert.Equal("x11", function.Metadata.Parameters[0].Name);
         Assert.Equal("a", function.Metadata.Parameters[1].Name);
         Assert.Equal("missing", function.Metadata.Parameters[2].Name);
         Assert.Equal("b", function.Metadata.Parameters[3].Name);
         Assert.Equal("c", function.Metadata.Parameters[4].Name);
         Assert.Equal("d", function.Metadata.Parameters[5].Name);
+        Assert.Equal("ename", function.Metadata.Parameters[6].Name);
     }
 
     [Fact]

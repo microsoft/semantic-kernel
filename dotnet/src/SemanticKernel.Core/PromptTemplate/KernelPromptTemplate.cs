@@ -134,17 +134,24 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
     private void AddMissingInputVariables()
     {
-        // Variables from the prompt template config
-        var inputVariableNames = this._promptConfig.InputVariables.Select(p => p.Name).ToList();
+        // Distinct variables from the prompt template config
+        var inputVariableNames = new HashSet<string>(this._promptConfig.InputVariables.Select(p => p.Name).ToList(), StringComparer.OrdinalIgnoreCase);
 
-        // Variables from the template
+        // Variables from variable blocks e.g. "{{$a}}"
         var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+
+        // Variables from code blocks e.g. "{{p.bar $b}}"
         var codeTokenBlocks = this._blocks.Value.Where(block => block.Type == BlockTypes.Code).SelectMany(block => ((CodeBlock)block).Blocks).ToList();
         var codeVariableNames = codeTokenBlocks.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg).Select(block => ((NamedArgBlock)block).Name).ToList();
         variableNames.AddRange(codeVariableNames);
+
+        // Variables from named arguments e.g. "{{p.bar b = $b}}"
+        var codeNamedArgs = codeTokenBlocks.Where(block => block.Type == BlockTypes.NamedArg).Select(block => ((NamedArgBlock)block).Name).ToList();
         variableNames.AddRange(codeNamedArgs);
-        foreach (var variableName in variableNames)
+
+        // Add distinct variables found in the template that are not in the prompt config
+        var uniqueVariableNames = new HashSet<string>(variableNames.Distinct().ToList(), StringComparer.OrdinalIgnoreCase);
+        foreach (var variableName in uniqueVariableNames)
         {
             if (!string.IsNullOrEmpty(variableName) && !inputVariableNames.Contains(variableName!))
             {
