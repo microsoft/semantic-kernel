@@ -126,13 +126,13 @@ public sealed class RestApiOperation
         {
             if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
             {
-                //Throw an exception if the parameter is a required one but no value is provided.
+                // Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)
                 {
                     throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
                 }
 
-                //Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it.
                 continue;
             }
 
