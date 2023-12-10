@@ -671,7 +671,7 @@ internal abstract class ClientCore
         {
             TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
             ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
-            _ => throw new NotSupportedException("Unsupported content type of chat message item.")
+            _ => throw new NotSupportedException($"Unsupported content type of chat message item: {item.GetType()}.")
         };
     }
 
