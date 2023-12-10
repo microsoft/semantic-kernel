@@ -18,15 +18,21 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction
 {
+    /// <summary>The measurement tag name for the function name.</summary>
+    protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
+
+    /// <summary>The measurement tag name for the function error type.</summary>
+    protected const string MeasurementErrorTagName = "error.type";
+
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
-    private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+    private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
-        name: "sk.function.invocation.duration",
+        name: "semantic_kernel.function.invocation.duration",
         unit: "s",
         description: "Measures the duration of a function’s execution");
 
@@ -36,7 +42,7 @@ public abstract class KernelFunction
     /// spent in the consuming code between MoveNextAsync calls on the enumerator.
     /// </remarks>
     private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
-        name: "sk.function.streaming.duration",
+        name: "semantic_kernel.function.streaming.duration",
         unit: "s",
         description: "Measures the duration of a function’s streaming execution");
 
@@ -118,7 +124,7 @@ public abstract class KernelFunction
         arguments ??= new KernelArguments();
         logger.LogFunctionInvokingWithArguments(this.Name, arguments);
 
-        TagList tags = new() { { "sk.function.name", this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult? functionResult = null;
         try
@@ -150,11 +156,12 @@ public abstract class KernelFunction
             }
 
             logger.LogFunctionInvokedSuccess(functionResult.Value);
+
             return functionResult;
         }
         catch (Exception ex)
         {
-            HandleException(ex, logger, this, kernel, arguments, functionResult, ref tags);
+            HandleException(ex, logger, activity, this, kernel, arguments, functionResult, ref tags);
             throw;
         }
         finally
@@ -229,7 +236,7 @@ public abstract class KernelFunction
         arguments ??= new KernelArguments();
         logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);
 
-        TagList tags = new() { { "sk.function.name", this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
@@ -255,7 +262,7 @@ public abstract class KernelFunction
             }
             catch (Exception ex)
             {
-                HandleException(ex, logger, this, kernel, arguments, result: null, ref tags);
+                HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
                 throw;
             }
 
@@ -274,7 +281,7 @@ public abstract class KernelFunction
                     }
                     catch (Exception ex)
                     {
-                        HandleException(ex, logger, this, kernel, arguments, result: null, ref tags);
+                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
                         throw;
                     }
 
@@ -290,10 +297,7 @@ public abstract class KernelFunction
             // Record the streaming duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Function streaming completed. Duration: {Duration}s", duration.TotalSeconds);
-            }
+            logger.LogFunctionStreamingComplete(duration.TotalSeconds);
         }
     }
 
@@ -322,10 +326,18 @@ public abstract class KernelFunction
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(
-        Exception ex, ILogger logger, KernelFunction kernelFunction, Kernel kernel, KernelArguments arguments, FunctionResult? result, ref TagList tags)
+        Exception ex,
+        ILogger logger,
+        Activity? activity,
+        KernelFunction kernelFunction,
+        Kernel kernel,
+        KernelArguments arguments,
+        FunctionResult? result,
+        ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
-        tags.Add("error.type", ex.GetType().FullName);
+        tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
         logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException

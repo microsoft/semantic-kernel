@@ -20,11 +20,30 @@ namespace SemanticKernel.UnitTests.Functions;
 public class KernelFunctionFromPromptTests
 {
     [Fact]
+    public void ItAddsMissingVariablesForPrompt()
+    {
+        // Arrange & Act
+        var function = KernelFunctionFromPrompt.Create("This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal \"c\"' d = $d}} and {{p.baz ename=$e}}");
+
+        // Assert
+        Assert.NotNull(function);
+        Assert.NotNull(function.Metadata);
+        Assert.NotNull(function.Metadata.Parameters);
+        Assert.Equal(6, function.Metadata.Parameters.Count);
+        Assert.Equal("x11", function.Metadata.Parameters[0].Name);
+        Assert.Equal("a", function.Metadata.Parameters[1].Name);
+        Assert.Equal("missing", function.Metadata.Parameters[2].Name);
+        Assert.Equal("b", function.Metadata.Parameters[3].Name);
+        Assert.Equal("d", function.Metadata.Parameters[4].Name);
+        Assert.Equal("e", function.Metadata.Parameters[5].Name);
+    }
+
+    [Fact]
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
         var factory = new Mock<Func<IServiceProvider, ITextGenerationService>>();
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(factory.Object);
         Kernel kernel = builder.Build();
 
@@ -46,7 +65,7 @@ public class KernelFunctionFromPromptTests
 
         mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
         Kernel kernel = builder.Build();
 
@@ -77,7 +96,7 @@ public class KernelFunctionFromPromptTests
         mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
@@ -102,7 +121,7 @@ public class KernelFunctionFromPromptTests
         var mockTextGeneration1 = new Mock<ITextGenerationService>();
         var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
@@ -123,7 +142,7 @@ public class KernelFunctionFromPromptTests
     public async Task ItParsesStandardizedPromptWhenServiceIsChatCompletionAsync()
     {
         var fakeService = new FakeChatAsTextService();
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
@@ -145,7 +164,7 @@ public class KernelFunctionFromPromptTests
     public async Task ItParsesStandardizedPromptWhenServiceIsStreamingChatCompletionAsync()
     {
         var fakeService = new FakeChatAsTextService();
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
@@ -172,7 +191,7 @@ public class KernelFunctionFromPromptTests
         var mockResult = mockService.Setup(s => s.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<TextContent>() { new("something") });
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
         Kernel kernel = builder.Build();
 
@@ -200,7 +219,7 @@ public class KernelFunctionFromPromptTests
         var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
             .Returns(this.ToAsyncEnumerable<StreamingTextContent>(new List<StreamingTextContent>() { new("something") }));
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
         Kernel kernel = builder.Build();
 

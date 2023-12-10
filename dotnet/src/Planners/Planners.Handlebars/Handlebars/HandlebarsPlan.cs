@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -46,7 +48,22 @@ public sealed class HandlebarsPlan
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
-    public string Invoke(
+    public Task<string> InvokeAsync(
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken = default)
+    {
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan));
+
+        return PlannerInstrumentation.InvokePlanAsync(
+            static (HandlebarsPlan plan, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+                => plan.InvokeCoreAsync(kernel, arguments, cancellationToken),
+            this, kernel, arguments, logger, cancellationToken);
+    }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+    private async Task<string> InvokeCoreAsync(
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken = default)

@@ -59,7 +59,7 @@ after this event Caroline became his wife.""";
     public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("\n======== Groundedness Checks ========");
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
@@ -126,7 +126,7 @@ Text:\n{GroundingText};
 
         Console.WriteLine("\n======== Planning - Groundedness Checks ========");
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
@@ -146,7 +146,7 @@ Text:\n{GroundingText};
         Console.WriteLine($"======== Goal: ========\n{ask}");
         Console.WriteLine($"======== Plan ========\n{plan}");
 
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("======== Result ========");
         Console.WriteLine(result);
