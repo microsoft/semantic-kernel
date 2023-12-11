@@ -112,7 +112,7 @@ public class FunctionResultTests
     }
 
     [Fact]
-    public void GetValueWhenValueIsContentBaseGenericStringShouldReturnContentBaseToString()
+    public void GetValueWhenValueIsKernelContentGenericStringShouldReturnContentBaseToString()
     {
         // Arrange
         string expectedValue = Guid.NewGuid().ToString();
@@ -123,7 +123,7 @@ public class FunctionResultTests
     }
 
     [Fact]
-    public void GetValueWhenValueIsContentBaseGenericTypeMatchShouldReturn()
+    public void GetValueWhenValueIsKernelContentGenericTypeMatchShouldReturn()
     {
         // Arrange
         string expectedValue = Guid.NewGuid().ToString();

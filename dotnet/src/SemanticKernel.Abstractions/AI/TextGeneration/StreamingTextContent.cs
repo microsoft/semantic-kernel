@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.TextGeneration;
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
 /// </summary>
-public class StreamingTextContent : StreamingContentBase
+public class StreamingTextContent : StreamingKernelContent
 {
     /// <summary>
     /// Text associated to the update

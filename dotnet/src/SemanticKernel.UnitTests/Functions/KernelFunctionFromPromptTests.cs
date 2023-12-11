@@ -315,7 +315,7 @@ public class KernelFunctionFromPromptTests
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
 
-        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
         {
             Assert.Equal(expectedContent, chunk);
         }
@@ -340,7 +340,7 @@ public class KernelFunctionFromPromptTests
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
 
-        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
         {
             Assert.Equal(expectedContent, chunk);
             Assert.Equal("Something", chunk.ToString());
@@ -364,7 +364,7 @@ public class KernelFunctionFromPromptTests
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
 
-        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
         {
             Assert.Equal("Something", chunk.ToString());
         }

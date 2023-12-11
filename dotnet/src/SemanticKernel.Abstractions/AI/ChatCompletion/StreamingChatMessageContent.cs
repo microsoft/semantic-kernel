@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <remarks>
 /// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
-public class StreamingChatMessageContent : StreamingContentBase
+public class StreamingChatMessageContent : StreamingKernelContent
 {
     /// <summary>
     /// Text associated to the message payload
