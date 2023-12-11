@@ -19,7 +19,12 @@ public class ChatMessageContent : ContentBase
     /// <summary>
     /// Content of the message
     /// </summary>
-    public string Content { get; set; }
+    public string? Content { get; set; }
+
+    /// <summary>
+    /// Chat message content items
+    /// </summary>
+    public ChatMessageContentItemCollection? Items { get; set; }
 
     /// <summary>
     /// The encoding of the text content.
@@ -37,11 +42,41 @@ public class ChatMessageContent : ContentBase
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     [JsonConstructor]
-    public ChatMessageContent(AuthorRole role, string content, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
+    public ChatMessageContent(
+        AuthorRole role,
+        string content,
+        string? modelId = null,
+        object? innerContent = null,
+        Encoding? encoding = null,
+        IDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
     {
         this.Role = role;
         this.Content = content;
         this.Encoding = encoding ?? Encoding.UTF8;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
+    /// </summary>
+    /// <param name="role">Role of the author of the message</param>
+    /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="innerContent">Inner content object reference</param>
+    /// <param name="encoding">Encoding of the text</param>
+    /// <param name="metadata">Dictionary for any additional metadata</param>
+    public ChatMessageContent(
+        AuthorRole role,
+        ChatMessageContentItemCollection items,
+        string? modelId = null,
+        object? innerContent = null,
+        Encoding? encoding = null,
+        IDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Role = role;
+        this.Encoding = encoding ?? Encoding.UTF8;
+        this.Items = items;
     }
 
     /// <inheritdoc/>
