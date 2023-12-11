@@ -19,7 +19,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
+        this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate)) ?? NullLogger.Instance;
         this._promptModel = promptConfig;
     }
 

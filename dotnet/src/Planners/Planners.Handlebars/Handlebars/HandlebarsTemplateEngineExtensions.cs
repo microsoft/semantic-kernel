@@ -89,7 +89,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
-            return InvokeSKFunction(kernel, function, state, cancellationToken);
+            return InvokeKernelFunction(kernel, function, state, cancellationToken);
         });
     }
 
@@ -123,7 +123,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         {
             KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
             var functionName = arguments[1].ToString();
-            return parameter.ToSKParameterMetadata(functionName).GetSchemaTypeName();
+            return parameter.ToKernelParameterMetadata(functionName).GetSchemaTypeName();
         });
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -424,7 +424,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <summary>
     /// Invokes an SK function and returns a typed result, if specified.
     /// </summary>
-    private static object? InvokeSKFunction(
+    private static object? InvokeKernelFunction(
         Kernel kernel,
         KernelFunction function,
         KernelArguments state,

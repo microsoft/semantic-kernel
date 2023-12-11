@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
@@ -98,7 +99,11 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 
@@ -122,7 +127,11 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 
@@ -157,7 +166,7 @@ public static class GrpcKernelExtensions
 
         var runner = new GrpcOperationRunner(client);
 
-        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) ?? NullLogger.Instance;
         foreach (var operation in operations)
         {
             try
@@ -198,9 +207,9 @@ public static class GrpcKernelExtensions
             {
                 return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex) when (!ex.IsCriticalException() && loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Warning))
             {
-                loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
+                logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
                 throw;
             }
         }

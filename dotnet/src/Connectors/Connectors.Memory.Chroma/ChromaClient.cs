@@ -35,7 +35,7 @@ public class ChromaClient : IChromaClient
 
         this._httpClient = HttpClientProvider.GetHttpClient();
         this._endpoint = endpoint;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class ChromaClient : IChromaClient
 
         this._httpClient = httpClient;
         this._endpoint = endpoint;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc />

@@ -371,7 +371,7 @@ public static class KernelExtensions
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         var functions = new List<KernelFunction>();
-        ILogger logger = loggerFactory.CreateLogger(typeof(Kernel));
+        ILogger logger = loggerFactory.CreateLogger(typeof(Kernel)) ?? NullLogger.Instance;
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
         {
