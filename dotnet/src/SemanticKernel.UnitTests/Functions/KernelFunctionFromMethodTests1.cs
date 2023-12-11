@@ -744,6 +744,29 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("84", result.ToString());
     }
 
+    [Theory]
+    [InlineData((int)0, DayOfWeek.Sunday)]
+    [InlineData((uint)1, DayOfWeek.Monday)]
+    [InlineData((long)2, DayOfWeek.Tuesday)]
+    [InlineData((ulong)3, DayOfWeek.Wednesday)]
+    [InlineData((short)4, DayOfWeek.Thursday)]
+    [InlineData((ushort)5, DayOfWeek.Friday)]
+    [InlineData((byte)6, DayOfWeek.Saturday)]
+    [InlineData((sbyte)0, DayOfWeek.Sunday)]
+    public async Task ItSupportsConvertingAllIntegerTypesToEnumAsync(object argument, DayOfWeek expected)
+    {
+        // Arrange
+        object? actual = null;
+
+        var function = KernelFunctionFactory.CreateFromMethod((DayOfWeek dow) => actual = dow);
+
+        // Act
+        var result = await function.InvokeAsync(this._kernel, new() { ["dow"] = argument });
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
@@ -851,18 +874,21 @@ public sealed class KernelFunctionFromMethodTests1
         //Arrange
         var arguments = new KernelArguments()
         {
-            ["l"] = (int)1,     //Expected parameter type: long
-            ["i"] = (byte)1,    //Expected parameter type: int
-            ["d"] = (float)1.0, //Expected parameter type: double
-            ["f"] = (uint)1.0   //Expected parameter type: float
+            ["l"] = (int)1,                 //Passed to parameter of type long
+            ["i"] = (byte)1,                //Passed to parameter of type int
+            ["d"] = (float)1.0,             //Passed to parameter of type double
+            ["f"] = (uint)1.0,              //Passed to parameter of type float
+            ["g"] = new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"),   //Passed to parameter of type string
+            ["dof"] = DayOfWeek.Thursday    //Passed to parameter of type int
         };
 
-        var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f) =>
+        var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f, string g, int dof) =>
         {
             Assert.Equal(1, l);
             Assert.Equal(1, i);
             Assert.Equal(1.0, d);
-            Assert.Equal(1.0, f);
+            Assert.Equal("35626209-b0ab-458c-bfc4-43e6c7bd13dc", g);
+            Assert.Equal(4, dof);
         },
         functionName: "Test");
 
@@ -887,6 +913,60 @@ public sealed class KernelFunctionFromMethodTests1
         var function = KernelFunctionFactory.CreateFromMethod(Test);
 
         await function.InvokeAsync(this._kernel, arguments: new() { { "a", 10 } }); // Passing value for the 'a' parameter only.
+    }
+
+    [Fact]
+    public async Task ItShouldMarshalArgumentsOfValueTypeAsync()
+    {
+        //Scenario #1 - passing int argument to a method that accepts int
+        object? actual = null;
+        var sut = KernelFunctionFactory.CreateFromMethod((int val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = 5 });
+        Assert.Equal(5, actual);
+
+        //Scenario #2 - passing null argument to a method that accepts int
+        sut = KernelFunctionFactory.CreateFromMethod((int val) => { actual = val; });
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.InvokeAsync(this._kernel, new() { ["val"] = null }));
+
+        //Scenario #3 - passing int argument to a method that accepts int?
+        actual = null;
+        sut = KernelFunctionFactory.CreateFromMethod((int? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = 5 });
+        Assert.Equal(5, actual);
+
+        //Scenario #4 - passing null argument to a method that accepts int?
+        actual = new();
+        sut = KernelFunctionFactory.CreateFromMethod((int? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public async Task ItShouldMarshalArgumentsOfReferenceTypeAsync()
+    {
+        //Scenario #1 - passing string argument to a method that accepts string
+        object? actual = null;
+        var sut = KernelFunctionFactory.CreateFromMethod((string val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = "5" });
+        Assert.Equal("5", actual);
+
+        //Scenario #2 - passing null argument to a method that accepts string
+        actual = new();
+        sut = KernelFunctionFactory.CreateFromMethod((string val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+        Assert.Null(actual);
+
+        //Scenario #3 - passing string argument to a method that accepts string?
+        actual = null;
+        sut = KernelFunctionFactory.CreateFromMethod((string? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = "5" });
+        Assert.Equal("5", actual);
+
+        //Scenario #4 - passing null argument to a method that accepts string?
+        actual = new();
+        sut = KernelFunctionFactory.CreateFromMethod((string? val) => { actual = val; });
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+        Assert.Null(actual);
     }
 
     [Fact]
