@@ -9,9 +9,13 @@ class AIRequestSettings(SKBaseModel):
     service_id: Optional[str] = Field(None, min_length=1)
     extension_data: Dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, **data: Dict[str, Any]):
-        super().__init__(**data)
+    def __init__(self, service_id: Optional[str] = None, **kwargs: Any):
+        extension_data = kwargs.pop('extension_data', {})
+        super().__init__(service_id=service_id, extension_data=extension_data)
         for key, value in self.extension_data.items():
+            if key in self.keys:
+                setattr(self, key, value)
+        for key, value in kwargs.items():
             if key in self.keys:
                 setattr(self, key, value)
 

@@ -28,12 +28,27 @@ chat_service = sk_oai.AzureChatCompletion(
     **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_chat_service("chat-gpt", chat_service)
+
+## there are three ways to create the request settings in code: # noqa: E266
+
+## 1. create the request settings from the base class: # noqa: E266
+# from semantic_kernel.connectors.ai.chat_completion_client_base import AIRequestSettings
+# req_settings = AIRequestSettings(extension_data = { "max_tokens": 2000, "temperature": 0.7, "top_p": 0.8} )
+## This method (using the AIRequestSettings base class) is the most generic, and it allows you to store request settings for different services in the same extension_data field. There are two downsides to this approach: the specific request setting class will be created dynamically for each call, this is overhead when using just a single service. and the request settings are not type checked, so you will receive error messages once the dynamic creation of the request settings class fails. # noqa: E501 E266
+
+## 2. create the request settings directly for the service you are using: # noqa: E266
+# req_settings = sk_oai.AzureOpenAIChatRequestSettings(max_tokens=2000, temperature=0.7, top_p=0.8)
+## The second method is usefull when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
+
+## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
 req_settings = kernel.get_request_settings_from_service(
     ChatCompletionClientBase, "chat-gpt"
 )
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
+## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E266
+
 
 prompt_config = sk.PromptTemplateConfig(completion=req_settings)
 

@@ -483,7 +483,7 @@ class Kernel:
     def get_request_settings_from_service(
         self, type: Type[T], service_id: Optional[str] = None
     ) -> AIRequestSettings:
-        """Get the request settings from the service, instantiated with the service_id and ai_model_id."""
+        """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_ai_service(type, service_id)
         service_instance = service.__closure__[0].cell_contents
         req_settings_type = service_instance.get_request_settings_class()

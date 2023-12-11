@@ -120,7 +120,6 @@ async def execute_function_call(
 async def chat_completion_with_function_call(
     kernel: Kernel,
     context: SKContext,
-    functions: List[Dict[str, str]] = [],
     chat_skill_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[SKFunctionBase] = None,
@@ -170,10 +169,13 @@ async def chat_completion_with_function_call(
     assert isinstance(
         chat_function._chat_prompt_template, OpenAIChatPromptTemplate
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
+    settings = chat_function._chat_prompt_template.prompt_config.completion
+    if current_call_count >= max_function_calls:
+        settings.functions = []
     context = await chat_function.invoke_async(
         context=context,
         # when the maximum number of function calls is reached, execute the chat function without Functions.
-        functions=[] if current_call_count >= max_function_calls else functions,
+        settings=settings,
     )
     function_call = context.objects.pop("function_call", None)
     # if there is no function_call or if the content is not a FunctionCall object, return the context
@@ -188,7 +190,6 @@ async def chat_completion_with_function_call(
     return await chat_completion_with_function_call(
         kernel,
         chat_function=chat_function,
-        functions=functions,
         context=context,
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,

@@ -99,7 +99,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         return [message.as_dict() for message in self.messages]
 
     def dump_messages(self) -> List[Dict[str, str]]:
-        """Return the messages as a list of dicts with role, content, name."""
+        """Return the messages as a list of dicts with role, content, name and function_call."""
         return [message.as_dict() for message in self.messages]
 
     @classmethod
