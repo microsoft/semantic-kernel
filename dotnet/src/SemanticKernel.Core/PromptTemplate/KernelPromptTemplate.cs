@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,11 +88,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// <returns>The prompt template ready to be used for an AI request.</returns>
     private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
-        }
-
         var result = new StringBuilder();
         foreach (var block in blocks)
         {
@@ -106,21 +102,12 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                     break;
 
                 default:
-                    const string Error = "Unexpected block type, the block doesn't have a rendering method";
-                    this._logger.LogError(Error);
-                    throw new KernelException(Error);
+                    Debug.Fail($"Unexpected block type {block?.GetType()}, the block doesn't have a rendering method");
+                    break;
             }
         }
 
-        string resultString = result.ToString();
-
-        // Sensitive data, logging as trace, disabled by default
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Rendered prompt: {0}", resultString);
-        }
-
-        return resultString;
+        return result.ToString();
     }
 
     /// <summary>
