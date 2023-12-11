@@ -47,9 +47,9 @@ public static class Example66_FunctionCallingStepwisePlanner
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
+                TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
         kernel.ImportPluginFromType<EmailPlugin>();
