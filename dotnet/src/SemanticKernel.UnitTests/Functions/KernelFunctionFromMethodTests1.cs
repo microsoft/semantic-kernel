@@ -1176,7 +1176,7 @@ public sealed class KernelFunctionFromMethodTests1
         static ComplexType Test(ComplexType complexType) => complexType;
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", @"{ ""Foo"": 42 }" } });
 
         // Assert
@@ -1194,7 +1194,7 @@ public sealed class KernelFunctionFromMethodTests1
         static ComplexType Test(ComplexType complexType) => complexType;
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
 
         // Assert        
@@ -1212,7 +1212,7 @@ public sealed class KernelFunctionFromMethodTests1
         static int Test(int complexType) => complexType;
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
 
         // Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } }));
@@ -1225,7 +1225,7 @@ public sealed class KernelFunctionFromMethodTests1
         static ComplexType Test(ComplexType complexType) => complexType;
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } });
 
         // Assert
