@@ -402,12 +402,12 @@ public class CodeBlockTests
             )
         );
 
-        kernel.PromptRendering += (object? sender, Microsoft.SemanticKernel.Events.PromptRenderingEventArgs e) =>
+        kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
         {
             Assert.Equal(FooValue, e.Arguments[parameterName]);
         };
 
-        kernel.FunctionInvoking += (object? sender, Microsoft.SemanticKernel.Events.FunctionInvokingEventArgs e) =>
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             Assert.Equal(FooValue, e.Arguments[parameterName]);
         };
@@ -448,13 +448,13 @@ public class CodeBlockTests
             )
         );
 
-        kernel.PromptRendering += (object? sender, Microsoft.SemanticKernel.Events.PromptRenderingEventArgs e) =>
+        kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
         {
             Assert.Equal(FooValue, e.Arguments["foo"]);
             Assert.Equal(FooValue, e.Arguments["x11"]);
         };
 
-        kernel.FunctionInvoking += (object? sender, Microsoft.SemanticKernel.Events.FunctionInvokingEventArgs e) =>
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             Assert.Equal(FooValue, e.Arguments["foo"]);
             Assert.Equal(FooValue, e.Arguments["x11"]);
