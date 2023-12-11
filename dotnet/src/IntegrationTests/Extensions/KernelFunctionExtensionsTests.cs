@@ -81,6 +81,26 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
+    [Fact]
+    public async Task ItSupportsInvokeHandlebarsPromptAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
+
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}_GetEmailAddress}}}}";
+
+        // Act
+        FunctionResult actual = await target.InvokeHandlebarsPromptAsync(
+            prompt,
+            new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
+
+        // Assert
+        Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
+    }
+
     private readonly RedirectOutput _logger;
 
     public void Dispose()
