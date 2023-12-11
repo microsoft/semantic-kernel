@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// HuggingFace embedding generation service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneration
+public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGenerationService
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     private readonly string _model;
