@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel;
 #pragma warning disable RCS1110 // Declare type inside namespace.
 #pragma warning disable CA5394
 
-public static class Example74_Pipelining
+public static class Example69_Pipelining
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
