@@ -15,8 +15,9 @@ using Microsoft.SemanticKernel.TextGeneration;
  * To do this, this example uses a text generation service stub (MyTextGenerationService) and
  * no actual model.
  *
- * Using a a custom text generation model within SK can be useful in a few scenarios, for example:
+ * Using a custom text generation model within SK can be useful in a few scenarios, for example:
  * - You are not using OpenAI or Azure OpenAI models
+ * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
  *
  * Note that all OpenAI text generation models are deprecated and no longer available to new customers.
@@ -45,13 +46,13 @@ public static class Example16_CustomLLM
         Kernel kernel = builder.Build();
 
         const string FunctionDefinition = "Write one paragraph on {{$input}}";
-        var ParagraphWritingFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
+        var paragraphWritingFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         const string Input = "Why AI is awesome";
         Console.WriteLine($"Function input: {Input}\n");
-        var result = await ParagraphWritingFunction.InvokeAsync(kernel, new());
+        var result = await paragraphWritingFunction.InvokeAsync(kernel, new(Input));
 
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 
     private static async Task CustomTextGenerationAsync()
