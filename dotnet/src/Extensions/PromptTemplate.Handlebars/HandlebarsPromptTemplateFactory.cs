@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
@@ -28,11 +26,9 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateFactory"/> class.
     /// </summary>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="options">Handlebars prompt template options</param>
-    public HandlebarsPromptTemplateFactory(ILoggerFactory? loggerFactory = null, HandlebarsPromptTemplateOptions? options = null)
+    /// <param name="options">Handlebars promnpt template options</param>
+    public HandlebarsPromptTemplateFactory(HandlebarsPromptTemplateOptions? options = null)
     {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._options = options ?? new();
     }
 
@@ -43,15 +39,11 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 
         if (templateConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
         {
-            result = new HandlebarsPromptTemplate(templateConfig, this._loggerFactory, this._options);
+            result = new HandlebarsPromptTemplate(templateConfig, this._options);
             return true;
         }
 
         result = null;
         return false;
     }
-
-    #region private
-    private readonly ILoggerFactory _loggerFactory;
-    #endregion
 }

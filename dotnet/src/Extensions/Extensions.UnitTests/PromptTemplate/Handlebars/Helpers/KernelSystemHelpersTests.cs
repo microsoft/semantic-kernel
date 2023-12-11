@@ -14,7 +14,7 @@ public sealed class KernelSystemHelpersTests
 {
     public KernelSystemHelpersTests()
     {
-        this._factory = new(TestConsoleLogger.LoggerFactory);
+        this._factory = new();
         this._kernel = new();
         this._arguments = new(Guid.NewGuid().ToString("X"));
     }

@@ -48,30 +48,33 @@ internal static class KernelFunctionHelpers
     {
         string fullyResolvedFunctionName = functionMetadata.PluginName + nameDelimiter + functionMetadata.Name;
 
-        handlebarsInstance.RegisterHelper(fullyResolvedFunctionName, (in HelperOptions options, in Context context, in Arguments handlebarsArguments) =>
-        {
-            // Get the parameters from the template arguments
-            if (handlebarsArguments.Length is not 0)
+        KernelHelpersUtils.RegisterHelperSafe(
+            handlebarsInstance,
+            fullyResolvedFunctionName,
+            (Context context, Arguments handlebarsArguments) =>
             {
-                if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
+                // Get the parameters from the template arguments
+                if (handlebarsArguments.Length is not 0)
                 {
-                    ProcessHashArguments(functionMetadata, executionContext, (IDictionary<string, object>)handlebarsArguments[0], nameDelimiter);
+                    if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
+                    {
+                        ProcessHashArguments(functionMetadata, executionContext, (IDictionary<string, object>)handlebarsArguments[0], nameDelimiter);
+                    }
+                    else
+                    {
+                        ProcessPositionalArguments(functionMetadata, executionContext, handlebarsArguments);
+                    }
                 }
-                else
+                else if (functionMetadata.Parameters.Any(p => p.IsRequired))
                 {
-                    ProcessPositionalArguments(functionMetadata, executionContext, handlebarsArguments);
+                    throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarsArguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
                 }
-            }
-            else if (functionMetadata.Parameters.Any(p => p.IsRequired))
-            {
-                throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarsArguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
-            }
 
-            KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
+                KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
-            // Invoke the function and write the result to the template
-            return InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
-        });
+                // Invoke the function and write the result to the template
+                return InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
+            });
     }
 
     /// <summary>

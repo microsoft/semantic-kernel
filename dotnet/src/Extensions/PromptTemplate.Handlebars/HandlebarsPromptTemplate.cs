@@ -25,11 +25,10 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     /// Constructor for Handlebars PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
-    /// <param name="loggerFactory">Logger factory</param>
     /// <param name="options">Handlebars prompt template options</param>
-    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null, HandlebarsPromptTemplateOptions? options = null)
+    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, HandlebarsPromptTemplateOptions options)
     {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._loggerFactory ??= NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
         this._options = options ?? new();
@@ -65,9 +64,6 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
-
         // Add SK's built-in system helpers
         KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, this._options);
 
@@ -80,8 +76,15 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             options.CustomHelperPaths = this._options.CustomHelperPaths;
         });
 
+        // Add helpers for kernel functions
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+
         // Add any custom helpers
-        this._options.RegisterCustomHelpers?.Invoke(handlebarsInstance, arguments);
+        this._options.RegisterCustomHelpers?.Invoke(
+            (string name, HandlebarsReturnHelper helper) 
+                => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, name, helper),
+            this._options,
+            arguments);
     }
 
     /// <summary>

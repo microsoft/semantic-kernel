@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using HandlebarsDotNet;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using static Microsoft.SemanticKernel.PromptTemplate.Handlebars.HandlebarsPromptTemplateOptions;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -10,17 +12,18 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 internal sealed class HandlebarsPromptTemplateExtensions
 {
     public static void RegisterCustomCreatePlanHelpers(
-        IHandlebars handlebarsInstance,
+        RegisterHelperSafeCallback registerHelperSafe,
+        HandlebarsPromptTemplateOptions options,
         KernelArguments executionContext
     )
     {
-        handlebarsInstance.RegisterHelper("getSchemaTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        registerHelperSafe("getSchemaTypeName", (Context context, Arguments arguments) =>
         {
             KernelParameterMetadata parameter = (KernelParameterMetadata)arguments[0];
             return parameter.GetSchemaTypeName();
         });
 
-        handlebarsInstance.RegisterHelper("getSchemaReturnTypeName", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        registerHelperSafe("getSchemaReturnTypeName", (Context context, Arguments arguments) =>
         {
             KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
             var functionName = arguments[1].ToString();

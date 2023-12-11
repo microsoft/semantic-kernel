@@ -123,7 +123,7 @@ internal static class KernelSystemHelpers
             var end = int.Parse(arguments[1].ToString(), kernel.Culture) + 1;
             var count = end - start;
 
-            return Enumerable.Range(start, count).ToArray();
+            return Enumerable.Range(start, count).ToList();
         });
 
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>

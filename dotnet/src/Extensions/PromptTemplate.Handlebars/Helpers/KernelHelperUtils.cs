@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using HandlebarsDotNet;
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
@@ -9,6 +10,22 @@ namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 /// </summary>
 internal static class KernelHelpersUtils
 {
+    /// <summary>
+    /// Registers a helper with the Handlebars instance, throwing an exception if a helper with the same name is already registered.
+    /// </summary>
+    /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-instance.</param>
+    /// <param name="helperName">The name of the helper.</param>
+    /// <param name="helper">The helper to register.</param>
+    internal static void RegisterHelperSafe(IHandlebars handlebarsInstance, string helperName, HandlebarsReturnHelper helper)
+    {
+        if (handlebarsInstance.Configuration.Helpers.ContainsKey(helperName))
+        {
+            throw new InvalidOperationException($"A helper with the name '{helperName}' is already registered.");
+        }
+
+        handlebarsInstance.RegisterHelper(helperName, helper);
+    }
+
     /// <summary>
     /// Determines whether the specified type is a numeric type.
     /// </summary>
@@ -44,5 +61,10 @@ internal static class KernelHelpersUtils
             ulong.TryParse(input, out _) ||
             double.TryParse(input, out _) ||
             decimal.TryParse(input, out _);
+    }
+
+    internal static void HandleRegisterHelperSafeCallback(string name, HandlebarsReturnHelper helper)
+    {
+        throw new NotImplementedException();
     }
 }
