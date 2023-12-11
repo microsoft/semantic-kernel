@@ -3,7 +3,7 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Required configuration for Azure OpenAI chat completion with data.
+/// Required configuration for Azure OpenAI chat completion service.
 /// More information: <see href="https://learn.microsoft.com/azure/cognitive-services/openai/quickstart"/>
 /// </summary>
 public sealed class OpenAIServiceConfig
