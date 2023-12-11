@@ -2,9 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TextGeneration;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
@@ -327,5 +331,170 @@ public class CodeBlockTests
 
         // Assert
         Assert.Equal(2, arguments.Count);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task ItThrowsWhenArgumentsAreProvidedToAParameterlessFunctionAsync(int numberOfArguments)
+    {
+        // Arrange
+        const string Value = "value";
+        const string FooValue = "foo's value";
+        const string BobValue = "bob's value";
+
+        var arguments = new KernelArguments();
+        arguments["bob"] = BobValue;
+        arguments[KernelArguments.InputParameterName] = Value;
+
+        var blockList = new List<Block>
+        {
+            new FunctionIdBlock("plugin.function"),
+            new ValBlock($"'{FooValue}'")
+        };
+
+        if (numberOfArguments == 2)
+        {
+            blockList.Add(new NamedArgBlock("foo=$foo"));
+        }
+
+        var actualFoo = string.Empty;
+        var actualBaz = string.Empty;
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
+
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+
+        // Act
+        var codeBlock = new CodeBlock(blockList, "");
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await codeBlock.RenderCodeAsync(this._kernel, arguments));
+        Assert.Contains($"does not take any arguments but it is being called in the template with {numberOfArguments} arguments.", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("x11")]
+    [InlineData("firstParameter")]
+    [InlineData("anything")]
+    public async Task ItCallsPromptFunctionWithPositionalTargetFirstArgumentRegardlessOfNameAsync(string parameterName)
+    {
+        const string FooValue = "foo's value";
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
+        var kernel = builder.Build();
+
+        var blockList = new List<Block>
+        {
+            new FunctionIdBlock("Plugin1.Function1"),
+            new ValBlock($"'{FooValue}'")
+        };
+
+        kernel.Plugins.Add(
+            KernelPluginFactory.CreateFromFunctions("Plugin1", functions: new[]
+                {
+                    kernel.CreateFunctionFromPrompt(
+                        promptTemplate: $"\"This {{{{${parameterName}}}}}",
+                        functionName: "Function1")
+                }
+            )
+        );
+
+        kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
+        {
+            Assert.Equal(FooValue, e.Arguments[parameterName]);
+        };
+
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            Assert.Equal(FooValue, e.Arguments[parameterName]);
+        };
+
+        var codeBlock = new CodeBlock(blockList, "");
+        await codeBlock.RenderCodeAsync(kernel);
+    }
+
+    [Fact]
+    public async Task ItCallsPromptFunctionMatchArgumentWithNamedArgsAsync()
+    {
+        const string FooValue = "foo's value";
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
+        var kernel = builder.Build();
+
+        var arguments = new KernelArguments();
+        arguments["foo"] = FooValue;
+
+        var blockList = new List<Block>
+        {
+            new FunctionIdBlock("Plugin1.Function1"),
+            new NamedArgBlock("x11=$foo"),
+            new NamedArgBlock("x12='new'") // Extra parameters are ignored
+        };
+
+        kernel.Plugins.Add(
+            KernelPluginFactory.CreateFromFunctions("Plugin1", functions: new[]
+                {
+                    kernel.CreateFunctionFromPrompt(
+                        promptTemplate: "\"This {{$x11}}",
+                        functionName: "Function1")
+                }
+            )
+        );
+
+        kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
+        {
+            Assert.Equal(FooValue, e.Arguments["foo"]);
+            Assert.Equal(FooValue, e.Arguments["x11"]);
+        };
+
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            Assert.Equal(FooValue, e.Arguments["foo"]);
+            Assert.Equal(FooValue, e.Arguments["x11"]);
+        };
+
+        var codeBlock = new CodeBlock(blockList, "");
+        await codeBlock.RenderCodeAsync(kernel, arguments);
+    }
+
+    [Fact]
+    public async Task ItThrowsWhenArgumentsAreAmbiguousAsync()
+    {
+        // Arrange
+        const string Value = "value";
+        const string FooValue = "foo's value";
+        const string BobValue = "bob's value";
+
+        var arguments = new KernelArguments();
+        arguments["bob"] = BobValue;
+        arguments[KernelArguments.InputParameterName] = Value;
+
+        var funcId = new FunctionIdBlock("plugin.function");
+        var namedArgBlock1 = new ValBlock($"'{FooValue}'");
+        var namedArgBlock2 = new NamedArgBlock("foo=$foo");
+
+        var actualFoo = string.Empty;
+        var actualBaz = string.Empty;
+
+        var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) =>
+        {
+            actualFoo = foo;
+            actualBaz = baz;
+        },
+        "function");
+
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await codeBlock.RenderCodeAsync(this._kernel, arguments));
+        Assert.Contains(FooValue, exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 }

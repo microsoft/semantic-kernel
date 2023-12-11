@@ -107,7 +107,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (this._tokens.Count > 1)
         {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
-            arguments = this.EnrichFunctionArguments(arguments is null ? new KernelArguments() : new KernelArguments(arguments));
+            arguments = this.EnrichFunctionArguments(kernel, fBlock, arguments is null ? new KernelArguments() : new KernelArguments(arguments));
         }
         try
         {
@@ -157,10 +157,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// Additionally, for the prompt expression - {{MyPlugin.MyFunction p1=$v1}}, the value of the v1 variable will be resolved from the original arguments collection.
     /// Then, the new argument, p1, will be added to the arguments.
     /// </summary>
+    /// <param name="kernel">Kernel instance.</param>
+    /// <param name="fBlock">Function block.</param>
     /// <param name="arguments">The prompt rendering arguments.</param>
     /// <returns>The function arguments.</returns>
     /// <exception cref="KernelException">Occurs when any argument other than the first is not a named argument.</exception>
-    private KernelArguments EnrichFunctionArguments(KernelArguments arguments)
+    private KernelArguments EnrichFunctionArguments(Kernel kernel, FunctionIdBlock fBlock, KernelArguments arguments)
     {
         var firstArg = this._tokens[1];
 
@@ -170,12 +172,29 @@ internal sealed class CodeBlock : Block, ICodeRendering
             this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
         }
 
+        // Get the function metadata
+        var functionMetadata = kernel.Plugins.GetFunction(fBlock.PluginName, fBlock.FunctionName).Metadata;
+
+        // Check if the function has parameters to be set
+        if (functionMetadata.Parameters.Count == 0)
+        {
+            throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} does not take any arguments but it is being called in the template with {this._tokens.Count - 1} arguments.");
+        }
+
+        string? firstPositionalParameterName = null;
+        object? firstPositionalInputValue = null;
         var namedArgsStartIndex = 1;
+
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
-            object? input = ((ITextRendering)this._tokens[1]).Render(arguments);
+            // Gets the function first parameter name
+            firstPositionalParameterName = functionMetadata.Parameters[0].Name;
+
+            firstPositionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
+            // Type check is avoided and marshalling is done by the function itself
+
             // Keep previous trust information when updating the input
-            arguments[KernelArguments.InputParameterName] = input;
+            arguments[firstPositionalParameterName] = firstPositionalInputValue;
             namedArgsStartIndex++;
         }
 
@@ -195,6 +214,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
                 this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
+            }
+
+            // Check if the positional parameter clashes with a named parameter
+            if (firstPositionalParameterName is not null && string.Equals(firstPositionalParameterName, arg.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
             arguments[arg.Name] = arg.GetValue(arguments);

@@ -267,7 +267,7 @@ public class TemplateTokenizerTests
     {
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
-                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
+                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}{{positional 'abc' p1=$p1}}";
 
         // Act
         var blocks = this._target.Tokenize(template);
@@ -275,8 +275,8 @@ public class TemplateTokenizerTests
         var renderedBlocks = RenderBlocks(blocks);
 
         // Assert
-        Assert.Equal(10, blocks.Count);
-        Assert.Equal(10, renderedBlocks.Count);
+        Assert.Equal(11, blocks.Count);
+        Assert.Equal(11, renderedBlocks.Count);
 
         Assert.Equal("$x11", blocks[1].Content);
         Assert.Equal("", renderedBlocks[1].Content);
@@ -320,7 +320,8 @@ public class TemplateTokenizerTests
             ["a"] = "a value",
             ["_a"] = "_a value",
             ["c"] = "c value",
-            ["d"] = "d value"
+            ["d"] = "d value",
+            ["p1"] = "p1 value",
         };
 
         // Act
@@ -328,8 +329,8 @@ public class TemplateTokenizerTests
         renderedBlocks = RenderBlocks(blocks, arguments);
 
         // Assert
-        Assert.Equal(10, blocks.Count);
-        Assert.Equal(10, renderedBlocks.Count);
+        Assert.Equal(11, blocks.Count);
+        Assert.Equal(11, renderedBlocks.Count);
 
         Assert.Equal("$x11", blocks[1].Content);
         Assert.Equal("x11 value", renderedBlocks[1].Content);
@@ -365,6 +366,11 @@ public class TemplateTokenizerTests
         Assert.Equal("food a='b' c = $d", renderedBlocks[9].Content);
         Assert.Equal(BlockTypes.Code, blocks[9].Type);
         Assert.Equal(BlockTypes.Code, renderedBlocks[9].Type);
+
+        Assert.Equal("positional 'abc' p1=$p1", blocks[10].Content);
+        Assert.Equal("positional 'abc' p1=$p1", renderedBlocks[10].Content);
+        Assert.Equal(BlockTypes.Code, blocks[10].Type);
+        Assert.Equal(BlockTypes.Code, renderedBlocks[10].Type);
     }
 
     private static List<Block> RenderBlocks(IList<Block> blocks, KernelArguments? arguments = null)
