@@ -143,7 +143,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
         }
 
-        // This should never happen as the AI service is selected by the service selector
+        // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
         throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
@@ -171,7 +171,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         else
         {
-            // This should never happen as the AI service is selected by the service selector
+            // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
         }
 
@@ -284,7 +284,20 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+        }
+
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
+
+        if (this._logger.IsEnabled(LogLevel.Trace) &&
+            renderedEventArgs is not null &&
+            renderedEventArgs.Cancel is false &&
+            renderedEventArgs.RenderedPrompt != renderedPrompt)
+        {
+            this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+        }
 
         return (aiService, renderedPrompt, renderedEventArgs);
     }
