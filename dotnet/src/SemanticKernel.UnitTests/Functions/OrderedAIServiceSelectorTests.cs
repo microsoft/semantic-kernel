@@ -12,7 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public class OrderedAIServiceConfigurationProviderTests
+public class OrderedAIServiceSelectorTests
 {
     [Fact]
     public void ItThrowsAnSKExceptionForNoServices()
