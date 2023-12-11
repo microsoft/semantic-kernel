@@ -83,7 +83,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(model);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+            new HuggingFaceTextEmbeddingGenerationService(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
 
         return builder;
     }
@@ -106,6 +106,6 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
+            new HuggingFaceTextEmbeddingGenerationService(model, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
     }
 }
