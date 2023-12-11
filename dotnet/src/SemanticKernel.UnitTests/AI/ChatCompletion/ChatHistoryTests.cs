@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
@@ -65,7 +65,7 @@ public class ChatHistoryTests
             new(null, "am "),
             new(null, "a "),
             new(null, "test "),
-        }.ConvertToAsyncEnumerable();
+        }.ToAsyncEnumerable();
 
         var chatHistory = new ChatHistory();
         var finalContent = "Hello , I am a test ";

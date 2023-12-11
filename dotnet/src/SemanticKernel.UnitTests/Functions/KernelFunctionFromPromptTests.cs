@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -217,7 +218,7 @@ public class KernelFunctionFromPromptTests
     {
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns((new List<StreamingTextContent>() { new("something") }).ConvertToAsyncEnumerable());
+            .Returns((new List<StreamingTextContent>() { new("something") }).ToAsyncEnumerable());
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
@@ -307,7 +308,7 @@ public class KernelFunctionFromPromptTests
         var expectedContent = new StreamingTextContent("something");
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns((new List<StreamingTextContent>() { expectedContent }).ConvertToAsyncEnumerable());
+            .Returns((new List<StreamingTextContent>() { expectedContent }).ToAsyncEnumerable());
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
@@ -332,7 +333,7 @@ public class KernelFunctionFromPromptTests
         var expectedContent = new StreamingChatMessageContent(AuthorRole.Assistant, "Something");
         var mockService = new Mock<IChatCompletionService>();
         var mockResult = mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns((new List<StreamingChatMessageContent>() { expectedContent }).ConvertToAsyncEnumerable());
+            .Returns((new List<StreamingChatMessageContent>() { expectedContent }).ToAsyncEnumerable());
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<IChatCompletionService>((sp) => mockService.Object);
