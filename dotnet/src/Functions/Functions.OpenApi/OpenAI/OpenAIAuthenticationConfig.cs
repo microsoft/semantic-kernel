@@ -21,7 +21,7 @@ public class OpenAIAuthenticationConfig
     /// The type of authorization.
     /// </summary>
     [JsonPropertyName("authorization_type")]
-    public OpenAIAuthorizationType? AuthorizationType { get; set; }
+    public OpenAIAuthorizationType AuthorizationType { get; set; }
 
     /// <summary>
     /// The client URL.
