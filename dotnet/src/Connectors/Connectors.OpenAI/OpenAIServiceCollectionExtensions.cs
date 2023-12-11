@@ -242,7 +242,7 @@ public static class OpenAIServiceCollectionExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null) => AddOpenAIChatCompletion(builder, new() { ModelId = modelId, ApiKey = apiKey, Organization = orgId }, serviceId, httpClient);
+        HttpClient? httpClient = null) => AddOpenAITextGeneration(builder, new() { ModelId = modelId, ApiKey = apiKey, Organization = orgId }, serviceId, httpClient);
 
     /// <summary>
     /// Adds an OpenAI text generation service with the specified configuration.
