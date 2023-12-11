@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public abstract class DefaultSemanticSKFunction extends AbstractSKFunction implements SKFunction {
+public abstract class DefaultSemanticSKFunction extends AbstractSkFunction implements SKFunction {
 
     public DefaultSemanticSKFunction(
             List<ParameterView> parameters,

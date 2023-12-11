@@ -1,0 +1,39 @@
+name: GetSearchQuery
+template: |
+  {{#message role="system"}}
+  You are responsible for determining the users last intent based on the chat history
+  so that it can be used to perform a Bing search query.
+  {{/message}}
+
+  {{#each messages}}
+    {{#message role=Role}}
+    {{~Content~}}
+    {{/message}}
+  {{/each}}
+
+  {{#message role="assistant"}}
+  Can you give me a search query to help me achieve my goal?
+  {{/message}}
+
+  {{#message role="system"}}
+  You will now reply back with a single search query that will be used to perform a Bing search.
+  Do not provide any additional information besides the search query.
+  {{/message}}
+
+  {{#message role="assistant"}}
+  The best search query to perform on behalf of the user is:
+  {{/message}}
+
+template_format: handlebars
+description: A function that determines the best search query to perform on behalf of the user.
+input_variables:
+  - name: messages
+    type: ChatHistory
+    description: The history of the chat.
+    is_required: true
+output_variable:
+    type: string
+    description: The Bing search to perform on behalf of the user.
+execution_settings:
+  - model_id_pattern: ^gpt-3\.?5-turbo
+    temperature: 0.3

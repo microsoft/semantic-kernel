@@ -7,7 +7,11 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.functions.SemanticFunctionResult;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
+import com.microsoft.semantickernel.orchestration.DefaultSemanticSKFunction;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplateEngine;
@@ -24,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/** @since 1.0.0 */
 public class SemanticFunction extends DefaultSemanticSKFunction {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
     private String name;
@@ -33,6 +38,7 @@ public class SemanticFunction extends DefaultSemanticSKFunction {
     private List<SemanticFunctionModel.VariableViewModel> inputParameters;
     private PromptTemplate promptTemplate;
 
+    // TODO: This should not be in core.
     public SemanticFunction(
             String name,
             String pluginName,

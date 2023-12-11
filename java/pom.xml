@@ -6,7 +6,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>0.2.12-alpha-SNAPSHOT</version>
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
     <name>Semantic Kernel Parent</name>
@@ -71,11 +71,16 @@
 <!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
 <!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
 
-<!--        <module>extensions/semantickernel-planners</module>-->
-        <module>extensions/semantickernel-gpt3-tokenizer</module>
-        <module>extensions/semantickernel-settings-loader</module>
+        <module>aiservices/azureopenai</module>
+        <module>aiservices/huggingface</module>
+        <module>aiservices/ollama</module>
+        <module>aiservices/openai</module>
 
-         <module>plugins/semantickernel-plugin-core</module>
+        <module>misc/semantickernel-gpt3-tokenizer</module>
+        <module>misc/semantickernel-settings-loader</module>
+
+        <module>plugins/semantickernel-planners</module>
+        <module>plugins/semantickernel-plugin-core</module>
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
@@ -717,13 +722,13 @@
             </build>
         </profile>
 
-<!--        <profile>-->
-<!--            <id>with-samples</id>-->
-<!--            <modules>-->
-<!--                <module>samples</module>-->
+        <profile>
+            <id>with-samples</id>
+            <modules>
+                <module>samples/sk-v1</module>
 <!--                <module>api-test</module>-->
-<!--            </modules>-->
-<!--        </profile>-->
+            </modules>
+        </profile>
         <profile>
             <id>release</id>
             <properties>
