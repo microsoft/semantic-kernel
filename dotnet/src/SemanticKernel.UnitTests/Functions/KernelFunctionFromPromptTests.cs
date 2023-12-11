@@ -376,6 +376,158 @@ public class KernelFunctionFromPromptTests
         }
     }
 
+    [Fact]
+    public async Task InvokeAsyncUsesPromptExecutionSettingsAsync()
+    {
+        // Arrange
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything", new OpenAIPromptExecutionSettings { MaxTokens = 1000 });
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal("Result", result.GetValue<string>());
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Anything", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncUsesKernelArgumentsExecutionSettingsAsync()
+    {
+        // Arrange
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything", new OpenAIPromptExecutionSettings { MaxTokens = 1000 });
+
+        // Act
+        var result = await kernel.InvokeAsync(function, new KernelArguments(new OpenAIPromptExecutionSettings { MaxTokens = 2000 }));
+
+        // Assert
+        Assert.Equal("Result", result.GetValue<string>());
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Anything", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncWithServiceIdUsesKernelArgumentsExecutionSettingsAsync()
+    {
+        // Arrange
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything", new OpenAIPromptExecutionSettings { ServiceId = "service1", MaxTokens = 1000 });
+
+        // Act
+        var result = await kernel.InvokeAsync(function, new KernelArguments(new OpenAIPromptExecutionSettings { MaxTokens = 2000 }));
+
+        // Assert
+        Assert.Equal("Result", result.GetValue<string>());
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Anything", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncWithMultipleServicesUsesKernelArgumentsExecutionSettingsAsync()
+    {
+        // Arrange
+        var mockTextContent1 = new TextContent("Result1");
+        var mockTextCompletion1 = new Mock<ITextGenerationService>();
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        var mockTextContent2 = new TextContent("Result2");
+        var mockTextCompletion2 = new Mock<ITextGenerationService>();
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", mockTextCompletion2.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function1 = KernelFunctionFactory.CreateFromPrompt("Prompt1", new OpenAIPromptExecutionSettings { ServiceId = "service1", MaxTokens = 1000 });
+        KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt("Prompt2", new OpenAIPromptExecutionSettings { ServiceId = "service2", MaxTokens = 2000 });
+
+        // Act
+        var result1 = await kernel.InvokeAsync(function1);
+        var result2 = await kernel.InvokeAsync(function2);
+
+        // Assert
+        Assert.Equal("Result1", result1.GetValue<string>());
+        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal("Result2", result2.GetValue<string>());
+        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncWithMultipleServicesUsesServiceFromKernelArgumentsExecutionSettingsAsync()
+    {
+        // Arrange
+        var mockTextContent1 = new TextContent("Result1");
+        var mockTextCompletion1 = new Mock<ITextGenerationService>();
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        var mockTextContent2 = new TextContent("Result2");
+        var mockTextCompletion2 = new Mock<ITextGenerationService>();
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", mockTextCompletion2.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
+        // Act
+        var result1 = await kernel.InvokeAsync(function, new(new OpenAIPromptExecutionSettings { ServiceId = "service1", MaxTokens = 1000 }));
+        var result2 = await kernel.InvokeAsync(function, new(new OpenAIPromptExecutionSettings { ServiceId = "service2", MaxTokens = 2000 }));
+
+        // Assert
+        Assert.Equal("Result1", result1.GetValue<string>());
+        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal("Result2", result2.GetValue<string>());
+        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task InvokeAsyncWithMultipleServicesUsesKernelArgumentsExecutionSettingsOverrideAsync()
+    {
+        // Arrange
+        var mockTextContent1 = new TextContent("Result1");
+        var mockTextCompletion1 = new Mock<ITextGenerationService>();
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        var mockTextContent2 = new TextContent("Result2");
+        var mockTextCompletion2 = new Mock<ITextGenerationService>();
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", mockTextCompletion2.Object);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function1 = KernelFunctionFactory.CreateFromPrompt("Prompt1", new OpenAIPromptExecutionSettings { ServiceId = "service1", MaxTokens = 1000 });
+        KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt("Prompt2", new OpenAIPromptExecutionSettings { ServiceId = "service2", MaxTokens = 2000 });
+
+        // Act
+        var result1 = await kernel.InvokeAsync(function1, new(new OpenAIPromptExecutionSettings { ServiceId = "service2", MaxTokens = 2000 }));
+        var result2 = await kernel.InvokeAsync(function2, new(new OpenAIPromptExecutionSettings { ServiceId = "service1", MaxTokens = 1000 }));
+
+        // Assert
+        Assert.Equal("Result2", result1.GetValue<string>());
+        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal("Result1", result2.GetValue<string>());
+        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles
     private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
