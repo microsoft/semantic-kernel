@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -68,7 +69,7 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "sk.connectors.openai.tokens.prompt",
+            name: "semantic_kernel.connectors.openai.tokens.prompt",
             unit: "{token}",
             description: "Number of prompt tokens used");
 
@@ -77,7 +78,7 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "sk.connectors.openai.tokens.completion",
+            name: "semantic_kernel.connectors.openai.tokens.completion",
             unit: "{token}",
             description: "Number of completion tokens used");
 
@@ -86,7 +87,7 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "sk.connectors.openai.tokens.total",
+            name: "semantic_kernel.connectors.openai.tokens.total",
             unit: "{token}",
             description: "Number of tokens used");
 
@@ -664,6 +665,27 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
+    private static ChatMessageContentItem GetChatMessageContentItem(ContentBase item)
+    {
+        return item switch
+        {
+            TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
+            ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
+            _ => throw new NotSupportedException($"Unsupported content type of chat message item: {item.GetType()}.")
+        };
+    }
+
+    private static ChatRequestUserMessage GetChatRequestUserMessage(ChatMessageContent message, string? functionName)
+    {
+        if (message.Items is { Count: > 0 })
+        {
+            var contentItems = message.Items.Select(GetChatMessageContentItem);
+            return new ChatRequestUserMessage(contentItems) { Name = functionName };
+        }
+
+        return new ChatRequestUserMessage(message.Content) { Name = functionName };
+    }
+
     private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)
     {
         ChatRequestMessage? requestMessage;
@@ -680,7 +702,7 @@ internal abstract class ClientCore
                 functionName = functionNameFromMetadata?.ToString();
             }
 
-            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName };
+            requestMessage = GetChatRequestUserMessage(message, functionName);
         }
         else if (message.Role == AuthorRole.Assistant)
         {
