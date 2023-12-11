@@ -11,6 +11,8 @@ using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit.Abstractions;
 using Xunit;
+using SemanticKernel.IntegrationTests.Fakes;
+using System.Text.Json;
 
 namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
@@ -36,9 +38,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     //[Theory(Skip = "Requires model deployment that supports function calling.")]
     [Theory]
-    [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest")]
-    [InlineData("What is the weather in Seattle?", "Seattle")]
-    public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer)
+    [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest", new string[] { "WebSearch" })]
+    [InlineData("What is the weather in Seattle?", "Seattle", new string[] { "WebSearch" })]
+    [InlineData("What is the current hour number, plus 5?", "", new string[] { "Time", "Math" })]
+    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", "365", new string[] { "Math", "Email" })]
+    public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer, string[] expectedPlugins)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -46,7 +50,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject(new TimePlugin(), "time");
+        kernel.ImportPluginFromType<TimePlugin>("Time");
+        kernel.ImportPluginFromType<MathPlugin>("Math");
+        kernel.ImportPluginFromType<EmailPluginFake>("Email");
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 10 });
@@ -57,9 +63,13 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         // Assert - should contain the expected answer
         Assert.NotNull(planResult);
         Assert.NotEqual(string.Empty, planResult.FinalAnswer);
-        Assert.Contains(partialExpectedAnswer, planResult.FinalAnswer, StringComparison.InvariantCultureIgnoreCase);
         Assert.True(planResult.Iterations > 0);
         Assert.True(planResult.Iterations <= 10);
+        Assert.Contains(partialExpectedAnswer, planResult.FinalAnswer, StringComparison.InvariantCultureIgnoreCase);
+        foreach (string expectedPlugin in expectedPlugins)
+        {
+            Assert.Contains(expectedPlugin, JsonSerializer.Serialize(planResult.ChatHistory!), StringComparison.InvariantCultureIgnoreCase);
+        }
     }
 
     private Kernel InitializeKernel(bool useEmbeddings = false)
