@@ -124,6 +124,36 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         this._messages.AddRange(items);
     }
 
+    /// <summary>
+    /// Add a message to the chat history at the end of the streamed message
+    /// </summary>
+    /// <typeparam name="T">Specific chat message content type</typeparam>
+    /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
+    /// <returns>Returns the original streaming results with some message processing</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async IAsyncEnumerable<T> AddStreamingMessageAsync<T>(IAsyncEnumerable<T> streamingMessageContents) where T : StreamingChatMessageContent
+    {
+        List<T> messageContents = new();
+        AuthorRole? role = null;
+        StringBuilder messageContent = new();
+
+        await foreach (var chatMessage in streamingMessageContents)
+        {
+            messageContent.Append(chatMessage.Content);
+            messageContents.Add(chatMessage);
+
+            // Is aways expected to have at least one chunk with the role provided from a streaming message
+            role ??= chatMessage.Role;
+
+            yield return chatMessage;
+        }
+
+        if (messageContents.Count != 0)
+        {
+            this.AddMessage(new ChatMessageContent(role ?? AuthorRole.Assistant, messageContent.ToString(), messageContents[0].ModelId, messageContents, messageContents[0].Encoding, messageContents[0].Metadata));
+        }
+    }
+
     /// <summary>Inserts a message into the history at the specified index.</summary>
     /// <param name="index">The index at which the item should be inserted.</param>
     /// <param name="item">The message to insert.</param>

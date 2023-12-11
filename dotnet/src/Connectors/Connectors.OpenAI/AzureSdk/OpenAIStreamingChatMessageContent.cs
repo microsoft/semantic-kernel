@@ -31,6 +31,16 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     public string? FunctionArgument { get; set; }
 
     /// <summary>
+    /// The ID of the tool call update.
+    /// </summary>
+    public string ToolCallUpdateId { get; set; }
+
+    /// <summary>
+    /// The reason why the completion finished.
+    /// </summary>
+    public CompletionsFinishReason? FinishReason { get; set; }
+
+    /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
@@ -53,6 +63,8 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     {
         this.FunctionName = chatUpdate.FunctionName;
         this.FunctionArgument = chatUpdate.FunctionArgumentsUpdate;
+        this.ToolCallUpdateId = chatUpdate.ToolCallUpdate.Id;
+        this.FinishReason = chatUpdate.FinishReason;
     }
 
     /// <inheritdoc/>
