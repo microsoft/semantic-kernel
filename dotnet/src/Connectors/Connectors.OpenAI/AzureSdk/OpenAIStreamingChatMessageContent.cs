@@ -64,7 +64,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         this.FunctionName = chatUpdate.FunctionName;
         this.FunctionArgument = chatUpdate.FunctionArgumentsUpdate;
         this.ToolCallUpdateId = chatUpdate?.ToolCallUpdate?.Id;
-        this.FinishReason = chatUpdate.FinishReason;
+        this.FinishReason = chatUpdate?.FinishReason;
     }
 
     /// <inheritdoc/>
