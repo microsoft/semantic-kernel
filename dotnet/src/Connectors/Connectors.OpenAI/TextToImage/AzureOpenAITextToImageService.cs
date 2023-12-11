@@ -57,17 +57,22 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// Create a new instance of Azure OpenAI text to image service
     /// </summary>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAITextToImageService(
-        string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
+        string? endpoint,
+        string apiKey,
+        string? modelId = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null,
+        int? maxRetryCount = null,
+        string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        Verify.NotNull(modelId);
 
         if (httpClient?.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
