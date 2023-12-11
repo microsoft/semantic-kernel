@@ -1,9 +1,9 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
+import static com.microsoft.semantickernel.orchestration.contextvariables.VariableTypes.convert;
+
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.contextvariables.Converter;
-
-import static com.microsoft.semantickernel.orchestration.contextvariables.VariableTypes.convert;
 
 public class ChatHistoryVariableConverter extends Converter<ChatHistory> {
 
@@ -11,11 +11,21 @@ public class ChatHistoryVariableConverter extends Converter<ChatHistory> {
         super(
             ChatHistory.class,
             s -> convert(s, ChatHistory.class),
-            Object::toString,
+            ChatHistoryVariableConverter::toXmlString,
             x -> {
                 throw new UnsupportedOperationException(
                     "ChatHistoryVariableConverter does not support fromPromptString");
             }
         );
+    }
+
+    private static String toXmlString(ChatHistory chatHistory) {
+        return chatHistory
+            .getMessages()
+            .stream()
+            .map(message -> String.format("<message role=\"%s\">%s</message>%n",
+                message.getAuthorRoles(),
+                message.getContent()))
+            .reduce("", (acc, message) -> acc + message);
     }
 }

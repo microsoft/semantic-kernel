@@ -4,9 +4,9 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.PrimativeContextVariable.BooleanVariable;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -204,7 +204,7 @@ public class DefaultSequentialPlannerSKContext {
         SemanticTextMemory memory = delegate.getSemanticMemory();
 
         if (memory == null) {
-            delegate.setVariable(PlanSKFunctionsAreRemembered, BooleanVariable.of(true));
+            delegate.setVariable(PlanSKFunctionsAreRemembered, ContextVariable.of(true));
             return Mono.just(delegate);
         }
 
@@ -250,7 +250,7 @@ public class DefaultSequentialPlannerSKContext {
                 .map(
                         newMemory -> {
                             delegate.setVariable(
-                                    PlanSKFunctionsAreRemembered, BooleanVariable.of(true));
+                                    PlanSKFunctionsAreRemembered, ContextVariable.of(true));
                             return delegate;
                         });
     }

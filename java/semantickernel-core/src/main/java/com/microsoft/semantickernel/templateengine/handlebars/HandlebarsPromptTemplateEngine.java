@@ -43,7 +43,6 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
         return handler.render(variables);
     }
 
-
     private static class MessageResolver implements ValueResolver {
 
         @Override
@@ -55,7 +54,7 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
                     return ((Message) context).getContent();
                 }
             }
-            return null;
+            return UNRESOLVED;
         }
 
         @Override
@@ -63,7 +62,7 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
             if (context instanceof Message) {
                 return ((Message) context).getContent();
             }
-            return null;
+            return UNRESOLVED;
         }
 
         @Override
@@ -78,13 +77,12 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
         }
     }
 
-
     private static class ContextVariableResolver implements ValueResolver {
 
         @Override
         public Object resolve(Object context, String name) {
             if (context instanceof ContextVariables) {
-                return ((ContextVariables) context).get(name);
+                return ((ContextVariables) context).get(name).getValue();
             }
             if (context instanceof ContextVariable) {
                 return ((ContextVariable<?>) context).getValue();
@@ -97,7 +95,7 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
             if (context instanceof ContextVariable) {
                 return ((ContextVariable<?>) context).getValue();
             }
-            return null;
+            return UNRESOLVED;
         }
 
         @Override
@@ -105,6 +103,10 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
             if (context instanceof ContextVariables) {
                 HashMap<String, Object> result = new HashMap<>();
                 result.putAll((ContextVariables) context);
+                return result.entrySet();
+            } else if (context instanceof ContextVariable) {
+                HashMap<String, Object> result = new HashMap<>();
+                result.put("value", ((ContextVariable<?>) context).getValue());
                 return result.entrySet();
             }
             return new HashSet<>();
@@ -128,7 +130,8 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
                         String content = (String) options.fn(context);
 
                         if (context instanceof Optional) {
-                            ChatHistory.Message message = ((Optional<ChatHistory.Message>) context).orElse(null);
+                            ChatHistory.Message message = ((Optional<ChatHistory.Message>) context).orElse(
+                                null);
                             if (role == null || role.isEmpty()) {
                                 role = message.getAuthorRoles()
                                     .toString()
@@ -154,13 +157,13 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
             try {
                 ArrayList<ValueResolver> resolvers = new ArrayList<>();
                 resolvers.add(new MessageResolver());
+                resolvers.add(new ContextVariableResolver());
 
-                resolvers.addAll(ValueResolver.defaultValueResolvers());
+                // resolvers.addAll(ValueResolver.defaultValueResolvers());
 
                 Context context = Context
                     .newBuilder(variables)
-                    .push(new ContextVariableResolver())
-                    .push(new MessageResolver())
+                    .resolver(resolvers.toArray(new ValueResolver[0]))
                     .build();
 
                 String result = handlebars.compileInline(template).apply(context);

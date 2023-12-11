@@ -128,8 +128,18 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
     @Nullable
     @Override
-    public <U, T extends ContextVariable<U>> T get(String key, Class<T> clazz) {
-        return (T) get(key);
+    public <T> ContextVariable<T> get(String key, Class<T> clazz) {
+        ContextVariable<?> value = variables.get(key);
+        if (value == null) {
+            return null;
+        } else if (clazz.isAssignableFrom(value.getType().getClazz())) {
+            return (ContextVariable<T>) value;
+        }
+
+        throw new IllegalArgumentException(
+            String.format(
+                "Variable %s is of type %s, but requested type is %s",
+                key, value.getType().getClazz(), clazz));
     }
 
     @Override

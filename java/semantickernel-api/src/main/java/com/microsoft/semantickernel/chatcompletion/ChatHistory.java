@@ -1,15 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
+import com.microsoft.semantickernel.chatcompletion.ChatHistory.Message;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 /**
  * Provides a history of messages between the User, Assistant and System
  */
-public class ChatHistory {
+public class ChatHistory implements Iterable<Message> {
 
     private final List<Message> messages;
 
@@ -44,6 +48,21 @@ public class ChatHistory {
 
     public void addAll(ChatHistory value) {
         this.messages.addAll(value.getMessages());
+    }
+
+    @Override
+    public Iterator<Message> iterator() {
+        return messages.iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Message> action) {
+        messages.forEach(action);
+    }
+
+    @Override
+    public Spliterator<Message> spliterator() {
+        return messages.spliterator();
     }
 
     /**
