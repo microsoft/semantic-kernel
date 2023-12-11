@@ -29,7 +29,7 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateFactory"/> class.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="options">Handlebars promnpt template options</param>
+    /// <param name="options">Handlebars prompt template options</param>
     public HandlebarsPromptTemplateFactory(ILoggerFactory? loggerFactory = null, HandlebarsPromptTemplateOptions? options = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;

@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Helpers;
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
@@ -19,21 +17,28 @@ internal static class KernelSystemHelpers
     /// Register all (default) or specific categories of system helpers.
     /// </summary>
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-instance.</param>
+    /// <param name="kernel">Kernel instance.</param>
     /// <param name="variables">Dictionary of variables maintained by the Handlebars context.</param>
-    /// <param name="options">Handlebars promnpt template options.</param>
-    public static void Register(IHandlebars handlebarsInstance, KernelArguments variables, HandlebarsPromptTemplateOptions options)
+    /// <param name="options">Handlebars prompt template options.</param>
+    public static void Register(
+        IHandlebars handlebarsInstance,
+        Kernel kernel,
+        KernelArguments variables,
+        HandlebarsPromptTemplateOptions options)
     {
-        RegisterSystemHelpers(handlebarsInstance, variables);
+        RegisterSystemHelpers(handlebarsInstance, kernel, variables);
     }
 
     /// <summary>
     /// Register all system helpers.
     /// </summary>
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-instance.</param>
+    /// <param name="kernel">Kernel instance.</param>
     /// <param name="variables">Dictionary of variables maintained by the Handlebars context.</param>
     /// <exception cref="KernelException">Exception thrown when a message does not contain a defining role.</exception>
     private static void RegisterSystemHelpers(
         IHandlebars handlebarsInstance,
+        Kernel kernel,
         KernelArguments variables)
     {
         // TODO [@teresaqhoang]: Issue #3947 Isolate Handlebars Kernel System helpers in their own class
@@ -60,7 +65,7 @@ internal static class KernelSystemHelpers
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
-                var parameters = arguments[0] as IDictionary<string, object>;
+                var parameters = (IDictionary<string, object>)arguments[0];
                 name = (string)parameters!["name"];
                 value = parameters!["value"];
             }
@@ -70,21 +75,15 @@ internal static class KernelSystemHelpers
                 value = arguments[1];
             }
 
-            if (variables.TryGetValue(name, out var argVal))
-            {
-                variables[name] = value;
-            }
-            else
-            {
-                variables.Add(name, value);
-            }
+            // Set the variable in the Handlebars context
+            variables[name] = value;
         });
 
         handlebarsInstance.RegisterHelper("get", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
-                var parameters = arguments[0] as IDictionary<string, object>;
+                var parameters = (IDictionary<string, object>)arguments[0];
                 return variables[(string)parameters!["name"]];
             }
 
@@ -93,15 +92,18 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("json", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            object objectToSerialize = arguments[0];
-            string json = objectToSerialize.GetType() == typeof(string) ? (string)objectToSerialize : JsonSerializer.Serialize(objectToSerialize);
+            if (arguments.Length == 0 || arguments[0] is null)
+            {
+                throw new HandlebarsRuntimeException("`json` helper requires a value to be passed in.");
+            }
 
-            return json;
+            object objectToSerialize = arguments[0];
+            return objectToSerialize.GetType() == typeof(string) ? (string)objectToSerialize : JsonSerializer.Serialize(objectToSerialize);
         });
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            return string.Concat(arguments.Select(var => var?.ToString()));
+            return string.Concat(arguments);
         });
 
         handlebarsInstance.RegisterHelper("raw", (writer, options, context, arguments) =>
@@ -116,15 +118,12 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var start = int.Parse(arguments[0].ToString(), CultureInfo.InvariantCulture);
-            var end = int.Parse(arguments[1].ToString(), CultureInfo.InvariantCulture) + 1;
-
+            // Create array from start to end (inclusive)
+            var start = int.Parse(arguments[0].ToString(), kernel.Culture);
+            var end = int.Parse(arguments[1].ToString(), kernel.Culture) + 1;
             var count = end - start;
 
-            // Create array from start to end
-            var array = Enumerable.Range(start, count).ToList();
-
-            return array;
+            return Enumerable.Range(start, count).ToArray();
         });
 
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -143,6 +142,11 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("equals", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
+            if (arguments.Length < 2)
+            {
+                return false;
+            }
+
             object? left = arguments[0];
             object? right = arguments[1];
 

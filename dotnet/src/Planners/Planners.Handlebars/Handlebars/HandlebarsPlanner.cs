@@ -101,20 +101,16 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
+        // Get CreatePlan prompt template
         var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
         var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas).ConfigureAwait(false);
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-
-        // Extract the chat history from the rendered prompt
-        string pattern = @"<(user~|system~|assistant~)>(.*?)<\/\1>";
-        MatchCollection matches = Regex.Matches(createPlanPrompt, pattern, RegexOptions.Singleline);
-
-        // Add the chat history to the chat
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        // Check if plan could not be created due to insufficient functions
         if (completionResults.Content is not null && completionResults.Content.Contains(InsufficientFunctionsError))
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");

@@ -55,7 +55,7 @@ internal static class KernelFunctionHelpers
             {
                 if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
                 {
-                    ProcessHashArguments(functionMetadata, executionContext, handlebarsArguments[0] as IDictionary<string, object>, nameDelimiter);
+                    ProcessHashArguments(functionMetadata, executionContext, (IDictionary<string, object>)handlebarsArguments[0], nameDelimiter);
                 }
                 else
                 {
@@ -70,7 +70,7 @@ internal static class KernelFunctionHelpers
             KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
             // Invoke the function and write the result to the template
-            return InvokeKernelFunction(kernel, function, GetKernelArguments(executionContext), cancellationToken);
+            return InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
         });
     }
 
@@ -168,25 +168,6 @@ internal static class KernelFunctionHelpers
         {
             throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarsArguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
         }
-    }
-
-    /// <summary>
-    /// Initializes the variables in the SK function context with the variables maintained by the Handlebars context.
-    /// </summary>
-    /// <param name="arguments">Arguments maintained in the executing context.</param>
-    private static KernelArguments GetKernelArguments(KernelArguments arguments)
-    {
-        var executionContext = new KernelArguments();
-        foreach (var v in arguments)
-        {
-            var value = v.Value ?? "";
-            var type = value.GetType();
-
-            var varString = !(type.IsPrimitive || type == typeof(string)) ? JsonSerializer.Serialize(value) : value.ToString();
-            executionContext.Add(v.Key, varString);
-        }
-
-        return executionContext;
     }
 
     /// <summary>

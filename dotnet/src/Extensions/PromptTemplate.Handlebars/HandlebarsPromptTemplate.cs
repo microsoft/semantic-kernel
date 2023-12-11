@@ -26,7 +26,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    /// <param name="options">Handlebars promnpt template options</param>
+    /// <param name="options">Handlebars prompt template options</param>
     public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null, HandlebarsPromptTemplateOptions? options = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -69,9 +69,9 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
 
         // Add SK's built-in system helpers
-        KernelSystemHelpers.Register(handlebarsInstance, arguments, this._options);
+        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, this._options);
 
-        // Add Handlebars' built-in dotnet helpers
+        // Add built-in helpers from the HandlebarsDotNet library
         HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
         {
             options.PrefixSeparator = this._options.PrefixSeparator;
@@ -112,5 +112,6 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         return result;
     }
+
     #endregion
 }
