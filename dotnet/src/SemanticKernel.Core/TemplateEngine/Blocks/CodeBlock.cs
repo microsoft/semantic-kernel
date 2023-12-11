@@ -172,10 +172,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
             this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
         }
 
-        string? positionalParameterName = null;
-        object? positionalInputValue = null;
-        var namedArgsStartIndex = 1;
-
         // Get the function metadata
         var functionMetadata = kernel.Plugins.GetFunction(fBlock.PluginName, fBlock.FunctionName).Metadata;
 
@@ -185,16 +181,20 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} does not take any arguments but it is being called in the template with {this._tokens.Count - 1} arguments.");
         }
 
+        string? firstPositionalParameterName = null;
+        object? firstPositionalInputValue = null;
+        var namedArgsStartIndex = 1;
+
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
             // Gets the function first parameter name
-            positionalParameterName = functionMetadata.Parameters[0].Name;
+            firstPositionalParameterName = functionMetadata.Parameters[0].Name;
 
-            positionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
+            firstPositionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Type check is avoided and marshalling is done by the function itself
 
             // Keep previous trust information when updating the input
-            arguments[positionalParameterName] = positionalInputValue;
+            arguments[firstPositionalParameterName] = firstPositionalInputValue;
             namedArgsStartIndex++;
         }
 
@@ -217,9 +217,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
             }
 
             // Check if the positional parameter clashes with a named parameter
-            if (positionalParameterName is not null && string.Equals(positionalParameterName, arg.Name, StringComparison.OrdinalIgnoreCase))
+            if (firstPositionalParameterName is not null && string.Equals(firstPositionalParameterName, arg.Name, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{positionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
+                throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
             arguments[arg.Name] = arg.GetValue(arguments);
