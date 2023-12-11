@@ -749,6 +749,7 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
+        Verify.NotNull(serviceConfig);
         Verify.NotNullOrWhiteSpace(serviceConfig.DeploymentName);
         Verify.NotNullOrWhiteSpace(serviceConfig.Endpoint);
         Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
