@@ -70,12 +70,12 @@ internal static class TypeConverterFactory
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
-            if (value is not string)
+            if (value is not string json)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot convert from non-string value.");
             }
 
-            return JsonSerializer.Deserialize(value.ToString()!, this._type);
+            return JsonSerializer.Deserialize(json, this._type);
         }
 
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
