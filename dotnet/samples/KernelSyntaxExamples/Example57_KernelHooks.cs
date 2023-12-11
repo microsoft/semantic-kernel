@@ -81,7 +81,8 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking += MyPreHandler;
         kernel.FunctionInvoked += MyPostExecutionHandler;
 
-        // Adding and Removing a handler (will cancel if not removed)
+        // Demonstrate pattern for removing a handler.
+        // Note: MyRemovedPreExecutionHandler will cancel execution if not removed.
         kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
