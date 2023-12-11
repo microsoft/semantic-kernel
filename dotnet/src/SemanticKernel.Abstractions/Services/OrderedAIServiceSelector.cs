@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,10 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         [NotNullWhen(true)] out T? service,
         out PromptExecutionSettings? serviceSettings) where T : class, IAIService
     {
-        var executionSettings = function.ExecutionSettings;
+        // Allow the execution settings from the kernel arguments to take precedence
+        var executionSettings = arguments.ExecutionSettings is not null
+             ? new List<PromptExecutionSettings> { arguments.ExecutionSettings }
+             : function.ExecutionSettings;
         if (executionSettings is null || executionSettings.Count == 0)
         {
             service = GetAnyService(kernel);
