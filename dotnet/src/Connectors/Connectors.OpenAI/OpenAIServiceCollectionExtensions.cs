@@ -87,7 +87,7 @@ public static class OpenAIServiceCollectionExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        string? serviceId = null) => AddAzureOpenAIChatCompletion(services, new() { DeploymentName = deploymentName, Endpoint = endpoint, ApiKey = apiKey }, serviceId);
+        string? serviceId = null) => AddAzureOpenAITextGeneration(services, new() { DeploymentName = deploymentName, Endpoint = endpoint, ApiKey = apiKey }, serviceId);
 
     /// <summary>
     /// Adds an Azure OpenAI text generation service with the specified configuration.
