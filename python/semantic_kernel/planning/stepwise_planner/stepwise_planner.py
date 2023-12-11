@@ -16,10 +16,10 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -89,7 +89,9 @@ class StepwisePlanner:
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
 
         if prompt_user_config is None:
-            prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
+            prompt_config = PromptTemplateConfig.from_json(
+                read_file(PROMPT_CONFIG_FILE_PATH)
+            )
 
         prompt_config.completion.extension_data["max_tokens"] = self.config.max_tokens
 

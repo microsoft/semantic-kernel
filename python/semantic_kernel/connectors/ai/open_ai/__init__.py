@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.open_ai.azure_open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_open_ai_request_settings import (
     AzureOpenAIChatRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
     OpenAIRequestSettings,
     OpenAITextRequestSettings,

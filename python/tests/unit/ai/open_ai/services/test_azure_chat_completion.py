@@ -13,11 +13,11 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.open_ai.azure_open_ai_request_settings import (
-    AzureOpenAIChatRequestSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
+)
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_open_ai_request_settings import (
+    AzureOpenAIChatRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
     OpenAIChatPromptTemplateWithDataConfig,

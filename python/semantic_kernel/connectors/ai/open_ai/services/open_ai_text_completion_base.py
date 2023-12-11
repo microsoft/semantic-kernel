@@ -7,7 +7,7 @@ from openai.types.completion import Completion
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAITextRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+    from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
         OpenAIRequestSettings,
     )
 

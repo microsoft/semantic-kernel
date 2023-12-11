@@ -86,7 +86,7 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
 class OpenAIChatRequestSettings(OpenAIRequestSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: Optional[Literal["text", "json_object"]] = None
+    response_format: Optional[Literal["text", "json_object"]] = 'text'
     tools: Optional[List[Dict[str, Any]]] = None
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
@@ -102,3 +102,14 @@ class OpenAIChatRequestSettings(OpenAIRequestSettings):
             _LOGGER.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
             )
+
+
+class OpenAIEmbeddingRequestSettings(AIRequestSettings):
+    input: Optional[Union[str, List[str], List[int], List[List[int]]]] = None
+    ai_model_id: Optional[str] = Field(None, serialization_alias="model")
+    encoding_format: Optional[Literal["float", "base64"]] = None
+    user: Optional[str] = None
+    extra_headers: Optional[Dict] = None
+    extra_query: Optional[Dict] = None
+    extra_body: Optional[Dict] = None
+    timeout: Optional[float] = None

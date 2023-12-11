@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAITextRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (

@@ -6,7 +6,7 @@ from typing import Any, Dict, Mapping, Optional, overload
 from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (

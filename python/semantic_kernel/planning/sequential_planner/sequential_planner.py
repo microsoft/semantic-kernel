@@ -15,10 +15,10 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_extensions i
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -64,7 +64,9 @@ class SequentialPlanner:
         self._context = kernel.create_new_context()
 
     def _init_flow_function(self, prompt: str, kernel: Kernel):
-        prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
+        prompt_config = PromptTemplateConfig.from_json(
+            read_file(PROMPT_CONFIG_FILE_PATH)
+        )
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
         prompt_config.completion.extension_data["max_tokens"] = self.config.max_tokens
 

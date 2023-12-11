@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 load_dotenv()
@@ -26,7 +28,9 @@ chat_service = sk_oai.AzureChatCompletion(
     **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_chat_service("chat-gpt", chat_service)
-req_settings = kernel.get_request_settings_from_service(ChatCompletionClientBase, 'chat-gpt')
+req_settings = kernel.get_request_settings_from_service(
+    ChatCompletionClientBase, "chat-gpt"
+)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8

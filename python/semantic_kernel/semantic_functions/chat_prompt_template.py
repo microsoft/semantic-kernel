@@ -74,6 +74,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             kwargs: can be used by inherited classes.
         """
         concrete_message = self.model_fields["messages"].annotation.__args__[0]
+        # When the type is not explicitely set, it is still the typevar, replace with generic ChatMessage
         if isinstance(concrete_message, TypeVar):
             concrete_message = ChatMessage
         self.messages.append(

@@ -31,6 +31,8 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         completion_dict = data["completion"]
         service_id = completion_dict.pop("service_id", None)
         concrete_type = cls.model_fields["completion"].annotation
+        if isinstance(concrete_type, TypeVar):
+            concrete_type = AIRequestSettings
         config["completion"] = concrete_type(
             service_id=service_id, extension_data=completion_dict
         )
@@ -79,4 +81,9 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
 
     @classmethod
     def from_completion_parameters(cls, **kwargs) -> "PromptTemplateConfig":
-        return PromptTemplateConfig(completion=cls.model_fields["completion"].annotation(extension_data=kwargs))
+        concrete_class = cls.model_fields["completion"].annotation
+        if isinstance(concrete_class, TypeVar):
+            concrete_class = AIRequestSettings
+        return PromptTemplateConfig(
+            completion=concrete_class(extension_data=kwargs)
+        )

@@ -12,7 +12,7 @@ from typing import (
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (

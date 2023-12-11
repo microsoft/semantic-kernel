@@ -480,12 +480,17 @@ class Kernel:
 
         return skill
 
-    def get_request_settings_from_service(self, type: Type[T], service_id: Optional[str] = None) -> AIRequestSettings:
+    def get_request_settings_from_service(
+        self, type: Type[T], service_id: Optional[str] = None
+    ) -> AIRequestSettings:
         """Get the request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_ai_service(type, service_id)
         service_instance = service.__closure__[0].cell_contents
-        req_settings_type = service_instance.request_settings_factory()
-        return req_settings_type(service_id=service_id, extension_data={"ai_model_id": service_instance.ai_model_id})
+        req_settings_type = service_instance.get_request_settings_class()
+        return req_settings_type(
+            service_id=service_id,
+            extension_data={"ai_model_id": service_instance.ai_model_id},
+        )
 
     def get_ai_service(
         self, type: Type[T], service_id: Optional[str] = None

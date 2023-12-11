@@ -1,10 +1,10 @@
 import pytest
 
 from semantic_kernel.models.chat.chat_message import ChatMessage
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 
 
 def test_chat_message():

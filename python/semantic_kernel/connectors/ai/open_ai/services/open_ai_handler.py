@@ -2,9 +2,9 @@
 
 import logging
 from abc import ABC
-from typing import List, Optional, Union
+from typing import List, Union
 
-from numpy import array, ndarray
+from numpy import array
 from openai import AsyncOpenAI, AsyncStream
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -13,7 +13,8 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.open_ai.open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
+    OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
@@ -54,18 +55,18 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         Returns:
             ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
         """
-        if self.ai_model_type == OpenAIModelTypes.EMBEDDING:
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                "The model type is not supported for this operation, please use a text or chat model",
-            )
-        chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
         try:
             response = await (
-                self.client.chat.completions.create(**request_settings.create_options())
-                if chat_mode
-                else self.client.completions.create(**request_settings.create_options())
+                self.client.chat.completions.create(
+                    **request_settings.prepare_settings_dict()
+                )
+                if self.ai_model_type == OpenAIModelTypes.CHAT
+                else self.client.completions.create(
+                    **request_settings.prepare_settings_dict()
+                )
             )
+            self.store_usage(response)
+            return response
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -179,31 +180,16 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     #     return model_args
 
     async def _send_embedding_request(
-        self, texts: List[str], batch_size: Optional[int] = None
-    ) -> ndarray:
-        if self.ai_model_type != OpenAIModelTypes.EMBEDDING:
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                "The model type is not supported for this operation, please use an embedding model",
-            )
-        model_args = self.get_model_args()
+        self, settings: OpenAIEmbeddingRequestSettings
+    ) -> List[array]:
         try:
-            raw_embeddings = []
-            batch_size = batch_size or len(texts)
-            for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]  # noqa: E203
-                response = await self.client.embeddings.create(
-                    input=batch,
-                    **model_args,
-                )
-                # make numpy arrays from the response
-                # TODO: the openai response is cast to a list[float], could be used instead of nparray
-                raw_embeddings.extend([array(x.embedding) for x in response.data])
-                if response.usage:
-                    logger.info(f"OpenAI usage: {response.usage}")
-                    self.prompt_tokens += response.usage.prompt_tokens
-                    self.total_tokens += response.usage.total_tokens
-            return array(raw_embeddings)
+            response = await self.client.embeddings.create(
+                **settings.prepare_settings_dict()
+            )
+            self.store_usage(response)
+            # make numpy arrays from the response
+            # TODO: the openai response is cast to a list[float], could be used instead of nparray
+            return [array(x.embedding) for x in response.data]
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -211,6 +197,14 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
 
+    def store_usage(self, response):
+        if not isinstance(response, AsyncStream):
+            self.log.info(f"OpenAI usage: {response.usage}")
+            self.prompt_tokens += response.usage.prompt_tokens
+            self.total_tokens += response.usage.total_tokens
+            if hasattr(response.usage, "completion_tokens"):
+                self.completion_tokens += response.usage.completion_tokens
+
     def get_request_settings_class(self) -> "AIRequestSettings":
-        """Create a request settings object."""
+        """Return the class with the applicable request settings."""
         return OpenAIRequestSettings
