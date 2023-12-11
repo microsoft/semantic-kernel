@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.11" />
     <PackageVersion Include="Azure.Identity" Version="1.10.4" />
-    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.0.0" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.1.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5" />
     <PackageVersion Include="Markdig" Version="0.33.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
