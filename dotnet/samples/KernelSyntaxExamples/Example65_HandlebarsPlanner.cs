@@ -104,7 +104,7 @@ public static class Example65_HandlebarsPlanner
         var plan = await planner.CreatePlanAsync(kernel, goal);
 
         // Print the prompt template
-        if (shouldPrintPrompt)
+        if (shouldPrintPrompt && plan.Prompt is not null)
         {
             Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
         }

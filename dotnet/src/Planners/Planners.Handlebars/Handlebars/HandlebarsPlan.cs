@@ -25,14 +25,14 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Gets the prompt template used to generate the plan.
     /// </summary>
-    public string Prompt { get; }
+    public string? Prompt { get; set; } = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
     /// </summary>
     /// <param name="generatedPlan">A Handlebars template representing the generated plan.</param>
     /// <param name="createPlanPromptTemplate">Prompt template used to generate the plan.</param>
-    public HandlebarsPlan(string generatedPlan, string createPlanPromptTemplate)
+    public HandlebarsPlan(string generatedPlan, string? createPlanPromptTemplate = null)
     {
         this._template = generatedPlan;
         this.Prompt = createPlanPromptTemplate;
