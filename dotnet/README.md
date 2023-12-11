@@ -26,13 +26,13 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 var builder = new KernelBuilder();
 
-builder.WithAzureOpenAIChatCompletionService(
+builder.AddAzureOpenAIChatCompletion(
          "gpt-35-turbo",                      // Azure OpenAI Deployment Name
          "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
          "...your Azure OpenAI Key...");      // Azure OpenAI Key
 
 // Alternative using OpenAI
-//builder.WithOpenAIChatCompletionService(
+//builder.AddOpenAIChatCompletion(
 //         "gpt-3.5-turbo",                  // OpenAI Model name
 //         "...your OpenAI API Key...");     // OpenAI API Key
 
@@ -42,7 +42,7 @@ var prompt = @"{{$input}}
 
 One line TLDR with the fewest words.";
 
-var summarize = kernel.CreateSemanticFunction(prompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
+var summarize = kernel.CreateFunctionFromPrompt(prompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
 
 string text1 = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -54,47 +54,13 @@ string text2 = @"
 2. The acceleration of an object depends on the mass of the object and the amount of force applied.
 3. Whenever one object exerts a force on another object, the second object exerts an equal and opposite on the first.";
 
-Console.WriteLine(await kernel.RunAsync(text1, summarize));
+Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments(text1)));
 
-Console.WriteLine(await kernel.RunAsync(text2, summarize));
+Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments(text2)));
 
 // Output:
 //   Energy conserved, entropy increases, zero entropy at 0K.
 //   Objects move in response to forces.
-```
-
-# Prompt chaining
-
-The previous code shows how to invoke individual semantic functions, but you can
-also chain functions (aka prompt chaining) to process the initial input with multiple
-operations.
-
-The following code for example, translates an initial text to math symbols and
-then generates a summary:
-
-```csharp
-string translationPrompt = @"{{$input}}
-
-Translate the text to math.";
-
-string summarizePrompt = @"{{$input}}
-
-Give me a TLDR with the fewest words.";
-
-var translator = kernel.CreateSemanticFunction(translationPrompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 200 });
-var summarize = kernel.CreateSemanticFunction(summarizePrompt, executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });
-
-string inputText = @"
-1st Law of Thermodynamics - Energy cannot be created or destroyed.
-2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
-3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy.";
-
-// Run two prompts in sequence (prompt chaining)
-var output = await kernel.RunAsync(inputText, translator, summarize);
-
-Console.WriteLine(output);
-
-// Output: ΔE = 0, ΔSuniv > 0, S = 0 at 0K.
 ```
 
 # Semantic Kernel Notebooks
@@ -109,11 +75,12 @@ requirements and setup instructions.
 2. [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
 3. [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
 4. [Creating Semantic Functions at runtime (i.e. inline functions)](./notebooks/03-semantic-function-inline.ipynb)
-5. [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
+5. [Using Kernel Arguments to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
 6. [Creating and Executing Plans](./notebooks/05-using-the-planner.ipynb)
 7. [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
 8. [Creating images with DALL-E 2](./notebooks/07-DALL-E-2.ipynb)
 9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-2.ipynb)
+10. [BingSearch using Kernel](./notebooks/10-BingSearch-using-kernel.ipynb)
 
 # Nuget packages
 
