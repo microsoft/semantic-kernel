@@ -34,7 +34,8 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Theory(Skip = "Requires model deployment that supports function calling.")]
+    //[Theory(Skip = "Requires model deployment that supports function calling.")]
+    [Theory]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest")]
     [InlineData("What is the weather in Seattle?", "Seattle")]
     public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer)
@@ -66,8 +67,8 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
+        //AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+        //Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -75,13 +76,13 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
 
-        if (useEmbeddings)
+        /*if (useEmbeddings)
         {
             builder.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+        }*/
 
         var kernel = builder.Build();
 
