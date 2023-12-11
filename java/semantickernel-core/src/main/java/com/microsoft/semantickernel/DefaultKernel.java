@@ -18,16 +18,14 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import jakarta.inject.Inject;
-import java.util.*;
 
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -82,7 +80,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
+    public <FunctionType extends KernelFunction> FunctionType registerSemanticFunction(
             FunctionType semanticFunctionDefinition) {
         return null;
     }
@@ -105,12 +103,12 @@ public class DefaultKernel implements Kernel {
     //    }
 
     @Override
-    public SKFunction getFunction(String skill, String function) {
+    public KernelFunction getFunction(String skill, String function) {
         return defaultSkillCollection.getFunction(skill, function, null);
     }
 
     @Override
-    public CompletionSKFunction registerSemanticFunction(
+    public CompletionKernelFunction registerSemanticFunction(
             String skillName, String functionName, SemanticFunctionConfig functionConfig) {
         // Future-proofing the name not to contain special chars
         // Verify.ValidSkillName(skillName);
@@ -201,7 +199,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public CompletionSKFunction.Builder getSemanticFunctionBuilder() {
+    public CompletionKernelFunction.Builder getSemanticFunctionBuilder() {
         return SKBuilders.completionFunctions().withKernel(this);
     }
 
@@ -274,23 +272,23 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public Mono<KernelResult> runAsync(SKFunction... pipeline) {
+    public Mono<KernelResult> runAsync(KernelFunction... pipeline) {
         return runAsync(SKBuilders.variables().build(), pipeline);
     }
 
     @Override
-    public Mono<KernelResult> runAsync(String input, SKFunction... pipeline) {
+    public Mono<KernelResult> runAsync(String input, KernelFunction... pipeline) {
         return runAsync(SKBuilders.variables().withInput(input).build(), pipeline);
     }
 
     @Override
-    public Mono<KernelResult> runAsync(ContextVariables variables, SKFunction... pipeline) {
+    public Mono<KernelResult> runAsync(ContextVariables variables, KernelFunction... pipeline) {
         return null;
     }
 
     @Override
     public Mono<KernelResult> runAsync(
-            boolean streaming, ContextVariables variables, SKFunction... pipeline) {
+            boolean streaming, ContextVariables variables, KernelFunction... pipeline) {
         // TODO: 1.0 support pipeline
 
         if (pipeline == null || pipeline.length == 0) {
@@ -298,7 +296,7 @@ public class DefaultKernel implements Kernel {
         }
 
         List<Mono<FunctionResult>> results = new ArrayList<>();
-        for (SKFunction f : Arrays.asList(pipeline)) {
+        for (KernelFunction f : Arrays.asList(pipeline)) {
             results.add(f.invokeAsync(this, variables, streaming));
         }
 

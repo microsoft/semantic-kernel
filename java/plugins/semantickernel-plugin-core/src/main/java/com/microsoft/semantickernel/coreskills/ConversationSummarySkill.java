@@ -7,7 +7,7 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.text.TextChunker;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -17,9 +17,9 @@ public class ConversationSummarySkill {
     // The max tokens to process in a single semantic function call.
     private static final int MaxTokens = 1024;
 
-    private final CompletionSKFunction summarizeConversationFunction;
-    private final CompletionSKFunction conversationActionItemsFunction;
-    private final CompletionSKFunction conversationTopicsFunction;
+    private final CompletionKernelFunction summarizeConversationFunction;
+    private final CompletionKernelFunction conversationActionItemsFunction;
+    private final CompletionKernelFunction conversationTopicsFunction;
     private final Kernel kernel;
 
     /**

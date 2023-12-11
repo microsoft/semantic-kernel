@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.KernelException;
 import com.microsoft.semantickernel.KernelException.ErrorCodes;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
@@ -58,11 +58,11 @@ public class KernelExtensions {
 
                 // Load prompt configuration. Note: the configuration is
                 // optional.
-                PromptTemplateConfig config = new PromptTemplateConfig("", "", null);
+                PromptConfig config = new PromptConfig("", "", null);
 
                 File configPath = new File(dir, CONFIG_FILE);
                 if (configPath.exists()) {
-                    config = new ObjectMapper().readValue(configPath, PromptTemplateConfig.class);
+                    config = new ObjectMapper().readValue(configPath, PromptConfig.class);
 
                     // Verify.NotNull(config, $"Invalid prompt template
                     // configuration, unable to parse {configPath}");
@@ -100,11 +100,11 @@ public class KernelExtensions {
             PromptTemplateEngine promptTemplateEngine)
             throws KernelException {
 
-        PromptTemplateConfig config =
+        PromptConfig config =
                 getPromptTemplateConfig(pluginDirectory, pluginName, functionName, clazz);
 
         if (config == null) {
-            config = new PromptTemplateConfig("", "", null);
+            config = new PromptConfig("", "", null);
         }
 
         String template = getTemplatePrompt(pluginDirectory, pluginName, functionName, clazz);
@@ -150,7 +150,7 @@ public class KernelExtensions {
         }
     }
 
-    private static PromptTemplateConfig getPromptTemplateConfig(
+    private static PromptConfig getPromptTemplateConfig(
             String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz)
             throws KernelException {
         String configFileName =
@@ -171,7 +171,7 @@ public class KernelExtensions {
                             ResourceLocation.CLASSPATH,
                             ResourceLocation.FILESYSTEM);
 
-            return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
+            return new ObjectMapper().readValue(config, PromptConfig.class);
         } catch (IOException e) {
             if (e instanceof JsonMappingException) {
                 LOGGER.error("Failed to parse config file " + configFileName, e);

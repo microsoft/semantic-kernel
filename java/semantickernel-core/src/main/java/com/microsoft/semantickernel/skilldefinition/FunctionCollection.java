@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException.ErrorCodes;
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,16 +15,16 @@ import javax.annotation.Nullable;
 
 /** A collection of functions. */
 public class FunctionCollection implements ReadOnlyFunctionCollection {
-    private final CaseInsensitiveMap<SKFunction> functionCollection;
+    private final CaseInsensitiveMap<KernelFunction> functionCollection;
 
     private final String skillName;
 
-    private FunctionCollection(String skillName, Map<String, SKFunction> functionCollection) {
+    private FunctionCollection(String skillName, Map<String, KernelFunction> functionCollection) {
         this.functionCollection = new CaseInsensitiveMap<>(functionCollection);
         this.skillName = skillName;
     }
 
-    public FunctionCollection(String skillName, List<? extends SKFunction> functionCollection) {
+    public FunctionCollection(String skillName, List<? extends KernelFunction> functionCollection) {
         this(
                 skillName,
                 functionCollection.stream()
@@ -41,10 +41,10 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     public FunctionCollection(ReadOnlyFunctionCollection value) {
         this.skillName = value.getSkillName();
         this.functionCollection =
-                new CaseInsensitiveMap<SKFunction>(
+                new CaseInsensitiveMap<KernelFunction>(
                         Collections.unmodifiableMap(
                                 value.getAll().stream()
-                                        .collect(Collectors.toMap(SKFunction::getName, it -> it))));
+                                        .collect(Collectors.toMap(KernelFunction::getName, it -> it))));
     }
 
     @Override
@@ -53,8 +53,8 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     }
 
     @Override
-    public SKFunction getFunction(String functionName) {
-        SKFunction func = functionCollection.get(functionName.toLowerCase(Locale.ROOT));
+    public KernelFunction getFunction(String functionName) {
+        KernelFunction func = functionCollection.get(functionName.toLowerCase(Locale.ROOT));
         if (func == null) {
             throw new FunctionNotFound(
                     FunctionNotFound.ErrorCodes.FUNCTION_NOT_FOUND, functionName);
@@ -72,8 +72,8 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @throws RuntimeException if the given entry is not of the expected type
      */
     @Override
-    public <T extends SKFunction> T getFunction(String functionName, @Nullable Class<T> clazz) {
-        SKFunction func = getFunction(functionName);
+    public <T extends KernelFunction> T getFunction(String functionName, @Nullable Class<T> clazz) {
+        KernelFunction func = getFunction(functionName);
         if (clazz == null) {
             return (T) func;
         }
@@ -102,7 +102,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @return An unmodifiable list of all functions
      */
     @Override
-    public List<SKFunction> getAll() {
+    public List<KernelFunction> getAll() {
         return Collections.unmodifiableList(new ArrayList<>(functionCollection.values()));
     }
 
@@ -113,7 +113,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @param functionInstance
      * @return Collection for fluent callse
      */
-    public FunctionCollection put(String functionName, SKFunction functionInstance) {
+    public FunctionCollection put(String functionName, KernelFunction functionInstance) {
         this.functionCollection.put(functionName.toLowerCase(Locale.ROOT), functionInstance);
         return this;
     }

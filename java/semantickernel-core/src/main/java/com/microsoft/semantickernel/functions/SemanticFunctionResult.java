@@ -6,13 +6,6 @@ import java.util.Map;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import com.microsoft.semantickernel.semanticfunctions.SemanticFunction;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.Map;
-
 public class SemanticFunctionResult implements FunctionResult {
     private Mono<String> valueAsync;
     private Flux<String> streamingValueAsync;

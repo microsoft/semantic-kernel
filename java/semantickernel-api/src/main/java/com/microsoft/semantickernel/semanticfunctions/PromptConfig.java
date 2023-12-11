@@ -7,14 +7,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import reactor.util.annotation.Nullable;
 
-/** Prompt template configuration */
+/**
+ * Prompt template configuration
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PromptTemplateConfig {
+public class PromptConfig {
+
     private final CompletionConfig completionConfig;
     private final InputConfig input;
 
@@ -35,7 +39,26 @@ public class PromptTemplateConfig {
         return type;
     }
 
-    /** Builder for CompletionConfig */
+    public String getName() {
+        return null;
+    }
+
+    public List<KernelParameterMetadata> getKernelParametersMetadata() {
+        return null;
+    }
+
+    public KernelReturnParameterMetadata getKernelReturnParameterMetadata() {
+        return null;
+    }
+
+    public List<PromptExecutionSettings> getExecutionSettings() {
+        return null;
+    }
+
+
+    /**
+     * Builder for CompletionConfig
+     */
     public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
 
         private CompletionConfig completionConfig;
@@ -50,80 +73,80 @@ public class PromptTemplateConfig {
 
         public CompletionConfigBuilder temperature(double temperature) {
             return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
+                new CompletionConfig(
+                    temperature,
+                    completionConfig.topP,
+                    completionConfig.presencePenalty,
+                    completionConfig.frequencyPenalty,
+                    completionConfig.maxTokens,
+                    completionConfig.bestOf,
+                    completionConfig.user,
+                    completionConfig.stopSequences));
         }
 
         public CompletionConfigBuilder topP(double topP) {
             return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
+                new CompletionConfig(
+                    completionConfig.temperature,
+                    topP,
+                    completionConfig.presencePenalty,
+                    completionConfig.frequencyPenalty,
+                    completionConfig.maxTokens,
+                    completionConfig.bestOf,
+                    completionConfig.user,
+                    completionConfig.stopSequences));
         }
 
         public CompletionConfigBuilder presencePenalty(double presencePenalty) {
             return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
+                new CompletionConfig(
+                    completionConfig.temperature,
+                    completionConfig.topP,
+                    presencePenalty,
+                    completionConfig.frequencyPenalty,
+                    completionConfig.maxTokens,
+                    completionConfig.bestOf,
+                    completionConfig.user,
+                    completionConfig.stopSequences));
         }
 
         public CompletionConfigBuilder frequencyPenalty(double frequencyPenalty) {
             return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
+                new CompletionConfig(
+                    completionConfig.temperature,
+                    completionConfig.topP,
+                    completionConfig.presencePenalty,
+                    frequencyPenalty,
+                    completionConfig.maxTokens,
+                    completionConfig.bestOf,
+                    completionConfig.user,
+                    completionConfig.stopSequences));
         }
 
         public CompletionConfigBuilder maxTokens(int maxTokens) {
             return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
+                new CompletionConfig(
+                    completionConfig.temperature,
+                    completionConfig.topP,
+                    completionConfig.presencePenalty,
+                    completionConfig.frequencyPenalty,
+                    maxTokens,
+                    completionConfig.bestOf,
+                    completionConfig.user,
+                    completionConfig.stopSequences));
         }
 
         public CompletionConfigBuilder stopSequences(List<String> stopSequences) {
             return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            stopSequences));
+                new CompletionConfig(
+                    completionConfig.temperature,
+                    completionConfig.topP,
+                    completionConfig.presencePenalty,
+                    completionConfig.frequencyPenalty,
+                    completionConfig.maxTokens,
+                    completionConfig.bestOf,
+                    completionConfig.user,
+                    stopSequences));
         }
 
         public CompletionConfig build() {
@@ -135,8 +158,11 @@ public class PromptTemplateConfig {
         return input;
     }
 
-    /** Completion configuration parameters */
+    /**
+     * Completion configuration parameters
+     */
     public static class CompletionConfig implements Buildable {
+
         /*
         /// <summary>
         /// Sampling temperature to use, between 0 and 2. Higher values will make the output more random.
@@ -211,32 +237,32 @@ public class PromptTemplateConfig {
         }
 
         public CompletionConfig(
-                double temperature,
-                double topP,
-                double presencePenalty,
-                double frequencyPenalty,
-                int maxTokens) {
+            double temperature,
+            double topP,
+            double presencePenalty,
+            double frequencyPenalty,
+            int maxTokens) {
             this(
-                    temperature,
-                    topP,
-                    presencePenalty,
-                    frequencyPenalty,
-                    maxTokens,
-                    1,
-                    "",
-                    new ArrayList<>());
+                temperature,
+                topP,
+                presencePenalty,
+                frequencyPenalty,
+                maxTokens,
+                1,
+                "",
+                new ArrayList<>());
         }
 
         @JsonCreator
         public CompletionConfig(
-                @JsonProperty("temperature") double temperature,
-                @JsonProperty("top_p") double topP,
-                @JsonProperty("presence_penalty") double presencePenalty,
-                @JsonProperty("frequency_penalty") double frequencyPenalty,
-                @JsonProperty("max_tokens") int maxTokens,
-                @JsonProperty("best_of") int bestOf,
-                @JsonProperty("user") String user,
-                @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
+            @JsonProperty("temperature") double temperature,
+            @JsonProperty("top_p") double topP,
+            @JsonProperty("presence_penalty") double presencePenalty,
+            @JsonProperty("frequency_penalty") double frequencyPenalty,
+            @JsonProperty("max_tokens") int maxTokens,
+            @JsonProperty("best_of") int bestOf,
+            @JsonProperty("user") String user,
+            @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
             this.temperature = temperature;
             this.topP = topP;
             this.presencePenalty = presencePenalty;
@@ -301,8 +327,11 @@ public class PromptTemplateConfig {
         }
     }
 
-    /** Input parameter for semantic functions */
+    /**
+     * Input parameter for semantic functions
+     */
     public static class InputParameter {
+
         private final String name;
         private final String description;
 
@@ -310,9 +339,9 @@ public class PromptTemplateConfig {
 
         @JsonCreator
         public InputParameter(
-                @JsonProperty("name") String name,
-                @JsonProperty("description") String description,
-                @JsonProperty("defaultValue") String defaultValue) {
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("defaultValue") String defaultValue) {
             this.name = name;
             this.description = description;
             this.defaultValue = defaultValue;
@@ -347,7 +376,9 @@ public class PromptTemplateConfig {
         }
     }
 
-    /** Input configuration (list of all input parameters for a semantic function). */
+    /**
+     * Input configuration (list of all input parameters for a semantic function).
+     */
     public static class InputConfig {
 
         public final List<InputParameter> parameters;
@@ -367,26 +398,26 @@ public class PromptTemplateConfig {
     private final String type; // { get; set; } = "completion";
     private final String description;
 
-    public PromptTemplateConfig() {
+    public PromptConfig() {
         this("", "", null);
     }
 
-    public PromptTemplateConfig(CompletionConfig completionConfig) {
+    public PromptConfig(CompletionConfig completionConfig) {
         this(1, "", "", completionConfig, new InputConfig(new ArrayList<>()));
     }
 
-    public PromptTemplateConfig(
-            String description, String type, @Nullable CompletionConfig completionConfig) {
+    public PromptConfig(
+        String description, String type, @Nullable CompletionConfig completionConfig) {
         this(1, description, type, completionConfig, new InputConfig(new ArrayList<>()));
     }
 
     @JsonCreator
-    public PromptTemplateConfig(
-            @JsonProperty("schema") int schema,
-            @JsonProperty("description") String description,
-            @JsonProperty("type") String type,
-            @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
-            @Nullable @JsonProperty("input") InputConfig input) {
+    public PromptConfig(
+        @JsonProperty("schema") int schema,
+        @JsonProperty("description") String description,
+        @JsonProperty("type") String type,
+        @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
+        @Nullable @JsonProperty("input") InputConfig input) {
         if (completionConfig == null) {
             completionConfig = new CompletionConfig();
         }

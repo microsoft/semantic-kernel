@@ -4,8 +4,8 @@ package com.microsoft.semantickernel.e2e;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
@@ -22,12 +22,12 @@ public class InlineFunctionTest extends AbstractKernelTest {
         Kernel kernel = buildTextCompletionKernel();
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
-        CompletionSKFunction summarize =
+        CompletionKernelFunction summarize =
                 kernel.getSemanticFunctionBuilder()
                         .withPromptTemplate(prompt)
                         .withFunctionName("summarize")
                         .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                                new PromptConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
                         .build();
 
         String text =

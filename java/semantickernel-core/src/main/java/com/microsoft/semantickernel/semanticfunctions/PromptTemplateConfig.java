@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SemanticFunctionModel {
+public class PromptTemplateConfig {
     @JsonProperty("name")
     private String name;
 
@@ -28,9 +28,9 @@ public class SemanticFunctionModel {
     @JsonProperty("execution_settings")
     private List<ExecutionSettingsModel> executionSettings;
 
-    public SemanticFunctionModel() {}
+    public PromptTemplateConfig() {}
 
-    public SemanticFunctionModel(
+    public PromptTemplateConfig(
             String name,
             String template,
             String templateFormat,

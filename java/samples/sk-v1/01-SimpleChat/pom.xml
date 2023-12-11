@@ -19,6 +19,10 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

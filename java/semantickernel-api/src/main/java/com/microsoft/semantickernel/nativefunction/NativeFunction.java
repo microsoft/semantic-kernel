@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.nativefunction;
 
 import java.util.List;
 
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 
 public class NativeFunction {
 
-    public static List<SKFunction> getFunctionsFromObject(Object object) {
+    public static List<KernelFunction> getFunctionsFromObject(Object object) {
         return null;
     }
 }

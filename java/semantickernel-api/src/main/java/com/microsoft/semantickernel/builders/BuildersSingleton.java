@@ -9,11 +9,11 @@ import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,10 +66,10 @@ public enum BuildersSingleton {
             // Keep this list in alphabetical order by fallback variable name
             registerBuilder(ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
             registerBuilder(
-                    PromptTemplateConfig.CompletionConfigBuilder.class,
+                    PromptConfig.CompletionConfigBuilder.class,
                     FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS);
             registerBuilder(
-                    CompletionSKFunction.Builder.class, FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS);
+                    CompletionKernelFunction.Builder.class, FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS);
             registerBuilder(SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
             registerBuilder(
                     TextEmbeddingGeneration.Builder.class,

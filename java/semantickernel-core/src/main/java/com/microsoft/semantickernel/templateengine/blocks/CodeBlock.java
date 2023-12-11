@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.templateengine.blocks;
 import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.TemplateException;
@@ -82,7 +82,7 @@ public final class CodeBlock extends Block implements CodeRendering {
 
     private Mono<String> renderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context) {
         // context.ThrowIfSkillCollectionNotSet();
-        SKFunction function = this.getFunctionFromSkillCollection(context.getSkills(), fBlock);
+        KernelFunction function = this.getFunctionFromSkillCollection(context.getSkills(), fBlock);
         if (function == null) {
             // var errorMsg = $ "Function `{fBlock.Content}` not found";
             // this.Log.LogError(errorMsg);
@@ -117,13 +117,13 @@ public final class CodeBlock extends Block implements CodeRendering {
     }
 
     @Nullable
-    private SKFunction getFunctionFromSkillCollection(
+    private KernelFunction getFunctionFromSkillCollection(
             ReadOnlySkillCollection skills, FunctionIdBlock fBlock) {
         String skillName = fBlock.getSkillName();
         // Function in the global skill
         if ((skillName == null || skillName.isEmpty())
                 && skills.hasFunction(fBlock.getFunctionName())) {
-            SKFunction function = skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
+            KernelFunction function = skills.getFunction(fBlock.getFunctionName(), KernelFunction.class);
             return function;
         }
 

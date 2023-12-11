@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -59,7 +59,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
         this.skillCollection = new CaseInsensitiveMap<>();
     }
 
-    public DefaultSkillCollection addSemanticFunction(SKFunction functionInstance) {
+    public DefaultSkillCollection addSemanticFunction(KernelFunction functionInstance) {
         FunctionCollection existingFunctionCollection;
         if (!skillCollection.containsKey(functionInstance.getSkillName())) {
             existingFunctionCollection = new FunctionCollection(functionInstance.getSkillName());
@@ -75,13 +75,13 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
 
     @Override
     @Nullable
-    public <T extends SKFunction> T getFunction(String funName, @Nullable Class<T> functionClazz) {
+    public <T extends KernelFunction> T getFunction(String funName, @Nullable Class<T> functionClazz) {
         return getFunction(GlobalSkill, funName, functionClazz);
     }
 
     @Override
     @Nullable
-    public <T extends SKFunction> T getFunction(
+    public <T extends KernelFunction> T getFunction(
             String skillName, String funName, @Nullable Class<T> functionClazz) {
         FunctionCollection skills = skillCollection.get(skillName.toLowerCase(Locale.ROOT));
         if (skills == null) {
@@ -98,7 +98,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
 
     @Override
     public boolean hasFunction(String functionName) {
-        return getFunction(functionName, SKFunction.class) != null;
+        return getFunction(functionName, KernelFunction.class) != null;
     }
 
     @Override
@@ -116,7 +116,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
         return new DefaultSkillCollection(skillCollection);
     }
 
-    public DefaultSkillCollection addNativeFunction(SKFunction functionInstance) {
+    public DefaultSkillCollection addNativeFunction(KernelFunction functionInstance) {
         // TODO is there any difference here?
         return addSemanticFunction(functionInstance);
     }

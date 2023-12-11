@@ -19,12 +19,12 @@ import reactor.core.publisher.Mono;
 /// </summary>
 public class DefaultPromptTemplate implements PromptTemplate {
     private final String promptTemplate;
-    private final PromptTemplateConfig config;
+    private final PromptConfig config;
     private final PromptTemplateEngine templateEngine;
 
     public DefaultPromptTemplate(
             String promptTemplate,
-            PromptTemplateConfig config,
+            PromptConfig config,
             PromptTemplateEngine templateEngine) {
         this.promptTemplate = promptTemplate;
         this.config = config;
@@ -76,7 +76,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
     public static final class Builder implements PromptTemplate.Builder {
         @Nullable private String promptTemplate = null;
-        @Nullable private PromptTemplateConfig config = null;
+        @Nullable private PromptConfig config = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
 
         @Override
@@ -86,7 +86,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
         }
 
         @Override
-        public PromptTemplate.Builder withPromptTemplateConfig(PromptTemplateConfig config) {
+        public PromptTemplate.Builder withPromptTemplateConfig(PromptConfig config) {
             this.config = config;
             return this;
         }

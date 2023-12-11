@@ -5,7 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
 
 public class CompletionFunctionExample {
 
@@ -64,7 +64,7 @@ public class CompletionFunctionExample {
                         .createFunction(
                                 prompt,
                                 "summarize",
-                                new PromptTemplateConfig.CompletionConfig(
+                                new PromptConfig.CompletionConfig(
                                         0.2, 0.5, 0, 0, 2000))
                         .invokeAsync(text)
                         .block();

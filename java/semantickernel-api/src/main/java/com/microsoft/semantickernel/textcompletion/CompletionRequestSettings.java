@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -142,7 +142,7 @@ public class CompletionRequestSettings {
      * @param config The config to copy values from
      */
     public static CompletionRequestSettings fromCompletionConfig(
-            PromptTemplateConfig.CompletionConfig config) {
+            PromptConfig.CompletionConfig config) {
         return new CompletionRequestSettings(
                 config.getTemperature(),
                 config.getTopP(),

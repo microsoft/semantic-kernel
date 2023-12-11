@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 /** Semantic function configuration */
 public class SemanticFunctionConfig {
-    private final PromptTemplateConfig config;
+    private final PromptConfig config;
 
     /** Prompt template */
     private final PromptTemplate template;
@@ -14,12 +14,12 @@ public class SemanticFunctionConfig {
      * @param config Prompt template configuration.
      * @param template Prompt template.
      */
-    public SemanticFunctionConfig(PromptTemplateConfig config, PromptTemplate template) {
+    public SemanticFunctionConfig(PromptConfig config, PromptTemplate template) {
         this.config = config;
         this.template = template;
     }
 
-    public PromptTemplateConfig getConfig() {
+    public PromptConfig getConfig() {
         return config;
     }
 

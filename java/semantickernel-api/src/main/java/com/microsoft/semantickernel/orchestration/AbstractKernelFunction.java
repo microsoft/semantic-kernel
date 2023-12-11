@@ -21,9 +21,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 import reactor.core.publisher.Mono;
 
 /** Abstract implementation of the SKFunction interface. */
-public abstract class AbstractSkFunction implements SKFunction, RegistrableSkFunction {
-
-
+public abstract class AbstractKernelFunction implements KernelFunction, RegistrableSkFunction {
     private final List<ParameterView> parameters;
     private final String skillName;
     private final String functionName;
@@ -41,7 +39,7 @@ public abstract class AbstractSkFunction implements SKFunction, RegistrableSkFun
      * @param description The description of the function.
      * @param skillsSupplier The skill supplier.
      */
-    public AbstractSkFunction(
+    public AbstractKernelFunction(
             List<ParameterView> parameters,
             String skillName,
             String functionName,

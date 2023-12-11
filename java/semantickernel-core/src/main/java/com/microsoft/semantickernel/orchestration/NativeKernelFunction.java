@@ -40,13 +40,13 @@ import reactor.core.scheduler.Schedulers;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public class NativeSKFunction extends AbstractSkFunction {
+public class NativeKernelFunction extends AbstractKernelFunction {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NativeSKFunction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeKernelFunction.class);
 
     private final SKNativeTask<SKContext> function;
 
-    public NativeSKFunction(
+    public NativeKernelFunction(
             SKNativeTask<SKContext> delegateFunction,
             List<ParameterView> parameters,
             String skillName,
@@ -122,7 +122,7 @@ public class NativeSKFunction extends AbstractSkFunction {
         }
     }
 
-    public static NativeSKFunction fromNativeMethod(
+    public static NativeKernelFunction fromNativeMethod(
             Method methodSignature,
             Object methodContainerInstance,
             String skillName,
@@ -141,7 +141,7 @@ public class NativeSKFunction extends AbstractSkFunction {
         ParameterView returnParam =
                 new ParameterView("return", methodDetails.getReturnDescription(), "");
 
-        return new NativeSKFunction(
+        return new NativeKernelFunction(
                 methodDetails.function,
                 methodDetails.parameters,
                 skillName,

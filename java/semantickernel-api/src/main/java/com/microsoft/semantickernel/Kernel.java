@@ -14,13 +14,11 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.plugin.Plugin;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import reactor.core.publisher.Mono;
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import java.util.List;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
@@ -18,7 +18,7 @@ public interface ReadOnlyFunctionCollection {
      * @throws RuntimeException if the given entry is not of the expected type
      * @apiNote Breaking change: s/SKFunciton<?>/SKFunction/
      */
-    SKFunction getFunction(String functionName);
+    KernelFunction getFunction(String functionName);
 
     /**
      * Get function with the given SKFunction type argument.
@@ -29,7 +29,7 @@ public interface ReadOnlyFunctionCollection {
      * @return The given function
      * @throws RuntimeException if the given entry is not of the expected type
      */
-    <T extends SKFunction> T getFunction(String functionName, @Nullable Class<T> clazz);
+    <T extends KernelFunction> T getFunction(String functionName, @Nullable Class<T> clazz);
 
     /**
      * @return A clone of this collection
@@ -41,5 +41,5 @@ public interface ReadOnlyFunctionCollection {
      * @return An unmodifiable list of all functions
      * @apiNote Breaking change: s/SKFunciton<?>/SKFunction/
      */
-    List<SKFunction> getAll();
+    List<KernelFunction> getAll();
 }

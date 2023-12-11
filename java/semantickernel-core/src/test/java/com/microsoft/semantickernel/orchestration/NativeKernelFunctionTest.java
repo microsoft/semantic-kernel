@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-public class NativeSKFunctionTest {
+public class NativeKernelFunctionTest {
 
     @Test
     public void singleStringIsBoundToInput() {

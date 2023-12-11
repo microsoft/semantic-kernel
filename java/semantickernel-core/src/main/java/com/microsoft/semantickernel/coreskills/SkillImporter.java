@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import com.microsoft.semantickernel.orchestration.NativeSKFunction;
+import com.microsoft.semantickernel.orchestration.NativeKernelFunction;
 import com.microsoft.semantickernel.skilldefinition.FunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -13,12 +13,12 @@ public class SkillImporter {
 
     public static FunctionCollection importSkill(
             Object skillInstance, String skillName, KernelSkillsSupplier skillCollectionSupplier) {
-        List<NativeSKFunction> methods =
+        List<NativeKernelFunction> methods =
                 Arrays.stream(skillInstance.getClass().getMethods())
                         .filter(method -> method.isAnnotationPresent(DefineSKFunction.class))
                         .map(
                                 method -> {
-                                    return NativeSKFunction.fromNativeMethod(
+                                    return NativeKernelFunction.fromNativeMethod(
                                             method,
                                             skillInstance,
                                             skillName,
