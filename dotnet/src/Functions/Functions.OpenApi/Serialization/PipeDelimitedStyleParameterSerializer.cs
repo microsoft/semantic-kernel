@@ -4,15 +4,15 @@ using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'SpaceDelimited' style.
+/// Serializes REST API operation parameter of the 'PipeDelimited' style.
 /// </summary>
-internal static class SpaceDelimitedStyleParameterSerializer
+internal static class PipeDelimitedStyleParameterSerializer
 {
     /// <summary>
-    /// Serializes a REST API operation `SpaceDelimited` style parameter.
+    /// Serializes a REST API operation `PipeDelimited` style parameter.
     /// </summary>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
@@ -23,14 +23,14 @@ internal static class SpaceDelimitedStyleParameterSerializer
 
         Verify.NotNull(parameter);
 
-        if (parameter.Style != RestApiOperationParameterStyle.SpaceDelimited)
+        if (parameter.Style != RestApiOperationParameterStyle.PipeDelimited)
         {
             throw new ArgumentException($"Unexpected Rest API operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         if (parameter.Type != ArrayType)
         {
-            throw new ArgumentException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.SpaceDelimited}` style parameters. Parameter name `{parameter.Name}`.", nameof(parameter));
+            throw new ArgumentException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.PipeDelimited}` style parameters. Parameter name `{parameter.Name}`.", nameof(parameter));
         }
 
         return SerializeArrayParameter(parameter, argument);
@@ -54,6 +54,6 @@ internal static class SpaceDelimitedStyleParameterSerializer
             return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); //id=1&id=2&id=3
         }
 
-        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20")}"; //id=1%202%203
+        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "|")}"; //id=1|2|3
     }
 }
