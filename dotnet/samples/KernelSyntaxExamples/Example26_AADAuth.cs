@@ -44,7 +44,6 @@ public static class Example26_AADAuth
             // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new DefaultAzureCredential(authOptions))
             .Build();

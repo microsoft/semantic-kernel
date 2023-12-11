@@ -26,16 +26,16 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using API Key auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAITextGenerationService(
         string deploymentName,
-        string modelId,
         string endpoint,
         string apiKey,
+        string? modelId = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -56,7 +56,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         string deploymentName,
         string endpoint,
         TokenCredential credential,
-        string modelId,
+        string? modelId = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -75,7 +75,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
     public AzureOpenAITextGenerationService(
         string deploymentName,
         OpenAIClient openAIClient,
-        string modelId,
+        string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
