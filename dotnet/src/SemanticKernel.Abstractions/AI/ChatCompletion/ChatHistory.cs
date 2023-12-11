@@ -143,7 +143,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
             messageContent.Append(chatMessage.Content);
             messageContents.Add(chatMessage);
 
-            // Is aways expected to have at least one chunk with the role provided from a streaming message
+            // Is always expected to have at least one chunk with the role provided from a streaming message
             role ??= chatMessage.Role;
 
             yield return chatMessage;
