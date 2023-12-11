@@ -18,8 +18,8 @@ public class AIServicesOpenAIExtensionsTests
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
         Kernel targetKernel = Kernel.CreateBuilder()
-            .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", "azure")
-            .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url", "key", "azure")
+            .AddAzureOpenAITextGeneration("depl", "https://url", "key", "azure")
+            .AddAzureOpenAITextEmbeddingGeneration("depl2", "https://url", "key", "azure")
             .Build();
 
         Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("azure"));
@@ -30,9 +30,9 @@ public class AIServicesOpenAIExtensionsTests
     public void ItTellsIfAServiceIsAvailable()
     {
         Kernel targetKernel = Kernel.CreateBuilder()
-            .AddAzureOpenAITextGeneration("depl", "model", "https://url", "key", serviceId: "azure")
+            .AddAzureOpenAITextGeneration("depl", "https://url", "key", serviceId: "azure")
             .AddOpenAITextGeneration("model", "apikey", serviceId: "oai")
-            .AddAzureOpenAITextEmbeddingGeneration("depl2", "model2", "https://url2", "key", serviceId: "azure")
+            .AddAzureOpenAITextEmbeddingGeneration("depl2", "https://url2", "key", serviceId: "azure")
             .AddOpenAITextEmbeddingGeneration("model2", "apikey2", serviceId: "oai2")
             .Build();
 
@@ -50,20 +50,20 @@ public class AIServicesOpenAIExtensionsTests
         // Act - Assert no exception occurs
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
-        builder.Services.AddAzureOpenAITextGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAITextGeneration("depl", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAITextGeneration("depl", "https://localhost", "key", serviceId: "one");
 
         builder.Services.AddOpenAITextGeneration("model", "key", serviceId: "one");
         builder.Services.AddOpenAITextGeneration("model", "key", serviceId: "one");
 
-        builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
-        builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "model", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAITextEmbeddingGeneration("dep", "https://localhost", "key", serviceId: "one");
 
         builder.Services.AddOpenAITextEmbeddingGeneration("model", "key", serviceId: "one");
         builder.Services.AddOpenAITextEmbeddingGeneration("model", "key", serviceId: "one");
 
-        builder.Services.AddAzureOpenAIChatCompletion("dep", "model", "https://localhost", "key", serviceId: "one");
-        builder.Services.AddAzureOpenAIChatCompletion("dep", "model", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAIChatCompletion("dep", "https://localhost", "key", serviceId: "one");
+        builder.Services.AddAzureOpenAIChatCompletion("dep", "https://localhost", "key", serviceId: "one");
 
         builder.Services.AddOpenAIChatCompletion("model", "key", serviceId: "one");
         builder.Services.AddOpenAIChatCompletion("model", "key", serviceId: "one");
