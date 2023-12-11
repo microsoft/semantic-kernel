@@ -38,7 +38,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("\n======== Custom LLM - Text Completion - SKFunction ========");
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         // Add your text generation service as a singleton instance
         builder.Services.AddKeyedSingleton<ITextGenerationService>("myService1", new MyTextGenerationService());
         // Add your text generation service as a factory method
