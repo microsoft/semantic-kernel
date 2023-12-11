@@ -31,12 +31,12 @@ you will return a full answer to me as soon as possible.
 kernel = sk.Kernel()
 
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-api_version = "2023-07-01-preview"
+api_version = "2023-12-01-preview"
 kernel.add_chat_service(
     "chat-gpt",
     sk_oai.AzureChatCompletion(
-        deployment_name,
-        endpoint,
+        deployment_name=deployment_name,
+        endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
     ),

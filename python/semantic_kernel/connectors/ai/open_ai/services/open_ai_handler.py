@@ -185,15 +185,15 @@ class OpenAIHandler(AIServiceClientBase, ABC):
 
         model_args["messages"] = messages or [{"role": "user", "content": prompt}]
         if functions and request_settings.function_call is not None:
-            model_args["function_call"] = request_settings.function_call
+            model_args["tool_choice"] = request_settings.function_call
             if request_settings.function_call != "auto":
-                model_args["functions"] = [
+                model_args["tools"] = [
                     func
                     for func in functions
                     if func["name"] == request_settings.function_call
                 ]
             else:
-                model_args["functions"] = functions
+                model_args["tools"] = functions
         return model_args
 
     async def _send_embedding_request(

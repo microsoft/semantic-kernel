@@ -1,25 +1,31 @@
 import asyncio
+import os
 
 from openai import AsyncOpenAI
 
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai as sk_ai
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_settings import (
+    OpenAIAssistantSettings,
+)
+
+# Update the cwd to be the script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 
 
 async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
     assistant = sk_oai.OpenAIChatCompletion(
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
-        is_assistant=True,
         async_client=client,
+        is_assistant=True,
     )
 
-    settings = sk_ai.OpenAIAssistantSettings(
-        name="Parrot",
-        description="A fun chat bot.",
-        instructions="Repeat the user message in the voice of a pirate and then end with a parrot sound.",
-    )
+    file_path = os.path.join(script_dir, "assistants/parrot_assistant.yaml")
+
+    settings = OpenAIAssistantSettings.load_from_definition_file(file_path)
+
     await assistant.create_assistant_async(settings)
     return assistant
 

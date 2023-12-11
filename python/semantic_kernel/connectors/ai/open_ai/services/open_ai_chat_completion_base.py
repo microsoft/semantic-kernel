@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import json
 from logging import Logger
 from typing import (
     TYPE_CHECKING,
@@ -17,10 +18,12 @@ from openai.types.beta.threads.run import Run
 
 from semantic_kernel.connectors.ai import (
     ChatCompletionClientBase,
-    OpenAIAssistantSettings,
 )
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_settings import (
+    OpenAIAssistantSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
@@ -71,6 +74,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         functions: List[Dict[str, Any]],
         request_settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
+        is_submit_tool_outputs: bool = False,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -91,7 +95,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         if self.is_assistant:
             return await self._handle_assistant_chat_async(
-                messages, functions=functions
+                messages=messages, 
+                functions=functions
             )
         else:
             response = await self._send_request(
@@ -199,20 +204,28 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         functions: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[str]:
+        is_submit_tool_outputs: bool = False,
+    ) -> Union[
+        Tuple[Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[FunctionCall]]],
+    ]:
         """
         Handle an assistant chat request.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            functions {List[Dict[str, Any]]} -- The functions to use for the chat completion.
 
         Returns:
-            List[str] -- The completion result(s).
+            Union[
+                Tuple[Optional[str], Optional[FunctionCall]], 
+                List[Tuple[Optional[str], Optional[FunctionCall]]]
+            ] -- The completion result(s).
         """
         if not self.assistant_id:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
-                "Please first create an assistant."
+                "Please first create an assistant.",
             )
 
         if not self.thread_id:
@@ -220,7 +233,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             self.thread_id = thread.id
 
         await self.client.beta.threads.messages.create(
-            thread_id=self.thread_id, role=messages[-1]["role"], content=messages[-1]["content"]
+            thread_id=self.thread_id,
+            role=messages[-1]["role"],
+            content=messages[-1]["content"],
         )
 
         tools = []
@@ -235,34 +250,65 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         run = await self._poll_on_run(run)
 
-        if run.status == "requires_action" and run.required_action.type == "submit_tool_outputs":
+        if (
+            run.status == "requires_action"
+            and run.required_action.type == "submit_tool_outputs"
+        ):
+            tool_calls = run.required_action.submit_tool_outputs.tool_calls
+
+            # Initialize an empty list to store extracted data
+            completion = None
+            func_calls = None
+
+            # Iterate through each tool_call
+            for tool_call in tool_calls:
+                # Extract 'name' and 'arguments'
+                name = tool_call.function.name
+                arguments = json.loads(tool_call.function.arguments)
+                
+                print(f"Tool Call: {tool_call.id}")
+                print(f"Function Name: {name}")
+                print(f"Function Arguments:\n{arguments}")
+
+                try:
+                    fc = FunctionCall(tool_call_id=str(tool_call.id), name=str(name), arguments=str(arguments))
+                except Exception as e:
+                    print(f"Exception: {e}")
+
+                func_calls = fc
+
+                break
+
+            # return a list of Tuple[Optional[str], Optional[FunctionCall]]
+            return completion, func_calls
 
             # need to run the function here, how do we do that?
-
-            await self.client.beta.threads.runs.submit_tool_outputs(
-                run_id=run.id,
-                thread_id=self.thread_id,
-                tool_outputs=run.required_action.tool_outputs,
-            )
+            # await self.client.beta.threads.runs.submit_tool_outputs(
+            #     run_id=run.id,
+            #     thread_id=self.thread_id,
+            #     tool_outputs=run.required_action.tool_outputs,
+            # )
 
         run = await self._poll_on_run(run)
 
-        response = await self.client.beta.threads.messages.list(thread_id=self.thread_id, order="desc")
-        if hasattr(response, 'data'):
+        response = await self.client.beta.threads.messages.list(
+            thread_id=self.thread_id, order="desc"
+        )
+        if hasattr(response, "data"):
             # Filtering to get only assistant messages
-            assistant_messages = [message for message in response.data if message.role == 'assistant']
+            assistant_messages = [
+                message for message in response.data if message.role == "assistant"
+            ]
 
             # Do we need to concatenate all assistant messages?
             if assistant_messages:
                 assistant_response = assistant_messages[0]
                 if assistant_response.content:
-                    return assistant_response.content[0].text.value
+                    return (assistant_response.content[0].text.value, None)
             else:
                 return []
         else:
             return []
-
-    
 
     async def _poll_on_run(self, run: Run) -> Run:
         while run.status in ["queued", "in_progress"]:

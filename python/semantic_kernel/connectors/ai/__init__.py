@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.assistant_settings import OpenAIAssistantSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -21,5 +20,4 @@ __all__ = [
     "EmbeddingGeneratorBase",
     "ChatRequestSettings",
     "CompleteRequestSettings",
-    "OpenAIAssistantSettings",
 ]

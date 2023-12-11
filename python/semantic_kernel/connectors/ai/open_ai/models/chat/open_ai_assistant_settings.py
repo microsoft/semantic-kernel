@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+import yaml
 from pydantic import Field
 
 from semantic_kernel.sk_pydantic import SKBaseModel
@@ -13,3 +14,13 @@ class OpenAIAssistantSettings(SKBaseModel):
     name: str = Field(min_length=1, max_length=256)
     description: Optional[str] = Field(max_length=512)
     instructions: Optional[str] = Field(max_length=32768)
+
+    @classmethod
+    def load_from_definition_file(cls, path: str) -> "OpenAIAssistantSettings":
+        with open(path, "r") as file:
+            yaml_data = yaml.safe_load(file)
+            return cls(
+                name=yaml_data["name"],
+                description=yaml_data["description"],
+                instructions=yaml_data["instructions"],
+            )

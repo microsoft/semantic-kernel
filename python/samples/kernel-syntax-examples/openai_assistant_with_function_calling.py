@@ -1,37 +1,72 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
-
 from openai import AsyncOpenAI
+import os
+from typing import Any, Dict, Tuple
 
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai as sk_ai
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+    OpenAIChatPromptTemplate,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_settings import (
+    OpenAIAssistantSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.utils import (
+    chat_completion_with_function_call,
+    get_function_calling_object,
+)
 from semantic_kernel.core_skills import MathSkill
+
+
+# Update the cwd to be the script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 
 
 async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
     assistant = sk_oai.OpenAIChatCompletion(
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
-        is_assistant=True,
         async_client=client,
+        is_assistant=True,
     )
 
-    settings = sk_ai.OpenAIAssistantSettings(
-        name="Assistant",
-        description="A useful chat bot.",
-        instructions="Provide the user with a response based on the provided tools. Let them know which tool was used.",
-    )
+    file_path = os.path.join(script_dir, "assistants/tool_assistant.yaml")
+
+    settings = OpenAIAssistantSettings.load_from_definition_file(file_path)
+
     await assistant.create_assistant_async(settings)
     return assistant
 
 
-async def main() -> None:
-    api_key, _ = sk.openai_settings_from_dot_env()
-    client = AsyncOpenAI(api_key=api_key)
+async def chat(
+    context: sk.SKContext, 
+    kernel: sk.Kernel, 
+    functions: Dict[str, Any],
+    chat_func: SKFunctionBase,
+) -> Tuple[bool, sk.SKContext]:
+    context = await chat_completion_with_function_call(
+        kernel,
+        chat_skill_name="ChatBot",
+        chat_function_name="Chat",
+        context=context,
+        functions=functions,
+        chat_function=chat_func,
+    )
+    print(f"Mosscap:> {context.result}")
+    return True, context
 
+
+async def main() -> None:
+
+    kernel = sk.Kernel()
+
+    api_key, _ = sk.openai_settings_from_dot_env()
+
+    client = AsyncOpenAI(api_key=api_key)
     assistant = await create_assistant(client, api_key)
 
     kernel = sk.Kernel()
@@ -55,57 +90,26 @@ async def main() -> None:
         top_p=0.8,
         function_call="auto",
     )
-    prompt_template = sk.ChatPromptTemplate(
+    prompt_template = OpenAIChatPromptTemplate(
         "{{$user_input}}", kernel.prompt_template_engine, prompt_config
     )
-    # prompt_template.add_user_message("Hi there, who are you?")
-    # prompt_template.add_assistant_message(
-    #     "I am Mosscap, a chat bot. I'm trying to figure out what people need."
-    # )
 
     function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    chat_function = kernel.register_semantic_function(
-        "ChatBot", "Chat", function_config
-    )
-    # define the functions available
-    functions = [
-        {
-            "name": "search_hotels",
-            "description": "Retrieves hotels from the search index based on the parameters provided",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The location of the hotel (i.e. Seattle, WA)",
-                    },
-                    "max_price": {
-                        "type": "number",
-                        "description": "The maximum price for the hotel",
-                    },
-                    "features": {
-                        "type": "string",
-                        "description": "A comma separated list of features (i.e. beachfront, free wifi, etc.)",
-                    },
-                },
-                "required": ["location"],
-            },
-        }
-    ]
+    chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
+    # calling the chat, you could add a overloaded version of the settings here,
+    # to enable or disable function calling or set the function calling to a specific skill.
+    # see the openai_function_calling example for how to use this with a unrelated function definition
+    filter = {"exclude_skill": ["ChatBot"]}
+    functions = get_function_calling_object(kernel, filter)
+
+    chatting = True
     context = kernel.create_new_context()
     context.variables[
         "user_input"
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
-
-    context = await chat_function.invoke_async(context=context, functions=functions)
-    if "function_call" in context.objects:
-        function_call = context.objects.pop("function_call")
-        print(f"Function to be called: {function_call.name}")
-        print(f"Function parameters: \n{function_call.arguments}")
-    else:
-        print("No function was called")
-    print(f"Output was: {str(context)}")
+    while chatting:
+        chatting, context = await chat(context, kernel, functions, chat_function)
 
 
 if __name__ == "__main__":
