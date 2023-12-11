@@ -33,7 +33,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// <summary>
     /// The ID of the tool call update.
     /// </summary>
-    public string ToolCallUpdateId { get; set; }
+    public string? ToolCallUpdateId { get; set; }
 
     /// <summary>
     /// The reason why the completion finished.
@@ -63,7 +63,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     {
         this.FunctionName = chatUpdate.FunctionName;
         this.FunctionArgument = chatUpdate.FunctionArgumentsUpdate;
-        this.ToolCallUpdateId = chatUpdate.ToolCallUpdate.Id;
+        this.ToolCallUpdateId = chatUpdate?.ToolCallUpdate?.Id;
         this.FinishReason = chatUpdate.FinishReason;
     }
 

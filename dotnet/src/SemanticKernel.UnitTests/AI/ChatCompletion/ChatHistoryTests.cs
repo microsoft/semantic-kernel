@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -71,7 +70,7 @@ public class ChatHistoryTests
         var chatHistory = new ChatHistory();
         var finalContent = "Hello , I am a test ";
         string processedContent = string.Empty;
-        await foreach(var chatMessageChunk in chatHistory.AddStreamingMessageAsync<StreamingChatMessageContent>(chatHistoryStreamingContents))
+        await foreach (var chatMessageChunk in chatHistory.AddStreamingMessageAsync<StreamingChatMessageContent>(chatHistoryStreamingContents))
         {
             processedContent += chatMessageChunk.Content;
         }
