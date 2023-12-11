@@ -45,8 +45,8 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel(useEmbeddings);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.CreatePluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.CreatePluginFromObject(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject(new TimePlugin(), "time");
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 10 });
