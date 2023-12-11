@@ -194,7 +194,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");
@@ -235,7 +235,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");
