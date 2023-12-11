@@ -22,7 +22,7 @@ public static class Example72_AssistantCollaboration
     private static readonly List<IAssistant> s_assistants = new();
 
     /// <summary>
-    /// Show how to combine coordinate multiple assistants.
+    /// Show how to combine and coordinate multiple assistants.
     /// </summary>
     public static async Task RunAsync()
     {
