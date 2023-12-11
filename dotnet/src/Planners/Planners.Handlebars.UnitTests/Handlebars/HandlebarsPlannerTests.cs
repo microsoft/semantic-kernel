@@ -73,9 +73,11 @@ public sealed class HandlebarsPlannerTests
             .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
+        IChatCompletionService resultService = chatCompletion.Object;
+        PromptExecutionSettings resultSettings = new();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>()))
-            .Returns((chatCompletion.Object, new PromptExecutionSettings()));
+            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
+            .Returns(true);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
@@ -88,16 +90,16 @@ public sealed class HandlebarsPlannerTests
     {
         return new()
         {
-            new KernelPlugin("email", new[]
+            KernelPluginFactory.CreateFromFunctions("email", "Email functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
-            new KernelPlugin("WriterPlugin", new[]
+            KernelPluginFactory.CreateFromFunctions("WriterPlugin", "Writer functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
-            new KernelPlugin("SummarizePlugin", new[]
+            KernelPluginFactory.CreateFromFunctions("SummarizePlugin", "Summarize functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })

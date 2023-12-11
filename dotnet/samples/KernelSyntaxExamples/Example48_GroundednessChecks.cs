@@ -59,7 +59,7 @@ after this event Caroline became his wife.""";
     public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("\n======== Groundedness Checks ========");
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
@@ -95,7 +95,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        variables[KernelArguments.InputParameterName] = extractionResult;
+        variables["input"] = extractionResult;
         variables["reference_context"] = GroundingText;
 
         var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
@@ -103,7 +103,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("\n======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        variables[KernelArguments.InputParameterName] = summaryText;
+        variables["input"] = summaryText;
         variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
@@ -126,7 +126,7 @@ Text:\n{GroundingText};
 
         Console.WriteLine("\n======== Planning - Groundedness Checks ========");
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
@@ -146,7 +146,7 @@ Text:\n{GroundingText};
         Console.WriteLine($"======== Goal: ========\n{ask}");
         Console.WriteLine($"======== Plan ========\n{plan}");
 
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("======== Result ========");
         Console.WriteLine(result);

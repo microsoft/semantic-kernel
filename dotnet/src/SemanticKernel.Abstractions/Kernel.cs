@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -58,17 +57,21 @@ public sealed class Kernel
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
-            IEnumerable<IKernelPlugin> e = this.Services.GetServices<IKernelPlugin>();
+            IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
 
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
-            if (e is not ICollection<IKernelPlugin> c || c.Count != 0)
+            if (e is not ICollection<KernelPlugin> c || c.Count != 0)
             {
                 this._plugins = new(e);
             }
         }
     }
+
+    /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
+    /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
+    public static IKernelBuilder CreateBuilder() => new KernelBuilder();
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -80,7 +83,7 @@ public sealed class Kernel
     /// The same <see cref="IServiceProvider"/> reference as is returned by the current instance's <see cref="Kernel.Services"/>.
     /// </item>
     /// <item>
-    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="IKernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="KernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
     /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
     /// </item>
     /// <item>
@@ -441,7 +444,35 @@ public sealed class Kernel
     {
         Verify.NotNull(function);
 
-        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, CancellationToken.None);
+        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(functionName);
+
+        var function = this.Plugins.GetFunction(pluginName, functionName);
+
+        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, cancellationToken);
     }
 
     /// <summary>
@@ -462,6 +493,34 @@ public sealed class Kernel
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(function);
+
+        return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(functionName);
+
+        var function = this.Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
