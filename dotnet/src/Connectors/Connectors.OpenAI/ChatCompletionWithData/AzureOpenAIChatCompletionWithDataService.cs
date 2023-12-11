@@ -102,14 +102,6 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         Verify.NotNullOrWhiteSpace(config.DataSourceIndex);
     }
 
-    private static void ValidateMaxTokens(int? maxTokens)
-    {
-        if (maxTokens.HasValue && maxTokens < 1)
-        {
-            throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
-        }
-    }
-
     private async Task<IReadOnlyList<ChatMessageContent>> InternalGetChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
@@ -282,31 +274,6 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
                 Content = message.Content ?? string.Empty
             })
             .ToList();
-    }
-
-    /// <summary>
-    /// Create a new empty chat instance
-    /// </summary>
-    /// <param name="text">Optional chat instructions for the AI service</param>
-    /// <param name="executionSettings">Execution settings</param>
-    /// <returns>Chat object</returns>
-    private static OpenAIChatHistory InternalCreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
-    {
-        // If text is not provided, create an empty chat with the system prompt if provided
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return new OpenAIChatHistory(executionSettings?.ChatSystemPrompt);
-        }
-
-        // If settings is not provided, create a new chat with the text as the system prompt
-        var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
-        if (executionSettings is not null)
-        {
-            // If settings is provided, add the prompt as the user message
-            chat.AddUserMessage(text!);
-        }
-
-        return chat;
     }
 
     private string GetRequestUri()

@@ -3,6 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure.Core;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;

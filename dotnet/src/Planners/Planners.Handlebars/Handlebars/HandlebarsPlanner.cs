@@ -49,7 +49,7 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
-        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
+        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
         var createPlanPrompt = this.GetHandlebarsTemplate(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas);
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -91,8 +91,7 @@ public sealed class HandlebarsPlanner
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
         Kernel kernel,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        out Dictionary<string, string> complexParameterSchemas,
-        CancellationToken cancellationToken = default)
+        out Dictionary<string, string> complexParameterSchemas)
     {
         complexParameterTypes = new();
         complexParameterSchemas = new();

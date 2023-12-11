@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
