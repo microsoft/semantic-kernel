@@ -6,8 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -15,7 +16,6 @@ namespace SemanticKernel.UnitTests.Functions;
 public sealed class KernelFunctionFromMethodTests2
 {
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
-    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
@@ -85,9 +85,6 @@ public sealed class KernelFunctionFromMethodTests2
         // Arrange
         var canary = false;
 
-        var arguments = new KernelArguments();
-        arguments["done"] = "NO";
-
         // Note: the function doesn't have any SK attributes
         async Task ExecuteAsync(string done)
         {
@@ -103,7 +100,10 @@ public sealed class KernelFunctionFromMethodTests2
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+        FunctionResult result = await function.InvokeAsync(new(), new KernelArguments
+        {
+            ["done"] = "NO"
+        });
 
         // Assert
         Assert.True(canary);
@@ -136,11 +136,40 @@ public sealed class KernelFunctionFromMethodTests2
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+        FunctionResult result = await function.InvokeAsync(new(), arguments);
 
         // Assert
         Assert.Equal(variableOutsideTheFunction, result.GetValue<string>());
         Assert.Equal(variableOutsideTheFunction, result.ToString());
+    }
+
+    [Fact]
+    public async Task ItFlowsSpecialArgumentsIntoFunctionsAsync()
+    {
+        KernelBuilder builder = new();
+        builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning));
+        Kernel kernel = builder.Build();
+        kernel.Culture = new CultureInfo("fr-FR");
+        KernelArguments args = new();
+        using CancellationTokenSource cts = new();
+
+        bool invoked = false;
+        KernelFunction func = null!;
+        func = KernelFunctionFactory.CreateFromMethod(
+            (Kernel kernelArg, KernelFunction funcArg, KernelArguments argsArg, ILoggerFactory loggerArg, CultureInfo cultureArg, CancellationToken cancellationToken) =>
+            {
+                Assert.Same(kernel, kernelArg);
+                Assert.Same(func, funcArg);
+                Assert.Same(args, argsArg);
+                Assert.Same(kernel.LoggerFactory, loggerArg);
+                Assert.Same(kernel.Culture, cultureArg);
+                Assert.Equal(cts.Token, cancellationToken);
+                invoked = true;
+            });
+
+        await func.InvokeAsync(kernel, args, cts.Token);
+
+        Assert.True(invoked);
     }
 
     private sealed class InvalidPlugin

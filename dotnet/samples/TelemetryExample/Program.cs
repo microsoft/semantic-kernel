@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
@@ -80,7 +81,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result);
@@ -90,18 +91,19 @@ public sealed class Program
     {
         var folder = RepoFiles.SamplePluginsPath();
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(loggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        IKernelBuilder builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton(loggerFactory);
+        builder.AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+        builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        return kernel;
+        return builder.Build();
     }
 
     private static HandlebarsPlanner CreatePlanner(int maxTokens = 1024)

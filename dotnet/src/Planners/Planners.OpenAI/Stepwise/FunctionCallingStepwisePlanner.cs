@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Json.More;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -38,14 +38,29 @@ public sealed class FunctionCallingStepwisePlanner
     /// <param name="question">The question to answer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result containing the model's response message and chat history.</returns>
-    public async Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
+    public Task<FunctionCallingStepwisePlannerResult> ExecuteAsync(
+        Kernel kernel,
+        string question,
+        CancellationToken cancellationToken = default)
+    {
+        var logger = kernel.LoggerFactory.CreateLogger(this.GetType());
+
+        return PlannerInstrumentation.InvokePlanAsync(
+            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string question, CancellationToken cancellationToken)
+                => plan.ExecuteCoreAsync(kernel, question, cancellationToken),
+            this, kernel, question, logger, cancellationToken);
+    }
+
+    #region private
+
+    private async Task<FunctionCallingStepwisePlannerResult> ExecuteCoreAsync(
         Kernel kernel,
         string question,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(question);
         Verify.NotNull(kernel);
-        IChatCompletionService chatCompletion = kernel.GetService<IChatCompletionService>();
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
         ILogger logger = loggerFactory.CreateLogger(this.GetType());
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
@@ -53,7 +68,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
-        clonedKernel.ImportPluginFromObject<UserInteraction>();
+        clonedKernel.ImportPluginFromType<UserInteraction>();
 
         // Create and invoke a kernel function to generate the initial plan
         var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
@@ -71,7 +86,7 @@ public sealed class FunctionCallingStepwisePlanner
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
             var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
-            chatHistoryForSteps.AddAssistantMessage(chatResult);
+            chatHistoryForSteps.Add(chatResult);
 
             // Check for function response
             if (!this.TryGetFunctionResponse(chatResult, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))
@@ -134,15 +149,13 @@ public sealed class FunctionCallingStepwisePlanner
         };
     }
 
-    #region private
-
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
-    ChatHistory chatHistory,
-    Kernel kernel,
-    IChatCompletionService chatCompletion,
-    OpenAIPromptExecutionSettings openAIExecutionSettings,
-    ILogger logger,
-    CancellationToken cancellationToken)
+        ChatHistory chatHistory,
+        Kernel kernel,
+        IChatCompletionService chatCompletion,
+        OpenAIPromptExecutionSettings openAIExecutionSettings,
+        ILogger logger,
+        CancellationToken cancellationToken)
     {
         openAIExecutionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
 

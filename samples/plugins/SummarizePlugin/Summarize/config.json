@@ -14,7 +14,8 @@
     {
       "name": "input",
       "description": "Text to summarize",
-      "default": ""
+      "default": "",
+      "is_required": true
     }
   ]
 }

@@ -3,9 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /**
  * This example shows how to use Azure OpenAI Chat Completion with data.
@@ -41,7 +40,7 @@ public static class Example54_AzureChatCompletionWithData
         // Chat Completion example
         var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
-        var response = chatMessage.Content;
+        var response = chatMessage.Content!;
         var toolResponse = chatMessage.ToolContent;
 
         // Output
@@ -67,7 +66,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
+        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             Console.Write(word);
         }
@@ -83,8 +82,8 @@ public static class Example54_AzureChatCompletionWithData
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletion(config: completionWithDataConfig)
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
@@ -122,9 +121,9 @@ public static class Example54_AzureChatCompletionWithData
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
             CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
-            DataSourceApiKey = TestConfiguration.ACS.ApiKey,
-            DataSourceIndex = TestConfiguration.ACS.IndexName
+            DataSourceEndpoint = TestConfiguration.AzureAISearch.Endpoint,
+            DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
+            DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
     }
 }

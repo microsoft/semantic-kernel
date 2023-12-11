@@ -2,12 +2,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 
 /**
- * The following example shows how to use Semantic Kernel with streaming Text Completion.
+ * The following example shows how to use Semantic Kernel with streaming text completion.
+ *
+ * This example will NOT work with regular chat completion models. It will only work with
+ * text completion models.
  *
  * Note that all text generation models are deprecated by OpenAI and will be removed in a future release.
  *

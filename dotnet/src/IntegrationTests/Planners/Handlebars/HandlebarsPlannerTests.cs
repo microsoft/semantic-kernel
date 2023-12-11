@@ -35,7 +35,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
+        kernel.ImportPluginFromType<EmailPluginFake>(expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         // Act
@@ -76,34 +76,35 @@ public sealed class HandlebarsPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().WithServices(c =>
-        {
-            if (useChatModel)
-            {
-                c.AddAzureOpenAIChatCompletion(
-                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                    modelId: azureOpenAIConfiguration.ChatModelId!,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
-            else
-            {
-                c.AddAzureOpenAITextGeneration(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    modelId: azureOpenAIConfiguration.ModelId,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
-            if (useEmbeddings)
-            {
-                c.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-            }
-        }).Build();
+        if (useChatModel)
+        {
+            builder.Services.AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                modelId: azureOpenAIConfiguration.ChatModelId!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.Services.AddAzureOpenAITextGeneration(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                modelId: azureOpenAIConfiguration.ModelId,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+
+        if (useEmbeddings)
+        {
+            builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+        }
+
+        return builder.Build();
     }
 
     private readonly RedirectOutput _testOutputHelper;

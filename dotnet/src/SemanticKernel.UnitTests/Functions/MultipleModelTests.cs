@@ -4,8 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
@@ -24,11 +23,10 @@ public class MultipleModelTests
         mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-            c.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-        }).Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -50,11 +48,10 @@ public class MultipleModelTests
         var mockTextGeneration1 = new Mock<ITextGenerationService>();
         var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-            c.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-        }).Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -65,7 +62,7 @@ public class MultipleModelTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Required service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
+        Assert.Equal("Required service of type Microsoft.SemanticKernel.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
     }
 
     [Theory]
@@ -83,12 +80,11 @@ public class MultipleModelTests
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
         mockTextGeneration3.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-            c.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-            c.AddKeyedSingleton("service3", mockTextGeneration3.Object);
-        }).Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration3.Object);
+        Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
@@ -120,12 +116,11 @@ public class MultipleModelTests
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
         mockTextGeneration3.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            c.AddKeyedSingleton("service1", mockTextGeneration1.Object);
-            c.AddKeyedSingleton("service2", mockTextGeneration2.Object);
-            c.AddKeyedSingleton("service3", mockTextGeneration3.Object);
-        }).Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration3.Object);
+        Kernel kernel = builder.Build();
 
         var json = @"{
   ""template"": ""template"",

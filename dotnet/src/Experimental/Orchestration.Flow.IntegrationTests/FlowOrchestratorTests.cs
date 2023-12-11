@@ -42,7 +42,7 @@ public sealed class FlowOrchestratorTests : IDisposable
     public async Task CanExecuteFlowAsync()
     {
         // Arrange
-        KernelBuilder builder = this.InitializeKernelBuilder();
+        IKernelBuilder builder = this.InitializeKernelBuilder();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         var sessionId = Guid.NewGuid().ToString();
@@ -103,8 +103,7 @@ steps:
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        return new KernelBuilder()
-            .WithLoggerFactory(this._logger)
+        return Kernel.CreateBuilder()
             .WithAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,

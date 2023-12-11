@@ -5,6 +5,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.IntegrationTests.Connectors.OpenAI;
@@ -30,7 +32,8 @@ public sealed class PromptTests : IDisposable
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
 
-        this._kernelBuilder = new KernelBuilder();
+        this._kernelBuilder = Kernel.CreateBuilder();
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
     }
 
     [Theory]
@@ -39,7 +42,7 @@ public sealed class PromptTests : IDisposable
     public async Task GenerateStoryTestAsync(string resourceName, bool isHandlebars)
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         var kernel = builder.Build();
 
@@ -61,7 +64,7 @@ public sealed class PromptTests : IDisposable
 
     #region private methods
 
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
@@ -86,7 +89,7 @@ public sealed class PromptTests : IDisposable
         }
     }
 
-    private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -96,7 +99,7 @@ public sealed class PromptTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAITextGeneration(
+        kernelBuilder.AddAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,

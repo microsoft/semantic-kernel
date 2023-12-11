@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
@@ -21,19 +21,17 @@ public static class Example10_DescribeAllPluginsAndFunctions
     {
         Console.WriteLine("======== Describe all plugins and functions ========");
 
-        var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Import a native plugin
-        var staticText = new StaticTextPlugin();
-        kernel.ImportPluginFromObject(staticText, "StaticTextPlugin");
+        kernel.ImportPluginFromType<StaticTextPlugin>();
 
         // Import another native plugin
-        var text = new TextPlugin();
-        kernel.ImportPluginFromObject(text, "AnotherTextPlugin");
+        kernel.ImportPluginFromType<TextPlugin>("AnotherTextPlugin");
 
         // Import a semantic plugin
         string folder = RepoFiles.SamplePluginsPath();
