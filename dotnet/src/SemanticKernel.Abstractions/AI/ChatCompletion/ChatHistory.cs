@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 #pragma warning disable CA1710 // Identifiers should have correct suffix
@@ -137,7 +138,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         AuthorRole? role = null;
         StringBuilder messageContent = new();
 
-        await foreach (var chatMessage in streamingMessageContents)
+        await foreach (var chatMessage in streamingMessageContents.ConfigureAwait(false))
         {
             messageContent.Append(chatMessage.Content);
             messageContents.Add(chatMessage);
