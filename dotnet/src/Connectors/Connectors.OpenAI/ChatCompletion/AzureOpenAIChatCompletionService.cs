@@ -31,6 +31,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(serviceConfig);
         Verify.NotNullOrWhiteSpace(serviceConfig.DeploymentName);
         Verify.NotNullOrWhiteSpace(serviceConfig.Endpoint);
         Verify.NotNullOrWhiteSpace(serviceConfig.ApiKey);
