@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
