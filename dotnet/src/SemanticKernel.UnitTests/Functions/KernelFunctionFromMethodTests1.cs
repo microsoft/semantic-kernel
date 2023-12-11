@@ -1215,7 +1215,7 @@ public sealed class KernelFunctionFromMethodTests1
         var function = KernelFunctionFactory.CreateFromMethod(Test);
 
         // Assert
-        await Assert.ThrowsAsync<ArgumentException>(async () => await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } }));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await function.InvokeAsync(this._kernel, arguments: new() { { "complexType", new ComplexType() { Foo = 42 } } }));
     }
 
     [Fact]
