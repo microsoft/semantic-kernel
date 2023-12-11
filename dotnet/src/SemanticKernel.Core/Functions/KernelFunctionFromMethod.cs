@@ -301,11 +301,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Handle the other types. These can each show up multiple times in the method signature.
 
         string name = SanitizeMetadataName(parameter.Name ?? "");
-        bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
         ThrowForInvalidSignatureIf(string.IsNullOrWhiteSpace(name), method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
-        ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
-
-        bool fallBackToInput = !sawFirstParameter && !nameIsInput;
 
         var parser = GetParser(type);
 
@@ -321,13 +317,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             if (parameter.HasDefaultValue)
             {
                 return parameter.DefaultValue;
-            }
-
-            // 3. Otherwise, use "input" if this is the first (or only) parameter.
-            if (fallBackToInput)
-            {
-                arguments.TryGetValue(KernelArguments.InputParameterName, out object? input);
-                return Process(input);
             }
 
             // 4. Otherwise, fail.

@@ -84,8 +84,9 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        KernelArguments variables = new(summaryText)
+        KernelArguments variables = new()
         {
+            ["input"] = summaryText,
             ["topic"] = "people and places",
             ["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
         };
@@ -95,7 +96,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        variables[KernelArguments.InputParameterName] = extractionResult;
+        variables["input"] = extractionResult;
         variables["reference_context"] = GroundingText;
 
         var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
@@ -103,7 +104,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("\n======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        variables[KernelArguments.InputParameterName] = summaryText;
+        variables["input"] = summaryText;
         variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 

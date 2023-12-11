@@ -23,6 +23,8 @@ namespace SemanticKernel.UnitTests;
 
 public class KernelTests
 {
+    private const string InputParameterName = "input";
+
     [Fact]
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
@@ -404,11 +406,11 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.Arguments[KernelArguments.InputParameterName] = newInput;
+            e.Arguments["originalInput"] = newInput;
         };
 
         // Act
-        var result = await kernel.InvokeAsync(function, new(originalInput));
+        var result = await kernel.InvokeAsync(function, new() { ["originalInput"] = originalInput });
 
         // Assert
         Assert.Equal(newInput, result.GetValue<string>());
@@ -429,7 +431,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await kernel.InvokeAsync(function, new(originalInput));
+        var result = await kernel.InvokeAsync(function, new() { [InputParameterName] = originalInput });
 
         // Assert
         Assert.Equal(newInput, result.GetValue<string>());
@@ -622,7 +624,7 @@ public class KernelTests
         Kernel kernel = builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
-        var variables = new KernelArguments("importance");
+        var variables = new KernelArguments() { [InputParameterName] = "importance" };
 
         var chunkCount = 0;
         // Act

@@ -79,7 +79,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
@@ -118,7 +118,7 @@ public static class Example57_KernelHooks
         kernel.PromptRendered += MyRenderedHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 

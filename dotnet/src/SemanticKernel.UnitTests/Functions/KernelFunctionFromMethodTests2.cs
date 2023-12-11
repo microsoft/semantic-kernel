@@ -58,7 +58,7 @@ public sealed class KernelFunctionFromMethodTests2
         var instance = new InvalidPlugin();
         MethodInfo[] methods = instance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode")
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
         // Act - Assert that no exception occurs
@@ -76,7 +76,7 @@ public sealed class KernelFunctionFromMethodTests2
         }
 
         // Assert
-        Assert.Equal(2, count);
+        Assert.Equal(1, count);
     }
 
     [Fact]
@@ -174,11 +174,6 @@ public sealed class KernelFunctionFromMethodTests2
 
     private sealed class InvalidPlugin
     {
-        [KernelFunction]
-        public void Invalid2(CustomUnknownType n, string input) // Only first parameter can have the 'input' name
-        {
-        }
-
         [KernelFunction]
         public void Invalid4(CancellationToken ct1, CancellationToken ct2)
         {

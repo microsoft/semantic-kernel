@@ -239,7 +239,7 @@ public class CodeBlockTests
 
         var arguments = new KernelArguments();
         arguments["bob"] = BobValue;
-        arguments[KernelArguments.InputParameterName] = Value;
+        arguments["input"] = Value;
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
@@ -289,11 +289,11 @@ public class CodeBlockTests
         var variable = new CodeBlock(new List<Block> { varBlock }, "");
 
         // Assert function positional argument passed to the the function with no changes
-        await functionWithPositionedArgument.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
+        await functionWithPositionedArgument.RenderCodeAsync(this._kernel, new() { ["p1"] = expectedValue, ["var"] = expectedValue });
         Assert.Same(expectedValue, canary); // Ensuring that the two variables point to the same object, as there is no other way to verify that the argument has not been transformed from object -> string -> object during the process.
 
         // Assert function named argument passed to the the function with no changes
-        await functionWithNamedArgument.RenderCodeAsync(this._kernel, new() { ["a1"] = expectedValue });
+        await functionWithNamedArgument.RenderCodeAsync(this._kernel, new() { ["p1"] = expectedValue, ["a1"] = expectedValue });
         Assert.Same(expectedValue, canary);
 
         // Assert argument assigned to a variable with no changes
@@ -311,7 +311,7 @@ public class CodeBlockTests
 
         var arguments = new KernelArguments();
         arguments["bob"] = BobValue;
-        arguments[KernelArguments.InputParameterName] = Value;
+        arguments["input"] = Value;
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");

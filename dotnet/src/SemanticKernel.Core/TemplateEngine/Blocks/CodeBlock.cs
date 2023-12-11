@@ -175,7 +175,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             object? input = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Keep previous trust information when updating the input
-            arguments[KernelArguments.InputParameterName] = input;
+            arguments["input"] = input;
             namedArgsStartIndex++;
         }
 

@@ -96,7 +96,7 @@ public class ConversationSummaryPlugin
 
         for (int i = 0; i < results.Length; i++)
         {
-            arguments[KernelArguments.InputParameterName] = paragraphs[i];
+            arguments["input"] = paragraphs[i];
 
             results[i] = (await func.InvokeAsync(kernel, arguments).ConfigureAwait(false)).GetValue<string>() ?? "";
         }
