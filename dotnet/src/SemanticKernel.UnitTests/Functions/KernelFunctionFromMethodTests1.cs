@@ -753,10 +753,9 @@ public sealed class KernelFunctionFromMethodTests1
     [InlineData((ushort)5, DayOfWeek.Friday)]
     [InlineData((byte)6, DayOfWeek.Saturday)]
     [InlineData((sbyte)0, DayOfWeek.Sunday)]
-
     public async Task ItSupportsConvertingAllIntegerTypesToEnumAsync(object argument, DayOfWeek expected)
     {
-        // Assert
+        // Arrange
         object? actual = null;
 
         var function = KernelFunctionFactory.CreateFromMethod((DayOfWeek dow) => actual = dow);
