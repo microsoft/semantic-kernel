@@ -115,7 +115,7 @@ If you need to do basic operations, you can use these two helpers with numerical
 {{/if}}
 ## Comparison helpers
 If you need to compare two values, you can use the `\{{equals}}` helper.
-To use the {{#if allowLoops}}math and {{/if}}comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is equal to number `1`, you would use the following helper like so: `\{{#if (equal var 1)}}\{{/if}}`.
+To use the {{#if allowLoops}}math and {{/if}}comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is equal to number `1`, you would use the following helper like so: `\{{#if (equal (get "var") 1)}}\{{/if}}`.
 
 ## Variable helpers
 If you need to create or retrieve a variable, you can use the following helpers:

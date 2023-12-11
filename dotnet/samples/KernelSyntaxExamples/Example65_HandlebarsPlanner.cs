@@ -54,7 +54,7 @@ public static class Example65_HandlebarsPlanner
             return;
         }
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
@@ -113,7 +113,7 @@ public static class Example65_HandlebarsPlanner
 
         // Execute the plan
         var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
-        Console.WriteLine($"\nResult:{result}\n");
+        Console.WriteLine($"\nResult:\n{result}\n");
     }
 
     private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)

@@ -40,7 +40,7 @@ public static class Example54_AzureChatCompletionWithData
         // Chat Completion example
         var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
-        var response = chatMessage.Content;
+        var response = chatMessage.Content!;
         var toolResponse = chatMessage.ToolContent;
 
         // Output
@@ -66,7 +66,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (string word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
+        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
             Console.Write(word);
         }
@@ -82,7 +82,7 @@ public static class Example54_AzureChatCompletionWithData
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
