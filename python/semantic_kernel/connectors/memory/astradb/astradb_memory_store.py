@@ -41,11 +41,13 @@ class AstraDBMemoryStore(MemoryStoreBase):
         default_dimensionality: int,
         logger: Optional[Logger] = None,
     ) -> None:
-        """Initializes a new instance of the PineconeMemoryStore class.
+        """Initializes a new instance of the AstraDBMemoryStore class.
 
         Arguments:
-            pinecone_api_key {str} -- The Pinecone API key.
-            pinecone_environment {str} -- The Pinecone environment.
+            app_token {str} -- The Astra application token.
+            db_id {str} -- The Astra id of database.
+            regin {str} -- The Astra region
+            keyspace {str} -- The Astra keyspace
             default_dimensionality {int} -- The default dimensionality to use for new collections.
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
@@ -54,7 +56,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 f"Dimensionality of {default_dimensionality} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
-        
+
         self._request_url = f"https://{db_id}-{region}.apps.astra.datastax.com/api/json/v1/{keyspace}"
         self._request_header = {
             "x-cassandra-token": app_token,
@@ -62,10 +64,15 @@ class AstraDBMemoryStore(MemoryStoreBase):
         }
         self._logger = logger or NullLogger()
 
+    def get_collections_async(self) -> List[str]:
+        """Gets the list of collections.
 
-    def get_collections(self) -> List[str]:
+        Returns:
+            List[str] -- The list of collections.
+        """
         find_query = {"findCollections": {"options": {"explain": True}}}
-        response = requests.request("POST", self._request_url, headers=self._request_header, data=json.dumps(find_query))
+        response = requests.request(
+            "POST", self._request_url, headers=self._request_header, data=json.dumps(find_query))
         response_dict = json.loads(response.text)
 
         if response.status_code == 200:
@@ -75,7 +82,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 raise Exception(f"status not in response: {response.text}")
 
         else:
-            raise Exception(f"Astra DB not available. Status code: {response.status_code}, {response.text}")
+            raise Exception(
+                f"Astra DB not available. Status code: {response.status_code}, {response.text}")
 
     async def create_collection_async(
         self,
@@ -83,6 +91,15 @@ class AstraDBMemoryStore(MemoryStoreBase):
         dimension_num: Optional[int] = None,
         distance_type: Optional[str] = "cosine",
     ) -> None:
+        """Creates a new collection in Astra if it does not exist.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to create.
+            dimension_num {int} -- The dimension of the vectors to be stored in this collection.
+            distance_type {str} -- Specifies the similarity metric to be used when querying or comparing vectors within this collection. The available options are dot_product, euclidean, and cosine.
+        Returns:
+            None
+        """
         if dimension_num is None:
             dimension_num = self._default_dimensionality
         if dimension_num > MAX_DIMENSIONALITY:
@@ -97,24 +114,16 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 "options": {"vector": {"dimension": dimension_num, "metric": distance_type}},
             }
         }
-        response = requests.request("POST", self._request_url, headers=self._request_header, data=json.dumps(create_query))
+        response = requests.request(
+            "POST", self._request_url, headers=self._request_header, data=json.dumps(create_query))
         response_dict = json.loads(response.text)
         if response.status_code == 200 and "status" in response_dict:
-            self._logger.info(f"Collection {collection_name} created: {response.text}")
+            self._logger.info(
+                f"Collection {collection_name} created: {response.text}")
         else:
             raise Exception(
                 f"Create Astra collection ailed with the following error: status code {response.status_code}, {response.text}"
             )
-
-    async def get_collections_async(
-        self,
-    ) -> List[str]:
-        """Gets the list of collections.
-
-        Returns:
-            List[str] -- The list of collections.
-        """
-        return self.get_collections()
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -126,16 +135,19 @@ class AstraDBMemoryStore(MemoryStoreBase):
             None
         """
         collections = self.get_collections()
-        collection_name_matches = list(filter(lambda d: d == collection_name, collections))
+        collection_name_matches = list(
+            filter(lambda d: d == collection_name, collections))
         if len(collection_name_matches) == 0:
-            self._logger.warning(f"Astra collection {collection_name} not found")
+            self._logger.warning(
+                f"Astra collection {collection_name} not found")
         else:
             delete_query = {
                 "deleteCollection": {
                     "name": collection_name,
                 }
             }
-            response = requests.request("POST", self._request_url, headers=self._request_header, data=json.dumps(delete_query))
+            response = requests.request(
+                "POST", self._request_url, headers=self._request_header, data=json.dumps(delete_query))
             if response.status_code == 200:
                 self._logger.info(f"Collection {collection_name} deleted")
             else:
@@ -152,7 +164,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        collections = self.get_collections()
+        collections = self.get_collections_async()
         return collection_name in collections
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
@@ -172,14 +184,16 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 if "errors" in response_dict:
                     self._logger.error(response_dict["errors"])
         else:
-            raise Exception(f"Astra DB request error - status code: {response.status_code} response {response.text}")
+            raise Exception(
+                f"Astra DB request error - status code: {response.status_code} response {response.text}")
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
         documents = [build_payload(record) for record in records]
 
-        query = json.dumps({"insertMany": {"options": {"ordered": False}, "documents": documents}})
+        query = json.dumps(
+            {"insertMany": {"options": {"ordered": False}, "documents": documents}})
 
         response = requests.request(
             "POST",
@@ -196,11 +210,22 @@ class AstraDBMemoryStore(MemoryStoreBase):
                     self._logger.error(response_dict["errors"])
                 return []
         else:
-            raise Exception(f"Astra DB request error - status code: {response.status_code} response {response.text}")
+            raise Exception(
+                f"Astra DB request error - status code: {response.status_code} response {response.text}")
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord:
+        """Gets a record. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the record from.
+            key {str} -- The unique database key of the record.
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+
+        Returns:
+            MemoryRecord -- The record.
+        """
         query = json.dumps({"findOne": {"filter": {"_id": key}}})
         response = requests.request(
             "POST",
@@ -215,11 +240,22 @@ class AstraDBMemoryStore(MemoryStoreBase):
             else:
                 raise KeyError(f"Record with key '{key}' does not exist")
         else:
-            raise Exception(f"Astra DB request error - status code: {response.status_code} response {response.text}")
+            raise Exception(
+                f"Astra DB request error - status code: {response.status_code} response {response.text}")
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
+        """Gets a batch of records. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the records from.
+            keys {List[str]} -- The unique database keys of the records.
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[MemoryRecord] -- The records.
+        """
         query = json.dumps({"find": {"filter": {"_id": {"$in": keys}}}})
         response = requests.request(
             "POST",
@@ -234,9 +270,19 @@ class AstraDBMemoryStore(MemoryStoreBase):
             else:
                 return []
         else:
-            raise Exception(f"Astra DB request error - status code: {response.status_code} response {response.text}")
+            raise Exception(
+                f"Astra DB request error - status code: {response.status_code} response {response.text}")
 
     async def remove_async(self, collection_name: str, key: str) -> None:
+        """Removes a memory record from the data store. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to remove the record from.
+            key {str} -- The unique id associated with the memory record to remove.
+
+        Returns:
+            None
+        """
         query = json.dumps({"deleteOne": {"filter": {"_id": key}}})
         response = requests.request(
             "POST",
@@ -247,14 +293,25 @@ class AstraDBMemoryStore(MemoryStoreBase):
         response_dict = json.loads(response.text)
         if response.status_code == 200:
             if "status" in response_dict and "deletedCount" in response_dict["status"]:
-                self._logger.info(f"Remove {response_dict.status.deletedCount}")
+                self._logger.info(
+                    f"Remove {response_dict.status.deletedCount}")
             else:
                 if "errors" in response_dict:
                     self._logger.error(response_dict["errors"])
         else:
-            raise Exception(f"Astra DB request error - status code: {response.status_code} response {response.text}")
+            raise Exception(
+                f"Astra DB request error - status code: {response.status_code} response {response.text}")
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+        """Removes a batch of records. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to remove the records from.
+            keys {List[str]} -- The unique ids associated with the memory records to remove.
+
+        Returns:
+            None
+        """
         query = json.dumps({"deleteMany": {"filter": {"_id": {"$in": keys}}}})
         response = requests.request(
             "POST",
@@ -265,12 +322,14 @@ class AstraDBMemoryStore(MemoryStoreBase):
         response_dict = json.loads(response.text)
         if response.status_code == 200:
             if "status" in response_dict and "deletedCount" in response_dict["status"]:
-                self._logger.info(f"Remove {response_dict['status']['deletedCount']}")
+                self._logger.info(
+                    f"Remove {response_dict['status']['deletedCount']}")
             else:
                 if "errors" in response_dict:
                     self._logger.error(response_dict["errors"])
         else:
-            raise Exception(f"Astra DB request error - status code: {response.status_code} response {response.text}")
+            raise Exception(
+                f"Astra DB request error - status code: {response.status_code} response {response.text}")
 
     async def get_nearest_match_async(
         self,
@@ -279,7 +338,24 @@ class AstraDBMemoryStore(MemoryStoreBase):
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
-        pass
+        """Gets the nearest match to an embedding using cosine similarity.
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest matches from.
+            embedding {ndarray} -- The embedding to find the nearest matches to.
+            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+        """
+        matches = await self.get_nearest_matches_async(
+            collection_name=collection_name,
+            embedding=embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
+        return matches[0]
 
     async def get_nearest_matches_async(
         self,
@@ -289,4 +365,50 @@ class AstraDBMemoryStore(MemoryStoreBase):
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
     ) -> List[Tuple[MemoryRecord, float]]:
-        pass
+        """Gets the nearest matches to an embedding using cosine similarity.
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest matches from.
+            embedding {ndarray} -- The embedding to find the nearest matches to.
+            limit {int} -- The maximum number of matches to return.
+            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+        """
+        query = json.dumps({
+            "find": {
+                "sort": {"$vector": embedding.tolist()},
+                "projection": {
+                    "$vector": with_embeddings
+                },
+                "options": {
+                    "includeSimilarity": True,
+                    "limit": limit,
+                }
+            }
+        })
+        response = requests.request(
+            "POST",
+            f"{self._request_url}/{collection_name}",
+            headers=self._request_header,
+            data=query,
+        )
+        response_dict = json.loads(response.text)
+
+        matches = response_dict["data"]["documents"]
+        if min_relevance_score:
+            matches = [
+                match for match in matches if match["$similarity"] >= min_relevance_score]
+
+        return (
+            [
+                (
+                    parse_payload(match),
+                    match["$similarity"],
+                )
+                for match in matches
+            ]
+            if len(matches) > 0
+            else []
+        )
