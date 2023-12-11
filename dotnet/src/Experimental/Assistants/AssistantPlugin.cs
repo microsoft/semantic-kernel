@@ -24,7 +24,6 @@ public abstract class AssistantPlugin : KernelPlugin
     /// <summary>
     /// Invoke plugin with user input
     /// </summary>
-    /// <param name="plugin">The plugin</param>
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancel token</param>
     /// <returns>The assistant response</returns>
