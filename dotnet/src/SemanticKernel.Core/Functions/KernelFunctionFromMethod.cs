@@ -319,7 +319,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 return parameter.DefaultValue;
             }
 
-            // 4. Otherwise, fail.
+            // 3. Otherwise, fail.
             throw new KernelException($"Missing value for parameter '{name}'",
                 new ArgumentException("Missing value function parameter", name));
 
