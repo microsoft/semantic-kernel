@@ -11,7 +11,7 @@ using Json.Schema.Generation;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 // NOTE: Since this space is evolving rapidly, in order to reduce the risk of needing to take breaking
-// changes as OpenAI's APIs evolve, these types are not externally construcible. In the future, once
+// changes as OpenAI's APIs evolve, these types are not externally constructible. In the future, once
 // things stabilize, and if need demonstrates, we could choose to expose those constructors.
 
 /// <summary>
