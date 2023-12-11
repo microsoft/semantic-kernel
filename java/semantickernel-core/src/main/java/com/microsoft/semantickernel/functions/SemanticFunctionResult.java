@@ -72,8 +72,4 @@ public class SemanticFunctionResult implements FunctionResult {
         return valueAsync.block();
     }
 
-    @Override
-    public <T> T tryGetMetadataValue(String key) {
-        return null;
-    }
 }

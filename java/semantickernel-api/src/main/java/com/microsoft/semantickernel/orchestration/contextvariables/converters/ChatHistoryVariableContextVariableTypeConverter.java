@@ -1,17 +1,18 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
-import static com.microsoft.semantickernel.orchestration.contextvariables.VariableTypes.convert;
+import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.orchestration.contextvariables.Converter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 
-public class ChatHistoryVariableConverter extends Converter<ChatHistory> {
+public class ChatHistoryVariableContextVariableTypeConverter extends
+    ContextVariableTypeConverter<ChatHistory> {
 
-    public ChatHistoryVariableConverter() {
+    public ChatHistoryVariableContextVariableTypeConverter() {
         super(
             ChatHistory.class,
             s -> convert(s, ChatHistory.class),
-            ChatHistoryVariableConverter::toXmlString,
+            ChatHistoryVariableContextVariableTypeConverter::toXmlString,
             x -> {
                 throw new UnsupportedOperationException(
                     "ChatHistoryVariableConverter does not support fromPromptString");

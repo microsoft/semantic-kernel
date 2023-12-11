@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.VariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.VariableTypes;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 
 public class ContextVariable<T> {
 
-    private final VariableType<T> type;
+    private final ContextVariableType<T> type;
     private final T value;
 
-    public ContextVariable(VariableType<T> type, T value) {
+    public ContextVariable(ContextVariableType<T> type, T value) {
         this.type = type;
         this.value = value;
     }
@@ -18,14 +19,17 @@ public class ContextVariable<T> {
         return value;
     }
 
-    public VariableType<T> getType() {
+    public ContextVariableType<T> getType() {
         return type;
     }
 
-    public String toPromptString() {
-        return type.getConverter().toPromptString(value);
+    public String toPromptString(ContextVariableTypeConverter<T> converter) {
+        return converter.toPromptString(value);
     }
 
+    public String toPromptString() {
+        return toPromptString(type.getConverter());
+    }
 
     public boolean isEmpty() {
         return value == null || value.toString().isEmpty();
@@ -36,7 +40,7 @@ public class ContextVariable<T> {
     }
 
     public static <T> ContextVariable<T> of(T value) {
-        VariableType<T> type = VariableTypes.getVariableTypeForClass(
+        ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(
             (Class<T>) value.getClass());
         return new ContextVariable<T>(type, value);
     }

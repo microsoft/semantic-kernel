@@ -204,10 +204,8 @@ public abstract class AbstractSkFunction implements SKFunction, RegistrableSkFun
                                             || parameter.getDefaultValue().isEmpty()
                                             || parameter
                                                     .getDefaultValue()
-                                                    .toPromptString()
-                                                    .equals(
-                                                            SKFunctionParameters
-                                                                    .NO_DEFAULT_VALUE)) {
+                                                    .toString()
+                                                    .equals(SKFunctionParameters.NO_DEFAULT_VALUE)) {
                                         defaultValueString = "";
                                     } else {
                                         defaultValueString =

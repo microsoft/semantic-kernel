@@ -2,14 +2,14 @@ package com.microsoft.semantickernel.orchestration.contextvariables;
 
 import java.util.function.Function;
 
-public class Converter<T> {
+public class ContextVariableTypeConverter<T> {
 
     private final Class<T> clazz;
     private final Function<Object, T> fromObject;
     private final Function<T, String> toPromptString;
     private final Function<String, T> fromPromptString;
 
-    public Converter(
+    public ContextVariableTypeConverter(
         Class<T> clazz,
         Function<Object, T> fromObject,
         Function<T, String> toPromptString,
