@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -55,7 +54,7 @@ internal sealed class Assistant : IAssistant
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
 
-    private IAssistantPlugin? _assistantPlugin;
+    private AssistantPlugin? _assistantPlugin;
     private bool _isDeleted;
 
     /// <summary>
@@ -98,7 +97,7 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    public IAssistantPlugin AsPlugin() => this._assistantPlugin ??= this.DefinePlugin();
+    public AssistantPlugin AsPlugin() => this._assistantPlugin ??= this.DefinePlugin();
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -171,11 +170,11 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    private AssistantPlugin DefinePlugin()
+    private AssistantPluginImpl DefinePlugin()
     {
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
 
-        return new AssistantPlugin(this, functionAsk);
+        return new AssistantPluginImpl(this, functionAsk);
     }
 
     private void ThrowIfDeleted()
@@ -186,29 +185,30 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    private class AssistantPlugin(Assistant assistant, KernelFunction functionAsk) : IAssistantPlugin
+    private sealed class AssistantPluginImpl : AssistantPlugin
     {
-        public KernelFunction this[string functionName] =>
-            this.TryGetFunction(functionName, out var function) ?
-             function! :
-             throw new AssistantException($"Unknown function: {functionName}");
+        public KernelFunction FunctionAsk { get; }
 
-        public string Name { get; } = s_removeInvalidCharsRegex.Replace(assistant.Name ?? assistant.Id, string.Empty);
+        internal override Assistant Assistant { get; }
 
-        public string Description => assistant.Description ?? assistant.Instructions;
-
-        public KernelFunction FunctionAsk => functionAsk;
-
-        Assistant IAssistantPlugin.Assistant => assistant;
+        public override int FunctionCount => 1;
 
         private static readonly string s_functionName = nameof(Assistant.AskAsync).Substring(0, nameof(Assistant.AskAsync).Length - 5);
 
-        public IEnumerator<KernelFunction> GetEnumerator()
+        public AssistantPluginImpl(Assistant assistant, KernelFunction functionAsk)
+            : base(s_removeInvalidCharsRegex.Replace(assistant.Name ?? assistant.Id, string.Empty),
+                   assistant.Description ?? assistant.Instructions)
+        {
+            this.Assistant = assistant;
+            this.FunctionAsk = functionAsk;
+        }
+
+        public override IEnumerator<KernelFunction> GetEnumerator()
         {
             yield return this.FunctionAsk;
         }
 
-        public bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
+        public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
         {
             function = null;
 
@@ -218,11 +218,6 @@ internal sealed class Assistant : IAssistant
             }
 
             return function != null;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
     }
 }

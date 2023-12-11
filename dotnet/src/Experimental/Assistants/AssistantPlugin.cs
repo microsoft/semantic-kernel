@@ -8,18 +8,19 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// Specialization of <see cref="IKernelPlugin"/> for <see cref="IAssistant"/>
+/// Specialization of <see cref="KernelPlugin"/> for <see cref="IAssistant"/>
 /// </summary>
-public interface IAssistantPlugin : IKernelPlugin
+public abstract class AssistantPlugin : KernelPlugin
 {
-    internal Assistant Assistant { get; }
-}
+    /// <inheritdoc/>
+    protected AssistantPlugin(string name, string? description = null)
+        : base(name, description)
+    {
+        // No specialization...
+    }
 
-/// <summary>
-/// Convenience actions for <see cref="IAssistantPlugin"/>/
-/// </summary>
-public static class IAssistantPluginExtensions
-{
+    internal abstract Assistant Assistant { get; }
+
     /// <summary>
     /// Invoke plugin with user input
     /// </summary>
@@ -27,10 +28,10 @@ public static class IAssistantPluginExtensions
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancel token</param>
     /// <returns>The assistant response</returns>
-    public static async Task<string> InvokeAsync(this IAssistantPlugin plugin, string input, CancellationToken cancellationToken = default)
+    public async Task<string> InvokeAsync(string input, CancellationToken cancellationToken = default)
     {
         var args = new KernelArguments { { "input", input } };
-        var result = await plugin.First().InvokeAsync(plugin.Assistant.Kernel, args, cancellationToken).ConfigureAwait(false);
+        var result = await this.First().InvokeAsync(this.Assistant.Kernel, args, cancellationToken).ConfigureAwait(false);
         var response = result.GetValue<AssistantResponse>()!;
 
         return response.Message;
