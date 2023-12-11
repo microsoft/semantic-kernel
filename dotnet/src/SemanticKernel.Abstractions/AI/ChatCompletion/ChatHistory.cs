@@ -70,11 +70,27 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
 
     /// <summary>
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    /// <param name="encoding">Encoding of the message content</param>
+    /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// </summary>
+    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection items, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
+        this.Add(new ChatMessageContent(authorRole, items, null, null, encoding, metadata));
+
+    /// <summary>
     /// Add a user message to the chat history
     /// </summary>
     /// <param name="content">Message content</param>
     public void AddUserMessage(string content) =>
         this.AddMessage(AuthorRole.User, content);
+
+    /// <summary>
+    /// Add a user message to the chat history
+    /// </summary>
+    /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    public void AddUserMessage(ChatMessageContentItemCollection items) =>
+        this.AddMessage(AuthorRole.User, items);
 
     /// <summary>
     /// Add an assistant message to the chat history

@@ -279,7 +279,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             .Select(message => new ChatWithDataMessage
             {
                 Role = message.Role.Label,
-                Content = message.Content
+                Content = message.Content ?? string.Empty
             })
             .ToList();
     }

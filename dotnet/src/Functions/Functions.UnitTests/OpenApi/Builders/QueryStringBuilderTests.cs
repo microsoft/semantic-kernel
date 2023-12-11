@@ -38,8 +38,7 @@ public class QueryStringBuilderTests
             "/",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
+            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata });
 
         var arguments = new Dictionary<string, string>
         {
@@ -80,8 +79,7 @@ public class QueryStringBuilderTests
             "/",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
+            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata });
 
         var arguments = new Dictionary<string, string>
         {
@@ -121,8 +119,7 @@ public class QueryStringBuilderTests
             "/",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
+            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata });
 
         var arguments = new Dictionary<string, string>
         {
@@ -157,7 +154,7 @@ public class QueryStringBuilderTests
             { "p1", $"p1_value{specialSymbol}" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var queryString = operation.BuildQueryString(arguments);
@@ -198,7 +195,7 @@ public class QueryStringBuilderTests
             { "p2", "[1,2,3]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -239,7 +236,7 @@ public class QueryStringBuilderTests
             { "p2", "[1,2,3]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -279,7 +276,7 @@ public class QueryStringBuilderTests
             { "p2", "true" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -320,7 +317,7 @@ public class QueryStringBuilderTests
             { "p2", "[1,2,3]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -361,7 +358,7 @@ public class QueryStringBuilderTests
             { "p2", "[1,2,3]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -402,7 +399,7 @@ public class QueryStringBuilderTests
             { "p2", "[1,2,3]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -443,7 +440,7 @@ public class QueryStringBuilderTests
             { "p2", "[1,2,3]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
@@ -493,7 +490,7 @@ public class QueryStringBuilderTests
             { "p7", "[\"e\",\"f\"]" }
         };
 
-        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
         var result = operation.BuildQueryString(arguments);
