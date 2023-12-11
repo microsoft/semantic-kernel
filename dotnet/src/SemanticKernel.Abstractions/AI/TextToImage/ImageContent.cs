@@ -14,7 +14,7 @@ public sealed class ImageContent : ContentBase
     /// <summary>
     /// The URI of image.
     /// </summary>
-    public Uri Uri { get; set; }
+    public Uri? Uri { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
@@ -38,6 +38,6 @@ public sealed class ImageContent : ContentBase
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Uri.ToString();
+        return this.Uri?.ToString() ?? string.Empty;
     }
 }
