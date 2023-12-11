@@ -1232,9 +1232,4 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.NotNull(result);
         Assert.Throws<InvalidCastException>(() => result.GetValue<double>());
     }
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
-    }
 }
