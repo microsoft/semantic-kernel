@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.SemanticKernel.TextToImage;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents image content.

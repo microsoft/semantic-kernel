@@ -3,8 +3,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.TextGeneration;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.

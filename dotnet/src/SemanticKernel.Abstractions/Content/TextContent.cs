@@ -3,8 +3,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.TextGeneration;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents text content return from a <see cref="ITextGenerationService" /> service.

@@ -3,8 +3,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletionService"/> interface.
