@@ -33,7 +33,7 @@ public static class Program
     private static async Task RunExamplesAsync(string? filter, CancellationToken cancellationToken)
     {
         var examples = (Assembly.GetExecutingAssembly().GetTypes())
-            .Where(type => type.Name.StartsWith("Example", StringComparison.OrdinalIgnoreCase))
+            .Where(type => type.Name.StartsWith("Example999", StringComparison.OrdinalIgnoreCase))
             .Select(type => type.Name).ToList();
 
         // Filter and run examples
