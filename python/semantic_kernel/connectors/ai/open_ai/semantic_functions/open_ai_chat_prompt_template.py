@@ -43,10 +43,19 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
             name = None
         function_call = kwargs.get("function_call")
         if function_call is not None:
-            if role == 'assistant':
-                self.messages.append(OpenAIChatMessage(role=role, fixed_content=message, name=name, function_call=function_call))
+            if role == "assistant":
+                self.messages.append(
+                    OpenAIChatMessage(
+                        role=role,
+                        fixed_content=message,
+                        name=name,
+                        function_call=function_call,
+                    )
+                )
                 return
-            self._log.warning("function_call is only used with role: assistant, ignoring")
+            self._log.warning(
+                "function_call is only used with role: assistant, ignoring"
+            )
             function_call = None
         self.messages.append(
             OpenAIChatMessage(

@@ -84,6 +84,4 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         concrete_class = cls.model_fields["completion"].annotation
         if isinstance(concrete_class, TypeVar):
             concrete_class = AIRequestSettings
-        return PromptTemplateConfig(
-            completion=concrete_class(extension_data=kwargs)
-        )
+        return PromptTemplateConfig(completion=concrete_class(extension_data=kwargs))

@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import os
 
 import pytest
 from openai import AsyncOpenAI
