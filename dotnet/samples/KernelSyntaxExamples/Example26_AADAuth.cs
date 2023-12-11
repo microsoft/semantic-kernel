@@ -40,11 +40,10 @@ public static class Example26_AADAuth
             ExcludeAzurePowerShellCredential = true
         };
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
             .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new DefaultAzureCredential(authOptions))
             .Build();

@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Events;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -42,7 +41,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Get Usage Data ========\n");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
@@ -87,7 +86,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Get Rendered Prompt ========\n");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: s_openAIModelId!,
                 apiKey: s_openAIApiKey!)
@@ -126,7 +125,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
@@ -160,7 +159,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)
@@ -195,7 +194,7 @@ public static class Example57_KernelHooks
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                modelId: s_openAIModelId!,
                apiKey: s_openAIApiKey!)

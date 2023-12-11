@@ -69,7 +69,7 @@ internal sealed class Assistant : IAssistant
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
         AssistantModel assistantModel,
-        IEnumerable<IKernelPlugin>? plugins = null,
+        IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
@@ -83,12 +83,12 @@ internal sealed class Assistant : IAssistant
     internal Assistant(
         AssistantModel model,
         OpenAIRestContext restContext,
-        IEnumerable<IKernelPlugin>? plugins = null)
+        IEnumerable<KernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
         this.Kernel = builder.Build();
 
