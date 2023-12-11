@@ -26,5 +26,6 @@ public static class HandlebarsKernelExtensions
         kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
             arguments?.ExecutionSettings,
+            HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
             promptTemplateFactory: s_promptTemplateFactory), arguments);
 }

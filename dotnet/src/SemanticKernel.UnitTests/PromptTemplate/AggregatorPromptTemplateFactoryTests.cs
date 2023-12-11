@@ -45,6 +45,38 @@ public sealed class AggregatorPromptTemplateFactoryTests
         Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 
+    [Fact]
+    public void ItCreatesPromptFunctionsUsingCorrectFactory()
+    {
+        // Arrange
+        var templateString = "{{$input}}";
+        var kernel = new Kernel();
+        var factory1 = new MyPromptTemplateFactory1();
+        var factory2 = new MyPromptTemplateFactory2();
+        var target = new AggregatorPromptTemplateFactory(factory1, factory2);
+
+        // Act
+        var function1 = kernel.CreateFunctionFromPrompt(templateString, templateFormat: "my-format-1", promptTemplateFactory: target);
+        var function2 = kernel.CreateFunctionFromPrompt(templateString, templateFormat: "my-format-1", promptTemplateFactory: target);
+
+        // Assert
+        Assert.NotNull(function1);
+        Assert.NotNull(function2);
+    }
+
+    [Fact]
+    public void ItThrowsExceptionCreatePromptFunctionWithoutFormat()
+    {
+        // Arrange
+        var templateString = "{{$input}}";
+        var kernel = new Kernel();
+        var factory1 = new MyPromptTemplateFactory1();
+
+        // Act & Assert
+        var result = Assert.Throws<ArgumentNullException>(() => kernel.CreateFunctionFromPrompt(templateString, promptTemplateFactory: factory1));
+        Assert.Equal("templateFormat", result.ParamName);
+    }
+
     #region private
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
