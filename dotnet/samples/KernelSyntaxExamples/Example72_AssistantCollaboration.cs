@@ -16,7 +16,7 @@ public static class Example72_AssistantCollaboration
     /// Specific model is required that supports assistants and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-0613";
+    private const string OpenAIFunctionEnabledModel = "gpt-4-0613";
 
     // Track assistants for clean-up
     private static readonly List<IAssistant> s_assistants = new();
@@ -67,11 +67,11 @@ public static class Example72_AssistantCollaboration
             {
                 // Initiate copy-writer input
                 var assistantMessages = await thread.InvokeAsync(copyWriter).ToArrayAsync();
-                DisplayMessages(assistantMessages);
+                DisplayMessages(assistantMessages, copyWriter);
 
                 // Initiate art-director input
                 assistantMessages = await thread.InvokeAsync(artDirector).ToArrayAsync();
-                DisplayMessages(assistantMessages);
+                DisplayMessages(assistantMessages, artDirector);
 
                 // Evaluate if goal is met.
                 if (assistantMessages.First().Content.Contains("PRINT IT", StringComparison.OrdinalIgnoreCase))
@@ -153,18 +153,25 @@ public static class Example72_AssistantCollaboration
                     .BuildAsync());
     }
 
-    private static void DisplayMessages(IEnumerable<IChatMessage> messages)
+    private static void DisplayMessages(IEnumerable<IChatMessage> messages, IAssistant? assistant = null)
     {
         foreach (var message in messages)
         {
-            DisplayMessage(message);
+            DisplayMessage(message, assistant);
         }
     }
 
-    private static void DisplayMessage(IChatMessage message)
+    private static void DisplayMessage(IChatMessage message, IAssistant? assistant = null)
     {
         Console.WriteLine($"[{message.Id}]");
-        Console.WriteLine($"# {message.Role}: {message.Content}");
+        if (assistant != null)
+        {
+            Console.WriteLine($"# {message.Role}: ({assistant.Name}) {message.Content}");
+        }
+        else
+        {
+            Console.WriteLine($"# {message.Role}: {message.Content}");
+        }
     }
 
     private static IAssistant Track(IAssistant assistant)

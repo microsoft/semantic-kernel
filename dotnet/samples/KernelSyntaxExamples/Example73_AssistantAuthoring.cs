@@ -46,10 +46,10 @@ public static class Example73_AssistantAuthoring
         try
         {
             // Initialize the assistant with tools
-            var articleGenerator = await CreateArticleGeneratorAsync();
+            IAssistant articleGenerator = await CreateArticleGeneratorAsync();
 
             // "Stream" messages as they become available
-            await foreach (var message in articleGenerator.InvokeAsync("Thai food is the best in the world"))
+            await foreach (IChatMessage message in articleGenerator.InvokeAsync("Thai food is the best in the world"))
             {
                 Console.WriteLine($"[{message.Id}]");
                 Console.WriteLine($"# {message.Role}: {message.Content}");
@@ -66,10 +66,10 @@ public static class Example73_AssistantAuthoring
         try
         {
             // Initialize the assistant with tools
-            var articleGenerator = await CreateArticleGeneratorAsync();
+            IAssistant articleGenerator = await CreateArticleGeneratorAsync();
 
             // Invoke as a plugin function
-            var response = await articleGenerator.AsPlugin().InvokeAsync("Thai food is the best in the world");
+            string response = await articleGenerator.AsPlugin().InvokeAsync("Thai food is the best in the world");
 
             // Display final result
             Console.WriteLine(response);
