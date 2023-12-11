@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
-public class ChatMessageContent : ContentBase
+public class ChatMessageContent : KernelContent
 {
     /// <summary>
     /// Role of the author of the message

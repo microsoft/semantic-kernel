@@ -133,6 +133,6 @@ public class FunctionResultTests
         // Act and Assert
 
         Assert.Equal(valueType, target.GetValue<TextContent>());
-        Assert.Equal(valueType, target.GetValue<ContentBase>());
+        Assert.Equal(valueType, target.GetValue<KernelContent>());
     }
 }

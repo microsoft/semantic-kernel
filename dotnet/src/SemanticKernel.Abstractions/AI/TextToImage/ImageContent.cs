@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.TextToImage;
 /// <summary>
 /// Represents image content.
 /// </summary>
-public sealed class ImageContent : ContentBase
+public sealed class ImageContent : KernelContent
 {
     /// <summary>
     /// The URI of image.

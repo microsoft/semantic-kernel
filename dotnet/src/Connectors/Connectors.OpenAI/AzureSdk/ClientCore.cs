@@ -665,7 +665,7 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static ChatMessageContentItem GetChatMessageContentItem(ContentBase item)
+    private static ChatMessageContentItem GetChatMessageContentItem(KernelContent item)
     {
         return item switch
         {
