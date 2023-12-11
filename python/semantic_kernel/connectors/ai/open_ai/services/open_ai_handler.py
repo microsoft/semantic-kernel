@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import ABC
+from typing import List, Optional, Union
 
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream
@@ -62,13 +62,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
         try:
             response = await (
-                self.client.chat.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                self.client.chat.completions.create(**request_settings.create_options())
                 if chat_mode
-                else self.client.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                else self.client.completions.create(**request_settings.create_options())
             )
         except Exception as ex:
             raise AIException(
@@ -136,6 +132,52 @@ class OpenAIHandler(AIServiceClientBase, ABC):
 
         return model_args
 
+    # def _create_model_args(
+    #     self, request_settings, stream, prompt, messages, functions, chat_mode
+    # ):
+    #     model_args = self.get_model_args()
+    #     model_args.update(
+    #         {
+    #             "stream": stream,
+    #             "temperature": request_settings.temperature,
+    #             "top_p": request_settings.top_p,
+    #             "stop": (
+    #                 request_settings.stop_sequences
+    #                 if request_settings.stop_sequences is not None
+    #                 and len(request_settings.stop_sequences) > 0
+    #                 else None
+    #             ),
+    #             "max_tokens": request_settings.max_tokens,
+    #             "presence_penalty": request_settings.presence_penalty,
+    #             "frequency_penalty": request_settings.frequency_penalty,
+    #             "logit_bias": (
+    #                 request_settings.token_selection_biases
+    #                 if request_settings.token_selection_biases is not None
+    #                 and len(request_settings.token_selection_biases) > 0
+    #                 else {}
+    #             ),
+    #             "n": request_settings.number_of_responses,
+    #         }
+    #     )
+    #     if not chat_mode:
+    #         model_args["prompt"] = prompt
+    #         if hasattr(request_settings, "logprobs"):
+    #             model_args["logprobs"] = request_settings.logprobs
+    #         return model_args
+
+    #     model_args["messages"] = messages or [{"role": "user", "content": prompt}]
+    #     if functions and request_settings.function_call is not None:
+    #         model_args["function_call"] = request_settings.function_call
+    #         if request_settings.function_call != "auto":
+    #             model_args["functions"] = [
+    #                 func
+    #                 for func in functions
+    #                 if func["name"] == request_settings.function_call
+    #             ]
+    #         else:
+    #             model_args["functions"] = functions
+    #     return model_args
+
     async def _send_embedding_request(
         self, texts: List[str], batch_size: Optional[int] = None
     ) -> ndarray:
@@ -168,10 +210,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 f"{type(self)} service failed to generate embeddings",
                 ex,
             ) from ex
-
-    @abstractmethod
-    def get_model_args(self) -> Dict[str, Any]:
-        """Return the model args for the specific openai api."""
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
