@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 

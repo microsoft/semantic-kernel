@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using static Extensions.UnitTests.PromptTemplate.Handlebars.HandlebarsPromptTemplateTestUtils;

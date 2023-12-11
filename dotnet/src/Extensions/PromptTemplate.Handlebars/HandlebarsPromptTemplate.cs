@@ -2,11 +2,13 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using HandlebarsDotNet;
+using HandlebarsDotNet.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars prompt template.
@@ -41,25 +43,50 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         arguments = this.GetVariables(arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
-        // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
-
-        // Add built-in system helpers
-        KernelSystemHelpers.Register(handlebarsInstance, arguments, this._options);
-
-        // Register any custom helpers
-        this._options.RegisterCustomHelpers?.Invoke(handlebarsInstance, arguments);
+        // Register kernel, system, and any custom helpers
+        this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
         return template(arguments);
     }
 
     #region private
-    private readonly ILoggerFactory _loggerFactory;
 
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
 
+    /// <summary>
+    /// Registers kernel, system, and any custom helpers.
+    /// </summary>
+    private void RegisterHelpers(
+        IHandlebars handlebarsInstance,
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken = default)
+    {
+        // Add helpers for kernel functions
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+
+        // Add SK's built-in system helpers
+        KernelSystemHelpers.Register(handlebarsInstance, arguments, this._options);
+
+        // Add Handlebars' built-in dotnet helpers
+        HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
+        {
+            options.PrefixSeparator = this._options.PrefixSeparator;
+            options.Categories = this._options.Categories;
+            options.UseCategoryPrefix = this._options.UseCategoryPrefix;
+            options.CustomHelperPaths = this._options.CustomHelperPaths;
+        });
+
+        // Add any custom helpers
+        this._options.RegisterCustomHelpers?.Invoke(handlebarsInstance, arguments);
+    }
+
+    /// <summary>
+    /// Gets the variables for the prompt template, including setting any default values from the prompt config.
+    /// </summary>
     private KernelArguments GetVariables(KernelArguments? arguments)
     {
         KernelArguments result = new();

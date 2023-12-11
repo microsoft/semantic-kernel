@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using HandlebarsDotNet.Helpers.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -41,11 +41,6 @@ public enum HandlebarsPlannerErrorCodes
 public sealed class HandlebarsPlanner
 {
     /// <summary>
-    /// Error message if kernel does not contain sufficient functions to create a plan.
-    /// </summary>
-    private const string InsufficientFunctionsError = "Additional helpers may be required";
-
-    /// <summary>
     /// Represents static options for all Handlebars Planner prompt templates.
     /// </summary>
     public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
@@ -57,15 +52,6 @@ public sealed class HandlebarsPlanner
         // Custom helpers
         RegisterCustomHelpers = HandlebarsPromptTemplateExtensions.RegisterCustomCreatePlanHelpers,
     };
-
-    /// <summary>
-    /// Gets the stopwatch used for measuring planning time.
-    /// </summary>
-    public Stopwatch Stopwatch { get; } = new();
-
-    private readonly HandlebarsPlannerConfig _config;
-
-    private HandlebarsPromptTemplateFactory _templateFactory { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -96,6 +82,22 @@ public sealed class HandlebarsPlanner
                 => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
             this, kernel, goal, logger, cancellationToken);
     }
+
+    #region private
+
+    /// <summary>
+    /// Gets the stopwatch used for measuring planning time.
+    /// </summary>
+    private Stopwatch Stopwatch { get; } = new();
+
+    private readonly HandlebarsPlannerConfig _config;
+
+    private HandlebarsPromptTemplateFactory _templateFactory { get; }
+
+    /// <summary>
+    /// Error message if kernel does not contain sufficient functions to create a plan.
+    /// </summary>
+    private const string InsufficientFunctionsError = "Additional helpers may be required";
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
@@ -281,4 +283,6 @@ public sealed class HandlebarsPlanner
             return Regex.Replace(m.Value, @"\s+", " ").Replace(" {", "{").Replace(" }", "}").Replace(" )", ")");
         });
     }
+
+    #endregion
 }

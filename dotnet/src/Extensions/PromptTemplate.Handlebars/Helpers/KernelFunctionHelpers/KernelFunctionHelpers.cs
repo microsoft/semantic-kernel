@@ -8,14 +8,12 @@ using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
 /// <summary>
 /// Utility class for registering kernel functions as helpers in Handlebars.
 /// </summary>
-public static class KernelFunctionHelpers
+internal static class KernelFunctionHelpers
 {
     /// <summary>
     /// Register all (default) or specific categories.

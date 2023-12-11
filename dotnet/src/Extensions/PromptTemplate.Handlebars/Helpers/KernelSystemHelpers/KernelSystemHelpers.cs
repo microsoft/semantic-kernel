@@ -8,36 +8,22 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Helpers;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.
 /// </summary>
-public static class KernelSystemHelpers
+internal static class KernelSystemHelpers
 {
     /// <summary>
-    /// Register all (default) or specific categories.
+    /// Register all (default) or specific categories of system helpers.
     /// </summary>
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-instance.</param>
     /// <param name="variables">Dictionary of variables maintained by the Handlebars context.</param>
     /// <param name="options">Handlebars promnpt template options.</param>
     public static void Register(IHandlebars handlebarsInstance, KernelArguments variables, HandlebarsPromptTemplateOptions options)
     {
-        RegisterHandlebarsDotNetHelpers(handlebarsInstance, options);
         RegisterSystemHelpers(handlebarsInstance, variables);
-    }
-
-    private static void RegisterHandlebarsDotNetHelpers(IHandlebars handlebarsInstance, HandlebarsPromptTemplateOptions helperOptions)
-    {
-        HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
-        {
-            options.PrefixSeparator = helperOptions.PrefixSeparator;
-            options.Categories = helperOptions.Categories;
-            options.UseCategoryPrefix = helperOptions.UseCategoryPrefix;
-            options.CustomHelperPaths = helperOptions.CustomHelperPaths;
-        });
     }
 
     /// <summary>
@@ -54,7 +40,7 @@ public static class KernelSystemHelpers
         // Should also consider standardizing the naming conventions for these helpers, i.e., 'Message' instead of 'message'
         handlebarsInstance.RegisterHelper("message", (writer, options, context, arguments) =>
         {
-            var parameters = arguments[0] as IDictionary<string, object>;
+            var parameters = (IDictionary<string, object>)arguments[0];
 
             // Verify that the message has a role
             if (!parameters!.ContainsKey("role"))
@@ -125,10 +111,7 @@ public static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            // Convert all the arguments to an array
-            var array = arguments.Select(a => a).ToList();
-
-            return array;
+            return arguments.ToArray();
         });
 
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>

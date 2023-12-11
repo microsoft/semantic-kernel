@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 /// <summary>
 /// Provides an <see cref="IPromptTemplateFactory"/> for the handlebars prompt template format.

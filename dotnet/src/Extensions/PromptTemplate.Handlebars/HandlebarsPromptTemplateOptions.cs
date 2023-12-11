@@ -5,7 +5,7 @@ using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.Options;
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
 /// <summary>
 /// Configuration for Handlebars helpers.
@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
 {
     // TODO [@teresaqhoang]: Issue #3947 Add Categories filter for KernelSystemHelpers (i.e., KernelHelperCategories)
-
-    /// <summary>
-    /// Default character to use for delimiting plugin name and function name in a Handlebars template.
-    /// </summary>
-    public string DefaultNameDelimiter { get; set; } = "-";
 
     /// <summary>
     /// Callback for registering custom helpers.
@@ -30,7 +25,7 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// <remarks>Categories only filters built-in dotnet helpers, the ones defined here: https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki.</remarks>
     public HandlebarsPromptTemplateOptions()
     {
-        this.PrefixSeparator = this.DefaultNameDelimiter;
+        this.PrefixSeparator = "-";
         this.Categories = new Category[] {
             Category.Math, // Enables basic math operations (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/Math)
             Category.String // Enables string manipulation (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/String)

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// <summary>
 /// Extension methods for the <see cref="HandlebarsPlanner"/> interface.
 /// </summary>
-public static class HandlebarsPlannerExtensions
+internal static class HandlebarsPlannerExtensions
 {
     /// <summary>
     /// Reads the prompt for the given file name.
