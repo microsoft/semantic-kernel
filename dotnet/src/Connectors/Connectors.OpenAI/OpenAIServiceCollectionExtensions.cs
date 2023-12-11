@@ -172,7 +172,6 @@ public static class OpenAIServiceCollectionExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
