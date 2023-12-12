@@ -714,7 +714,6 @@ internal abstract class ClientCore
         else if (string.Equals(message.Role.Label, "function", StringComparison.OrdinalIgnoreCase))
         {
             string? functionName = null;
-
             if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
             {
                 functionName = functionNameFromMetadata?.ToString();
