@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Nodes;
+using System;
 using System.Globalization;
 using System.Text.Json;
-using System;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
