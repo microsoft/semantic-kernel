@@ -75,8 +75,9 @@ public static class Example60_AdvancedMethodFunctions
     #region Custom Type
 
     /// <summary>
-    /// In order to use custom types, <see cref="TypeConverter"/> should be specified,
-    /// that will convert object instance to string representation.
+    /// In order to use custom types, a <see cref="TypeConverter"/> can be specified,
+    /// but is not required if the native serialization provided by default is sufficient.
+    /// A <see cref="TypeConverter"/> will convert object instance to string representation.
     /// </summary>
     /// <remarks>
     /// <see cref="TypeConverter"/> is used to represent complex object as meaningful string, so
