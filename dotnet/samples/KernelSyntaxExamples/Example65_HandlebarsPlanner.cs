@@ -58,10 +58,10 @@ public static class Example65_HandlebarsPlanner
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
