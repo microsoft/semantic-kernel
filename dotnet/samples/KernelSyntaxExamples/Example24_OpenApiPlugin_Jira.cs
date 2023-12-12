@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 // ReSharper disable once InconsistentNaming
 public static class Example24_OpenApiPlugin_Jira
@@ -108,4 +112,148 @@ public static class Example24_OpenApiPlugin_Jira
             });
         Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
     }
+
+    #region Example of authentication providers
+
+    /// <summary>
+    /// Retrieves authentication content (e.g. username/password, API key) via the provided delegate and
+    /// applies it to HTTP requests using the "basic" authentication scheme.
+    /// </summary>
+    public class BasicAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _credentials;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="BasicAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="credentials">Delegate for retrieving credentials.</param>
+        public BasicAuthenticationProvider(Func<Task<string>> credentials)
+        {
+            this._credentials = credentials;
+        }
+
+        /// <summary>
+        /// Applies the authentication content to the provided HTTP request message.
+        /// </summary>
+        /// <param name="request">The HTTP request message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
+        {
+            // Base64 encode
+            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
+    /// "bearer" authentication scheme.
+    /// </summary>
+    public class BearerAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _bearerToken;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="BearerAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="bearerToken">Delegate to retrieve the bearer token.</param>
+        public BearerAuthenticationProvider(Func<Task<string>> bearerToken)
+        {
+            this._bearerToken = bearerToken;
+        }
+
+        /// <summary>
+        /// Applies the token to the provided HTTP request message.
+        /// </summary>
+        /// <param name="request">The HTTP request message.</param>
+        public async Task AuthenticateRequestAsync(HttpRequestMessage request)
+        {
+            var token = await this._bearerToken().ConfigureAwait(false);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+    }
+
+    /// <summary>
+    /// Uses the Microsoft Authentication Library (MSAL) to authenticate HTTP requests.
+    /// </summary>
+    public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvider
+    {
+        /// <summary>
+        /// Creates an instance of the <see cref="InteractiveMsalAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="clientId">Client ID of the caller.</param>
+        /// <param name="tenantId">Tenant ID of the target resource.</param>
+        /// <param name="scopes">Requested scopes.</param>
+        /// <param name="redirectUri">Redirect URI.</param>
+        public InteractiveMsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+            : base(() => GetTokenAsync(clientId, tenantId, scopes, redirectUri))
+        {
+        }
+
+        /// <summary>
+        /// Gets an access token using the Microsoft Authentication Library (MSAL).
+        /// </summary>
+        /// <param name="clientId">Client ID of the caller.</param>
+        /// <param name="tenantId">Tenant ID of the target resource.</param>
+        /// <param name="scopes">Requested scopes.</param>
+        /// <param name="redirectUri">Redirect URI.</param>
+        /// <returns>Access token.</returns>
+        private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+        {
+            IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId)
+                .WithRedirectUri(redirectUri.ToString())
+                .WithTenantId(tenantId)
+                .Build();
+
+            IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
+            AuthenticationResult result;
+            try
+            {
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
+                    .ExecuteAsync().ConfigureAwait(false);
+            }
+            catch (MsalUiRequiredException)
+            {
+                // A MsalUiRequiredException happened on AcquireTokenSilent.
+                // This indicates you need to call AcquireTokenInteractive to acquire a token
+                result = await app.AcquireTokenInteractive(scopes)
+                    .ExecuteAsync().ConfigureAwait(false);
+            }
+
+            return result.AccessToken;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves authentication content (scheme and value) via the provided delegate and applies it to HTTP requests.
+    /// </summary>
+    public sealed class CustomAuthenticationProvider
+    {
+        private readonly Func<Task<string>> _header;
+        private readonly Func<Task<string>> _value;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="CustomAuthenticationProvider"/> class.
+        /// </summary>
+        /// <param name="header">Delegate for retrieving the header name.</param>
+        /// <param name="value">Delegate for retrieving the value.</param>
+        public CustomAuthenticationProvider(Func<Task<string>> header, Func<Task<string>> value)
+        {
+            this._header = header;
+            this._value = value;
+        }
+
+        /// <summary>
+        /// Applies the header and value to the provided HTTP request message.
+        /// </summary>
+        /// <param name="request">The HTTP request message.</param>
+        public async Task AuthenticateRequestAsync(HttpRequestMessage request)
+        {
+            var header = await this._header().ConfigureAwait(false);
+            var value = await this._value().ConfigureAwait(false);
+            request.Headers.Add(header, value);
+        }
+    }
+
+    #endregion
 }
