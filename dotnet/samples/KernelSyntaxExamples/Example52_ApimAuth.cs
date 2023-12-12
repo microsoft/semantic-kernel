@@ -50,7 +50,9 @@ public static class Example52_ApimAuth
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
-        builder.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient);
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            openAIClient: openAIClient);
         Kernel kernel = builder.Build();
 
         // Load semantic plugin defined with prompt templates
@@ -61,7 +63,7 @@ public static class Example52_ApimAuth
         // Run
         var result = await kernel.InvokeAsync(
             kernel.Plugins["FunPlugin"]["Excuses"],
-            new("I have no homework")
+            new() { ["input"] = "I have no homework" }
         );
         Console.WriteLine(result.GetValue<string>());
 
