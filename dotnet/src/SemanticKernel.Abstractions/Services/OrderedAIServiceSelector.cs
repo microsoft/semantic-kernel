@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -23,7 +24,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
     {
         // Allow the execution settings from the kernel arguments to take precedence
         var executionSettings = arguments.ExecutionSettings is not null
-             ? new List<PromptExecutionSettings> { arguments.ExecutionSettings }
+             ? new Dictionary<string, PromptExecutionSettings> { { arguments.ExecutionSettings.ServiceId ?? PromptExecutionSettings.DefaultServiceId, arguments.ExecutionSettings } }
              : function.ExecutionSettings;
         if (executionSettings is null || executionSettings.Count == 0)
         {
@@ -37,9 +38,13 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         else
         {
             PromptExecutionSettings? defaultExecutionSettings = null;
-            foreach (var settings in executionSettings)
+            foreach (var settings in executionSettings.Values)
             {
-                if (!string.IsNullOrEmpty(settings.ServiceId))
+                if (string.IsNullOrEmpty(settings.ServiceId) || settings.ServiceId!.Equals(PromptExecutionSettings.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    defaultExecutionSettings ??= settings;
+                }
+                else if (!string.IsNullOrEmpty(settings.ServiceId))
                 {
                     service = (kernel.Services as IKeyedServiceProvider)?.GetKeyedService<T>(settings.ServiceId);
                     if (service is not null)
@@ -48,7 +53,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                         return true;
                     }
                 }
-                else if (!string.IsNullOrEmpty(settings.ModelId))
+                if (!string.IsNullOrEmpty(settings.ModelId))
                 {
                     service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
                     if (service is not null)
@@ -56,11 +61,6 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                         serviceSettings = settings;
                         return true;
                     }
-                }
-                else
-                {
-                    // First execution settings with empty or null service id is the default
-                    defaultExecutionSettings ??= settings;
                 }
             }
 

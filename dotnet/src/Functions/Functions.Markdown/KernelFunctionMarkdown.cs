@@ -55,7 +55,7 @@ public static class KernelFunctionMarkdown
                         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
                         if (executionSettings is not null)
                         {
-                            promptFunctionModel.ExecutionSettings.Add(executionSettings);
+                            promptFunctionModel.ExecutionSettings.Add(executionSettings.ServiceId ?? PromptExecutionSettings.DefaultServiceId, executionSettings);
                         }
                         break;
                 }

@@ -21,8 +21,9 @@ public sealed class PromptTemplateConfig
 
     /// <summary>Lazily-initialized input variables.</summary>
     private List<InputVariable>? _inputVariables;
-    /// <summary>Lazily-initialized execution settings.</summary>
-    private List<PromptExecutionSettings>? _executionSettings;
+
+    /// <summary>Lazily-initialized execution settings. The key is the service id or "default" for the default execution settings.</summary>
+    private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
     /// Name of the kernel function.
@@ -72,7 +73,7 @@ public sealed class PromptTemplateConfig
     /// Prompt execution settings.
     /// </summary>
     [JsonPropertyName("execution_settings")]
-    public List<PromptExecutionSettings> ExecutionSettings
+    public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
         get => this._executionSettings ??= new();
         set
@@ -81,6 +82,11 @@ public sealed class PromptTemplateConfig
             this._executionSettings = value;
         }
     }
+
+    /// <summary>
+    /// Default execution settings.
+    /// </summary>
+    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings is not null && this._executionSettings.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) ? settings : null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -95,6 +101,19 @@ public sealed class PromptTemplateConfig
     public PromptTemplateConfig(string template)
     {
         this.Template = template;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="PromptExecutionSettings.ServiceId"/> is used as the key if provided. Otherwise, the key is "default".
+    /// </remarks>
+    /// <param name="settings"></param>
+    public void AddExecutionSettings(PromptExecutionSettings settings)
+    {
+        Verify.NotNull(settings);
+        this.ExecutionSettings[settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId] = settings;
     }
 
     /// <summary>
@@ -114,6 +133,20 @@ public sealed class PromptTemplateConfig
         }
 
         return Array.Empty<KernelParameterMetadata>();
+    }
+
+    /// <summary>
+    /// Set the service id for each execution settings if not already set.
+    /// </summary>
+    private void InitServiceIds()
+    {
+        if (this._executionSettings is not null)
+        {
+            foreach (var keyValue in this.ExecutionSettings)
+            {
+                keyValue.Value.ServiceId ??= keyValue.Key;
+            }
+        }
     }
 
     /// <summary>
@@ -142,6 +175,12 @@ public sealed class PromptTemplateConfig
     public static PromptTemplateConfig FromJson(string json)
     {
         var result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
+
+        if (result is not null)
+        {
+            result.InitServiceIds();
+        }
+
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }
