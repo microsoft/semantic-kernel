@@ -21,14 +21,14 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// The higher the temperature, the more random the completion.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0;
+    public double Temperature { get; set; }
 
     /// <summary>
     /// TopP controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; } = 0;
+    public double TopP { get; set; }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -36,7 +36,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// model's likelihood to talk about new topics.
     /// </summary>
     [JsonPropertyName("presence_penalty")]
-    public double PresencePenalty { get; set; } = 0;
+    public double PresencePenalty { get; set; }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -44,7 +44,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
-    public double FrequencyPenalty { get; set; } = 0;
+    public double FrequencyPenalty { get; set; }
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
@@ -56,7 +56,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
-    public IList<string>? StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string>? StopSequences { get; set; }
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.
@@ -96,7 +96,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     [JsonPropertyName("token_selection_biases")]
-    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
+    public IDictionary<int, int>? TokenSelectionBiases { get; set; }
 
     /// <summary>
     /// Gets or sets the behavior for how function calls are handled.

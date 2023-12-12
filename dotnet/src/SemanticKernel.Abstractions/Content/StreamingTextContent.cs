@@ -3,13 +3,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.TextGeneration;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
 /// </summary>
-public class StreamingTextContent : StreamingContentBase
+public class StreamingTextContent : StreamingKernelContent
 {
     /// <summary>
     /// Text associated to the update

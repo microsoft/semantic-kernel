@@ -18,8 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -546,9 +544,12 @@ internal abstract class ClientCore
             DeploymentName = deploymentOrModelName
         };
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -617,9 +618,12 @@ internal abstract class ClientCore
                 break;
         }
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -666,7 +670,7 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static ChatMessageContentItem GetChatMessageContentItem(ContentBase item)
+    private static ChatMessageContentItem GetChatMessageContentItem(KernelContent item)
     {
         return item switch
         {
