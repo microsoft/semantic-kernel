@@ -39,7 +39,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
@@ -58,7 +58,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGeneration(azureOpenAIConfiguration.DeploymentName,
+        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(azureOpenAIConfiguration.DeploymentName,
             azureOpenAIConfiguration.Endpoint,
             azureOpenAIConfiguration.ApiKey);
 
