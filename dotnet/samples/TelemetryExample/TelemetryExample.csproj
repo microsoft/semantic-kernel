@@ -9,13 +9,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait" -->
-    <NoWarn>CA1050;CA1707;CA2007;VSTHRD111,SKEXP0050,SKEXP0054,SKEXP0060</NoWarn>
+    <NoWarn>CA1050;CA1707;CA2007;CS1591;VSTHRD111,SKEXP0050,SKEXP0054,SKEXP0060</NoWarn>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 
   <ItemGroup>
