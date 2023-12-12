@@ -204,11 +204,11 @@ public abstract class KernelFunction
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
-        this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
+        this.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.

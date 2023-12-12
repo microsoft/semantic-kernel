@@ -152,8 +152,8 @@ public class KernelTests
         };
 
         // Act
-        IAsyncEnumerable<StreamingContentBase> enumerable = kernel.InvokeStreamingAsync<StreamingContentBase>(function);
-        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        IAsyncEnumerable<StreamingKernelContent> enumerable = kernel.InvokeStreamingAsync<StreamingKernelContent>(function);
+        IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
@@ -183,8 +183,8 @@ public class KernelTests
         };
 
         // Act
-        IAsyncEnumerable<StreamingContentBase> enumerable = kernel.InvokeStreamingAsync<StreamingContentBase>(functions["GetAnyValue"]);
-        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        IAsyncEnumerable<StreamingKernelContent> enumerable = kernel.InvokeStreamingAsync<StreamingKernelContent>(functions["GetAnyValue"]);
+        IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
@@ -625,7 +625,7 @@ public class KernelTests
 
         var chunkCount = 0;
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel, variables))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingKernelContent>(kernel, variables))
         {
             chunkCount++;
         }

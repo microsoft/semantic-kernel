@@ -160,7 +160,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        IAsyncEnumerable<StreamingContentBase>? asyncReference = null;
+        IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
         if (aiService is IChatCompletionService chatCompletion)
         {
             asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);

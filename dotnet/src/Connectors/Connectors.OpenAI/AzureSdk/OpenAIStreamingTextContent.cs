@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 

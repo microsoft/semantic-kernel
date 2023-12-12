@@ -6,26 +6,24 @@ classDiagram
     direction LR
 
     namespace Microsoft_SemanticKernel {
-        class ContentBase {
+        class KernelContent {
             <<abstract>>
             +InnerContent : Object
             +ModelId : String
             +Metadata : IDictionary
-            +string(modelContent : ContentBase)
+            +string(modelContent : KernelContent)
         }
 
-        class StreamingContentBase {
+        class StreamingKernelContent {
             <<abstract>>
             +ChoiceIndex : Integer
             +InnerContent : Object
             +Metadata : IDictionary
             +ToString()
             +ToByteArray()
-            +string(modelContent : StreamingContentBase)
+            +string(modelContent : StreamingKernelContent)
         }
-    }
 
-    namespace Microsoft_SemanticKernel_TextGeneration {
         class TextContent {
             +Text : String
             +Encoding : Encoding
@@ -38,20 +36,13 @@ classDiagram
             +ToString()
             +ToByteArray()
         }
-    }
 
-    namespace Microsoft_SemanticKernel_ChatCompletion {
         class ChatMessageContent {
             +Role : AuthorRole
             +Content : String
             +Items : ChatMessageContentItemCollection
             +Encoding : Encoding
             +ToString()
-        }
-
-        class ChatMessageContentItemCollection {
-            +Count
-            +Add(item: ContentBase)
         }
 
         class StreamingChatMessageContent {
@@ -62,19 +53,24 @@ classDiagram
             +ToByteArray()
         }
 
-        class ChatHistory {
-            +AddMessage(chatMessageContent : ChatMessageContent)
-            +AddMessage(authorRole : AuthorRole, item : ChatMessageContentItem, encoding : Encoding, metadata : IDictionary)
-            +AddUserMessage(item : ChatMessageContentItem)
-            +AddAssistantMessage(item : ChatMessageContentItem)
-            +AddSystemMessage(item : ChatMessageContentItem)
-        }
-    }
-
-    namespace Microsoft_SemanticKernel_TextToImage {
         class ImageContent {
             +Uri : Uri
             +ToString()
+        }
+    }
+
+    namespace Microsoft_SemanticKernel_ChatCompletion {
+        class ChatMessageContentItemCollection {
+            +Count
+            +Add(item: KernelContent)
+        }
+
+        class ChatHistory {
+            +AddMessage(chatMessageContent : ChatMessageContent)
+            +AddMessage(authorRole : AuthorRole, content : string, encoding : Encoding, metadata : IDictionary)
+            +AddUserMessage(content : string)
+            +AddAssistantMessage(content : string)
+            +AddSystemMessage(content : string)
         }
     }
 
@@ -114,15 +110,15 @@ classDiagram
         }
     }
 
-    ContentBase <|-- TextContent
-    ContentBase <|-- ImageContent
-    ContentBase <|-- ChatMessageContent
-    ContentBase *-- ChatMessageContentItemCollection
+    KernelContent <|-- TextContent
+    KernelContent <|-- ImageContent
+    KernelContent <|-- ChatMessageContent
+    KernelContent *-- ChatMessageContentItemCollection
     ChatMessageContent <|-- OpenAIChatMessageContent
     ChatMessageContent <|-- AzureOpenAIWithDataChatMessageContent
-    StreamingContentBase <|-- StreamingTextContent
+    StreamingKernelContent <|-- StreamingTextContent
     StreamingTextContent <|-- OpenAIStreamingTextContent
-    StreamingContentBase <|-- StreamingChatMessageContent
+    StreamingKernelContent <|-- StreamingChatMessageContent
     StreamingChatMessageContent <|-- OpenAIStreamingChatMessageContent
     StreamingChatMessageContent <|-- AzureOpenAIWithDataStreamingChatMessageContent
     ChatHistory <|-- OpenAIChatHistory

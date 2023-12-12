@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.SemanticKernel.TextToImage;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents image content.
 /// </summary>
-public sealed class ImageContent : ContentBase
+public sealed class ImageContent : KernelContent
 {
     /// <summary>
     /// The URI of image.
