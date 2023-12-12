@@ -17,7 +17,7 @@ internal static partial class KernelFunctionLogMessages
     /// </summary>
     [LoggerMessage(
         EventId = 0,
-        Level = LogLevel.Trace,
+        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
         Message = "Function {FunctionName} invoking. Arguments: {Arguments}.")]
     public static partial void LogFunctionInvokingWithArguments(
         this ILogger logger,
@@ -38,7 +38,7 @@ internal static partial class KernelFunctionLogMessages
     /// </summary>
     [LoggerMessage(
         EventId = 2,
-        Level = LogLevel.Trace,
+        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
         Message = "Function succeeded. Result: {Result}")]
     public static partial void LogFunctionInvokedSuccess(this ILogger logger, object? result);
 
@@ -70,10 +70,21 @@ internal static partial class KernelFunctionLogMessages
     /// </summary>
     [LoggerMessage(
         EventId = 5,
-        Level = LogLevel.Trace,
+        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
         Message = "Function {FunctionName} streaming. Arguments: {Arguments}.")]
     public static partial void LogFunctionStreamingInvokingWithArguments(
         this ILogger logger,
         string functionName,
         KernelArguments arguments);
+
+    /// <summary>
+    /// Logs <see cref="KernelFunction"/> streaming complete.
+    /// </summary>
+    [LoggerMessage(
+        EventId = 6,
+        Level = LogLevel.Information,
+        Message = "Function streaming completed. Duration: {Duration}s.")]
+    public static partial void LogFunctionStreamingComplete(
+        this ILogger logger,
+        double duration);
 }

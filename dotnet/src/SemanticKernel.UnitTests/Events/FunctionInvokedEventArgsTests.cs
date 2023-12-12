@@ -2,7 +2,6 @@
 
 using System.Globalization;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Events;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Events;

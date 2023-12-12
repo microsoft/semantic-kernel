@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
 // ReSharper disable once InconsistentNaming
@@ -31,7 +31,7 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
             return;
         }
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.AddConsole());
         builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,

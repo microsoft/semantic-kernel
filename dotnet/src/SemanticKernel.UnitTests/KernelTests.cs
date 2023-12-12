@@ -12,9 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
@@ -72,7 +70,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IKernelPlugin plugin = new Kernel().ImportPluginFromType<MyPlugin>();
+        KernelPlugin plugin = new Kernel().ImportPluginFromType<MyPlugin>();
 
         // Assert
         Assert.Equal(3, plugin.Count());
@@ -321,7 +319,7 @@ public class KernelTests
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
         Kernel kernel = builder.Build();
 
@@ -503,7 +501,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
         var kernel = new Kernel();
-        kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
 
         //Act
         var result = await kernel.InvokeAsync("plugin", "function");
@@ -584,7 +582,7 @@ public class KernelTests
 #pragma warning restore CA2000
             .AddSingleton(loggerFactory.Object)
             .BuildServiceProvider();
-        var plugin = new KernelPlugin("plugin1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
         Kernel kernel1 = new(serviceProvider, plugins);
         kernel1.Data["key"] = "value";
@@ -618,7 +616,7 @@ public class KernelTests
         var mockTextCompletion = this.SetupStreamingMocks(
             new StreamingTextContent("chunk1"),
             new StreamingTextContent("chunk2"));
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
         Kernel kernel = builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";

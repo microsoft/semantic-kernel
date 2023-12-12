@@ -3,7 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
 
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
@@ -25,7 +24,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// The main input parameter name.
     /// </summary>
-    public const string InputParameterName = "input";
+    internal const string InputParameterName = "input";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.

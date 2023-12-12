@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Services;
 
@@ -16,17 +16,22 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
     public static OrderedAIServiceSelector Instance { get; } = new();
 
     /// <inheritdoc/>
-    public (T?, PromptExecutionSettings?) SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class, IAIService
+    public bool TrySelectAIService<T>(
+        Kernel kernel, KernelFunction function, KernelArguments arguments,
+        [NotNullWhen(true)] out T? service,
+        out PromptExecutionSettings? serviceSettings) where T : class, IAIService
     {
-        var executionSettings = function.ExecutionSettings;
+        // Allow the execution settings from the kernel arguments to take precedence
+        var executionSettings = arguments.ExecutionSettings is not null
+             ? new List<PromptExecutionSettings> { arguments.ExecutionSettings }
+             : function.ExecutionSettings;
         if (executionSettings is null || executionSettings.Count == 0)
         {
-            var service = kernel.Services is IKeyedServiceProvider ?
-                kernel.GetAllServices<T>().LastOrDefault() : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
-                kernel.Services.GetService<T>();
+            service = GetAnyService(kernel);
             if (service is not null)
             {
-                return (service, null);
+                serviceSettings = null;
+                return true;
             }
         }
         else
@@ -36,20 +41,20 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             {
                 if (!string.IsNullOrEmpty(settings.ServiceId))
                 {
-                    var service = kernel.Services is IKeyedServiceProvider ?
-                        kernel.Services.GetKeyedService<T>(settings.ServiceId) :
-                        null;
+                    service = (kernel.Services as IKeyedServiceProvider)?.GetKeyedService<T>(settings.ServiceId);
                     if (service is not null)
                     {
-                        return (service, settings);
+                        serviceSettings = settings;
+                        return true;
                     }
                 }
                 else if (!string.IsNullOrEmpty(settings.ModelId))
                 {
-                    var service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
+                    service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
                     if (service is not null)
                     {
-                        return (service, settings);
+                        serviceSettings = settings;
+                        return true;
                     }
                 }
                 else
@@ -61,28 +66,29 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
             if (defaultExecutionSettings is not null)
             {
-                return (kernel.GetRequiredService<T>(), defaultExecutionSettings);
+                service = GetAnyService(kernel);
+                if (service is not null)
+                {
+                    serviceSettings = defaultExecutionSettings;
+                    return true;
+                }
             }
         }
 
-        var serviceIds = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ServiceId).ToArray()) : null;
-        var modelIds = executionSettings is not null ? string.Join("|", executionSettings.Select(model => model.ModelId).ToArray()) : null;
-        var message = new StringBuilder($"Required service of type {typeof(T)} not registered.");
-        if (!string.IsNullOrEmpty(serviceIds))
-        {
-            message.Append($" Expected serviceIds: {serviceIds}.");
-        }
-        if (!string.IsNullOrEmpty(modelIds))
-        {
-            message.Append($" Expected modelIds: {modelIds}.");
-        }
-        throw new KernelException(message.ToString());
+        service = null;
+        serviceSettings = null;
+        return false;
+
+        // Get's a non-required service, regardless of service key
+        static T? GetAnyService(Kernel kernel) =>
+            kernel.Services is IKeyedServiceProvider ?
+                kernel.GetAllServices<T>().LastOrDefault() : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
+                kernel.Services.GetService<T>();
     }
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
     {
-        var services = kernel.GetAllServices<T>();
-        foreach (var service in services)
+        foreach (var service in kernel.GetAllServices<T>())
         {
             string? serviceModelId = service.GetModelId();
             if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
@@ -91,6 +97,6 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             }
         }
 
-        return default;
+        return null;
     }
 }
