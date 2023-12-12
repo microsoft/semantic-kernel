@@ -15,6 +15,7 @@ ExampleOptions = Union[Dict[str, Any], Iterable[Dict[str, Any]]]
 
 
 class GooglePalmRequestSettings(AIRequestSettings):
+    ai_model_id: Optional[str] = Field(None, serialization_alias="model")
     temperature: float = Field(0.0, ge=0.0, le=1.0)
     top_p: float = 1.0
     top_k: float = 1.0
