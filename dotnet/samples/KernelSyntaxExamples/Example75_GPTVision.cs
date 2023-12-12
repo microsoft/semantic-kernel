@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.TextToImage;
  * This example shows how to use GPT Vision model with different content types (text and image).
  */
 // ReSharper disable once InconsistentNaming
-public static class Example74_GPTVision
+public static class Example75_GPTVision
 {
     public static async Task RunAsync()
     {
