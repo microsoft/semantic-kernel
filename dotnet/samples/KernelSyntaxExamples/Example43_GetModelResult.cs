@@ -24,7 +24,7 @@ public static class Example43_GetModelResult
         KernelFunction myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         // Invoke function through kernel
-        FunctionResult result = await kernel.InvokeAsync(myFunction, new("travel"));
+        FunctionResult result = await kernel.InvokeAsync(myFunction, new() { ["input"] = "travel" });
 
         // Display results
         Console.WriteLine(result.GetValue<string>());
