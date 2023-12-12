@@ -72,8 +72,7 @@ public sealed class TextMemoryPlugin
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        if (loggerFactory is not null &&
-            loggerFactory.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
+        if (loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Debug))
         {
             logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
@@ -155,8 +154,7 @@ public sealed class TextMemoryPlugin
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        if (loggerFactory is not null &&
-            loggerFactory.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
+        if (loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Debug))
         {
             logger.LogDebug("Saving memory to collection '{0}'", collection);
@@ -182,8 +180,7 @@ public sealed class TextMemoryPlugin
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        if (loggerFactory is not null &&
-            loggerFactory.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
+        if (loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Debug))
         {
             logger.LogDebug("Removing memory from collection '{0}'", collection);
