@@ -81,8 +81,8 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
         // Add any custom helpers
         this._options.RegisterCustomHelpers?.Invoke(
-            (string name, HandlebarsReturnHelper helper) 
-                => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, name, helper),
+            (string name, HandlebarsReturnHelper customHelper)
+                => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, name, customHelper),
             this._options,
             arguments);
     }

@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars.Helpers;
 
@@ -186,15 +187,20 @@ internal static class KernelFunctionHelpers
         FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
-        // If return type is complex, serialize the object so it can be deserialized with expected class properties.
-        // i.e., class properties can be different if JsonPropertyName = 'id' and class property is 'Id'.
-        var returnType = function.Metadata.ReturnParameter.ParameterType.TryGetGenericResultType(out var taskResultType) ? taskResultType : function.Metadata.ReturnParameter.ParameterType;
-        var resultAsObject = result.GetValue<object?>();
+        return ParseResult(result);
+    }
 
-        if (returnType is not null && !(returnType.IsPrimitive || returnType == typeof(string)))
+    /// <summary>
+    /// Parse the <see cref="FunctionResult"/> into an object, extracting the appropriate value if the return type is <see cref="OpenAIChatMessageContent"/>.
+    /// </summary>
+    /// <param name="result">Function result.</param>
+    /// <returns>Deserialized object</returns>
+    private static object? ParseResult(FunctionResult result)
+    {
+        var resultAsObject = result.GetValue<object?>();
+        if (result.ValueType is not null && resultAsObject is not null && result.ValueType == typeof(OpenAIChatMessageContent))
         {
-            var serializedResult = JsonSerializer.Serialize(resultAsObject);
-            resultAsObject = JsonSerializer.Deserialize(serializedResult, returnType);
+            resultAsObject = ((OpenAIChatMessageContent)resultAsObject).Content;
         }
 
         return resultAsObject;

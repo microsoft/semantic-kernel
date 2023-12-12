@@ -62,9 +62,4 @@ internal static class KernelHelpersUtils
             double.TryParse(input, out _) ||
             decimal.TryParse(input, out _);
     }
-
-    internal static void HandleRegisterHelperSafeCallback(string name, HandlebarsReturnHelper helper)
-    {
-        throw new NotImplementedException();
-    }
 }

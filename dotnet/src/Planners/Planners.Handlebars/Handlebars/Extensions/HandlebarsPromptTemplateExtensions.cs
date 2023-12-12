@@ -12,18 +12,18 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 internal sealed class HandlebarsPromptTemplateExtensions
 {
     public static void RegisterCustomCreatePlanHelpers(
-        RegisterHelperSafeCallback registerHelperSafe,
+        RegisterHelperCallback registerHelper,
         HandlebarsPromptTemplateOptions options,
         KernelArguments executionContext
     )
     {
-        registerHelperSafe("getSchemaTypeName", (Context context, Arguments arguments) =>
+        registerHelper("getSchemaTypeName", (Context context, Arguments arguments) =>
         {
             KernelParameterMetadata parameter = (KernelParameterMetadata)arguments[0];
             return parameter.GetSchemaTypeName();
         });
 
-        registerHelperSafe("getSchemaReturnTypeName", (Context context, Arguments arguments) =>
+        registerHelper("getSchemaReturnTypeName", (Context context, Arguments arguments) =>
         {
             KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
             var functionName = arguments[1].ToString();

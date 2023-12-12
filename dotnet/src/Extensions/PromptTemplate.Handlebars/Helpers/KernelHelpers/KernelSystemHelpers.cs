@@ -118,7 +118,7 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            // Create array from start to end (inclusive)
+            // Create list with numbers from start to end (inclusive)
             var start = int.Parse(arguments[0].ToString(), kernel.Culture);
             var end = int.Parse(arguments[1].ToString(), kernel.Culture) + 1;
             var count = end - start;

@@ -19,7 +19,7 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// </summary>
     /// <param name="name">The name of the helper.</param>
     /// <param name="helper">The helper to register.</param>
-    public delegate void RegisterHelperSafeCallback(string name, HandlebarsReturnHelper helper);
+    public delegate void RegisterHelperCallback(string name, HandlebarsReturnHelper helper);
 
     /// <summary>
     /// Callback for registering custom helpers.
@@ -27,13 +27,13 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// <remarks>
     /// This callback allows users to register their custom helpers while ensuring
     /// that they don't conflict with existing system or custom helpers. Users should
-    /// use the provided `RegisterHelperSafe` callback when registering their custom helpers.
+    /// use the provided `registerHelper` callback when registering their custom helpers.
     /// </remarks>
     /// <example>
     /// <code>
-    /// KernelSystemHelpers.RegisterCustomHelpers = (registerHelperSafe, options, variables) =>
+    /// HandlebarsPromptTemplateOptions.RegisterCustomHelpers = (RegisterHelperCallback registerHelper, HandlebarsPromptTemplateOptions options, KernelArguments variables) =>
     /// {
-    ///     registerHelperSafe("customHelper", (Context context, Arguments arguments) =>
+    ///     registerHelper("customHelper", (Context context, Arguments arguments) =>
     ///     {
     ///         // Custom helper logic
     ///     });
@@ -42,11 +42,11 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// </example>
     /// <value>
     /// The callback takes three parameters:
-    /// 1. A callback representing the `RegisterHelperSafe` method to register new helpers.
+    /// 1. A callback representing the `RegisterHelperSafe` method to register new helpers with built-in conflict handling.
     /// 2. A <see cref="HandlebarsPromptTemplateOptions"/> representing the configuration for helpers.
     /// 3. A <see cref="KernelArguments"/> instance containing variables maintained by the Handlebars context.
     /// </value>
-    public Action<RegisterHelperSafeCallback, HandlebarsPromptTemplateOptions, KernelArguments>? RegisterCustomHelpers { get; set; }
+    public Action<RegisterHelperCallback, HandlebarsPromptTemplateOptions, KernelArguments>? RegisterCustomHelpers { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateOptions"/> class.

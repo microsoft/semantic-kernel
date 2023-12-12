@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using static Extensions.UnitTests.PromptTemplate.Handlebars.HandlebarsPromptTemplateTestUtils;
 
@@ -131,16 +130,16 @@ public sealed class HandlebarsPromptTemplateTests
 
         var options = new HandlebarsPromptTemplateOptions
         {
-            RegisterCustomHelpers = (handlebars, args) =>
+            RegisterCustomHelpers = (registerHelper, options, variables) =>
             {
-                handlebars.RegisterHelper("customHelper", (writer, context, parameters) =>
+                registerHelper("customHelper", (Context context, Arguments arguments) =>
                 {
-                    writer.Write("Custom Helper Output");
+                    return "Custom Helper Output";
                 });
             }
         };
 
-        this._factory = new(TestConsoleLogger.LoggerFactory, options);
+        this._factory = new HandlebarsPromptTemplateFactory(options);
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
