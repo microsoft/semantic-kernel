@@ -28,7 +28,7 @@ internal static class OpenApiTypeConverter
         {
             if (s_converters.TryGetValue(type, out var converter))
             {
-                var result = converter(name, type, argument);
+                var result = converter(argument);
                 return result is null
                     ? throw new ArgumentOutOfRangeException(name, argument, $"Argument type '{argument.GetType()}' is not convertible to parameter type '{type}'.")
                     : result;
@@ -49,11 +49,9 @@ internal static class OpenApiTypeConverter
     /// <summary>
     /// Converts the given argument to a JsonNode of type string.
     /// </summary>
-    /// <param name="name">The parameter name.</param>
-    /// <param name="type">The parameter type.</param>
     /// <param name="argument">The argument to be converted.</param>
     /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertString(string name, string type, object argument)
+    private static JsonNode? ConvertString(object argument)
     {
         return JsonValue.Create(argument);
     }
@@ -61,11 +59,9 @@ internal static class OpenApiTypeConverter
     /// <summary>
     /// Converts the given argument to a JsonNode of type array.
     /// </summary>
-    /// <param name="name">The parameter name.</param>
-    /// <param name="type">The parameter type.</param>
     /// <param name="argument">The argument to be converted.</param>
     /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertArray(string name, string type, object argument)
+    private static JsonNode? ConvertArray(object argument)
     {
         return argument switch
         {
@@ -77,11 +73,9 @@ internal static class OpenApiTypeConverter
     /// <summary>
     /// Converts the given argument to a JsonNode of type integer.
     /// </summary>
-    /// <param name="name">The parameter name.</param>
-    /// <param name="type">The parameter type.</param>
     /// <param name="argument">The argument to be converted.</param>
     /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertInteger(string name, string type, object argument)
+    private static JsonNode? ConvertInteger(object argument)
     {
         return argument switch
         {
@@ -101,11 +95,9 @@ internal static class OpenApiTypeConverter
     /// <summary>
     /// Converts the given argument to a JsonNode of type boolean.
     /// </summary>
-    /// <param name="name">The parameter name.</param>
-    /// <param name="type">The parameter type.</param>
     /// <param name="argument">The argument to be converted.</param>
     /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertBoolean(string name, string type, object argument)
+    private static JsonNode? ConvertBoolean(object argument)
     {
         return argument switch
         {
@@ -118,11 +110,9 @@ internal static class OpenApiTypeConverter
     /// <summary>
     /// Converts the given argument to a JsonNode of type number.
     /// </summary>
-    /// <param name="name">The parameter name.</param>
-    /// <param name="type">The parameter type.</param>
     /// <param name="argument">The argument to be converted.</param>
     /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertNumber(string name, string type, object argument)
+    private static JsonNode? ConvertNumber(object argument)
     {
         return argument switch
         {
@@ -146,7 +136,7 @@ internal static class OpenApiTypeConverter
     /// <summary>
     /// A dictionary mapping OpenApi types to their respective converter functions.
     /// </summary>
-    private static readonly Dictionary<string, Func<string, string, object, JsonNode?>> s_converters = new()
+    private static readonly Dictionary<string, Func<object, JsonNode?>> s_converters = new()
     {
         { "number", ConvertNumber },
         { "boolean", ConvertBoolean },

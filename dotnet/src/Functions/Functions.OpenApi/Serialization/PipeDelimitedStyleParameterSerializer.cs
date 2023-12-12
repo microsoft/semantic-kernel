@@ -46,7 +46,7 @@ internal static class PipeDelimitedStyleParameterSerializer
     {
         if (argument is not JsonArray array)
         {
-            throw new ArgumentOutOfRangeException(parameter.Name, argument, $"Unexpected argument type '{argument.GetType()} for parameter type '{parameter.Type}'.");
+            throw new ArgumentException(parameter.Name, $"Unexpected argument type '{argument.GetType()} with value '{argument}' for parameter type '{parameter.Type}'.");
         }
 
         if (parameter.Expand)
