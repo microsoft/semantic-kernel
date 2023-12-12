@@ -528,6 +528,33 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
+    [Fact]
+    public async Task InvokeAsyncWithPromptRenderedHooksExecutesModifiedPromptAsync()
+    {
+        // Arrange
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+
+        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
+        {
+            e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
+        }
+
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service", mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+        kernel.PromptRendered += MyRenderedHandler;
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
+        // Act
+        var result1 = await kernel.InvokeAsync(function);
+
+        // Assert
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles
     private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
