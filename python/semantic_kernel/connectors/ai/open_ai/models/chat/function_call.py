@@ -1,6 +1,6 @@
 """Class to hold chat messages."""
 import json
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.sk_pydantic import SKBaseModel
@@ -11,7 +11,7 @@ class FunctionCall(SKBaseModel):
 
     name: str
     arguments: str
-    tool_call_id: str
+    tool_call_id: Optional[str] = None
 
     def parse_arguments(self) -> Dict[str, str]:
         """Parse the arguments into a dictionary."""

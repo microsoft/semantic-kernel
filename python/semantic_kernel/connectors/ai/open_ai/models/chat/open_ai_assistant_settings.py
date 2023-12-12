@@ -20,7 +20,7 @@ class OpenAIAssistantSettings(SKBaseModel):
         with open(path, "r") as file:
             yaml_data = yaml.safe_load(file)
             return cls(
-                name=yaml_data["name"],
-                description=yaml_data["description"],
-                instructions=yaml_data["instructions"],
+                name=yaml_data.get("name", None),
+                description=yaml_data.get("description", None),
+                instructions=yaml_data.get("instructions", None),
             )

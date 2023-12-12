@@ -58,7 +58,6 @@ class WebSearchEngineSkill:
 async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
     assistant = sk_oai.OpenAIChatCompletion(
         ai_model_id="gpt-3.5-turbo-1106",
-        api_key=api_key,
         async_client=client,
         is_assistant=True,
     )

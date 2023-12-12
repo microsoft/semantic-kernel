@@ -13,11 +13,11 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_setting
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-
+# Note: this Kernel examples requires an OpenAI API key. Azure OpenAI doesn't currently
+# support Assistants. When Azure OpenAI supports Assistants, this example will be updated.
 async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
     assistant = sk_oai.OpenAIChatCompletion(
         ai_model_id="gpt-3.5-turbo-1106",
-        api_key=api_key,
         async_client=client,
         is_assistant=True,
     )

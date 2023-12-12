@@ -12,5 +12,5 @@ class OpenAIToolOutput(SKBaseModel):
     output from the function call.
     """
 
-    tool_call_id: str = Field(default=None, min_length=1, init_var=False)
-    output: str = Field(default=None, min_length=1, init_var=False)
+    tool_call_id: str = Field(..., min_length=1, init_var=False)
+    output: str = Field(..., min_length=1, init_var=False)

@@ -32,7 +32,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     total_tokens: int = Field(0, init_var=False)
 
     # OpenAI Assistant related fields
-    is_assistant: bool = Field(False, init_var=False)
+    is_assistant: bool = Field(False)
     assistant_id: str = Field(None, init_var=False)
     thread_id: str = Field(None, init_var=False)
     run: Run = Field(None, init_var=False)

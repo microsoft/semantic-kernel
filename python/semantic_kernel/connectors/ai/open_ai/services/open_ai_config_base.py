@@ -50,7 +50,7 @@ class OpenAIConfigBase(OpenAIHandler):
             default_headers {Optional[Mapping[str, str]]} -- Default headers
                 for HTTP requests. (Optional)
             log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
-            is_assistant {Optional[bool]} -- Whether this is an assistant. (Optional)
+            is_assistant {bool} -- Whether this is an assistant. Defaults to false.
         """
 
         # Merge APP_INFO into the headers if it exists

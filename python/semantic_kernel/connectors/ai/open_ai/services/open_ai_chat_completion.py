@@ -145,5 +145,5 @@ class OpenAIChatCompletion(
             org_id=settings.get("org_id"),
             default_headers=settings.get("default_headers"),
             log=settings.get("log"),
-            is_assistant=settings.get("is_assistant"),
+            is_assistant=settings.get("is_assistant", False),
         )
