@@ -43,9 +43,9 @@ public static class Example26_AADAuth
         Kernel kernel = Kernel.CreateBuilder()
             // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
             .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                new DefaultAzureCredential(authOptions))
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                credentials: new DefaultAzureCredential(authOptions))
             .Build();
 
         IChatCompletionService chatGPT = kernel.GetRequiredService<IChatCompletionService>();

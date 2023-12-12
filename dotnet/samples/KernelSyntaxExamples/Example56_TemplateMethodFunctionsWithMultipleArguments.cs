@@ -35,10 +35,10 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
         builder.Services.AddLogging(c => c.AddConsole());
         builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,
-            modelId: modelId,
             endpoint: endpoint,
             serviceId: serviceId,
-            apiKey: apiKey);
+            apiKey: apiKey,
+            modelId: modelId);
         Kernel kernel = builder.Build();
 
         var arguments = new KernelArguments();
