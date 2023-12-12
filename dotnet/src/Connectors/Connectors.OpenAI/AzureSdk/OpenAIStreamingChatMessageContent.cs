@@ -16,21 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageContent
 {
     /// <summary>
-    /// Name of the author of the message. Name is required if the role is 'function'.
-    /// </summary>
-    public string? Name { get; }
-
-    /// <summary>
-    /// Function name to be called
-    /// </summary>
-    public string? FunctionName { get; set; }
-
-    /// <summary>
-    /// Function arguments fragment associated with this chunk
-    /// </summary>
-    public string? FunctionArgument { get; set; }
-
-    /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
@@ -51,40 +36,15 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-        this.FunctionName = chatUpdate.FunctionName;
-        this.FunctionArgument = chatUpdate.FunctionArgumentsUpdate;
+        this.ToolCallUpdate = chatUpdate.ToolCallUpdate;
     }
+
+    /// <summary>Gets any update information in the message about a tool call.</summary>
+    public ChatCompletionsToolCall? ToolCallUpdate { get; }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;
-
-    /// <summary>
-    /// Retrieve the resulting function from the chat result.
-    /// </summary>
-    /// <param name="fullContent">Full content of the chat</param>
-    /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
-    public static OpenAIFunctionResponse? GetOpenAIStreamingFunctionResponse(IEnumerable<OpenAIStreamingChatMessageContent> fullContent)
-    {
-        StringBuilder arguments = new();
-        string? functionName = null;
-        foreach (var message in fullContent)
-        {
-            functionName ??= message.FunctionName;
-
-            if (message?.FunctionArgument is not null)
-            {
-                arguments.Append(message.FunctionArgument);
-            }
-        }
-
-        if (functionName is null)
-        {
-            return null;
-        }
-
-        return OpenAIFunctionResponse.FromFunctionCall(new FunctionCall(functionName, arguments.ToString()));
-    }
 }

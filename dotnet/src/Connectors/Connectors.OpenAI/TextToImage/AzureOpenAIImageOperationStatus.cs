@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
 [Experimental("SKEXP0012")]
-public static class AzureOpenAIImageOperationStatus
+internal static class AzureOpenAIImageOperationStatus
 {
     /// <summary>
     /// Text to image Succeeded
