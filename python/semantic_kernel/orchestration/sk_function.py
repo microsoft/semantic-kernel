@@ -143,11 +143,7 @@ class SKFunction(SKFunctionBase):
             # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages_async(context)
 
-            functions = (
-                kwargs.get("functions")
-                if request_settings.function_call is not None
-                else None
-            )
+            functions = kwargs.get("functions") if request_settings.function_call is not None else None
             if request_settings.function_call is not None and functions is None:
                 log.warning("Function call is not None, but functions is None")
             try:
@@ -258,9 +254,7 @@ class SKFunction(SKFunctionBase):
                     prompt = await function_config.prompt_template.render_async(context)
 
                     completion = ""
-                    async for partial_content in client.complete_stream_async(
-                        prompt, request_settings
-                    ):
+                    async for partial_content in client.complete_stream_async(prompt, request_settings):
                         completion += partial_content
                         yield partial_content
                     context.variables.update(completion)
@@ -278,9 +272,7 @@ class SKFunction(SKFunctionBase):
             function_name=function_name,
             is_semantic=True,
             log=log,
-            chat_prompt_template=function_config.prompt_template
-            if function_config.has_chat_prompt
-            else None,
+            chat_prompt_template=function_config.prompt_template if function_config.has_chat_prompt else None,
         )
 
     @property
@@ -341,24 +333,18 @@ class SKFunction(SKFunctionBase):
         self._chat_request_settings = ChatRequestSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_skill_collection(
-        self, skills: ReadOnlySkillCollectionBase
-    ) -> "SKFunction":
+    def set_default_skill_collection(self, skills: ReadOnlySkillCollectionBase) -> "SKFunction":
         self._skill_collection = skills
         return self
 
-    def set_ai_service(
-        self, ai_service: Callable[[], TextCompletionClientBase]
-    ) -> "SKFunction":
+    def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "SKFunction":
         if ai_service is None:
             raise ValueError("AI LLM service factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_service = ai_service()
         return self
 
-    def set_chat_service(
-        self, chat_service: Callable[[], ChatCompletionClientBase]
-    ) -> "SKFunction":
+    def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "SKFunction":
         if chat_service is None:
             raise ValueError("Chat LLM service factory cannot be `None`")
         self._verify_is_semantic()
@@ -427,9 +413,7 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context.variables = variables.merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
             if memory is not None:
                 context.memory = memory
 
@@ -479,9 +463,7 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context.variables = variables.merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
             if memory is not None:
                 context.memory = memory
 
@@ -513,12 +495,8 @@ class SKFunction(SKFunctionBase):
                     "Semantic functions must have either an AI service or Chat service",
                 )
 
-        service = (
-            self._ai_service if self._ai_service is not None else self._chat_service
-        )
-        new_context = await self._function(
-            service, settings, context, functions=kwargs.get("functions", None)
-        )
+        service = self._ai_service if self._ai_service is not None else self._chat_service
+        new_context = await self._function(service, settings, context, functions=kwargs.get("functions", None))
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
@@ -576,9 +554,7 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context.variables = variables.merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
             if memory is not None:
                 context._memory = memory
 
@@ -587,9 +563,7 @@ class SKFunction(SKFunctionBase):
 
         try:
             if self.is_semantic:
-                async for stream_msg in self._invoke_semantic_stream_async(
-                    context, settings
-                ):
+                async for stream_msg in self._invoke_semantic_stream_async(context, settings):
                     yield stream_msg
             else:
                 async for stream_msg in self._invoke_native_stream_async(context):
@@ -617,9 +591,7 @@ class SKFunction(SKFunctionBase):
                     "Semantic functions must have either an AI service or Chat service",
                 )
 
-        service = (
-            self._ai_service if self._ai_service is not None else self._chat_service
-        )
+        service = self._ai_service if self._ai_service is not None else self._chat_service
 
         async for stream_msg in self._stream_function(service, settings, context):
             yield stream_msg

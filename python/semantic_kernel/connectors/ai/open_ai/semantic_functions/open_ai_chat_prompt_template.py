@@ -20,13 +20,9 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 class OpenAIChatPromptTemplate(ChatPromptTemplate):
     def add_function_response_message(self, name: str, content: Any) -> None:
         """Add a function response message to the chat template."""
-        self._messages.append(
-            OpenAIChatMessage(role="function", name=name, fixed_content=str(content))
-        )
+        self._messages.append(OpenAIChatMessage(role="function", name=name, fixed_content=str(content)))
 
-    def add_message(
-        self, role: str, message: Optional[str] = None, **kwargs: Any
-    ) -> None:
+    def add_message(self, role: str, message: Optional[str] = None, **kwargs: Any) -> None:
         """Add a message to the chat template.
 
         Arguments:
@@ -42,21 +38,15 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
             name = None
         function_call = kwargs.get("function_call")
         if function_call is not None and role != "assistant":
-            self._log.warning(
-                "function_call is only used with role: assistant, ignoring"
-            )
+            self._log.warning("function_call is only used with role: assistant, ignoring")
             function_call = None
             if function_call and not isinstance(function_call, FunctionCall):
-                self._log.warning(
-                    "function_call is not a FunctionCall, ignoring: %s", function_call
-                )
+                self._log.warning("function_call is not a FunctionCall, ignoring: %s", function_call)
                 function_call = None
         self._messages.append(
             OpenAIChatMessage(
                 role=role,
-                content_template=PromptTemplate(
-                    message, self._template_engine, self._prompt_config
-                ),
+                content_template=PromptTemplate(message, self._template_engine, self._prompt_config),
                 name=name,
                 function_call=function_call,
             )
@@ -78,15 +68,9 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         if that is a system message.
         """
         chat_template = cls(template, template_engine, prompt_config, log)
-        if (
-            prompt_config.completion.chat_system_prompt
-            and messages[0]["role"] == "system"
-        ):
+        if prompt_config.completion.chat_system_prompt and messages[0]["role"] == "system":
             existing_system_message = messages.pop(0)
-            if (
-                existing_system_message["message"]
-                != prompt_config.completion.chat_system_prompt
-            ):
+            if existing_system_message["message"] != prompt_config.completion.chat_system_prompt:
                 chat_template._log.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],
