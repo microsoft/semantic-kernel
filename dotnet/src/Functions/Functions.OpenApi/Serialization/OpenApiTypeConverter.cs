@@ -79,15 +79,8 @@ internal static class OpenApiTypeConverter
     {
         return argument switch
         {
-            byte b => JsonValue.Create(b),
-            sbyte sb => JsonValue.Create(sb),
-            short sh => JsonValue.Create(sh),
-            ushort ush => JsonValue.Create(ush),
-            int i => JsonValue.Create(i),
-            uint ui => JsonValue.Create(ui),
-            long l => JsonValue.Create(l),
-            ulong ul => JsonValue.Create(ul),
-            string s => JsonValue.Create(long.Parse(s, CultureInfo.InvariantCulture)),
+            string stringArgument => JsonValue.Create(long.Parse(stringArgument, CultureInfo.InvariantCulture)),
+            byte or sbyte or short or ushort or int or uint or long or ulong => JsonValue.Create(argument),
             _ => null
         };
     }
@@ -116,19 +109,9 @@ internal static class OpenApiTypeConverter
     {
         return argument switch
         {
-            byte b => JsonValue.Create(b),
-            sbyte sb => JsonValue.Create(sb),
-            short sh => JsonValue.Create(sh),
-            ushort ush => JsonValue.Create(ush),
-            int i => JsonValue.Create(i),
-            uint ui => JsonValue.Create(ui),
-            long l => JsonValue.Create(l),
-            ulong ul => JsonValue.Create(ul),
-            float f => JsonValue.Create(f),
-            double d => JsonValue.Create(d),
-            decimal d => JsonValue.Create(d),
-            string s when long.TryParse(s, out var intValue) => JsonValue.Create(intValue),
-            string s => JsonValue.Create(double.Parse(s, CultureInfo.InvariantCulture)),
+            string stringArgument when long.TryParse(stringArgument, out var intValue) => JsonValue.Create(intValue),
+            string stringArgument when double.TryParse(stringArgument, out var doubleValue) => JsonValue.Create(doubleValue),
+            byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => JsonValue.Create(argument),
             _ => null
         };
     }
