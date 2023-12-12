@@ -11,7 +11,6 @@ using RepoUtils;
 
 public static class Program
 {
-    // ReSharper disable once InconsistentNaming
     public static async Task Main(string[] args)
     {
         // Load configuration from environment variables or user secrets.
