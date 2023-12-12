@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using HandlebarsDotNet;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using static Microsoft.SemanticKernel.PromptTemplate.Handlebars.HandlebarsPromptTemplateOptions;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.HandlebarsPromptTemplateOptions;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 

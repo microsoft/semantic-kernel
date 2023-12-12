@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using HandlebarsDotNet.Helpers.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
@@ -102,7 +102,7 @@ public sealed class HandlebarsPlanner
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
         // Get CreatePlan prompt template
-        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas, cancellationToken);
+        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
         var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
@@ -132,8 +132,7 @@ public sealed class HandlebarsPlanner
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
         Kernel kernel,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        out Dictionary<string, string> complexParameterSchemas,
-        CancellationToken cancellationToken = default)
+        out Dictionary<string, string> complexParameterSchemas)
     {
         complexParameterTypes = new();
         complexParameterSchemas = new();

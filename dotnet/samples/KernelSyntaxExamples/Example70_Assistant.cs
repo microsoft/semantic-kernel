@@ -129,7 +129,7 @@ public static class Example70_Assistant
         try
         {
             // Invoke assistant plugin function.
-            KernelArguments arguments = new("Practice makes perfect.");
+            KernelArguments arguments = new() { ["input"] = "Practice makes perfect." };
 
             var kernel = new Kernel();
             var result = await kernel.InvokeAsync(assistant.AsPlugin().Single(), arguments);
