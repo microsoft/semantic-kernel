@@ -19,6 +19,11 @@ public sealed class PromptTemplateConfig
     /// </summary>
     public const string SemanticKernelTemplateFormat = "semantic-kernel";
 
+    /// <summary>Lazily-initialized input variables.</summary>
+    private List<InputVariable>? _inputVariables;
+    /// <summary>Lazily-initialized execution settings.</summary>
+    private List<PromptExecutionSettings>? _executionSettings;
+
     /// <summary>
     /// Name of the kernel function.
     /// </summary>
@@ -47,7 +52,15 @@ public sealed class PromptTemplateConfig
     /// Input variables.
     /// </summary>
     [JsonPropertyName("input_variables")]
-    public List<InputVariable> InputVariables { get; set; } = new();
+    public List<InputVariable> InputVariables
+    {
+        get => this._inputVariables ??= new();
+        set
+        {
+            Verify.NotNull(value);
+            this._inputVariables = value;
+        }
+    }
 
     /// <summary>
     /// Output variable.
@@ -59,7 +72,15 @@ public sealed class PromptTemplateConfig
     /// Prompt execution settings.
     /// </summary>
     [JsonPropertyName("execution_settings")]
-    public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
+    public List<PromptExecutionSettings> ExecutionSettings
+    {
+        get => this._executionSettings ??= new();
+        set
+        {
+            Verify.NotNull(value);
+            this._executionSettings = value;
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -79,15 +100,20 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Return the input variables metadata.
     /// </summary>
-    internal List<KernelParameterMetadata> GetKernelParametersMetadata()
+    internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
+        if (this._inputVariables is List<InputVariable> inputVariables)
         {
-            Description = p.Description,
-            DefaultValue = p.Default,
-            IsRequired = p.IsRequired,
-            Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
-        }).ToList();
+            return inputVariables.Select(p => new KernelParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                DefaultValue = p.Default,
+                IsRequired = p.IsRequired,
+                Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
+            }).ToList();
+        }
+
+        return Array.Empty<KernelParameterMetadata>();
     }
 
     /// <summary>
