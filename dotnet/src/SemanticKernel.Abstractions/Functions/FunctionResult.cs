@@ -64,7 +64,7 @@ public sealed class FunctionResult
             return typedResult;
         }
 
-        if (this.Value is ContentBase content)
+        if (this.Value is KernelContent content)
         {
             if (typeof(T) == typeof(string))
             {

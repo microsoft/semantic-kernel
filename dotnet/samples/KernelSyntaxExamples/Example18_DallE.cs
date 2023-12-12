@@ -22,7 +22,7 @@ public static class Example18_DallE
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             // Add your text to image service
             .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
@@ -59,7 +59,7 @@ public static class Example18_DallE
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -69,7 +69,7 @@ public static class Example18_DallE
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -90,11 +90,18 @@ public static class Example18_DallE
     {
         Console.WriteLine("========Azure OpenAI Dall-E 2 Text To Image ========");
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             // Add your text to image service
-            .AddAzureOpenAITextToImage(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ImageModelId, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAITextToImage(
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ImageModelId)
             // Add your chat completion service
-            .AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
@@ -126,7 +133,7 @@ public static class Example18_DallE
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -136,7 +143,7 @@ public static class Example18_DallE
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 

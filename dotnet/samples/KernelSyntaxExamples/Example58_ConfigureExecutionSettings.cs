@@ -28,13 +28,13 @@ public static class Example58_ConfigureExecutionSettings
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: serviceId,
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         var prompt = "Hello AI, what can you do for me?";

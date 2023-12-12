@@ -30,13 +30,13 @@ public static class Example72_KernelStreaming
             return;
         }
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         var funnyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });

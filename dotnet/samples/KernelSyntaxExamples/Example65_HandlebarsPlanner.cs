@@ -55,13 +55,13 @@ public static class Example65_HandlebarsPlanner
             return;
         }
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
@@ -113,7 +113,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 

@@ -56,7 +56,7 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Functions.Grpc\Functions.Grpc.csproj" />
     <ProjectReference Include="..\Functions.Markdown\Functions.Markdown.csproj" />
-    <ProjectReference Include="..\Functions.OpenAPI\Functions.OpenAPI.csproj" />
+    <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Functions.Yaml\Functions.Yaml.csproj" />
   </ItemGroup>
 </Project>

@@ -24,8 +24,8 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
-    /// <exception cref="ArgumentException"><paramref name="name"/> if plugin name is invalid.</exception>
-    /// <exception cref="ArgumentException"><paramref name="name"/> if plugin with this name is already registered.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is an invalid plugin name.</exception>
     protected KernelPlugin(string name, string? description = null)
     {
         Verify.ValidPluginName(name);
@@ -75,6 +75,19 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <param name="function">If the plugin contains the requested function, the found function instance; otherwise, null.</param>
     /// <returns>true if the function was found in the plugin; otherwise, false.</returns>
     public abstract bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function);
+
+    /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in this plugin.</summary>
+    /// <returns>A list of metadata over every function in this plugin.</returns>
+    public IList<KernelFunctionMetadata> GetFunctionsMetadata()
+    {
+        List<KernelFunctionMetadata> metadata = new(this.FunctionCount);
+        foreach (KernelFunction function in this)
+        {
+            metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = this.Name });
+        }
+
+        return metadata;
+    }
 
     /// <inheritdoc/>
     public abstract IEnumerator<KernelFunction> GetEnumerator();

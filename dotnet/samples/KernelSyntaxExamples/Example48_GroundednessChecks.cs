@@ -59,12 +59,12 @@ after this event Caroline became his wife.""";
     public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("\n======== Groundedness Checks ========");
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
@@ -84,8 +84,9 @@ his daughter, Mary. Mary procured work to eek out a living, but after ten months
 her a beggar. My father came to her aid and two years later they married.
 ";
 
-        KernelArguments variables = new(summaryText)
+        KernelArguments variables = new()
         {
+            ["input"] = summaryText,
             ["topic"] = "people and places",
             ["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
         };
@@ -95,7 +96,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        variables[KernelArguments.InputParameterName] = extractionResult;
+        variables["input"] = extractionResult;
         variables["reference_context"] = GroundingText;
 
         var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
@@ -103,7 +104,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("\n======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        variables[KernelArguments.InputParameterName] = summaryText;
+        variables["input"] = summaryText;
         variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
@@ -126,12 +127,12 @@ Text:\n{GroundingText};
 
         Console.WriteLine("\n======== Planning - Groundedness Checks ========");
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
@@ -146,7 +147,7 @@ Text:\n{GroundingText};
         Console.WriteLine($"======== Goal: ========\n{ask}");
         Console.WriteLine($"======== Plan ========\n{plan}");
 
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("======== Result ========");
         Console.WriteLine(result);

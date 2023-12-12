@@ -2,7 +2,7 @@
 
 // ==========================================================================================================
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
-// You can access the builder using new KernelBuilder().
+// You can access the builder using Kernel.CreateBuilder().
 
 #pragma warning disable CA1852
 
@@ -26,26 +26,34 @@ public static class Example42_KernelBuilder
 
         // KernelBuilder provides a simple way to configure a Kernel. This constructs a kernel
         // with logging and an Azure OpenAI chat completion service configured.
-        Kernel kernel1 = new KernelBuilder()
-            .AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey)
+        Kernel kernel1 = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIChatDeploymentName,
+                endpoint: azureOpenAIEndpoint,
+                apiKey: azureOpenAIKey,
+                modelId: azureOpenAIChatModelId)
             .Build();
 
         // For greater flexibility and to incorporate arbitrary services, KernelBuilder.Services
         // provides direct access to an underlying IServiceCollection.
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information))
                         .AddHttpClient()
-                        .AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
+                        .AddAzureOpenAIChatCompletion(
+                            deploymentName: azureOpenAIChatDeploymentName,
+                            endpoint: azureOpenAIEndpoint,
+                            apiKey: azureOpenAIKey,
+                            modelId: azureOpenAIChatModelId);
         Kernel kernel2 = builder.Build();
 
         // Plugins may also be configured via the corresponding Plugins property.
-        builder = new KernelBuilder();
+        builder = Kernel.CreateBuilder();
         builder.Plugins.AddFromType<HttpPlugin>();
         Kernel kernel3 = builder.Build();
 
         // Every call to KernelBuilder.Build creates a new Kernel instance, with a new service provider
         // and a new plugin collection.
-        builder = new KernelBuilder();
+        builder = Kernel.CreateBuilder();
         Debug.Assert(!ReferenceEquals(builder.Build(), builder.Build()));
 
         // KernelBuilder provides a convenient API for creating Kernel instances. However, it is just a
@@ -54,7 +62,11 @@ public static class Example42_KernelBuilder
         var services = new ServiceCollection();
         services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         services.AddHttpClient();
-        services.AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
+        services.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIChatDeploymentName,
+            endpoint: azureOpenAIEndpoint,
+            apiKey: azureOpenAIKey,
+            modelId: azureOpenAIChatModelId);
         Kernel kernel4 = new(services.BuildServiceProvider());
 
         // Kernels can also be constructed and resolved via such a dependency injection container.
@@ -68,7 +80,11 @@ public static class Example42_KernelBuilder
         services = new ServiceCollection();
         services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         services.AddHttpClient();
-        services.AddKernel().AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
+        services.AddKernel().AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIChatDeploymentName,
+            endpoint: azureOpenAIEndpoint,
+            apiKey: azureOpenAIKey,
+            modelId: azureOpenAIChatModelId);
         services.AddSingleton<KernelPlugin>(sp => KernelPluginFactory.CreateFromType<TimePlugin>(serviceProvider: sp));
         services.AddSingleton<KernelPlugin>(sp => KernelPluginFactory.CreateFromType<HttpPlugin>(serviceProvider: sp));
         Kernel kernel6 = services.BuildServiceProvider().GetRequiredService<Kernel>();
