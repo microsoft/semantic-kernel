@@ -62,7 +62,7 @@ public interface IAssistant
     /// <summary>
     /// Expose the assistant as a plugin.
     /// </summary>
-    public KernelPlugin AsPlugin();
+    public AssistantPlugin AsPlugin();
 
     /// <summary>
     /// Creates a new assistant chat thread.

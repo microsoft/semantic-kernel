@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -118,34 +117,25 @@ public static class Example70_Assistant
     {
         Console.WriteLine("======== Run:AsFunction ========");
 
-        // Create assistant, same as the other cases.
+        // Create parrot assistant, same as the other cases.
         var assistant =
             await new AssistantBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
                 .BuildAsync();
 
-        string? threadId = null;
         try
         {
-            // Invoke assistant plugin function.
-            KernelArguments arguments = new() { ["input"] = "Practice makes perfect." };
+            // Invoke assistant plugin.
+            var response = await assistant.AsPlugin().InvokeAsync("Practice makes perfect.");
 
-            var kernel = new Kernel();
-            var result = await kernel.InvokeAsync(assistant.AsPlugin().Single(), arguments);
-
-            // Display result
-            var response = result.GetValue<AssistantResponse>();
-            threadId = response?.ThreadId;
-            Console.WriteLine(
-                response?.Message ??
-                $"No response from assistant: {assistant.Id}");
+            // Display result.
+            Console.WriteLine(response ?? $"No response from assistant: {assistant.Id}");
         }
         finally
         {
-            await Task.WhenAll(
-                assistant.DeleteThreadAsync(threadId),
-                assistant.DeleteAsync());
+            // Clean-up (storage costs $)
+            await assistant.DeleteAsync();
         }
     }
 
@@ -166,53 +156,36 @@ public static class Example70_Assistant
         var definition = EmbeddedResource.Read(resourcePath);
 
         // Create assistant
-        IAssistant assistant =
+        var assistant =
             await new AssistantBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(definition)
                 .WithPlugin(plugin)
                 .BuildAsync();
 
-        IChatThread? thread = null;
+        // Create chat thread.  Note: Thread is not bound to a single assistant.
+        var thread = await assistant.NewThreadAsync();
         try
         {
             // Display assistant identifier.
             Console.WriteLine($"[{assistant.Id}]");
 
-            // Create chat thread.  Note: Thread is not bound to a single assistant.
-            thread = await assistant.NewThreadAsync();
-
             // Process each user message and assistant response.
-            foreach (var message in messages)
+            foreach (var response in messages.Select(m => thread.InvokeAsync(assistant, m)))
             {
-                // Add the user message
-                var messageUser = await thread.AddUserMessageAsync(message);
-                DisplayMessage(messageUser);
-
-                // Retrieve the assistant response
-                var assistantMessages = await thread.InvokeAsync(assistant);
-                DisplayMessages(assistantMessages);
+                await foreach (var message in response)
+                {
+                    Console.WriteLine($"[{message.Id}]");
+                    Console.WriteLine($"# {message.Role}: {message.Content}");
+                }
             }
         }
         finally
         {
+            // Clean-up (storage costs $)
             await Task.WhenAll(
                 thread?.DeleteAsync() ?? Task.CompletedTask,
                 assistant.DeleteAsync());
         }
-    }
-
-    private static void DisplayMessages(IEnumerable<IChatMessage> messages)
-    {
-        foreach (var message in messages)
-        {
-            DisplayMessage(message);
-        }
-    }
-
-    private static void DisplayMessage(IChatMessage message)
-    {
-        Console.WriteLine($"[{message.Id}]");
-        Console.WriteLine($"# {message.Role}: {message.Content}");
     }
 }

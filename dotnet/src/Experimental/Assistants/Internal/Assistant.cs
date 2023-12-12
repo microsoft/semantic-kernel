@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
@@ -46,9 +49,12 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
     public string Instructions => this._model.Instructions;
 
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
-    private KernelPlugin? _assistantPlugin;
+
+    private AssistantPlugin? _assistantPlugin;
     private bool _isDeleted;
 
     /// <summary>
@@ -82,8 +88,12 @@ internal sealed class Assistant : IAssistant
         this._restContext = restContext;
 
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
-        this.Kernel = builder.Build();
+        ;
+        this.Kernel =
+            Kernel
+                .CreateBuilder()
+                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
+                .Build();
 
         if (plugins is not null)
         {
@@ -91,7 +101,7 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-    public KernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
+    public AssistantPlugin AsPlugin() => this._assistantPlugin ??= this.DefinePlugin();
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -144,25 +154,31 @@ internal sealed class Assistant : IAssistant
         CancellationToken cancellationToken = default)
     {
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
 
-        await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-        var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
-        var response =
-            new AssistantResponse
-            {
-                ThreadId = thread.Id,
-                Message = string.Concat(message.Select(m => m.Content)),
-            };
+            var messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var response =
+                new AssistantResponse
+                {
+                    ThreadId = thread.Id,
+                    Message = string.Concat(messages.Select(m => m.Content)),
+                };
 
-        return response;
+            return response;
+        }
+        finally
+        {
+            await thread.DeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
-    private KernelPlugin DefinePlugin()
+    private AssistantPluginImpl DefinePlugin()
     {
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
-        var assistantPlugin = KernelPluginFactory.CreateFromFunctions(this.Name ?? this.Id, this.Description, new[] { functionAsk });
 
-        return this._assistantPlugin = assistantPlugin;
+        return new AssistantPluginImpl(this, functionAsk);
     }
 
     private void ThrowIfDeleted()
@@ -170,6 +186,42 @@ internal sealed class Assistant : IAssistant
         if (this._isDeleted)
         {
             throw new AssistantException($"{nameof(Assistant)}: {this.Id} has been deleted.");
+        }
+    }
+
+    private sealed class AssistantPluginImpl : AssistantPlugin
+    {
+        public KernelFunction FunctionAsk { get; }
+
+        internal override Assistant Assistant { get; }
+
+        public override int FunctionCount => 1;
+
+        private static readonly string s_functionName = nameof(Assistant.AskAsync).Substring(0, nameof(Assistant.AskAsync).Length - 5);
+
+        public AssistantPluginImpl(Assistant assistant, KernelFunction functionAsk)
+            : base(s_removeInvalidCharsRegex.Replace(assistant.Name ?? assistant.Id, string.Empty),
+                   assistant.Description ?? assistant.Instructions)
+        {
+            this.Assistant = assistant;
+            this.FunctionAsk = functionAsk;
+        }
+
+        public override IEnumerator<KernelFunction> GetEnumerator()
+        {
+            yield return this.FunctionAsk;
+        }
+
+        public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
+        {
+            function = null;
+
+            if (s_functionName.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                function = this.FunctionAsk;
+            }
+
+            return function != null;
         }
     }
 }
