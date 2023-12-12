@@ -156,7 +156,7 @@ public static class Example15_TextMemoryPlugin
             .Build();
 
         // Create an embedding generator to use for semantic memory.
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
