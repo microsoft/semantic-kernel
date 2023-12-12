@@ -361,6 +361,10 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         messages=messages_in, request_settings=complete_request_settings
     )
 
+    expected_data_settings = asdict(azure_chat_with_data_settings)
+    # No embeddingDeploymentName if not using vectors.
+    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"] 
+
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages_out,
@@ -373,7 +377,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         # presence_penalty=complete_request_settings.presence_penalty,
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias={},
-        extra_body=asdict(azure_chat_with_data_settings),
+        extra_body=expected_data_settings,
     )
 
 
@@ -423,6 +427,10 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         request_settings=complete_request_settings,
     )
 
+    expected_data_settings = asdict(azure_chat_with_data_settings)
+    # No embeddingDeploymentName if not using vectors.
+    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"] 
+
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages,
@@ -435,7 +443,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         # presence_penalty=complete_request_settings.presence_penalty,
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias=token_bias,
-        extra_body=asdict(azure_chat_with_data_settings),
+        extra_body=expected_data_settings,
         functions=functions,
         function_call=complete_request_settings.function_call,
     )
@@ -482,6 +490,10 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
 
     await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
 
+    expected_data_settings = asdict(azure_chat_with_data_settings)
+    # No embeddingDeploymentName if not using vectors.
+    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"] 
+
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages,
@@ -494,5 +506,5 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         # presence_penalty=complete_request_settings.presence_penalty,
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias={},
-        extra_body=asdict(azure_chat_with_data_settings),
+        extra_body=expected_data_settings,
     )
