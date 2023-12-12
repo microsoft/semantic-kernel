@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -28,8 +27,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(0, executionSettings.FrequencyPenalty);
         Assert.Equal(0, executionSettings.PresencePenalty);
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
-        Assert.Equal(Array.Empty<string>(), executionSettings.StopSequences);
-        Assert.Equal(new Dictionary<int, int>(), executionSettings.TokenSelectionBiases);
+        Assert.Null(executionSettings.StopSequences);
+        Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Null(executionSettings.ServiceId);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
