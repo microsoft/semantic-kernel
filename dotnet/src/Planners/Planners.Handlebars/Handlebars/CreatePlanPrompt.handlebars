@@ -207,15 +207,23 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 Now take a deep breath and accomplish the task:
 1. Keep the template short and sweet. Be as efficient as possible.
 2. Do not use helpers or functions that were not provided to you, and be especially careful to not assume or make up any helpers or operations that were not explicitly defined already.
-3. If, and ONLY if none of the available helpers can achieve the goal, respond with "Additional helpers may be required", followed by the plugin and the source code.
-For each required plugin write the production, ready-to-use C# kernelfunction.
-Generate only one plugin file with all of the kernelfunctions that will be required to achieve the goal. You MUST use one of the following return types for each kernel function:
-void, string
+3. If, and ONLY if none of the available helpers can achieve the goal, respond with "Additional helpers may be required", followed by the plugin and the source code:
+
+For each required plugin write the production, ready-to-use C# kernelfunction targeting .NET 6.
+Generate only one plugin file with all of the kernelfunctions that will be required to achieve the goal. You MUST use only string return types. The KernelFunction signatures MUST be ""public string"". You MUST NOT use any other return types. The function MUST NOT be async.
 Break functionalities up into separate KernelFunctions. Do not create a single KernelFunction that does everything.
-You MUST NOT write any TODOs or placeholders, implement the full functionality to the best of your ability.
-The class MUST contain ""using Microsoft.SemanticKernel"", the class name MUST be ""GeneratedPlugin"", and the namespace MUST be ""Plugins"".
-After the code snipper you MUST list all of the assemblies that need to be imported in order to compile the plugin. Make sure you include all information on the assembly in the following format : "System.Runtime, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+You MUST NOT write any TODOs or placeholders, implement the full functionality to the best of your ability. Do not write any placeholder code.
+
+The class MUST contain ""using Microsoft.SemanticKernel"", the class name MUST be ""GeneratedPlugin"", and the namespace MUST be ""Plugins"". The class MUST be a "public sealed class". The class and functions MUST NOT be static.
+After the code snipper you MUST list all of the assemblies that need to be imported in order to compile the plugin prefixed by "- ". Make sure you include all information on the assembly in the following format : "System.Runtime, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
 The line preceding the assembly list MUST start with "Assemblies required"
+Here is an example of the assemblies block:
+Assemblies required:
+- System.Runtime, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+- System.IO.FileSystem, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+- System.Linq, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+- Microsoft.SemanticKernel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35
+
 Here is an example of a simple lower case to upper case plugin:
 
 using System.ComponentModel;
@@ -284,6 +292,7 @@ public sealed class MathPlugin
 }
 
 Again, do not generate any C# helper code unless you could not achieve the goal.
+
 4. Always start by identifying any important values in the goal. Then, use the `\{{set}}` helper to create variables for each of these values.
 5. The template should use the \{{json}} helper at least once to output the result of the final step.
 6. Don't forget to use the tips and tricks otherwise the template will not work.

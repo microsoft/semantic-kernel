@@ -15,21 +15,20 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Emit;
-using System.Linq;
-using System.Collections.Generic;
-using NRedisStack;
-using MongoDB.Driver.GeoJsonObjectModel;
+using System.Collections.Generic;ic compiler erros
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 /**
  * This example shows how to use the Handlebars sequential planner.
  */
-public static class Example999_HandlebarsPlanner
+public static class Example999_AutoPlugin
 {
-    private static int s_sampleIndex;
+    private static int s_sampleIndex; 
+    private static string plannerprompt = @"
 
-    private const string CourseraPluginName = "CourseraPlugin";
+        Extract today's featured article text from https://en.wikipedia.org and summarize it.
+
+    ";
 
     /// <summary>
     /// Show how to create a plan with Handlebars and execute it.
@@ -41,131 +40,24 @@ public static class Example999_HandlebarsPlanner
 
         // Using primitive types as inputs and outputs
 
-        await DynamicSKillSampleAsync();
-        //await RunDictionaryWithBasicTypesSampleAsync();
-        //await RunPoetrySampleAsync();
-        //await RunBookSampleAsync();
-
-        // Using Complex Types as inputs and outputs
-        //await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
+        await AutoPluginSampleAsync();
     }
 
     private static void WriteSampleHeadingToConsole(string name)
     {
-        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute {name} Plan ========");
-    }
-
-    private static async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
-    {
-        //string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        //string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        //string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        //string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        //if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
-        //{
-        //    Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
-        //    return;
-        //}
-
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
-
-        //var gplugin = KernelPluginFactory.CreateFromType<GeneratedPlugin>();
-        //kernel.Plugins.Add(gplugin);
-
-        //var kernel = new KernelBuilder()
-        //    .AddAzureOpenAIChatCompletion(
-        //        deploymentName: chatDeploymentName,
-        //        modelId: chatModelId,
-        //        endpoint: endpoint,
-        //        serviceId: "AzureOpenAIChat",
-        //        apiKey: apiKey)
-        //    .Build();
-
-        if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
-        {
-            kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
-        {
-            kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == CourseraPluginName)
-        {
-            await kernel.ImportPluginFromOpenApiAsync(
-                CourseraPluginName,
-                new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
-            );
-        }
-        else
-        {
-            string folder = RepoFiles.SamplePluginsPath();
-
-            foreach (var pluginDirectoryName in pluginDirectoryNames)
-            {
-                kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
-            }
-        }
-
-        // Use gpt-4 or newer models if you want to test with loops. 
-        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
-        var allowLoopsInPlan = true; // chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
-        var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerConfig()
-            {
-                // Change this if you want to test with loops regardless of model selection.
-                AllowLoops = allowLoopsInPlan
-            });
-
-        Console.WriteLine($"Goal: {goal}");
-
-        // Create the plan
-        var plan = await planner.CreatePlanAsync(kernel, goal);
-
-        // Print the prompt template
-        if (shouldPrintPrompt)
-        {
-            Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
-        }
-
-        Console.WriteLine($"\nOriginal plan:\n{plan}");
-
-        // Execute the plan
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
-        Console.WriteLine($"\nResult:\n{result}\n");
+        Console.WriteLine($"======== [Handlebars AutoPlugin Planner] Attempt {s_sampleIndex++} - Create and Execute {name} Plan ========");
     }
 
     private static async Task RunSamplePluginClassAsync(string goal, bool shouldPrintPrompt = false, KernelPlugin? kp = null)
     {
-        //string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        //string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        //string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        //string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        //if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
-        //{
-        //    Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
-        //    return;
-        //}
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
-
-        //var gplugin = KernelPluginFactory.CreateFromType<GeneratedPlugin>();
-        //kernel.Plugins.Add(gplugin);
 
         if (kp != null)
         {
@@ -173,8 +65,7 @@ public static class Example999_HandlebarsPlanner
         }
 
         // Use gpt-4 or newer models if you want to test with loops. 
-        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
-        var allowLoopsInPlan = true; // chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
+        var allowLoopsInPlan = true;
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerConfig()
             {
@@ -200,20 +91,16 @@ public static class Example999_HandlebarsPlanner
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 
-    private static async Task DynamicSKillSampleAsync(bool shouldPrintPrompt = false)
+    private static async Task AutoPluginSampleAsync(bool shouldPrintPrompt = false)
     {
         KernelPlugin kp = null;
         bool needMorePlugins = true;
         while (needMorePlugins)
         {
-            WriteSampleHeadingToConsole("DynamicSkillSample");
+            WriteSampleHeadingToConsole("AutoPluginSample");
             try
             {
-                // Load additional plugins to enable planner but not enough for the given goal.
-                string testPrompt = @"
-
-How big are the files combined in C:\\Temp folder? Tell me the size in MB and the number of files.
-                ";
+                string testPrompt = plannerprompt;
                 await RunSamplePluginClassAsync(testPrompt, shouldPrintPrompt, kp);
                 needMorePlugins = false;
             }
@@ -257,203 +144,102 @@ How big are the files combined in C:\\Temp folder? Tell me the size in MB and th
 
                 List<MetadataReference> references = new List<MetadataReference>();
 
+                // General references that are often needed
                 references.Add(MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location));
-                references.Add(MetadataReference.CreateFromFile(typeof(System.ComponentModel.BrowsableAttribute).Assembly.Location));
+                //references.Add(MetadataReference.CreateFromFile(typeof(System.ComponentModel.BrowsableAttribute).Assembly.Location));
+                references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.ComponentModel, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
                 references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.Runtime, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
                 references.Add(MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version = 2.0.0.0, Culture = neutral, PublicKeyToken = cc7b13ffcd2ddd51").Location));
                 references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.Collections, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
 
-                //foreach (string assembly in assemblies)
-                //{
-                //    if (!assembly.Contains("SemanticKernel"))
-                //        references.Add(MetadataReference.CreateFromFile(Assembly.Load(assembly).Location));
-                //}
+                foreach (string assembly in assemblies)
+                {
+                    if (!assembly.Contains("SemanticKernel"))
+                        references.Add(MetadataReference.CreateFromFile(Assembly.Load(assembly).Location));
+                }
 
                 foreach (string file in files)
                 {
                     references.Add(MetadataReference.CreateFromFile(file));
                 }
 
-                Console.WriteLine("Compiling Generated Kernel Plugin");
-
-                CSharpCompilation compilation = CSharpCompilation.Create(
-                    "assemblyName",
-                    syntaxTrees: new[] { syntaxTree },
-                    references: references.ToArray(),
-                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                using (var ms = new MemoryStream())
+                bool needMoreAssemblies = true;
+                while (needMoreAssemblies)
                 {
-                    EmitResult result = compilation.Emit(ms);
+                    needMoreAssemblies = false;
+                    Console.WriteLine("Compiling Generated Kernel Plugin");
 
-                    if (!result.Success)
+                    CSharpCompilation compilation = CSharpCompilation.Create(
+                        "assemblyName",
+                        syntaxTrees: new[] { syntaxTree },
+                        references: references.ToArray(),
+                        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+                    using (var ms = new MemoryStream())
                     {
-                        // handle exceptions
-                        Console.WriteLine("Compilation failed");
-                        foreach (var x in result.Diagnostics)
+                        EmitResult result = compilation.Emit(ms);
+
+                        if (!result.Success)
                         {
-                            Console.WriteLine(x.GetMessage());
+                            // handle exceptions
+                            Console.WriteLine("Compilation failed");
+                            foreach (var x in result.Diagnostics) // Logic to resolve compiler errors
+                            {
+                                if (x.Id.Equals("CS0012")) // Missing Assembly
+                                {
+                                    string pattern = @"'([^']*)'\.";
+                                    Match match = Regex.Match(x.GetMessage(), pattern);
+
+                                    if (match.Success)
+                                    {
+                                        string assemblyString = match.Groups[1].Value;
+                                        Console.WriteLine("Adding assembly " + assemblyString);
+                                        references.Add(MetadataReference.CreateFromFile(Assembly.Load(assemblyString).Location));
+                                        needMoreAssemblies = true;
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine(x.GetMessage());
+                                    needMoreAssemblies = false;
+                                    needMorePlugins = false; // Abort all new attempts
+                                }
+                            }
+                            if (needMoreAssemblies)
+                            {
+                                Console.WriteLine("Restarting compilation.\n");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Could not resolve compiler errors.");
+                            }
                         }
-                        Console.ReadKey(); return;
-                    }
-                    else
-                    {
-                        ms.Seek(0, SeekOrigin.Begin);
-                        Assembly assembly = Assembly.Load(ms.ToArray());
+                        else
+                        {
+                            ms.Seek(0, SeekOrigin.Begin);
+                            Assembly assembly = Assembly.Load(ms.ToArray());
 
-                        // Get the type from the assembly
-                        Type pluginType = assembly.GetType("Plugins.GeneratedPlugin");
+                            // Get the type from the assembly
+                            Type pluginType = assembly.GetType("Plugins.GeneratedPlugin");
 
-                        // Create an instance of the type
-                        var instance = Activator.CreateInstance(pluginType);
+                            // Create an instance of the type
+                            var instance = Activator.CreateInstance(pluginType);
 
-                        Console.WriteLine("Adding plugin to kernel. Restarting planner.");
+                            Console.WriteLine("Adding plugin to kernel.\nRestarting planner.\n");
 
-                        Type factoryType = typeof(KernelPluginFactory);
-                        MethodInfo method = factoryType.GetMethod("CreateFromType");
-                        MethodInfo genericMethod = method.MakeGenericMethod(pluginType);
-                        string param = "GeneratedPlugin";
-                        object[] parameters = { param, null };
+                            Type factoryType = typeof(KernelPluginFactory);
+                            MethodInfo method = factoryType.GetMethod("CreateFromType");
+                            MethodInfo genericMethod = method.MakeGenericMethod(pluginType);
+                            string param = "GeneratedPlugin";
+                            object[] parameters = { param, null };
 
-                        kp = (KernelPlugin)genericMethod.Invoke(null, parameters);
-                        //kp = instance;
+                            kp = (KernelPlugin)genericMethod.Invoke(null, parameters);
+                            //kp = instance;
+                        }
                     }
                 }
-
                 needMorePlugins = true;
             }
         }
-    }
-    private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
-    {
-        WriteSampleHeadingToConsole("Plan Not Possible");
-
-        try
-        {
-            // Load additional plugins to enable planner but not enough for the given goal.
-            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
-        }
-        catch (KernelException e)
-        {
-            /*
-                Unable to create plan for goal with available functions.
-                Goal: Email me a list of meetings I have scheduled today.
-                Available Functions: SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Topics
-                Planner output:
-                I'm sorry, but it seems that the provided helpers do not include any helper to fetch or filter meetings scheduled for today. 
-                Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
-                Additional helpers may be required.
-            */
-            Console.WriteLine($"{e.Message}\n");
-        }
-    }
-
-    private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
-    {
-        WriteSampleHeadingToConsole("Dictionary");
-        await RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
-        /*
-            Original plan:
-            {{!-- Step 1: Get a random word --}}
-            {{set "randomWord" (DictionaryPlugin-GetRandomWord)}}
-
-            {{!-- Step 2: Get the definition of the random word --}}
-            {{set "definition" (DictionaryPlugin-GetDefinition word=(get "randomWord"))}}
-
-            {{!-- Step 3: Output the random word and its definition --}}
-            {{json (array (get "randomWord") (get "definition"))}}
-
-            Result:
-            ["book","a set of printed or written pages bound together along one edge"]
-        */
-    }
-
-    private static async Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
-    {
-        WriteSampleHeadingToConsole("Complex Types with Local Dictionary Plugin");
-        await RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
-        /*
-            Original Plan:
-            {{!-- Step 1: Get two random dictionary entries --}}
-            {{set "entry1" (DictionaryPlugin-GetRandomEntry)}}
-            {{set "entry2" (DictionaryPlugin-GetRandomEntry)}}
-
-            {{!-- Step 2: Extract words from the entries --}}
-            {{set "word1" (DictionaryPlugin-GetWord entry=(get "entry1"))}}
-            {{set "word2" (DictionaryPlugin-GetWord entry=(get "entry2"))}}
-
-            {{!-- Step 3: Extract definitions for the words --}}
-            {{set "definition1" (DictionaryPlugin-GetDefinition word=(get "word1"))}}
-            {{set "definition2" (DictionaryPlugin-GetDefinition word=(get "word2"))}}
-
-            {{!-- Step 4: Display the words and their definitions --}}
-            Word 1: {{json (get "word1")}}
-            Definition: {{json (get "definition1")}}
-
-            Word 2: {{json (get "word2")}}
-            Definition: {{json (get "definition2")}}
-
-            Result:
-            Word 1: apple
-            Definition 1: a round fruit with red, green, or yellow skin and a white flesh
-
-            Word 2: dog
-            Definition 2: a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship
-        */
-    }
-
-    private static async Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
-    {
-        WriteSampleHeadingToConsole("Poetry");
-        await RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
-        /*
-            Original plan:
-            {{!-- Step 1: Initialize the scenario for the poem --}}
-            {{set "scenario" "John Doe, a mysterious and kind-hearted person"}}
-
-            {{!-- Step 2: Generate a short poem about John Doe --}}
-            {{set "poem" (WriterPlugin-ShortPoem input=(get "scenario"))}}
-
-            {{!-- Step 3: Translate the poem into Italian --}}
-            {{set "translatedPoem" (WriterPlugin-Translate input=(get "poem") language="Italian")}}
-
-            {{!-- Step 4: Output the translated poem --}}
-            {{json (get "translatedPoem")}}
-
-            Result:
-            C'era una volta un uomo di nome John Doe,
-            La cui gentilezza si mostrava costantemente,
-            Aiutava con un sorriso,
-            E non si arrendeva mai,
-            Al mistero che lo faceva brillare.
-        */
-    }
-
-    private static async Task RunBookSampleAsync(bool shouldPrintPrompt = false)
-    {
-        WriteSampleHeadingToConsole("Book Creation");
-        await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
-        /*
-            Original plan:
-            {{!-- Step 1: Initialize the book title and chapter count --}}
-            {{set "bookTitle" "The Thinking Caps"}}
-            {{set "chapterCount" 3}}
-
-            {{!-- Step 2: Generate the novel outline with the given chapter count --}}
-            {{set "novelOutline" (WriterPlugin-NovelOutline input=(get "bookTitle") chapterCount=(get "chapterCount"))}}
-
-            {{!-- Step 3: Loop through the chapters and generate the content for each chapter --}}
-            {{#each (range 1 (get "chapterCount"))}}
-                {{set "chapterIndex" this}}
-                {{set "chapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex"))}}
-                {{set "previousChapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex" - 1))}}
-                
-                {{!-- Step 4: Write the chapter content using the WriterPlugin-NovelChapter helper --}}
-                {{set "chapterContent" (WriterPlugin-NovelChapter input=(get "chapterSynopsis") theme=(get "bookTitle") previousChapter=(get "previousChapterSynopsis") chapterIndex=(get "chapterIndex"))}}
-                
-                {{!-- Step 5: Output the chapter content --}}
-                {{json (get "chapterContent")}}
-            {{/each}}
-        */
     }
 }
