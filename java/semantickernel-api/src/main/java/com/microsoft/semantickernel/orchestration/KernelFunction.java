@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -68,7 +69,7 @@ public interface KernelFunction {
      * @param <T>       The type of the context variable
      * @return An {@link Flux} for streaming the results of the function's invocation.
      */
-    <T> Flux<ContextVariable<T>> invokeStreamingAsync(
+    <T> Flux<StreamingContent<T>> invokeStreamingAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType);

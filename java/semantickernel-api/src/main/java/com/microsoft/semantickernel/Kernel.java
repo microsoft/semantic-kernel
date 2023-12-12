@@ -3,10 +3,15 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.orchestration.KernelArguments;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -26,14 +31,29 @@ public interface Kernel extends Buildable {
     <T> Mono<ContextVariable<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
-        ContextVariable<T> resultType);
+        ContextVariableType<T> resultType);
 
     <T> Mono<ContextVariable<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType);
 
+    <T> Flux<StreamingContent<T>> invokeStreamingAsync(
+        KernelFunction function,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType);
+
+    <T> Flux<StreamingContent<T>> invokeStreamingAsync(
+        KernelFunction function,
+        @Nullable KernelArguments arguments,
+        Class<T> resultType);
+
     interface Builder extends SemanticKernelBuilder<Kernel> {
+
+        Builder withDefaultAIService(
+            ChatCompletionService gpt35Turbo);
+
+        Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
 
     }
 }

@@ -1,19 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.skilldefinition.ParameterView;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.templateengine.blocks.BlockTypes;
-import com.microsoft.semantickernel.templateengine.blocks.VarBlock;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import reactor.core.publisher.Mono;
-
+/*
 /// <summary>
 /// Prompt template.
 /// </summary>
@@ -109,3 +97,6 @@ public class DefaultPromptTemplate implements PromptTemplate {
         }
     }
 }
+
+
+ */

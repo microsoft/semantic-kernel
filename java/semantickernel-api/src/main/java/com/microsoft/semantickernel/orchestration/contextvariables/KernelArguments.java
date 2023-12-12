@@ -105,6 +105,5 @@ public interface KernelArguments extends Buildable, Map<String, ContextVariable<
         <T> Builder withVariable(String key, ContextVariable<T> value);
 
         Builder withVariable(String key, Object value);
-
     }
 }

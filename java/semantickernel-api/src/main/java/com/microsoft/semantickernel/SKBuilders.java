@@ -16,7 +16,8 @@ public class SKBuilders {
 
     public static TextEmbeddingGeneration.Builder textEmbeddingGeneration() {
         return BuildersSingleton.INST.getInstance(TextEmbeddingGeneration.Builder.class);
-    }*/
+    }
+    */
 
     public static Kernel.Builder kernel() {
         return BuildersSingleton.INST.getInstance(Kernel.Builder.class);

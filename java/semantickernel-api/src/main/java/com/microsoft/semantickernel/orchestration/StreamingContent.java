@@ -28,4 +28,7 @@ public class StreamingContent<T> {
     public KernelArguments metadata;
 
 
+    public StreamingContent(T content) {
+        this.innerContent = content;
+    }
 }

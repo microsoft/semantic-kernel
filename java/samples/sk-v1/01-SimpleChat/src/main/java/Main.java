@@ -3,10 +3,13 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.orchestration.KernelArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,20 +29,21 @@ public class Main {
             .endpoint(AZURE_OPENAI_ENDPOINT)
             .buildAsyncClient();
 
-        ChatCompletion<ChatHistory> gpt35Turbo = ChatCompletion.builder()
+        ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
             .withOpenAIClient(client)
             .withModelId(GPT_35_DEPLOYMENT_NAME)
             .build();
 
+        /*
         ChatCompletion<ChatHistory> gpt4 = ChatCompletion.builder()
             .withOpenAIClient(client)
             .withModelId(GPT_4_DEPLOYMENT_NAME)
             .build();
+         */
 
         Kernel kernel = SKBuilders.kernel()
             .withDefaultAIService(gpt35Turbo)
-            .withDefaultAIService(gpt4)
-            .withPromptTemplateEngine(new HandlebarsPromptTemplateEngine())
+            .withPromptTemplateEngine(new HandlebarsPromptTemplate())
             .build();
 
         // Initialize the required functions and services for the kernel
@@ -54,7 +58,7 @@ public class Main {
             String input = bf.readLine();
             chatHistory.addUserMessage(input);
 
-            String message = kernel
+            ContextVariable<String> message = kernel
                 .invokeAsync(
                     chatFunction,
                     KernelArguments
@@ -66,8 +70,8 @@ public class Main {
                 .block();
 
             System.out.print("Assistant > ");
-            System.out.println(message);
-            chatHistory.addAssistantMessage(message);
+            System.out.println(message.getValue());
+            chatHistory.addAssistantMessage(message.getValue());
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import javax.annotation.Nullable;
 
 public class KernelFunctionYaml {

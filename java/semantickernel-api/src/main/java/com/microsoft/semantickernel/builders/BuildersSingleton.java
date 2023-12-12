@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.builders;
 
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -47,16 +48,21 @@ public enum BuildersSingleton {
     private static final String FALLBACK_VARIABLE_BUILDER_CLASS =
         "com.microsoft.semantickernel.orchestration.DefaultContextVariables$Builder";
 
+    private static final String FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS =
+        "com.microsoft.semantickernel.orchestration.DefaultKernelArguments$Builder";
+
     private final Map<Class<? extends SemanticKernelBuilder<?>>, Supplier<? extends Buildable>>
         builders = new HashMap<>();
 
     BuildersSingleton() {
         try {
+            registerBuilder(Kernel.Builder.class, FALLBACK_KERNEL_BUILDER_CLASS);
+            registerBuilder(KernelArguments.Builder.class, FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS);
+/*
             // Keep this list in alphabetical order by fallback variable name
             registerBuilder(ChatCompletionService.Builder.class,
                 FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
 
-/*
             registerBuilder(
                 CompletionKernelFunction.Builder.class, FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS);
 
@@ -68,7 +74,6 @@ public enum BuildersSingleton {
             registerBuilder(
                     TextEmbeddingGeneration.Builder.class,
                     FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
-            registerBuilder(Kernel.Builder.class, FALLBACK_KERNEL_BUILDER_CLASS);
             registerBuilder(KernelConfig.Builder.class, FALLBACK_KERNEL_CONFIG_BUILDER_CLASS);
             registerBuilder(MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
             registerBuilder(PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
@@ -79,7 +84,6 @@ public enum BuildersSingleton {
             registerBuilder(
                     ReadOnlySkillCollection.Builder.class, FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
             registerBuilder(TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
-            registerBuilder(ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
 
  */
         } catch (Throwable e) {
