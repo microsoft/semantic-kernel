@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -64,6 +65,14 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("results_per_prompt")]
     public int ResultsPerPrompt { get; set; } = 1;
+
+    /// <summary>
+    /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
+    /// same seed and parameters should return the same result. Determinism is not guaranteed.
+    /// </summary>
+    [Experimental("SKEXP0013")]
+    [JsonPropertyName("seed")]
+    public long? Seed { get; set; }
 
     /// <summary>
     /// The system prompt to use when generating text using a chat model.
