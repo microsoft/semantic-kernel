@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -234,7 +235,7 @@ public static class OpenApiKernelExtensions
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory, cancellationToken));
+                functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -256,7 +257,6 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     private static KernelFunction CreateRestApiFunction(
         string pluginName,
@@ -264,8 +264,7 @@ public static class OpenApiKernelExtensions
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
-        ILoggerFactory? loggerFactory = null,
-        CancellationToken cancellationToken = default)
+        ILoggerFactory? loggerFactory = null)
     {
         IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? false,

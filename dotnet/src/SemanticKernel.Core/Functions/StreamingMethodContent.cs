@@ -17,9 +17,9 @@ public sealed class StreamingMethodContent : StreamingKernelContent
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        if (this.Content is byte[])
+        if (this.Content is byte[] bytes)
         {
-            return (byte[])this.Content;
+            return bytes;
         }
 
         // By default if a native value is not Byte[] we output the UTF8 string representation of the value
