@@ -191,31 +191,21 @@ public sealed class Kernel
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     #region GetServices
-    /// <summary>Gets a service from the <see cref="Services"/> collection.</summary>
+    /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
     /// <typeparam name="T">Specifies the type of the service to get.</typeparam>
-    /// <param name="serviceId">An object that specifies the key of the service to get.</param>
+    /// <param name="serviceKey">An object that specifies the key of the service to get.</param>
     /// <returns>The found service instance.</returns>
     /// <exception cref="KernelException">A service of the specified type and name could not be found.</exception>
-    /// <remarks>
-    /// The behavior of this method is not the same as that of <see cref="IServiceProvider.GetService(Type)"/>
-    /// on the exposed <see cref="Services"/>. Rather, it is opinionated view around it. If a <paramref name="serviceId"/>
-    /// is provided, it will attempt to find a service registered with that key. If no <paramref name="serviceId"/>
-    /// is provided, it will attempt to find any service registered, regardless of whether it was registered with
-    /// with a key. If multiple services meet the criteria, it will return one of those registered, but no guarantee
-    /// on exactly which. For certain services, like <see cref="ILoggerFactory"/>, it will also return a default implementation
-    /// if no key was specified and no service was found. If it's able to find the specified service, that service is returned.
-    /// Otherwise, an exception is thrown.
-    /// </remarks>
-    public T GetRequiredService<T>(string? serviceId = null) where T : class
+    public T GetRequiredService<T>(object? serviceKey = null) where T : class
     {
         T? service = null;
 
-        if (serviceId is not null)
+        if (serviceKey is not null)
         {
             if (this.Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = this.Services.GetRequiredKeyedService<T>(serviceId);
+                service = this.Services.GetKeyedService<T>(serviceKey);
             }
         }
         else
@@ -235,9 +225,9 @@ public sealed class Kernel
         if (service is null)
         {
             string message =
-                serviceId is null ? $"Service of type '{typeof(T)}' not registered." :
-                this.Services is not IKeyedServiceProvider ? $"Key '{serviceId}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
-                $"Service of type '{typeof(T)}' and key '{serviceId}' not registered.";
+                serviceKey is null ? $"Service of type '{typeof(T)}' not registered." :
+                this.Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
+                $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
 
             throw new KernelException(message);
         }
