@@ -34,7 +34,7 @@ public static class Example66_FunctionCallingStepwisePlanner
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
-            // Console.WriteLine($"Chat history:\n{result.ChatHistory?.AsJson()}");
+            // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");
         }
     }
 
