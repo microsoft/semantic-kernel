@@ -2,7 +2,7 @@
 
 This example project shows how an application can be configured to send Semantic Kernel telemetry to Application Insights.
 
-> Note that it is also possible to use other Application Performance Management (APM) venders. An example is [Prometheus](https://prometheus.io/docs/introduction/overview/). Please refer to this [link](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics-collection#configure-the-example-app-to-use-opentelemetrys-prometheus-exporter) on how to do it.
+> Note that it is also possible to use other Application Performance Management (APM) vendors. An example is [Prometheus](https://prometheus.io/docs/introduction/overview/). Please refer to this [link](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics-collection#configure-the-example-app-to-use-opentelemetrys-prometheus-exporter) on how to do it.
 
 For more information, please refer to the following articles:
 
