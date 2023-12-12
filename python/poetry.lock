@@ -2084,19 +2084,18 @@ traitlets = "*"
 
 [[package]]
 name = "milvus"
-version = "2.2.13"
+version = "2.3.3"
 description = "Embeded Milvus"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "milvus-2.2.13-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:fcaff6cdc885ab46f432b79294a298e2cac542ffdbcb8c61be5f4c1f1c27dbeb"},
-    {file = "milvus-2.2.13-py3-none-macosx_11_0_arm64.whl", hash = "sha256:58dfe6b2630a981475c56dc06fe414d2d821c94651b3341e62e7de8bc2850ec9"},
-    {file = "milvus-2.2.13-py3-none-manylinux2014_x86_64.whl", hash = "sha256:9f95afcdb7b8912ae7c8a02604ed3a057462df25e6fa22112db1ead828e371a1"},
-    {file = "milvus-2.2.13-py3-none-win_amd64.whl", hash = "sha256:03c55043321a72d41d2dcb49745836f10156c61bfc9c48fa58345ae27dbbf164"},
+    {file = "milvus-2.3.3-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:9dba3c89e3e23fd679659ba93198a07396cea8b186ac668ed7386ba7b9eb8560"},
+    {file = "milvus-2.3.3-py3-none-macosx_11_0_arm64.whl", hash = "sha256:28469736ce9cc792f6ed6f4a50a3613b3c3fcbe2e3206bcec9b98e0336fcf4a8"},
+    {file = "milvus-2.3.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:39c26ebb54808e1d46a063d3c3799ffe60fe4576aebef61be8ee6653ae600bc0"},
 ]
 
 [package.extras]
-client = ["pymilvus (>=2.2.0,!=2.2.14,<2.3.0)"]
+client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
 
 [[package]]
 name = "minio"
