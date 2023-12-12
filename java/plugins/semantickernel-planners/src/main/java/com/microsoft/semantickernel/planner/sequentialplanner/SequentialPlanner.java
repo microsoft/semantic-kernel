@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
@@ -111,7 +112,7 @@ public class SequentialPlanner {
                                 SKContext updatedContext =
                                         context.setVariable(
                                                         "available_functions",
-                                                        relevantFunctionsManual)
+                                                        ContextVariable.of(relevantFunctionsManual))
                                                 .update(goal);
 
                                 return functionFlowFunction.invokeAsync(updatedContext, null);

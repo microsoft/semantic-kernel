@@ -21,6 +21,7 @@ public class NativeSKFunctionTest {
     @Test
     public void singleStringIsBoundToInput() {
         class SinleStringSkill {
+
             @DefineSKFunction
             public String doSomething(String anInput) {
                 return "";
@@ -37,6 +38,7 @@ public class NativeSKFunctionTest {
     @Test
     public void annotatedWithSKFunctionInputAttributeIsBoundToInput() {
         class With2Inputs {
+
             @DefineSKFunction
             public String doSomething(
                     @SKFunctionInputAttribute(description = "") String anInput,
@@ -48,8 +50,12 @@ public class NativeSKFunctionTest {
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         ContextVariables variables = SKBuilders.variables().build();
+
         variables = variables.writableClone().setVariable("input", "foo");
-        variables = variables.writableClone().setVariable("secondInput", "ignore");
+        variables =
+                variables
+                        .writableClone()
+                        .setVariable("secondInput", "ignore");
         skills.getFunction("doSomething").invokeWithCustomInputAsync(variables, null, null).block();
         Mockito.verify(skill, Mockito.times(1)).doSomething("foo", "ignore");
     }
@@ -57,6 +63,7 @@ public class NativeSKFunctionTest {
     @Test
     public void annotatedWithNonInputIsBound() {
         class With2InputParameters {
+
             @DefineSKFunction
             public String doSomething(
                     @SKFunctionParameters(name = "anInput") String anInput,
@@ -77,6 +84,7 @@ public class NativeSKFunctionTest {
     @Test
     public void nonExistentVariableCreatesError() {
         class DoesNotExist {
+
             @DefineSKFunction
             public String doSomething(@SKFunctionParameters(name = "doesNotExist") String anInput) {
                 return "";
@@ -100,6 +108,7 @@ public class NativeSKFunctionTest {
     @Test
     public void noAnnotationCreatesError() {
         class AnnotationDoesNotExist {
+
             public String doSomething(String anInput) {
                 return "";
             }
@@ -119,6 +128,7 @@ public class NativeSKFunctionTest {
     @Test
     public void contextIsBound() {
         class WithContext {
+
             @DefineSKFunction
             public String doSomething(SKContext context) {
                 return "";
@@ -135,6 +145,7 @@ public class NativeSKFunctionTest {
     @Test
     public void withMonoReturn() {
         class WithMono {
+
             @DefineSKFunction
             public Mono<String> doSomething() {
                 return Mono.just("A-RESULT");

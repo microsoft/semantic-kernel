@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.blocks;
 
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
@@ -99,8 +100,9 @@ public final class CodeBlock extends Block implements CodeRendering {
             String input = ((TextRendering) this.tokens.get(1)).render(variables);
             if (content.startsWith("$")) {
                 String varName = content.substring(1);
-                variables = variables.writableClone().setVariable(varName, input);
-            } else variables = variables.writableClone().update(input);
+                variables =
+                        variables.writableClone().setVariable(varName, ContextVariable.of(input));
+            } else variables = variables.writableClone().update(ContextVariable.of(input));
         }
 
         Mono<SKContext> result =
@@ -109,9 +111,9 @@ public final class CodeBlock extends Block implements CodeRendering {
 
         // TODO: 1.0 fix cast
         return result.map(
-                it -> {
-                    return (String) it.getResult();
-                });
+            it -> {
+                return it.getResult().toPromptString();
+            });
     }
 
     @Nullable

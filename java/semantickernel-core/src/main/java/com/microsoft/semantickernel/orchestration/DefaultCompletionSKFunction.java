@@ -140,7 +140,7 @@ public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
         // TODO: fix
         return results.map(
                         result -> {
-                            return (String) result.getResult();
+                            return result.getResult().toPromptString();
                         })
                 .collect(Collectors.joining("\n"))
                 .map(context::update);
@@ -273,7 +273,8 @@ public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
     }
 
     @Override
-    public Mono<FunctionResult> invokeAsync(Kernel kernel, ContextVariables variables, boolean streaming) {
+    public Mono<FunctionResult> invokeAsync(
+            Kernel kernel, ContextVariables variables, boolean streaming) {
         return null;
     }
 

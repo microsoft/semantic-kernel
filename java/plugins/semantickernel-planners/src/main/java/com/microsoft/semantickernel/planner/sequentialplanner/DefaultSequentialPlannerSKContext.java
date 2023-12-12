@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -196,14 +197,14 @@ public class DefaultSequentialPlannerSKContext {
     /// <param name="availableFunctions">The available functions to save.</param>
     Mono<SKContext> rememberFunctionsAsync(List<SKFunction> availableFunctions) {
         // Check if the functions have already been saved to memory.
-        if (delegate.getVariables().asMap().containsKey(PlanSKFunctionsAreRemembered)) {
+        if (delegate.getVariables().containsKey(PlanSKFunctionsAreRemembered)) {
             return Mono.just(delegate);
         }
 
         SemanticTextMemory memory = delegate.getSemanticMemory();
 
         if (memory == null) {
-            delegate.setVariable(PlanSKFunctionsAreRemembered, "true");
+            delegate.setVariable(PlanSKFunctionsAreRemembered, ContextVariable.of(true));
             return Mono.just(delegate);
         }
 
@@ -248,7 +249,8 @@ public class DefaultSequentialPlannerSKContext {
                 .ignoreElements()
                 .map(
                         newMemory -> {
-                            delegate.setVariable(PlanSKFunctionsAreRemembered, "true");
+                            delegate.setVariable(
+                                    PlanSKFunctionsAreRemembered, ContextVariable.of(true));
                             return delegate;
                         });
     }

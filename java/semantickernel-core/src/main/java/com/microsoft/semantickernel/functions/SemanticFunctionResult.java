@@ -2,6 +2,10 @@
 package com.microsoft.semantickernel.functions;
 
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import java.util.Map;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,7 +30,11 @@ public class SemanticFunctionResult implements FunctionResult {
         this.isStreaming = false;
     }
 
-    public SemanticFunctionResult(String pluginName, String functionName, Mono<String> valueAsync, Flux<String> streamingValueAsync) {
+    public SemanticFunctionResult(
+            String pluginName,
+            String functionName,
+            Mono<String> valueAsync,
+            Flux<String> streamingValueAsync) {
         this.pluginName = pluginName;
         this.functionName = functionName;
         this.valueAsync = valueAsync;
@@ -64,8 +72,4 @@ public class SemanticFunctionResult implements FunctionResult {
         return valueAsync.block();
     }
 
-    @Override
-    public <T> T tryGetMetadataValue(String key) {
-        return null;
-    }
 }

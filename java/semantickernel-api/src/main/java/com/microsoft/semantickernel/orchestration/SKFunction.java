@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 /**
  * Semantic Kernel callable function interface
  *
- * @apiNote Breaking change: s/SKFunction/SKFunction/
+ * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
  */
 public interface SKFunction {
     /**

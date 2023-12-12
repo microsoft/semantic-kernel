@@ -70,7 +70,7 @@ public class DefaultKernelTest {
         Assertions.assertEquals("a", result.getResult());
 
         result =
-                result.appendToVariable("history", "user: A" + result.getResult())
+                result.setVariable("history", "user: A" + result.getResult())
                         .setVariable("user_input", "B");
 
         result = chat.invokeAsync(result, null).block();

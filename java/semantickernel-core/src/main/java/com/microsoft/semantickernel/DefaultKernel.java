@@ -20,6 +20,7 @@ import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import jakarta.inject.Inject;
+import java.util.*;
 
 import java.util.List;
 import java.util.Arrays;
@@ -301,9 +302,7 @@ public class DefaultKernel implements Kernel {
             results.add(f.invokeAsync(this, variables, streaming));
         }
 
-        return Flux.merge(results)
-                .collectList()
-                .map(DefaultKernelResult::new);
+        return Flux.merge(results).collectList().map(DefaultKernelResult::new);
     }
 
     public static class Builder implements Kernel.Builder {

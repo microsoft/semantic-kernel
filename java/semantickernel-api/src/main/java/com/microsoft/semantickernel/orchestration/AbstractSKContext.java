@@ -26,8 +26,8 @@ public abstract class AbstractSKContext implements SKContext {
 
     @Nullable
     @Override
-    public Object getResult() {
-        return getVariables().asMap().get(ContextVariables.MAIN_KEY);
+    public ContextVariable<?> getResult() {
+        return getVariables().get(ContextVariables.MAIN_KEY);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public abstract class AbstractSKContext implements SKContext {
     /// </summary>
     @Override
     public ContextVariables getVariables() {
-        return SKBuilders.variables().withVariables(variables.asMap()).build();
+        return SKBuilders.variables().withVariables(variables).build();
     }
 
     AbstractSKContext(ContextVariables variables) {
@@ -53,8 +53,7 @@ public abstract class AbstractSKContext implements SKContext {
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills) {
-        this.variables =
-                SKBuilders.variables().withVariables(variables.asMap()).build().writableClone();
+        this.variables = SKBuilders.variables().withVariables(variables).build().writableClone();
 
         if (memory != null) {
             this.memory = memory.copy();
@@ -100,14 +99,20 @@ public abstract class AbstractSKContext implements SKContext {
     }
 
     @Override
-    public SKContext setVariable(@Nonnull String key, @Nonnull String content) {
+    public SKContext setVariable(@Nonnull String key, @Nonnull ContextVariable<?> content) {
+        variables.setVariable(key, content);
+        return getThis();
+    }
+
+    @Override
+    public SKContext setVariable(@Nonnull String key, @Nonnull Object content) {
         variables.setVariable(key, content);
         return getThis();
     }
 
     @Override
     public SKContext update(@Nonnull String content) {
-        variables.update(content);
+        variables.update(ContextVariable.of(content));
         return getThis();
     }
 

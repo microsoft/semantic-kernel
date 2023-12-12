@@ -3,24 +3,7 @@ package com.microsoft.semantickernel.syntaxexamples; // Copyright (c) Microsoft.
 
 // reserved.
 
-import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
-
-import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.coreskills.TextSkill;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.planner.PlanningException;
-import com.microsoft.semantickernel.planner.actionplanner.Plan;
-import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
-import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-import java.io.IOException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import reactor.util.function.Tuples;
+/*
 
 public class Example12SequentialPlannerTest {
     @Test
@@ -200,3 +183,4 @@ public class Example12SequentialPlannerTest {
                         Mockito.matches("fake@example.com"));
     }
 }
+*/

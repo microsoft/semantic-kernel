@@ -122,7 +122,7 @@ public interface Kernel extends SkillExecutor, Buildable {
      * Registers a semantic function on this kernel
      *
      * @apiNote Breaking change: s/<RequestConfiguration, FunctionType extends
-     *     SKFunction>/<FunctionType extends SKFunction>/
+     *     SKFunction<RequestConfiguration>>/<FunctionType extends SKFunction>/
      */
     @Deprecated
     default <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
@@ -131,7 +131,7 @@ public interface Kernel extends SkillExecutor, Buildable {
     /**
      * Obtains a semantic function with the given name
      *
-     * @apiNote Breaking change: s/SKFunction/SKFunction/
+     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
      */
     @Deprecated
     default SKFunction getFunction(String skill, String function) { throw new UnsupportedOperationException(); }
