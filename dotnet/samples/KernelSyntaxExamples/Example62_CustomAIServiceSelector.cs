@@ -43,13 +43,13 @@ public static class Example62_CustomAIServiceSelector
             .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
+                apiKey: azureApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId,
-                apiKey: azureApiKey)
+                modelId: azureModelId)
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                serviceId: "OpenAIChat",
-                apiKey: openAIApiKey);
+                apiKey: openAIApiKey,
+                serviceId: "OpenAIChat");
         builder.Services.AddSingleton<IAIServiceSelector>(new GptAIServiceSelector()); // Use the custom AI service selector to select the GPT model
         Kernel kernel = builder.Build();
 

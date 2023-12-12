@@ -307,12 +307,16 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
 
-        if (this._logger.IsEnabled(LogLevel.Trace) &&
-            renderedEventArgs is not null &&
+        if (renderedEventArgs is not null &&
             renderedEventArgs.Cancel is false &&
             renderedEventArgs.RenderedPrompt != renderedPrompt)
         {
-            this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+            renderedPrompt = renderedEventArgs.RenderedPrompt;
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+            }
         }
 
         return (aiService, renderedPrompt, renderedEventArgs);
