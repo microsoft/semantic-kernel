@@ -84,7 +84,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new("blah blah blah"));
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = "blah blah blah" });
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }

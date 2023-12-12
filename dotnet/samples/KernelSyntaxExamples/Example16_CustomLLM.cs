@@ -50,7 +50,7 @@ public static class Example16_CustomLLM
 
         const string Input = "Why AI is awesome";
         Console.WriteLine($"Function input: {Input}\n");
-        var result = await paragraphWritingFunction.InvokeAsync(kernel, new(Input));
+        var result = await paragraphWritingFunction.InvokeAsync(kernel, new() { ["input"] = Input });
 
         Console.WriteLine(result);
     }

@@ -19,8 +19,9 @@ public static class Example03_Arguments
         Kernel kernel = new();
         var textPlugin = kernel.ImportPluginFromType<StaticTextPlugin>();
 
-        var arguments = new KernelArguments("Today is: ")
+        var arguments = new KernelArguments()
         {
+            ["input"] = "Today is: ",
             ["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture)
         };
 

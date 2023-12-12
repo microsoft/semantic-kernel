@@ -200,8 +200,9 @@ public static class Example15_TextMemoryPlugin
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.InvokeAsync(memoryPlugin["Save"], new("My family is from New York")
+        await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
+            [TextMemoryPlugin.InputParam] = "My family is from New York",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
         }, cancellationToken);
@@ -242,8 +243,9 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
-        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new("Ask: where do I live?")
+        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new()
         {
+            [TextMemoryPlugin.InputParam] = "Ask: where do I live?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
@@ -289,8 +291,9 @@ Answer:
 
         var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.InvokeAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
+        result = await kernel.InvokeAsync(aboutMeOracle, new()
         {
+            [TextMemoryPlugin.InputParam] = "Do I live in the same town where I grew up?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",

@@ -21,7 +21,7 @@ public static class Example27_PromptFunctionsUsingChatGPT
         var func = kernel.CreateFunctionFromPrompt(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync(kernel, new("Jupiter"));
+        var result = await func.InvokeAsync(kernel, new() { ["input"] = "Jupiter" });
         Console.WriteLine(result.GetValue<string>());
 
         /*

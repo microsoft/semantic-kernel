@@ -89,7 +89,7 @@ public static class Example54_AzureChatCompletionWithData
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var response = await kernel.InvokeAsync(function, new(ask));
+        var response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
 
         // Output
         // Ask: How did Emily and David meet?
@@ -100,7 +100,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.InvokeAsync(function, new(ask));
+        response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
 
         // Output
         // Ask: What are Emily and David studying?

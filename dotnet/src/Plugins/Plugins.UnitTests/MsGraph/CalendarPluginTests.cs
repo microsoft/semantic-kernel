@@ -38,8 +38,9 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
         {
+            ["input"] = anySubject,
             ["start"] = anyStartTime,
             ["end"] = anyEndTime,
             ["location"] = anyLocation,
@@ -77,8 +78,9 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
         {
+            ["input"] = anySubject,
             ["start"] = anyStartTime,
             ["end"] = anyEndTime,
             ["content"] = anyContent,
@@ -115,8 +117,9 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
         {
+            ["input"] = anySubject,
             ["start"] = anyStartTime,
             ["end"] = anyEndTime,
             ["location"] = anyLocation,
@@ -153,8 +156,9 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
         {
+            ["input"] = anySubject,
             ["start"] = anyStartTime,
             ["end"] = anyEndTime,
             ["location"] = anyLocation,
@@ -180,8 +184,9 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act and Assert
-        await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
         {
+            ["input"] = anySubject,
             ["end"] = anyEndTime,
             ["location"] = anyLocation,
             ["content"] = anyContent,
@@ -204,8 +209,9 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
         {
+            ["input"] = anySubject,
             ["start"] = anyStartTime,
             ["location"] = anyLocation,
             ["content"] = anyContent,

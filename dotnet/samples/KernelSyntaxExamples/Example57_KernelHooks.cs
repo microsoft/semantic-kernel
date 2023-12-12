@@ -88,7 +88,7 @@ public static class Example57_KernelHooks
 
         // Invoke prompt to trigger execution hooks.
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
         Console.WriteLine($"Function Result: {result}");
     }
 
@@ -136,7 +136,7 @@ public static class Example57_KernelHooks
 
         // Invoke prompt to trigger prompt rendering hooks.
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
