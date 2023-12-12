@@ -33,7 +33,9 @@ internal static class KernelHelpersUtils
     /// <returns>True if the type is a numeric type; otherwise, false.</returns>
     public static bool IsNumericType(Type? type)
     {
-        return type is not null &&
+        return type == typeof(nuint)
+            || type == typeof(nint)
+            || (type is not null &&
                 Type.GetTypeCode(type) is
                     TypeCode.SByte or
                     TypeCode.Int16 or
@@ -45,7 +47,7 @@ internal static class KernelHelpersUtils
                     TypeCode.UInt64 or
                     TypeCode.Double or
                     TypeCode.Single or
-                    TypeCode.Decimal;
+                    TypeCode.Decimal);
     }
 
     /// <summary>

@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Extensions.UnitTests.PromptTemplates.Handlebars;
 
-public static class HandlebarsPromptTemplateTestUtils
+internal static class TestUtilities
 {
     public static PromptTemplateConfig InitializeHbPromptConfig(string template)
     {

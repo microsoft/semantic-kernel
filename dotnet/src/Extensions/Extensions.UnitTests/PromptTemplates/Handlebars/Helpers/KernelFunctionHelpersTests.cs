@@ -8,7 +8,7 @@ using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
-using static Extensions.UnitTests.PromptTemplates.Handlebars.HandlebarsPromptTemplateTestUtils;
+using static Extensions.UnitTests.PromptTemplates.Handlebars.TestUtilities;
 
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplates.Handlebars.Helpers;
 

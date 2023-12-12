@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// <summary>
 /// Represents a Handlebars prompt template.
 /// </summary>
-internal class HandlebarsPromptTemplate : IPromptTemplate
+internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Default options for built-in Handlebars helpers.

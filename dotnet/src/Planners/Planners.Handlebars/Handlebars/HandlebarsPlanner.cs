@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -13,27 +12,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
-
-/// <summary>
-/// Enum error codes for Handlebars planner exceptions.
-/// </summary>
-public enum HandlebarsPlannerErrorCodes
-{
-    /// <summary>
-    /// Error code for hallucinated helpers.
-    /// </summary>
-    HallucinatedHelpers,
-
-    /// <summary>
-    /// Error code for invalid Handlebars template.
-    /// </summary>
-    InvalidTemplate,
-
-    /// <summary>
-    /// Error code for insufficient functions to complete the goal.
-    /// </summary>
-    InsufficientFunctionsForGoal,
-}
 
 /// <summary>
 /// Represents a Handlebars planner.
@@ -84,11 +62,6 @@ public sealed class HandlebarsPlanner
     }
 
     #region private
-
-    /// <summary>
-    /// Gets the stopwatch used for measuring planning time.
-    /// </summary>
-    private Stopwatch Stopwatch { get; } = new();
 
     private readonly HandlebarsPlannerConfig _config;
 
@@ -258,7 +231,7 @@ public sealed class HandlebarsPlanner
         {
             Template = createPlanPrompt,
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            Name = "CreatePlan",
+            Name = "Planner_Excluded-CreateHandlebarsPlan",
         };
 
         var handlebarsTemplate = this._templateFactory.Create(promptTemplateConfig);

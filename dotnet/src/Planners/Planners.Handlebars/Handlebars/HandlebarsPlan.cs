@@ -78,7 +78,7 @@ public sealed class HandlebarsPlan
         {
             Template = this._template,
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            Name = "ExecutePlan",
+            Name = "InvokeHandlebarsPlan",
         };
 
         var handlebarsTemplate = templateFactory.Create(promptTemplateConfig);

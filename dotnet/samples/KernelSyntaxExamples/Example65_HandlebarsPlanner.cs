@@ -113,7 +113,7 @@ public static class Example65_HandlebarsPlanner
 
         // Execute the plan
         var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
-        Console.WriteLine($"\nResult:\n{result}\n");
+        Console.WriteLine($"\nResult:{result}\n");
     }
 
     private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
@@ -138,7 +138,7 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"\n\n{ex.Message}\n");
+            Console.WriteLine($"\n{ex.Message}\n");
         }
     }
 
