@@ -26,13 +26,8 @@ public static class Example49_LogitBias
         var settings = new OpenAIPromptExecutionSettings();
 
         // This will make the model try its best to avoid any of the above related words.
-        foreach (var key in keys)
-        {
-            //This parameter maps tokens to an associated bias value from -100 (a potential ban) to 100 (exclusive selection of the token).
-
-            //-100 to potentially ban all the tokens from the list.
-            settings.TokenSelectionBiases.Add(key, -100);
-        }
+        //-100 to potentially ban all the tokens from the list.
+        settings.TokenSelectionBiases = keys.ToDictionary(key => key, key => -100);
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
