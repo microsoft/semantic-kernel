@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
+namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Factory for creating TypeConverter instances based on a provided type.
 /// </summary>
