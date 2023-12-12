@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Execution settings for an OpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public class OpenAIPromptExecutionSettings : PromptExecutionSettings
+public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -84,7 +84,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         get => this._chatSystemPrompt;
         set
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 value = DefaultChatSystemPrompt;
             }
@@ -99,25 +99,25 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public IDictionary<int, int>? TokenSelectionBiases { get; set; }
 
     /// <summary>
-    /// Gets or sets the behavior for how function calls are handled.
+    /// Gets or sets the behavior for how tool calls are handled.
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
-    /// <item>To disable all function calling, set the property to null (the default).</item>
+    /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To request that the model use a specific function, set the property to an instance returned
-    /// from <see cref="FunctionCallBehavior.RequireFunction"/>.
+    /// from <see cref="ToolCallBehavior.RequireFunction"/>.
     /// </item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="FunctionCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="ToolCallBehavior.EnableFunctions"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
     /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
-    /// set the property to <see cref="FunctionCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// set the property to <see cref="ToolCallBehavior.EnableKernelFunctions"/> if the client should simply
     /// send the information about the functions and not handle the response in any special manner, or
-    /// <see cref="FunctionCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// <see cref="ToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
     /// invoke the function and send the result back to the service.
     /// </item>
     /// </list>
@@ -128,7 +128,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
-    public FunctionCallBehavior? FunctionCallBehavior { get; set; }
+    public ToolCallBehavior? ToolCallBehavior { get; set; }
 
     /// <summary>
     /// Default value for chat system property.
