@@ -1,29 +1,58 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from openai import AsyncOpenAI
 import os
 from typing import Any, Dict, Tuple
 
+from openai import AsyncOpenAI
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
-    OpenAIChatPromptTemplate,
-)
 from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_settings import (
     OpenAIAssistantSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+    OpenAIChatPromptTemplate,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
     get_function_calling_object,
 )
-from semantic_kernel.core_skills import MathSkill
-
+from semantic_kernel.connectors.search_engine import BingConnector
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 # Update the cwd to be the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
+
+
+class WebSearchEngineSkill:
+    """
+    A search engine skill.
+    """
+
+    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.skill_definition import (
+        sk_function,
+        sk_function_context_parameter,
+    )
+
+    def __init__(self, connector) -> None:
+        self._connector = connector
+
+    @sk_function(
+        description="Performs a web search for a given query", name="searchAsync"
+    )
+    @sk_function_context_parameter(
+        name="query",
+        description="The search query",
+    )
+    async def search_async(self, query: str, context: SKContext) -> str:
+        query = query or context.variables.get("query")
+        result = await self._connector.search_async(query, num_results=5, offset=0)
+        if isinstance(result, list):
+            result = " ".join(result)
+        return str(result)
 
 
 async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
@@ -43,8 +72,8 @@ async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
 
 
 async def chat(
-    context: sk.SKContext, 
-    kernel: sk.Kernel, 
+    context: sk.SKContext,
+    kernel: sk.Kernel,
     functions: Dict[str, Any],
     chat_func: SKFunctionBase,
 ) -> Tuple[bool, sk.SKContext]:
@@ -56,12 +85,10 @@ async def chat(
         functions=functions,
         chat_function=chat_func,
     )
-    print(f"Mosscap:> {context.result}")
-    return True, context
+    print(f"Assistant:> {context.result}")
 
 
 async def main() -> None:
-
     kernel = sk.Kernel()
 
     api_key, _ = sk.openai_settings_from_dot_env()
@@ -72,12 +99,9 @@ async def main() -> None:
     kernel = sk.Kernel()
     kernel.add_chat_service("oai_assistant", assistant)
 
-    skills_directory = os.path.join(__file__, "../../../../samples/skills")
-    # adding skills to the kernel
-    # the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
-    kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-    # the math skill is a core skill and has the function calling enabled.
-    kernel.import_skill(MathSkill(), skill_name="math")
+    BING_API_KEY = sk.bing_search_settings_from_dot_env()
+    connector = BingConnector(BING_API_KEY)
+    kernel.import_skill(WebSearchEngineSkill(connector), skill_name="WebSearch")
 
     # enabling or disabling function calling is done by setting the function_call parameter for the completion.
     # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
@@ -95,7 +119,9 @@ async def main() -> None:
     )
 
     function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
+    chat_function = kernel.register_semantic_function(
+        "ChatBot", "Chat", function_config
+    )
 
     # calling the chat, you could add a overloaded version of the settings here,
     # to enable or disable function calling or set the function calling to a specific skill.
@@ -103,13 +129,11 @@ async def main() -> None:
     filter = {"exclude_skill": ["ChatBot"]}
     functions = get_function_calling_object(kernel, filter)
 
-    chatting = True
     context = kernel.create_new_context()
     context.variables[
         "user_input"
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
-    while chatting:
-        chatting, context = await chat(context, kernel, functions, chat_function)
+    await chat(context, kernel, functions, chat_function)
 
 
 if __name__ == "__main__":

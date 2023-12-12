@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import json
 from logging import Logger
 from typing import (
     TYPE_CHECKING,
@@ -23,6 +22,17 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_settings import (
     OpenAIAssistantSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_const import (
+    ACTION_STATE,
+    REQUIRED_ACTION_TYPE,
+    RUN_STATUS_CANCELED,
+    RUN_STATUS_FAILED,
+    RUN_STATUS_IN_PROGRESS,
+    RUN_STATUS_QUEUED,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_tool_output import (
+    OpenAIToolOutput,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
@@ -74,7 +84,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         functions: List[Dict[str, Any]],
         request_settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
-        is_submit_tool_outputs: bool = False,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -95,8 +104,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         if self.is_assistant:
             return await self._handle_assistant_chat_async(
-                messages=messages, 
-                functions=functions
+                messages=messages, functions=functions
             )
         else:
             response = await self._send_request(
@@ -203,129 +211,313 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def _handle_assistant_chat_async(
         self,
         messages: List[Dict[str, str]],
-        functions: Optional[List[Dict[str, Any]]] = None,
-        is_submit_tool_outputs: bool = False,
-    ) -> Union[
-        Tuple[Optional[str], Optional[FunctionCall]],
-        List[Tuple[Optional[str], Optional[FunctionCall]]],
-    ]:
+        functions: List[Dict[str, Any]] = None,
+    ) -> Tuple[str, List[FunctionCall]]:
         """
         Handle an assistant chat request.
 
-        Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            functions {List[Dict[str, Any]]} -- The functions to use for the chat completion.
+        Args:
+            messages (List[Dict[str, str]]): A list of message dictionaries.
+            functions (List[Dict[str, Any]]): A list of function definitions.
 
         Returns:
-            Union[
-                Tuple[Optional[str], Optional[FunctionCall]], 
-                List[Tuple[Optional[str], Optional[FunctionCall]]]
-            ] -- The completion result(s).
+            Tuple[str, List[FunctionCall]]: A tuple containing the assistant's response and a list of function calls.
+        """
+        await self._validate_assistant_configuration_async()
+
+        if self.is_tool_output_required and self.run is not None:
+            await self._handle_tool_output_async(messages)
+        else:
+            await self._handle_chat_and_functions_async(messages, functions)
+
+        return await self._finalize_response_async()
+
+    async def _validate_assistant_configuration_async(self) -> None:
+        """
+        Validate the assistant and thread configurations.
+
+        Raises:
+            AIException: If the assistant or thread is not configured.
+
+        Returns:
+            None
         """
         if not self.assistant_id:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "Please first create an assistant.",
             )
-
         if not self.thread_id:
-            thread = await self.client.beta.threads.create(timeout=10)
-            self.thread_id = thread.id
+            self.thread_id = await self._create_thread_async()
 
+    async def _create_thread_async(self) -> str:
+        """
+        Create a new thread and return its ID.
+
+        Returns:
+            str: The ID of the created thread.
+        """
+        thread = await self.client.beta.threads.create(timeout=10)
+        return thread.id
+
+    async def _handle_tool_output_async(
+        self,
+        messages: List[Dict[str, str]],
+    ) -> None:
+        """
+        Handle the tool output based on the provided messages.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of message dictionaries.
+
+        Returns:
+            None
+        """
+        tool_outputs = self._extract_function_data(messages)
+        await self._submit_tool_outputs_async(tool_outputs)
+
+    def _extract_function_data(
+        self,
+        messages: List[Dict[str, str]],
+    ) -> List[OpenAIToolOutput]:
+        """
+        Extracts function-related data from a list of messages.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of message dictionaries.
+
+        Returns:
+            List[OpenAIToolOutput]: A list of OpenAIToolOutput objects extracted from the messages.
+        """
+        tool_outputs = []
+        for message in reversed(messages):
+            if (
+                message.get("role") == "function"
+                and message.get("tool_call_id") in self.tool_call_ids
+            ):
+                tool_call_id = message.get("tool_call_id")
+                output = message.get("content")
+                if tool_call_id and output:
+                    tool_output = OpenAIToolOutput(
+                        tool_call_id=tool_call_id, output=output
+                    )
+                    tool_outputs.append(tool_output)
+
+        return tool_outputs
+
+    async def _submit_tool_outputs_async(
+        self,
+        tool_outputs: List[OpenAIToolOutput],
+    ) -> None:
+        """
+        Submit tool outputs to the thread.
+
+        Args:
+            tool_outputs (List[OpenAIToolOutput]): A list of OpenAIToolOutput objects.
+
+        Returns:
+            None
+        """
+        tools_list = [tool.model_dump() for tool in tool_outputs]
+
+        await self.client.beta.threads.runs.submit_tool_outputs(
+            run_id=self.run.id, thread_id=self.thread_id, tool_outputs=tools_list
+        )
+        # The run's state is back to pending, so retrieve it to get the latest status
+        self.run = await self.client.beta.threads.runs.retrieve(
+            thread_id=self.thread_id, run_id=self.run.id
+        )
+        await self._poll_on_run_async(self.run)
+        self._reset_tool_flags()
+
+    def _reset_tool_flags(self) -> None:
+        """
+        Reset tool-related flags.
+
+        Returns:
+            None
+        """
+        self.is_tool_output_required = False
+        self.tool_call_ids = []
+
+    async def _handle_chat_and_functions_async(
+        self,
+        messages: List[Dict[str, str]],
+        functions: List[Dict[str, Any]] = None,
+    ) -> None:
+        """
+        Handle chat messages and function invocations.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of message dictionaries.
+            functions (List[Dict[str, Any]]): A list of function definitions.
+
+        Returns:
+            None
+        """
+        await self._send_latest_message_on_thread_async(messages)
+        tools = self._transform_function_definitions(functions) if functions else []
+        self.run = await self._create_run_on_thread_and_poll_async(tools)
+
+    def _transform_function_definitions(
+        self,
+        functions: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """
+        Transforms function definitions into a specific format.
+
+        Args:
+            functions (List[Dict]): A list of function definitions.
+
+        Returns:
+            List[Dict]: A list of transformed function definitions.
+        """
+        transformed_functions = []
+        for func in functions:
+            transformed_function = {"type": "function", "function": func}
+            transformed_functions.append(transformed_function)
+
+        return transformed_functions
+
+    async def _send_latest_message_on_thread_async(self, messages) -> None:
+        """
+        Send the latest message from the messages list.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of message dictionaries.
+
+        Returns:
+            None
+        """
+        # Todo: do we want to send only the latest message?
+        # Don't want to duplicate sending old messages if they've
+        # already been included in the thread
         await self.client.beta.threads.messages.create(
             thread_id=self.thread_id,
             role=messages[-1]["role"],
             content=messages[-1]["content"],
         )
 
-        tools = []
-        if functions is not None:
-            tools = self._transform_function_definitions(functions)
+    async def _create_run_on_thread_and_poll_async(
+        self,
+        tools: List[Dict[str, Any]],
+    ) -> Run:
+        """
+        Create a new run with the given tools and poll until completion.
 
+        Args:
+            tools (List[Dict]): A list of tool definitions.
+
+        Returns:
+            Run: The run object after it exits the queued or in-progress state.
+        """
         run = await self.client.beta.threads.runs.create(
-            thread_id=self.thread_id,
-            assistant_id=self.assistant_id,
-            tools=tools,
+            thread_id=self.thread_id, assistant_id=self.assistant_id, tools=tools
         )
+        return await self._poll_on_run_async(run)
 
-        run = await self._poll_on_run(run)
+    async def _poll_on_run_async(self, run: Run) -> Run:
+        """
+        Polls the status of a run until it is no longer queued or in progress.
 
-        if (
-            run.status == "requires_action"
-            and run.required_action.type == "submit_tool_outputs"
-        ):
-            tool_calls = run.required_action.submit_tool_outputs.tool_calls
+        Args:
+            run (Run): The run object to be polled.
 
-            # Initialize an empty list to store extracted data
-            completion = None
-            func_calls = None
+        Raises:
+            AIException: If the run fails.
 
-            # Iterate through each tool_call
-            for tool_call in tool_calls:
-                # Extract 'name' and 'arguments'
-                name = tool_call.function.name
-                arguments = json.loads(tool_call.function.arguments)
-                
-                print(f"Tool Call: {tool_call.id}")
-                print(f"Function Name: {name}")
-                print(f"Function Arguments:\n{arguments}")
-
-                try:
-                    fc = FunctionCall(tool_call_id=str(tool_call.id), name=str(name), arguments=str(arguments))
-                except Exception as e:
-                    print(f"Exception: {e}")
-
-                func_calls = fc
-
-                break
-
-            # return a list of Tuple[Optional[str], Optional[FunctionCall]]
-            return completion, func_calls
-
-            # need to run the function here, how do we do that?
-            # await self.client.beta.threads.runs.submit_tool_outputs(
-            #     run_id=run.id,
-            #     thread_id=self.thread_id,
-            #     tool_outputs=run.required_action.tool_outputs,
-            # )
-
-        run = await self._poll_on_run(run)
-
-        response = await self.client.beta.threads.messages.list(
-            thread_id=self.thread_id, order="desc"
-        )
-        if hasattr(response, "data"):
-            # Filtering to get only assistant messages
-            assistant_messages = [
-                message for message in response.data if message.role == "assistant"
-            ]
-
-            # Do we need to concatenate all assistant messages?
-            if assistant_messages:
-                assistant_response = assistant_messages[0]
-                if assistant_response.content:
-                    return (assistant_response.content[0].text.value, None)
-            else:
-                return []
-        else:
-            return []
-
-    async def _poll_on_run(self, run: Run) -> Run:
-        while run.status in ["queued", "in_progress"]:
+        Returns:
+            Run: The updated run object after it exits the queued or in-progress state.
+        """
+        while run.status in [RUN_STATUS_QUEUED, RUN_STATUS_IN_PROGRESS]:
+            # Retrieve the latest status of the run
             run = await self.client.beta.threads.runs.retrieve(
                 thread_id=self.thread_id, run_id=run.id
             )
             await asyncio.sleep(0.5)
+
+        if run.status in [RUN_STATUS_FAILED, RUN_STATUS_CANCELED]:
+            raise AIException(
+                AIException.ErrorCodes.RunFailed,
+                f"Run failed with status: {run.status}",
+            )
+
         return run
 
-    def _transform_function_definitions(self, functions):
-        transformed_functions = []
+    async def _finalize_response_async(self) -> Tuple[List[str], List[FunctionCall]]:
+        """
+        Finalize the response based on the run status.
 
-        for func in functions:
-            transformed_function = {"type": "function", "function": func}
-            transformed_functions.append(transformed_function)
+        Returns:
+            Tuple[List[str], List[FunctionCall]]: A tuple containing the
+                assistant's response and a list of function calls.
+        """
+        if self._is_tool_interaction_required():
+            return await self._handle_required_tool_interaction()
+        else:
+            return await self._get_assistant_response()
 
-        return transformed_functions
+    def _is_tool_interaction_required(self) -> bool:
+        """
+        Check if tool interaction is required.
+
+        Returns:
+            bool: True if tool interaction is required, False otherwise.
+        """
+        return (
+            self.run.status == ACTION_STATE
+            and self.run.required_action.type == REQUIRED_ACTION_TYPE
+        )
+
+    async def _handle_required_tool_interaction(
+        self,
+    ) -> Tuple[List[str], List[FunctionCall]]:
+        """
+        Handle the required tool interaction.
+
+        Returns:
+            Tuple[str, List[FunctionCall]]: A tuple containing the assistant's response and a list of function calls.
+        """
+        tool_calls = self.run.required_action.submit_tool_outputs.tool_calls
+        completions, func_calls = [], []
+        self.is_tool_output_required = True
+
+        # Store tool call IDs
+        self.tool_call_ids = [str(tool_call.id) for tool_call in tool_calls]
+
+        func_calls = [
+            FunctionCall(
+                tool_call_id=str(tool_call.id),
+                name=str(tool_call.function.name),
+                arguments=str(tool_call.function.arguments),
+            )
+            for tool_call in tool_calls
+        ]
+
+        return completions, func_calls
+
+    async def _get_assistant_response(self) -> Tuple[str, List[FunctionCall]]:
+        """
+        Retrieve the assistant's response.
+
+        Returns:
+            Tuple[str, List[FunctionCall]]: A tuple containing the assistant's response and a list of function calls.
+        """
+        response = await self.client.beta.threads.messages.list(
+            thread_id=self.thread_id, order="desc"
+        )
+        if hasattr(response, "data"):
+            assistant_messages = [
+                message for message in response.data if message.role == "assistant"
+            ]
+            if assistant_messages:
+                assistant_response = assistant_messages[0]
+                if assistant_response.content:
+                    return assistant_response.content[0].text.value, None
+            else:
+                return None, None
+        else:
+            return None, None
 
     @staticmethod
     def _parse_choices(choice) -> Tuple[str, int]:

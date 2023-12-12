@@ -18,10 +18,17 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 
 
 class OpenAIChatPromptTemplate(ChatPromptTemplate):
-    def add_function_response_message(self, name: str, content: Any) -> None:
+    def add_function_response_message(
+        self, name: str, content: Any, tool_call_id: str
+    ) -> None:
         """Add a function response message to the chat template."""
         self._messages.append(
-            OpenAIChatMessage(role="function", name=name, fixed_content=str(content))
+            OpenAIChatMessage(
+                role="function",
+                name=name,
+                fixed_content=str(content),
+                tool_call_id=tool_call_id,
+            )
         )
 
     def add_message(

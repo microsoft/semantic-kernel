@@ -169,6 +169,9 @@ class SKFunction(SKFunctionBase):
                     completion = await client.complete_chat_async(
                         messages, request_settings
                     )
+                    # if completion is a type tuple, grab the first element only
+                    if isinstance(completion, tuple):
+                        completion = completion[0]
                     as_chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
             except Exception as exc:

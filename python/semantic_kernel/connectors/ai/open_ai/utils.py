@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
 
@@ -169,13 +169,19 @@ async def chat_completion_with_function_call(
     )
     function_call = context.objects.pop("function_call", None)
     # if there is no function_call or if the content is not a FunctionCall object, return the context
-    if function_call is None or not isinstance(function_call, FunctionCall):
+    if not _is_valid_function_call(function_call):
         return context
-    result = await execute_function_call(kernel, function_call, log=log)
-    # add the result to the chat prompt template
-    chat_function._chat_prompt_template.add_function_response_message(
-        name=function_call.name, content=str(result)
-    )
+    for func in function_call:
+        try:
+            result = await execute_function_call(kernel, func, log=log)
+            # add the result to the chat prompt template
+            chat_function._chat_prompt_template.add_function_response_message(
+                name=func.name,
+                content=str(result),
+                tool_call_id=func.tool_call_id,
+            )
+        except Exception as e:
+            print(f"Error executing function call: {e}")
     # request another completion
     return await chat_completion_with_function_call(
         kernel,
@@ -186,6 +192,30 @@ async def chat_completion_with_function_call(
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )
+
+
+def _is_valid_function_call(
+    function_call: Union[FunctionCall, List[FunctionCall], None]
+) -> bool:
+    """
+    Check if the input is a valid FunctionCall instance or a list of FunctionCall instances.
+
+    Args:
+    - function_call (Union[FunctionCall, List[FunctionCall], None]): The function call or list of function
+        calls to check.
+
+    Returns:
+    - bool: True if valid, False otherwise.
+    """
+    if function_call is None:
+        return False
+
+    if isinstance(function_call, FunctionCall):
+        return True
+    elif isinstance(function_call, list):
+        return all(isinstance(item, FunctionCall) for item in function_call)
+
+    return False
 
 
 def _parse_message(

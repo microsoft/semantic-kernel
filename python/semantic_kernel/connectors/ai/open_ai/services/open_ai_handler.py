@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream
 from openai.types import Completion
+from openai.types.beta.threads.run import Run
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import Field
 
@@ -29,9 +30,14 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     prompt_tokens: int = Field(0, init_var=False)
     completion_tokens: int = Field(0, init_var=False)
     total_tokens: int = Field(0, init_var=False)
+
+    # OpenAI Assistant related fields
     is_assistant: bool = Field(False, init_var=False)
     assistant_id: str = Field(None, init_var=False)
     thread_id: str = Field(None, init_var=False)
+    run: Run = Field(None, init_var=False)
+    is_tool_output_required: bool = Field(None, init_var=False)
+    tool_call_ids: List[str] = Field(None, init_var=False)
 
     async def _send_request(
         self,
