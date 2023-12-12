@@ -37,6 +37,10 @@
             <artifactId>aiservices-openai</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-plugin-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-ai-openai</artifactId>
             <scope>compile</scope>
