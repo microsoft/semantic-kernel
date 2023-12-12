@@ -342,8 +342,10 @@ class AzureChatCompletion(
             request_settings, stream, prompt, messages, functions, chat_mode
         )
 
-        if (hasattr(request_settings, "data_source_settings") 
-            and request_settings.data_source_settings is not None):
+        if (
+            hasattr(request_settings, "data_source_settings")
+            and request_settings.data_source_settings is not None
+        ):
             model_args["extra_body"] = asdict(request_settings.data_source_settings)
             if request_settings.inputLanguage is not None:
                 model_args["extra_body"][

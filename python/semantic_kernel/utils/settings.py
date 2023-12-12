@@ -235,7 +235,9 @@ def redis_settings_from_dot_env() -> str:
     return connection_string
 
 
-def azure_aisearch_settings_from_dot_env(include_index_name=False) -> Union[Tuple[str,str], Tuple[str, str, str]]:
+def azure_aisearch_settings_from_dot_env(
+    include_index_name=False,
+) -> Union[Tuple[str, str], Tuple[str, str, str]]:
     """
     Reads the Azure AI Search environment variables for the .env file.
 
@@ -253,7 +255,9 @@ def azure_aisearch_settings_from_dot_env(include_index_name=False) -> Union[Tupl
         return api_key, url
     else:
         index_name = config.get("AZURE_AISEARCH_INDEX_NAME", None)
-        assert index_name is not None, "Azure AI Search index name not found in .env file"
+        assert (
+            index_name is not None
+        ), "Azure AI Search index name not found in .env file"
         return api_key, url, index_name
 
 
@@ -264,7 +268,9 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     Returns:
         Dict[str, str]: the Azure AI search environment variables
     """
-    api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env(
+        include_index_name=True
+    )
     return {"key": api_key, "endpoint": url, "indexName": index_name}
 
 
@@ -277,7 +283,9 @@ def azure_aisearch_settings_from_dot_env_as_datasource() -> (
     Returns:
         PromptTemplateWithDataConfig.AzureAISearchDataSource: the Azure AI search data source class.
     """
-    api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env(
+        include_index_name=True
+    )
     return PromptTemplateWithDataConfig.AzureAISearchDataSource(
         parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName=index_name, endpoint=url, key=api_key

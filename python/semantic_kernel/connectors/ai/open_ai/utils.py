@@ -190,7 +190,10 @@ async def chat_completion_with_function_call(
 
 def _parse_message(
     message: ChatCompletion, logger: Optional[Logger] = None, with_data: bool = False
-) -> Union[Tuple[Optional[str], Optional[FunctionCall]], Tuple[Optional[str], Optional[str], Optional[FunctionCall]]]:
+) -> Union[
+    Tuple[Optional[str], Optional[FunctionCall]],
+    Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
+]:
     """
     Parses the message.
 

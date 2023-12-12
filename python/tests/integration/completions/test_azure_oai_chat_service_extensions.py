@@ -3,16 +3,12 @@
 import os
 import time
 from random import randint
+
 import numpy as np
-
 import pytest
-from openai import AsyncAzureOpenAI
-from test_utils import retry
 
-import semantic_kernel.connectors.ai.open_ai as sk_oai
 import semantic_kernel as sk
-
-
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
     AzureCognitiveSearchMemoryStore,
 )
@@ -51,16 +47,19 @@ async def create_memory_store():
             additional_metadata=None,
             embedding=np.array([0.2, 0.1, 0.2, 0.7]),
         )
-        id = await memory_store.upsert_async(collection, rec)
+        await memory_store.upsert_async(collection, rec)
         time.sleep(1)
         return collection, memory_store
     except:
         await memory_store.delete_collection_async(collection)
         raise
 
+
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def create_with_data_chat_function(get_aoai_config, create_kernel, create_memory_store):
+async def create_with_data_chat_function(
+    get_aoai_config, create_kernel, create_memory_store
+):
     collection, memory_store = await create_memory_store
     try:
         deployment_name, api_key, endpoint = get_aoai_config
@@ -78,13 +77,13 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
 
         # Load Azure OpenAI with data settings
         search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_ENDPOINT")
-        search_api_key  = os.getenv("AZURE_COGNITIVE_SEARCH_ADMIN_KEY")
+        search_api_key = os.getenv("AZURE_COGNITIVE_SEARCH_ADMIN_KEY")
 
         azure_aisearch_datasource = sk.PromptTemplateWithDataConfig.AzureAISearchDataSource(
-            parameters = sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-                indexName = collection,
-                endpoint = search_endpoint,
-                key = search_api_key,
+            parameters=sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+                indexName=collection,
+                endpoint=search_endpoint,
+                key=search_api_key,
             )
         )
 
@@ -115,16 +114,26 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         )
 
         function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-        chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
+        chat_function = kernel.register_semantic_function(
+            "ChatBot", "Chat", function_config
+        )
         return chat_function, kernel, collection, memory_store
     except:
         await memory_store.delete_collection_async(collection)
         raise
 
+
 @pytest.mark.asyncio
-async def test_azure_e2e_chat_completion_with_extensions(create_with_data_chat_function):
+async def test_azure_e2e_chat_completion_with_extensions(
+    create_with_data_chat_function,
+):
     # Create an index and populate it with some data
-    chat_function, kernel, collection, memory_store = await create_with_data_chat_function
+    (
+        chat_function,
+        kernel,
+        collection,
+        memory_store,
+    ) = await create_with_data_chat_function
 
     try:
         result = []

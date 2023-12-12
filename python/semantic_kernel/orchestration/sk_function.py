@@ -154,7 +154,7 @@ class SKFunction(SKFunctionBase):
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
                     if (
                         hasattr(client, "complete_chat_with_data_async")
-                        and hasattr(request_settings, "data_source_settings") 
+                        and hasattr(request_settings, "data_source_settings")
                         and request_settings.data_source_settings is not None
                     ):
                         (
@@ -187,7 +187,7 @@ class SKFunction(SKFunctionBase):
                 else:
                     if (
                         hasattr(client, "complete_chat_with_data_async")
-                        and hasattr(request_settings, "data_source_settings") 
+                        and hasattr(request_settings, "data_source_settings")
                         and request_settings.data_source_settings is not None
                     ):
                         # third item is function_call, None in this case
@@ -229,7 +229,7 @@ class SKFunction(SKFunctionBase):
                     # With data case - stream and get the tool message for citations
                     if (
                         hasattr(client, "complete_chat_with_data_async")
-                        and hasattr(request_settings, "data_source_settings") 
+                        and hasattr(request_settings, "data_source_settings")
                         and request_settings.data_source_settings is not None
                     ):
                         response = await client.complete_chat_stream_with_data_async(
