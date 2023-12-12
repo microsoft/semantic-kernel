@@ -44,8 +44,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer, string[] expectedFunctions)
     {
         // Arrange
-        bool useEmbeddings = false;
-        Kernel kernel = this.InitializeKernel(useEmbeddings);
+        Kernel kernel = this.InitializeKernel();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
@@ -73,7 +72,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         }
     }
 
-    private Kernel InitializeKernel(bool useEmbeddings = false)
+    private Kernel InitializeKernel()
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -83,17 +82,6 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
-
-        if (useEmbeddings)
-        {
-            AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-            Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
-
-            builder.AddAzureOpenAITextEmbeddingGeneration(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
 
         var kernel = builder.Build();
 
