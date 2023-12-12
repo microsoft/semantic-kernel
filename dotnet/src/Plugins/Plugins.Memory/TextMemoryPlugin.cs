@@ -17,22 +17,26 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 public sealed class TextMemoryPlugin
 {
     /// <summary>
-    /// Name of the context variable used to specify which memory collection to use.
+    /// Name used to specify the input text.
+    /// </summary>
+    public const string InputParam = "input";
+    /// <summary>
+    /// Name used to specify which memory collection to use.
     /// </summary>
     public const string CollectionParam = "collection";
 
     /// <summary>
-    /// Name of the context variable used to specify memory search relevance score.
+    /// Name used to specify memory search relevance score.
     /// </summary>
     public const string RelevanceParam = "relevance";
 
     /// <summary>
-    /// Name of the context variable used to specify a unique key associated with stored information.
+    /// Name used to specify a unique key associated with stored information.
     /// </summary>
     public const string KeyParam = "key";
 
     /// <summary>
-    /// Name of the context variable used to specify the number of memories to recall
+    /// Name used to specify the number of memories to recall
     /// </summary>
     public const string LimitParam = "limit";
 
