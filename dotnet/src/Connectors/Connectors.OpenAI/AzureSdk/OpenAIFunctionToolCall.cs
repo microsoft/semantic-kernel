@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public sealed class OpenAIFunctionToolCall
 {
-    private string? _fqn;
+    private string? _fullyQualifiedFunctionName;
 
     /// <summary>Initialize the <see cref="OpenAIFunctionToolCall"/> from a <see cref="ChatCompletionsFunctionToolCall"/>.</summary>
     internal OpenAIFunctionToolCall(ChatCompletionsFunctionToolCall functionToolCall)
@@ -34,7 +34,7 @@ public sealed class OpenAIFunctionToolCall
         }
 
         this.Id = functionToolCall.Id;
-        this._fqn = fullyQualifiedFunctionName;
+        this._fullyQualifiedFunctionName = fullyQualifiedFunctionName;
         this.PluginName = pluginName;
         this.FunctionName = functionName;
         if (!string.IsNullOrWhiteSpace(arguments))
@@ -62,7 +62,7 @@ public sealed class OpenAIFunctionToolCall
     /// this is the same as <see cref="FunctionName"/>.
     /// </remarks>
     public string FullyQualifiedName =>
-        this._fqn ??=
+        this._fullyQualifiedFunctionName ??=
         string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
 
     /// <inheritdoc/>
