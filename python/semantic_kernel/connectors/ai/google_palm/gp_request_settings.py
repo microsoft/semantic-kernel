@@ -1,13 +1,17 @@
 from typing import Any, Dict, Iterable, Optional, Union
 
-from google.generativeai.types import (
-    ExampleOptions,
-    MessagePromptOptions,
-    MessagesOptions,
-)
 from pydantic import Field, model_validator
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+
+# TODO: replace back with google types once pydantic issue is fixed.
+MessageOptions = Union[str, Dict[str, Any]]
+MessagesOptions = Union[MessageOptions, Iterable[MessageOptions]]
+
+MessagePromptOption = Union[str, dict]
+MessagePromptOptions = Union[MessagePromptOption, Iterable[MessagePromptOption]]
+
+ExampleOptions = Union[Dict[str, Any], Iterable[Dict[str, Any]]]
 
 
 class GooglePalmRequestSettings(AIRequestSettings):

@@ -38,7 +38,7 @@ kernel.add_chat_service("chat-gpt", chat_service)
 
 ## 2. create the request settings directly for the service you are using: # noqa: E266
 # req_settings = sk_oai.AzureOpenAIChatRequestSettings(max_tokens=2000, temperature=0.7, top_p=0.8)
-## The second method is usefull when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
+## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
 req_settings = kernel.get_request_settings_from_service(

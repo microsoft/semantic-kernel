@@ -33,7 +33,7 @@ class OpenAIRequestSettings(AIRequestSettings):
             if key in self.keys:
                 setattr(self, key, value)
 
-    def update_from_extention_data(self, extension_data: Dict[str, Any]) -> None:
+    def update_from_extension_data(self, extension_data: Dict[str, Any]) -> None:
         """Update the request settings from extension data."""
         for key, value in extension_data.items():
             if key in self.keys:
@@ -45,7 +45,7 @@ class OpenAIRequestSettings(AIRequestSettings):
         """Update the request settings from another request settings."""
         self.service_id = ai_request_settings.service_id
         self.extension_data = ai_request_settings.extension_data
-        self.update_from_extention_data(self.extension_data)
+        self.update_from_extension_data(self.extension_data)
 
     @classmethod
     def from_ai_request(cls, ai_request: AIRequestSettings) -> "OpenAIRequestSettings":
