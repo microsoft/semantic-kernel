@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a single update to a streaming content.
 /// </summary>
-public abstract class StreamingContentBase
+public abstract class StreamingKernelContent
 {
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
@@ -53,13 +53,13 @@ public abstract class StreamingContentBase
     public abstract byte[] ToByteArray();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingContentBase"/> class.
+    /// Initializes a new instance of the <see cref="StreamingKernelContent"/> class.
     /// </summary>
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="choiceIndex">Choice index</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="metadata">Additional metadata associated with the content.</param>
-    protected StreamingContentBase(object? innerContent, int choiceIndex = 0, string? modelId = null, IDictionary<string, object?>? metadata = null)
+    protected StreamingKernelContent(object? innerContent, int choiceIndex = 0, string? modelId = null, IDictionary<string, object?>? metadata = null)
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;

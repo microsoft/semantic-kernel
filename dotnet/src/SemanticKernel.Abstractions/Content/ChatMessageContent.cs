@@ -3,13 +3,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
-public class ChatMessageContent : ContentBase
+public class ChatMessageContent : KernelContent
 {
     /// <summary>
     /// Role of the author of the message
