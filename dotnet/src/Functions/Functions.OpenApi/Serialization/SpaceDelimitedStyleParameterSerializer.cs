@@ -17,7 +17,7 @@ internal static class SpaceDelimitedStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
-    public static string Serialize(RestApiOperationParameter parameter, string argument)
+    public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
 
@@ -25,12 +25,12 @@ internal static class SpaceDelimitedStyleParameterSerializer
 
         if (parameter.Style != RestApiOperationParameterStyle.SpaceDelimited)
         {
-            throw new ArgumentException($"Unexpected Rest API operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.", nameof(parameter));
+            throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
 
         if (parameter.Type != ArrayType)
         {
-            throw new ArgumentException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.SpaceDelimited}` style parameters. Parameter name `{parameter.Name}`.", nameof(parameter));
+            throw new NotSupportedException($"Unsupported Rest API operation parameter type '{parameter.Type}' for parameter '{parameter.Name}'");
         }
 
         return SerializeArrayParameter(parameter, argument);
@@ -42,11 +42,11 @@ internal static class SpaceDelimitedStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
-    private static string SerializeArrayParameter(RestApiOperationParameter parameter, string argument)
+    private static string SerializeArrayParameter(RestApiOperationParameter parameter, JsonNode argument)
     {
-        if (JsonNode.Parse(argument) is not JsonArray array)
+        if (argument is not JsonArray array)
         {
-            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array.");
+            throw new ArgumentOutOfRangeException(parameter.Name, argument, $"Unexpected argument type '{argument.GetType()} for parameter type '{parameter.Type}'.");
         }
 
         if (parameter.Expand)

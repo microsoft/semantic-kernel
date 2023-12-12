@@ -49,10 +49,10 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     [Fact]
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
-        //Act
+        // Act
         var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument);
 
-        //Assert
+        // Assert
         var setSecretFunction = plugin["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
@@ -179,7 +179,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     [Fact]
     public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
     {
-        //Arrange
+        // Arrange
         using var messageHandlerStub = new HttpMessageHandlerStub();
         messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
 
@@ -205,11 +205,11 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
             { "api-version", "fake-api-version" }
         };
 
-        //Act
+        // Act
         registerCancellationToken.Cancel();
         var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
-        //Assert
+        // Assert
         Assert.NotNull(result);
 
         var response = result.GetValue<RestApiOperationResponse>();
@@ -231,8 +231,8 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         return new KernelArguments
         {
             ["secret-name"] = "fake-secret-name",
-            ["api-version"] = "fake-api-version",
-            ["X-API-Version"] = "fake-api-version",
+            ["api-version"] = "7.0",
+            ["X-API-Version"] = 6,
             ["payload"] = "fake-payload"
         };
     }
