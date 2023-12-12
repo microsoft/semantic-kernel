@@ -186,10 +186,6 @@ public sealed class KernelFunctionFromMethodTests2
     [Fact]
     public async Task ItThrowsForMissingServicesWithoutDefaultsAsync()
     {
-        var serviceA = new ExampleService();
-        var serviceB = new ExampleService();
-        var serviceC = new ExampleService();
-
         Kernel kernel = new();
         KernelFunction func;
 
