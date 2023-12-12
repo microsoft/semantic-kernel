@@ -50,7 +50,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (promptTemplateFactory is not null)
         {
-            Verify.NotNullOrWhiteSpace(templateFormat);
+            if (string.IsNullOrWhiteSpace(templateFormat))
+            {
+                throw new ArgumentException($"Template format is required when providing a {nameof(promptTemplateFactory)}", nameof(templateFormat));
+            }
         }
 
         var promptConfig = new PromptTemplateConfig

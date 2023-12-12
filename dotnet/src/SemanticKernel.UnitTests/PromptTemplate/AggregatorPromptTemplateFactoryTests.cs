@@ -73,8 +73,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
         var factory1 = new MyPromptTemplateFactory1();
 
         // Act & Assert
-        var result = Assert.Throws<ArgumentNullException>(() => kernel.CreateFunctionFromPrompt(templateString, promptTemplateFactory: factory1));
+        var result = Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompt(templateString, promptTemplateFactory: factory1));
         Assert.Equal("templateFormat", result.ParamName);
+        Assert.Equal("Template format is required when providing a promptTemplateFactory (Parameter 'templateFormat')", result.Message);
     }
 
     #region private
