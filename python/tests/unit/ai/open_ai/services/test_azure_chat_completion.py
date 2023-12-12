@@ -363,7 +363,9 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 
     expected_data_settings = asdict(azure_chat_with_data_settings)
     # No embeddingDeploymentName if not using vectors.
-    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"] 
+    del expected_data_settings["dataSources"][0]["parameters"][
+        "embeddingDeploymentName"
+    ]
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -429,7 +431,9 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 
     expected_data_settings = asdict(azure_chat_with_data_settings)
     # No embeddingDeploymentName if not using vectors.
-    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"] 
+    del expected_data_settings["dataSources"][0]["parameters"][
+        "embeddingDeploymentName"
+    ]
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -492,7 +496,9 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
 
     expected_data_settings = asdict(azure_chat_with_data_settings)
     # No embeddingDeploymentName if not using vectors.
-    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"] 
+    del expected_data_settings["dataSources"][0]["parameters"][
+        "embeddingDeploymentName"
+    ]
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
