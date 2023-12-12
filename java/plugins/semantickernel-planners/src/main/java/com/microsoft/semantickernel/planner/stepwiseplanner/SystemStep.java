@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.planner.stepwiseplanner;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -27,7 +28,7 @@ public class SystemStep {
     /// </summary>
     @JsonProperty("action_variables")
     @Nullable
-    private Map<String, String> actionVariables;
+    private Map<String, ContextVariable<?>> actionVariables;
 
     /// <summary>
     /// Gets or sets the output of the action
@@ -54,7 +55,8 @@ public class SystemStep {
     public SystemStep(
             @JsonProperty("thought") @Nullable String thought,
             @JsonProperty("action") @Nullable String action,
-            @JsonProperty("action_variables") @Nullable Map<String, String> actionVariables,
+            @JsonProperty("action_variables") @Nullable
+                    Map<String, ContextVariable<?>> actionVariables,
             @JsonProperty("observation") @Nullable String observation,
             @JsonProperty("final_answer") @Nullable String finalAnswer,
             @JsonProperty("original_response") @Nullable String originalResponse) {
@@ -81,7 +83,7 @@ public class SystemStep {
     }
 
     @Nullable
-    public Map<String, String> getActionVariables() {
+    public Map<String, ContextVariable<?>> getActionVariables() {
         if (actionVariables == null) {
             return null;
         }
@@ -111,7 +113,7 @@ public class SystemStep {
         this.action = action;
     }
 
-    public void setActionVariables(@Nullable Map<String, String> actionVariables) {
+    public void setActionVariables(@Nullable Map<String, ContextVariable<?>> actionVariables) {
         if (actionVariables == null) {
             this.actionVariables = null;
         } else {

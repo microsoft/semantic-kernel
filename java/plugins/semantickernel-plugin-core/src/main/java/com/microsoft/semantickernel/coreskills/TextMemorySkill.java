@@ -186,8 +186,12 @@ public class TextMemorySkill {
         // TODO: 1.0 fix cast
         // Validate parameters
         if (collection == null || collection.trim().isEmpty()) {
-            collection = (String) context.getVariables().get(TextMemorySkill.COLLECTION_PARAM);
-            if (collection == null) collection = DEFAULT_COLLECTION;
+            if (context.getVariables().get(TextMemorySkill.COLLECTION_PARAM) == null) {
+                collection = DEFAULT_COLLECTION;
+            } else {
+                collection =
+                        context.getVariables().get(TextMemorySkill.COLLECTION_PARAM).toString();
+            }
         }
         final String _collection = collection;
         final float _relevance = (float) Math.min(1.0, Math.max(0.0, relevance));

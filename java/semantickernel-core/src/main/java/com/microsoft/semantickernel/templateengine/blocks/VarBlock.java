@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.blocks;
 
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.templateengine.TemplateException;
 import org.slf4j.Logger;
@@ -33,15 +34,13 @@ public final class VarBlock extends Block implements TextRendering {
                     "Variable rendering failed, the variable name is empty");
         }
 
-        // TODO: 1.0 fix cast
-        String value = (String) variables.asMap().get(name);
+        ContextVariable<?> value = variables.get(name);
 
         if (value == null) {
-
             LOGGER.warn("Variable `{}{}` not found", Symbols.VarPrefix, name);
         }
 
-        return value != null ? value : "";
+        return value != null ? value.toPromptString() : "";
     }
 
     @Override

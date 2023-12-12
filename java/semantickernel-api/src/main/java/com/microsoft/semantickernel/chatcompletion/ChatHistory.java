@@ -1,18 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
+import com.microsoft.semantickernel.chatcompletion.ChatHistory.Message;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
-/** Provides a history of messages between the User, Assistant and System */
-public class ChatHistory {
+/**
+ * Provides a history of messages between the User, Assistant and System
+ */
+public class ChatHistory implements Iterable<Message> {
 
     private final List<Message> messages;
 
     public ChatHistory() {
         this.messages = new ArrayList<>();
+    }
+
+    public ChatHistory(List<Message> messages) {
+        this.messages = new ArrayList<>(messages);
     }
 
     /**
@@ -36,7 +46,28 @@ public class ChatHistory {
         return Optional.of(messages.get(messages.size() - 1));
     }
 
-    /** Role of the author of a chat message */
+    public void addAll(ChatHistory value) {
+        this.messages.addAll(value.getMessages());
+    }
+
+    @Override
+    public Iterator<Message> iterator() {
+        return messages.iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Message> action) {
+        messages.forEach(action);
+    }
+
+    @Override
+    public Spliterator<Message> spliterator() {
+        return messages.spliterator();
+    }
+
+    /**
+     * Role of the author of a chat message
+     */
     public enum AuthorRoles {
         Unknown,
         System,
@@ -44,8 +75,11 @@ public class ChatHistory {
         Assistant
     }
 
-    /** Chat message representation */
+    /**
+     * Chat message representation
+     */
     public static class Message {
+
         private final AuthorRoles authorRoles;
 
         private final String content;
@@ -54,7 +88,7 @@ public class ChatHistory {
          * Create a new instance
          *
          * @param authorRoles Role of message author
-         * @param content Message content
+         * @param content     Message content
          */
         public Message(AuthorRoles authorRoles, String content) {
             this.authorRoles = authorRoles;
@@ -84,7 +118,7 @@ public class ChatHistory {
      * Add a message to the chat history
      *
      * @param authorRole Role of the message author
-     * @param content Message content
+     * @param content    Message content
      */
     @Deprecated
     public void addMessage(AuthorRoles authorRole, String content) {
