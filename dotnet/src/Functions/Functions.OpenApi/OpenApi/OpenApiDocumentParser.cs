@@ -231,7 +231,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()!),
                 (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()!),
                 parameter.Schema.Items?.Type,
-                GetParameterValue(parameter.Name, parameter.Schema.Default),
+                GetParameterValue(parameter.Schema.Default),
                 parameter.Description,
                 parameter.Schema.ToJsonSchema()
             );
@@ -324,10 +324,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Returns parameter value.
     /// </summary>
-    /// <param name="name">The parameter name.</param>
     /// <param name="valueMetadata">The value metadata.</param>
     /// <returns>The parameter value.</returns>
-    private static string? GetParameterValue(string name, IOpenApiAny valueMetadata)
+    private static string? GetParameterValue(IOpenApiAny valueMetadata)
     {
         if (valueMetadata is not IOpenApiPrimitive value)
         {

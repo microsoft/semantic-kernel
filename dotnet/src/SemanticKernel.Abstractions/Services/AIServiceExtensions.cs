@@ -14,19 +14,19 @@ namespace Microsoft.SemanticKernel.Services;
 public static class AIServiceExtensions
 {
     /// <summary>
-    /// Key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string ModelIdKey = "ModelId";
+    public static string ModelIdKey => "ModelId";
 
     /// <summary>
-    /// Key used to store the endpoint key in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the endpoint key in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string EndpointKey = "Endpoint";
+    public static string EndpointKey => "Endpoint";
 
     /// <summary>
-    /// Key used to store the API version in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the API version in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string ApiVersionKey = "ApiVersion";
+    public static string ApiVersionKey => "ApiVersion";
 
     /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.

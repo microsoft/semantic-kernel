@@ -4,6 +4,8 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
+namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Factory for creating TypeConverter instances based on a provided type.
 /// </summary>

@@ -18,6 +18,8 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
     /// <param name="name">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     internal DefaultKernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null) : base(name, description)

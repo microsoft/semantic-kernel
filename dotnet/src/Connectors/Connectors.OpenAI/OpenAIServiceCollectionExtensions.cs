@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToImage;
 
@@ -53,7 +54,7 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
 
@@ -85,7 +86,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
@@ -117,7 +118,7 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
 
@@ -149,7 +150,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, credentials, serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
@@ -682,7 +683,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
@@ -722,7 +722,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(serviceProvider));
@@ -764,7 +763,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
@@ -804,7 +802,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(serviceProvider));
@@ -1188,9 +1185,9 @@ public static class OpenAIServiceCollectionExtensions
 
     #endregion
 
-    private static OpenAIClient CreateAzureOpenAIClient(string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
+    private static OpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 
-    private static OpenAIClient CreateAzureOpenAIClient(string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
+    private static OpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 }

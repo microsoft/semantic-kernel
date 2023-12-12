@@ -4,6 +4,7 @@
     <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>12</LangVersion>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
@@ -11,6 +12,12 @@
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0010,SKEXP0011,SKEXP0012,SKEXP0013,SKEXP0020,SKEXP0021,SKEXP0022,SKEXP0023,SKEXP0024,SKEXP0025,SKEXP0026,SKEXP0027,SKEXP0028,SKEXP0029,SKEXP0030,SKEXP0031,SKEXP0032,SKEXP0052</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Use newest available compiler to permit LangVersion 12. -->
+    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

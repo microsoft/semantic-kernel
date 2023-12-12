@@ -57,7 +57,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance;
 
-        MethodDetails methodDetails = GetMethodDetails(functionName, method, target, logger);
+        MethodDetails methodDetails = GetMethodDetails(functionName, method, target);
         var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
@@ -90,9 +90,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-        if (functionResult.Value is TResult)
+        if (functionResult.Value is TResult result)
         {
-            yield return (TResult)functionResult.Value;
+            yield return result;
             yield break;
         }
 
@@ -147,7 +147,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         this._function = implementationFunc;
     }
 
-    private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
+    private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 

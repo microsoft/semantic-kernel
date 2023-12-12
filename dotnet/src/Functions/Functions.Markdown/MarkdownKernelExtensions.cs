@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -16,14 +14,12 @@ public static class MarkdownKernelExtensions
     /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
     /// <param name="functionName">The function name</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
-    /// <param name="loggerFactory"></param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     public static KernelFunction CreateFunctionFromMarkdown(
         this Kernel kernel,
         string text,
         string functionName,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null)
+        IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(text);

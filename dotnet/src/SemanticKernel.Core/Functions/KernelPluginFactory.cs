@@ -80,14 +80,24 @@ public static class KernelPluginFactory
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 
+    /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreateFromFunctions(string pluginName, IEnumerable<KernelFunction>? functions) =>
+        CreateFromFunctions(pluginName, description: null, functions);
+
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
-    {
-        return new DefaultKernelPlugin(pluginName, description, functions);
-    }
+    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
+        new DefaultKernelPlugin(pluginName, description, functions);
 }

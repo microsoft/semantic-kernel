@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;

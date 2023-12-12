@@ -2,101 +2,189 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
-
-#pragma warning disable CA1812 // Uninstantiated internal types
 
 /**
- * This example shows how to use OpenAI's function calling capability via the chat completions interface.
- * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
+ * This example shows how to use OpenAI's tool calling capability via the chat completions interface.
  */
-// ReSharper disable once InconsistentNaming
 public static class Example59_OpenAIFunctionCalling
 {
     public static async Task RunAsync()
     {
-        // Create kernel with chat completions service and plugins
+        // Create kernel.
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Plugins.AddFromType<TimePlugin>();
-        builder.Plugins.AddFromType<WidgetPlugin>();
         builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 
-        // Load additional functions into the kernel
-        await kernel.ImportPluginFromOpenAIAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
-
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var chatHistory = new ChatHistory();
-        var executionSettings = new OpenAIPromptExecutionSettings();
-
-        // Set FunctionCall to the result of FunctionCallBehavior.RequireFunction with a specific function to force the model to use that function.
-        executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(kernel.Plugins["TimePlugin"]["Date"].Metadata.ToOpenAIFunction(), autoInvoke: true);
-        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletionService, kernel, executionSettings);
-
-        // Set FunctionCall to FunctionCallBehavior.ProvideKernelFunctions to let the model choose the best function to use from all available in the kernel.
-        executionSettings.FunctionCallBehavior = FunctionCallBehavior.AutoInvokeKernelFunctions;
-        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletionService, kernel, executionSettings);
-
-        // Reset chat history to avoid Token Limit Exceeded error (4K Context Models)
-        chatHistory = new ChatHistory();
-        await StreamingCompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletionService, kernel, executionSettings);
-
-        // This sample relies on the AI picking the correct color from an enum
-        executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(kernel.Plugins["WidgetPlugin"]["CreateWidget"].Metadata.ToOpenAIFunction(), autoInvoke: true);
-        await CompleteChatWithFunctionsAsync("Create a lime widget called foo", chatHistory, chatCompletionService, kernel, executionSettings);
-        await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletionService, kernel, executionSettings);
-    }
-
-    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletionService chatCompletionService, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
-    {
-        Console.WriteLine($"\n\n======== Non-Streaming - {executionSettings.FunctionCallBehavior} ========\n");
-
-        Console.WriteLine($"User message: {ask}");
-        chatHistory.AddUserMessage(ask);
-        chatHistory.Add(await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel));
-        Console.WriteLine($"Assistant response: {chatHistory[chatHistory.Count - 1].Content}");
-    }
-
-    private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletionService chatCompletionService, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
-    {
-        Console.WriteLine($"\n\n======== Streaming - {executionSettings.FunctionCallBehavior} ========\n");
-        Console.WriteLine($"User message: {ask}");
-        chatHistory.AddUserMessage(ask);
-
-        // Send request
-        var fullContent = new List<StreamingChatMessageContent>();
-        Console.Write("Assistant response: ");
-        await foreach (var chatResult in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
+        // Add a plugin with some helper functions we want to allow the model to utilize.
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("HelperFunctions", new[]
         {
-            fullContent.Add(chatResult);
-            if (chatResult.Content is { Length: > 0 })
+            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime"),
+            kernel.CreateFunctionFromMethod((string cityName) =>
+                cityName switch
+                {
+                    "Boston" => "61 and rainy",
+                    "London" => "55 and cloudy",
+                    "Miami" => "80 and sunny",
+                    "Paris" => "60 and rainy",
+                    "Tokyo" => "50 and sunny",
+                    "Sydney" => "75 and sunny",
+                    "Tel Aviv" => "80 and sunny",
+                    _ => "31 and snowing",
+                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
+        }));
+
+        Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+        {
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+        {
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
-                Console.Write(chatResult.Content);
+                Console.Write(update);
+            }
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        {
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+            var chatHistory = new ChatHistory();
+
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+            chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+            while (true)
+            {
+                var result = (OpenAIChatMessageContent)await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+                if (result.Content is not null)
+                {
+                    Console.Write(result.Content);
+                }
+
+                List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
+                if (toolCalls.Count == 0)
+                {
+                    break;
+                }
+
+                chatHistory.Add(result);
+                foreach (var toolCall in toolCalls)
+                {
+                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
+                        JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
+                        "Unable to find function. Please try again!";
+
+                    chatHistory.Add(new ChatMessageContent(
+                        AuthorRole.Tool,
+                        content,
+                        metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+                }
+            }
+
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("======== Example 4: Use manual function calling with a streaming prompt ========");
+        {
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+            var chatHistory = new ChatHistory();
+
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+            chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+            while (true)
+            {
+                List<ChatCompletionsFunctionToolCall> calls = new();
+                StringBuilder contents = new();
+                await foreach (OpenAIStreamingChatMessageContent update in chat.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+                {
+                    if (update.Content is not null)
+                    {
+                        Console.Write(update.Content);
+                        contents.Append(update.Content);
+                    }
+
+                    if (update.ToolCallUpdate is ChatCompletionsFunctionToolCall toolCall)
+                    {
+                        if (toolCall.Id is not null &&
+                            (calls.Count == 0 || calls[^1].Id != toolCall.Id))
+                        {
+                            calls.Add(toolCall);
+                        }
+                        else if (calls.Count > 0)
+                        {
+                            ChatCompletionsFunctionToolCall last = calls[^1];
+                            last.Name ??= toolCall.Name;
+                            last.Arguments += toolCall.Arguments;
+                        }
+                    }
+                }
+
+                if (calls.Count == 0)
+                {
+                    break;
+                }
+
+                chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, contents.ToString(), metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.ToolCallsProperty, calls } }));
+                foreach (ChatCompletionsFunctionToolCall toolCall in calls)
+                {
+                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
+                        JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
+                        "Unable to find function. Please try again!";
+
+                    chatHistory.Add(new ChatMessageContent(
+                        AuthorRole.Tool,
+                        content,
+                        metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+                }
+            }
+
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("======== Example 5: Use automated function calling with a streaming chat ========");
+        {
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+            var chatHistory = new ChatHistory();
+
+            while (true)
+            {
+                Console.Write("Question: ");
+                string question = Console.ReadLine() ?? string.Empty;
+                if (question == "done")
+                {
+                    break;
+                }
+
+                chatHistory.AddUserMessage(question);
+                StringBuilder sb = new();
+                await foreach (var update in chat.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+                {
+                    if (update.Content is not null)
+                    {
+                        Console.Write(update.Content);
+                        sb.Append(update.Content);
+                    }
+                }
+                chatHistory.AddAssistantMessage(sb.ToString());
+                Console.WriteLine();
             }
         }
-        Console.WriteLine();
-    }
-
-    private enum WidgetColor
-    {
-        Red,
-        Green,
-        Blue
-    }
-
-    private sealed class WidgetPlugin
-    {
-        [KernelFunction, Description("Create a virtual widget.")]
-        public string CreateWidget([Description("Widget name")] string name, [Description("Widget color")] WidgetColor color) =>
-            $"Created a {color} widget named {name}";
     }
 }

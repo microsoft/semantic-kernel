@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable CA2215 // Dispose methods should call base class dispose
 
+namespace Microsoft.SemanticKernel.Http;
+
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>

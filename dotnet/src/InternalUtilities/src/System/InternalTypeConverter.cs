@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Globalization;
 
+namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides internal utility methods for converting types to strings with consideration for CultureInfo.
 /// </summary>
