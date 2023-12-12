@@ -50,7 +50,6 @@ public static class Example42_KernelBuilder
         // Every call to KernelBuilder.Build creates a new Kernel instance, with a new service provider
         // and a new plugin collection.
         builder = Kernel.CreateBuilder();
-        // ReSharper disable once EqualExpressionComparison
         Debug.Assert(!ReferenceEquals(builder.Build(), builder.Build()));
 
         // KernelBuilder provides a convenient API for creating Kernel instances. However, it is just a
