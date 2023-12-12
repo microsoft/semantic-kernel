@@ -219,8 +219,11 @@ def _is_valid_function_call(
 
 
 def _parse_message(
-    message: ChatCompletion, logger: Optional[Logger] = None
-) -> Tuple[Optional[str], Optional[FunctionCall]]:
+    message: ChatCompletion, logger: Optional[Logger] = None, with_data: bool = False
+) -> Union[
+    Tuple[Optional[str], Optional[FunctionCall]],
+    Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
+]:
     """
     Parses the message.
 
@@ -238,4 +241,13 @@ def _parse_message(
             arguments=function_call.arguments,
         )
 
-    return (content, function_call)
+    if not with_data:
+        return (content, function_call)
+    else:
+        tool_content = None
+        if message.model_extra and "context" in message.model_extra:
+            for m in message.model_extra["context"].get("messages", []):
+                if m["role"] == "tool":
+                    tool_content = m.get("content", None)
+                    break
+        return (content, tool_content, function_call)
