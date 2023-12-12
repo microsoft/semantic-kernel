@@ -44,7 +44,8 @@
             "presentation": {
                 "reveal": "silent",
                 "panel": "shared"
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "Python: Tests - Unit",
@@ -59,7 +60,19 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
-            }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Python: Tests - Code Coverage",
+            "type": "shell",
+            "command": "poetry run pytest --cov=semantic_kernel --cov-report term-missing tests/unit/",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         },
         {
             "label": "Python: Tests - All",
@@ -74,7 +87,8 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
-            }
+            },
+            "problemMatcher": []
         }
     ]
 }
