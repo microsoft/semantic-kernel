@@ -169,21 +169,25 @@ public sealed class Kernel
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <summary>
     /// Provides an event that's raised after a function's invocation.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
     /// Provides an event that's raised prior to a prompt being rendered.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
 
     /// <summary>
     /// Provides an event that's raised after a prompt is rendered.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     #region GetServices
@@ -271,6 +275,7 @@ public sealed class Kernel
     #endregion
 
     #region Internal Event Helpers
+    [Experimental("SKEXP0004")]
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
@@ -283,6 +288,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
+    [Experimental("SKEXP0004")]
     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedEventArgs? eventArgs = null;
@@ -295,6 +301,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
+    [Experimental("SKEXP0004")]
     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingEventArgs? eventArgs = null;
@@ -307,6 +314,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
+    [Experimental("SKEXP0004")]
     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedEventArgs? eventArgs = null;

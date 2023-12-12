@@ -7,7 +7,7 @@
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0055</NoWarn>
+    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0055</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
