@@ -61,7 +61,7 @@ public static class Example52_ApimAuth
         // Run
         var result = await kernel.InvokeAsync(
             kernel.Plugins["FunPlugin"]["Excuses"],
-            new("I have no homework")
+            new() { ["input"] = "I have no homework" }
         );
         Console.WriteLine(result.GetValue<string>());
 
