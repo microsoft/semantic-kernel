@@ -10,6 +10,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <packaging>pom</packaging>
+
+    <artifactId>sk-v1-samples</artifactId>
 
     <modules>
         <module>01-SimpleChat</module>

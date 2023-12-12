@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,6 +14,14 @@ import reactor.core.publisher.Mono;
  * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
  */
 public interface KernelFunction {
+
+    /**
+     * Returns a description of the function, including parameters.
+     *
+     * @return An instance of {@link FunctionView} describing the function
+     */
+    @Nullable
+    FunctionView describe();
 
 
     /**

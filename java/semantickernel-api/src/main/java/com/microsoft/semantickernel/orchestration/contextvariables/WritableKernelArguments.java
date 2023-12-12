@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.orchestration;
+package com.microsoft.semantickernel.orchestration.contextvariables;
 
 import java.util.Map;
 
@@ -7,7 +7,7 @@ import java.util.Map;
  * Context Variables is a data structure that holds temporary data while a task is being performed.
  * It is accessed by functions in the pipeline.
  */
-public interface WritableContextVariables extends ContextVariables {
+public interface WritableKernelArguments extends KernelArguments {
 
     /**
      * Set the value
@@ -16,9 +16,9 @@ public interface WritableContextVariables extends ContextVariables {
      * @param content value to set
      * @return Context for fluent calls
      */
-    ContextVariables setVariable(String key, ContextVariable<?> content);
+    KernelArguments setVariable(String key, ContextVariable<?> content);
 
-    ContextVariables setVariable(String key, Object content);
+    KernelArguments setVariable(String key, Object content);
 
     /**
      * Updates the main input text with the new value after a function is complete.
@@ -27,9 +27,9 @@ public interface WritableContextVariables extends ContextVariables {
      *                the user if the pipeline reached the end.
      * @return The current instance
      */
-    ContextVariables update(ContextVariable<?> content);
+    KernelArguments update(ContextVariable<?> content);
 
-    ContextVariables update(String content);
+    KernelArguments update(String content);
 
     /**
      * Updates the variables merging or overwriting in the new values.
@@ -38,9 +38,9 @@ public interface WritableContextVariables extends ContextVariables {
      * @param merge   Whether to merge the new data with the existing data or to replace it
      * @return The current instance
      */
-    ContextVariables update(ContextVariables newData, boolean merge);
+    KernelArguments update(KernelArguments newData, boolean merge);
 
-    ContextVariables remove(String key);
+    KernelArguments remove(String key);
 
     interface Builder {
 
@@ -50,6 +50,6 @@ public interface WritableContextVariables extends ContextVariables {
          * @param map Existing variables
          * @return an instantiation of ContextVariables
          */
-        WritableContextVariables build(Map<String, ContextVariable<?>> map);
+        WritableKernelArguments build(Map<String, ContextVariable<?>> map);
     }
 }
