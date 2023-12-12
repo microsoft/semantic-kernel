@@ -53,9 +53,7 @@
             "args": [
                 "run",
                 "pytest",
-                "tests/unit/",
-                "--cov=src",
-                "--cov-report=term-missing"
+                "tests/unit/"
             ],
             "group": "test",
             "presentation": {
