@@ -32,7 +32,6 @@ public static class Program
     private static async Task RunExamplesAsync(string? filter, CancellationToken cancellationToken)
     {
         var examples = (Assembly.GetExecutingAssembly().GetTypes())
-            .Where(type => type.Name.StartsWith("Example", StringComparison.OrdinalIgnoreCase))
             .Select(type => type.Name).ToList();
 
         // Filter and run examples
@@ -42,14 +41,14 @@ public static class Program
             {
                 try
                 {
-                    Console.WriteLine($"Running {example}...");
-
                     var method = Assembly.GetExecutingAssembly().GetType(example)?.GetMethod("RunAsync");
                     if (method == null)
                     {
-                        Console.WriteLine($"Example {example} not found");
+                        // Skip if the type does not have a RunAsync method
                         continue;
                     }
+
+                    Console.WriteLine($"Running {example}...");
 
                     bool hasCancellationToken = method.GetParameters().Any(param => param.ParameterType == typeof(CancellationToken));
 
@@ -98,6 +97,7 @@ public static class Program
         try
         {
             await task.WaitAsync(cancellationToken);
+            Console.WriteLine();
             Console.WriteLine("== DONE ==");
         }
         catch (ConfigurationNotFoundException ex)
