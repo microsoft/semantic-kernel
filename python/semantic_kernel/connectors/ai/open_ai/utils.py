@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
 
@@ -190,7 +190,7 @@ async def chat_completion_with_function_call(
 
 def _parse_message(
     message: ChatCompletion, logger: Optional[Logger] = None, with_data: bool = False
-) -> Tuple[Optional[str], Optional[FunctionCall]]:
+) -> Union[Tuple[Optional[str], Optional[FunctionCall]], Tuple[Optional[str], Optional[str], Optional[FunctionCall]]]:
     """
     Parses the message.
 

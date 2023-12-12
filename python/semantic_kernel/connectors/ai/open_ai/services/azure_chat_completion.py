@@ -177,6 +177,7 @@ class AzureChatCompletion(
             string values for HTTP requests. (Optional)
         log: The logger instance to use. (Optional)
         use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
+            When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
             The default value is False.
         """
 
@@ -225,6 +226,9 @@ class AzureChatCompletion(
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
+            use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
+                When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
+                The default value is False.
         """
         if logger:
             logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
@@ -338,7 +342,8 @@ class AzureChatCompletion(
             request_settings, stream, prompt, messages, functions, chat_mode
         )
 
-        if request_settings.data_source_settings is not None:
+        if (hasattr(request_settings, "data_source_settings") 
+            and request_settings.data_source_settings is not None):
             model_args["extra_body"] = asdict(request_settings.data_source_settings)
             if request_settings.inputLanguage is not None:
                 model_args["extra_body"][
