@@ -3,7 +3,7 @@
 using System.Text.Json;
 using Json.Schema;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperationResponse"/> class.

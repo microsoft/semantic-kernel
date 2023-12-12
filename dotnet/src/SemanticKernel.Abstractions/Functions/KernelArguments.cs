@@ -24,7 +24,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// The main input parameter name.
     /// </summary>
-    public const string InputParameterName = "input";
+    internal const string InputParameterName = "input";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
