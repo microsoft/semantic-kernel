@@ -10,20 +10,35 @@ kernel = sk.Kernel()
 # Load Azure OpenAI Settings
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-# Load Azure OpenAI with data settings
-azure_aisearch_datasource = sk.azure_aisearch_settings_from_dot_env_as_datasource()
-
-azure_chat_with_data_settings = (
-    sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        dataSources=[azure_aisearch_datasource]
-    )
-)
-
 # For example, AI Search index may contain the following document:
 
 # Emily and David, two passionate scientists, met during a research expedition to Antarctica.
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
+
+azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
+
+# Our example index has fields "source_title", "source_text", "source_url", and "source_file".
+# Add fields mapping to the settings to indicate which fields to use for the title, content, URL, and file path.
+azure_ai_search_settings["fieldsMapping"] = {
+    "titleField": "source_title",
+    "urlField": "source_url",
+    "contentFields": ["source_text"],
+    "filepathField": "source_file",
+}
+
+# Configure the Azure AI Search index as a data source.
+azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+    parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+        **azure_ai_search_settings
+    )
+)
+azure_chat_with_data_settings = (
+    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        dataSources=[azure_aisearch_datasource]
+    )
+)
+
 
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
@@ -35,11 +50,13 @@ chat_service = sk_oai.AzureChatCompletion(
 )
 kernel.add_chat_service("chat-gpt", chat_service)
 
-prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    data_source_settings=azure_chat_with_data_settings,
+prompt_config = (
+    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+        max_tokens=2000,
+        temperature=0.7,
+        top_p=0.8,
+        data_source_settings=azure_chat_with_data_settings,
+    )
 )
 
 prompt_template = sk.ChatPromptTemplate(

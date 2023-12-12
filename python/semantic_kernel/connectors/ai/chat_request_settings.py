@@ -4,11 +4,11 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
+        OpenAIChatPromptTemplateWithDataConfig,
+    )
     from semantic_kernel.semantic_functions.prompt_template_config import (
         PromptTemplateConfig,
-    )
-    from semantic_kernel.semantic_functions.prompt_template_with_data_config import (
-        PromptTemplateWithDataConfig,
     )
 
 
@@ -24,7 +24,7 @@ class ChatRequestSettings:
     stop_sequences: List[str] = field(default_factory=list)
     function_call: Optional[str] = None
     data_source_settings: Optional[
-        "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
+        "OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings"
     ] = None
     inputLanguage: Optional[str] = None
     outputLanguage: Optional[str] = None

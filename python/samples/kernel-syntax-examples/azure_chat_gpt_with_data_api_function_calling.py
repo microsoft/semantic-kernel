@@ -21,10 +21,14 @@ kernel = sk.Kernel()
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
-azure_aisearch_datasource = sk.azure_aisearch_settings_from_dot_env_as_datasource()
+azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+    parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+        **sk.azure_aisearch_settings_from_dot_env_as_dict()
+    )
+)
 
 azure_chat_with_data_settings = (
-    sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
         dataSources=[azure_aisearch_datasource]
     )
 )
@@ -59,12 +63,14 @@ kernel.import_skill(TimeSkill(), skill_name="time")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_call="auto",
-    data_source_settings=azure_chat_with_data_settings,
+prompt_config = (
+    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+        max_tokens=2000,
+        temperature=0.7,
+        top_p=0.8,
+        function_call="auto",
+        data_source_settings=azure_chat_with_data_settings,
+    )
 )
 prompt_template = OpenAIChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config

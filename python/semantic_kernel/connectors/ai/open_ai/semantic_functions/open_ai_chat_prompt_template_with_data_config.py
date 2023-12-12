@@ -9,13 +9,13 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 
 
 @dataclass
-class PromptTemplateWithDataConfig(PromptTemplateConfig):
+class OpenAIChatPromptTemplateWithDataConfig(PromptTemplateConfig):
     @dataclass
     class CompletionConfig(PromptTemplateConfig.CompletionConfig):
         inputLanguage: str = None
         outputLanguage: str = None
         data_source_settings: Optional[
-            "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
+            "OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings"
         ] = None
 
     @dataclass
@@ -38,7 +38,9 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         """Class to hold Azure AI Search data source."""
 
         type: str = "AzureCognitiveSearch"
-        parameters: "PromptTemplateConfig.AzureAISearchDataSourceParameters" = None
+        parameters: "OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters" = (
+            None
+        )
 
     @dataclass
     class AzureChatWithDataSettings:
@@ -46,11 +48,11 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         each data source has a type and parameters."""
 
         dataSources: List[
-            "PromptTemplateWithDataConfig.AzureAISearchDataSource"
+            "OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource"
         ] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(data: dict) -> "PromptTemplateWithDataConfig":
+    def from_dict(data: dict) -> "OpenAIChatPromptTemplateWithDataConfig":
         config = super().from_dict(data)
 
         completion_keys = ["inputLanguage", "outputLanguage"]
@@ -60,7 +62,7 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
 
         if "data_source_settings" in data["completion"]:
             config.completion.data_source_settings = (
-                PromptTemplateWithDataConfig.AzureChatWithDataSettings()
+                OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings()
             )
             config.completion.data_source_settings.dataSources = data["completion"][
                 "data_source_settings"
@@ -83,9 +85,9 @@ class PromptTemplateWithDataConfig(PromptTemplateConfig):
         inputLanguage: str = None,
         outputLanguage: str = None,
         data_source_settings: Optional[
-            "PromptTemplateWithDataConfig.AzureChatWithDataSettings"
+            "OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings"
         ] = None,
-    ) -> "PromptTemplateWithDataConfig":
+    ) -> "OpenAIChatPromptTemplateWithDataConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
         config.completion.top_p = top_p

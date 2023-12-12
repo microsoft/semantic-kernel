@@ -17,11 +17,11 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
+from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
+    OpenAIChatPromptTemplateWithDataConfig,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
-)
-from semantic_kernel.semantic_functions.prompt_template_with_data_config import (
-    PromptTemplateWithDataConfig,
 )
 
 
@@ -332,15 +332,15 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     messages_in = [{"role": "user", "content": prompt}]
     messages_out = [{"role": "user", "content": prompt}]
 
-    azure_aisearch_datasource = PromptTemplateWithDataConfig.AzureAISearchDataSource(
-        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+    azure_aisearch_datasource = OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName="test_index",
             endpoint="https://test-endpoint-search.com",
             key="test_key",
         )
     )
     azure_chat_with_data_settings = (
-        PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
             dataSources=[azure_aisearch_datasource]
         )
     )
@@ -390,15 +390,15 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
 
-    azure_aisearch_datasource = PromptTemplateWithDataConfig.AzureAISearchDataSource(
-        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+    azure_aisearch_datasource = OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName="test_index",
             endpoint="https://test-endpoint-search.com",
             key="test_key",
         )
     )
     azure_chat_with_data_settings = (
-        PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
             dataSources=[azure_aisearch_datasource]
         )
     )
@@ -458,15 +458,15 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     stop = ["!"]
     complete_request_settings.stop_sequences = stop
 
-    azure_aisearch_datasource = PromptTemplateWithDataConfig.AzureAISearchDataSource(
-        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+    azure_aisearch_datasource = OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
             indexName="test_index",
             endpoint="https://test-endpoint-search.com",
             key="test_key",
         )
     )
     azure_chat_with_data_settings = (
-        PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
             dataSources=[azure_aisearch_datasource]
         )
     )

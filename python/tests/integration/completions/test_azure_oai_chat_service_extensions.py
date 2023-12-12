@@ -79,8 +79,8 @@ async def create_with_data_chat_function(
         search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_ENDPOINT")
         search_api_key = os.getenv("AZURE_COGNITIVE_SEARCH_ADMIN_KEY")
 
-        azure_aisearch_datasource = sk.PromptTemplateWithDataConfig.AzureAISearchDataSource(
-            parameters=sk.PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+        azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+            parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
                 indexName=collection,
                 endpoint=search_endpoint,
                 key=search_api_key,
@@ -88,7 +88,7 @@ async def create_with_data_chat_function(
         )
 
         azure_chat_with_data_settings = (
-            sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+            sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
                 dataSources=[azure_aisearch_datasource]
             )
         )
@@ -102,11 +102,13 @@ async def create_with_data_chat_function(
         )
         kernel.add_chat_service("chat-gpt", chat_service)
 
-        prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
-            max_tokens=2000,
-            temperature=0.7,
-            top_p=0.8,
-            data_source_settings=azure_chat_with_data_settings,
+        prompt_config = (
+            sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+                max_tokens=2000,
+                temperature=0.7,
+                top_p=0.8,
+                data_source_settings=azure_chat_with_data_settings,
+            )
         )
 
         prompt_template = sk.ChatPromptTemplate(

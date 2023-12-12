@@ -4,10 +4,6 @@ from typing import Dict, Optional, Tuple, Union
 
 from dotenv import dotenv_values
 
-from semantic_kernel.semantic_functions.prompt_template_with_data_config import (
-    PromptTemplateWithDataConfig,
-)
-
 
 def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
@@ -272,22 +268,3 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
         include_index_name=True
     )
     return {"key": api_key, "endpoint": url, "indexName": index_name}
-
-
-def azure_aisearch_settings_from_dot_env_as_datasource() -> (
-    "PromptTemplateWithDataConfig.AzureAISearchDataSource"
-):
-    """
-    Reads the Azure AI Search environment variables including index name from the .env file.
-
-    Returns:
-        PromptTemplateWithDataConfig.AzureAISearchDataSource: the Azure AI search data source class.
-    """
-    api_key, url, index_name = azure_aisearch_settings_from_dot_env(
-        include_index_name=True
-    )
-    return PromptTemplateWithDataConfig.AzureAISearchDataSource(
-        parameters=PromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-            indexName=index_name, endpoint=url, key=api_key
-        )
-    )

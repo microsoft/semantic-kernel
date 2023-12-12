@@ -11,12 +11,16 @@ kernel = sk.Kernel()
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Load Azure OpenAI with data settings
-azure_aisearch_datasource = sk.azure_aisearch_settings_from_dot_env_as_datasource()
+azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+    parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+        **sk.azure_aisearch_settings_from_dot_env_as_dict()
+    )
+)
 # Set index language
 azure_aisearch_datasource.parameters.indexLanguage = "en"
 
 azure_chat_with_data_settings = (
-    sk.PromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
         dataSources=[azure_aisearch_datasource]
     )
 )
@@ -40,13 +44,15 @@ kernel.add_chat_service(
     chat_service,
 )
 
-prompt_config = sk.PromptTemplateWithDataConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    inputLanguage="fr",
-    outputLanguage="de",
-    data_source_settings=azure_chat_with_data_settings,
+prompt_config = (
+    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+        max_tokens=2000,
+        temperature=0.7,
+        top_p=0.8,
+        inputLanguage="fr",
+        outputLanguage="de",
+        data_source_settings=azure_chat_with_data_settings,
+    )
 )
 
 prompt_template = sk.ChatPromptTemplate(
