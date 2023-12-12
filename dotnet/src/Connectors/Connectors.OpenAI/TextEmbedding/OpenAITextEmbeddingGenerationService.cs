@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// OpenAI text embedding service.
 /// </summary>
 [Experimental("SKEXP0011")]
-public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
+public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly OpenAIClientCore _core;
 
@@ -29,14 +29,14 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextEmbeddingGeneration(
+    public OpenAITextEmbeddingGenerationService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGeneration)));
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -47,12 +47,12 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextEmbeddingGeneration(
+    public OpenAITextEmbeddingGenerationService(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGeneration)));
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 

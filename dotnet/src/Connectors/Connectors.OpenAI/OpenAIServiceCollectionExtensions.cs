@@ -355,8 +355,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
@@ -391,8 +391,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
@@ -427,8 +427,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
@@ -463,8 +463,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
@@ -494,8 +494,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 openAIClient,
                 modelId,
@@ -525,8 +525,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 openAIClient,
                 modelId,
@@ -556,8 +556,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
@@ -588,8 +588,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
@@ -616,8 +616,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
@@ -643,8 +643,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));

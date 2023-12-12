@@ -23,7 +23,7 @@ public class AIServicesOpenAIExtensionsTests
             .Build();
 
         Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("azure"));
-        Assert.NotNull(targetKernel.GetRequiredService<ITextEmbeddingGeneration>("azure"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextEmbeddingGenerationService>("azure"));
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class AIServicesOpenAIExtensionsTests
         // Assert
         Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("azure"));
         Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("oai"));
-        Assert.NotNull(targetKernel.GetRequiredService<ITextEmbeddingGeneration>("azure"));
+        Assert.NotNull(targetKernel.GetRequiredService<ITextEmbeddingGenerationService>("azure"));
         Assert.NotNull(targetKernel.GetRequiredService<ITextGenerationService>("oai"));
     }
 

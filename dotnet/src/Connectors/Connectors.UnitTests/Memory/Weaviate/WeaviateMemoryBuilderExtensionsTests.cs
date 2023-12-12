@@ -34,7 +34,7 @@ public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
     public async Task WeaviateMemoryStoreShouldBeProperlyInitializedAsync(string? apiVersion, string expectedAddress)
     {
         // Arrange
-        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGeneration>();
+        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGenerationService>();
 
         var getResponse = new
         {

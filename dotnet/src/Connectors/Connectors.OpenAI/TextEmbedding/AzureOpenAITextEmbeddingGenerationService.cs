@@ -18,12 +18,12 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Azure OpenAI text embedding service.
 /// </summary>
 [Experimental("SKEXP0011")]
-public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
+public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly AzureOpenAIClientCore _core;
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance using API Key auth.
+    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance using API Key auth.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -31,7 +31,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextEmbeddingGeneration(
+    public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -39,13 +39,13 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance supporting AAD auth.
+    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance supporting AAD auth.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -53,7 +53,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextEmbeddingGeneration(
+    public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
@@ -61,25 +61,25 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
+        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client.
+    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextEmbeddingGeneration(
+    public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         OpenAIClient openAIClient,
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGeneration)));
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
