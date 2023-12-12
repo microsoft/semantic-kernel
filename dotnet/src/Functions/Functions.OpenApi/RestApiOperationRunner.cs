@@ -11,9 +11,6 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 

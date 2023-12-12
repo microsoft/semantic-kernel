@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 

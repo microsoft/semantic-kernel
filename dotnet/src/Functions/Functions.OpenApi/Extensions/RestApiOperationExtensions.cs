@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.

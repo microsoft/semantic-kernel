@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents a query string builder for REST API operations.

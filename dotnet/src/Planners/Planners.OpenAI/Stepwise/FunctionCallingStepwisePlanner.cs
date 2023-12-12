@@ -9,7 +9,7 @@ using Json.More;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Microsoft.SemanticKernel.Planning;
 
