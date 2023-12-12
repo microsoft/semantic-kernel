@@ -262,7 +262,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    [Experimental("SKEXP0004")]
+#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     private async Task<(IAIService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
@@ -307,6 +307,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         return (aiService, renderedPrompt, renderedEventArgs);
     }
+#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
