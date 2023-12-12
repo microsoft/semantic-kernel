@@ -58,7 +58,12 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
         self._validate_request(request_settings, prompt, messages, chat_mode)
         model_args = self._create_model_args(
-            request_settings, stream, prompt, messages, functions, chat_mode
+            request_settings,
+            stream,
+            prompt,
+            messages,
+            functions,
+            chat_mode,
         )
         try:
             response = await (
@@ -106,7 +111,13 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ) from exc
 
     def _create_model_args(
-        self, request_settings, stream, prompt, messages, functions, chat_mode
+        self,
+        request_settings,
+        stream,
+        prompt,
+        messages,
+        functions,
+        chat_mode,
     ):
         model_args = self.get_model_args()
         model_args.update(
@@ -149,6 +160,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ]
             else:
                 model_args["functions"] = functions
+
         return model_args
 
     async def _send_embedding_request(
