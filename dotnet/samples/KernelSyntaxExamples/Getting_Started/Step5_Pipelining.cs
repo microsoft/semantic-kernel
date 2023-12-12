@@ -10,14 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-<<<<<<<< HEAD:dotnet/samples/KernelSyntaxExamples/Example69_Pipelining.cs
-#pragma warning disable RCS1110 // Declare type inside namespace.
-#pragma warning disable CA5394
-
-public static class Example69_Pipelining
-========
 public static class Step5_Pipelining
->>>>>>>> main:dotnet/samples/KernelSyntaxExamples/Getting_Started/Step5_Pipelining.cs
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
