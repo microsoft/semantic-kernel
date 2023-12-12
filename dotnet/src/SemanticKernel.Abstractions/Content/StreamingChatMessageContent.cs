@@ -3,8 +3,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletionService"/> interface.
@@ -12,7 +13,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <remarks>
 /// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
-public class StreamingChatMessageContent : StreamingContentBase
+public class StreamingChatMessageContent : StreamingKernelContent
 {
     /// <summary>
     /// Text associated to the message payload

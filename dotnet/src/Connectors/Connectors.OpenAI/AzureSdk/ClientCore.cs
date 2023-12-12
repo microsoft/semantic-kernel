@@ -18,8 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -622,9 +620,12 @@ internal abstract class ClientCore
             DeploymentName = deploymentOrModelName
         };
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -661,9 +662,12 @@ internal abstract class ClientCore
         };
 
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -724,7 +728,7 @@ internal abstract class ClientCore
 
             if (message.Items is { Count: > 0 })
             {
-                return new ChatRequestUserMessage(message.Items.Select(static (ContentBase item) => (ChatMessageContentItem)(item switch
+                return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
                 {
                     TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                     ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),

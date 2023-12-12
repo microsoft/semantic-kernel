@@ -556,7 +556,7 @@ public static class KernelExtensions
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    public static IAsyncEnumerable<StreamingContentBase> InvokePromptStreamingAsync(
+    public static IAsyncEnumerable<StreamingKernelContent> InvokePromptStreamingAsync(
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
@@ -571,7 +571,7 @@ public static class KernelExtensions
             arguments?.ExecutionSettings,
             promptTemplateFactory: promptTemplateFactory);
 
-        return function.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }
     #endregion
 

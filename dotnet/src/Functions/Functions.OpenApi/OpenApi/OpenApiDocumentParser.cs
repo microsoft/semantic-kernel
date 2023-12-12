@@ -16,10 +16,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Parser for OpenAPI documents.

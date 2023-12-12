@@ -169,21 +169,25 @@ public sealed class Kernel
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <summary>
     /// Provides an event that's raised after a function's invocation.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
     /// Provides an event that's raised prior to a prompt being rendered.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
 
     /// <summary>
     /// Provides an event that's raised after a prompt is rendered.
     /// </summary>
+    [Experimental("SKEXP0004")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     #region GetServices
@@ -271,6 +275,7 @@ public sealed class Kernel
     #endregion
 
     #region Internal Event Helpers
+    [Experimental("SKEXP0004")]
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
@@ -283,6 +288,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
+    [Experimental("SKEXP0004")]
     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedEventArgs? eventArgs = null;
@@ -295,6 +301,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
+    [Experimental("SKEXP0004")]
     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingEventArgs? eventArgs = null;
@@ -307,6 +314,7 @@ public sealed class Kernel
         return eventArgs;
     }
 
+    [Experimental("SKEXP0004")]
     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedEventArgs? eventArgs = null;
@@ -437,14 +445,14 @@ public sealed class Kernel
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
         KernelFunction function,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(function);
 
-        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
     /// <summary>
@@ -462,7 +470,7 @@ public sealed class Kernel
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
-    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
         string? pluginName,
         string functionName,
         KernelArguments? arguments = null,
@@ -472,7 +480,7 @@ public sealed class Kernel
 
         var function = this.Plugins.GetFunction(pluginName, functionName);
 
-        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
     /// <summary>

@@ -5,8 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;

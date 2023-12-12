@@ -13,8 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-using Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 

@@ -234,7 +234,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             MaxTokens = executionSettings.MaxTokens,
             PresencePenalty = executionSettings.PresencePenalty,
             FrequencyPenalty = executionSettings.FrequencyPenalty,
-            TokenSelectionBiases = executionSettings.TokenSelectionBiases,
+            TokenSelectionBiases = executionSettings.TokenSelectionBiases ?? new Dictionary<int, int>(),
             DataSources = this.GetDataSources(),
             Messages = this.GetMessages(chat)
         };
