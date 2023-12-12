@@ -95,11 +95,11 @@ public sealed class Program
 
         builder.Services.AddSingleton(loggerFactory);
         builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey
+        ).Build();
 
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
