@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation.

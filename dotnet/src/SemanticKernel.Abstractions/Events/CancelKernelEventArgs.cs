@@ -2,13 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides an <see cref="EventArgs"/> for cancelable operations related
 /// to <see cref="Kernel"/>-based operations.
 /// </summary>
+[Experimental("SKEXP0003")]
 public abstract class CancelKernelEventArgs : KernelEventArgs
 {
     /// <summary>

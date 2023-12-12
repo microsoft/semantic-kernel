@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -545,9 +544,12 @@ internal abstract class ClientCore
             DeploymentName = deploymentOrModelName
         };
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -615,9 +617,12 @@ internal abstract class ClientCore
                 break;
         }
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -664,6 +669,27 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
+    private static ChatMessageContentItem GetChatMessageContentItem(KernelContent item)
+    {
+        return item switch
+        {
+            TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
+            ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
+            _ => throw new NotSupportedException($"Unsupported content type of chat message item: {item.GetType()}.")
+        };
+    }
+
+    private static ChatRequestUserMessage GetChatRequestUserMessage(ChatMessageContent message, string? functionName)
+    {
+        if (message.Items is { Count: > 0 })
+        {
+            var contentItems = message.Items.Select(GetChatMessageContentItem);
+            return new ChatRequestUserMessage(contentItems) { Name = functionName };
+        }
+
+        return new ChatRequestUserMessage(message.Content) { Name = functionName };
+    }
+
     private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)
     {
         ChatRequestMessage? requestMessage;
@@ -674,27 +700,25 @@ internal abstract class ClientCore
         }
         else if (message.Role == AuthorRole.User)
         {
-            var functionName = openAIMessage?.Name;
-            if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
+            string? functionName = null;
+            if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
             {
                 functionName = functionNameFromMetadata?.ToString();
             }
 
-            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName };
+            requestMessage = GetChatRequestUserMessage(message, functionName);
         }
         else if (message.Role == AuthorRole.Assistant)
         {
             requestMessage = new ChatRequestAssistantMessage(message.Content)
             {
                 FunctionCall = openAIMessage?.FunctionCall,
-                Name = openAIMessage?.Name
             };
         }
         else if (string.Equals(message.Role.Label, "function", StringComparison.OrdinalIgnoreCase))
         {
-            var functionName = openAIMessage?.Name;
-
-            if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
+            string? functionName = null;
+            if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
             {
                 functionName = functionNameFromMetadata?.ToString();
             }

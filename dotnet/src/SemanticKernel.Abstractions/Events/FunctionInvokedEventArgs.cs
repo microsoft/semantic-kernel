@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides a <see cref="CancelKernelEventArgs"/> used in events just after a function is invoked.
 /// </summary>
+[Experimental("SKEXP0004")]
 public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
 {
     /// <summary>
