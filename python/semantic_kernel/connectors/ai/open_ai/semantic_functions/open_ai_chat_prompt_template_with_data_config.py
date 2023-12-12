@@ -32,6 +32,7 @@ class OpenAIChatPromptTemplateWithDataConfig(PromptTemplateConfig):
         queryType: Optional[str] = "simple"
         semanticConfiguration: Optional[str] = None
         roleInformation: Optional[str] = None
+        embeddingDeploymentName: Optional[str] = None
 
     @dataclass
     class AzureAISearchDataSource:

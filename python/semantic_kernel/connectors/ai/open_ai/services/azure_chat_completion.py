@@ -347,6 +347,18 @@ class AzureChatCompletion(
             and request_settings.data_source_settings is not None
         ):
             model_args["extra_body"] = asdict(request_settings.data_source_settings)
+
+            # Remove embeddingDeploymentName if not using vector search.
+            if (
+                model_args["extra_body"]["dataSources"][0]["parameters"][
+                    "embeddingDeploymentName"
+                ]
+                is None
+            ):
+                del model_args["extra_body"]["dataSources"][0]["parameters"][
+                    "embeddingDeploymentName"
+                ]
+
             if request_settings.inputLanguage is not None:
                 model_args["extra_body"][
                     "inputLanguage"
@@ -355,6 +367,7 @@ class AzureChatCompletion(
                 model_args["extra_body"][
                     "outputLanguage"
                 ] = request_settings.outputLanguage
+
             # Remove args that are not supported by the with-data extensions API (yet).
             del model_args["n"]
             del model_args["logit_bias"]
