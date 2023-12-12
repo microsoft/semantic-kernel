@@ -36,13 +36,12 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    //[Theory(Skip = "Requires model deployment that supports function calling.")]
-    [Theory]
-    [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest", new string[] { "WebSearch" })]
-    [InlineData("What is the weather in Seattle?", "Seattle", new string[] { "WebSearch" })]
-    [InlineData("What is the current hour number, plus 5?", "", new string[] { "Time", "Math" })]
-    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", "365", new string[] { "Math", "Email" })]
-    public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer, string[] expectedPlugins)
+    [Theory(Skip = "Requires model deployment that supports function calling.")]
+    [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest", new string[] { "WebSearch_Search" })]
+    [InlineData("What is the weather in Seattle?", "Seattle", new string[] { "WebSearch_Search" })]
+    [InlineData("What is the current hour number, plus 5?", "", new string[] { "Time_HourNumber", "Math_Add" })]
+    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", "365", new string[] { "Math_Subtract", "Email_GetEmailAddress", "Email_SendEmail" })]
+    public async Task CanExecuteStepwisePlanAsync(string prompt, string partialExpectedAnswer, string[] expectedFunctions)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -60,15 +59,17 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         // Act
         var planResult = await planner.ExecuteAsync(kernel, prompt);
 
-        // Assert - should contain the expected answer
+        // Assert - should contain the expected answer & function calls within the maximum iterations
         Assert.NotNull(planResult);
         Assert.NotEqual(string.Empty, planResult.FinalAnswer);
         Assert.True(planResult.Iterations > 0);
         Assert.True(planResult.Iterations <= 10);
         Assert.Contains(partialExpectedAnswer, planResult.FinalAnswer, StringComparison.InvariantCultureIgnoreCase);
-        foreach (string expectedPlugin in expectedPlugins)
+
+        string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
+        foreach (string expectedFunction in expectedFunctions)
         {
-            Assert.Contains(expectedPlugin, JsonSerializer.Serialize(planResult.ChatHistory!), StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains(expectedFunction, serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 
@@ -77,22 +78,22 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        //AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-        //Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
-
         IKernelBuilder builder = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
 
-        /*if (useEmbeddings)
+        if (useEmbeddings)
         {
+            AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+            Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
+
             builder.AddAzureOpenAITextEmbeddingGeneration(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                 apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }*/
+        }
 
         var kernel = builder.Build();
 
