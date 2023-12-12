@@ -94,7 +94,8 @@ public class OpenAIPromptExecutionSettingsTests
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", 128 },
                 { "service_id", "service" },
-                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } }
+                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
+                { "seed", 123456 },
             }
         };
 
@@ -103,6 +104,7 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         AssertExecutionSettings(executionSettings);
+        Assert.Equal(executionSettings.Seed, 123456);
     }
 
     [Fact]

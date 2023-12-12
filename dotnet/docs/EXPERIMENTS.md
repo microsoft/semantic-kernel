@@ -22,6 +22,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0010: Azure OpenAI with your data service
 - SKEXP0011: OpenAI embedding service
 - SKEXP0012: OpenAI image service
+- SKEXP0013: OpenAI parameters
 
 ## Memory connectors
 

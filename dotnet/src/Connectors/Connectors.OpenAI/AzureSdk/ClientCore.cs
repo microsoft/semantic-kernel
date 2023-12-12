@@ -588,6 +588,7 @@ internal abstract class ClientCore
             PresencePenalty = (float?)executionSettings.PresencePenalty,
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
+            Seed = executionSettings.Seed,
         };
 
         switch (executionSettings.FunctionCallBehavior)
