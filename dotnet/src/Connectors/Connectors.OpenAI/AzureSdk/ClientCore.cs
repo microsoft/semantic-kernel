@@ -18,8 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -671,7 +669,7 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static ChatMessageContentItem GetChatMessageContentItem(ContentBase item)
+    private static ChatMessageContentItem GetChatMessageContentItem(KernelContent item)
     {
         return item switch
         {
