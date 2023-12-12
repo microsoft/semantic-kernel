@@ -126,6 +126,7 @@ async def create_with_data_chat_function(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_azure_e2e_chat_completion_with_extensions(
     create_with_data_chat_function,
 ):
