@@ -37,7 +37,7 @@ def test_custom_openai_chat_request_settings():
     assert settings.presence_penalty == 0.5
     assert settings.frequency_penalty == 0.5
     assert settings.max_tokens == 128
-    assert settings.stop == ["\n"]
+    assert settings.stop == "\n"
     assert settings.number_of_responses == 2
     assert settings.logit_bias == {"1": 1}
     assert settings.messages == [{"role": "system", "content": "Hello"}]
@@ -91,7 +91,7 @@ def test_create_options():
         presence_penalty=0.5,
         frequency_penalty=0.5,
         max_tokens=128,
-        stop="\n",
+        stop=["\n"],
         number_of_responses=2,
         logit_bias={"1": 1},
         messages=[{"role": "system", "content": "Hello"}],

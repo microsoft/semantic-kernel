@@ -82,7 +82,10 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
                 role=role,
                 content_template=PromptTemplate(
                     message, self.template_engine, self.prompt_config
-                ),
+                )
+                if message
+                else None,
+                **kwargs
             )
         )
 

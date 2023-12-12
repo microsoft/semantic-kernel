@@ -16,7 +16,7 @@ class OpenAIRequestSettings(AIRequestSettings):
     frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0)
     logit_bias: Dict[str, float] = Field(default_factory=dict)
     max_tokens: int = Field(256, gt=0)
-    number_of_responses: int = Field(1, ge=1, serialization_alias="n")
+    number_of_responses: int = Field(1, ge=1, le=128, serialization_alias="n")
     presence_penalty: float = Field(0.0, ge=-2.0, le=2.0)
     seed: Optional[int] = None
     stop: Optional[Union[str, List[str]]] = None
@@ -24,13 +24,6 @@ class OpenAIRequestSettings(AIRequestSettings):
     temperature: float = Field(0.0, ge=0.0, le=2.0)
     top_p: float = Field(1.0, ge=0.0, le=1.0)
     user: Optional[str] = None
-
-    @field_validator("stop")
-    @classmethod
-    def validate_stop(cls, v: Any):
-        if not v or isinstance(v, list):
-            return v
-        return [v]
 
     def update_from_openai_request_settings(
         self, new_settings: "OpenAIRequestSettings"
