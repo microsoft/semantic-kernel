@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 if sys.version_info >= (3, 9):
     from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmRequestSettings,
+        GooglePalmChatRequestSettings,
     )
     from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
         GooglePalmChatCompletion,
@@ -64,7 +64,7 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
-        settings = GooglePalmRequestSettings()
+        settings = GooglePalmChatRequestSettings()
         response = await gp_chat_completion.complete_chat_async(prompt, settings)
         assert isinstance(response.result(), str) and len(response.result()) > 0
 
