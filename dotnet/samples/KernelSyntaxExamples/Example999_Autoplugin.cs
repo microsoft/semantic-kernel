@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Emit;
-using System.Collections.Generic;ic compiler erros
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 /**
@@ -26,7 +26,7 @@ public static class Example999_AutoPlugin
     private static int s_sampleIndex; 
     private static string plannerprompt = @"
 
-        Extract today's featured article text from https://en.wikipedia.org and summarize it.
+        Extract today's featured article text from https://en.wikipedia.org
 
     ";
 
