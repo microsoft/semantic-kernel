@@ -200,10 +200,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         for (int i = namedArgsStartIndex; i < this._tokens.Count; i++)
         {
-            var arg = this._tokens[i] as NamedArgBlock;
-
             // When casting fails because the block isn't a NamedArg, arg is null
-            if (arg == null)
+            if (this._tokens[i] is not NamedArgBlock arg)
             {
                 var errorMsg = "Functions support up to one positional argument";
                 this.Logger.LogError(errorMsg);
