@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-from typing import Any, Dict
+import numpy
+from typing import Dict
 from semantic_kernel.memory.memory_record import MemoryRecord
+
 
 def build_payload(record: MemoryRecord) -> dict:
     """
@@ -9,7 +10,7 @@ def build_payload(record: MemoryRecord) -> dict:
     """
     payload: dict = {}
     payload["_id"] = record._id
-    payload["$vector"]= record.embedding.tolist()
+    payload["$vector"] = record.embedding.tolist()
     if record._text:
         payload["text"] = record._text
     if record._description:
@@ -19,18 +20,19 @@ def build_payload(record: MemoryRecord) -> dict:
     return payload
 
 
-def parse_payload(record: Dict) -> MemoryRecord:
+def parse_payload(document: Dict) -> MemoryRecord:
     """
     Parses a record from Pinecone into a MemoryRecord.
     """
-    text = record["text"]
-    description = record["description"]
-    additional_metadata = record["additional_metadata"]
+    text = document["text"] if "text" in document else None
+    description = document["description"] if "description" in document else None
+    additional_metadata = document["additional_metadata"] if "additional_metadata" in document else None
 
     return MemoryRecord.local_record(
-        id=record._id,
+        id=document._id,
         description=description,
         text=text,
         additional_metadata=additional_metadata,
-        embedding=record["$vector"],
+        embedding=document["vector"] if "$vector" in document else numpy.array([
+        ]),
     )
