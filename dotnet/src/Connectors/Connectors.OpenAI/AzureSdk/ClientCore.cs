@@ -544,9 +544,12 @@ internal abstract class ClientCore
             DeploymentName = deploymentOrModelName
         };
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
@@ -614,9 +617,12 @@ internal abstract class ClientCore
                 break;
         }
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        if (executionSettings.TokenSelectionBiases is not null)
         {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
