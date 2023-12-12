@@ -19,7 +19,7 @@ public static class Example11_WebSearchQueries
 
         // Run
         var ask = "What's the tallest building in Europe?";
-        var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new(ask));
+        var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["input"] = ask });
 
         Console.WriteLine(ask + "\n");
         Console.WriteLine(result.GetValue<string>());

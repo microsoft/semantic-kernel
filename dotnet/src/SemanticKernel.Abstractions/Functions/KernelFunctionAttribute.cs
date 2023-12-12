@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -30,13 +29,6 @@ namespace Microsoft.SemanticKernel;
 /// Functions may have any number of parameters. A given method function may declare at
 /// most one parameter of each of these types - <see cref="Kernel"/>, <see cref="KernelArguments"/>,
 /// <see cref="CancellationToken"/>, <see cref="CultureInfo"/>, <see cref="ILogger"/> or <see cref="ILoggerFactory"/>.
-/// The special "input" parameter may only be declared once, and in such cases, it must be declared first.
-/// All other parameters must be of a primitive .NET type or
-/// a type attributed with <see cref="TypeConverterAttribute"/>. Functions may return a <see cref="Task"/>,
-/// <see cref="ValueTask"/>, any primitive .NET type or a type attributed with <see cref="TypeConverterAttribute"/>,
-/// or a <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/> of such a type.
-/// </para>
-/// <para>
 /// Parameters are populated based on a arguments of the same name. If no argument of the given name is present, but
 /// a default value was specified via either a <see cref="DefaultValueAttribute"/> or an optional value in the signature,
 /// that default value is used instead. If no default value was specified and it's the first parameter, the "input"
