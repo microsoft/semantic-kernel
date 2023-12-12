@@ -34,10 +34,10 @@ public sealed class HandlebarsPlanner
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
-    /// <param name="config">The configuration for Planner.</param>
-    public HandlebarsPlanner(HandlebarsPlannerConfig? config = default)
+    /// <param name="options">Configuration options for Handlebars Planner.</param>
+    public HandlebarsPlanner(HandlebarsPlannerOptions? options = default)
     {
-        this._config = config ?? new HandlebarsPlannerConfig();
+        this._options = options ?? new HandlebarsPlannerOptions();
         this._templateFactory = new HandlebarsPromptTemplateFactory(options: PromptTemplateOptions);
     }
 
@@ -63,7 +63,7 @@ public sealed class HandlebarsPlanner
 
     #region private
 
-    private readonly HandlebarsPlannerConfig _config;
+    private readonly HandlebarsPlannerOptions _options;
 
     private HandlebarsPromptTemplateFactory _templateFactory { get; }
 
@@ -111,8 +111,8 @@ public sealed class HandlebarsPlanner
         complexParameterSchemas = new();
 
         var availableFunctions = kernel.Plugins.GetFunctionsMetadata()
-            .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
+            .Where(s => !this._options.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
+                && !this._options.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
                 && !s.Name.Contains("Planner_Excluded"))
             .ToList();
 
@@ -220,11 +220,11 @@ public sealed class HandlebarsPlanner
                 { "goal", goal },
                 { "nameDelimiter", this._templateFactory.NameDelimiter},
                 { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
-                { "allowLoops", this._config.AllowLoops },
+                { "allowLoops", this._options.AllowLoops },
                 { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
                 { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
-                { "lastPlan", this._config.LastPlan },
-                { "lastError", this._config.LastError }
+                { "lastPlan", this._options.LastPlan },
+                { "lastError", this._options.LastError }
             };
 
         var promptTemplateConfig = new PromptTemplateConfig()

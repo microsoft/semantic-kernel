@@ -108,7 +108,7 @@ public sealed class Program
 
     private static HandlebarsPlanner CreatePlanner(int maxTokens = 1024)
     {
-        var plannerConfig = new HandlebarsPlannerConfig { MaxTokens = maxTokens };
+        var plannerConfig = new HandlebarsPlannerOptions { MaxTokens = maxTokens };
         return new HandlebarsPlanner(plannerConfig);
     }
 
