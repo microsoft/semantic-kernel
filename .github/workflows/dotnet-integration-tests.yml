@@ -21,7 +21,7 @@ jobs:
         os: [ubuntu-latest]
         configuration: [Debug]
     runs-on: ${{ matrix.os }}
-    steps:        
+    steps:
       - uses: actions/checkout@v4
         if: ${{ github.event_name != 'pull_request' }}
         with:
@@ -50,6 +50,9 @@ jobs:
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Planners__AzureOpenAI__ApiKey: ${{ secrets.PLANNERS__AZUREOPENAI__APIKEY }}
+          Planners__AzureOpenAI__Endpoint: ${{ secrets.PLANNERS__AZUREOPENAI__ENDPOINT }}
+          Planners__AzureOpenAI__DeploymentName: ${{ vars.PLANNERS__AZUREOPENAI__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
         run: |

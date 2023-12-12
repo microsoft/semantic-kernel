@@ -34,5 +34,18 @@
   "MongoDB": {
     "ConnectionString": "",
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
+  },
+  "Planners": {
+    "AzureOpenAI": {
+      "ServiceId": "azure-text-davinci-003",
+      "DeploymentName": "gpt-4",
+      "Endpoint": "",
+      "ApiKey": ""
+    },
+    "OpenAI": {
+      "ServiceId": "text-davinci-003",
+      "ModelId": "text-davinci-003",
+      "ApiKey": ""
+    }
   }
 }
