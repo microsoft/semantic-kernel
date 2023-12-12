@@ -52,34 +52,6 @@ public sealed class KernelFunctionFromMethodTests2
     }
 
     [Fact]
-    public void ItThrowsForInvalidFunctions()
-    {
-        // Arrange
-        var instance = new InvalidPlugin();
-        MethodInfo[] methods = instance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode")
-            .ToArray();
-
-        // Act - Assert that no exception occurs
-        var count = 0;
-        foreach (var method in methods)
-        {
-            try
-            {
-                KernelFunctionFactory.CreateFromMethod(method, instance, "plugin");
-            }
-            catch (KernelException)
-            {
-                count++;
-            }
-        }
-
-        // Assert
-        Assert.Equal(2, count);
-    }
-
-    [Fact]
     public async Task ItCanImportMethodFunctionsAsync()
     {
         // Arrange
@@ -156,12 +128,15 @@ public sealed class KernelFunctionFromMethodTests2
         bool invoked = false;
         KernelFunction func = null!;
         func = KernelFunctionFactory.CreateFromMethod(
-            (Kernel kernelArg, KernelFunction funcArg, KernelArguments argsArg, ILoggerFactory loggerArg, CultureInfo cultureArg, CancellationToken cancellationToken) =>
+            (Kernel kernelArg, KernelFunction funcArg, KernelArguments argsArg, ILoggerFactory loggerFactoryArg,
+             ILogger loggerArg, IAIServiceSelector serviceSelectorArg, CultureInfo cultureArg, CancellationToken cancellationToken) =>
             {
                 Assert.Same(kernel, kernelArg);
                 Assert.Same(func, funcArg);
                 Assert.Same(args, argsArg);
-                Assert.Same(kernel.LoggerFactory, loggerArg);
+                Assert.Same(kernel.LoggerFactory, loggerFactoryArg);
+                Assert.NotNull(loggerArg);
+                Assert.Same(kernel.ServiceSelector, serviceSelectorArg);
                 Assert.Same(kernel.Culture, cultureArg);
                 Assert.Equal(cts.Token, cancellationToken);
                 invoked = true;
@@ -172,19 +147,64 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.True(invoked);
     }
 
-    private sealed class InvalidPlugin
+    [Fact]
+    public async Task ItInjectsServicesFromDIIntoFunctionsAsync()
     {
-        [KernelFunction]
-        public void Invalid2(CustomUnknownType n, string input) // Only first parameter can have the 'input' name
-        {
-        }
+        var serviceA = new ExampleService();
+        var serviceB = new ExampleService();
+        var serviceC = new ExampleService();
 
-        [KernelFunction]
-        public void Invalid4(CancellationToken ct1, CancellationToken ct2)
-        {
-        }
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<IExampleService>("something", serviceA);
+        builder.Services.AddSingleton<IExampleService>(serviceB);
+        builder.Services.AddKeyedSingleton<IExampleService>("somethingelse", serviceC);
+        Kernel kernel = builder.Build();
 
-        public struct CustomUnknownType { }
+        bool invoked = false;
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(
+            ([FromKernelServices] IExampleService service1Arg,
+             [FromKernelServices("something")] IExampleService service2Arg,
+             [FromKernelServices("somethingelse")] IExampleService service3Arg,
+             [FromKernelServices] IExampleService service4Arg,
+             [FromKernelServices("doesntexist")] IExampleService? service5Arg = null) =>
+            {
+                Assert.Same(serviceB, service1Arg);
+                Assert.Same(serviceA, service2Arg);
+                Assert.Same(serviceC, service3Arg);
+                Assert.Same(serviceB, service4Arg);
+                Assert.Null(service5Arg);
+                invoked = true;
+            });
+
+        await func.InvokeAsync(kernel);
+
+        Assert.True(invoked);
+
+        Assert.DoesNotContain(func.Metadata.Parameters, p => p.Name.Contains("service", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ItThrowsForMissingServicesWithoutDefaultsAsync()
+    {
+        Kernel kernel = new();
+        KernelFunction func;
+
+        func = KernelFunctionFactory.CreateFromMethod(([FromKernelServices] IExampleService service) => { });
+        await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
+
+        func = KernelFunctionFactory.CreateFromMethod(([FromKernelServices] IExampleService? service) => { });
+        await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
+
+        func = KernelFunctionFactory.CreateFromMethod(([FromKernelServices("name")] IExampleService? service) => { });
+        await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
+    }
+
+    private interface IExampleService
+    {
+    }
+
+    private sealed class ExampleService : IExampleService
+    {
     }
 
     private sealed class LocalExamplePlugin

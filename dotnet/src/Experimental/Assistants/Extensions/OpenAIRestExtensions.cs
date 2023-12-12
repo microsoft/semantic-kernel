@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 internal static partial class OpenAIRestExtensions
 {
-    private const string BaseUrl = "https://api.openai.com/v1/";
+    private const string BaseUrl = "https://api.openai.com/v1";
     private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
     private const string HeaderNameAuthorization = "Authorization";
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
