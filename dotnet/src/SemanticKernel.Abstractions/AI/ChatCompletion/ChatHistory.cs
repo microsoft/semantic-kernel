@@ -131,7 +131,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <typeparam name="T">Specific chat message content type</typeparam>
     /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
     /// <returns>Returns the original streaming results with some message processing</returns>
-    /// <exception cref="InvalidOperationException"></exception>
     public async IAsyncEnumerable<T> AddStreamingMessageAsync<T>(IAsyncEnumerable<T> streamingMessageContents) where T : StreamingChatMessageContent
     {
         List<T> messageContents = new();
