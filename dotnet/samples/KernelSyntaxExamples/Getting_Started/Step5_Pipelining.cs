@@ -10,9 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-#pragma warning disable RCS1110 // Declare type inside namespace.
-#pragma warning disable CA5394
-
 public static class Step5_Pipelining
 {
     /// <summary>

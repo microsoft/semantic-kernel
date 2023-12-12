@@ -98,6 +98,7 @@ public static class Program
         try
         {
             await task.WaitAsync(cancellationToken);
+            Console.WriteLine();
             Console.WriteLine("== DONE ==");
         }
         catch (ConfigurationNotFoundException ex)

@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 /**
 * This example shows how to load a <see cref="KernelPlugin"/> instances.
 */
-// ReSharper disable once InconsistentNaming
 public static class Step2_Add_Plugins
 {
     /// <summary>
@@ -31,7 +30,7 @@ public static class Step2_Add_Plugins
         Console.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
         // Example 3. Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { FunctionCallBehavior = FunctionCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 

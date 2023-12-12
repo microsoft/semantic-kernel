@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 /**
  * This example shows how to create and use a <see cref="Kernel"/>.
  */
-// ReSharper disable once InconsistentNaming
 public static class Step1_Create_Kernel
 {
     /// <summary>

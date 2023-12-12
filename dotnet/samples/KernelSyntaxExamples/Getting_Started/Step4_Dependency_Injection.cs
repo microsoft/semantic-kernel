@@ -13,7 +13,6 @@ using RepoUtils;
 /**
 * This example shows how to using Dependency Injection with the Semantic Kernel
 */
-// ReSharper disable once InconsistentNaming
 public static class Step4_Dependency_Injection
 {
     /// <summary>
