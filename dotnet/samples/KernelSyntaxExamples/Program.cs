@@ -80,7 +80,7 @@ public static class Program
     private static void LoadUserSecrets()
     {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Development.json")
+            .AddJsonFile("appsettings.Development.json", true)
             .AddEnvironmentVariables()
             .AddUserSecrets<Env>()
             .Build();

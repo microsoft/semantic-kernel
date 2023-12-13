@@ -25,19 +25,21 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAIClient _client;
     private readonly ILogger _logger;
-
+    private readonly string _deploymentName;
     /// <summary>
     /// Create a new instance of Azure OpenAI image generation service
     /// </summary>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="deploymentName">Deployment name identifier</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="modelId">Model name identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAITextToImageService(
-        string? endpoint,
+        string deploymentName,
+        string endpoint,
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
@@ -45,6 +47,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         int? maxRetryCount = null,
         string? apiVersion = null)
     {
+        this._deploymentName = deploymentName;
+
         Verify.NotNullOrWhiteSpace(apiKey);
 
         if (string.Equals(modelId, "dall-e-3", StringComparison.OrdinalIgnoreCase))
@@ -89,21 +93,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentOutOfRangeException("width,height", $"{width}x{height}", SizeErr);
         }
 
-        var size = ImageSize.Size256x256;
-        switch (width)
+        var size = width switch
         {
-            case 256:
-                size = ImageSize.Size256x256;
-                break;
-            case 512:
-                size = ImageSize.Size512x512;
-                break;
-            case 1024:
-                size = ImageSize.Size1024x1024;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(width), SizeErr);
-        }
+            256 => ImageSize.Size256x256,
+            512 => ImageSize.Size512x512,
+            1024 => ImageSize.Size1024x1024,
+            _ => throw new ArgumentOutOfRangeException(nameof(width), SizeErr)
+        };
 
         Response<ImageGenerations> imageGenerations;
         try
@@ -111,6 +107,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             imageGenerations = await this._client.GetImageGenerationsAsync(
                 new ImageGenerationOptions
                 {
+                    DeploymentName = this._deploymentName,
                     Prompt = description,
                     Size = size,
                 }, cancellationToken).ConfigureAwait(false);

@@ -18,6 +18,7 @@ using Microsoft.SemanticKernel.TextToImage;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -1062,16 +1063,18 @@ public static class OpenAIServiceCollectionExtensions
     /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
+        string deploymentName,
         string endpoint,
         string apiKey,
         string? serviceId = null,
@@ -1085,6 +1088,7 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextToImageService(
+                deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
@@ -1099,15 +1103,17 @@ public static class OpenAIServiceCollectionExtensions
     /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
+        string deploymentName,
         string endpoint,
         string apiKey,
         string? serviceId = null,
@@ -1120,6 +1126,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextToImageService(
+                deploymentName,
                 endpoint,
                 apiKey,
                 modelId,

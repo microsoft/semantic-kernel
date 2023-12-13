@@ -18,23 +18,23 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
 /// </summary>
 public sealed class AzureOpenAITextToImageServiceTests
 {
-    [Fact]
-    public void ItValidatesTheModelId()
+    [Theory]
+    [InlineData("dall-e-3", false)]
+    [InlineData("dall-e-2", true)]
+    [InlineData("Dall-E-2", true)]
+    [InlineData("", true)]
+    public void ItValidatesTheModelId(string modelId, bool shouldBeValid)
     {
-        // Arrange
-        const string InvalidModel = "dall-e-3";
-
-        const string ValidModel1 = "dall-e-2";
-        const string ValidModel2 = "Dall-E-2";
-        const string ValidModel3 = "";
-
         // Act
-        Assert.Throws<NotSupportedException>(() => new AzureOpenAITextToImageService(modelId: InvalidModel, endpoint: "https://az.com", apiKey: "abc"));
-
-        // No exceptions for these
-        var _ = new AzureOpenAITextToImageService(modelId: ValidModel1, endpoint: "https://az.com", apiKey: "abc");
-        _ = new AzureOpenAITextToImageService(modelId: ValidModel2, endpoint: "https://az.com", apiKey: "abc");
-        _ = new AzureOpenAITextToImageService(modelId: ValidModel3, endpoint: "https://az.com", apiKey: "abc");
+        if (!shouldBeValid)
+        {
+            Assert.Throws<NotSupportedException>(() => new AzureOpenAITextToImageService(deploymentName: modelId, modelId: modelId, endpoint: "https://az.com", apiKey: "abc"));
+        }
+        else
+        {
+            // No exceptions for these
+            new AzureOpenAITextToImageService(deploymentName: modelId, modelId: modelId, endpoint: "https://az.com", apiKey: "abc");
+        }
     }
 
     [Fact(Skip = "Needs refactoring, decouple from Azure SDK implementation details")]
@@ -52,7 +52,7 @@ public sealed class AzureOpenAITextToImageServiceTests
         // The model ID must be empty when working with DallE2 (and DallE3 is not supported yet).
         const string EmptyModelId = "";
 
-        var generation = new AzureOpenAITextToImageService("https://fake-endpoint/", EmptyModelId, "fake-api-key", mockHttpClient);
+        var generation = new AzureOpenAITextToImageService(EmptyModelId, "https://fake-endpoint/", EmptyModelId, "fake-api-key", mockHttpClient);
 
         // Act
         var result = await generation.GenerateImageAsync("description", 256, 256);
