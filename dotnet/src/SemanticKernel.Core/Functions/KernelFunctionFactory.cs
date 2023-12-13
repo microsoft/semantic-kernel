@@ -111,7 +111,9 @@ public static class KernelFunctionFactory
     /// </summary>
     private static Dictionary<string, PromptExecutionSettings>? ToDictionary(this PromptExecutionSettings settings)
     {
-        return settings is null ? null : new Dictionary<string, PromptExecutionSettings> {
+        return settings is null ? null :
+            new Dictionary<string, PromptExecutionSettings>
+            {
                 { PromptExecutionSettings.DefaultServiceId, settings },
             };
     }
