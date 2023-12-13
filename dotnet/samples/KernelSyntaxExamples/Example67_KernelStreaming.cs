@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
  * This example shows how to use multiple prompt template formats.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example72_KernelStreaming
+public static class Example67_KernelStreaming
 {
     /// <summary>
     /// Show how to combine multiple prompt template factories.

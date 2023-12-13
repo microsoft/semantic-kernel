@@ -231,7 +231,9 @@ def redis_settings_from_dot_env() -> str:
     return connection_string
 
 
-def azure_aisearch_settings_from_dot_env() -> Tuple[str, str]:
+def azure_aisearch_settings_from_dot_env(
+    include_index_name=False,
+) -> Union[Tuple[str, str], Tuple[str, str, str]]:
     """
     Reads the Azure AI Search environment variables for the .env file.
 
@@ -245,4 +247,24 @@ def azure_aisearch_settings_from_dot_env() -> Tuple[str, str]:
     assert url is not None, "Azure AI Search URL not found in .env file"
     assert api_key is not None, "Azure AI Search API key not found in .env file"
 
-    return api_key, url
+    if not include_index_name:
+        return api_key, url
+    else:
+        index_name = config.get("AZURE_AISEARCH_INDEX_NAME", None)
+        assert (
+            index_name is not None
+        ), "Azure AI Search index name not found in .env file"
+        return api_key, url, index_name
+
+
+def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
+    """
+    Reads the Azure AI Search environment variables including index name from the .env file.
+
+    Returns:
+        Dict[str, str]: the Azure AI search environment variables
+    """
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env(
+        include_index_name=True
+    )
+    return {"key": api_key, "endpoint": url, "indexName": index_name}
