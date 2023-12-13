@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// The Update operation updates vector in a namespace.
