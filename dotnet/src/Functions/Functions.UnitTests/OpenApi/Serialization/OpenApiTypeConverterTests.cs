@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.VisualBasic;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class OpenApiTypeConverterTests
 {
