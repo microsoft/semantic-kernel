@@ -19,7 +19,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
-using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
