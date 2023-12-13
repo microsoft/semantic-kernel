@@ -22,8 +22,8 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         Assert.NotNull(executionSettings);
-        Assert.Equal(0, executionSettings.Temperature);
-        Assert.Equal(0, executionSettings.TopP);
+        Assert.Equal(1, executionSettings.Temperature);
+        Assert.Equal(1, executionSettings.TopP);
         Assert.Equal(0, executionSettings.FrequencyPenalty);
         Assert.Equal(0, executionSettings.PresencePenalty);
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
