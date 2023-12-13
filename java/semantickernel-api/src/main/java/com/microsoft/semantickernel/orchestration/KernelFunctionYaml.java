@@ -16,33 +16,30 @@ public class KernelFunctionYaml {
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     public static KernelFunction fromPromptYaml(
-        String text,
+        String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory
     ) throws IOException {
         return BuildersSingleton.INST.getInstance(Builder.class)
-            .fromPromptYaml(text, promptTemplateFactory);
+            .fromPromptYaml(yaml, promptTemplateFactory);
     }
 
-    public static KernelFunction fromPromptYaml(String text) throws IOException {
-        return fromPromptYaml(text, null);
+    public static KernelFunction fromPromptYaml(String yaml) throws IOException {
+        return fromPromptYaml(yaml, null);
     }
 
     public static KernelFunction fromYaml(Path filePath) throws IOException {
-        return fromYaml(filePath.toAbsolutePath().toString());
-    }
-
-    public static KernelFunction fromYaml(String filePath) throws IOException {
-        return BuildersSingleton.INST.getInstance(Builder.class).fromYaml(filePath);
+        return BuildersSingleton.INST.getInstance(Builder.class)
+            .fromYaml(filePath);
     }
 
     public interface Builder {
 
-        KernelFunction fromPromptYaml(
-            String text,
-            @Nullable PromptTemplateFactory promptTemplateFactory
-        ) throws IOException;
+        KernelFunction fromPromptYaml(String yaml,
+            @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException;
 
-        KernelFunction fromYaml(String filePath) throws IOException;
+        KernelFunction fromPromptYaml(String yaml) throws IOException;
+
+        KernelFunction fromYaml(Path filePath) throws IOException;
     }
 
 

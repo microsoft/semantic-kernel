@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTe
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.List;
 
 public class Main {
@@ -31,8 +32,8 @@ public class Main {
             .buildAsyncClient();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromPromptYaml(
-            "Plugins/ChatPlugin/PersonaChat.prompt.yaml");
+        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+            Path.of("Plugins/ChatPlugin/PersonaChat.prompt.yaml"));
 
         ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
             .withOpenAIClient(client)
@@ -40,7 +41,7 @@ public class Main {
             .build();
 
         Kernel kernel = SKBuilders.kernel()
-            .withDefaultAIService(gpt35Turbo)
+            .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplateEngine(new HandlebarsPromptTemplate())
             .build();
 

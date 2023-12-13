@@ -6,9 +6,12 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -79,6 +82,7 @@ public class DefaultKernel implements Kernel {
 
         private AIService defaultAIService;
         private final Map<Class, AIService> services = new HashMap<>();
+        private final List<KernelPlugin> plugins = new ArrayList<>();
 
         @Override
         public <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService) {
@@ -89,6 +93,12 @@ public class DefaultKernel implements Kernel {
 
         @Override
         public Builder withPromptTemplateEngine(PromptTemplate promptTemplate) {
+            return this;
+        }
+
+        @Override
+        public Kernel.Builder withPlugins(KernelPlugin plugin) {
+            plugins.add(plugin);
             return this;
         }
 

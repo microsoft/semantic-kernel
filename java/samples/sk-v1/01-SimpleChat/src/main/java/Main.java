@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTe
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 
 public class Main {
 
@@ -47,8 +48,8 @@ public class Main {
             .build();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromPromptYaml(
-            "Plugins/ChatPlugin/SimpleChat.prompt.yaml", null);
+        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+            Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
         ChatHistory chatHistory = gpt35Turbo.createNewChat();
 

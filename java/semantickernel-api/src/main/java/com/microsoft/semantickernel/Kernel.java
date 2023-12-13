@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -55,5 +56,6 @@ public interface Kernel extends Buildable {
 
         Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
 
+        Builder withPlugins(KernelPlugin searchPlugin);
     }
 }

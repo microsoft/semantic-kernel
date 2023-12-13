@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -67,7 +68,7 @@ public class SimpleChatTest {
 
         // Initialize the required functions and services for the kernel
         KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
-            "Plugins/ChatPlugin/SimpleChat.prompt.yaml");
+            Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
         ChatHistory chatHistory = gpt35Turbo.createNewChat();
 

@@ -2,10 +2,9 @@
 package plugins.searchplugin;
 
 import com.azure.core.http.HttpClient;
-import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
+import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.plugins.web.bing.BingConnector;
-
 import reactor.core.publisher.Mono;
 
 public class Search {
@@ -21,9 +20,9 @@ public class Search {
         this._bingConnector = new BingConnector(apiKey, httpClient);
     }
 
-    @DefineSKFunction(description="Searches Bing for the given query")
+    @DefineKernelFunction(description="Searches Bing for the given query")
     public Mono<String> searchAsync(
-        @SKFunctionParameters(description="The search query", name="query", type=String.class) String query
+        @KernelFunctionParameter(description="The search query", name="query", type=String.class) String query
     ){
         return Mono.empty();
     }

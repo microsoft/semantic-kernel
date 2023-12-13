@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -23,36 +24,42 @@ public class KernelFunctionYamlBuilder implements KernelFunctionYaml.Builder {
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory
     ) throws IOException {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-
-        PromptTemplateConfig functionModel = mapper.readValue(yaml, PromptTemplateConfig.class);
-
-        return new KernelFunctionFromPrompt.Builder()
-            .build(functionModel);
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        return fromYaml(targetStream, promptTemplateFactory);
     }
 
     public KernelFunction fromPromptYaml(
-        String text
+        String yaml
     ) throws IOException {
-        return fromPromptYaml(text, null);
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        return fromYaml(targetStream, null);
     }
 
     public KernelFunction fromYaml(Path filePath) throws IOException {
-        return fromYaml(filePath.toAbsolutePath().toString());
+        InputStream inputStream = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream(filePath.toString());
+        return fromYaml(inputStream, null);
     }
 
-    public KernelFunction fromYaml(String filePath) throws IOException {
+    private KernelFunction fromYaml(
+        InputStream inputStream,
+        @Nullable PromptTemplateFactory promptTemplateFactory
+    ) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        InputStream inputStream =
-            Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
-
         PromptTemplateConfig functionModel = mapper.readValue(inputStream,
             PromptTemplateConfig.class);
+
+        PromptTemplate promptTemplate;
+        if (promptTemplateFactory == null) {
+            promptTemplate = new HandlebarsPromptTemplate(functionModel);
+        } else {
+            promptTemplate = promptTemplateFactory.tryCreate(functionModel);
+        }
 
         return new KernelFunctionFromPrompt.Builder()
             .withName(functionModel.getName())
             .withInputParameters(functionModel.getInputVariables())
-            .withPromptTemplate(new HandlebarsPromptTemplate(functionModel))
+            .withPromptTemplate(promptTemplate)
             .withPluginName(functionModel.getName()) // TODO: 1.0 add plugin name
             .withExecutionSettings(functionModel.getExecutionSettings())
             .withDescription(functionModel.getDescription())
