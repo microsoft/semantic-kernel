@@ -74,7 +74,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal List<PromptExecutionSettings>? ExecutionSettings { get; }
+    public List<PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
