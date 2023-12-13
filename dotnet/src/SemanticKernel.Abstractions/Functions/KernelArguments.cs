@@ -28,7 +28,11 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     public KernelArguments(PromptExecutionSettings? executionSettings = null)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
-        this.ExecutionSettings = executionSettings;
+
+        if (executionSettings is not null)
+        {
+            this.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
+        }
     }
 
     /// <summary>
@@ -40,7 +44,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// If <paramref name="executionSettings"/> is non-null, it is used as the <see cref="ExecutionSettings"/> for this new instance.
     /// Otherwise, if the source is a <see cref="KernelArguments"/>, its <see cref="ExecutionSettings"/> are used.
     /// </remarks>
-    public KernelArguments(IDictionary<string, object?> source, PromptExecutionSettings? executionSettings = null)
+    public KernelArguments(IDictionary<string, object?> source, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(source);
 
@@ -51,7 +55,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Gets or sets the prompt execution settings.
     /// </summary>
-    public PromptExecutionSettings? ExecutionSettings { get; set; }
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; set; }
 
     /// <summary>
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.

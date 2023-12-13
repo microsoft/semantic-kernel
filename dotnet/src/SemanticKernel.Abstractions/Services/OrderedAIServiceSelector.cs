@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,9 +22,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         out PromptExecutionSettings? serviceSettings) where T : class, IAIService
     {
         // Allow the execution settings from the kernel arguments to take precedence
-        var executionSettings = arguments.ExecutionSettings is not null
-             ? new Dictionary<string, PromptExecutionSettings> { { arguments.ExecutionSettings.ServiceId ?? PromptExecutionSettings.DefaultServiceId, arguments.ExecutionSettings } }
-             : function.ExecutionSettings;
+        var executionSettings = arguments.ExecutionSettings ?? function.ExecutionSettings;
         if (executionSettings is null || executionSettings.Count == 0)
         {
             service = GetAnyService(kernel);
