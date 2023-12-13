@@ -63,7 +63,7 @@ public class KernelFunctionYamlTests
         var promptFunctionModel = deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
 
         // Act
-        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(promptFunctionModel.ExecutionSettings[0]);
+        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(promptFunctionModel.ExecutionSettings["service1"]);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -99,14 +99,16 @@ public class KernelFunctionYamlTests
         description:   The language to generate the greeting in
         default: English
     execution_settings:
-      - model_id:          gpt-4
+      service1:
+        model_id:          gpt-4
         temperature:       1.0
         top_p:             0.0
         presence_penalty:  0.0
         frequency_penalty: 0.0
         max_tokens:        256
         stop_sequences:    []
-      - model_id:          gpt-3.5
+      service2:
+        model_id:          gpt-3.5
         temperature:       1.0
         top_p:             0.0
         presence_penalty:  0.0
@@ -128,14 +130,16 @@ public class KernelFunctionYamlTests
         description:   The language to generate the greeting in
         default: English
     execution_settings:
-      - model_id:          gpt-4
+      service1:
+        model_id:          gpt-4
         temperature:       1.0
         top_p:             0.0
         presence_penalty:  0.0
         frequency_penalty: 0.0
         max_tokens:        256
         stop_sequences:    []
-      - model_id:          random-model
+      service2:
+        model_id:          random-model
         temperaturex:      1.0
         top_q:             0.0
         rando_penalty:     0.0
