@@ -6,11 +6,13 @@ import java.util.List;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.PromptExecutionSettings;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface ChatCompletionService extends AIService {
+public interface ChatCompletionService extends Buildable, AIService {
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
@@ -35,4 +37,16 @@ public interface ChatCompletionService extends AIService {
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel
     );
+
+    @SuppressWarnings("unchecked")
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(ChatCompletionService.class);
+    }
+
+    interface Builder extends SemanticKernelBuilder<ChatCompletionService> {
+
+        Builder withOpenAIClient(OpenAIAsyncClient client);
+
+        Builder withModelId(String modelId);
+    }
 }

@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.skilldefinition.CaseInsensitiveMap;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.contextvariables.WritableKernelArguments;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +14,7 @@ import reactor.util.annotation.NonNull;
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
 /// It is accessed and manipulated by functions in the pipeline.
 /// </summary>
-class DefaultContextVariables implements ContextVariables, WritableContextVariables {
+class DefaultKernelArguments implements KernelArguments, WritableKernelArguments {
 
     private final CaseInsensitiveMap<ContextVariable<?>> variables;
 
@@ -25,27 +27,27 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    DefaultContextVariables(@NonNull ContextVariable<?> content) {
+    DefaultKernelArguments(@NonNull ContextVariable<?> content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
     }
 
-    DefaultContextVariables(Map<String, ContextVariable<?>> variables) {
+    DefaultKernelArguments(Map<String, ContextVariable<?>> variables) {
         this.variables = new CaseInsensitiveMap<>(variables);
     }
 
-    DefaultContextVariables() {
+    DefaultKernelArguments() {
         this.variables = new CaseInsensitiveMap<>();
     }
 
     @Override
-    public ContextVariables setVariable(@NonNull String key, @NonNull ContextVariable<?> content) {
+    public KernelArguments setVariable(@NonNull String key, @NonNull ContextVariable<?> content) {
         this.variables.put(key, content);
         return this;
     }
 
     @Override
-    public ContextVariables setVariable(String key, Object content) {
+    public KernelArguments setVariable(String key, Object content) {
         this.variables.put(key, ContextVariable.of(content));
         return this;
     }
@@ -58,16 +60,16 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
     @Override
-    public ContextVariables update(@NonNull ContextVariable<?> content) {
+    public KernelArguments update(@NonNull ContextVariable<?> content) {
         return setVariable(MAIN_KEY, content);
     }
 
     @Override
-    public ContextVariables update(String content) {
+    public KernelArguments update(String content) {
         return null;
     }
 
-    public DefaultContextVariables update(@NonNull DefaultContextVariables newData) {
+    public DefaultKernelArguments update(@NonNull DefaultKernelArguments newData) {
         return update(newData, true);
     }
 
@@ -80,30 +82,20 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     // data.</param>
     /// <returns>The current instance</returns>
     @Override
-    public DefaultContextVariables update(@NonNull ContextVariables newData, boolean merge) {
-        /*
-        // If requested, discard old data and keep only the new one.
-        if (!merge) { this._variables.Clear(); }
-
-        foreach (KeyValuePair<string, string> varData in newData._variables)
-        {
-            this._variables[varData.Key] = varData.Value;
-        }
-
-         */
+    public DefaultKernelArguments update(@NonNull KernelArguments newData, boolean merge) {
         this.variables.putAll(newData);
         return this;
     }
 
     @Override
-    public ContextVariables remove(String key) {
+    public KernelArguments remove(String key) {
         variables.remove(key);
         return this;
     }
 
     @Override
-    public WritableContextVariables writableClone() {
-        return new DefaultContextVariables(variables);
+    public WritableKernelArguments writableClone() {
+        return new DefaultKernelArguments(variables);
     }
 
     @Override
@@ -140,6 +132,12 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
             String.format(
                 "Variable %s is of type %s, but requested type is %s",
                 key, value.getType().getClazz(), clazz));
+    }
+
+    @Nullable
+    @Override
+    public PromptExecutionSettings getExecutionSettings() {
+        return null;
     }
 
     @Override
@@ -213,31 +211,31 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         return variables.entrySet();
     }
 
-    public static class WritableBuilder implements WritableContextVariables.Builder {
+    public static class WritableBuilder implements WritableKernelArguments.Builder {
 
         @Override
-        public WritableContextVariables build(Map<String, ContextVariable<?>> map) {
-            return new DefaultContextVariables(map);
+        public WritableKernelArguments build(Map<String, ContextVariable<?>> map) {
+            return new DefaultKernelArguments(map);
         }
     }
 
-    public static class Builder implements ContextVariables.Builder {
+    public static class Builder implements KernelArguments.Builder {
 
-        private final DefaultContextVariables variables;
+        private final DefaultKernelArguments variables;
 
         public Builder() {
-            variables = new DefaultContextVariables();
+            variables = new DefaultKernelArguments();
             this.variables.put(MAIN_KEY, ContextVariable.of(""));
         }
 
         @Override
-        public <T> ContextVariables.Builder withVariable(String key, ContextVariable<T> value) {
+        public <T> KernelArguments.Builder withVariable(String key, ContextVariable<T> value) {
             variables.put(key, value);
             return this;
         }
 
         @Override
-        public ContextVariables.Builder withVariable(String key, Object value) {
+        public KernelArguments.Builder withVariable(String key, Object value) {
             variables.put(key, ContextVariable.of(value));
             return this;
         }
@@ -249,7 +247,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         }
 
         @Override
-        public ContextVariables.Builder withInput(Object content) {
+        public KernelArguments.Builder withInput(Object content) {
             return withInput(ContextVariable.of(content));
         }
 
@@ -260,8 +258,8 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         }
 
         @Override
-        public ContextVariables build() {
-            return new DefaultContextVariables(variables);
+        public KernelArguments build() {
+            return new DefaultKernelArguments(variables);
         }
     }
 }

@@ -18,10 +18,14 @@ import com.microsoft.semantickernel.orchestration.ContextVariable;
  */
 public class ChatHistory implements Iterable<ChatMessageContent> {
 
-    private final List<ChatMessageContent> messages;
+    private final List<ChatMessageContent> chatMessageContents;
 
     public ChatHistory() {
-        this.messages = new ArrayList<>();
+        this.chatMessageContents = new ArrayList<>();
+    }
+
+    public ChatHistory(List<ChatMessageContent> chatMessageContents) {
+        this.chatMessageContents = new ArrayList<>(chatMessageContents);
     }
 
     public ChatHistory(List<ChatMessageContent> messages) {
@@ -34,7 +38,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      * @return List of messages in the chat
      */
     public List<ChatMessageContent> getMessages() {
-        return Collections.unmodifiableList(messages);
+        return Collections.unmodifiableList(chatMessageContents);
     }
 
     /**
@@ -43,37 +47,37 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      * @return The most recent message in chat
      */
     public Optional<ChatMessageContent> getLastMessage() {
-        if (messages.isEmpty()) {
+        if (chatMessageContents.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(messages.get(messages.size() - 1));
+        return Optional.of(chatMessageContents.get(chatMessageContents.size() - 1));
     }
 
     public void addAll(ChatHistory value) {
-        this.messages.addAll(value.getMessages());
+        this.chatMessageContents.addAll(value.getMessages());
     }
 
     @Override
     public Iterator<ChatMessageContent> iterator() {
-        return messages.iterator();
+        return chatMessageContents.iterator();
     }
 
     @Override
     public void forEach(Consumer<? super ChatMessageContent> action) {
-        messages.forEach(action);
+        chatMessageContents.forEach(action);
     }
 
     @Override
     public Spliterator<ChatMessageContent> spliterator() {
-        return messages.spliterator();
+        return chatMessageContents.spliterator();
     }
 
     public void addMessage(AuthorRole authorRole, String content, Charset encoding, Map<String, ContextVariable<?>> metadata) {
-        messages.add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+        chatMessageContents.add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
     }
 
     public void addMessage(ChatMessageContent content) {
-        messages.add(content);
+        chatMessageContents.add(content);
     }
 
 }

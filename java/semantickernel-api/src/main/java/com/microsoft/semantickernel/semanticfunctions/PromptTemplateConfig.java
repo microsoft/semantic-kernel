@@ -1,411 +1,255 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.BuildersSingleton;
-import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import reactor.util.annotation.Nullable;
+import java.util.Map;
 
-/** Prompt template configuration */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class PromptTemplateConfig {
-    private final CompletionConfig completionConfig;
-    private final InputConfig input;
+    @JsonProperty("name")
+    private String name;
 
-    /**
-     * A returns the configuration for the text completion
-     *
-     * @return CompletionConfig
-     */
-    public CompletionConfig getCompletionConfig() {
-        return completionConfig;
+    @JsonProperty("template")
+    private String template;
+
+    @JsonProperty("template_format")
+    private String templateFormat;
+
+    @JsonProperty("description")
+    private String description;
+
+    @JsonProperty("input_variables")
+    private List<VariableViewModel> inputVariables;
+
+    @JsonProperty("output_variable")
+    private VariableViewModel outputVariable;
+
+    @JsonProperty("execution_settings")
+    private List<ExecutionSettingsModel> executionSettings;
+
+    public PromptTemplateConfig() {}
+
+    public PromptTemplateConfig(
+            String name,
+            String template,
+            String templateFormat,
+            String description,
+            List<VariableViewModel> inputVariables,
+            VariableViewModel outputVariable,
+            List<ExecutionSettingsModel> executionSettings) {
+        this.name = name;
+        this.template = template;
+        this.templateFormat = templateFormat;
+        this.description = description;
+        this.inputVariables = inputVariables;
+        this.outputVariable = outputVariable;
+        this.executionSettings = executionSettings;
     }
 
-    public int getSchema() {
-        return schema;
-    }
+    public static class VariableViewModel {
+        @JsonProperty("name")
+        private String name;
 
-    public String getType() {
-        return type;
-    }
+        @JsonProperty("type")
+        private String type;
 
-    /** Builder for CompletionConfig */
-    public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
+        @JsonProperty("description")
+        private String description;
 
-        private CompletionConfig completionConfig;
+        @JsonProperty("default_value")
+        private Object defaultValue;
 
-        public CompletionConfigBuilder() {
-            completionConfig = new CompletionConfig();
-        }
+        @JsonProperty("is_required")
+        private boolean isRequired;
 
-        public CompletionConfigBuilder(CompletionConfig completionConfig) {
-            this.completionConfig = completionConfig;
-        }
+        public VariableViewModel() {}
 
-        public CompletionConfigBuilder temperature(double temperature) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder topP(double topP) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder presencePenalty(double presencePenalty) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder frequencyPenalty(double frequencyPenalty) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder maxTokens(int maxTokens) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder stopSequences(List<String> stopSequences) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            stopSequences));
-        }
-
-        public CompletionConfig build() {
-            return completionConfig;
-        }
-    }
-
-    public InputConfig getInput() {
-        return input;
-    }
-
-    /** Completion configuration parameters */
-    public static class CompletionConfig implements Buildable {
-        /*
-        /// <summary>
-        /// Sampling temperature to use, between 0 and 2. Higher values will make the output more random.
-        /// Lower values will make it more focused and deterministic.
-        /// </summary>
-        [JsonPropertyName("temperature")]
-        [JsonPropertyOrder(1)]
-        */
-        private final double temperature;
-        /*
-        /// <summary>
-        /// Cut-off of top_p probability mass of tokens to consider.
-        /// For example, 0.1 means only the tokens comprising the top 10% probability mass are considered.
-        /// </summary>
-        [JsonPropertyName("top_p")]
-        [JsonPropertyOrder(2)]
-        */
-        private final double topP;
-
-        /*
-        /// <summary>
-        /// Lowers the probability of a word appearing if it already appeared in the predicted text.
-        /// Unlike the frequency penalty, the presence penalty does not depend on the frequency at which words
-        /// appear in past predictions.
-        /// </summary>
-        [JsonPropertyName("presence_penalty")]
-        [JsonPropertyOrder(3)]
-        */
-        private final double presencePenalty;
-
-        /*
-        /// <summary>
-        /// Controls the model’s tendency to repeat predictions. The frequency penalty reduces the probability
-        /// of words that have already been generated. The penalty depends on how many times a word has already
-        /// occurred in the prediction.
-        /// </summary>
-        [JsonPropertyName("frequency_penalty")]
-        [JsonPropertyOrder(4)]
-        */
-        private final double frequencyPenalty;
-        /*
-        /// <summary>
-        /// Maximum number of tokens that can be generated.
-        /// </summary>
-        [JsonPropertyName("max_tokens")]
-        [JsonPropertyOrder(5)]*/
-        private final int maxTokens; // { get; set; } = 256;
-        /*
-        /// <summary>
-        /// Stop sequences are optional sequences that tells the AI model when to stop generating tokens.
-        /// </summary>
-        [JsonPropertyName("stop_sequences")]
-        [JsonPropertyOrder(6)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        */
-        public final List<String> stopSequences; // { get; set; } = new();
-
-        /**
-         * The maximum number of completions to generate for each prompt. This is used by the
-         * CompletionService to generate multiple completions for a single prompt.
-         */
-        private final Integer bestOf;
-
-        /**
-         * A unique identifier representing your end-user, which can help OpenAI to monitor and
-         * detect abuse
-         */
-        private final String user;
-
-        public CompletionConfig() {
-            this(0.0, 0.0, 0.0, 0.0, 256, 1, "", new ArrayList<>());
-        }
-
-        public CompletionConfig(
-                double temperature,
-                double topP,
-                double presencePenalty,
-                double frequencyPenalty,
-                int maxTokens) {
-            this(
-                    temperature,
-                    topP,
-                    presencePenalty,
-                    frequencyPenalty,
-                    maxTokens,
-                    1,
-                    "",
-                    new ArrayList<>());
-        }
-
-        @JsonCreator
-        public CompletionConfig(
-                @JsonProperty("temperature") double temperature,
-                @JsonProperty("top_p") double topP,
-                @JsonProperty("presence_penalty") double presencePenalty,
-                @JsonProperty("frequency_penalty") double frequencyPenalty,
-                @JsonProperty("max_tokens") int maxTokens,
-                @JsonProperty("best_of") int bestOf,
-                @JsonProperty("user") String user,
-                @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
-            this.temperature = temperature;
-            this.topP = topP;
-            this.presencePenalty = presencePenalty;
-            this.frequencyPenalty = frequencyPenalty;
-            this.maxTokens = maxTokens;
-
-            // bestOf must be at least 1
-            this.bestOf = Math.max(1, bestOf);
-
-            if (user == null) {
-                user = "";
-            }
-            this.user = user;
-            if (stopSequences == null) {
-                stopSequences = new ArrayList<>();
-            }
-            this.stopSequences = stopSequences;
-        }
-
-        public double getTemperature() {
-            return temperature;
-        }
-
-        public double getTopP() {
-            return topP;
-        }
-
-        public double getPresencePenalty() {
-            return presencePenalty;
-        }
-
-        public double getFrequencyPenalty() {
-            return frequencyPenalty;
-        }
-
-        public int getMaxTokens() {
-            return maxTokens;
-        }
-
-        /**
-         * The maximum number of completions to generate for each prompt. This is used by the
-         * CompletionService to generate multiple completions for a single prompt.
-         */
-        public int getBestOf() {
-            return bestOf;
-        }
-
-        /**
-         * A unique identifier representing your end-user, which can help OpenAI to monitor and
-         * detect abuse
-         */
-        public String getUser() {
-            return user;
-        }
-
-        public SemanticKernelBuilder<CompletionConfig> builder() {
-            return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
-        }
-
-        public List<String> getStopSequences() {
-            return Collections.unmodifiableList(stopSequences);
-        }
-    }
-
-    /** Input parameter for semantic functions */
-    public static class InputParameter {
-        private final String name;
-        private final String description;
-
-        private final String defaultValue;
-
-        @JsonCreator
-        public InputParameter(
-                @JsonProperty("name") String name,
-                @JsonProperty("description") String description,
-                @JsonProperty("defaultValue") String defaultValue) {
+        public VariableViewModel(
+                String name,
+                String type,
+                String description,
+                Object defaultValue,
+                boolean isRequired) {
             this.name = name;
+            this.type = type;
             this.description = description;
             this.defaultValue = defaultValue;
+            this.isRequired = isRequired;
         }
 
-        /**
-         * Name of the parameter to pass to the function. e.g. when using "{{$input}}" the name is
-         * "input", when using "{{$style}}" the name is "style", etc.
-         *
-         * @return name
-         */
         public String getName() {
             return name;
         }
 
-        /**
-         * Parameter description for UI apps and planner. Localization is not supported here.
-         *
-         * @return description
-         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
         public String getDescription() {
             return description;
         }
 
-        /**
-         * Default value when nothing is provided
-         *
-         * @return the default value
-         */
-        public String getDefaultValue() {
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public Object getDefaultValue() {
             return defaultValue;
         }
-    }
 
-    /** Input configuration (list of all input parameters for a semantic function). */
-    public static class InputConfig {
-
-        public final List<InputParameter> parameters;
-
-        @JsonCreator
-        public InputConfig(@JsonProperty("parameters") List<InputParameter> parameters) {
-            this.parameters = Collections.unmodifiableList(parameters);
+        public void setDefaultValue(Object defaultValue) {
+            this.defaultValue = defaultValue;
         }
 
-        public List<InputParameter> getParameters() {
-            return parameters;
+        public boolean isRequired() {
+            return isRequired;
+        }
+
+        public void setRequired(boolean required) {
+            isRequired = required;
         }
     }
 
-    private final int schema;
+    public static class ExecutionSettingsModel {
+        @JsonProperty("model_id")
+        private String modelId;
 
-    private final String type; // { get; set; } = "completion";
-    private final String description;
+        @JsonProperty("model_id_pattern")
+        private String modelIdPattern;
 
-    public PromptTemplateConfig() {
-        this("", "", null);
-    }
+        @JsonProperty("service_id")
+        private String serviceId;
 
-    public PromptTemplateConfig(CompletionConfig completionConfig) {
-        this(1, "", "", completionConfig, new InputConfig(new ArrayList<>()));
-    }
+        @JsonProperty("temperature")
+        private String temperature;
 
-    public PromptTemplateConfig(
-            String description, String type, @Nullable CompletionConfig completionConfig) {
-        this(1, description, type, completionConfig, new InputConfig(new ArrayList<>()));
-    }
+        @JsonProperty("additional_properties")
+        private final Map<String, Object> additionalProperties;
 
-    @JsonCreator
-    public PromptTemplateConfig(
-            @JsonProperty("schema") int schema,
-            @JsonProperty("description") String description,
-            @JsonProperty("type") String type,
-            @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
-            @Nullable @JsonProperty("input") InputConfig input) {
-        if (completionConfig == null) {
-            completionConfig = new CompletionConfig();
+        public Object get(String propertyName) {
+            return additionalProperties.get(propertyName);
         }
-        this.schema = schema;
-        this.description = description;
-        this.type = type;
-        this.completionConfig = completionConfig;
-        if (input == null) {
-            input = new InputConfig(new ArrayList<>());
+
+        public void set(String propertyName, Object value) {
+            additionalProperties.put(propertyName, value);
         }
-        this.input = input;
+
+        public ExecutionSettingsModel() {
+            this.additionalProperties = new HashMap<>();
+        }
+
+        public ExecutionSettingsModel(
+                String modelId,
+                String modelIdPattern,
+                String serviceId,
+                String temperature,
+                Map<String, Object> additionalProperties) {
+            this.modelId = modelId;
+            this.modelIdPattern = modelIdPattern;
+            this.serviceId = serviceId;
+            this.temperature = temperature;
+            this.additionalProperties = additionalProperties;
+        }
+
+        public String getModelId() {
+            return modelId;
+        }
+
+        public void setModelId(String modelId) {
+            this.modelId = modelId;
+        }
+
+        public String getModelIdPattern() {
+            return modelIdPattern;
+        }
+
+        public void setModelIdPattern(String modelIdPattern) {
+            this.modelIdPattern = modelIdPattern;
+        }
+
+        public String getServiceId() {
+            return serviceId;
+        }
+
+        public void setServiceId(String serviceId) {
+            this.serviceId = serviceId;
+        }
+
+        public String getTemperature() {
+            return temperature;
+        }
+
+        public void setTemperature(String temperature) {
+            this.temperature = temperature;
+        }
+
+        public Map<String, Object> getAdditionalProperties() {
+            return additionalProperties;
+        }
     }
 
-    /**
-     * Description
-     *
-     * @return Description
-     */
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
+    public String getTemplateFormat() {
+        return templateFormat;
+    }
+
+    public void setTemplateFormat(String templateFormat) {
+        this.templateFormat = templateFormat;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<VariableViewModel> getInputVariables() {
+        return inputVariables;
+    }
+
+    public void setInputVariables(List<VariableViewModel> inputVariables) {
+        this.inputVariables = inputVariables;
+    }
+
+    public VariableViewModel getOutputVariable() {
+        return outputVariable;
+    }
+
+    public void setOutputVariable(VariableViewModel outputVariable) {
+        this.outputVariable = outputVariable;
+    }
+
+    public List<ExecutionSettingsModel> getExecutionSettings() {
+        return executionSettings;
+    }
+
+    public void setExecutionSettings(List<ExecutionSettingsModel> executionSettings) {
+        this.executionSettings = executionSettings;
     }
 }

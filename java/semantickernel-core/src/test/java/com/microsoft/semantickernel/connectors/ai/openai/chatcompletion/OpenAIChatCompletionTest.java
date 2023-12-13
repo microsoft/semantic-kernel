@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory.ChatMessageContent;
 import com.microsoft.semantickernel.syntaxexamples.Example17ChatGPTTest;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -77,9 +78,9 @@ public class OpenAIChatCompletionTest {
 
         // First user message
         chatHistory.addUserMessage(message);
-        ChatHistory.Message createdMessage = chatHistory.getLastMessage().get();
-        Assertions.assertEquals(ChatHistory.AuthorRoles.User, createdMessage.getAuthorRoles());
-        Assertions.assertEquals(message, createdMessage.getContent());
+        ChatMessageContent createdChatMessageContent = chatHistory.getLastMessage().get();
+        Assertions.assertEquals(ChatHistory.AuthorRoles.User, createdChatMessageContent.getAuthorRoles());
+        Assertions.assertEquals(message, createdChatMessageContent.getContent());
 
         // First bot assistant message
         return chatGPT.generateMessageAsync(chatHistory, null).block();
