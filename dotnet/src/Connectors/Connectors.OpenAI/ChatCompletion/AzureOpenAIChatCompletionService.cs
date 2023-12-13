@@ -38,7 +38,12 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(
+            deploymentName: deploymentName,
+            endpoint: endpoint,
+            apiKey: apiKey,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -60,7 +65,12 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(
+            deploymentName: deploymentName,
+            endpoint: endpoint,
+            credential: credentials,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -77,7 +87,10 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(
+            deploymentName: deploymentName,
+            openAIClient: openAIClient,
+            logger: loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
