@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Memory.Kusto
+﻿# Microsoft.SemanticKernel.Connectors.Kusto
 
 This connector uses [Azure Data Explorer (Kusto)](https://learn.microsoft.com/en-us/azure/data-explorer/) to implement Semantic Memory.
 

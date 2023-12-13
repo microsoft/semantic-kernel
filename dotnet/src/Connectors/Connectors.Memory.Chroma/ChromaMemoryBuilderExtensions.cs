@@ -2,9 +2,9 @@
 
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Chroma memory connector.

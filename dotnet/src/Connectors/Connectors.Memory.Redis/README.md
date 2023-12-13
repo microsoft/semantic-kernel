@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Memory.Redis
+﻿# Microsoft.SemanticKernel.Connectors.Redis
 
 This connector uses Redis to implement Semantic Memory. It requires the [RediSearch](https://redis.io/docs/interact/search-and-query/) module to be enabled on Redis to implement vector similarity search.
 

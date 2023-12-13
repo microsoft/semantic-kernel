@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Memory.MongoDB
+﻿# Microsoft.SemanticKernel.Connectors.MongoDB
 
 This connector uses [MongoDB Atlas Vector Search](https://www.mongodb.com/products/platform/atlas-vector-search) to implement Semantic Memory.
 

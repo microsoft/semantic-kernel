@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Postgres</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Postgres</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>

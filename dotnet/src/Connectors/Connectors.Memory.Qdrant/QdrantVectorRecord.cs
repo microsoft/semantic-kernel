@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// A record structure used by Qdrant that contains an embedding and metadata.

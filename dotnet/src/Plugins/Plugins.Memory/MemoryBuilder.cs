@@ -5,9 +5,8 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Plugins.Memory;
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A builder for Memory plugin.

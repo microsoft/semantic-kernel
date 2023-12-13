@@ -13,7 +13,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.

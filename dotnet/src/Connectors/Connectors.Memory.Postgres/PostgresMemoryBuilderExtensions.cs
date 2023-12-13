@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Postgres connector.

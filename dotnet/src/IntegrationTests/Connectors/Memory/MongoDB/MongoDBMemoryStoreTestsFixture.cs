@@ -4,11 +4,11 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {

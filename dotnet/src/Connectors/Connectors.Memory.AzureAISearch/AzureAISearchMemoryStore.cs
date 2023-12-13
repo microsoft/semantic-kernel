@@ -18,7 +18,7 @@ using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// <see cref="AzureAISearchMemoryStore"/> is a memory store implementation using Azure AI Search.

@@ -1,4 +1,4 @@
-# Microsoft.SemanticKernel.Connectors.Memory.Chroma
+# Microsoft.SemanticKernel.Connectors.Chroma
 
 This assembly contains implementation of Semantic Kernel Memory Store using [Chroma](https://docs.trychroma.com/), open-source embedding database.
 

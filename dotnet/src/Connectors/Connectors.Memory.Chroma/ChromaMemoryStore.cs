@@ -11,12 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Chroma.

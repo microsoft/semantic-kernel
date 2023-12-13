@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
 /// A MongoDB record metadata.

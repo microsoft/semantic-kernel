@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Structure for storing data which can be scored.

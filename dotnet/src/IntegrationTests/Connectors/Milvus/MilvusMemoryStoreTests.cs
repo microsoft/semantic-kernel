@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Milvus;
+using Microsoft.SemanticKernel.Connectors.Milvus;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Milvus;
+namespace SemanticKernel.IntegrationTests.Milvus;
 
 public class MilvusMemoryStoreTests : IAsyncLifetime
 {

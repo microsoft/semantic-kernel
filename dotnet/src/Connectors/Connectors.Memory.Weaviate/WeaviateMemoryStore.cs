@@ -15,13 +15,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Weaviate.

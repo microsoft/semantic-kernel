@@ -8,14 +8,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Chroma;
+namespace SemanticKernel.Connectors.UnitTests.Chroma;
 
 /// <summary>
 /// Unit tests for <see cref="ChromaMemoryStore"/> class.

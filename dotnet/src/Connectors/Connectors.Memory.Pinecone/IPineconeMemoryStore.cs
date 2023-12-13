@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Interface for Pinecone memory store that extends the memory store interface

@@ -8,10 +8,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Utils for Pinecone connector.

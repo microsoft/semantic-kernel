@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using DuckDB.NET.Data;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a DuckDB database.

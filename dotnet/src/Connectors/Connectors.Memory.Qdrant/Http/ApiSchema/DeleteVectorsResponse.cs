@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// Empty qdrant response for requests that return nothing but status / error.

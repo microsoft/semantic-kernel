@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Milvus.Client;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Milvus;
+namespace Microsoft.SemanticKernel.Connectors.Milvus;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for the Milvus vector database.

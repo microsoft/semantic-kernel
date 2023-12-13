@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
