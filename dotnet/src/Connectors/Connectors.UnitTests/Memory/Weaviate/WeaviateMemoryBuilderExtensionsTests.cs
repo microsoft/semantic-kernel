@@ -8,9 +8,9 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Moq;
 using Xunit;
 
