@@ -109,7 +109,7 @@ public class KernelBuilderTests
     {
         var builder = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
 
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -118,10 +118,10 @@ public class KernelBuilderTests
         Kernel kernel = builder.Build();
 
         Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
-        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
+        Assert.IsType<AzureOpenAIChatCompletionService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
 
         Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
-        Assert.Single(kernel.GetAllServices<IChatCompletionService>());
+        Assert.Equal(2, kernel.GetAllServices<IChatCompletionService>().Count());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }

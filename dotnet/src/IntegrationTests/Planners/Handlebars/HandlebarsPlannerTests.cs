@@ -29,12 +29,12 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
+    public async Task CreatePlanFunctionFlowAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings);
         kernel.ImportPluginFromType<EmailPluginFake>(expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
@@ -68,7 +68,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         );
     }
 
-    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
+    private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -78,28 +78,17 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        if (useChatModel)
-        {
-            builder.Services.AddAzureOpenAIChatCompletion(
+        builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId!,
+                modelId: azureOpenAIConfiguration.ChatModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.Services.AddAzureOpenAITextGeneration(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                modelId: azureOpenAIConfiguration.ModelId,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
 
         if (useEmbeddings)
         {
             builder.Services.AddAzureOpenAITextEmbeddingGeneration(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
+                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                 apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }

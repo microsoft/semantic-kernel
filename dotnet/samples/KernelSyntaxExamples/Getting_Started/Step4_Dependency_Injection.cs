@@ -37,7 +37,10 @@ public static class Step4_Dependency_Injection
         collection.AddSingleton<ILoggerFactory>(ConsoleLogger.LoggerFactory);
 
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.Services.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
+        collection.AddOpenAIChatCompletion(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
 
         return collection.BuildServiceProvider();

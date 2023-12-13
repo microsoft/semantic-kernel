@@ -99,7 +99,7 @@ public sealed class PromptTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.AddAzureOpenAITextGeneration(
+        kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
