@@ -3,11 +3,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-/**
- * This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
- */
+// This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
 public static class Step3_Yaml_Prompt
 {
     /// <summary>

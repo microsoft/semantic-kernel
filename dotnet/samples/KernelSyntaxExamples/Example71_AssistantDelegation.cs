@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Plugins;
 using Resources;
 
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase complex Open AI Assistant interactions using semantic kernel.
 /// </summary>

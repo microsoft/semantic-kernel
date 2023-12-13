@@ -34,14 +34,14 @@ public class OpenApiTypeConverterTests
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", (short)10).ToString());
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", (ushort)10).ToString());
 
-        Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", 10).ToString());
+        Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", (int)10).ToString());
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", (uint)10).ToString());
 
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", (long)10).ToString());
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", (ulong)10).ToString());
 
         Assert.Equal("10.5", OpenApiTypeConverter.Convert("id", "number", (float)10.5).ToString());
-        Assert.Equal("10.5", OpenApiTypeConverter.Convert("id", "number", 10.5).ToString());
+        Assert.Equal("10.5", OpenApiTypeConverter.Convert("id", "number", (double)10.5).ToString());
         Assert.Equal("10.5", OpenApiTypeConverter.Convert("id", "number", (decimal)10.5).ToString());
 
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "number", "10").ToString());
@@ -58,7 +58,7 @@ public class OpenApiTypeConverterTests
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", (short)10).ToString());
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", (ushort)10).ToString());
 
-        Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", 10).ToString());
+        Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", (int)10).ToString());
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", (uint)10).ToString());
 
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", (long)10).ToString());

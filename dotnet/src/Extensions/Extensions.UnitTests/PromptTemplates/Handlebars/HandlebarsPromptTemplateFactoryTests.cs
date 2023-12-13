@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
+using static Extensions.UnitTests.PromptTemplates.Handlebars.TestUtilities;
+
+namespace SemanticKernel.Extensions.UnitTests.PromptTemplates.Handlebars;
 
 public sealed class HandlebarsPromptTemplateFactoryTests
 {
@@ -13,7 +15,7 @@ public sealed class HandlebarsPromptTemplateFactoryTests
     {
         // Arrange
         var templateString = "{{input}}";
-        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = templateString };
+        var promptConfig = InitializeHbPromptConfig(templateString);
         var target = new HandlebarsPromptTemplateFactory();
 
         // Act

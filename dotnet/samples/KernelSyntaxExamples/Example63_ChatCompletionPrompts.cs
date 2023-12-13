@@ -4,10 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-/**
- * This example shows how to use chat completion prompts.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use chat completion prompts.
 public static class Example63_ChatCompletionPrompts
 {
     public static async Task RunAsync()
