@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
-  "execution_settings": [
-    {
+  "execution_settings": {
+    "default": {
       "max_tokens": 256,
       "temperature": 0.5,
       "top_p": 1.0,
@@ -12,5 +12,5 @@
         "#END#"
       ]
     }
-  ]
+  }
 }

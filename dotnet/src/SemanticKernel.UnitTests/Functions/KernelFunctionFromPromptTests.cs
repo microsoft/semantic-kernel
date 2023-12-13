@@ -71,7 +71,7 @@ public class KernelFunctionFromPromptTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.ExecutionSettings.Add(new OpenAIPromptExecutionSettings()
+        promptConfig.AddExecutionSettings(new OpenAIPromptExecutionSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
         });
@@ -103,7 +103,7 @@ public class KernelFunctionFromPromptTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = "service1" });
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
@@ -128,7 +128,7 @@ public class KernelFunctionFromPromptTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = "service3" });
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act

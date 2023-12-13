@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "description": "Turns your intent into a SAFE DOS batch script",
-  "execution_settings": [
-    {
+  "execution_settings": {
+    "default": {
       "max_tokens": 1000,
       "temperature": 0.0,
       "top_p": 0.0,
@@ -14,5 +14,5 @@
         "exit /b 0"
       ]
     }
-  ]
+  }
 }

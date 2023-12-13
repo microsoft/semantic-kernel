@@ -19,8 +19,8 @@ public class KernelFunctionMarkdownTests
         Assert.Equal("TellMeAbout", model.Name);
         Assert.Equal("Hello AI, tell me about {{$input}}", model.Template);
         Assert.Equal(2, model.ExecutionSettings.Count);
-        Assert.Equal("gpt4", model.ExecutionSettings[0].ModelId);
-        Assert.Equal("gpt3.5", model.ExecutionSettings[1].ModelId);
+        Assert.Equal("gpt4", model.ExecutionSettings["service1"].ModelId);
+        Assert.Equal("gpt3.5", model.ExecutionSettings["service2"].ModelId);
     }
 
     [Fact]
@@ -45,15 +45,19 @@ Hello AI, tell me about {{$input}}
 These are AI execution settings
 ```sk.execution_settings
 {
-    ""model_id"": ""gpt4"",
-    ""temperature"": 0.7
+    ""service1"" : {
+        ""model_id"": ""gpt4"",
+        ""temperature"": 0.7
+    }
 }
 ```
 These are more AI execution settings
 ```sk.execution_settings
 {
-    ""model_id"": ""gpt3.5"",
-    ""temperature"": 0.8
+    ""service2"" : {
+        ""model_id"": ""gpt3.5"",
+        ""temperature"": 0.8
+    }
 }
 ```
 ";

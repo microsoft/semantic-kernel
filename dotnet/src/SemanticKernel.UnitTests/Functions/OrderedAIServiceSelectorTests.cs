@@ -180,10 +180,10 @@ public class OrderedAIServiceSelectorTests
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service3", new TextGenerationService("model_id_3"));
         Kernel kernel = builder.Build();
 
-        var executionSettings = new List<PromptExecutionSettings>();
+        var executionSettings = new Dictionary<string, PromptExecutionSettings>();
         foreach (var serviceId in serviceIds)
         {
-            executionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
+            executionSettings.Add(serviceId, new PromptExecutionSettings() { ServiceId = serviceId });
         }
         var function = kernel.CreateFunctionFromPrompt(promptConfig: new PromptTemplateConfig() { Template = "Hello AI", ExecutionSettings = executionSettings });
         var serviceSelector = new OrderedAIServiceSelector();

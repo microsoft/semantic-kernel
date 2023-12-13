@@ -13,4 +13,5 @@ input_variables:
 output_variable:
   description: The generated story.
 execution_settings:
-  - temperature: 0.6
+  default:
+    temperature: 0.6

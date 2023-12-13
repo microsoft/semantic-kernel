@@ -66,7 +66,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (executionSettings is not null)
         {
-            promptConfig.ExecutionSettings.Add(executionSettings);
+            promptConfig.ExecutionSettings.Add(executionSettings.ServiceId ?? PromptExecutionSettings.DefaultServiceId, executionSettings);
         }
 
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
