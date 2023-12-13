@@ -37,8 +37,8 @@
   },
   "Planners": {
     "AzureOpenAI": {
-      "ServiceId": "azure-text-davinci-003",
-      "DeploymentName": "gpt-4",
+      "ServiceId": "azure-gpt-35-turbo",
+      "DeploymentName": "gpt-35-turbo",
       "Endpoint": "",
       "ApiKey": ""
     },
