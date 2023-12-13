@@ -2,9 +2,7 @@
 
 using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Reflection;
-using System.Text.Json;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,7 +16,7 @@ internal static class TypeConverterFactory
     /// </summary>
     /// <param name="type">The Type of the object to convert.</param>
     /// <returns>A TypeConverter instance if a suitable converter is found, otherwise null.</returns>
-    internal static TypeConverter GetTypeConverter(Type type)
+    internal static TypeConverter? GetTypeConverter(Type type)
     {
         // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
         // any form of ahead-of-time compilation, as it could end up requiring functionality that was trimmed.
@@ -53,41 +51,6 @@ internal static class TypeConverterFactory
             return converter;
         }
 
-        // If a `TypeConverter` is not found for the custom type, then we will fallback to using 
-        // `JsonSerializer` to serialize/deserialize the value. This allows for custom types to 
-        // be supported by default.
-        return new JsonSerializationTypeConverter(type);
-    }
-
-    internal sealed class JsonSerializationTypeConverter : TypeConverter
-    {
-        private readonly Type _type;
-
-        public JsonSerializationTypeConverter(Type type)
-        {
-            this._type = type;
-        }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string);
-
-        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
-        {
-            if (value is not string json)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot convert from non-string value.");
-            }
-
-            return JsonSerializer.Deserialize(json, this._type);
-        }
-
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
-        {
-            if (destinationType != typeof(string))
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot convert from non-string value.");
-            }
-
-            return JsonSerializer.Serialize(value, this._type);
-        }
+        return null;
     }
 }

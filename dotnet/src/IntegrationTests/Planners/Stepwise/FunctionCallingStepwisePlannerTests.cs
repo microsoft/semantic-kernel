@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web;
-using Microsoft.SemanticKernel;
-using SemanticKernel.IntegrationTests.TestSettings;
-using Xunit.Abstractions;
-using Xunit;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.Fakes;
-using System.Text.Json;
+using SemanticKernel.IntegrationTests.TestSettings;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
