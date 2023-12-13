@@ -526,7 +526,6 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
-            arguments?.ExecutionSettings,
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -566,7 +565,6 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
-            arguments?.ExecutionSettings,
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);

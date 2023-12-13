@@ -31,7 +31,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 
         if (executionSettings is not null)
         {
-            this.ExecutionSettings = new() { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
+            this.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
         }
     }
 
@@ -55,7 +55,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Gets or sets the prompt execution settings.
     /// </summary>
-    public Dictionary<string, PromptExecutionSettings>? ExecutionSettings { get; set; }
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; set; }
 
     /// <summary>
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.
