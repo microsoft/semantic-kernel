@@ -52,3 +52,4 @@ public interface WritableKernelArguments extends KernelArguments {
          */
         WritableKernelArguments build(Map<String, ContextVariable<?>> map);
     }
+}

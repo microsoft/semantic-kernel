@@ -3,11 +3,13 @@ package com.microsoft.semantickernel.chatcompletion;
 
 import java.util.List;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.PromptExecutionSettings;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -40,7 +42,7 @@ public interface ChatCompletionService extends Buildable, AIService {
 
     @SuppressWarnings("unchecked")
     static Builder builder() {
-        return BuildersSingleton.INST.getInstance(ChatCompletionService.class);
+        return BuildersSingleton.INST.getInstance(ChatCompletionService.Builder.class);
     }
 
     interface Builder extends SemanticKernelBuilder<ChatCompletionService> {

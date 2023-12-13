@@ -28,10 +28,6 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
         this.chatMessageContents = new ArrayList<>(chatMessageContents);
     }
 
-    public ChatHistory(List<ChatMessageContent> messages) {
-        this.messages = new ArrayList<>(messages);
-    }
-
     /**
      * Get the chat history
      *
