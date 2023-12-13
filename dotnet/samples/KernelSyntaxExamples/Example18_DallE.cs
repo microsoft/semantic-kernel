@@ -88,7 +88,7 @@ public static class Example18_DallE
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAITextToImage( // Add your text to image service
                 deploymentName: TestConfiguration.AzureOpenAI.ImageModelId,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 modelId: TestConfiguration.AzureOpenAI.ImageModelId)
             .AddAzureOpenAIChatCompletion( // Add your chat completion service

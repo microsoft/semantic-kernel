@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,14 +63,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             this._logger.LogWarning($"{nameof(AzureOpenAITextToImageService)} supports only Dall-E-2. The model ID will be ignored.");
         }
 
-        if (httpClient?.BaseAddress == null && string.IsNullOrEmpty(endpoint))
+        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
+        if (connectorEndpoint is null)
         {
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
-
-        this._client = new(new Uri(endpoint),
+        this._client = new(new Uri(connectorEndpoint),
             new AzureKeyCredential(apiKey),
             GetClientOptions(httpClient, maxRetryCount, apiVersion));
     }
@@ -107,7 +107,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             imageGenerations = await this._client.GetImageGenerationsAsync(
                 new ImageGenerationOptions
                 {
-                    DeploymentName = this._deploymentName,
                     Prompt = description,
                     Size = size,
                 }, cancellationToken).ConfigureAwait(false);
@@ -115,7 +114,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         catch (RequestFailedException e) when (e.Status == 404)
         {
             this._logger.LogError("Image generation failed with status code 404. This error can occur also when attempting to use Dall-E-3 which is still not supported");
-            throw;
+            throw e.ToHttpOperationException();
         }
 
         if (!imageGenerations.HasValue)

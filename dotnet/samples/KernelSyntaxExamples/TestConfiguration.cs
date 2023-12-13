@@ -74,6 +74,7 @@ public sealed class TestConfiguration
         public string ChatModelId { get; set; }
         public string ImageDeploymentName { get; set; }
         public string ImageModelId { get; set; }
+        public string ImageEndpoint { get; set; }
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
     }
