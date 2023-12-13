@@ -13,8 +13,11 @@ input_variables:
 output_variable:
   description: The generated story.
 execution_settings:
-  - model_id: gpt-4
+  service1:  
+    model_id: gpt-4
     temperature: 0.6
-  - model_id: gpt-3
-    temperature: 0.4  
-  - temperature: 0.5
+  service2:
+    model_id: gpt-3
+    temperature: 0.4
+  default:
+    temperature: 0.5
