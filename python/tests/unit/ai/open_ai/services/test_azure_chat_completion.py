@@ -448,8 +448,8 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         # frequency_penalty=complete_request_settings.frequency_penalty,
         # logit_bias=token_bias,
         extra_body=expected_data_settings,
-        functions=functions,
-        function_call=complete_request_settings.function_call,
+        tools=functions,
+        tool_choice=complete_request_settings.function_call,
     )
 
 

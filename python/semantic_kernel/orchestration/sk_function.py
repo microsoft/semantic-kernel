@@ -204,7 +204,7 @@ class SKFunction(SKFunctionBase):
                         completion = await client.complete_chat_async(
                             messages, request_settings
                         )
-                        # Chat completion may return a Tuplpe(Completion, FunctionCall)
+                        # Chat completion may return a Tuple(Completion, FunctionCall)
                         # thus if so, only grab the completion
                         if isinstance(completion, tuple):
                             completion = completion[0]
