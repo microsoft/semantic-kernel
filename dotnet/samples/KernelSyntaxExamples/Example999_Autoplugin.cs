@@ -26,7 +26,7 @@ public static class Example999_AutoPlugin
     private static int s_sampleIndex; 
     private static string plannerprompt = @"
 
-        Extract today's featured article text from https://en.wikipedia.org
+        What is the directory in C:\demos that has the longest name, and how many files does it contain?
 
     ";
 
@@ -146,8 +146,8 @@ public static class Example999_AutoPlugin
 
                 // General references that are often needed
                 references.Add(MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location));
-                //references.Add(MetadataReference.CreateFromFile(typeof(System.ComponentModel.BrowsableAttribute).Assembly.Location));
-                references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.ComponentModel, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
+                references.Add(MetadataReference.CreateFromFile(typeof(System.ComponentModel.BrowsableAttribute).Assembly.Location));
+                //references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.ComponentModel, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
                 references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.Runtime, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
                 references.Add(MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version = 2.0.0.0, Culture = neutral, PublicKeyToken = cc7b13ffcd2ddd51").Location));
                 references.Add(MetadataReference.CreateFromFile(Assembly.Load("System.Collections, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location));
