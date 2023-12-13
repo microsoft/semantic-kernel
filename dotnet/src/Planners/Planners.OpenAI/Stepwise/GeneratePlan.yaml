@@ -23,7 +23,8 @@ input_variables:
   - name:          goal
     description:   The goal to satisfy
 execution_settings:
-  - temperature:       0.0
+  default:  
+    temperature:       0.0
     top_p:             0.0
     presence_penalty:  0.0
     frequency_penalty: 0.0
