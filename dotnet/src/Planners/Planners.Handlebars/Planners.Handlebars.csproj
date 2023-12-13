@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
   </ItemGroup>
 
   <ItemGroup>

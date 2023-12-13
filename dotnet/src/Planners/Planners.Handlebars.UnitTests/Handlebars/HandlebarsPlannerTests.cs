@@ -12,12 +12,18 @@ public sealed class HandlebarsPlannerTests
 {
     private const string PlanString =
     @"```handlebars
-        <plan>
-            <function.SummarizePlugin.Summarize/>
-            <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-            <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
-            <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
-        </plan>```";
+{{!-- Step 1: Call Summarize function --}}  
+{{set ""summary"" (SummarizePlugin-Summarize)}}  
+
+{{!-- Step 2: Call Translate function with the language set to French --}}  
+{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
+
+{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+
+{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
+```";
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -49,7 +55,7 @@ public sealed class HandlebarsPlannerTests
     }
 
     [Fact]
-    public async Task InvalidXMLThrowsAsync()
+    public async Task InvalidHandlebarsTemplateThrowsAsync()
     {
         // Arrange
         var kernel = this.CreateKernelWithMockCompletionResult("<plan>notvalid<</plan>");

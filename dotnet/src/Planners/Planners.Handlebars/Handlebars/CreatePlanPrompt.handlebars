@@ -34,7 +34,7 @@ What's the sum of 5+10+15?
   \{{!-- Step 3: Create random number --}}
   \{{set
     "randomNumber"
-    (Example{{reservedNameDelimiter}}Random
+    (Example{{nameDelimiter}}Random
       seed=(get
         "index"
       )
@@ -42,7 +42,7 @@ What's the sum of 5+10+15?
   }}
   \{{!-- Step 4: Call example helper with random number and print the result to the screen --}}
   \{{json
-    (Example{{reservedNameDelimiter}}Helper
+    (Example{{nameDelimiter}}Helper
       input=(get
         "randomNumber"
       )
@@ -66,7 +66,7 @@ What's the sum of 5+10+15?
 \{{!-- Step 2: Call the Example-AddNums helper with the variables and store the result --}}
 \{{set
   "sum"
-  (Example{{reservedNameDelimiter}}AddNums
+  (Example{{nameDelimiter}}AddNums
     num1=(get
       "num1"
     )
@@ -102,20 +102,20 @@ The following helpers are available to you:
 {{#if allowLoops}}
 ## Loop helpers
 If you need to loop through a list of values with `\{{#each}}`, you can use the following helpers:
-- `\{{range}}` – Generates a sequence of integral numbers within a specified range, inclusive of last value.
+- `\{{range}}` – Generates a sequence of integral numbers within a specified range, inclusive of the first and last value.
 - `\{{array}}` – Generates an array of values from the given values.
 
 IMPORTANT: `range` and `array` are the only supported data structures. Others like `hash` are not supported. Also, you cannot use any methods or properties on the built-in data structures, such as `array.push` or `range.length`.
 
 ## Math helpers
 If you need to do basic operations, you can use these two helpers with numerical values:
-- `\{{add}}` – Adds two values together.
-- `\{{subtract}}` – Subtracts the second value from the first.
+- `\{{Add}}` – Adds two values together.
+- `\{{Subtract}}` – Subtracts the second value from the first.
 
 {{/if}}
 ## Comparison helpers
-If you need to compare two values, you can use the `\{{equal}}` helper.
-To use the {{#if allowLoops}}math and {{/if}}comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is equal to number `1`, you would use the following helper like so: `\{{#if (equal var 1)}}\{{/if}}`.
+If you need to compare two values, you can use the `\{{equals}}` helper.
+To use the {{#if allowLoops}}math and {{/if}}comparison helpers, you must pass in two positional values. For example, to check if the variable `var` is equal to number `1`, you would use the following helper like so: `\{{#if (equal (get "var") 1)}}\{{/if}}`.
 
 ## Variable helpers
 If you need to create or retrieve a variable, you can use the following helpers:
@@ -149,10 +149,10 @@ Some helpers require arguments that are complex objects. The JSON schemas for th
 {{/each}}
 {{/if}}
 ## Custom helpers
-Lastly, you also have the following Handlebars helpers that you can use:
+Lastly, you also have the following helpers you can use:
 
 {{#each functions}}
-### `{{doubleOpen}}{{PluginName}}{{../reservedNameDelimiter}}{{Name}}{{doubleClose}}`
+### `{{doubleOpen}}{{PluginName}}{{../nameDelimiter}}{{Name}}{{doubleClose}}`
 Description: {{Description}}
 Inputs:
   {{#each Parameters}}
@@ -193,8 +193,8 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 ## Start
 Now take a deep breath and accomplish the task:
 1. Keep the template short and sweet. Be as efficient as possible.
-2. Do not use helpers or functions that were not provided to you, and be especially careful to not assume or make up any helpers or operations that were not explicitly defined already.
-3. If none of the available helpers can achieve the goal, respond with "Additional helpers may be required".
+2. Do not make up helpers or functions that were not provided to you, and be especially careful to NOT assume or use any helpers or operations that were not explicitly defined already.
+3. If you can't fully accomplish the goal with the available helpers, just print "{{insufficientFunctionsErrorMessage}}".
 4. Always start by identifying any important values in the goal. Then, use the `\{{set}}` helper to create variables for each of these values.
 5. The template should use the \{{json}} helper at least once to output the result of the final step.
 6. Don't forget to use the tips and tricks otherwise the template will not work.

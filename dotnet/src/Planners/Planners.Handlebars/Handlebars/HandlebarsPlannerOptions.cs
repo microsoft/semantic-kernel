@@ -10,8 +10,10 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// <summary>
 /// Configuration for Handlebars planner instances.
 /// </summary>
-public sealed class HandlebarsPlannerConfig
+public sealed class HandlebarsPlannerOptions
 {
+    // TODO [@teresaqhoang]: Implement all options
+
     /// <summary>
     /// Delegate to get the prompt template string.
     /// </summary>
@@ -33,7 +35,7 @@ public sealed class HandlebarsPlannerConfig
     /// If set, this function takes precedence over <see cref="Memory"/>.
     /// Setting <see cref="ExcludedPlugins"/>, <see cref="ExcludedFunctions"/> will be used to filter the results.
     /// </summary>
-    public Func<HandlebarsPlannerConfig, string?, CancellationToken, Task<IEnumerable<KernelFunctionMetadata>>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<HandlebarsPlannerOptions, string?, CancellationToken, Task<IEnumerable<KernelFunctionMetadata>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Callback to get a function by name (optional).
@@ -63,9 +65,9 @@ public sealed class HandlebarsPlannerConfig
     public bool AllowLoops { get; set; } = true;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HandlebarsPlannerConfig"/> class.
+    /// Initializes a new instance of the <see cref="HandlebarsPlannerOptions"/> class.
     /// </summary>
-    public HandlebarsPlannerConfig(
+    public HandlebarsPlannerOptions(
         HandlebarsPlan? lastPlan = default,
         string? lastError = default,
         bool allowLoops = true
