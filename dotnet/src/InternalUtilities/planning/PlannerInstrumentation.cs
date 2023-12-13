@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -127,11 +128,21 @@ internal static partial class PlannerInstrumentation
         Message = "Plan created.")]
     static partial void LogPlanCreated(this ILogger logger);
 
-    [LoggerMessage(
-        EventId = 3,
-        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
-        Message = "Plan:\n{Plan}")]
-    static partial void LogPlan(this ILogger logger, object plan);
+    private static readonly Action<ILogger, string, Exception?> s_logPlan =
+        LoggerMessage.Define<string>(
+            logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
+            eventId: 3,
+            "Plan:\n{Plan}");
+    private static void LogPlan(this ILogger logger, object plan)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            s_logPlan(
+                logger,
+                JsonSerializer.Serialize(plan),
+                null);
+        }
+    }
 
     [LoggerMessage(
         EventId = 4,
@@ -160,11 +171,22 @@ internal static partial class PlannerInstrumentation
         Message = "Plan executed successfully.")]
     static partial void LogInvokePlanSuccess(this ILogger logger);
 
-    [LoggerMessage(
-        EventId = 8,
-        Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
-        Message = "Plan result: {PlanResult}")]
-    static partial void LogPlanResult(this ILogger logger, object planResult);
+    private static readonly Action<ILogger, string, Exception?> s_logPlanResult =
+        LoggerMessage.Define<string>(
+            logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
+            eventId: 8,
+            "Plan result: {Result}");
+
+    private static void LogPlanResult(this ILogger logger, object planResult)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            s_logPlanResult(
+                logger,
+                JsonSerializer.Serialize(planResult),
+                null);
+        }
+    }
 
     [LoggerMessage(
         EventId = 9,
