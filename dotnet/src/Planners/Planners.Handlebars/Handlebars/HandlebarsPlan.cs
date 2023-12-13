@@ -14,9 +14,9 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 public sealed class HandlebarsPlan
 {
     /// <summary>
-    /// Error message for hallucinated helpers.
+    /// Error message for hallucinated helpers (helpers that are not registered kernel functions or built-in library helpers).
     /// </summary>
-    private const string HallucinatedHelpersErrorMessage = "Template references a helper that cannot be resolved.";
+    internal const string HallucinatedHelpersErrorMessage = "Template references a helper that cannot be resolved.";
 
     /// <summary>
     /// The handlebars template representing the plan.
