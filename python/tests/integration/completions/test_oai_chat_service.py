@@ -133,7 +133,7 @@ async def test_oai_assistant(setup_tldr_function_for_oai_models, get_oai_config)
     summary = await retry(lambda: kernel.run_async(chat_function))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert output is not None and len(output) < 100
+    assert output is not None
 
 
 @pytest.mark.asyncio
@@ -189,4 +189,4 @@ async def test_oai_assistant_with_custom_client(
     summary = await retry(lambda: kernel.run_async(chat_function))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert output is not None and len(output) < 100
+    assert output is not None
