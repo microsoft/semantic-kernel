@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public class PineconeUtilsTests
 {
