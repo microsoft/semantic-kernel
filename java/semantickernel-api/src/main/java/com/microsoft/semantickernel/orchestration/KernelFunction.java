@@ -2,9 +2,14 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.ExecutionSettingsModel;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.VariableViewModel;
+import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,7 +19,7 @@ import reactor.core.publisher.Mono;
  *
  * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
  */
-public interface KernelFunction {
+public interface KernelFunction extends Buildable {
 
 
     /**
@@ -88,4 +93,27 @@ public interface KernelFunction {
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType);
+
+    interface FromPromptBuilder {
+
+        FromPromptBuilder withName(String name);
+
+        FromPromptBuilder withInputParameters(List<VariableViewModel> inputVariables);
+
+        FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
+
+        FromPromptBuilder withPluginName(String name);
+
+        FromPromptBuilder withExecutionSettings(List<ExecutionSettingsModel> executionSettings);
+
+        FromPromptBuilder withDescription(String description);
+
+        FromPromptBuilder withTemplate(String template);
+
+        KernelFunction build();
+
+        FromPromptBuilder withTemplateFormat(String templateFormat);
+
+        FromPromptBuilder withOutputVariable(VariableViewModel outputVariable);
+    }
 }

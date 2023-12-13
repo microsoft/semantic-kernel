@@ -2,15 +2,17 @@
 package com.microsoft.semantickernel.chatcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface ChatCompletionService extends Buildable {
+public interface ChatCompletionService extends Buildable, AIService {
 
     /**
      * Create a new empty chat instance
@@ -49,6 +51,12 @@ public interface ChatCompletionService extends Buildable {
         ChatHistory chatHistory,
         PromptExecutionSettings executionSettings,
         Kernel kernel);
+
+
+    Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(
+        String prompt,
+        @Nullable PromptExecutionSettings executionSettings,
+        @Nullable Kernel kernel);
 
     @SuppressWarnings("unchecked")
     static Builder builder() {

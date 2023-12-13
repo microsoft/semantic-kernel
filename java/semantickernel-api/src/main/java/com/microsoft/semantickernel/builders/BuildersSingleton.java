@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,13 +52,18 @@ public enum BuildersSingleton {
     private static final String FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS =
         "com.microsoft.semantickernel.orchestration.DefaultKernelArguments$Builder";
 
-    private final Map<Class<? extends SemanticKernelBuilder<?>>, Supplier<? extends Buildable>>
+
+    private static final String FALLBACK_KERNEL_FUNCTION_YAML_BUILDER_CLASS =
+        "com.microsoft.semantickernel.semanticfunctions.KernelFunctionYamlBuilder";
+    private final Map<Class<?>, Supplier<?>>
         builders = new HashMap<>();
 
     BuildersSingleton() {
         try {
             registerBuilder(Kernel.Builder.class, FALLBACK_KERNEL_BUILDER_CLASS);
             registerBuilder(KernelArguments.Builder.class, FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS);
+            registerBuilder(KernelFunctionYaml.Builder.class,
+                FALLBACK_KERNEL_FUNCTION_YAML_BUILDER_CLASS);
 /*
             // Keep this list in alphabetical order by fallback variable name
             registerBuilder(ChatCompletionService.Builder.class,
@@ -112,7 +118,7 @@ public enum BuildersSingleton {
     }
 
     @SuppressWarnings("unchecked")
-    private <U extends Buildable, T extends SemanticKernelBuilder<U>> void registerBuilder(
+    private <T> void registerBuilder(
         Class<T> clazz, String fallbackClassName) {
         builders.put(
             clazz,
@@ -121,7 +127,7 @@ public enum BuildersSingleton {
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends Buildable, T extends SemanticKernelBuilder<U>> T getInstance(Class<T> clazz) {
+    public <T> T getInstance(Class<T> clazz) {
         return (T) builders.get(clazz).get();
     }
 }

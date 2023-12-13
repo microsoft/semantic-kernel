@@ -16,7 +16,7 @@ public class ServiceLoadUtil {
 
     private ServiceLoadUtil() {}
 
-    public static <U extends Buildable, T extends SemanticKernelBuilder<U>>
+    public static <T>
             Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
 

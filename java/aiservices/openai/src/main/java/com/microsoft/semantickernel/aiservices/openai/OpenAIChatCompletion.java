@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import com.azure.ai.openai.models.ChatCompletions;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
+import com.microsoft.semantickernel.chatcompletionp.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 import com.microsoft.semantickernel.orchestration.FunctionResult;

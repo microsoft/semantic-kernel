@@ -6,6 +6,7 @@ package com.microsoft.semantickernel.orchestration.contextvariables;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -59,6 +60,9 @@ public interface KernelArguments extends Buildable, Map<String, ContextVariable<
      */
     @Nullable
     <T> ContextVariable<T> get(String key, Class<T> clazz);
+
+    @Nullable
+    PromptExecutionSettings getExecutionSettings();
 
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Builder.class);

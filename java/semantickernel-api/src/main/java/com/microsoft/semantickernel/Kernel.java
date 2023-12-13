@@ -3,9 +3,7 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
@@ -38,20 +36,22 @@ public interface Kernel extends Buildable {
         @Nullable KernelArguments arguments,
         Class<T> resultType);
 
-    <T> Flux<StreamingContent<T>> invokeStreamingAsync(
+    <T> Flux<T> invokeStreamingAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> resultType);
 
-    <T> Flux<StreamingContent<T>> invokeStreamingAsync(
+    <T> Flux<T> invokeStreamingAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType);
 
+
+    ServiceProvider getServiceSelector();
+
     interface Builder extends SemanticKernelBuilder<Kernel> {
 
-        Builder withDefaultAIService(
-            ChatCompletionService gpt35Turbo);
+        <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService);
 
         Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
 

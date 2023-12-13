@@ -134,6 +134,12 @@ class DefaultKernelArguments implements KernelArguments, WritableKernelArguments
                 key, value.getType().getClazz(), clazz));
     }
 
+    @Nullable
+    @Override
+    public PromptExecutionSettings getExecutionSettings() {
+        return null;
+    }
+
     @Override
     public boolean isNullOrEmpty(String key) {
         return get(key) == null || get(key).isEmpty();

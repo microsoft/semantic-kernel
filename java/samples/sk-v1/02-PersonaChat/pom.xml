@@ -14,11 +14,5 @@
 
     <artifactId>02-PersonaChat</artifactId>
     <packaging>jar</packaging>
-    
-    <dependencies>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core</artifactId>
-        </dependency>
-    </dependencies>
+
 </project>
