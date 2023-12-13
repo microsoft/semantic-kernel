@@ -45,7 +45,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         ILoggerFactory? loggerFactory = null,
         string? apiVersion = null)
     {
-
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
