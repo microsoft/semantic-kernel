@@ -23,7 +23,7 @@ public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParamet
         Uri? serverUrlOverride = null,
         string userAgent = HttpHeaderValues.UserAgent,
         bool ignoreNonCompliantErrors = false,
-        bool enableDynamicOperationPayload = false,
+        bool enableDynamicOperationPayload = true,
         bool enablePayloadNamespacing = false) : base(httpClient, null, serverUrlOverride, userAgent, ignoreNonCompliantErrors, enableDynamicOperationPayload, enablePayloadNamespacing)
     {
         this.AuthCallback = authCallback;
