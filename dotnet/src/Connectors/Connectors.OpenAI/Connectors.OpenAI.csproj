@@ -6,7 +6,7 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);NU5104;SKEXP0013</NoWarn>
+    <NoWarn>$(NoWarn);NU5104;SKEXP0013,SKEXP0014</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -18,6 +18,10 @@
     <Title>Semantic Kernel - OpenAI and Azure OpenAI connectors</Title>
     <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />

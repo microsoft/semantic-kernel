@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -217,7 +218,7 @@ public class KernelFunctionFromPromptTests
     {
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns(this.ToAsyncEnumerable<StreamingTextContent>(new List<StreamingTextContent>() { new("something") }));
+            .Returns((new List<StreamingTextContent>() { new("something") }).ToAsyncEnumerable());
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
@@ -307,7 +308,7 @@ public class KernelFunctionFromPromptTests
         var expectedContent = new StreamingTextContent("something");
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns(this.ToAsyncEnumerable<StreamingTextContent>(new List<StreamingTextContent>() { expectedContent }));
+            .Returns((new List<StreamingTextContent>() { expectedContent }).ToAsyncEnumerable());
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
@@ -332,7 +333,7 @@ public class KernelFunctionFromPromptTests
         var expectedContent = new StreamingChatMessageContent(AuthorRole.Assistant, "Something");
         var mockService = new Mock<IChatCompletionService>();
         var mockResult = mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns(this.ToAsyncEnumerable<StreamingChatMessageContent>(new List<StreamingChatMessageContent>() { expectedContent }));
+            .Returns((new List<StreamingChatMessageContent>() { expectedContent }).ToAsyncEnumerable());
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<IChatCompletionService>((sp) => mockService.Object);
@@ -554,19 +555,6 @@ public class KernelFunctionFromPromptTests
         // Assert
         mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable IDE1006 // Naming Styles
-    private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-    {
-        foreach (var enumerationItem in enumeration)
-        {
-            yield return enumerationItem;
-        }
-    }
-
     private sealed class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
