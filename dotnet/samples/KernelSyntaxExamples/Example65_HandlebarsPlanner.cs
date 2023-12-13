@@ -10,9 +10,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
 
-/**
- * This example shows how to use the Handlebars sequential planner.
- */
+// This example shows how to use the Handlebars sequential planner.
 public static class Example65_HandlebarsPlanner
 {
     private static int s_sampleIndex;
