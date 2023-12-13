@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-// ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
 {
     public static async Task RunAsync()
@@ -15,7 +14,7 @@ public static class Example05_InlineFunctionDefinition
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (openAIModelId is null || openAIApiKey is null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;

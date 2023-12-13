@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-// ReSharper disable once InconsistentNaming
-
 internal static class Example13_ConversationSummaryPlugin
 {
     private const string ChatTranscript =
@@ -180,7 +178,6 @@ Jane: Goodbye!
     }
 }
 
-// ReSharper disable CommentTypo
 /* Example Output:
 
 ======== SamplePlugins - Conversation Summary Plugin - Summarize ========
@@ -260,4 +257,3 @@ Generated Topics:
 }
 
 */
-// ReSharper restore CommentTypo

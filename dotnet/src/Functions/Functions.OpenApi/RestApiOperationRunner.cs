@@ -122,35 +122,13 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var stringArguments = CastToStringArguments(arguments, operation);
+        var url = this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        var url = this.BuildsOperationUrl(operation, stringArguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var headers = operation.RenderHeaders(arguments);
 
-        var headers = operation.RenderHeaders(stringArguments);
-
-        var payload = this.BuildOperationPayload(operation, stringArguments);
+        var payload = this.BuildOperationPayload(operation, arguments);
 
         return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
-    }
-
-    /// <summary>
-    /// Casts argument values of type object to string.
-    /// </summary>
-    /// <param name="arguments">The kernel arguments to be cast.</param>
-    /// <param name="operation">The REST API operation.</param>
-    /// <returns>A dictionary of arguments with string values.</returns>
-    /// <exception cref="KernelException">Thrown when an argument has an unsupported, non-string type.</exception>
-    private static Dictionary<string, string> CastToStringArguments(KernelArguments arguments, RestApiOperation operation)
-    {
-        return arguments.ToDictionary(item => item.Key, item =>
-        {
-            if (item.Value is string stringValue)
-            {
-                return stringValue;
-            }
-
-            throw new KernelException($"Non-string OpenApi operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Id}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
-        });
     }
 
     #region private
@@ -245,7 +223,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="operation">The operation.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent? BuildOperationPayload(RestApiOperation operation, Dictionary<string, string> arguments)
+    private HttpContent? BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments)
     {
         if (operation?.Method != HttpMethod.Put && operation?.Method != HttpMethod.Post)
         {
@@ -253,14 +231,14 @@ internal sealed class RestApiOperationRunner
         }
 
         var mediaType = operation.Payload?.MediaType;
-
-        // A try to resolve payload content type from the operation arguments if it's missing in the payload metadata.
         if (string.IsNullOrEmpty(mediaType))
         {
-            if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out mediaType))
+            if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out object? fallback) || fallback is not string mediaTypeFallback)
             {
-                throw new KernelException($"No content type is provided for the {operation.Id} operation.");
+                throw new KernelException($"No media type is provided for the {operation.Id} operation.");
             }
+
+            mediaType = mediaTypeFallback;
         }
 
         if (!this._payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
@@ -277,9 +255,9 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
-        //Build operation payload dynamically
+        // Build operation payload dynamically
         if (this._enableDynamicPayload)
         {
             if (payloadMetadata == null)
@@ -292,10 +270,10 @@ internal sealed class RestApiOperationRunner
             return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson);
         }
 
-        //Get operation payload content from the 'payload' argument if dynamic payload building is not required.
-        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var content))
+        // Get operation payload content from the 'payload' argument if dynamic payload building is not required.
+        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string content)
         {
-            throw new KernelException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
+            throw new KernelException($"No payload is provided by the argument '{RestApiOperation.PayloadArgumentName}'.");
         }
 
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
@@ -308,7 +286,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="arguments">The arguments.</param>
     /// <param name="propertyNamespace">The namespace to add to the property name.</param>
     /// <returns>The JSON object.</returns>
-    private JsonObject BuildJsonObject(IList<RestApiOperationPayloadProperty> properties, IDictionary<string, string> arguments, string? propertyNamespace = null)
+    private JsonObject BuildJsonObject(IList<RestApiOperationPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
     {
         var result = new JsonObject();
 
@@ -323,9 +301,9 @@ internal sealed class RestApiOperationRunner
                 continue;
             }
 
-            if (arguments.TryGetValue(argumentName, out string? propertyValue) && propertyValue is not null)
+            if (arguments.TryGetValue(argumentName, out object? propertyValue) && propertyValue is not null)
             {
-                result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, propertyValue));
                 continue;
             }
 
@@ -365,36 +343,19 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Converts the JSON property value to the REST API type specified in metadata.
-    /// </summary>
-    /// <param name="propertyValue">The value of the property to be converted.</param>
-    /// <param name="propertyMetadata">The metadata of the property.</param>
-    /// <returns>A JsonNode representing the converted property value.</returns>
-    private static JsonNode? ConvertJsonPropertyValueType(string propertyValue, RestApiOperationPayloadProperty propertyMetadata) =>
-        propertyMetadata.Type switch
-        {
-            "number" => long.TryParse(propertyValue, out var intValue) ? JsonValue.Create(intValue) : JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture)),
-            "boolean" => JsonValue.Create(bool.Parse(propertyValue)),
-            "integer" => JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture)),
-            "array" => JsonArray.Parse(propertyValue) as JsonArray ?? throw new KernelException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array."),
-            "string" => JsonValue.Create(propertyValue),
-            _ => throw new KernelException($"Unexpected OpenAPI data type - {propertyMetadata.Type}"),
-        };
-
-    /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    private HttpContent BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
-        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var propertyValue))
+        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string payload)
         {
             throw new KernelException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
-        return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);
+        return new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain);
     }
 
     /// <summary>
@@ -421,7 +382,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
