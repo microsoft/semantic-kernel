@@ -20,7 +20,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">MongoDB connection string.</param>
     /// <param name="databaseName">Database name.</param>
-    /// /// <param name="indexName">Name of the search index. If no value is provided default index will be used.</param>
+    /// <param name="indexName">Name of the search index. If no value is provided default index will be used.</param>
     public MongoDBMemoryStore(string connectionString, string databaseName, string? indexName = default) :
         this(new MongoClient(connectionString), databaseName, indexName)
     {

@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    internal const string BaseAssistantUrl = $"{BaseUrl}assistants";
+    internal const string BaseAssistantUrl = $"{BaseUrl}/assistants";
 
     /// <summary>
     /// Create a new assistant.
