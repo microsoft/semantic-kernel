@@ -14,13 +14,13 @@ using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 
 public static class Example15_TextMemoryPlugin
 {
