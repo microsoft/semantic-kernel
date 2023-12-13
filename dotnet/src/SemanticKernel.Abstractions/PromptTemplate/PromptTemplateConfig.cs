@@ -113,7 +113,14 @@ public sealed class PromptTemplateConfig
     public void AddExecutionSettings(PromptExecutionSettings settings)
     {
         Verify.NotNull(settings);
-        this.ExecutionSettings[settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId] = settings;
+
+        var key = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+        if (this.ExecutionSettings.ContainsKey(key))
+        {
+            throw new ArgumentException($"Execution settings for service id '{key}' already exists.");
+        }
+
+        this.ExecutionSettings[key] = settings;
     }
 
     /// <summary>

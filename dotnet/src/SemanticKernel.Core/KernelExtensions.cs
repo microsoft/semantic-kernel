@@ -528,7 +528,8 @@ public static class KernelExtensions
             promptTemplate,
             arguments?.ExecutionSettings,
             templateFormat: templateFormat,
-            promptTemplateFactory: promptTemplateFactory);
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
 
         return kernel.InvokeAsync(function, arguments);
     }
@@ -567,7 +568,8 @@ public static class KernelExtensions
             promptTemplate,
             arguments?.ExecutionSettings,
             templateFormat: templateFormat,
-            promptTemplateFactory: promptTemplateFactory);
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
 
         return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }

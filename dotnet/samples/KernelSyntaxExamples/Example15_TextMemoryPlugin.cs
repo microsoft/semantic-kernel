@@ -22,7 +22,6 @@ using Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
-// ReSharper disable once InconsistentNaming
 public static class Example15_TextMemoryPlugin
 {
     private const string MemoryCollectionName = "aboutMe";
