@@ -35,12 +35,12 @@ public static class OpenAIMemoryBuilderExtensions
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             new AzureOpenAITextEmbeddingGenerationService(
-                deploymentName,
-                modelId,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(httpClient),
-                loggerFactory));
+                deploymentName: deploymentName,
+                endpoint: endpoint,
+                apiKey: apiKey,
+                modelId: modelId,
+                httpClient: httpClient,
+                loggerFactory: loggerFactory));
     }
 
     /// <summary>
@@ -65,12 +65,12 @@ public static class OpenAIMemoryBuilderExtensions
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             new AzureOpenAITextEmbeddingGenerationService(
-                deploymentName,
-                endpoint,
-                credential,
-                modelId,
-                HttpClientProvider.GetHttpClient(httpClient),
-                loggerFactory));
+                deploymentName: deploymentName,
+                endpoint: endpoint,
+                credential: credential,
+                modelId: modelId,
+                httpClient: httpClient,
+                loggerFactory: loggerFactory));
     }
 
     /// <summary>
@@ -93,10 +93,10 @@ public static class OpenAIMemoryBuilderExtensions
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             new OpenAITextEmbeddingGenerationService(
-                modelId,
-                apiKey,
-                orgId,
-                HttpClientProvider.GetHttpClient(httpClient),
-                loggerFactory));
+                modelId: modelId,
+                apiKey: apiKey,
+                organization: orgId,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient),
+                loggerFactory: loggerFactory));
     }
 }
