@@ -36,7 +36,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Theory(Skip = "Requires model deployment that supports function calling.")]
+    [Theory]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest", new string[] { "WebSearch_Search" })]
     [InlineData("What is the weather in Seattle?", "Seattle", new string[] { "WebSearch_Search" })]
     [InlineData("What is the current hour number, plus 5?", "", new string[] { "Time_HourNumber", "Math_Add" })]
@@ -74,7 +74,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     private Kernel InitializeKernel()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("Planners:AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder()
