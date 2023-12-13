@@ -115,12 +115,10 @@ public sealed class PromptTemplateConfig
         Verify.NotNull(settings);
 
         var key = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
-        /*
         if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.");
         }
-        */
 
         this.ExecutionSettings[key] = settings;
     }
