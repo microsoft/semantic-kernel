@@ -45,17 +45,19 @@ Hello AI, tell me about {{$input}}
 These are AI execution settings
 ```sk.execution_settings
 {
-    ""service_id"": ""service1"",
-    ""model_id"": ""gpt4"",
-    ""temperature"": 0.7
+    ""service1"" : {
+        ""model_id"": ""gpt4"",
+        ""temperature"": 0.7
+    }
 }
 ```
 These are more AI execution settings
 ```sk.execution_settings
 {
-    ""service_id"": ""service2"",
-    ""model_id"": ""gpt3.5"",
-    ""temperature"": 0.8
+    ""service2"" : {
+        ""model_id"": ""gpt3.5"",
+        ""temperature"": 0.8
+    }
 }
 ```
 ";
