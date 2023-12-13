@@ -1068,7 +1068,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier</param>
-    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
+    /// <param name="apiVersion">Azure OpenAI API version</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
@@ -1079,7 +1079,7 @@ public static class OpenAIServiceCollectionExtensions
         string apiKey,
         string? serviceId = null,
         string? modelId = null,
-        int maxRetryCount = 5,
+        string? apiVersion = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -1094,7 +1094,7 @@ public static class OpenAIServiceCollectionExtensions
                 modelId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
-                maxRetryCount));
+                apiVersion));
 
         return builder;
     }
@@ -1131,8 +1131,7 @@ public static class OpenAIServiceCollectionExtensions
                 apiKey,
                 modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                maxRetryCount));
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>

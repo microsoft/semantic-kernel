@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +35,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <param name="modelId">Model name identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
-    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAITextToImageService(
         string deploymentName,
@@ -45,22 +43,19 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         string? modelId = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
-        int? maxRetryCount = null,
         string? apiVersion = null)
     {
-        this._deploymentName = deploymentName;
 
         Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNullOrWhiteSpace(deploymentName);
 
-        if (string.Equals(modelId, "dall-e-3", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new NotSupportedException("Dall-E-3 is not supported yet. Please use model ID 'dall-e-2'.");
-        }
+        this._deploymentName = deploymentName;
 
         this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
-        if (!string.IsNullOrWhiteSpace(modelId) && !string.Equals(modelId, "dall-e-2", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(modelId, "dall-e-2", StringComparison.OrdinalIgnoreCase))
         {
-            this._logger.LogWarning($"{nameof(AzureOpenAITextToImageService)} supports only Dall-E-2. The model ID will be ignored.");
+            this._logger.LogWarning($"{nameof(AzureOpenAITextToImageService)} supports only Dall-E-3. .");
+            throw new NotSupportedException("Dall-E-2 support was deprecated in Azure Open AI latest SDK. Please use a 'dall-e-3' deployment.");
         }
 
         var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
@@ -71,7 +66,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         this._client = new(new Uri(connectorEndpoint),
             new AzureKeyCredential(apiKey),
-            GetClientOptions(httpClient, maxRetryCount, apiVersion));
+            GetClientOptions(httpClient, apiVersion));
     }
 
     /// <inheritdoc/>
@@ -107,6 +102,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             imageGenerations = await this._client.GetImageGenerationsAsync(
                 new ImageGenerationOptions
                 {
+                    DeploymentName = this._deploymentName,
                     Prompt = description,
                     Size = size,
                 }, cancellationToken).ConfigureAwait(false);
@@ -130,7 +126,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         return imageGenerations.Value.Data[0].Url.AbsoluteUri;
     }
 
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient, int? maxRetryCount, string? apiVersion)
+    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient, string? apiVersion)
     {
         OpenAIClientOptions.ServiceVersion version = apiVersion switch
         {
@@ -139,13 +135,12 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             "2023-06-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_06_01_Preview,
             "2023-07-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_07_01_Preview,
             "2023-08-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_08_01_Preview,
+            "2023-12-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview,
             _ => OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview
         };
 
-        maxRetryCount ??= 5;
         var options = new OpenAIClientOptions(version)
         {
-            RetryPolicy = new RetryPolicy(maxRetries: Math.Max(0, maxRetryCount.Value)),
             Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
         };
 

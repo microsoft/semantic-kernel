@@ -77,6 +77,7 @@ public sealed class TestConfiguration
         public string ImageEndpoint { get; set; }
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
+        public string ImageApiKey { get; set; }
     }
 
     public class AzureOpenAIEmbeddingsConfig

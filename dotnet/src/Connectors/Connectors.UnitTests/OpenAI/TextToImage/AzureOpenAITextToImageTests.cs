@@ -19,21 +19,21 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
 public sealed class AzureOpenAITextToImageServiceTests
 {
     [Theory]
-    [InlineData("dall-e-3", false)]
-    [InlineData("dall-e-2", true)]
-    [InlineData("Dall-E-2", true)]
-    [InlineData("", true)]
-    public void ItValidatesTheModelId(string modelId, bool shouldBeValid)
+    [InlineData("My deployment", "dall-e-3", true, null)]
+    [InlineData("My deployment", "dall-e-2", false, typeof(NotSupportedException))]
+    [InlineData("My deployment", "Dall-E-2", false, typeof(NotSupportedException))]
+    [InlineData("", "", false, typeof(ArgumentException))]
+    public void ItValidatesTheModelId(string deploymentName, string modelId, bool shouldBeValid, Type expectedExceptionType)
     {
         // Act
         if (!shouldBeValid)
         {
-            Assert.Throws<NotSupportedException>(() => new AzureOpenAITextToImageService(deploymentName: modelId, modelId: modelId, endpoint: "https://az.com", apiKey: "abc"));
+            Assert.Throws(expectedExceptionType, () => new AzureOpenAITextToImageService(deploymentName: deploymentName, modelId: modelId, endpoint: "https://az.com", apiKey: "abc"));
         }
         else
         {
             // No exceptions for these
-            new AzureOpenAITextToImageService(deploymentName: modelId, modelId: modelId, endpoint: "https://az.com", apiKey: "abc");
+            new AzureOpenAITextToImageService(deploymentName: deploymentName, modelId: modelId, endpoint: "https://az.com", apiKey: "abc");
         }
     }
 
