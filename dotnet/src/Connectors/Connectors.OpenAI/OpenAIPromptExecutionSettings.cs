@@ -19,16 +19,18 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
+    /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; }
+    public double Temperature { get; set; } = 1;
 
     /// <summary>
     /// TopP controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
+    /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; }
+    public double TopP { get; set; } = 1;
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens

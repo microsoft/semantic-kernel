@@ -16,6 +16,11 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageContent
 {
     /// <summary>
+    /// The reason why the completion finished.
+    /// </summary>
+    public CompletionsFinishReason? FinishReason { get; set; }
+
+    /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
@@ -37,6 +42,38 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             metadata)
     {
         this.ToolCallUpdate = chatUpdate.ToolCallUpdate;
+        this.FinishReason = chatUpdate?.FinishReason;
+    }
+
+    /// <summary>
+    /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
+    /// </summary>
+    /// <param name="authorRole">Author role of the message</param>
+    /// <param name="content">Content of the message</param>
+    /// <param name="tootToolCallUpdate">Tool call update</param>
+    /// <param name="completionsFinishReason">Completion finish reason</param>
+    /// <param name="choiceIndex">Index of the choice</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="metadata">Additional metadata</param>
+    internal OpenAIStreamingChatMessageContent(
+        AuthorRole? authorRole,
+        string? content,
+        ChatCompletionsToolCall? tootToolCallUpdate = null,
+        CompletionsFinishReason? completionsFinishReason = null,
+        int choiceIndex = 0,
+        string? modelId = null,
+        Dictionary<string, object?>? metadata = null)
+        : base(
+            authorRole,
+            content,
+            null,
+            choiceIndex,
+            modelId,
+            Encoding.UTF8,
+            metadata)
+    {
+        this.ToolCallUpdate = tootToolCallUpdate;
+        this.FinishReason = completionsFinishReason;
     }
 
     /// <summary>Gets any update information in the message about a tool call.</summary>
