@@ -5,10 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
 
-/**
- * This example shows how to use gRPC plugins.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use gRPC plugins.
 public static class Example35_GrpcPlugins
 {
     public static async Task RunAsync()

@@ -332,11 +332,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Handle parameters to be satisfied from KernelArguments.
 
         string name = SanitizeMetadataName(parameter.Name ?? "");
-        bool nameIsInput = name.Equals(KernelArguments.InputParameterName, StringComparison.OrdinalIgnoreCase);
         ThrowForInvalidSignatureIf(string.IsNullOrWhiteSpace(name), method, $"Parameter {parameter.Name}'s attribute defines an invalid name.");
-        ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
-
-        bool fallBackToInput = !sawFirstParameter && !nameIsInput;
 
         var converter = GetConverter(type);
 
@@ -354,14 +350,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 return parameter.DefaultValue;
             }
 
-            // 3. Otherwise, use "input" if this is the first (or only) parameter.
-            if (fallBackToInput)
-            {
-                arguments.TryGetValue(KernelArguments.InputParameterName, out object? input);
-                return Process(input);
-            }
-
-            // 4. Otherwise, fail.
+            // 3. Otherwise, fail.
             throw new KernelException($"Missing argument for function parameter '{name}'",
                 new ArgumentException("Missing argument for function parameter", name));
 

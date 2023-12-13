@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -101,7 +101,7 @@ public sealed class RestApiOperation
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    public Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
 
@@ -115,7 +115,7 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The rendered request headers.</returns>
-    public IDictionary<string, string> RenderHeaders(IDictionary<string, string> arguments)
+    public IDictionary<string, string> RenderHeaders(IDictionary<string, object?> arguments)
     {
         var headers = new Dictionary<string, string>();
 
@@ -123,7 +123,7 @@ public sealed class RestApiOperation
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out string? argument) || argument is null)
+            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
             {
                 // Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)
@@ -142,7 +142,10 @@ public sealed class RestApiOperation
                 throw new KernelException($"The headers parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            headers.Add(parameter.Name, serializer.Invoke(parameter, argument));
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+
+            //Serializing the parameter and adding it to the headers.
+            headers.Add(parameter.Name, serializer.Invoke(parameter, node));
         }
 
         return headers;
@@ -156,29 +159,38 @@ public sealed class RestApiOperation
     /// <param name="path">Operation path to replace parameters in.</param>
     /// <param name="arguments">Arguments to replace parameters by.</param>
     /// <returns>Path with replaced parameters</returns>
-    private string ReplacePathParameters(string path, IDictionary<string, string> arguments)
+    private string ReplacePathParameters(string path, IDictionary<string, object?> arguments)
     {
-        string ReplaceParameter(Match match)
+        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Path);
+
+        foreach (var parameter in parameters)
         {
-            var parameterName = match.Groups[1].Value;
-
-            // Try to find parameter value in arguments
-            if (arguments.TryGetValue(parameterName, out string? value) && value is not null)
+            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
             {
-                return value;
+                // Throw an exception if the parameter is a required one but no value is provided.
+                if (parameter.IsRequired)
+                {
+                    throw new KernelException($"No argument is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+                }
+
+                // Skipping not required parameter if no argument provided for it.
+                continue;
             }
 
-            // Try to find default value for the parameter
-            var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
-            if (parameterMetadata?.DefaultValue is null)
+            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+
+            if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                throw new KernelException($"No argument or value is provided for the '{parameterName}' parameter of the operation - '{this.Id}'.");
+                throw new KernelException($"The path parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            return parameterMetadata.DefaultValue;
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+
+            // Serializing the parameter and adding it to the path.
+            path = path.Replace($"{{{parameter.Name}}}", node.ToString().Trim('"'));
         }
 
-        return s_urlParameterMatch.Replace(path, ReplaceParameter);
+        return path;
     }
 
     /// <summary>
@@ -212,9 +224,7 @@ public sealed class RestApiOperation
         return new Uri(serverUrlString);
     }
 
-    private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
-
-    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_parameterSerializers = new()
+    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, JsonNode, string>> s_parameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
     };

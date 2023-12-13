@@ -3,10 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-/**
- * The following example shows how to use Semantic Kernel with HuggingFace API.
- */
-// ReSharper disable once InconsistentNaming
+
+// The following example shows how to use Semantic Kernel with HuggingFace API.
 public static class Example20_HuggingFace
 {
     public static async Task RunAsync()
@@ -31,7 +29,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.InvokeAsync(questionAnswerFunction, new("What is New York?"));
+        var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         Console.WriteLine(result.GetValue<string>());
     }
@@ -66,7 +64,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.InvokeAsync(questionAnswerFunction, new("What is New York?"));
+        var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         Console.WriteLine(result.GetValue<string>());
     }

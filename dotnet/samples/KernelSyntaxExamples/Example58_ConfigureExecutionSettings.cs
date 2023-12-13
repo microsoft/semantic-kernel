@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-// ReSharper disable once InconsistentNaming
 public static class Example58_ConfigureExecutionSettings
 {
     /// <summary>
@@ -31,10 +30,10 @@ public static class Example58_ConfigureExecutionSettings
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: serviceId,
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         var prompt = "Hello AI, what can you do for me?";

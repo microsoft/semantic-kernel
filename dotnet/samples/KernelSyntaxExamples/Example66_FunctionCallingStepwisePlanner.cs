@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 
-// ReSharper disable once InconsistentNaming
 public static class Example66_FunctionCallingStepwisePlanner
 {
     public static async Task RunAsync()
@@ -34,7 +33,7 @@ public static class Example66_FunctionCallingStepwisePlanner
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
-            // Console.WriteLine($"Chat history:\n{result.ChatHistory?.AsJson()}");
+            // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");
         }
     }
 

@@ -5,14 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-#pragma warning disable RCS1110 // Declare type inside namespace.
-#pragma warning disable CA1819 // Properties should not return arrays
-
-/**
- * This example shows how to use multiple prompt template formats.
- */
-// ReSharper disable once InconsistentNaming
-public static class Example72_KernelStreaming
+// This example shows how to use multiple prompt template formats.
+public static class Example67_KernelStreaming
 {
     /// <summary>
     /// Show how to combine multiple prompt template factories.
@@ -33,10 +27,10 @@ public static class Example72_KernelStreaming
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         var funnyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
