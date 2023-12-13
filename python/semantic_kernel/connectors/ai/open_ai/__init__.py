@@ -8,9 +8,10 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_sett
     OpenAIRequestSettings,
     OpenAITextRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
-    OpenAIChatPromptTemplateWithDataConfig,
-)
+
+# from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
+#     OpenAIChatPromptTemplateWithDataConfig,
+# )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
@@ -41,5 +42,4 @@ __all__ = [
     "AzureTextCompletion",
     "AzureChatCompletion",
     "AzureTextEmbedding",
-    "OpenAIChatPromptTemplateWithDataConfig",
 ]

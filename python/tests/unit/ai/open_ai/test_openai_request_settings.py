@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_open_ai_request_settings import (
+    AzureAISearchDataSources,
+    AzureOpenAIChatRequestSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
 )
@@ -106,3 +110,39 @@ def test_create_options():
     assert options["n"] == 2
     assert options["logit_bias"] == {"1": 1}
     assert not options["stream"]
+
+
+def test_create_options_azure_data():
+    az_source = AzureAISearchDataSources(
+        indexName="test-index", endpoint="test-endpoint", key="test-key"
+    )
+    settings = AzureOpenAIChatRequestSettings(data_sources=[az_source])
+    print(settings.model_dump(exclude_none=True, by_alias=True))
+    assert False
+
+
+def test_azure_open_ai_chat_request_settings_with_datasources():
+    input_dict = {
+        "dataSources": [
+            {
+                "type": "AzureCosmosDB",
+                "parameters": {
+                    "authentication": {
+                        "type": "ConnectionString",
+                        "connectionString": "mongodb+srv://onyourdatatest:{password}$@{cluster-name}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
+                    },
+                    "databaseName": "vectordb",
+                    "containerName": "azuredocs",
+                    "indexName": "azuredocindex",
+                    "embeddingDependency": {
+                        "type": "DeploymentName",
+                        "deploymentName": "{embedding deployment name}",
+                    },
+                    "fieldsMapping": {"vectorFields": ["contentvector"]},
+                },
+            }
+        ]
+    }
+    settings = AzureOpenAIChatRequestSettings.model_validate(input_dict)
+    print(settings)
+    assert settings.data_sources[0].type == "AzureCosmosDB"
