@@ -38,8 +38,18 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(ChatRole role, string content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, Dictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, Dictionary<string, object?>? metadata = null)
         : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(1))
+    {
+        this.ToolCalls = toolCalls;
+        this.Metadata![ToolCallsProperty] = toolCalls;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
+    /// </summary>
+    internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, Dictionary<string, object?>? metadata = null)
+        : base(role, content, modelId, content, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(1))
     {
         this.ToolCalls = toolCalls;
         this.Metadata![ToolCallsProperty] = toolCalls;
