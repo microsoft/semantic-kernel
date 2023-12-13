@@ -9,8 +9,6 @@ using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
 internal static class Example48_GroundednessChecks
 {
     private const string GroundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
