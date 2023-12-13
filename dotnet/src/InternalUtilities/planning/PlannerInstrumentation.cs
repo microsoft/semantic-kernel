@@ -183,7 +183,7 @@ internal static partial class PlannerInstrumentation
         {
             s_logPlanResult(
                 logger,
-                JsonSerializer.Serialize(planResult),
+                planResult.GetType() == typeof(string) ? planResult.ToString() : JsonSerializer.Serialize(planResult),
                 null);
         }
     }
