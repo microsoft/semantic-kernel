@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 

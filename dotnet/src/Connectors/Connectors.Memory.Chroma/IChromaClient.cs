@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 
 namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
