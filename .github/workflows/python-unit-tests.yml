@@ -24,6 +24,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
+      - name: Install Milvus on Windows
+        if: runner.os == 'Windows'
+        run: pip install milvus==2.3.3
       - name: Install dependencies
         run: |
           python -m pip install poetry pytest
