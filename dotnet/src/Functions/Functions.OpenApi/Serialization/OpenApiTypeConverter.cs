@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -31,33 +30,6 @@ internal static class OpenApiTypeConverter
                 "string" => JsonValue.Create(argument),
                 "array" => argument switch
                 {
-            throw new ArgumentOutOfRangeException(name, argument, ex.Message);
-        }
-        catch (FormatException ex)
-        {
-            throw new ArgumentOutOfRangeException(name, argument, ex.Message);
-        }
-    }
-
-    /// <summary>
-    /// Converts the given argument to a JsonNode of type string.
-    /// </summary>
-    /// <param name="argument">The argument to be converted.</param>
-    /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertString(object argument)
-    {
-        return JsonValue.Create(argument);
-    }
-
-    /// <summary>
-    /// Converts the given argument to a JsonNode of type array.
-    /// </summary>
-    /// <param name="argument">The argument to be converted.</param>
-    /// <returns>A JsonNode representing the converted value, or null if the argument cannot be converted.</returns>
-    private static JsonNode? ConvertArray(object argument)
-    {
-        return argument switch
-        {
                     string s => JsonArray.Parse(s) as JsonArray,
                     _ => JsonSerializer.SerializeToNode(argument) as JsonArray
                 },
@@ -82,7 +54,6 @@ internal static class OpenApiTypeConverter
                 },
                 _ => throw new NotSupportedException($"Unexpected type '{type}' of parameter '{name}' with argument '{argument}'."),
             };
-    }
 
             return converter ?? throw new ArgumentOutOfRangeException(name, argument, $"Argument type '{argument.GetType()}' is not convertible to parameter type '{type}'.");
         }
