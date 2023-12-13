@@ -13,9 +13,10 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_setting
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
+
 # Note: this Kernel examples requires an OpenAI API key. Azure OpenAI doesn't currently
 # support Assistants. When Azure OpenAI supports Assistants, this example will be updated.
-async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
+async def create_assistant(client) -> sk_oai.OpenAIChatCompletion:
     assistant = sk_oai.OpenAIChatCompletion(
         ai_model_id="gpt-3.5-turbo-1106",
         async_client=client,
@@ -30,19 +31,18 @@ async def create_assistant(client, api_key) -> sk_oai.OpenAIChatCompletion:
     return assistant
 
 
-async def chat(kernel, chat_function) -> bool:
+async def chat(kernel, chat_function) -> None:
     context_vars = sk.ContextVariables()
 
     answer = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Assistant:> {answer}")
-    return True
 
 
 async def main() -> None:
     api_key, _ = sk.openai_settings_from_dot_env()
     client = AsyncOpenAI(api_key=api_key)
 
-    assistant = await create_assistant(client, api_key)
+    assistant = await create_assistant(client)
 
     kernel = sk.Kernel()
     kernel.add_chat_service("oai_assistant", assistant)
@@ -67,7 +67,7 @@ async def main() -> None:
             "ChatBot", "Chat", function_config
         )
         print(f"User:> {message}")
-        _ = await chat(kernel, chat_function)
+        await chat(kernel, chat_function)
 
 
 if __name__ == "__main__":

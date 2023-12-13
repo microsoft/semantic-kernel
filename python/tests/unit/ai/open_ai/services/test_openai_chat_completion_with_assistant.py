@@ -6,13 +6,13 @@ import pytest
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
-from semantic_kernel.connectors.ai.ai_exception import AIException
 
 
 def test_open_ai_assistant_init() -> None:
@@ -77,11 +77,9 @@ def test_open_ai_assistant_with_empty_api_key() -> None:
 
     with pytest.raises(ValidationError, match="api_key"):
         OpenAIChatCompletion(
-            ai_model_id=ai_model_id,
-            api_key="",
-            log=logger,
-            is_assistant=True
+            ai_model_id=ai_model_id, api_key="", log=logger, is_assistant=True
         )
+
 
 @pytest.mark.asyncio
 async def test_open_ai_assistant_with_chat_stream_raises_error() -> None:
@@ -102,6 +100,7 @@ async def test_open_ai_assistant_with_chat_stream_raises_error() -> None:
         async for _ in assistant.complete_chat_stream_async(None, None):
             # Only start the generator to check for the exception
             break
+
 
 def test_open_ai_assistant_serialize() -> None:
     ai_model_id = "test_model_id"

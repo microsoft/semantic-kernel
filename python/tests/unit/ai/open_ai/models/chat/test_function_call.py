@@ -10,12 +10,16 @@ def test_function_call():
     assert fc.name == "Test-Function"
     assert fc.arguments == """{"input": "world"}"""
 
+
 def test_function_call_with_tool_id():
     # Test initialization with default values
-    fc = FunctionCall(name="Test-Function", arguments="""{"input": "world"}""", tool_call_id="123")
+    fc = FunctionCall(
+        name="Test-Function", arguments="""{"input": "world"}""", tool_call_id="123"
+    )
     assert fc.name == "Test-Function"
     assert fc.arguments == """{"input": "world"}"""
     assert fc.tool_call_id == "123"
+
 
 @pytest.mark.asyncio
 async def test_function_call_to_content_variables(create_kernel):
@@ -32,6 +36,7 @@ async def test_function_call_to_content_variables(create_kernel):
     context.variables.merge_or_overwrite(func_call.to_context_variables())
     assert context.variables.input == "world"
     assert context.variables["input2"] == "world2"
+
 
 @pytest.mark.asyncio
 async def test_function_call_with_tool_id_to_content_variables(create_kernel):

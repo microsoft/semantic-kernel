@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_setting
     OpenAIAssistantSettings,
 )
 
+
 @pytest.mark.asyncio
 async def test_oai_chat_service_with_skills(
     setup_tldr_function_for_oai_models, get_oai_config
@@ -85,8 +86,60 @@ async def test_oai_chat_service_with_skills_with_provided_client(
     )
     assert len(output) < 100
 
+
 @pytest.mark.asyncio
-async def test_oai_assistant_custom_client(
+async def test_oai_assistant(setup_tldr_function_for_oai_models, get_oai_config):
+    kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
+
+    api_key, _ = get_oai_config
+
+    print("* Service: OpenAI Chat Completion")
+    print("* Endpoint: OpenAI")
+    print("* Model: gpt-3.5-turbo")
+
+    assistant = sk_oai.OpenAIChatCompletion(
+        ai_model_id="gpt-3.5-turbo-1106",
+        api_key=api_key,
+        is_assistant=True,
+    )
+
+    settings = OpenAIAssistantSettings(
+        name="Test Assistant",
+        description="Test Assistant",
+        instructions="(hyphenated words count as 1 word) Give me the TLDR in exactly 5 words",
+    )
+
+    await assistant.create_assistant_async(settings)
+
+    kernel.add_chat_service(
+        "assistant",
+        assistant,
+    )
+
+    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+        max_tokens=2000, temperature=0.7, top_p=0.8
+    )
+
+    prompt_template = sk.ChatPromptTemplate(
+        sk_prompt, kernel.prompt_template_engine, prompt_config
+    )
+    prompt_template.add_user_message(text_to_summarize)
+    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+    chat_function = kernel.register_semantic_function(
+        "ChatBot", "Chat", function_config
+    )
+
+    summary = await retry(lambda: kernel.run_async(chat_function))
+    output = str(summary).strip()
+    print(f"TLDR using input string: '{output}'")
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert output is not None and len(output) < 100
+
+
+@pytest.mark.asyncio
+async def test_oai_assistant_with_custom_client(
     setup_tldr_function_for_oai_models, get_oai_config
 ):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
@@ -111,7 +164,7 @@ async def test_oai_assistant_custom_client(
     settings = OpenAIAssistantSettings(
         name="Test Assistant",
         description="Test Assistant",
-        instructions="(hyphenated words count as 1 word) Give me the TLDR in exactly 5 words"
+        instructions="(hyphenated words count as 1 word) Give me the TLDR in exactly 5 words",
     )
 
     await assistant.create_assistant_async(settings)
@@ -134,12 +187,7 @@ async def test_oai_assistant_custom_client(
         "ChatBot", "Chat", function_config
     )
 
-    summary = await retry(
-        lambda: kernel.run_async(chat_function)
-    )
+    summary = await retry(lambda: kernel.run_async(chat_function))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
-    )
     assert output is not None and len(output) < 100
