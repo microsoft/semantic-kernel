@@ -18,7 +18,7 @@ internal static class TypeConverterFactory
     /// </summary>
     /// <param name="type">The Type of the object to convert.</param>
     /// <returns>A TypeConverter instance if a suitable converter is found, otherwise null.</returns>
-    internal static TypeConverter GetTypeConverter(Type type)
+    internal static TypeConverter? GetTypeConverter(Type type)
     {
         // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
         // any form of ahead-of-time compilation, as it could end up requiring functionality that was trimmed.
@@ -53,10 +53,7 @@ internal static class TypeConverterFactory
             return converter;
         }
 
-        // If a `TypeConverter` is not found for the custom type, then we will fallback to using 
-        // `JsonSerializer` to serialize/deserialize the value. This allows for custom types to 
-        // be supported by default.
-        return new JsonSerializationTypeConverter(type);
+        return null;
     }
 
     internal sealed class JsonSerializationTypeConverter : TypeConverter

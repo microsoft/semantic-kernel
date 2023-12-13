@@ -54,7 +54,7 @@ public sealed class TypeConverterFactoryTests
     /// <summary>
     /// Asserts the custom type type converter.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Default JSON serialization has been disabled")]
     public static void ItCanSerializeCustomTypeUsingNativeConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomType));
@@ -64,7 +64,7 @@ public sealed class TypeConverterFactoryTests
     /// <summary>
     /// Asserts the custom type type converter.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Default JSON serialization has been disabled")]
     public static void ItCanDeserializeCustomTypeUsingNativeConverter()
     {
         var typeConverter = TypeConverterFactory.GetTypeConverter(typeof(MyCustomType));

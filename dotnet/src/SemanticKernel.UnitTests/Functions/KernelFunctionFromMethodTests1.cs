@@ -572,7 +572,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("Result: other value", result.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = "Default JSON serialization has been disabled")]
     public async Task ItSupportsOverridingNameWithAttributeAsync()
     {
         static string Test([Description("description")] string input) => "Result: " + input;
@@ -1142,7 +1142,7 @@ public sealed class KernelFunctionFromMethodTests1
         public int Foo { get; set; }
     }
 
-    [Fact]
+    [Fact(Skip = "Default JSON serialization has been disabled")]
     public async Task ItSupportsMarshallingStringToComplexTypeAsync()
     {
         //Arrange
@@ -1160,7 +1160,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(42, complexTypeResult.Foo);
     }
 
-    [Fact]
+    [Fact(Skip = "Default JSON serialization has been disabled")]
     public async Task ItSupportsMarshallingComplexTypeToStringAsync()
     {
         //Arrange
