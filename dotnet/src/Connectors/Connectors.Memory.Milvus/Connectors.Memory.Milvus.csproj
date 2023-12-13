@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Milvus</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>alpha</VersionSuffix>
     <Nullable>enable</Nullable>
 
     <!--NU5104: A stable release of a package should not have a prerelease dependency.-->

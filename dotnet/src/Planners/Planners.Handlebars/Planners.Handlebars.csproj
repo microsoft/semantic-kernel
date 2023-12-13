@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Planners.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

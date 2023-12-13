@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Chroma</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <VersionSuffix>test</VersionSuffix>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->

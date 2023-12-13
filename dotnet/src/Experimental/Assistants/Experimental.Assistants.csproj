@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Experimental.Assistants</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Experimental.Assistants</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>alpha</VersionSuffix>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
