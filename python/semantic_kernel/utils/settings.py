@@ -129,6 +129,33 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
     return api_key, environment
 
+def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+    """
+    Reads the Astradb API key and Environment from the .env file.
+    Returns:
+        Tuple[str, str]: The Astradb API key, the Astradb Environment
+    """
+
+    api_key, environment = None, None
+    with open(".env", "r") as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if line.startswith("ASTRADB_API_KEY"):
+                parts = line.split("=")[1:]
+                api_key = "=".join(parts).strip().strip('"')
+                continue
+
+            if line.startswith("ASTRADB_ENVIRONMENT"):
+                parts = line.split("=")[1:]
+                environment = "=".join(parts).strip().strip('"')
+                continue
+
+    assert api_key, "Astradb API key not found in .env file"
+    assert environment, "Astradb environment not found in .env file"
+
+    return api_key, environment
+
 
 def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:
     """

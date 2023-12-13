@@ -25,6 +25,7 @@ from semantic_kernel.utils.settings import (
     mongodb_atlas_settings_from_dot_env,
     openai_settings_from_dot_env,
     pinecone_settings_from_dot_env,
+    astradb_settings_from_dot_env,
     postgres_settings_from_dot_env,
     redis_settings_from_dot_env,
 )
@@ -39,6 +40,7 @@ __all__ = [
     "azure_aisearch_settings_from_dot_env_as_dict",
     "postgres_settings_from_dot_env",
     "pinecone_settings_from_dot_env",
+    "astradb_settings_from_dot_env",
     "bing_search_settings_from_dot_env",
     "mongodb_atlas_settings_from_dot_env",
     "google_palm_settings_from_dot_env",
