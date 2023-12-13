@@ -15,7 +15,7 @@ internal static class ArrayParameterValueSerializer
     /// Serializes the items of an array as separate parameters with the same name.
     /// </summary>
     /// <param name="name">The name of the parameter.</param>
-    /// <param name="array">The array containing the items to be serialized.</param>
+    /// <param name="array">The array containing the items to serialize.</param>
     /// <param name="delimiter">The delimiter used to separate parameters.</param>
     /// <returns>A string containing the serialized parameters.</returns>
     public static string SerializeArrayAsSeparateParameters(string name, JsonArray array, string delimiter)
@@ -33,7 +33,7 @@ internal static class ArrayParameterValueSerializer
     /// <summary>
     /// Serializes the items of an array as one parameter with delimited values.
     /// </summary>
-    /// <param name="array">The array containing the items to be serialized.</param>
+    /// <param name="array">The array containing the items to serialize.</param>
     /// <param name="delimiter">The delimiter used to separate items.</param>
     /// <param name="encode">Flag specifying whether to encode items or not.</param>
     /// <returns>A string containing the serialized parameter.</returns>

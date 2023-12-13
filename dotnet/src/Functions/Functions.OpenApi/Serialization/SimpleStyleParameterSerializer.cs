@@ -16,15 +16,16 @@ internal static class SimpleStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
-    public static string Serialize(RestApiOperationParameter parameter, string argument)
+    public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
 
         Verify.NotNull(parameter);
+        Verify.NotNull(argument);
 
         if (parameter.Style != RestApiOperationParameterStyle.Simple)
         {
-            throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
+            throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
 
         // Serializing parameters of array type.
@@ -33,8 +34,8 @@ internal static class SimpleStyleParameterSerializer
             return SerializeArrayParameter(parameter, argument);
         }
 
-        // Serializing parameters of primitive - integer, string, etc type.
-        return argument;
+        // Handling parameters of primitive and removing extra quotes added by the JsonValue for string values.
+        return argument.ToString().Trim('"');
     }
 
     /// <summary>
@@ -43,11 +44,11 @@ internal static class SimpleStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
-    private static string SerializeArrayParameter(RestApiOperationParameter parameter, string argument)
+    private static string SerializeArrayParameter(RestApiOperationParameter parameter, object argument)
     {
-        if (JsonNode.Parse(argument) is not JsonArray array)
+        if (argument is not JsonArray array)
         {
-            throw new KernelException($"Can't deserialize parameter name '{parameter.Name}' argument '{argument}' to JSON array.");
+            throw new ArgumentException(parameter.Name, $"Unexpected argument type '{argument.GetType()} with value '{argument}' for parameter type '{parameter.Type}'.");
         }
 
         return ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false); //1,2,3

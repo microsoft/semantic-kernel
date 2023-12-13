@@ -17,15 +17,16 @@ internal static class FormStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
-    public static string Serialize(RestApiOperationParameter parameter, string argument)
+    public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
 
         Verify.NotNull(parameter);
+        Verify.NotNull(argument);
 
         if (parameter.Style != RestApiOperationParameterStyle.Form)
         {
-            throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
+            throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
 
         // Handling parameters of array type.
@@ -34,8 +35,8 @@ internal static class FormStyleParameterSerializer
             return SerializeArrayParameter(parameter, argument);
         }
 
-        // Handling parameters of primitive - integer, string, etc type.
-        return $"{parameter.Name}={HttpUtility.UrlEncode(argument)}";
+        // Handling parameters of primitive and removing extra quotes added by the JsonValue for string values.
+        return $"{parameter.Name}={HttpUtility.UrlEncode(argument.ToString().Trim('"'))}";
     }
 
     /// <summary>
@@ -44,18 +45,18 @@ internal static class FormStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
-    private static string SerializeArrayParameter(RestApiOperationParameter parameter, string argument)
+    private static string SerializeArrayParameter(RestApiOperationParameter parameter, JsonNode argument)
     {
-        if (JsonNode.Parse(argument) is not JsonArray array)
+        if (argument is not JsonArray array)
         {
-            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
+            throw new ArgumentException(parameter.Name, $"Unexpected argument type '{argument.GetType()} with value '{argument}' for parameter type '{parameter.Type}'.");
         }
 
         if (parameter.Expand)
         {
-            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); //id=1&id=2&id=3
+            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); // id=1&id=2&id=3
         }
 
-        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",")}"; //id=1,2,3
+        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",")}"; // id=1,2,3
     }
 }
