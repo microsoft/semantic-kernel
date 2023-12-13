@@ -6,13 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> collection and upsert operations.
