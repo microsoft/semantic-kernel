@@ -91,8 +91,8 @@ class AstraClient:
                 "$vector": vector
             }
 
-        if include_vector is not None:
-            find_query["projection"]["$vector"] = int(include_vector)
+        if include_vector is not None and include_vector == False:
+            find_query["projection"]["$vector"] = 0
 
         if limit is not None:
             find_query["options"]["limit"] = limit

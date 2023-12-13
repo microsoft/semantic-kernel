@@ -9,7 +9,7 @@ def build_payload(record: MemoryRecord) -> dict:
     Builds a metadata payload to be sent to Pinecone from a MemoryRecord.
     """
     payload: dict = {}
-    payload["_id"] = record._id
+    # payload["_id"] = record._id
     payload["$vector"] = record.embedding.tolist()
     if record._text:
         payload["text"] = record._text
@@ -29,10 +29,10 @@ def parse_payload(document: Dict) -> MemoryRecord:
     additional_metadata = document["additional_metadata"] if "additional_metadata" in document else None
 
     return MemoryRecord.local_record(
-        id=document._id,
+        id=document["_id"],
         description=description,
         text=text,
         additional_metadata=additional_metadata,
-        embedding=document["vector"] if "$vector" in document else numpy.array([
+        embedding=document["$vector"] if "$vector" in document else numpy.array([
         ]),
     )

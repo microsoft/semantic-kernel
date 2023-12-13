@@ -2,8 +2,6 @@
 
 from logging import Logger
 from typing import List, Optional, Tuple
-import requests
-import json
 
 from numpy import ndarray
 
@@ -50,9 +48,12 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim {int} -- The dimensionality to use for new collections.
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
-        if embedding_dim > MAX_DIMENSIONALITY:
+        self._embedding_dim = embedding_dim
+        self._similarity = similarity
+
+        if self._embedding_dim > MAX_DIMENSIONALITY:
             raise ValueError(
-                f"Dimensionality of {embedding_dim} exceeds "
+                f"Dimensionality of {self._embedding_dim} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
@@ -84,6 +85,9 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
+        dimension_num = dimension_num if dimension_num is not None else self._embedding_dim
+        distance_type = distance_type if distance_type is not None else self._similarity
+
         if dimension_num > MAX_DIMENSIONALITY:
             raise ValueError(
                 f"Dimensionality of {dimension_num} exceeds "
@@ -141,7 +145,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         status = self._client.update_document(
             collection_name, filter, update, True)
 
-        return status["upsertedId"]
+        return status["upsertedId"] if "upsertedId" in status else record._id
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -149,7 +153,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         upserted_ids = []
 
         for record in records:
-            id = self.upsert_async(collection_name, record)
+            id = await self.upsert_async(collection_name, record)
             upserted_ids.append(id)
 
         return upserted_ids
