@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.TextGeneration;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
@@ -68,7 +68,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         builder.Plugins.AddFromType<EmailPluginFake>();
         Kernel target = builder.Build();
 
-        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}_GetEmailAddress}}}}";
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}-GetEmailAddress}}}}";
 
         // Act
         FunctionResult actual = await target.InvokePromptAsync(
@@ -90,7 +90,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         builder.Plugins.AddFromType<EmailPluginFake>();
         Kernel target = builder.Build();
 
-        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}_GetEmailAddress}}}}";
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}-GetEmailAddress}}}}";
 
         // Act
         FunctionResult actual = await target.InvokeHandlebarsPromptAsync(
