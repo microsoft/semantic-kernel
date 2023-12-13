@@ -10,7 +10,12 @@ import semantic_kernel as sk
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-
+"""
+export ASTRADB_APP_TOKEN=AstraCS:ZUJZcHtgmQswaEDUGqvfDZKU:88c0442ab720e1bb574c8b838c2afa6fbcf7a53b7ef3cc6237d7d4b763c565bd
+export ASTRADB_ID=2ee186dc-3fa5-45b9-a585-5f978c3db9bd
+export ASTRADB_REGION=us-east1
+export ASTRADB_KEYSPACE=anant
+"""
 
 try:
     from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient  # noqa: ????
@@ -45,13 +50,15 @@ def slow_down_tests():
 @pytest.fixture(scope="session")
 def get_astradb_config():
     if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["Astradb__ApiKey"]
-        environment = os.environ["Astradb__Environment"]
+        app_token = os.environ["ASTRADB_APP_TOKEN"]
+        db_id = os.environ["ASTRADB_ID"]
+        region = os.environ["ASTRADB_REGION"]
+        keyspace = os.environ["ASTRADB_KEYSPACE"]
     else:
         # Load credentials from .env file
-        api_key, environment = sk.astradb_settings_from_dot_env()
+        app_token, db_id, region, keyspace = sk.astradb_settings_from_dot_env()
 
-    return api_key, environment
+    return app_token, db_id, region, keyspace
 
 
 @pytest.fixture
@@ -97,8 +104,9 @@ def memory_record3():
 
 
 def test_constructor(get_astradb_config):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
     assert memory.get_collections() is not None
 
 
@@ -107,69 +115,74 @@ def test_constructor(get_astradb_config):
     reason="Test failed due to known unreliable communications with Astradb free tier"
 )
 async def test_create_and_get_collection_async(get_astradb_config):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
-    result = await retry(lambda: memory.describe_collection_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
+    result = await retry(lambda: memory.does_collection_exist_async("test_collection"))
     assert result is not None
-    assert result.name == "test-collection"
+    assert result == True
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_get_collections_async(get_astradb_config):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection", 2))
+    await retry(lambda: memory.create_collection_async("test_collection"))
     result = await retry(lambda: memory.get_collections_async())
-    assert "test-collection" in result
+    assert "test_collection" in result
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_delete_collection_async(get_astradb_config):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.delete_collection_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
+    await retry(lambda: memory.delete_collection_async("test_collection"))
     result = await retry(lambda: memory.get_collections_async())
-    assert "test-collection" not in result
+    assert "test_collection" not in result
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_does_collection_exist_async(get_astradb_config):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
-    result = await retry(lambda: memory.does_collection_exist_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
+    result = await retry(lambda: memory.does_collection_exist_async("test_collection"))
     assert result is True
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_upsert_async_and_get_async(get_astradb_config, memory_record1):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.upsert_async("test-collection", memory_record1))
+    await retry(lambda: memory.create_collection_async("test_collection"))
+    await retry(lambda: memory.upsert_async("test_collection", memory_record1))
 
     result = await retry(
         lambda: memory.get_async(
-            "test-collection",
+            "test_collection",
             memory_record1._id,
             with_embedding=True,
         )
@@ -184,24 +197,25 @@ async def test_upsert_async_and_get_async(get_astradb_config, memory_record1):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_upsert_batch_async_and_get_batch_async(
     get_astradb_config, memory_record1, memory_record2
 ):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
     await retry(
         lambda: memory.upsert_batch_async(
-            "test-collection", [memory_record1, memory_record2]
+            "test_collection", [memory_record1, memory_record2]
         )
     )
 
     results = await retry(
         lambda: memory.get_batch_async(
-            "test-collection",
+            "test_collection",
             [memory_record1._id, memory_record2._id],
             with_embeddings=True,
         )
@@ -214,67 +228,70 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_remove_async(get_astradb_config, memory_record1):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.upsert_async("test-collection", memory_record1))
-    await retry(lambda: memory.remove_async("test-collection", memory_record1._id))
+    await retry(lambda: memory.create_collection_async("test_collection"))
+    await retry(lambda: memory.upsert_async("test_collection", memory_record1))
+    await retry(lambda: memory.remove_async("test_collection", memory_record1._id))
 
     with pytest.raises(KeyError):
         _ = await memory.get_async(
-            "test-collection", memory_record1._id, with_embedding=True
+            "test_collection", memory_record1._id, with_embedding=True
         )
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_remove_batch_async(get_astradb_config, memory_record1, memory_record2):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
     await retry(
         lambda: memory.upsert_batch_async(
-            "test-collection", [memory_record1, memory_record2]
+            "test_collection", [memory_record1, memory_record2]
         )
     )
     await retry(
         lambda: memory.remove_batch_async(
-            "test-collection", [memory_record1._id, memory_record2._id]
+            "test_collection", [memory_record1._id, memory_record2._id]
         )
     )
 
     with pytest.raises(KeyError):
         _ = await memory.get_async(
-            "test-collection", memory_record1._id, with_embedding=True
+            "test_collection", memory_record1._id, with_embedding=True
         )
 
     with pytest.raises(KeyError):
         _ = await memory.get_async(
-            "test-collection", memory_record2._id, with_embedding=True
+            "test_collection", memory_record2._id, with_embedding=True
         )
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_get_nearest_match_async(
     get_astradb_config, memory_record1, memory_record2
 ):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
     await retry(
         lambda: memory.upsert_batch_async(
-            "test-collection", [memory_record1, memory_record2]
+            "test_collection", [memory_record1, memory_record2]
         )
     )
 
@@ -283,7 +300,7 @@ async def test_get_nearest_match_async(
 
     result = await retry(
         lambda: memory.get_nearest_match_async(
-            "test-collection",
+            "test_collection",
             test_embedding,
             min_relevance_score=0.0,
             with_embedding=True,
@@ -296,18 +313,19 @@ async def test_get_nearest_match_async(
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Pinecone free tier"
+    reason="Test failed due to known unreliable communications with AstraDB free tier"
 )
 async def test_get_nearest_matches_async(
     get_astradb_config, memory_record1, memory_record2, memory_record3
 ):
-    api_key, environment = get_astradb_config
-    memory = AstraDBMemoryStore(api_key, environment, 2)
+    app_token, db_id, region, keyspace = get_astradb_config
+    memory = AstraDBMemoryStore(
+        app_token, db_id, region, keyspace, 2, "cosine")
 
-    await retry(lambda: memory.create_collection_async("test-collection"))
+    await retry(lambda: memory.create_collection_async("test_collection"))
     await retry(
         lambda: memory.upsert_batch_async(
-            "test-collection", [memory_record1, memory_record2, memory_record3]
+            "test_collection", [memory_record1, memory_record2, memory_record3]
         )
     )
 
@@ -316,7 +334,7 @@ async def test_get_nearest_matches_async(
 
     result = await retry(
         lambda: memory.get_nearest_matches_async(
-            "test-collection",
+            "test_collection",
             test_embedding,
             limit=2,
             min_relevance_score=0.0,

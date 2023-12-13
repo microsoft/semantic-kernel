@@ -129,32 +129,45 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
     return api_key, environment
 
-def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+
+def astradb_settings_from_dot_env() -> Tuple[str, str, str, str]:
     """
     Reads the Astradb API key and Environment from the .env file.
     Returns:
         Tuple[str, str]: The Astradb API key, the Astradb Environment
     """
 
-    api_key, environment = None, None
+    app_token, db_id, region, keyspace = None, None
     with open(".env", "r") as f:
         lines = f.readlines()
 
         for line in lines:
-            if line.startswith("ASTRADB_API_KEY"):
+            if line.startswith("ASTRADB_APP_TOKEN"):
                 parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
+                app_token = "=".join(parts).strip().strip('"')
                 continue
 
-            if line.startswith("ASTRADB_ENVIRONMENT"):
+            if line.startswith("ASTRADB_ID"):
                 parts = line.split("=")[1:]
-                environment = "=".join(parts).strip().strip('"')
+                db_id = "=".join(parts).strip().strip('"')
                 continue
 
-    assert api_key, "Astradb API key not found in .env file"
-    assert environment, "Astradb environment not found in .env file"
+            if line.startswith("ASTRADB_REGION"):
+                parts = line.split("=")[1:]
+                region = "=".join(parts).strip().strip('"')
+                continue
 
-    return api_key, environment
+            if line.startswith("ASTRADB_KEYSPACE"):
+                parts = line.split("=")[1:]
+                keyspace = "=".join(parts).strip().strip('"')
+                continue
+
+    assert app_token, "Astradb Application token not found in .env file"
+    assert db_id, "Astradb ID not found in .env file"
+    assert region, "Astradb Region not found in .env file"
+    assert keyspace, "Astradb Keyspace name not found in .env file"
+
+    return app_token, db_id, region, keyspace
 
 
 def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:

@@ -62,13 +62,21 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         self._logger = logger or NullLogger()
 
-    def get_collections_async(self) -> List[str]:
+    def get_collections(self) -> List[str]:
         """Gets the list of collections.
 
         Returns:
             List[str] -- The list of collections.
         """
         return self._client.find_collections(False)
+
+    async def get_collections_async(self) -> List[str]:
+        """Gets the list of collections.
+
+        Returns:
+            List[str] -- The list of collections.
+        """
+        return self.get_collections(False)
 
     async def create_collection_async(
         self,
