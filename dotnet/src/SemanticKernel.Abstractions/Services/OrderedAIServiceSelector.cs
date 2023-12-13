@@ -38,7 +38,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             foreach (var keyValue in executionSettings)
             {
                 var settings = keyValue.Value;
-                var serviceId = keyValue.Value.ServiceId ?? keyValue.Key;
+                var serviceId = keyValue.Key;
                 if (string.IsNullOrEmpty(serviceId) || serviceId!.Equals(PromptExecutionSettings.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
                 {
                     defaultExecutionSettings ??= settings;

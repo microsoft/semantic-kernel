@@ -27,7 +27,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { };
 
         // Assert
-        Assert.Same(executionSettings, sut.ExecutionSettings?["default"]);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
         Assert.Empty(sut);
     }
 
@@ -55,7 +55,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { { "fake-key", "fake-value" } };
 
         // Assert
-        Assert.Same(executionSettings, sut.ExecutionSettings?["default"]);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
 
         var argument = Assert.Single(sut);
         Assert.Equal("fake-key", argument.Key);
@@ -113,6 +113,6 @@ public class KernelArgumentsTests
         Assert.True(sut.ContainsName("fake-key"));
         Assert.Equal("fake-value", sut["fake-key"]);
 
-        Assert.Same(executionSettings, sut.ExecutionSettings?["default"]);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
     }
 }

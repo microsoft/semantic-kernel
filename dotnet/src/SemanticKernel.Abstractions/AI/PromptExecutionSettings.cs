@@ -21,13 +21,6 @@ public class PromptExecutionSettings
     public const string DefaultServiceId = "default";
 
     /// <summary>
-    /// Service identifier.
-    /// This identifies a service and is set when the AI service is registered.
-    /// </summary>
-    [JsonPropertyName("service_id")]
-    public string? ServiceId { get; set; }
-
-    /// <summary>
     /// Model identifier.
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>

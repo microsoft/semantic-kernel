@@ -107,14 +107,15 @@ public sealed class PromptTemplateConfig
     /// Adds the <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
     /// </summary>
     /// <remarks>
-    /// The <see cref="PromptExecutionSettings.ServiceId"/> is used as the key if provided. Otherwise, the key is "default".
+    /// The key is the service id or "default" for the default execution settings.
     /// </remarks>
-    /// <param name="settings"></param>
-    public void AddExecutionSettings(PromptExecutionSettings settings)
+    /// <param name="settings">Instance of <see cref="PromptExecutionSettings"/></param>
+    /// <param name="serviceId">Service id</param>
+    public void AddExecutionSettings(PromptExecutionSettings settings, string? serviceId = null)
     {
         Verify.NotNull(settings);
 
-        var key = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+        var key = serviceId ?? PromptExecutionSettings.DefaultServiceId;
         if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.");

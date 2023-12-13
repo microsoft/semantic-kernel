@@ -94,7 +94,7 @@ public static class AIServiceExtensions
         var message = new StringBuilder($"Required service of type {typeof(T)} not registered.");
         if (function.ExecutionSettings is not null)
         {
-            string serviceIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ServiceId));
+            string serviceIds = string.Join("|", function.ExecutionSettings.Keys);
             if (!string.IsNullOrEmpty(serviceIds))
             {
                 message.Append($" Expected serviceIds: {serviceIds}.");

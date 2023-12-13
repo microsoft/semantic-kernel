@@ -58,12 +58,12 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokePromptAsync(
-           prompt,
-           new(new PromptExecutionSettings()
-           {
-               ServiceId = serviceId
-           }));
+        KernelArguments arguments = new();
+        arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
+        {
+            { serviceId, new PromptExecutionSettings() }
+        };
+        var result = await kernel.InvokePromptAsync(prompt, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 
