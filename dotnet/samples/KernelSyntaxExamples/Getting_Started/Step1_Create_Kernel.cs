@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * This example shows how to create and use a <see cref="Kernel"/>.
- */
+// This example shows how to create and use a <see cref="Kernel"/>.
 public static class Step1_Create_Kernel
 {
     /// <summary>
