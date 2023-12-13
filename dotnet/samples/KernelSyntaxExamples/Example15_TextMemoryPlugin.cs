@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
