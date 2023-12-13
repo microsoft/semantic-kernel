@@ -69,7 +69,7 @@
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
     <PackageVersion Include="YamlDotNet" Version="13.7.1" />
     <!-- Memory stores -->
-    <PackageVersion Include="Pgvector" Version="0.1.4" />
+    <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.9.0" />
     <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
     <!-- Symbols -->
