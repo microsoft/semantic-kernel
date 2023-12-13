@@ -502,9 +502,11 @@ internal abstract class ClientCore
     /// </returns>
     private static KernelArguments? UpdateOrCreateArguments(KernelArguments? args, PromptExecutionSettings? settings)
     {
-        if (args is not null)
+        if (args is not null && settings is not null)
         {
-            args.ExecutionSettings = settings;
+            args.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>{
+                { PromptExecutionSettings.DefaultServiceId, settings },
+            };
         }
         else if (settings is not null)
         {
