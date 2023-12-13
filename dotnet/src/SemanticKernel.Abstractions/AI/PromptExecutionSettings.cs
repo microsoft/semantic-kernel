@@ -16,11 +16,9 @@ namespace Microsoft.SemanticKernel;
 public class PromptExecutionSettings
 {
     /// <summary>
-    /// Service identifier.
-    /// This identifies a service and is set when the AI service is registered.
+    /// Default service identifier.
     /// </summary>
-    [JsonPropertyName("service_id")]
-    public string? ServiceId { get; set; }
+    public const string DefaultServiceId = "default";
 
     /// <summary>
     /// Model identifier.

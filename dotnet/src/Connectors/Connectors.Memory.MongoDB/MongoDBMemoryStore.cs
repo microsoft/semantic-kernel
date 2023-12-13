@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a MongoDB database.

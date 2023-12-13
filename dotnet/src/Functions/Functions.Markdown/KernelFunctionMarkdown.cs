@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Markdig;
 using Markdig.Syntax;
@@ -52,10 +53,13 @@ public static class KernelFunctionMarkdown
 
                     case "sk.execution_settings":
                         var modelSettings = codeBlock.Lines.ToString();
-                        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
-                        if (executionSettings is not null)
+                        var settingsDictionary = JsonSerializer.Deserialize<Dictionary<string, PromptExecutionSettings>>(modelSettings);
+                        if (settingsDictionary is not null)
                         {
-                            promptFunctionModel.ExecutionSettings.Add(executionSettings);
+                            foreach (var keyValue in settingsDictionary)
+                            {
+                                promptFunctionModel.ExecutionSettings.Add(keyValue.Key, keyValue.Value);
+                            }
                         }
                         break;
                 }

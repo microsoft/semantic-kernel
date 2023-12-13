@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Memory.Postgres
+﻿# Microsoft.SemanticKernel.Connectors.Postgres
 
 This connector uses Postgres to implement Semantic Memory. It requires the [pgvector](https://github.com/pgvector/pgvector) extension to be installed on Postgres to implement vector similarity search.
 

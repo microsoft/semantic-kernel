@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
@@ -11,11 +12,11 @@ public class SpaceDelimitedStyleParametersSerializerTests
     [Fact]
     public void ItShouldThrowExceptionForUnsupportedParameterStyle()
     {
-        //Arrange
+        // Arrange
         var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Label);
 
-        //Act & Assert
-        Assert.Throws<ArgumentException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
     [Theory]
@@ -26,11 +27,11 @@ public class SpaceDelimitedStyleParametersSerializerTests
     [InlineData("object")]
     public void ItShouldThrowExceptionIfParameterTypeIsNotArray(string parameterType)
     {
-        //Arrange
+        // Arrange
         var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
 
-        //Act & Assert
-        Assert.Throws<ArgumentException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
     [Fact]
@@ -47,7 +48,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
                 arrayItemType: "integer");
 
         // Act
-        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
+        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
 
         // Assert
         Assert.NotNull(result);
@@ -69,7 +70,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
                 arrayItemType: "integer");
 
         // Act
-        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
+        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
 
         // Assert
         Assert.NotNull(result);
@@ -88,7 +89,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
 
         // Act
-        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
 
         // Assert
         Assert.NotNull(result);
@@ -107,7 +108,7 @@ public class SpaceDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited);
 
         // Act
-        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+        var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
 
         // Assert
         Assert.NotNull(result);
