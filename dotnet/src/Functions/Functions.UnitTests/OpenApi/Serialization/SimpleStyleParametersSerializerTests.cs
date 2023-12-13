@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class SimpleStyleParametersSerializerTests
 {

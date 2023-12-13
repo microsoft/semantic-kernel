@@ -124,7 +124,7 @@ internal sealed class RestApiOperationRunner
     {
         var url = this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        var headers = operation.RenderHeaders(arguments);
+        var headers = operation.BuildHeaders(arguments);
 
         var payload = this.BuildOperationPayload(operation, arguments);
 
