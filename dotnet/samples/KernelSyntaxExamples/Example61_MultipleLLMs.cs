@@ -88,10 +88,10 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new List<PromptExecutionSettings>();
+        var modelSettings = new Dictionary<string, PromptExecutionSettings>();
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
+            modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
         }
         var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 
