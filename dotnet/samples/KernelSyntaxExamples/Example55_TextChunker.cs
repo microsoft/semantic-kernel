@@ -12,7 +12,6 @@ using Resources;
 using SharpToken;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
-// ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
 {
     private const string Text = @"The city of Venice, located in the northeastern part of Italy,
@@ -157,10 +156,8 @@ known as coral polyps.";
     /// </summary>
     private static TokenCounter DeepDevTokenCounter => (string input) =>
     {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         // Initialize encoding by encoding name
         var tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // Initialize encoding by model name
         // var tokenizer = TokenizerBuilder.CreateByModelNameAsync("gpt-4").GetAwaiter().GetResult();

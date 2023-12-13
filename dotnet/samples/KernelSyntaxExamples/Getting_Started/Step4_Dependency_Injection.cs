@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-// ReSharper disable once InconsistentNaming
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,10 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
-/**
-* This example shows how to using Dependency Injection with the Semantic Kernel
-*/
+// This example shows how to using Dependency Injection with the Semantic Kernel
 public static class Step4_Dependency_Injection
 {
     /// <summary>

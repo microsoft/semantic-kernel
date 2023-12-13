@@ -16,8 +16,6 @@ using Microsoft.SemanticKernel.Plugins.Memory;
  * Semantic Memory allows to store your data like traditional DBs,
  * adding the ability to query it using natural language.
  */
-
-// ReSharper disable once InconsistentNaming
 public static class Example14_SemanticMemory
 {
     private const string MemoryCollectionName = "SKGitHub";

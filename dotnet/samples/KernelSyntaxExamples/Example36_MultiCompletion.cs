@@ -5,10 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion.
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion.
 public static class Example36_MultiCompletion
 {
     public static async Task RunAsync()

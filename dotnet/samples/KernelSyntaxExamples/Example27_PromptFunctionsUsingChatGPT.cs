@@ -4,10 +4,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-/**
- * This example shows how to use GPT3.5 Chat model for prompts and prompt functions.
- */
-// ReSharper disable once InconsistentNaming
+/// <summary>
+/// This example shows how to use GPT3.5 Chat model for prompts and prompt functions.
+/// </summary>
 public static class Example27_PromptFunctionsUsingChatGPT
 {
     public static async Task RunAsync()

@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-// ReSharper disable once InconsistentNaming
 public static class Example06_TemplateLanguage
 {
     /// <summary>

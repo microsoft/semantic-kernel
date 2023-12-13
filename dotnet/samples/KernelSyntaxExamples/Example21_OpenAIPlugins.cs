@@ -6,16 +6,15 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-// ReSharper disable once InconsistentNaming
 public static class Example21_OpenAIPlugins
 {
-    public static async Task RunAsync()
+    public static Task RunAsync()
     {
         // Uncomment after filling the template below
         // await RunOpenAIPluginAsync();
 
         // --------------- Example using Klarna's OpenAI plugin ------------------------
-        await CallKlarnaAsync();
+        return CallKlarnaAsync();
     }
 
     /// <summary>

@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
-// ReSharper disable once InconsistentNaming
 public static class Example22_OpenAIPlugin_AzureKeyVault
 {
     private const string SecretName = "Foo";
@@ -207,9 +206,7 @@ internal sealed class OpenAIAuthenticationProvider
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
 /// </summary>
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class OAuthTokenResponse
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     /// <summary>
     /// The type of access token.

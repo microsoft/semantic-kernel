@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-// ReSharper disable once InconsistentNaming
 public static class Example61_MultipleLLMs
 {
     /// <summary>

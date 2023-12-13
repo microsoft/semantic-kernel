@@ -13,8 +13,6 @@ using Microsoft.SemanticKernel.Plugins.Web.Google;
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
 public static class Example07_BingAndGooglePlugins
 {
     public static async Task RunAsync()

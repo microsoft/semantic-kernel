@@ -6,19 +6,18 @@ using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-/**
- * This example shows how to connect your app to Azure OpenAI using
- * Azure Active Directory (AAD) authentication, as opposed to API keys.
- *
- * The example uses DefaultAzureCredential, which you can configure to support
- * multiple authentication strategies:
- *
- * - Env vars present in Azure VMs
- * - Azure Managed Identities
- * - Shared tokens
- * - etc.
- */
-// ReSharper disable once InconsistentNaming
+/// <summary>
+/// This example shows how to connect your app to Azure OpenAI using
+/// Azure Active Directory(AAD) authentication, as opposed to API keys.
+///
+/// The example uses <see cref="DefaultAzureCredential"/>, which you can configure to support
+/// multiple authentication strategies:
+///
+/// -Env vars present in Azure VMs
+/// -Azure Managed Identities
+/// -Shared tokens
+/// -etc.
+/// </summary>
 public static class Example26_AADAuth
 {
     public static async Task RunAsync()

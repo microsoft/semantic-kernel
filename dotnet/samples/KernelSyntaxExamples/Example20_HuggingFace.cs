@@ -3,10 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-/**
- * The following example shows how to use Semantic Kernel with HuggingFace API.
- */
-// ReSharper disable once InconsistentNaming
+
+// The following example shows how to use Semantic Kernel with HuggingFace API.
 public static class Example20_HuggingFace
 {
     public static async Task RunAsync()

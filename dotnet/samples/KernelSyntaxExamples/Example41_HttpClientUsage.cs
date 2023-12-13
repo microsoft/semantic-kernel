@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
-/**
- * These examples show how to use HttpClient and HttpClientFactory within SK SDK.
- */
+// These examples show how to use HttpClient and HttpClientFactory within SK SDK.
 public static class Example41_HttpClientUsage
 {
     public static Task RunAsync()
