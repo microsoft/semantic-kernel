@@ -136,20 +136,6 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Set the service id for each execution settings if not already set.
-    /// </summary>
-    private void InitServiceIds()
-    {
-        if (this._executionSettings is not null)
-        {
-            foreach (var keyValue in this.ExecutionSettings)
-            {
-                keyValue.Value.ServiceId ??= keyValue.Key;
-            }
-        }
-    }
-
-    /// <summary>
     /// Return the output variable metadata.
     /// </summary>
     internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
@@ -175,12 +161,6 @@ public sealed class PromptTemplateConfig
     public static PromptTemplateConfig FromJson(string json)
     {
         var result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
-
-        if (result is not null)
-        {
-            result.InitServiceIds();
-        }
-
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }
