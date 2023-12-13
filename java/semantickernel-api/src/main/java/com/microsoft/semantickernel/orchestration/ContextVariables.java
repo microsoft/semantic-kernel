@@ -46,6 +46,7 @@ public interface ContextVariables extends Buildable, Map<String, ContextVariable
      * Return the variable with the given name
      *
      * @param key variable name
+     * @param <T> variable type
      * @return content of the variable
      */
     @Nullable
@@ -55,6 +56,8 @@ public interface ContextVariables extends Buildable, Map<String, ContextVariable
      * Return the variable with the given name
      *
      * @param key variable name
+     * @param clazz variable type
+     * @param <T> variable type 
      * @return content of the variable
      */
     @Nullable

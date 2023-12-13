@@ -1,270 +1,437 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
 
-import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
-import com.microsoft.semantickernel.aiservices.AIService;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.memory.MemoryStore;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.plugin.Plugin;
-import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.orchestration.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.services.AIServiceSelector;
+import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/** Interface for the semantic kernel. */
-public interface Kernel extends SkillExecutor, Buildable {
 
-    /**
-     * Settings required to execute functions, including details about AI dependencies, e.g.
-     * endpoints and API keys.
-     */
-    @Deprecated
-    default KernelConfig getConfig() { throw new UnsupportedOperationException(); }
+/** 
+ * Provides state for use throughout a Semantic Kernel workload.
+ * <p>
+ * An instance of {@code Kernel} is passed through to every function invocation and service call
+ * throughout the system, providing to each the ability to access shared state and services.
+ */
+public class Kernel implements Buildable {
 
-    /**
-     * Reference to the engine rendering prompt templates
-     *
-     * @return Reference to the engine rendering prompt templates
-     */
-    @Deprecated
-    default PromptTemplateEngine getPromptTemplateEngine() { throw new UnsupportedOperationException(); }
 
-    /**
-     * Get the SemanticTextMemory in use.
-     *
-     * @return the SemanticTextMemory in use
-     */
-    @Deprecated
-    default SemanticTextMemory getMemory() { throw new UnsupportedOperationException(); }
+    /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
+    private Map<String, ContextVariable<?>> data;
+    /// <summary><see cref="CultureInfo"/> to be used by any operations that need access to the culture, a format provider, etc.</summary>
+    private Locale locale = Locale.ROOT;
+    /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private KernelPluginCollection plugins;
+    private ServiceProvider services;
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
-     */
-    @Deprecated
-    default Mono<KernelResult> runAsync(SKFunction... pipeline) { throw new UnsupportedOperationException(); }
+    /// <summary>
+    /// Initializes a new instance of <see cref="Kernel"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceProvider"/> used to query for services available through the kernel.</param>
+    /// <param name="plugins">
+    /// The collection of plugins available through the kernel. If null, an empty collection will be used.
+    /// If non-null, the supplied collection instance is used, not a copy; if it's desired for the <see cref="Kernel"/>
+    /// to have a copy, the caller is responsible for supplying it.
+    /// </param>
+    /// <remarks>
+    /// The KernelBuilder class provides a fluent API for constructing a <see cref="Kernel"/> instance.
+    /// </remarks>
+    public Kernel(
+        ServiceProvider services,
+        KernelPluginCollection plugins)
+    {
+        // Store the provided services, or an empty singleton if there aren't any.
+        // this.Services = services ?? EmptyServiceProvider.Instance;
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param input Input to process
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
-     */
-    @Deprecated
-    default Mono<KernelResult> runAsync(String input, SKFunction... pipeline) { throw new UnsupportedOperationException(); }
+        // // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
+        // this.plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+        // if (this.plugins is null)
+        // {
+        //     // Otherwise, enumerate any plugins that may have been registered directly.
+        //     IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param variables variables to initialise the context with
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     * @apiNote Breaking change: s/SKFunction/SKFunction/, s/Mono<SKContext>/Mono<KernelResult>/
-     */
-    Mono<KernelResult> runAsync(ContextVariables variables, SKFunction... pipeline);
+        //     // It'll be common not to have any plugins directly registered as a service.
+        //     // If we can efficiently tell there aren't any, avoid proactively allocating
+        //     // the plugins collection.
+        //     if (e is not ICollection<KernelPlugin> c || c.Count != 0)
+        //     {
+        //         this.plugins = new(e);
+        //     }
+        // }
+    }
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param streaming Whether to stream the results of the pipeline
-     * @param variables variables to initialise the context with
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     * @since 1.0.0
-     */
-    Mono<KernelResult> runAsync(
-            boolean streaming, ContextVariables variables, SKFunction... pipeline);
+    /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
+    /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
+//     public static IKernelBuilder CreateBuilder() => new KernelBuilder();
 
-    /**
-     * Register a semantic function on this kernel
-     *
-     * @param skillName The skill name
-     * @param functionName The function name
-     * @param functionConfig The function configuration
-     * @return The registered function
-     */
-    @Deprecated
-    default CompletionSKFunction registerSemanticFunction(
-            String skillName, String functionName, SemanticFunctionConfig functionConfig)
-        { throw new UnsupportedOperationException(); }
+    /// <summary>
+    /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
+    /// </summary>
+    /// <remarks>
+    /// The current instance is unmodified by this operation. The new <see cref="Kernel"/> will be initialized with:
+    /// <list type="bullet">
+    /// <item>
+    /// The same <see cref="IServiceProvider"/> reference as is returned by the current instance's <see cref="Kernel.Services"/>.
+    /// </item>
+    /// <item>
+    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="KernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
+    /// </item>
+    /// <item>
+    /// All of the delegates registered with each event. Delegates are immutable (every time an additional delegate is added or removed, a new one is created),
+    /// so changes to the new instance's event delegates will not affect the current instance's event delegates, and vice versa.
+    /// </item>
+    /// <item>
+    /// A new <see cref="IDictionary{TKey, TValue}"/> containing all of the key/value pairs from the current instance's <see cref="Kernel.Data"/> dictionary.
+    /// Any changes made to the new instance's dictionary will not affect the current instance's dictionary, and vice versa.
+    /// </item>
+    /// <item>The same <see cref="CultureInfo"/> reference as is returned by the current instance's <see cref="Kernel.Culture"/>.</item>
+    /// </list>
+    /// </remarks>
+//     public Kernel clone() =>
+//         new(this.Services, this.plugins is { Count: > 0 } ? new KernelPluginCollection(this.plugins) : null)
+//         {
+//             FunctionInvoking = this.FunctionInvoking,
+//             FunctionInvoked = this.FunctionInvoked,
+//             PromptRendering = this.PromptRendering,
+//             PromptRendered = this.PromptRendered,
+//             data = this.data is { Count: > 0 } ? new Map<String, ContextVariable<?>>(this.data) : null,
+//             locale = this.locale,
+//         };
 
-    /**
-     * Get a completion function builder, functions created with this builder will be registered on
-     * the kernel
-     */
-    @Deprecated
-    default CompletionSKFunction.Builder getSemanticFunctionBuilder() { throw new UnsupportedOperationException(); }
+    /// <summary>
+    /// Gets the collection of plugins available through the kernel.
+    /// </summary>
+    public KernelPluginCollection getPlugins() { return this.plugins; }
 
-    /** Obtains the service with the given name and type */
-    @Deprecated
-    default <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
-            throws KernelException { throw new UnsupportedOperationException(); }
+    /// <summary>
+    /// Gets the service provider used to query for services available through the kernel.
+    /// </summary>
+    public ServiceProvider getServices() { return services; }
 
-    /**
-     * Registers a semantic function on this kernel
-     *
-     * @apiNote Breaking change: s/<RequestConfiguration, FunctionType extends
-     *     SKFunction<RequestConfiguration>>/<FunctionType extends SKFunction>/
-     */
-    @Deprecated
-    default <FunctionType extends SKFunction> FunctionType registerSemanticFunction(
-            FunctionType semanticFunctionDefinition) { throw new UnsupportedOperationException(); }
+    /// <summary>
+    /// Gets the culture currently associated with this <see cref="Kernel"/>.
+    /// </summary>
+    /// <remarks>
+    /// The culture defaults to <see cref="CultureInfo.InvariantCulture"/> if not explicitly set.
+    /// It may be set to another culture, such as <see cref="CultureInfo.CurrentCulture"/>,
+    /// and any functions invoked within the context can consult this property for use in
+    /// operations like formatting and parsing.
+    /// </remarks>
+    public Locale getLocale() { return locale; }
+    
+    public void setLocale(Locale locale) {
+        this.locale = locale != null ? locale : Locale.ROOT; 
+    }
 
-    /**
-     * Obtains a semantic function with the given name
-     *
-     * @apiNote Breaking change: s/SKFunction<?>/SKFunction/
-     */
-    @Deprecated
-    default SKFunction getFunction(String skill, String function) { throw new UnsupportedOperationException(); }
+    
+    /// <summary>
+    /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
+    /// </summary>
+    public AIServiceSelector getServiceSelector() {
+        // TODO: IServiceProvider is a .NET API for DI. Do we need to support this?
+        AIServiceSelector selector = this.services.getService(AIServiceSelector.class);
+        if (selector == null) {
+            selector = OrderedAIServiceSelector.INST;
+        }
+        return selector;
+    }
 
-    static Builder builder() {
+    /// <summary>
+    /// Gets a dictionary for ambient data associated with the kernel.
+    /// </summary>
+    /// <remarks>
+    /// This may be used to flow arbitrary data in and out of operations performed with this kernel instance.
+    /// </remarks>
+    public Map<String, ContextVariable<?>> getData() {
+        // TODO: not thread safe!
+        if (data == null) {
+            data = new HashMap<>();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Provides an event that's raised prior to a function's invocation.
+    /// </summary>
+    ///[Experimental("SKEXP0004")]
+    /// public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <summary>
+    /// Provides an event that's raised after a function's invocation.
+    /// </summary>
+    /// [Experimental("SKEXP0004")]
+    /// public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
+    /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    /// [Experimental("SKEXP0004")]
+    /// public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    /// [Experimental("SKEXP0004")]
+    /// public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    /// #region GetServices
+    /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
+    /// <typeparam name="T">Specifies the type of the service to get.</typeparam>
+    /// <param name="serviceKey">An object that specifies the key of the service to get.</param>
+    /// <returns>The found service instance.</returns>
+    /// <exception cref="KernelException">A service of the specified type and name could not be found.</exception>
+//     public T GetRequiredService<T>(object? serviceKey = null) where T : class
+//     {
+//         T? service = null;
+
+//         if (serviceKey is not null)
+//         {
+//             if (this.Services is IKeyedServiceProvider)
+//             {
+//                 // We were given a service ID, so we need to use the keyed service lookup.
+//                 service = this.Services.GetKeyedService<T>(serviceKey);
+//             }
+//         }
+//         else
+//         {
+//             // No ID was given. We first want to use non-keyed lookup, in order to match against
+//             // a service registered without an ID. If we can't find one, then we try to match with
+//             // a service registered with an ID. In both cases, if there were multiple, this will match
+//             // with whichever was registered last.
+//             service = this.Services.GetService<T>();
+//             if (service is null && this.Services is IKeyedServiceProvider)
+//             {
+//                 service = this.GetAllServices<T>().LastOrDefault();
+//             }
+//         }
+
+//         // If we couldn't find the service, throw an exception.
+//         if (service is null)
+//         {
+//             string message =
+//                 serviceKey is null ? $"Service of type '{typeof(T)}' not registered." :
+//                 this.Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
+//                 $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
+
+//             throw new KernelException(message);
+//         }
+
+//         // Return the found service.
+//         return service;
+//     }
+
+    /// <summary>Gets all services of the specified type.</summary>
+    /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
+    /// <returns>An enumerable of all instances of the specified service that are registered.</returns>
+    /// <remarks>There is no guaranteed ordering on the results.</remarks>
+//     public IEnumerable<T> GetAllServices<T>() where T : class
+//     {
+//         if (this.Services is IKeyedServiceProvider)
+//         {
+//             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
+//             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
+//             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
+//             // mapping. We can query for that service and and then use it to try to get a service.
+//             if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
+//             {
+//                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?> keys))
+//                 {
+//                     return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
+//                 }
+
+//                 return Enumerable.Empty<T>();
+//             }
+//         }
+
+//         return this.Services.GetServices<T>();
+//     }
+
+//     #endregion
+
+//     #region Internal Event Helpers
+//     [Experimental("SKEXP0004")]
+//     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
+//     {
+//         FunctionInvokingEventArgs? eventArgs = null;
+//         if (this.FunctionInvoking is { } functionInvoking)
+//         {
+//             eventArgs = new(function, arguments);
+//             functionInvoking.Invoke(this, eventArgs);
+//         }
+
+//         return eventArgs;
+//     }
+
+//     [Experimental("SKEXP0004")]
+//     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
+//     {
+//         FunctionInvokedEventArgs? eventArgs = null;
+//         if (this.FunctionInvoked is { } functionInvoked)
+//         {
+//             eventArgs = new(function, arguments, result);
+//             functionInvoked.Invoke(this, eventArgs);
+//         }
+
+//         return eventArgs;
+//     }
+
+//     [Experimental("SKEXP0004")]
+//     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
+//     {
+//         PromptRenderingEventArgs? eventArgs = null;
+//         if (this.PromptRendering is { } promptRendering)
+//         {
+//             eventArgs = new(function, arguments);
+//             promptRendering.Invoke(this, eventArgs);
+//         }
+
+//         return eventArgs;
+//     }
+
+//     [Experimental("SKEXP0004")]
+//     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+//     {
+//         PromptRenderedEventArgs? eventArgs = null;
+//         if (this.PromptRendered is { } promptRendered)
+//         {
+//             eventArgs = new(function, arguments, renderedPrompt);
+//             promptRendered.Invoke(this, eventArgs);
+//         }
+
+//         return eventArgs;
+//     }
+//     #endregion
+
+//     #region InvokeAsync
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Mono<FunctionResult> invokeAsync(
+        KernelFunction function,
+        KernelArguments arguments)
+    {
+        Objects.requireNonNull(function);
+
+        return function.invokeAsync(this, arguments);
+    }
+
+    /// <summary>
+    /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Mono<FunctionResult> invokeAsync(
+        String pluginName,
+        String functionName,
+        KernelArguments arguments)
+    {
+        Objects.requireNonNull(functionName);
+
+        KernelFunction function = this.plugins.getFunction(pluginName, functionName);
+        if (function == null) {
+                return Mono.empty();
+        }
+
+        return function.invokeAsync(this, arguments);
+    }
+
+//     #region InvokeStreamingAsync
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public Flux<StreamingKernelContent> invokeStreamingAsync(
+        KernelFunction function,
+        KernelArguments arguments)
+    {
+        Objects.requireNonNull(function);
+
+        return function.invokeStreamingAsync(this, arguments);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public Flux<StreamingKernelContent> invokeStreamingAsync(
+        String pluginName,
+        String functionName,
+        KernelArguments arguments)
+    {
+        Objects.requireNonNull(functionName);
+
+        KernelFunction function = this.plugins.getFunction(pluginName, functionName);
+        if (function == null) {
+                return Flux.empty();
+        }
+
+        return function.invokeStreamingAsync(this, arguments);
+    }
+
+    
+    public static Builder builder() {
         return BuildersSingleton.INST.getInstance(Kernel.Builder.class);
     }
 
-    @Deprecated
-    default ReadOnlySkillCollection getSkills() { throw new UnsupportedOperationException(); }
-
-    @Deprecated
-    default ReadOnlyFunctionCollection getSkill() { throw new UnsupportedOperationException(); }
-
-    interface Builder extends SemanticKernelBuilder<Kernel> {
-        /**
-         * Set the kernel configuration
-         *
-         * @param kernelConfig Kernel configuration
-         * @return Builder
-         */
-        @Deprecated
-        Builder withConfiguration(KernelConfig kernelConfig);
-
-        /**
-         * Add prompt template engine to the kernel to be built.
-         *
-         * @param promptTemplateEngine Prompt template engine to add.
-         * @return Updated kernel builder including the prompt template engine.
-         */
-        @Deprecated
-        Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine);
-
-        /**
-         * Add memory storage to the kernel to be built.
-         *
-         * @param storage Storage to add.
-         * @return Updated kernel builder including the memory storage.
-         */
-        @Deprecated
-        Builder withMemoryStorage(MemoryStore storage);
-
-        /**
-         * Add memory storage factory to the kernel.
-         *
-         * @param factory The storage factory.
-         * @return Updated kernel builder including the memory storage.
-         */
-        @Deprecated
-        Builder withMemoryStorage(Supplier<MemoryStore> factory);
-
-        /**
-         * Adds an instance to the services collection
-         *
-         * @param instance The instance.
-         * @return The builder.
-         */
-        @Deprecated
-        <T extends AIService> Builder withDefaultAIService(T instance);
-
-        /**
-         * Adds an instance to the services collection
-         *
-         * @param instance The instance.
-         * @param clazz The class of the instance.
-         * @return The builder.
-         */
-        @Deprecated
-        <T extends AIService> Builder withDefaultAIService(T instance, Class<T> clazz);
-
-        /**
-         * Adds a factory method to the services collection
-         *
-         * @param factory The factory method that creates the AI service instances of type T.
-         * @param clazz The class of the instance.
-         */
-        @Deprecated
-        <T extends AIService> Builder withDefaultAIService(Supplier<T> factory, Class<T> clazz);
-
-        /**
-         * Adds an instance to the services collection
-         *
-         * @param serviceId The service ID
-         * @param instance The instance.
-         * @param setAsDefault Optional: set as the default AI service for type T
-         * @param clazz The class of the instance.
-         */
-        @Deprecated
-        <T extends AIService> Builder withAIService(
-                @Nullable String serviceId, T instance, boolean setAsDefault, Class<T> clazz);
-
-        /**
-         * Adds a factory method to the services collection
-         *
-         * @param serviceId The service ID
-         * @param factory The factory method that creates the AI service instances of type T.
-         * @param setAsDefault Optional: set as the default AI service for type T
-         * @param clazz The class of the instance.
-         */
-        @Deprecated
-        <T extends AIService> Builder withAIServiceFactory(
-                @Nullable String serviceId,
-                Function<KernelConfig, T> factory,
-                boolean setAsDefault,
-                Class<T> clazz);
-
-        /**
-         * Add a semantic text memory entity to the kernel to be built.
-         *
-         * @param memory Semantic text memory entity to add.
-         * @return Updated kernel builder including the semantic text memory entity.
-         */
-        @Deprecated
-        Builder withMemory(SemanticTextMemory memory);
-
-        /**
-         * Add memory storage and an embedding generator to the kernel to be built.
-         *
-         * @param storage Storage to add.
-         * @param embeddingGenerator Embedding generator to add.
-         * @return Updated kernel builder including the memory storage and embedding generator.
-         */
-        @Deprecated
-        Builder withMemoryStorageAndTextEmbeddingGeneration(
-                MemoryStore storage, TextEmbeddingGeneration embeddingGenerator);
-
-        /**
-         * Add plugins to the kernel to be built.
-         *
-         * @param plugins Plugins to add.
-         * @return Updated kernel builder including the plugins.
-         * @since 1.0.0
-         */
-        Builder withPlugins(Plugin... plugins);
+    /**
+     * Builder for Kernel
+     */
+    public interface Builder extends SemanticKernelBuilder<Kernel> {
+        // TODO
     }
+
+      
 }

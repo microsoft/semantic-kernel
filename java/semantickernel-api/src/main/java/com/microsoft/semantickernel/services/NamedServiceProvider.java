@@ -4,7 +4,8 @@ package com.microsoft.semantickernel.services;
 import javax.annotation.Nullable;
 
 /**
- * @deprecated Use {@code com.microsoft.semantickernel.aiservices.NamedServiceProvider} instead
+ * A service provider for named services.
+ * @param <T> The type of the service.
  */
 public interface NamedServiceProvider<T> {
     /**
@@ -12,6 +13,7 @@ public interface NamedServiceProvider<T> {
      *
      * @param name The name of the service, or null for the default service.
      * @param clazz The type of the service.
+     * @param <U> The specific type of the service
      * @return The service instance, or null if not found.
      */
     @Nullable

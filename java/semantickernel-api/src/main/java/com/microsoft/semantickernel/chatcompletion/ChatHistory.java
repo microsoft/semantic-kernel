@@ -1,27 +1,30 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.semantickernel.chatcompletion.ChatHistory.Message;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import com.microsoft.semantickernel.orchestration.ContextVariable;
+
 /**
  * Provides a history of messages between the User, Assistant and System
  */
-public class ChatHistory implements Iterable<Message> {
+public class ChatHistory implements Iterable<ChatMessageContent> {
 
-    private final List<Message> messages;
+    private final List<ChatMessageContent> messages;
 
     public ChatHistory() {
         this.messages = new ArrayList<>();
     }
 
-    public ChatHistory(List<Message> messages) {
+    public ChatHistory(List<ChatMessageContent> messages) {
         this.messages = new ArrayList<>(messages);
     }
 
@@ -30,7 +33,7 @@ public class ChatHistory implements Iterable<Message> {
      *
      * @return List of messages in the chat
      */
-    public List<Message> getMessages() {
+    public List<ChatMessageContent> getMessages() {
         return Collections.unmodifiableList(messages);
     }
 
@@ -39,7 +42,7 @@ public class ChatHistory implements Iterable<Message> {
      *
      * @return The most recent message in chat
      */
-    public Optional<Message> getLastMessage() {
+    public Optional<ChatMessageContent> getLastMessage() {
         if (messages.isEmpty()) {
             return Optional.empty();
         }
@@ -51,97 +54,26 @@ public class ChatHistory implements Iterable<Message> {
     }
 
     @Override
-    public Iterator<Message> iterator() {
+    public Iterator<ChatMessageContent> iterator() {
         return messages.iterator();
     }
 
     @Override
-    public void forEach(Consumer<? super Message> action) {
+    public void forEach(Consumer<? super ChatMessageContent> action) {
         messages.forEach(action);
     }
 
     @Override
-    public Spliterator<Message> spliterator() {
+    public Spliterator<ChatMessageContent> spliterator() {
         return messages.spliterator();
     }
 
-    /**
-     * Role of the author of a chat message
-     */
-    public enum AuthorRoles {
-        Unknown,
-        System,
-        User,
-        Assistant
+    public void addMessage(AuthorRole authorRole, String content, Charset encoding, Map<String, ContextVariable<?>> metadata) {
+        messages.add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
     }
 
-    /**
-     * Chat message representation
-     */
-    public static class Message {
-
-        private final AuthorRoles authorRoles;
-
-        private final String content;
-
-        /**
-         * Create a new instance
-         *
-         * @param authorRoles Role of message author
-         * @param content     Message content
-         */
-        public Message(AuthorRoles authorRoles, String content) {
-            this.authorRoles = authorRoles;
-            this.content = content;
-        }
-
-        /**
-         * Get the role of the message author
-         *
-         * @return Role of the message author, e.g. user/assistant/system
-         */
-        public AuthorRoles getAuthorRoles() {
-            return authorRoles;
-        }
-
-        /**
-         * Get the message content
-         *
-         * @return Message content
-         */
-        public String getContent() {
-            return content;
-        }
+    public void addMessage(ChatMessageContent content) {
+        messages.add(content);
     }
 
-    /**
-     * Add a message to the chat history
-     *
-     * @param authorRole Role of the message author
-     * @param content    Message content
-     */
-    @Deprecated
-    public void addMessage(AuthorRoles authorRole, String content) {
-        this.messages.add(new Message(authorRole, content));
-    }
-
-    /**
-     * Add a message to the chat history with the user as the author
-     *
-     * @param content Message content
-     * @since 1.0.0 @
-     */
-    public void addUserMessage(String content) {
-        this.messages.add(new Message(AuthorRoles.User, content));
-    }
-
-    /**
-     * Add a message to the chat history with the assistat as the author
-     *
-     * @param content Message content
-     * @since 1.0.0
-     */
-    public void addAssistantMessage(String content) {
-        this.messages.add(new Message(AuthorRoles.Assistant, content));
-    }
 }
