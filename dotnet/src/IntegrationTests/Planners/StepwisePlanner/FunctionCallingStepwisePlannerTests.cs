@@ -46,7 +46,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject(new TimePlugin(), "time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         var planner = new FunctionCallingStepwisePlanner(
             kernel,
@@ -71,7 +71,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = new KernelBuilder()
+        var builder = Kernel.CreateBuilder()
             .WithAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,

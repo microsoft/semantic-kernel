@@ -1,27 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
 {
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Method Function types ========");
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var plugin = kernel.ImportPluginFromObject<LocalExamplePlugin>("test");
+        var plugin = kernel.ImportPluginFromType<LocalExamplePlugin>("test");
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
@@ -85,7 +81,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new("blah blah blah"));
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = "blah blah blah" });
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }

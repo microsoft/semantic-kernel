@@ -4,46 +4,33 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 using Resources;
 
-/**
- * Scenario:
- *  - the user is reading a wikipedia page, they select a piece of text and they ask AI to extract some information.
- *  - the app explicitly uses the Chat model to get a result.
- *
- * The following example shows how to:
- *
- * - Use the prompt template engine to render prompts, without executing them.
- *   This can be used to leverage the template engine (which executes functions internally)
- *   to generate prompts and use them programmatically, without executing them like prompt functions.
- *
- * - Use rendered prompts to create the context of System and User messages sent to Chat models
- *   like "gpt-3.5-turbo"
- *
- * Note: normally you would work with Prompt Functions to automatically send a prompt to a model
- *       and get a response. In this case we use the Chat model, sending a chat history object, which
- *       includes some instructions, some context (the text selected), and the user query.
- *
- *       We use the prompt template engine to craft the strings with all of this information.
- *
- *       Out of scope and not in the example: if needed, one could go further and use a semantic
- *       function (with extra cost) asking AI to generate the text to send to the Chat model.
- *
- * TLDR: how to render a prompt:
- *
- *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
- *      ... import plugins and functions ...
- *      var context = kernel.CreateNewContext();
- *      ... set variables ...
- *
- *      var promptRenderer = new KernelPromptTemplateEngine();
- *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
- */
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
+/// <summary>
+/// Scenario:
+///  - the user is reading a wikipedia page, they select a piece of text and they ask AI to extract some information.
+///  - the app explicitly uses the Chat model to get a result.
+///
+/// The following example shows how to:
+///
+/// - Use the prompt template engine to render prompts, without executing them.
+///   This can be used to leverage the template engine (which executes functions internally)
+///   to generate prompts and use them programmatically, without executing them like prompt functions.
+///
+/// - Use rendered prompts to create the context of System and User messages sent to Chat models
+///   like "gpt-3.5-turbo"
+///
+/// Note: normally you would work with Prompt Functions to automatically send a prompt to a model
+///       and get a response. In this case we use the Chat model, sending a chat history object, which
+///       includes some instructions, some context (the text selected), and the user query.
+///
+///       We use the prompt template engine to craft the strings with all of this information.
+///
+///       Out of scope and not in the example: if needed, one could go further and use a semantic
+///       function (with extra cost) asking AI to generate the text to send to the Chat model.
+/// </summary>
 public static class Example30_ChatWithPrompts
 {
     public static async Task RunAsync()
@@ -60,14 +47,13 @@ public static class Example30_ChatWithPrompts
         var selectedText = EmbeddedResource.Read("30-user-context.txt");
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         // Adding required arguments referenced by the prompt templates.
         var arguments = new KernelArguments
@@ -98,7 +84,7 @@ public static class Example30_ChatWithPrompts
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
-        var chatCompletion = kernel.GetService<IChatCompletionService>();
+        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the

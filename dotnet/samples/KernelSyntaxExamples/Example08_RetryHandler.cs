@@ -8,32 +8,32 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-#pragma warning disable CA1031 // Do not catch general exception types
-#pragma warning disable CA2000 // Dispose objects before losing scope
-
+// This example shows how to use a retry handler within a Semantic Kernel
 public static class Example08_RetryHandler
 {
     public static async Task RunAsync()
     {
         // Create a Kernel with the HttpClient
-        var kernel = new KernelBuilder().WithServices(c =>
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
+        builder.Services.ConfigureHttpClientDefaults(c =>
         {
-            c.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
-            c.ConfigureHttpClientDefaults(c =>
+            // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+            c.AddStandardResilienceHandler().Configure(o =>
             {
-                // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-                c.AddStandardResilienceHandler().Configure(o =>
-                {
-                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-                });
+                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
             });
-            c.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-        }).Build();
+        });
+        builder.Services.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
+        Kernel kernel = builder.Build();
 
         var logger = kernel.LoggerFactory.CreateLogger(typeof(Example08_RetryHandler));
 
-        const string Question = "How popular is Polly library?";
+        const string Question = "How popular is the Polly library?";
         logger.LogInformation("Question: {Question}", Question);
+
+        // The call to OpenAI will fail and be retried a few times before eventually failing.
+        // Retrying can overcome transient problems and thus improves resiliency.
         try
         {
             // The InvokePromptAsync call will issue a request to OpenAI with an invalid API key.

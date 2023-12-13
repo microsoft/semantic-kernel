@@ -5,8 +5,8 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Moq;
 using Xunit;
@@ -29,7 +29,7 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
     public async Task QdrantMemoryStoreShouldBeProperlyInitializedAsync()
     {
         // Arrange
-        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGeneration>();
+        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGenerationService>();
 
         this._httpClient.BaseAddress = new Uri("https://fake-random-qdrant-host");
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{\"result\":{\"collections\":[]}}", Encoding.UTF8, MediaTypeNames.Application.Json);

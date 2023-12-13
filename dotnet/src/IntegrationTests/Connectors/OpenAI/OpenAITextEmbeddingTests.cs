@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Embeddings;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,7 +39,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
@@ -58,8 +58,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGeneration(azureOpenAIConfiguration.DeploymentName,
-            azureOpenAIConfiguration.EmbeddingModelId,
+        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(azureOpenAIConfiguration.DeploymentName,
             azureOpenAIConfiguration.Endpoint,
             azureOpenAIConfiguration.ApiKey);
 

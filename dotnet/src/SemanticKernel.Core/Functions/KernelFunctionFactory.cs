@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -68,6 +67,7 @@ public static class KernelFunctionFactory
     /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
@@ -76,9 +76,10 @@ public static class KernelFunctionFactory
         PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
         string? description = null,
+        string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, executionSettings, functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
 
     /// <summary>
     /// Create a prompt function instance, given a prompt function model.

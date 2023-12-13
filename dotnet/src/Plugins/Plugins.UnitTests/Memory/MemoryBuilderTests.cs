@@ -3,7 +3,7 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Moq;
@@ -40,7 +40,7 @@ public sealed class MemoryBuilderTests
         var exception = Assert.Throws<KernelException>(() => builder.Build());
 
         // Assert
-        Assert.Equal("ITextEmbeddingGeneration dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);
+        Assert.Equal("ITextEmbeddingGenerationService dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class MemoryBuilderTests
         // Arrange
         var builder = new MemoryBuilder()
             .WithMemoryStore(Mock.Of<IMemoryStore>())
-            .WithTextEmbeddingGeneration(Mock.Of<ITextEmbeddingGeneration>());
+            .WithTextEmbeddingGeneration(Mock.Of<ITextEmbeddingGenerationService>());
 
         // Act
         var memory = builder.Build();
@@ -80,7 +80,7 @@ public sealed class MemoryBuilderTests
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);
 
-                return Mock.Of<ITextEmbeddingGeneration>();
+                return Mock.Of<ITextEmbeddingGenerationService>();
             })
             .Build();
     }
@@ -107,7 +107,7 @@ public sealed class MemoryBuilderTests
                 Assert.Same(httpClientUsed, httpClient);
                 Assert.NotSame(httpClientUnused, httpClient);
 
-                return Mock.Of<ITextEmbeddingGeneration>();
+                return Mock.Of<ITextEmbeddingGenerationService>();
             })
             .Build();
     }

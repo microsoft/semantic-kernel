@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.AI.ChatCompletion;
@@ -25,7 +25,7 @@ public class ChatHistoryTests
 
         // Assert
         Assert.NotNull(chatHistoryJson);
-        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"ModelId\":null,\"Metadata\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"ModelId\":null,\"Metadata\":null}]", chatHistoryJson);
+        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"Items\":null,\"ModelId\":null,\"Metadata\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"Items\":null,\"ModelId\":null,\"Metadata\":null}]", chatHistoryJson);
     }
 
     [Fact]

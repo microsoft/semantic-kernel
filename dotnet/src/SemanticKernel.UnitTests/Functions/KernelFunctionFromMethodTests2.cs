@@ -6,8 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -15,7 +16,6 @@ namespace SemanticKernel.UnitTests.Functions;
 public sealed class KernelFunctionFromMethodTests2
 {
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
-    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
 
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
@@ -52,41 +52,10 @@ public sealed class KernelFunctionFromMethodTests2
     }
 
     [Fact]
-    public void ItThrowsForInvalidFunctions()
-    {
-        // Arrange
-        var instance = new InvalidPlugin();
-        MethodInfo[] methods = instance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode")
-            .ToArray();
-
-        // Act - Assert that no exception occurs
-        var count = 0;
-        foreach (var method in methods)
-        {
-            try
-            {
-                KernelFunctionFactory.CreateFromMethod(method, instance, "plugin");
-            }
-            catch (KernelException)
-            {
-                count++;
-            }
-        }
-
-        // Assert
-        Assert.Equal(2, count);
-    }
-
-    [Fact]
     public async Task ItCanImportMethodFunctionsAsync()
     {
         // Arrange
         var canary = false;
-
-        var arguments = new KernelArguments();
-        arguments["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
         async Task ExecuteAsync(string done)
@@ -103,7 +72,10 @@ public sealed class KernelFunctionFromMethodTests2
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+        FunctionResult result = await function.InvokeAsync(new(), new KernelArguments
+        {
+            ["done"] = "NO"
+        });
 
         // Assert
         Assert.True(canary);
@@ -136,26 +108,103 @@ public sealed class KernelFunctionFromMethodTests2
             description: "description",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
+        FunctionResult result = await function.InvokeAsync(new(), arguments);
 
         // Assert
         Assert.Equal(variableOutsideTheFunction, result.GetValue<string>());
         Assert.Equal(variableOutsideTheFunction, result.ToString());
     }
 
-    private sealed class InvalidPlugin
+    [Fact]
+    public async Task ItFlowsSpecialArgumentsIntoFunctionsAsync()
     {
-        [KernelFunction]
-        public void Invalid2(CustomUnknownType n, string input) // Only first parameter can have the 'input' name
-        {
-        }
+        KernelBuilder builder = new();
+        builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning));
+        Kernel kernel = builder.Build();
+        kernel.Culture = new CultureInfo("fr-FR");
+        KernelArguments args = new();
+        using CancellationTokenSource cts = new();
 
-        [KernelFunction]
-        public void Invalid4(CancellationToken ct1, CancellationToken ct2)
-        {
-        }
+        bool invoked = false;
+        KernelFunction func = null!;
+        func = KernelFunctionFactory.CreateFromMethod(
+            (Kernel kernelArg, KernelFunction funcArg, KernelArguments argsArg, ILoggerFactory loggerFactoryArg,
+             ILogger loggerArg, IAIServiceSelector serviceSelectorArg, CultureInfo cultureArg, CancellationToken cancellationToken) =>
+            {
+                Assert.Same(kernel, kernelArg);
+                Assert.Same(func, funcArg);
+                Assert.Same(args, argsArg);
+                Assert.Same(kernel.LoggerFactory, loggerFactoryArg);
+                Assert.NotNull(loggerArg);
+                Assert.Same(kernel.ServiceSelector, serviceSelectorArg);
+                Assert.Same(kernel.Culture, cultureArg);
+                Assert.Equal(cts.Token, cancellationToken);
+                invoked = true;
+            });
 
-        public struct CustomUnknownType { }
+        await func.InvokeAsync(kernel, args, cts.Token);
+
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public async Task ItInjectsServicesFromDIIntoFunctionsAsync()
+    {
+        var serviceA = new ExampleService();
+        var serviceB = new ExampleService();
+        var serviceC = new ExampleService();
+
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<IExampleService>("something", serviceA);
+        builder.Services.AddSingleton<IExampleService>(serviceB);
+        builder.Services.AddKeyedSingleton<IExampleService>("somethingelse", serviceC);
+        Kernel kernel = builder.Build();
+
+        bool invoked = false;
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(
+            ([FromKernelServices] IExampleService service1Arg,
+             [FromKernelServices("something")] IExampleService service2Arg,
+             [FromKernelServices("somethingelse")] IExampleService service3Arg,
+             [FromKernelServices] IExampleService service4Arg,
+             [FromKernelServices("doesntexist")] IExampleService? service5Arg = null) =>
+            {
+                Assert.Same(serviceB, service1Arg);
+                Assert.Same(serviceA, service2Arg);
+                Assert.Same(serviceC, service3Arg);
+                Assert.Same(serviceB, service4Arg);
+                Assert.Null(service5Arg);
+                invoked = true;
+            });
+
+        await func.InvokeAsync(kernel);
+
+        Assert.True(invoked);
+
+        Assert.DoesNotContain(func.Metadata.Parameters, p => p.Name.Contains("service", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ItThrowsForMissingServicesWithoutDefaultsAsync()
+    {
+        Kernel kernel = new();
+        KernelFunction func;
+
+        func = KernelFunctionFactory.CreateFromMethod(([FromKernelServices] IExampleService service) => { });
+        await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
+
+        func = KernelFunctionFactory.CreateFromMethod(([FromKernelServices] IExampleService? service) => { });
+        await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
+
+        func = KernelFunctionFactory.CreateFromMethod(([FromKernelServices("name")] IExampleService? service) => { });
+        await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
+    }
+
+    private interface IExampleService
+    {
+    }
+
+    private sealed class ExampleService : IExampleService
+    {
     }
 
     private sealed class LocalExamplePlugin

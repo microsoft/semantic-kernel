@@ -109,4 +109,29 @@ public class FunctionResultTests
         // Act and Assert
         Assert.Equal(value, target.ToString());
     }
+
+    [Fact]
+    public void GetValueWhenValueIsKernelContentGenericStringShouldReturnContentBaseToString()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        FunctionResult target = new(s_nopFunction, new TextContent(expectedValue));
+
+        // Act and Assert
+        Assert.Equal(expectedValue, target.GetValue<string>());
+    }
+
+    [Fact]
+    public void GetValueWhenValueIsKernelContentGenericTypeMatchShouldReturn()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new TextContent(expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType, target.GetValue<TextContent>());
+        Assert.Equal(valueType, target.GetValue<KernelContent>());
+    }
 }

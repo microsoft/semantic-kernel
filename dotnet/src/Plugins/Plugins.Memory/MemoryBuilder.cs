@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Plugins.Memory;
@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 public sealed class MemoryBuilder
 {
     private Func<IMemoryStore>? _memoryStoreFactory = null;
-    private Func<ITextEmbeddingGeneration>? _embeddingGenerationFactory = null;
+    private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory = null;
     private HttpClient? _httpClient;
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
@@ -29,7 +29,7 @@ public sealed class MemoryBuilder
             throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
         var embeddingGeneration = this._embeddingGenerationFactory?.Invoke() ??
-            throw new KernelException($"{nameof(ITextEmbeddingGeneration)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
+            throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }
@@ -99,7 +99,7 @@ public sealed class MemoryBuilder
     /// </summary>
     /// <param name="textEmbeddingGeneration">The text embedding generation.</param>
     /// <returns>Updated Memory builder including the text embedding generation.</returns>
-    public MemoryBuilder WithTextEmbeddingGeneration(ITextEmbeddingGeneration textEmbeddingGeneration)
+    public MemoryBuilder WithTextEmbeddingGeneration(ITextEmbeddingGenerationService textEmbeddingGeneration)
     {
         Verify.NotNull(textEmbeddingGeneration);
         this._embeddingGenerationFactory = () => textEmbeddingGeneration;
@@ -112,7 +112,7 @@ public sealed class MemoryBuilder
     /// <param name="factory">The text embedding generation factory.</param>
     /// <returns>Updated Memory builder including the text embedding generation.</returns>
     public MemoryBuilder WithTextEmbeddingGeneration<TEmbeddingGeneration>(
-        Func<ILoggerFactory, HttpClient?, TEmbeddingGeneration> factory) where TEmbeddingGeneration : ITextEmbeddingGeneration
+        Func<ILoggerFactory, HttpClient?, TEmbeddingGeneration> factory) where TEmbeddingGeneration : ITextEmbeddingGenerationService
     {
         Verify.NotNull(factory);
         this._embeddingGenerationFactory = () => factory(this._loggerFactory, this._httpClient);

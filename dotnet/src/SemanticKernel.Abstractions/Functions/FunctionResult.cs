@@ -64,6 +64,19 @@ public sealed class FunctionResult
             return typedResult;
         }
 
+        if (this.Value is KernelContent content)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (T)(object)content.ToString();
+            }
+
+            if (content.InnerContent is T innerContent)
+            {
+                return innerContent;
+            }
+        }
+
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 

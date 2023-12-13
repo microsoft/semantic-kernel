@@ -7,10 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-/**
- * This example shows different ways how to define and execute method functions using custom and primitive types.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows different ways how to define and execute method functions using custom and primitive types.
 public static class Example60_AdvancedMethodFunctions
 {
     public static async Task RunAsync()
@@ -27,9 +24,9 @@ public static class Example60_AdvancedMethodFunctions
     {
         Console.WriteLine("Running Method Function Chaining example...");
 
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
-        var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
+        var functions = kernel.ImportPluginFromType<FunctionsChainingPlugin>();
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
@@ -94,9 +91,7 @@ public static class Example60_AdvancedMethodFunctions
     /// In this example, object instance is serialized with <see cref="JsonSerializer"/> from System.Text.Json,
     /// but it's possible to convert object to string using any other serialization logic.
     /// </summary>
-#pragma warning disable CA1812 // instantiated by Kernel
     private sealed class MyCustomTypeConverter : TypeConverter
-#pragma warning restore CA1812
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 

@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -48,7 +48,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
@@ -74,7 +74,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<TimePlugin>("time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
         var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
@@ -99,11 +99,11 @@ public sealed class StepwisePlannerTests : IDisposable
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<TextPlugin>("text");
-        kernel.ImportPluginFromObject<ConversationSummaryPlugin>("ConversationSummary");
-        kernel.ImportPluginFromObject<MathPlugin>("Math");
-        kernel.ImportPluginFromObject<FileIOPlugin>("FileIO");
-        kernel.ImportPluginFromObject<HttpPlugin>("Http");
+        kernel.ImportPluginFromType<TextPlugin>("text");
+        kernel.ImportPluginFromType<ConversationSummaryPlugin>("ConversationSummary");
+        kernel.ImportPluginFromType<MathPlugin>("Math");
+        kernel.ImportPluginFromType<FileIOPlugin>("FileIO");
+        kernel.ImportPluginFromType<HttpPlugin>("Http");
 
         var planner = new StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
@@ -143,31 +143,32 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().WithServices(c =>
-        {
-            if (useChatModel)
-            {
-                c.AddAzureOpenAIChatCompletion(
-                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
-            else
-            {
-                c.AddAzureOpenAITextGeneration(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
-            if (useEmbeddings)
-            {
-                c.AddAzureOpenAITextEmbeddingGeneration(
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-            }
-        }).Build();
+        if (useChatModel)
+        {
+            builder.Services.AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.Services.AddAzureOpenAITextGeneration(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+
+        if (useEmbeddings)
+        {
+            builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+        }
+
+        return builder.Build();
     }
 
     private readonly RedirectOutput _testOutputHelper;

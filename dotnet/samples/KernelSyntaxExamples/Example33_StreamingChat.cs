@@ -3,13 +3,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with streaming Chat Completion
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with streaming Chat Completion
 public static class Example33_StreamingChat
 {
     public static async Task RunAsync()
