@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 
-public interface RegistrableSkFunction {
+public interface RegisterableSkFunction {
 
     void registerOnKernel(Kernel kernel);
 }

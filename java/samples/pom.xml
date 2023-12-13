@@ -83,7 +83,7 @@
         </plugins>
     </build>
 
-    <dependencies>
+    <!-- <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
@@ -122,7 +122,7 @@
             <artifactId>semantickernel-planners</artifactId>
             <scope>compile</scope>
         </dependency>
-    </dependencies>
+    </dependencies> -->
 
     <profiles>
         <profile>

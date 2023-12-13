@@ -8,6 +8,6 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 public class NativeFunction {
 
     public static List<KernelFunction> getFunctionsFromObject(Object object) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

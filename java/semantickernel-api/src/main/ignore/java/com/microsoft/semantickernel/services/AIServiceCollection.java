@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
-import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,23 +9,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.AIService;
+import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 
 /**
  * A collection that can hold AI services 
- * @deprecated Use {@code com.microsoft.semantickernel.aiservices.AIService}
  */
-@Deprecated
 public class AIServiceCollection {
     // A constant key for the default service
-    private static final String DefaultKey = "__DEFAULT__";
+    private static final String DEFAULT_KEY = "__DEFAULT__";
 
     private static final List<Class<? extends AIService>> KNOWN_SERVICES =
             Arrays.asList(
-                    EmbeddingGeneration.class,
-                    TextEmbeddingGeneration.class,
-                    TextCompletion.class,
-                    ChatCompletion.class);
+                    // EmbeddingGeneration.class,
+                    // TextEmbeddingGeneration.class,
+                    // TextCompletion.class,
+                    ChatCompletionService.class);
 
     // A dictionary that maps a service type to a nested dictionary of names and service instances
     // or factories
@@ -46,9 +44,10 @@ public class AIServiceCollection {
      *
      * @param service The service instance.
      * @param serviceType The type of the service.
+     * @param <T> The type of the service.
      */
     public <T extends AIService> void setService(T service, Class<T> serviceType) {
-        setService(DefaultKey, (Supplier<T>) () -> service, true, serviceType);
+        setService(DEFAULT_KEY, (Supplier<T>) () -> service, true, serviceType);
     }
 
     /**
@@ -58,6 +57,7 @@ public class AIServiceCollection {
      * @param service The service instance.
      * @param setAsDefault Whether the service should be the default for its type.
      * @param serviceType The type of the service.
+     * @param <T> The type of the service.
      */
     public <T extends AIService> void setService(
             String name, T service, boolean setAsDefault, Class<T> serviceType) {
@@ -69,9 +69,10 @@ public class AIServiceCollection {
      *
      * @param factory The factory function to create the service instance.
      * @param serviceType The type of the service.
+     * @param <T> The type of the service.
      */
     public <T extends AIService> void setService(Supplier<T> factory, Class<T> serviceType) {
-        setService(DefaultKey, factory, true, serviceType);
+        setService(DEFAULT_KEY, factory, true, serviceType);
     }
 
     /**
@@ -81,6 +82,7 @@ public class AIServiceCollection {
      * @param factory The factory function to create the service instance.
      * @param setAsDefault Whether the service should be the default for its type.
      * @param specificServiceType The type of the service.
+     * @param <T> The type of the service.
      */
     public <T extends AIService> void setService(
             @Nullable String name,
@@ -106,11 +108,11 @@ public class AIServiceCollection {
                             // or there is no default name for the service type.
                             if (name == null || setAsDefault || !this.hasDefault(serviceType)) {
                                 // Update the default name for the service type
-                                this.defaultIds.put(serviceType, name == null ? DefaultKey : name);
+                                this.defaultIds.put(serviceType, name == null ? DEFAULT_KEY : name);
                             }
 
                             // Register the factory with the given name
-                            namedServices.put(name == null ? DefaultKey : name, factory);
+                            namedServices.put(name == null ? DEFAULT_KEY : name, factory);
                         });
     }
 
@@ -136,7 +138,7 @@ public class AIServiceCollection {
         Map<Class<? extends AIService>, Map<String, Supplier<? extends AIService>>> servicesClone =
                 cloneServices(services);
 
-        Map defaultsClone = new HashMap<>(defaultIds);
+        Map<Class<? extends AIService>, String> defaultsClone = new HashMap<>(defaultIds);
 
         return new DefaultAIServiceProvider(servicesClone, defaultsClone);
     }

@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.Verify;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.Verify;
 
 /** 
  * Default implementation of {@link NamedServiceProvider} 
- * @deprecated Use {@code com.microsoft.semantickernel.aiservices.DefaultNamedServiceProvider} instead
+ * @param <T> The type of the service.
  */
 public class DefaultNamedServiceProvider<T> implements NamedServiceProvider<T> {
 
