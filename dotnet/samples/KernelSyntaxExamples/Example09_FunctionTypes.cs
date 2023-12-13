@@ -35,17 +35,17 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin["type04"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type04"]);
 
-        await kernel.InvokeAsync(plugin["type05"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"]);
+        await kernel.InvokeAsync(plugin["type05"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"], new() { ["x"] = "" });
 
-        await kernel.InvokeAsync(plugin["type06"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"]);
+        await kernel.InvokeAsync(plugin["type06"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"], new() { ["x"] = "" });
 
-        await kernel.InvokeAsync(plugin["type07"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"]);
+        await kernel.InvokeAsync(plugin["type07"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"], new() { ["x"] = "" });
 
-        await kernel.InvokeAsync(plugin["type08"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"]);
+        await kernel.InvokeAsync(plugin["type08"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"], new() { ["x"] = "" });
 
         await kernel.InvokeAsync(plugin["type09"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
