@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace  SemanticKernel.Connectors.UnitTests.Qdrant;
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> Get and Remove operations.

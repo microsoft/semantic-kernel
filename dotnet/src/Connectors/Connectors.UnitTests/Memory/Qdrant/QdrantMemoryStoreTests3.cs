@@ -15,7 +15,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace  SemanticKernel.Connectors.UnitTests.Qdrant;
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> Search operations.
