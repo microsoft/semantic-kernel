@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
