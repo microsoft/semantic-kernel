@@ -657,7 +657,7 @@ class SKFunction(SKFunctionBase):
 
     def run_async_in_executor(self, coroutine_func: Callable[[], Any]) -> Any:
         """
-        A unified method for async execution for more efficent and safer thread management
+        A unified method for async execution for more efficient and safer thread management
 
         Arguments:
             coroutine_func {Callable[[], Any]} -- The coroutine to run
