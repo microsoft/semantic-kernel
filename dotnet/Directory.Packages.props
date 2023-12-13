@@ -9,6 +9,7 @@
     <PackageVersion Include="Azure.Identity" Version="1.10.4" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.1.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5" />
+    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1" />
     <PackageVersion Include="Markdig" Version="0.33.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
@@ -69,7 +70,7 @@
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
     <PackageVersion Include="YamlDotNet" Version="13.7.1" />
     <!-- Memory stores -->
-    <PackageVersion Include="Pgvector" Version="0.1.4" />
+    <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.9.0" />
     <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
     <!-- Symbols -->
