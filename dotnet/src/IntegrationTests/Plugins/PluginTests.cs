@@ -127,7 +127,7 @@ public class PluginTests
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments();
         arguments["payload"] = payload;
@@ -158,7 +158,7 @@ public class PluginTests
             var plugin = await kernel.ImportPluginFromOpenAIAsync(
                 name,
                 stream,
-                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
             var arguments = new KernelArguments();
             arguments["payload"] = payload;
@@ -188,7 +188,7 @@ public class PluginTests
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             pluginFilePath,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments();
         arguments["payload"] = payload;

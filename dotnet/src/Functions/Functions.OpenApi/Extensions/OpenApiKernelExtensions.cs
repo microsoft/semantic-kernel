@@ -225,7 +225,7 @@ public static class OpenApiKernelExtensions
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
-            executionParameters?.EnableDynamicPayload ?? false,
+            executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false);
 
         var functions = new List<KernelFunction>();
@@ -267,7 +267,7 @@ public static class OpenApiKernelExtensions
         ILoggerFactory? loggerFactory = null)
     {
         IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
-            executionParameters?.EnableDynamicPayload ?? false,
+            executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false
         );
 

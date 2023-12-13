@@ -80,7 +80,7 @@ public class OpenApiFunctionExecutionParameters
         Uri? serverUrlOverride = null,
         string userAgent = HttpHeaderValues.UserAgent,
         bool ignoreNonCompliantErrors = false,
-        bool enableDynamicOperationPayload = false,
+        bool enableDynamicOperationPayload = true,
         bool enablePayloadNamespacing = false,
         IList<string>? operationsToExclude = null)
     {
