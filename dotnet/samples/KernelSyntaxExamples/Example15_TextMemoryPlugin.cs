@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
+using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
