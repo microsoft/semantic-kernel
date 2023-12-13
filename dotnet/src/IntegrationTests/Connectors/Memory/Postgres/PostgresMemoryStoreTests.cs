@@ -6,12 +6,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
+namespace SemanticKernel.IntegrationTests.Connectors.Postgres;
 
 /// <summary>
 /// Integration tests of <see cref="PostgresMemoryStore"/>.
