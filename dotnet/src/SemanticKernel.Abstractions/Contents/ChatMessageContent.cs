@@ -49,7 +49,7 @@ public class ChatMessageContent : KernelContent
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
         this.Role = role;
@@ -72,7 +72,7 @@ public class ChatMessageContent : KernelContent
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
         this.Role = role;
