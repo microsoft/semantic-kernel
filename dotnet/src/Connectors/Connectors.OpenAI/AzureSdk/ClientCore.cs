@@ -297,10 +297,7 @@ internal abstract class ClientCore
             }
             catch (JsonException e)
             {
-                if (this.Logger.IsEnabled(LogLevel.Error))
-                {
-                    this.Logger.LogError(e, "Failed to parse function call response.");
-                }
+                this.Logger.LogError(e, "Failed to parse function call response.");
             }
 
             if (functionToolCalls is not { Count: > 0 })
@@ -478,10 +475,7 @@ internal abstract class ClientCore
             }
             catch (JsonException e)
             {
-                if (this.Logger.IsEnabled(LogLevel.Error))
-                {
-                    this.Logger.LogError(e, "Failed to parse function call response.");
-                }
+                this.Logger.LogError(e, "Failed to parse function call response.");
             }
 
             if (functionCalls is null)
