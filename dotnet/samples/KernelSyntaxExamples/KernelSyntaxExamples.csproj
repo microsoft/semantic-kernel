@@ -20,6 +20,10 @@
     <Compile Remove="RepoUtils\PlanExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\GenerateStory.yaml" />
+    <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -84,5 +88,11 @@
     <EmbeddedResource Include="Resources\EnglishRoberta\dict.txt" />
     <EmbeddedResource Include="Resources\EnglishRoberta\encoder.json" />
     <EmbeddedResource Include="Resources\EnglishRoberta\vocab.bpe" />
+    <EmbeddedResource Include="Resources\GenerateStory.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\GenerateStoryHandlebars.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
