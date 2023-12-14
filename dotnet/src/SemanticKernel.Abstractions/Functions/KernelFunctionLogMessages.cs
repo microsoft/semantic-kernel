@@ -79,7 +79,7 @@ internal static partial class KernelFunctionLogMessages
         {
             s_logFunctionResult(
                 logger,
-                JsonSerializer.Serialize(result),
+                result?.GetType() == typeof(string) ? result.ToString() : JsonSerializer.Serialize(result),
                 null);
         }
     }
