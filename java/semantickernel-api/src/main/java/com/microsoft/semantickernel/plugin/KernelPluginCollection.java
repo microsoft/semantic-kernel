@@ -1,8 +1,9 @@
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.plugin;
 
 import java.util.Iterator;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
 
 public class KernelPluginCollection implements Iterable<KernelPlugin> {
 

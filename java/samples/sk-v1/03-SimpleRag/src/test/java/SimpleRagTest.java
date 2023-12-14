@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import plugins.searchplugin.Search;
 import reactor.core.publisher.Flux;
 
-class SimpleRagTest {
+public class SimpleRagTest {
 
     record Message(String matcher, String role, String content) {
 
@@ -74,7 +74,7 @@ class SimpleRagTest {
             .withPlugins(searchPlugin)
             .build();
 
-        ChatHistory chatHistory = gpt35Turbo.createNewChat();
+        ChatHistory chatHistory = new ChatHistory();
 
         messages.forEach(message -> {
             chatHistory.addUserMessage(message.matcher);

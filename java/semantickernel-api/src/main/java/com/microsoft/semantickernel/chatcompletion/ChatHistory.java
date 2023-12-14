@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
+import com.microsoft.semantickernel.orchestration.ContextVariable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,8 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-
-import com.microsoft.semantickernel.orchestration.ContextVariable;
 
 /**
  * Provides a history of messages between the User, Assistant and System
@@ -68,12 +67,27 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
         return chatMessageContents.spliterator();
     }
 
-    public void addMessage(AuthorRole authorRole, String content, Charset encoding, Map<String, ContextVariable<?>> metadata) {
-        chatMessageContents.add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+    public void addMessage(AuthorRole authorRole, String content, Charset encoding,
+        Map<String, ContextVariable<?>> metadata) {
+        chatMessageContents.add(
+            new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+    }
+
+
+    public void addMessage(AuthorRole authorRole, String content) {
+        chatMessageContents.add(
+            new ChatMessageContent(authorRole, content, null, null, null, null));
     }
 
     public void addMessage(ChatMessageContent content) {
         chatMessageContents.add(content);
     }
 
+    public void addUserMessage(String content) {
+        addMessage(AuthorRole.USER, content);
+    }
+
+    public void addAssistantMessage(String content) {
+        addMessage(AuthorRole.ASSISTANT, content);
+    }
 }
