@@ -5,12 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -23,7 +19,7 @@ public sealed class SequentialPlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
         Kernel kernel,
@@ -42,7 +38,7 @@ public sealed class SequentialPlanner
             promptTemplate: promptTemplate,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new AIRequestSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {
@@ -53,7 +49,7 @@ public sealed class SequentialPlanner
             });
 
         this._kernel = kernel;
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
@@ -62,7 +58,7 @@ public sealed class SequentialPlanner
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -82,13 +78,13 @@ public sealed class SequentialPlanner
             [AvailableFunctionsKey] = relevantFunctionsManual
         };
 
-        FunctionResult planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
+        FunctionResult planResult = await this._kernel.InvokeAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
         string? planResultString = planResult.GetValue<string>()?.Trim();
 
         if (string.IsNullOrWhiteSpace(planResultString))
         {
-            throw new SKException(
+            throw new KernelException(
                 "Unable to create plan. No response from Function Flow function. " +
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
@@ -100,14 +96,14 @@ public sealed class SequentialPlanner
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
-            throw new SKException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
         }
 
         if (plan.Steps.Count == 0)
         {
-            throw new SKException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+            throw new KernelException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
         return plan;

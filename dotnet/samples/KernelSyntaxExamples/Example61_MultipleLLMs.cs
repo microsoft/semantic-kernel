@@ -4,15 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
-using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example61_MultipleLLMs
 {
     /// <summary>
-    /// Show how to run a semantic function and specify a specific service to use.
+    /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
     public static async Task RunAsync()
     {
@@ -23,9 +19,9 @@ public static class Example61_MultipleLLMs
         string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (azureApiKey == null || azureDeploymentName == null || azureEndpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -38,18 +34,17 @@ public static class Example61_MultipleLLMs
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
+                apiKey: azureApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId,
-                apiKey: azureApiKey)
-            .WithOpenAIChatCompletionService(
+                modelId: azureModelId)
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
+                apiKey: openAIApiKey,
+                serviceId: "OpenAIChat")
             .Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
@@ -63,12 +58,12 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokePromptAsync(
-           prompt,
-           new AIRequestSettings()
-           {
-               ServiceId = serviceId
-           });
+        KernelArguments arguments = new();
+        arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
+        {
+            { serviceId, new PromptExecutionSettings() }
+        };
+        var result = await kernel.InvokePromptAsync(prompt, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -80,10 +75,10 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
            prompt,
-           requestSettings: new AIRequestSettings()
+           new(new PromptExecutionSettings()
            {
                ModelId = modelId
-           });
+           }));
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -93,19 +88,16 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new List<AIRequestSettings>();
+        var modelSettings = new Dictionary<string, PromptExecutionSettings>();
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new AIRequestSettings() { ModelId = modelId });
+            modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
         }
-        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
+        var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 
-        var function = kernel.CreateFunctionFromPrompt(
-            prompt,
-            promptTemplateConfig,
-            "HelloAI");
+        var function = kernel.CreateFunctionFromPrompt(promptConfig);
 
-        var result = await kernel.RunAsync(function);
+        var result = await kernel.InvokeAsync(function);
         Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Stepwise.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class ParseResultTests
 {
@@ -24,7 +21,7 @@ public sealed class ParseResultTests
     public void WhenInputIsFinalAnswerReturnsFinalAnswer(string input, string expected)
     {
         // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
 
         var planner = new StepwisePlanner(kernel);
 
@@ -75,7 +72,7 @@ public sealed class ParseResultTests
         }
 
         // Arrange
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object);
 
         var planner = new StepwisePlanner(kernel);
 

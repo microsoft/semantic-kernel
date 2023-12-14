@@ -57,7 +57,12 @@ public interface IAssistant
     /// <summary>
     /// Tools defined for run execution.
     /// </summary>
-    public SKPluginCollection Plugins { get; }
+    public KernelPluginCollection Plugins { get; }
+
+    /// <summary>
+    /// Expose the assistant as a plugin.
+    /// </summary>
+    public AssistantPlugin AsPlugin();
 
     /// <summary>
     /// Creates a new assistant chat thread.
@@ -71,4 +76,18 @@ public interface IAssistant
     /// <param name="id">The id of the existing chat thread.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes an existing assistant chat thread.
+    /// </summary>
+    /// <param name="id">The id of the existing chat thread.  Allows for null-fallthrough to simplify caller patterns.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task DeleteThreadAsync(string? id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete current assistant.  Terminal state - Unable to perform any
+    /// subsequent actions.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task DeleteAsync(CancellationToken cancellationToken = default);
 }

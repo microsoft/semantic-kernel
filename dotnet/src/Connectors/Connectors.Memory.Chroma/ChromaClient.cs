@@ -10,11 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// An implementation of a client for the Chroma Vector DB. This class is used to
@@ -33,7 +31,7 @@ public class ChromaClient : IChromaClient
     {
         Verify.NotNull(endpoint);
 
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
         this._endpoint = endpoint;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
     }
@@ -44,7 +42,7 @@ public class ChromaClient : IChromaClient
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <exception cref="SKException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
+    /// <exception cref="KernelException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
     public ChromaClient(HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))

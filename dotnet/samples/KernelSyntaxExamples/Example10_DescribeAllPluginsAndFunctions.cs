@@ -4,12 +4,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllPluginsAndFunctions
 {
     /// <summary>
@@ -21,31 +20,29 @@ public static class Example10_DescribeAllPluginsAndFunctions
     {
         Console.WriteLine("======== Describe all plugins and functions ========");
 
-        var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Import a native plugin
-        var staticText = new StaticTextPlugin();
-        kernel.ImportPluginFromObject(staticText, "StaticTextPlugin");
+        kernel.ImportPluginFromType<StaticTextPlugin>();
 
         // Import another native plugin
-        var text = new TextPlugin();
-        kernel.ImportPluginFromObject(text, "AnotherTextPlugin");
+        kernel.ImportPluginFromType<TextPlugin>("AnotherTextPlugin");
 
         // Import a semantic plugin
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIRequestSettings() { MaxTokens = 150 });
+        // Define a prompt function inline, without naming
+        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
 
-        // Define a semantic function inline, with plugin name
+        // Define a prompt function inline, with plugin name
         var sFun2 = kernel.CreateFunctionFromPrompt(
             "write a novel about {{$input}} in {{$language}} language",
-            new OpenAIRequestSettings() { MaxTokens = 150 },
+            new OpenAIPromptExecutionSettings() { MaxTokens = 150 },
             functionName: "Novel",
             description: "Write a bedtime story");
 
@@ -56,7 +53,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (SKFunctionMetadata func in functions)
+        foreach (KernelFunctionMetadata func in functions)
         {
             PrintFunction(func);
         }
@@ -64,7 +61,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-    private static void PrintFunction(SKFunctionMetadata func)
+    private static void PrintFunction(KernelFunctionMetadata func)
     {
         Console.WriteLine($"   {func.Name}: {func.Description}");
 
@@ -82,7 +79,6 @@ public static class Example10_DescribeAllPluginsAndFunctions
     }
 }
 
-#pragma warning disable CS1587 // XML comment is not placed on a valid language element
 /** Sample output:
 
 *****************************************
@@ -180,4 +176,3 @@ Plugin: SummarizePlugin
         default: ''
 
 */
-#pragma warning restore CS1587 // XML comment is not placed on a valid language element

@@ -4,11 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -49,7 +46,7 @@ internal static class SequentialPlanParser
     /// <param name="getFunctionCallback">The callback to get a plugin function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
-    /// <exception cref="SKException">Thrown when the plan xml is invalid.</exception>
+    /// <exception cref="KernelException">Thrown when the plan xml is invalid.</exception>
     internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, KernelFunction?> getFunctionCallback, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
@@ -85,12 +82,12 @@ internal static class SequentialPlanParser
                 }
                 catch (XmlException ex)
                 {
-                    throw new SKException($"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
+                    throw new KernelException($"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
                 }
             }
             else
             {
-                throw new SKException($"Failed to parse plan xml string: '{xmlString}'", e);
+                throw new KernelException($"Failed to parse plan xml string: '{xmlString}'", e);
             }
         }
 
@@ -131,7 +128,7 @@ internal static class SequentialPlanParser
                             var functionOutputs = new List<string>();
                             var functionResults = new List<string>();
 
-                            var metadata = pluginFunction.GetMetadata();
+                            var metadata = pluginFunction.Metadata;
                             foreach (var p in metadata.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);
@@ -175,7 +172,7 @@ internal static class SequentialPlanParser
                             }
                             else
                             {
-                                throw new SKException($"Failed to find function '{pluginFunctionName}' in plugin '{pluginName}'.");
+                                throw new KernelException($"Failed to find function '{pluginFunctionName}' in plugin '{pluginName}'.");
                             }
                         }
                     }

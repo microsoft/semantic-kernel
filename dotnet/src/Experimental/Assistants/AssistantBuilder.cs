@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
@@ -17,7 +19,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 public partial class AssistantBuilder
 {
     private readonly AssistantModel _model;
-    private readonly SKPluginCollection _plugins;
+    private readonly KernelPluginCollection _plugins;
 
     private string? _apiKey;
     private Func<HttpClient>? _httpClientProvider;
@@ -28,7 +30,7 @@ public partial class AssistantBuilder
     public AssistantBuilder()
     {
         this._model = new AssistantModel();
-        this._plugins = new SKPluginCollection();
+        this._plugins = new KernelPluginCollection();
     }
 
     /// <summary>
@@ -40,18 +42,17 @@ public partial class AssistantBuilder
     {
         if (string.IsNullOrWhiteSpace(this._model.Model))
         {
-            throw new SKException("Model must be defined for assistant.");
+            throw new AssistantException("Model must be defined for assistant.");
         }
 
         if (string.IsNullOrWhiteSpace(this._apiKey))
         {
-            throw new SKException("ApiKey must be provided for assistant.");
+            throw new AssistantException("ApiKey must be provided for assistant.");
         }
 
         return
             await Assistant.CreateAsync(
                 new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
-                new OpenAIChatCompletion(this._model.Model, this._apiKey!),
                 this._model,
                 this._plugins,
                 cancellationToken).ConfigureAwait(false);
@@ -61,12 +62,42 @@ public partial class AssistantBuilder
     /// Define the OpenAI chat completion service (required).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithOpenAIChatCompletionService(string model, string apiKey)
+    public AssistantBuilder WithOpenAIChatCompletion(string model, string apiKey)
     {
         this._apiKey = apiKey;
         this._model.Model = model;
 
         return this;
+    }
+
+    /// <summary>
+    /// Create a new assistant from a yaml formatted string.
+    /// </summary>
+    /// <param name="template">YAML assistant definition.</param>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
+    public AssistantBuilder FromTemplate(string template)
+    {
+        var deserializer = new DeserializerBuilder().Build();
+
+        var assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(template);
+
+        return
+            this
+                .WithInstructions(assistantKernelModel.Instructions.Trim())
+                .WithName(assistantKernelModel.Name.Trim())
+                .WithDescription(assistantKernelModel.Description.Trim());
+    }
+
+    /// <summary>
+    /// Create a new assistant from a yaml template.
+    /// </summary>
+    /// <param name="templatePath">Path to a configuration file.</param>
+    /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
+    public AssistantBuilder FromTemplatePath(string templatePath)
+    {
+        var yamlContent = File.ReadAllText(templatePath);
+
+        return this.FromTemplate(yamlContent);
     }
 
     /// <summary>
@@ -142,9 +173,12 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugin(ISKPlugin plugin)
+    public AssistantBuilder WithPlugin(KernelPlugin? plugin)
     {
-        this._plugins.Add(plugin);
+        if (plugin != null)
+        {
+            this._plugins.Add(plugin);
+        }
 
         return this;
     }
@@ -153,12 +187,9 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugins(IEnumerable<ISKPlugin> plugins)
+    public AssistantBuilder WithPlugins(IEnumerable<KernelPlugin> plugins)
     {
-        foreach (ISKPlugin plugin in plugins)
-        {
-            this._plugins.Add(plugin);
-        }
+        this._plugins.AddRange(plugins);
 
         return this;
     }

@@ -4,10 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-/**
- * This example shows how to use chat completion prompts.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use chat completion prompts.
 public static class Example63_ChatCompletionPrompts
 {
     public static async Task RunAsync()
@@ -18,8 +15,8 @@ public static class Example63_ChatCompletionPrompts
             <message role=""system"">Respond with JSON.</message>
         ";
 
-        var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
@@ -27,8 +24,8 @@ public static class Example63_ChatCompletionPrompts
         var textSemanticFunction = kernel.CreateFunctionFromPrompt(TextPrompt);
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
 
-        var textPromptResult = await kernel.RunAsync(textSemanticFunction);
-        var chatPromptResult = await kernel.RunAsync(chatSemanticFunction);
+        var textPromptResult = await kernel.InvokeAsync(textSemanticFunction);
+        var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
         Console.WriteLine("Text Prompt:");
         Console.WriteLine(TextPrompt);
@@ -41,6 +38,13 @@ public static class Example63_ChatCompletionPrompts
         Console.WriteLine(ChatPrompt);
         Console.WriteLine("Chat Prompt Result:");
         Console.WriteLine(chatPromptResult);
+
+        Console.WriteLine("Chat Prompt Streaming Result:");
+        await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
 
         /*
         Text Prompt:

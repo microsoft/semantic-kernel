@@ -20,10 +20,11 @@
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Assistants.UnitTests" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>

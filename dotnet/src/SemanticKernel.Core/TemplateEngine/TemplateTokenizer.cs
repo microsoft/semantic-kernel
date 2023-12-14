@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -48,7 +47,7 @@ internal sealed class TemplateTokenizer
     /// </summary>
     /// <param name="text">Text to parse</param>
     /// <returns>List of blocks found in the text</returns>
-    public IList<Block> Tokenize(string? text)
+    public List<Block> Tokenize(string? text)
     {
         // An empty block consists of 4 chars: "{{}}"
         const int EmptyCodeBlockLength = 4;
@@ -157,7 +156,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Variable:
                                     if (codeBlocks.Count > 1)
                                     {
-                                        throw new SKException($"Invalid token detected after the variable: {contentWithoutDelimiters}");
+                                        throw new KernelException($"Invalid token detected after the variable: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(codeBlocks[0]);
@@ -166,7 +165,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Value:
                                     if (codeBlocks.Count > 1)
                                     {
-                                        throw new SKException($"Invalid token detected after the value: {contentWithoutDelimiters}");
+                                        throw new KernelException($"Invalid token detected after the value: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(codeBlocks[0]);
@@ -181,7 +180,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Undefined:
                                 case BlockTypes.NamedArg:
                                 default:
-                                    throw new SKException($"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
+                                    throw new KernelException($"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
                             }
                         }
 

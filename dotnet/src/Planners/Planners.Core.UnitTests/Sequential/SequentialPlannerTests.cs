@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class SequentialPlannerTests
 {
@@ -64,7 +61,7 @@ public sealed class SequentialPlannerTests
         var planner = new SequentialPlanner(kernel);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync("goal"));
         Assert.True(exception?.InnerException?.Message?.Contains("Failed to parse plan xml strings", StringComparison.InvariantCulture));
     }
 
@@ -86,48 +83,49 @@ public sealed class SequentialPlannerTests
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
 
-    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
+    private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new SKPluginCollection();
+        plugins ??= new KernelPluginCollection();
 
         var textResult = new Mock<ITextResult>();
         textResult
             .Setup(tr => tr.GetCompletionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(testPlanString);
 
-        var textCompletionResult = new List<ITextResult> { textResult.Object };
+        var textGenerationResult = new List<ITextResult> { textResult.Object };
 
-        var textCompletion = new Mock<ITextCompletion>();
-        textCompletion
-            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(textCompletionResult);
+        var textGeneration = new Mock<ITextGenerationService>();
+        textGeneration
+            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(textGenerationResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<KernelFunction>()))
-            .Returns((textCompletion.Object, new AIRequestSettings()));
+            .Setup(ss => ss.SelectAIService<ITextGenerationService>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
+            .Returns((textGeneration.Object, new PromptExecutionSettings()));
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
 
-        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
+        return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
 
-    private SKPluginCollection CreatePluginCollection()
+    private KernelPluginCollection CreatePluginCollection()
     {
         return new()
         {
-            new SKPlugin("email", new[]
+            new KernelPlugin("email", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
-            new SKPlugin("WriterPlugin", new[]
+            new KernelPlugin("WriterPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
-            new SKPlugin("SummarizePlugin", new[]
+            new KernelPlugin("SummarizePlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })
         };
     }

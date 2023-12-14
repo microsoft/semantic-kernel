@@ -15,13 +15,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Weaviate.
@@ -77,7 +75,7 @@ public class WeaviateMemoryStore : IMemoryStore
         this._apiKey = apiKey;
         this._apiVersion = apiVersion;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
     /// <summary>
@@ -129,7 +127,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
             if (result == null || result.Description != description)
             {
-                throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
+                throw new KernelException($"Name conflict for collection: {collectionName} with class name: {className}");
             }
 
             this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
@@ -165,7 +163,7 @@ public class WeaviateMemoryStore : IMemoryStore
                 // For example a collectionName of '__this_collection' and 'this_collection' are
                 // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
                 // system could consider them as unique collection names.
-                throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
+                throw new KernelException($"Unable to verify existing collection: {collectionName} with class name: {className}");
             }
 
             return true;
@@ -204,7 +202,7 @@ public class WeaviateMemoryStore : IMemoryStore
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
         if (getSchemaResponse == null)
         {
-            throw new SKException("Unable to deserialize list collections response");
+            throw new KernelException("Unable to deserialize list collections response");
         }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
@@ -279,7 +277,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         if (result == null)
         {
-            throw new SKException("Unable to deserialize batch response");
+            throw new KernelException("Unable to deserialize batch response");
         }
 
         foreach (BatchResponse batchResponse in result)

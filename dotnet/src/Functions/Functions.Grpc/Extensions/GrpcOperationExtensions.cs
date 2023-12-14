@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 #pragma warning disable RCS1175 // Unused 'this' parameter 'operation'.
 
@@ -18,9 +17,9 @@ internal static class GrpcOperationExtensions
     /// TODO: not an extension method, `operation` is never used.
     /// </summary>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<SKParameterMetadata> GetParameters(this GrpcOperation operation)
+    public static IReadOnlyList<KernelParameterMetadata> GetParameters(this GrpcOperation operation)
     {
-        var parameters = new SKParameterMetadata[]
+        var parameters = new KernelParameterMetadata[]
         {
             // Register the "address" parameter so that it's possible to override it if needed.
             new(GrpcOperation.AddressArgumentName)

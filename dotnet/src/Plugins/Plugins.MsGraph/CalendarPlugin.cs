@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -21,47 +20,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class CalendarPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Event start as DateTimeOffset.
-        /// </summary>
-        public const string Start = "start";
-
-        /// <summary>
-        /// Event end as DateTimeOffset.
-        /// </summary>
-        public const string End = "end";
-
-        /// <summary>
-        /// Event's location.
-        /// </summary>
-        public const string Location = "location";
-
-        /// <summary>
-        /// Event's content.
-        /// </summary>
-        public const string Content = "content";
-
-        /// <summary>
-        /// Event's attendees, separated by ',' or ';'.
-        /// </summary>
-        public const string Attendees = "attendees";
-
-        /// <summary>
-        /// The name of the top parameter used to limit the number of results returned in the response.
-        /// </summary>
-        public const string MaxResults = "maxResults";
-
-        /// <summary>
-        /// The name of the skip parameter used to skip a certain number of results in the response.
-        /// </summary>
-        public const string Skip = "skip";
-    }
-
     private readonly ICalendarConnector _connector;
     private readonly ILogger _logger;
     private static readonly JsonSerializerOptions s_options = new()
@@ -84,25 +42,25 @@ public sealed class CalendarPlugin
     }
 
     /// <summary>
-    /// Add an event to my calendar using <see cref="ContextVariables.Input"/> as the subject.
+    /// Add an event to my calendar.
     /// </summary>
-    [SKFunction, Description("Add an event to my calendar.")]
+    [KernelFunction, Description("Add an event to my calendar.")]
     public async Task AddEventAsync(
-        [Description("Event subject"), SKName("input")] string subject,
+        [Description("Event subject")] string input,
         [Description("Event start date/time as DateTimeOffset")] DateTimeOffset start,
         [Description("Event end date/time as DateTimeOffset")] DateTimeOffset end,
         [Description("Event location (optional)")] string? location = null,
         [Description("Event content/body (optional)")] string? content = null,
         [Description("Event attendees, separated by ',' or ';'.")] string? attendees = null)
     {
-        if (string.IsNullOrWhiteSpace(subject))
+        if (string.IsNullOrWhiteSpace(input))
         {
-            throw new ArgumentException($"{nameof(subject)} variable was null or whitespace", nameof(subject));
+            throw new ArgumentException($"{nameof(input)} variable was null or whitespace", nameof(input));
         }
 
         CalendarEvent calendarEvent = new()
         {
-            Subject = subject,
+            Subject = input,
             Start = start,
             End = end,
             Location = location,
@@ -118,7 +76,7 @@ public sealed class CalendarPlugin
     /// <summary>
     /// Get calendar events with specified optional clauses used to query for messages.
     /// </summary>
-    [SKFunction, Description("Get calendar events.")]
+    [KernelFunction, Description("Get calendar events.")]
     public async Task<string> GetCalendarEventsAsync(
         [Description("Optional limit of the number of events to retrieve.")] int? maxResults = 10,
         [Description("Optional number of events to skip before retrieving results.")] int? skip = 0,

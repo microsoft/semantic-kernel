@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -14,8 +13,6 @@ using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettin
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
-
-#pragma warning disable SKEXP0001
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
@@ -45,7 +42,7 @@ public sealed class FlowOrchestratorTests : IDisposable
     public async Task CanExecuteFlowAsync()
     {
         // Arrange
-        KernelBuilder builder = this.InitializeKernelBuilder();
+        IKernelBuilder builder = this.InitializeKernelBuilder();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         var sessionId = Guid.NewGuid().ToString();
@@ -106,16 +103,11 @@ steps:
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .WithRetryBasic()
-            .WithAzureOpenAIChatCompletionService(
+        return Kernel.CreateBuilder()
+            .WithAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
-                alsoAsTextCompletion: true);
-
-        return builder;
+                apiKey: azureOpenAIConfiguration.ApiKey);
     }
 
     private readonly ILoggerFactory _logger;

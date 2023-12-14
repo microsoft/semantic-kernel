@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
@@ -16,10 +17,10 @@ public sealed class KernelExtensionTests
     public static void InvokeTwoPartTool()
     {
         //Arrange
-        var function = SKFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
-        var kernel = KernelBuilder.Create();
-        kernel.Plugins.Add(new SKPlugin("Fake", new[] { function }));
+        var kernel = new Kernel();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("Fake", "Fake functions", new[] { function }));
 
         //Act
         var tool = kernel.GetAssistantTool(TwoPartToolName);
@@ -35,9 +36,9 @@ public sealed class KernelExtensionTests
     public static void InvokeInvalidSinglePartTool(string toolName)
     {
         //Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = new Kernel();
 
         //Act & Assert
-        Assert.Throws<SKException>(() => kernel.GetAssistantTool(toolName));
+        Assert.Throws<AssistantException>(() => kernel.GetAssistantTool(toolName));
     }
 }

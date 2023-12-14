@@ -6,18 +6,15 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A flow orchestrator that using semantic kernel for execution.
 /// </summary>
 public class FlowOrchestrator
 {
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
 
     private readonly IFlowStatusProvider _flowStatusProvider;
 
@@ -72,7 +69,7 @@ public class FlowOrchestrator
         }
         catch (Exception ex)
         {
-            throw new SKException("Invalid flow", ex);
+            throw new KernelException("Invalid flow", ex);
         }
 
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);

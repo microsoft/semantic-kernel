@@ -3,12 +3,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Base class for blocks parsed from a prompt template
 /// </summary>
-public abstract class Block
+internal abstract class Block
 {
     internal virtual BlockTypes Type => BlockTypes.Undefined;
 

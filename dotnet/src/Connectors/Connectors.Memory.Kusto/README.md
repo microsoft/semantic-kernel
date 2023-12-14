@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Memory.Kusto
+﻿# Microsoft.SemanticKernel.Connectors.Kusto
 
 This connector uses [Azure Data Explorer (Kusto)](https://learn.microsoft.com/en-us/azure/data-explorer/) to implement Semantic Memory.
 
@@ -16,7 +16,7 @@ KustoMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
 Kernel kernel = new KernelBuilder()
     .WithLogger(ConsoleLogger.Log)
-    .WithOpenAITextCompletionService(modelId: TestConfiguration.OpenAI.ModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
+    .WithOpenAITextGenerationService(modelId: TestConfiguration.OpenAI.ModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
     .WithOpenAITextEmbeddingGenerationService(modelId: TestConfiguration.OpenAI.EmbeddingModelId,apiKey: TestConfiguration.OpenAI.ApiKey)
     .WithMemoryStorage(memoryStore)
     .Build();
