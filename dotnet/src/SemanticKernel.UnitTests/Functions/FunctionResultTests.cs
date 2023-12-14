@@ -29,7 +29,7 @@ public class FunctionResultTests
     {
         object resultValue = new();
         CultureInfo culture = new("fr-FR");
-        IDictionary<string, object?> metadata = new Dictionary<string, object?>();
+        var metadata = new Dictionary<string, object?>();
 
         FunctionResult result = new(s_nopFunction, resultValue, culture);
         Assert.Same(resultValue, result.GetValue<object>());
