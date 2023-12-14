@@ -57,7 +57,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Kernel target = this._kernelBuilder
             .AddOpenAIChatCompletion(
                 serviceId: openAIConfiguration.ServiceId,
-                modelId: openAIConfiguration.ChatModelId,
+                modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey)
             .Build();
 
@@ -186,7 +186,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder
             .AddOpenAIChatCompletion(
                 serviceId: openAIConfiguration.ServiceId,
-                modelId: openAIConfiguration.ChatModelId,
+                modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY"); // Use an invalid API key to force a 401 Unauthorized response
         this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
@@ -220,8 +220,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         builder.AddAzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-            modelId: azureOpenAIConfiguration.ChatModelId,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
@@ -294,7 +293,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder
             .AddOpenAIChatCompletion(
-                modelId: openAIConfiguration.ChatModelId,
+                modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
@@ -317,8 +316,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         Kernel target = this._kernelBuilder
             .AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-                modelId: azureOpenAIConfiguration.ChatModelId,
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: "INVALID_KEY",
                 serviceId: azureOpenAIConfiguration.ServiceId)
@@ -342,8 +340,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         Kernel target = this._kernelBuilder
             .AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-                modelId: azureOpenAIConfiguration.ChatModelId,
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
                 serviceId: azureOpenAIConfiguration.ServiceId)
@@ -438,7 +435,7 @@ public sealed class OpenAICompletionTests : IDisposable
             @"{
                 ""name"": ""FishMarket2"",
                 ""execution_settings"": {
-                    ""azure-text-davinci-003"": {
+                    ""azure-open-ai"": {
                         ""max_tokens"": 256
                     }
                 }
@@ -488,12 +485,12 @@ public sealed class OpenAICompletionTests : IDisposable
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
         Assert.NotNull(openAIConfiguration);
-        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ModelId);
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: openAIConfiguration.ChatModelId,
+            modelId: openAIConfiguration.ModelId,
             apiKey: openAIConfiguration.ApiKey,
             serviceId: openAIConfiguration.ServiceId);
     }
@@ -503,14 +500,13 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
-        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-            modelId: azureOpenAIConfiguration.ChatModelId,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
@@ -524,8 +520,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-            modelId: azureOpenAIConfiguration.ChatModelId,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "invalid-api-key",
             serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}");
@@ -536,14 +531,13 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
-        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-            modelId: azureOpenAIConfiguration.ChatModelId,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);

@@ -79,7 +79,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
         IKernelBuilder builder = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
 

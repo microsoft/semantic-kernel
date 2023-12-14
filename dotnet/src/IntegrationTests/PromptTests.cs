@@ -101,7 +101,6 @@ public sealed class PromptTests : IDisposable
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
-            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);

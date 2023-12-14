@@ -79,8 +79,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         builder.Services.AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId,
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
 
