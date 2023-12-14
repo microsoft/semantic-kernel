@@ -18,7 +18,7 @@ public sealed class FunctionResult
     /// <param name="value">The resulting object of the function's invocation.</param>
     /// <param name="culture">The culture configured on the <see cref="Kernel"/> that executed the function.</param>
     /// <param name="metadata">Metadata associated with the function's execution</param>
-    public FunctionResult(KernelFunction function, object? value = null, CultureInfo? culture = null, IDictionary<string, object?>? metadata = null)
+    public FunctionResult(KernelFunction function, object? value = null, CultureInfo? culture = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         Verify.NotNull(function);
 
@@ -36,7 +36,7 @@ public sealed class FunctionResult
     /// <summary>
     /// Gets any metadata associated with the function's execution.
     /// </summary>
-    public IDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Gets the <see cref="Type"/> of the function's result.
