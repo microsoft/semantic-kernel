@@ -1,4 +1,4 @@
-﻿# Microsoft.SemanticKernel.Connectors.Memory.Redis
+﻿# Microsoft.SemanticKernel.Connectors.Redis
 
 This connector uses Redis to implement Semantic Memory. It requires the [RediSearch](https://redis.io/docs/interact/search-and-query/) module to be enabled on Redis to implement vector similarity search.
 
@@ -30,7 +30,7 @@ ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.Connec
 IDatabase database = connectionMultiplexer.GetDatabase();
 RedisMemoryStore memoryStore = new RedisMemoryStore(database, vectorSize: 1536);
 
-IKernel kernel = new KernelBuilder()
+Kernel kernel = new KernelBuilder()
     .WithLogger(ConsoleLogger.Logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)

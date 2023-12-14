@@ -3,14 +3,13 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /**
  * This example shows how to use Azure OpenAI Chat Completion with data.
  * More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
  */
-// ReSharper disable once InconsistentNaming
 public static class Example54_AzureChatCompletionWithData
 {
     public static async Task RunAsync()
@@ -30,19 +29,18 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
-        var chatHistory = chatCompletion.CreateNewChat();
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
+        var chatHistory = new ChatHistory();
 
         // First question without previous context based on uploaded content.
         var ask = "How did Emily and David meet?";
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory))[0];
-        var chatMessage = await chatResult.GetChatMessageAsync();
+        var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
-        var response = chatMessage.Content;
-        var toolResponse = chatResult.ModelResult.GetResult<ChatWithDataModelResult>().ToolContent;
+        var response = chatMessage.Content!;
+        var toolResponse = chatMessage.ToolContent;
 
         // Output
         // Ask: How did Emily and David meet?
@@ -67,16 +65,9 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
+        await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
-            await foreach (var message in result.GetStreamingChatMessageAsync())
-            {
-                // Output
-                // Ask: What are Emily and David studying?
-                // Response: They are passionate scientists who study glaciology,
-                // a branch of geology that deals with the study of ice and its effects.
-                Console.Write(message.Content);
-            }
+            Console.Write(word);
         }
 
         Console.WriteLine(Environment.NewLine);
@@ -90,14 +81,14 @@ public static class Example54_AzureChatCompletionWithData
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        IKernel kernel = new KernelBuilder()
-            .WithAzureChatCompletionService(config: completionWithDataConfig)
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
-        var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
+        var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var response = await kernel.RunAsync(ask, semanticFunction);
+        var response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
 
         // Output
         // Ask: How did Emily and David meet?
@@ -108,7 +99,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.RunAsync(ask, semanticFunction);
+        response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
 
         // Output
         // Ask: What are Emily and David studying?
@@ -120,18 +111,18 @@ public static class Example54_AzureChatCompletionWithData
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureChatCompletionWithDataConfig"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
     /// </summary>
-    private static AzureChatCompletionWithDataConfig GetCompletionWithDataConfig()
+    private static AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig()
     {
-        return new AzureChatCompletionWithDataConfig
+        return new AzureOpenAIChatCompletionWithDataConfig
         {
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
             CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
-            DataSourceApiKey = TestConfiguration.ACS.ApiKey,
-            DataSourceIndex = TestConfiguration.ACS.IndexName
+            DataSourceEndpoint = TestConfiguration.AzureAISearch.Endpoint,
+            DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
+            DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
     }
 }

@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Memory;
+namespace SemanticKernel.UnitTests.Memory;
 
 public class VolatileMemoryStoreTests
 {
@@ -100,7 +99,7 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Assert
-        await Assert.ThrowsAsync<SKException>(async () => await this._db.UpsertAsync(collection, testRecord));
+        await Assert.ThrowsAsync<KernelException>(async () => await this._db.UpsertAsync(collection, testRecord));
     }
 
     [Fact]
@@ -587,6 +586,6 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Act
-        await Assert.ThrowsAsync<SKException>(() => this._db.DeleteCollectionAsync(collection));
+        await Assert.ThrowsAsync<KernelException>(() => this._db.DeleteCollectionAsync(collection));
     }
 }

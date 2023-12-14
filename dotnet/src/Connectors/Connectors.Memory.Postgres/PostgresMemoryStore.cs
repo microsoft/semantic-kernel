@@ -7,13 +7,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
-using Pgvector.Npgsql;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
@@ -210,7 +208,9 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
         if (disposing)
         {
-            this._dataSource?.Dispose();
+            // Avoid error when running in .Net 7 where it throws
+            // Could not load type 'System.Data.Common.DbDataSource' from assembly 'Npgsql, Version=7.*
+            (this._dataSource as IDisposable)?.Dispose();
         }
     }
 

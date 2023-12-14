@@ -1,4 +1,4 @@
-# Microsoft.SemanticKernel.Connectors.Memory.Milvus
+# Microsoft.SemanticKernel.Connectors.Milvus
 
 This is an implementation of the Semantic Kernel Memory Store abstraction for the [Milvus vector database](https://milvus.io).
 
@@ -23,7 +23,7 @@ docker-compose up -d
 ```csharp
 using MilvusMemoryStore memoryStore = new("localhost");
 
-IKernel kernel = new KernelBuilder()
+Kernel kernel = new KernelBuilder()
     .WithLogger(logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
     .WithMemoryStorage(memoryStore)

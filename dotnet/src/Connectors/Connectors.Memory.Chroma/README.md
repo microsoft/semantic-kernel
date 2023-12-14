@@ -1,4 +1,4 @@
-# Microsoft.SemanticKernel.Connectors.Memory.Chroma
+# Microsoft.SemanticKernel.Connectors.Chroma
 
 This assembly contains implementation of Semantic Kernel Memory Store using [Chroma](https://docs.trychroma.com/), open-source embedding database.
 
@@ -25,7 +25,7 @@ const string endpoint = "http://localhost:8000";
 
 ChromaMemoryStore memoryStore = new(endpoint);
 
-IKernel kernel = new KernelBuilder()
+Kernel kernel = new KernelBuilder()
     .WithLogger(logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
     .WithMemoryStorage(memoryStore)
