@@ -31,7 +31,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         StreamingChatCompletionsUpdate chatUpdate,
         int choiceIndex,
         string modelId,
-        Dictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
             chatUpdate.ContentUpdate,
@@ -62,7 +62,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         CompletionsFinishReason? completionsFinishReason = null,
         int choiceIndex = 0,
         string? modelId = null,
-        Dictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             authorRole,
             content,
