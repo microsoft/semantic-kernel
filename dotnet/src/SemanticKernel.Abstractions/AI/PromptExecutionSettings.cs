@@ -15,29 +15,24 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class PromptExecutionSettings
 {
-    private Dictionary<string, object>? _extensionData;
-
     /// <summary>
-    /// Service identifier.
-    /// This identifies a service and is set when the AI service is registered.
+    /// Default service identifier.
     /// </summary>
-    [JsonPropertyName("service_id")]
-    public string? ServiceId { get; set; } = null;
+    public const string DefaultServiceId = "default";
 
     /// <summary>
     /// Model identifier.
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
     [JsonPropertyName("model_id")]
-    public string? ModelId { get; set; } = null;
+    public string? ModelId { get; set; }
 
     /// <summary>
-    /// Extra properties
+    /// Extra properties that may be included in the serialized execution settings.
     /// </summary>
+    /// <remarks>
+    /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="PromptExecutionSettings"/>.
+    /// </remarks>
     [JsonExtensionData]
-    public Dictionary<string, object> ExtensionData
-    {
-        get => this._extensionData ??= new();
-        set => this._extensionData = value;
-    }
+    public Dictionary<string, object>? ExtensionData { get; set; }
 }

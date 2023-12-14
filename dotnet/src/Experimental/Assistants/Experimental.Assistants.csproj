@@ -20,6 +20,7 @@
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Assistants.UnitTests" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup>

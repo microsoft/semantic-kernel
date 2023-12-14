@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
  * This example shows how to use Azure OpenAI Chat Completion with data.
  * More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
  */
-// ReSharper disable once InconsistentNaming
 public static class Example54_AzureChatCompletionWithData
 {
     public static async Task RunAsync()
@@ -40,7 +39,7 @@ public static class Example54_AzureChatCompletionWithData
         // Chat Completion example
         var chatMessage = (AzureOpenAIWithDataChatMessageContent)await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
-        var response = chatMessage.Content;
+        var response = chatMessage.Content!;
         var toolResponse = chatMessage.ToolContent;
 
         // Output
@@ -82,14 +81,14 @@ public static class Example54_AzureChatCompletionWithData
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var response = await kernel.InvokeAsync(function, new(ask));
+        var response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
 
         // Output
         // Ask: How did Emily and David meet?
@@ -100,7 +99,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
-        response = await kernel.InvokeAsync(function, new(ask));
+        response = await kernel.InvokeAsync(function, new() { ["input"] = ask });
 
         // Output
         // Ask: What are Emily and David studying?

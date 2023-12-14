@@ -3,13 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
 public static class Example45_MultiStreamingChatCompletion
 {
     // First procress multiple Azure OpenAI chat completions

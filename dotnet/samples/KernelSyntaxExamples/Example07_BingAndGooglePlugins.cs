@@ -13,8 +13,6 @@ using Microsoft.SemanticKernel.Plugins.Web.Google;
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
 public static class Example07_BingAndGooglePlugins
 {
     public static async Task RunAsync()
@@ -28,7 +26,7 @@ public static class Example07_BingAndGooglePlugins
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
@@ -75,7 +73,7 @@ public static class Example07_BingAndGooglePlugins
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
-        var result = await kernel.InvokeAsync(function, new(question));
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");

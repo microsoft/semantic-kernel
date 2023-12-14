@@ -8,8 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-using Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
@@ -108,7 +107,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
-        var parameters = putOperation.GetParameters();
+        var parameters = putOperation.GetParameters(addPayloadParamsFromMetadata: false);
         Assert.NotNull(parameters);
         Assert.True(parameters.Count >= 5);
 
@@ -208,12 +207,15 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.True(operations.Any());
 
         var operation = operations.Single(o => o.Id == "SetSecret");
-        Assert.NotNull(operation.Headers);
-        Assert.Equal(3, operation.Headers.Count);
 
-        Assert.True(operation.Headers.ContainsKey("Accept"));
-        Assert.True(operation.Headers.ContainsKey("X-API-Version"));
-        Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
+        var headerParameters = operation.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+
+        Assert.NotNull(headerParameters);
+        Assert.Equal(3, headerParameters.Count());
+
+        Assert.Contains(headerParameters, (p) => p.Name == "Accept");
+        Assert.Contains(headerParameters, (p) => p.Name == "X-API-Version");
+        Assert.Contains(headerParameters, (p) => p.Name == "X-Operation-Csv-Ids");
     }
 
     [Fact]

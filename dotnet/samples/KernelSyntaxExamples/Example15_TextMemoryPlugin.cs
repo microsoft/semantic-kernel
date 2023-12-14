@@ -4,26 +4,24 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
-using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Connectors.Chroma;
+using Microsoft.SemanticKernel.Connectors.DuckDB;
+using Microsoft.SemanticKernel.Connectors.Kusto;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Postgres;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Redis;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
-using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
-// ReSharper disable once InconsistentNaming
 public static class Example15_TextMemoryPlugin
 {
     private const string MemoryCollectionName = "aboutMe";
@@ -150,13 +148,13 @@ public static class Example15_TextMemoryPlugin
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Create an embedding generator to use for semantic memory.
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
@@ -200,8 +198,9 @@ public static class Example15_TextMemoryPlugin
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.InvokeAsync(memoryPlugin["Save"], new("My family is from New York")
+        await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
+            [TextMemoryPlugin.InputParam] = "My family is from New York",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
         }, cancellationToken);
@@ -242,8 +241,9 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
-        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new("Ask: where do I live?")
+        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new()
         {
+            [TextMemoryPlugin.InputParam] = "Ask: where do I live?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
@@ -289,8 +289,9 @@ Answer:
 
         var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.InvokeAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
+        result = await kernel.InvokeAsync(aboutMeOracle, new()
         {
+            [TextMemoryPlugin.InputParam] = "Do I live in the same town where I grew up?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",

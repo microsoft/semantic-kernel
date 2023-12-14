@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -27,7 +26,7 @@ public sealed class OpenAIStreamingTextContent : StreamingTextContent
         int choiceIndex,
         string modelId,
         object? innerContentObject = null,
-        Dictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             text,
             choiceIndex,

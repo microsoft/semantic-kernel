@@ -1,21 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
 {
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Method Function types ========");
 
-        var kernel = new KernelBuilder()
+        var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
@@ -38,17 +35,17 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin["type04"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type04"]);
 
-        await kernel.InvokeAsync(plugin["type05"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"]);
+        await kernel.InvokeAsync(plugin["type05"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"], new() { ["x"] = "" });
 
-        await kernel.InvokeAsync(plugin["type06"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"]);
+        await kernel.InvokeAsync(plugin["type06"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"], new() { ["x"] = "" });
 
-        await kernel.InvokeAsync(plugin["type07"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"]);
+        await kernel.InvokeAsync(plugin["type07"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"], new() { ["x"] = "" });
 
-        await kernel.InvokeAsync(plugin["type08"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"]);
+        await kernel.InvokeAsync(plugin["type08"], new() { ["x"] = "" });
+        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"], new() { ["x"] = "" });
 
         await kernel.InvokeAsync(plugin["type09"]);
         await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
@@ -84,7 +81,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new("blah blah blah"));
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = "blah blah blah" });
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }

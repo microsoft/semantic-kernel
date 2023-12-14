@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-// ReSharper disable once InconsistentNaming
 public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 {
     /// <summary>
@@ -31,14 +30,14 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
             return;
         }
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.AddConsole());
         builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,
-            modelId: modelId,
             endpoint: endpoint,
             serviceId: serviceId,
-            apiKey: apiKey);
+            apiKey: apiKey,
+            modelId: modelId);
         Kernel kernel = builder.Build();
 
         var arguments = new KernelArguments();

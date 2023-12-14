@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Plugins;
 
-/*
- * This example shows how to use kernel arguments when invoking functions.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use kernel arguments when invoking functions.
 public static class Example03_Arguments
 {
     public static async Task RunAsync()
@@ -19,8 +16,9 @@ public static class Example03_Arguments
         Kernel kernel = new();
         var textPlugin = kernel.ImportPluginFromType<StaticTextPlugin>();
 
-        var arguments = new KernelArguments("Today is: ")
+        var arguments = new KernelArguments()
         {
+            ["input"] = "Today is: ",
             ["day"] = DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture)
         };
 

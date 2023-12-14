@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Events;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -21,9 +20,9 @@ public class FunctionFromMethodTests
         var sut = KernelFunctionFactory.CreateFromMethod(() => nativeContent);
 
         var chunkCount = 0;
-        StreamingContentBase? lastChunk = null;
+        StreamingKernelContent? lastChunk = null;
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingKernelContent>(kernel))
         {
             chunkCount++;
             lastChunk = chunk;
@@ -32,7 +31,7 @@ public class FunctionFromMethodTests
         // Assert
         Assert.Equal(1, chunkCount);
         Assert.NotNull(lastChunk);
-        Assert.IsAssignableFrom<StreamingContentBase>(lastChunk);
+        Assert.IsAssignableFrom<StreamingKernelContent>(lastChunk);
         Assert.IsType<StreamingMethodContent>(lastChunk);
 
         var methodContent = lastChunk as StreamingMethodContent;
@@ -61,7 +60,7 @@ public class FunctionFromMethodTests
         };
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingKernelContent>(kernel))
         {
         }
 
@@ -85,8 +84,8 @@ public class FunctionFromMethodTests
         };
 
         // Act
-        IAsyncEnumerable<StreamingContentBase> enumerable = sut.InvokeStreamingAsync<StreamingContentBase>(kernel);
-        IAsyncEnumerator<StreamingContentBase> enumerator = enumerable.GetAsyncEnumerator();
+        IAsyncEnumerable<StreamingKernelContent> enumerable = sut.InvokeStreamingAsync<StreamingKernelContent>(kernel);
+        IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
         Assert.False(invokingCalled);
         var e = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
 
@@ -113,7 +112,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingKernelContent>(kernel))
         {
             chunkCount++;
         }

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-// ReSharper disable once InconsistentNaming
 public static class Example61_MultipleLLMs
 {
     /// <summary>
@@ -35,17 +34,17 @@ public static class Example61_MultipleLLMs
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
+                apiKey: azureApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId,
-                apiKey: azureApiKey)
+                modelId: azureModelId)
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
+                apiKey: openAIApiKey,
+                serviceId: "OpenAIChat")
             .Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
@@ -59,12 +58,12 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokePromptAsync(
-           prompt,
-           new(new PromptExecutionSettings()
-           {
-               ServiceId = serviceId
-           }));
+        KernelArguments arguments = new();
+        arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
+        {
+            { serviceId, new PromptExecutionSettings() }
+        };
+        var result = await kernel.InvokePromptAsync(prompt, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -89,10 +88,10 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new List<PromptExecutionSettings>();
+        var modelSettings = new Dictionary<string, PromptExecutionSettings>();
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
+            modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
         }
         var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 

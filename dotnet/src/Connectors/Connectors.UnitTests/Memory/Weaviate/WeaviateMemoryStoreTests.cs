@@ -8,10 +8,10 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Weaviate;
+namespace SemanticKernel.Connectors.UnitTests.Weaviate;
 
 /// <summary>
 /// Unit tests for <see cref="WeaviateMemoryStore"/> class.

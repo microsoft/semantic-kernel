@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example52_ApimAuth
 {
     public static async Task RunAsync()
@@ -48,9 +47,11 @@ public static class Example52_ApimAuth
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
-        builder.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, openAIClient);
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            openAIClient: openAIClient);
         Kernel kernel = builder.Build();
 
         // Load semantic plugin defined with prompt templates
@@ -61,7 +62,7 @@ public static class Example52_ApimAuth
         // Run
         var result = await kernel.InvokeAsync(
             kernel.Plugins["FunPlugin"]["Excuses"],
-            new("I have no homework")
+            new() { ["input"] = "I have no homework" }
         );
         Console.WriteLine(result.GetValue<string>());
 

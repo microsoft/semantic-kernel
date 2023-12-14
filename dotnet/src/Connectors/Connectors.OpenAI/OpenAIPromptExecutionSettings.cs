@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,21 +14,23 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Execution settings for an OpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public class OpenAIPromptExecutionSettings : PromptExecutionSettings
+public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
+    /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0;
+    public double Temperature { get; set; } = 1;
 
     /// <summary>
     /// TopP controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
+    /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; } = 0;
+    public double TopP { get; set; } = 1;
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -35,7 +38,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// model's likelihood to talk about new topics.
     /// </summary>
     [JsonPropertyName("presence_penalty")]
-    public double PresencePenalty { get; set; } = 0;
+    public double PresencePenalty { get; set; }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -43,7 +46,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
-    public double FrequencyPenalty { get; set; } = 0;
+    public double FrequencyPenalty { get; set; }
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
@@ -55,7 +58,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
-    public IList<string>? StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string>? StopSequences { get; set; }
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.
@@ -64,6 +67,14 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("results_per_prompt")]
     public int ResultsPerPrompt { get; set; } = 1;
+
+    /// <summary>
+    /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
+    /// same seed and parameters should return the same result. Determinism is not guaranteed.
+    /// </summary>
+    [Experimental("SKEXP0013")]
+    [JsonPropertyName("seed")]
+    public long? Seed { get; set; }
 
     /// <summary>
     /// The system prompt to use when generating text using a chat model.
@@ -75,7 +86,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         get => this._chatSystemPrompt;
         set
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 value = DefaultChatSystemPrompt;
             }
@@ -87,28 +98,28 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     [JsonPropertyName("token_selection_biases")]
-    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
+    public IDictionary<int, int>? TokenSelectionBiases { get; set; }
 
     /// <summary>
-    /// Gets or sets the behavior for how function calls are handled.
+    /// Gets or sets the behavior for how tool calls are handled.
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
-    /// <item>To disable all function calling, set the property to null (the default).</item>
+    /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To request that the model use a specific function, set the property to an instance returned
-    /// from <see cref="FunctionCallBehavior.RequireFunction"/>.
+    /// from <see cref="ToolCallBehavior.RequireFunction"/>.
     /// </item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="FunctionCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="ToolCallBehavior.EnableFunctions"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
     /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
-    /// set the property to <see cref="FunctionCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// set the property to <see cref="ToolCallBehavior.EnableKernelFunctions"/> if the client should simply
     /// send the information about the functions and not handle the response in any special manner, or
-    /// <see cref="FunctionCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// <see cref="ToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
     /// invoke the function and send the result back to the service.
     /// </item>
     /// </list>
@@ -119,7 +130,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
-    public FunctionCallBehavior? FunctionCallBehavior { get; set; }
+    public ToolCallBehavior? ToolCallBehavior { get; set; }
 
     /// <summary>
     /// Default value for chat system property.

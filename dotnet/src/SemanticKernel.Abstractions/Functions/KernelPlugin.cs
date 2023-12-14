@@ -24,8 +24,8 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
-    /// <exception cref="ArgumentException"><paramref name="name"/> if plugin name is invalid.</exception>
-    /// <exception cref="ArgumentException"><paramref name="name"/> if plugin with this name is already registered.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is an invalid plugin name.</exception>
     protected KernelPlugin(string name, string? description = null)
     {
         Verify.ValidPluginName(name);

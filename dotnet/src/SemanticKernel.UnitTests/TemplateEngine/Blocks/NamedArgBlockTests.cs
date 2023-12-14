@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class NamedArgBlockTests
 {
