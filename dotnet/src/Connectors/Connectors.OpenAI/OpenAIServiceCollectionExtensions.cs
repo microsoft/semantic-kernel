@@ -1067,7 +1067,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL</param>
     /// <param name="apiKey">Azure OpenAI API key</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier</param>
     /// <param name="apiVersion">Azure OpenAI API version</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
@@ -1078,7 +1077,6 @@ public static class OpenAIServiceCollectionExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null)
     {
@@ -1091,7 +1089,6 @@ public static class OpenAIServiceCollectionExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                modelId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 apiVersion));
@@ -1129,7 +1126,6 @@ public static class OpenAIServiceCollectionExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }

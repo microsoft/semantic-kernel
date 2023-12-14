@@ -32,7 +32,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <param name="deploymentName">Deployment name identifier</param>
     /// <param name="endpoint">Azure OpenAI deployment URL</param>
     /// <param name="apiKey">Azure OpenAI API key</param>
-    /// <param name="modelId">Model name identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
@@ -40,7 +39,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         string deploymentName,
         string endpoint,
         string apiKey,
-        string? modelId = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
         string? apiVersion = null)
@@ -51,11 +49,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         this._deploymentName = deploymentName;
 
         this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
-        if (string.Equals(modelId, "dall-e-2", StringComparison.OrdinalIgnoreCase))
-        {
-            this._logger.LogWarning($"{nameof(AzureOpenAITextToImageService)} supports only Dall-E-3. .");
-            throw new NotSupportedException("Dall-E-2 support was deprecated in Azure Open AI latest SDK. Please use a 'dall-e-3' deployment.");
-        }
 
         var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
         if (connectorEndpoint is null)
@@ -68,7 +61,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             GetClientOptions(httpClient, apiVersion));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc/>a
     public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
 
     /// <inheritdoc/>
@@ -80,19 +73,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
-        const string SizeErr = "Dall-E 2 can generate only square images of size 256x256, 512x512, or 1024x1024";
 
-        if (width != height)
+        var size = (width, height) switch
         {
-            throw new ArgumentOutOfRangeException("width,height", $"{width}x{height}", SizeErr);
-        }
-
-        var size = width switch
-        {
-            256 => ImageSize.Size256x256,
-            512 => ImageSize.Size512x512,
-            1024 => ImageSize.Size1024x1024,
-            _ => throw new ArgumentOutOfRangeException(nameof(width), SizeErr)
+            (1024, 1024) => ImageSize.Size1024x1024,
+            (1792, 1024) => ImageSize.Size1792x1024,
+            (1024,1792) => ImageSize.Size1024x1792,
+            _ => throw new NotSupportedException("Dall-E 3 can only generate images of the following sizes 1024x1024, 1792x1024, or 1024x1792")
         };
 
         Response<ImageGenerations> imageGenerations;
@@ -106,9 +93,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
                     Size = size,
                 }, cancellationToken).ConfigureAwait(false);
         }
-        catch (RequestFailedException e) when (e.Status == 404)
+        catch (RequestFailedException e)
         {
-            this._logger.LogError("Image generation failed with status code 404. This error can occur also when attempting to use Dall-E-3 which is still not supported");
             throw e.ToHttpOperationException();
         }
 
@@ -129,13 +115,9 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     {
         OpenAIClientOptions.ServiceVersion version = apiVersion switch
         {
-            "2022-12-01" => OpenAIClientOptions.ServiceVersion.V2022_12_01,
-            "2023-05-15" => OpenAIClientOptions.ServiceVersion.V2023_05_15,
-            "2023-06-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_06_01_Preview,
-            "2023-07-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_07_01_Preview,
-            "2023-08-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_08_01_Preview,
+            // Dalle-E-3 is only supported in 2023-12-01-preview
             "2023-12-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview,
-            _ => OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview
+            _ => OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview
         };
 
         var options = new OpenAIClientOptions(version)
@@ -145,6 +127,9 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         if (httpClient != null)
         {
+            // Disable retries when using a custom HttpClient
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0);
+
             options.Transport = new HttpClientTransport(httpClient);
         }
 
