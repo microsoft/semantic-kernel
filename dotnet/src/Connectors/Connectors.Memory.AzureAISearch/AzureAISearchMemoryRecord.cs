@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// Azure AI Search record and index definition.
