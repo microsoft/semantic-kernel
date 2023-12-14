@@ -4,7 +4,7 @@ using System.Net;
 using Azure;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.
