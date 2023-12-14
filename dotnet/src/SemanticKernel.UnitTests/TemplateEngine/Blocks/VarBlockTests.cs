@@ -2,10 +2,10 @@
 
 using System;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class VarBlockTests
 {
@@ -37,33 +37,33 @@ public class VarBlockTests
     }
 
     [Fact]
-    public void ItRendersToEmptyStringWithoutArgument()
+    public void ItRendersToNullWithNoArgument()
     {
         // Arrange
-        var target = new VarBlock("  $var \n ");
+        var target = new VarBlock("$var");
 
         // Act
-        var result = target.Render(null);
+        var result = target.Render(new KernelArguments());
 
         // Assert
-        Assert.Equal(string.Empty, result);
+        Assert.Null(result);
     }
 
     [Fact]
-    public void ItRendersToEmptyStringIfArgumentIsMissing()
+    public void ItRendersToNullWithNullArgument()
     {
         // Arrange
-        var target = new VarBlock("  $var \n ");
+        var target = new VarBlock("$var");
         var arguments = new KernelArguments()
         {
-            ["foo"] = "bar"
+            ["$var"] = null
         };
 
         // Act
         var result = target.Render(arguments);
 
         // Assert
-        Assert.Equal(string.Empty, result);
+        Assert.Null(result);
     }
 
     [Fact]

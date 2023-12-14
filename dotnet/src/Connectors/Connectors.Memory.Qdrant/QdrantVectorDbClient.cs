@@ -11,10 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// An implementation of a client for the Qdrant Vector Database. This class is used to
@@ -194,7 +193,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");
@@ -235,7 +234,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");

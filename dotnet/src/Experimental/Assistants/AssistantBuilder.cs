@@ -6,6 +6,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using YamlDotNet.Serialization;
@@ -41,12 +42,12 @@ public partial class AssistantBuilder
     {
         if (string.IsNullOrWhiteSpace(this._model.Model))
         {
-            throw new KernelException("Model must be defined for assistant.");
+            throw new AssistantException("Model must be defined for assistant.");
         }
 
         if (string.IsNullOrWhiteSpace(this._apiKey))
         {
-            throw new KernelException("ApiKey must be provided for assistant.");
+            throw new AssistantException("ApiKey must be provided for assistant.");
         }
 
         return
@@ -172,7 +173,7 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugin(IKernelPlugin? plugin)
+    public AssistantBuilder WithPlugin(KernelPlugin? plugin)
     {
         if (plugin != null)
         {
@@ -186,7 +187,7 @@ public partial class AssistantBuilder
     /// Define functions associated with assistant instance (optional).
     /// </summary>
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
-    public AssistantBuilder WithPlugins(IEnumerable<IKernelPlugin> plugins)
+    public AssistantBuilder WithPlugins(IEnumerable<KernelPlugin> plugins)
     {
         this._plugins.AddRange(plugins);
 

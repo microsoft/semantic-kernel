@@ -10,9 +10,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
 
-/**
- * This example shows how to use the Handlebars sequential planner.
- */
+// This example shows how to use the Handlebars sequential planner.
 public static class Example65_HandlebarsPlanner
 {
     private static int s_sampleIndex;
@@ -25,16 +23,15 @@ public static class Example65_HandlebarsPlanner
     public static async Task RunAsync()
     {
         s_sampleIndex = 1;
-        bool shouldPrintPrompt = true;
+
+        // Using Complex Types as inputs and outputs
+        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt: true);
 
         // Using primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
         await RunDictionaryWithBasicTypesSampleAsync();
         await RunPoetrySampleAsync();
         await RunBookSampleAsync();
-
-        // Using Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -55,23 +52,22 @@ public static class Example65_HandlebarsPlanner
             return;
         }
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new StringParamsDictionaryPlugin(), StringParamsDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new ComplexParamsDictionaryPlugin(), ComplexParamsDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == CourseraPluginName)
         {
@@ -94,7 +90,7 @@ public static class Example65_HandlebarsPlanner
         // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
         var allowLoopsInPlan = chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
         var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerConfig()
+            new HandlebarsPlannerOptions()
             {
                 // Change this if you want to test with loops regardless of model selection.
                 AllowLoops = allowLoopsInPlan
@@ -106,7 +102,7 @@ public static class Example65_HandlebarsPlanner
         var plan = await planner.CreatePlanAsync(kernel, goal);
 
         // Print the prompt template
-        if (shouldPrintPrompt)
+        if (shouldPrintPrompt && plan.Prompt is not null)
         {
             Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
         }
@@ -114,7 +110,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 
@@ -127,7 +123,9 @@ public static class Example65_HandlebarsPlanner
             // Load additional plugins to enable planner but not enough for the given goal.
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
-        catch (KernelException e)
+        catch (KernelException ex) when (
+            ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase))
         {
             /*
                 Unable to create plan for goal with available functions.
@@ -138,7 +136,7 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"{e.Message}\n");
+            Console.WriteLine($"\n{ex.Message}\n");
         }
     }
 

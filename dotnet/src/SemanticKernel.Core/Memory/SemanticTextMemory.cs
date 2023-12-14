@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0003")]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly ITextEmbeddingGenerationService _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
     /// <summary>
@@ -28,7 +28,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     /// <param name="embeddingGenerator">The text embedding generator to use for generating embeddings.</param>
     public SemanticTextMemory(
         IMemoryStore storage,
-        ITextEmbeddingGeneration embeddingGenerator)
+        ITextEmbeddingGenerationService embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;

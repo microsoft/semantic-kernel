@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -19,6 +18,12 @@ public sealed class PromptTemplateConfig
     /// Semantic Kernel template format.
     /// </summary>
     public const string SemanticKernelTemplateFormat = "semantic-kernel";
+
+    /// <summary>Lazily-initialized input variables.</summary>
+    private List<InputVariable>? _inputVariables;
+
+    /// <summary>Lazily-initialized execution settings. The key is the service id or "default" for the default execution settings.</summary>
+    private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
     /// Name of the kernel function.
@@ -48,7 +53,15 @@ public sealed class PromptTemplateConfig
     /// Input variables.
     /// </summary>
     [JsonPropertyName("input_variables")]
-    public List<InputVariable> InputVariables { get; set; } = new();
+    public List<InputVariable> InputVariables
+    {
+        get => this._inputVariables ??= new();
+        set
+        {
+            Verify.NotNull(value);
+            this._inputVariables = value;
+        }
+    }
 
     /// <summary>
     /// Output variable.
@@ -60,7 +73,20 @@ public sealed class PromptTemplateConfig
     /// Prompt execution settings.
     /// </summary>
     [JsonPropertyName("execution_settings")]
-    public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
+    public Dictionary<string, PromptExecutionSettings> ExecutionSettings
+    {
+        get => this._executionSettings ??= new();
+        set
+        {
+            Verify.NotNull(value);
+            this._executionSettings = value;
+        }
+    }
+
+    /// <summary>
+    /// Default execution settings.
+    /// </summary>
+    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings is not null && this._executionSettings.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) ? settings : null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -78,15 +104,60 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
+    /// Adds the <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
+    /// </summary>
+    /// <remarks>
+    /// The key is the service id or "default" for the default execution settings.
+    /// </remarks>
+    /// <param name="settings">Instance of <see cref="PromptExecutionSettings"/></param>
+    /// <param name="serviceId">Service id</param>
+    public void AddExecutionSettings(PromptExecutionSettings settings, string? serviceId = null)
+    {
+        Verify.NotNull(settings);
+
+        var key = serviceId ?? PromptExecutionSettings.DefaultServiceId;
+        if (this.ExecutionSettings.ContainsKey(key))
+        {
+            throw new ArgumentException($"Execution settings for service id '{key}' already exists.");
+        }
+
+        this.ExecutionSettings[key] = settings;
+    }
+
+    /// <summary>
     /// Return the input variables metadata.
     /// </summary>
-    internal List<KernelParameterMetadata> GetKernelParametersMetadata()
+    internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
+        if (this._inputVariables is List<InputVariable> inputVariables)
         {
-            Description = p.Description,
-            DefaultValue = p.Default
-        }).ToList();
+            return inputVariables.Select(p => new KernelParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                DefaultValue = p.Default,
+                IsRequired = p.IsRequired,
+                Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
+            }).ToList();
+        }
+
+        return Array.Empty<KernelParameterMetadata>();
+    }
+
+    /// <summary>
+    /// Return the output variable metadata.
+    /// </summary>
+    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
+    {
+        if (this.OutputVariable is not null)
+        {
+            return new KernelReturnParameterMetadata
+            {
+                Description = this.OutputVariable.Description,
+                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema),
+            };
+        }
+
+        return null;
     }
 
     /// <summary>

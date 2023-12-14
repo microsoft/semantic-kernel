@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Moq;
 using Xunit;
@@ -13,12 +12,18 @@ public sealed class HandlebarsPlannerTests
 {
     private const string PlanString =
     @"```handlebars
-        <plan>
-            <function.SummarizePlugin.Summarize/>
-            <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-            <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
-            <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
-        </plan>```";
+{{!-- Step 1: Call Summarize function --}}  
+{{set ""summary"" (SummarizePlugin-Summarize)}}  
+
+{{!-- Step 2: Call Translate function with the language set to French --}}  
+{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
+
+{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+
+{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
+```";
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -50,7 +55,7 @@ public sealed class HandlebarsPlannerTests
     }
 
     [Fact]
-    public async Task InvalidXMLThrowsAsync()
+    public async Task InvalidHandlebarsTemplateThrowsAsync()
     {
         // Arrange
         var kernel = this.CreateKernelWithMockCompletionResult("<plan>notvalid<</plan>");
@@ -74,9 +79,11 @@ public sealed class HandlebarsPlannerTests
             .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
+        IChatCompletionService resultService = chatCompletion.Object;
+        PromptExecutionSettings resultSettings = new();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>()))
-            .Returns((chatCompletion.Object, new PromptExecutionSettings()));
+            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
+            .Returns(true);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
@@ -89,16 +96,16 @@ public sealed class HandlebarsPlannerTests
     {
         return new()
         {
-            new KernelPlugin("email", new[]
+            KernelPluginFactory.CreateFromFunctions("email", "Email functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
-            new KernelPlugin("WriterPlugin", new[]
+            KernelPluginFactory.CreateFromFunctions("WriterPlugin", "Writer functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
-            new KernelPlugin("SummarizePlugin", new[]
+            KernelPluginFactory.CreateFromFunctions("SummarizePlugin", "Summarize functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })

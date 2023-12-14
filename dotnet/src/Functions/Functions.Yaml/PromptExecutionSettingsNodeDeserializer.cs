@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -28,16 +27,12 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
         {
             switch (kv.Key)
             {
-                case "service_id":
-                    modelSettings.ServiceId = (string)kv.Value;
-                    break;
-
                 case "model_id":
                     modelSettings.ModelId = (string)kv.Value;
                     break;
 
                 default:
-                    modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                    (modelSettings.ExtensionData ??= new()).Add(kv.Key, kv.Value);
                     break;
             }
         }

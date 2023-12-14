@@ -4,8 +4,10 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
+
+#pragma warning disable CA1812 // Uninstantiated internal types
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
 
@@ -30,8 +32,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(sut.PluginName, result.PluginName);
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal($"{sut.PluginName}_{sut.Name}", result.FullyQualifiedName);
+
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equal("retDesc", result.ReturnParameter.Description);
+        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -53,8 +58,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(sut.PluginName, result.PluginName);
         Assert.Equal(sut.Description, result.Description);
         Assert.Equal(sut.Name, result.FullyQualifiedName);
+
         Assert.NotNull(result.ReturnParameter);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+        Assert.Equal("retDesc", result.ReturnParameter.Description);
+        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Theory]
@@ -82,7 +90,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         // Act
         var result = sut.ToOpenAIFunction();
-        var outputParam = result.Parameters.First();
+        var outputParam = result.Parameters![0];
 
         // Assert
         Assert.Equal(param1.Name, outputParam.Name);
@@ -90,7 +98,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+
+        Assert.NotNull(result.ReturnParameter);
+        Assert.Equal("retDesc", result.ReturnParameter.Description);
+        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -112,13 +124,17 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         // Act
         var result = sut.ToOpenAIFunction();
-        var outputParam = result.Parameters.First();
+        var outputParam = result.Parameters![0];
 
         // Assert
         Assert.Equal(param1.Name, outputParam.Name);
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
-        Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
+
+        Assert.NotNull(result.ReturnParameter);
+        Assert.Equal("retDesc", result.ReturnParameter.Description);
+        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -140,7 +156,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         // Act
         var result = sut.ToOpenAIFunction();
-        var outputParam = result.Parameters.First();
+        var outputParam = result.Parameters![0];
 
         // Assert
         Assert.Equal(param1.Name, outputParam.Name);
@@ -151,16 +167,15 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanCreateValidOpenAIFunctionManual()
+    public void ItCanCreateValidOpenAIFunctionManualForPlugin()
     {
         // Arrange
-        var kernel = new KernelBuilder()
-            .WithPlugins(plugins => plugins.AddPluginFromObject<MyPlugin>("MyPlugin"))
-            .Build();
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<MyPlugin>("MyPlugin");
 
-        var functionView = kernel.Plugins["MyPlugin"].First().Metadata;
+        var functionMetadata = kernel.Plugins["MyPlugin"].First().Metadata;
 
-        var sut = functionView.ToOpenAIFunction();
+        var sut = functionMetadata.ToOpenAIFunction();
 
         // Act
         var result = sut.ToFunctionDefinition();
@@ -169,6 +184,41 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result);
         Assert.Equal(
             "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\",\"parameter3\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"},\"parameter3\":{\"type\":\"string\",\"format\":\"date-time\",\"description\":\"DateTime parameter\"}}}",
+            result.Parameters.ToString()
+        );
+    }
+
+    [Fact]
+    public void ItCanCreateValidOpenAIFunctionManualForPrompt()
+    {
+        // Arrange
+        var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
+        {
+            Description = "My sample function."
+        };
+        promptTemplateConfig.InputVariables.Add(new InputVariable
+        {
+            Name = "parameter1",
+            Description = "String parameter",
+            JsonSchema = "{\"type\":\"string\",\"description\":\"String parameter\"}"
+        });
+        promptTemplateConfig.InputVariables.Add(new InputVariable
+        {
+            Name = "parameter2",
+            Description = "Enum parameter",
+            JsonSchema = "{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}"
+        });
+        var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
+        var functionMetadata = function.Metadata;
+        var sut = functionMetadata.ToOpenAIFunction();
+
+        // Act
+        var result = sut.ToFunctionDefinition();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(
+            "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}}}",
             result.Parameters.ToString()
         );
     }

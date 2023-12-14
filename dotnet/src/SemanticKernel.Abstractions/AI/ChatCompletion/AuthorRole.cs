@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// A description of the intended purpose of a message within a chat completions interaction.
@@ -46,7 +46,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     [JsonConstructor]
     public AuthorRole(string label)
     {
-        Verify.NotNull(label, nameof(label));
+        Verify.NotNullOrWhiteSpace(label, nameof(label));
         this.Label = label!;
     }
 
@@ -58,9 +58,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <param name="right"> the second AuthorRole instance to compare </param>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(AuthorRole left, AuthorRole right)
-    {
-        return left.Equals(right);
-    }
+        => left.Equals(right);
 
     /// <summary>
     /// Returns a value indicating whether two AuthorRole instances are not equivalent, as determined by a
@@ -77,13 +75,13 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         => obj is AuthorRole otherRole && this == otherRole;
 
     /// <inheritdoc/>
-    public override int GetHashCode()
-        => this.Label.GetHashCode();
-
-    /// <inheritdoc/>
     public bool Equals(AuthorRole other)
         => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label;
+    public override int GetHashCode()
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label ?? string.Empty);
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Label ?? string.Empty;
 }
