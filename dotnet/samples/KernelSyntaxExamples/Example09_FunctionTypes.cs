@@ -1,10 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using RepoUtils;
 
 public static class Example09_FunctionTypes
@@ -13,9 +18,11 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Method Function types ========");
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var builder = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Warning));
+        var kernel = builder.Build();
+        kernel.Culture = new CultureInfo("pt-BR");
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         var plugin = kernel.ImportPluginFromType<LocalExamplePlugin>("Examples");
@@ -28,6 +35,7 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin["NoInputWithVoidResult"]);
         await kernel.InvokeAsync(kernel.Plugins["Examples"]["NoInputWithVoidResult"]);
 
+        // Different ways to invoke a function (not limited to these examples)
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithVoidResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputDateTimeWithStringResult)], new() { ["currentDate"] = DateTime.Now });
@@ -39,6 +47,13 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithFunctionResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithFunctionResult)]);
 
+        // Injecting Parameters Examples
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelFunctionWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerWithNoResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerFactoryWithNoResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCancellationTokenWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingServiceSelectorWithStringResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelWithInputTextAndStringResult)],
             new()
             {
@@ -92,18 +107,6 @@ public class LocalExamplePlugin
         var result = "string result";
         Console.WriteLine($"Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {result}");
         return Task.FromResult(result);
-    }
-
-    /// <summary>
-    /// Example how to inject Kernel in your function
-    /// This example uses the injected kernel to invoke a plugin from within another function
-    /// </summary>
-    [KernelFunction]
-    public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel, string textToSummarize)
-    {
-        var summary = await kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = textToSummarize });
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
-        return summary!;
     }
 
     /// <summary>
@@ -164,8 +167,94 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<FunctionResult> NoInputTaskWithFunctionResult(Kernel kernel)
     {
-        var result = await kernel.InvokeAsync(kernel.Plugins["Examples"]["NoInputWithVoidResult"]);
+        var result = await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
         Console.WriteLine($"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}");
+        return result;
+    }
+
+    /// <summary>
+    /// Example how to inject Kernel in your function
+    /// This example uses the injected kernel to invoke a plugin from within another function
+    /// </summary>
+    [KernelFunction]
+    public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel, string textToSummarize)
+    {
+        var summary = await kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = textToSummarize });
+        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
+        return summary!;
+    }
+
+    /// <summary>
+    /// Example how to inject the executing KernelFunction as a paremeter
+    /// </summary>
+    [KernelFunction, Description("Example function injecting itself as a parameter")]
+    public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction executingFunction)
+    {
+        var result = $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
+        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}");
+        return result;
+    }
+
+    /// <summary>
+    /// Example how to inject ILogger in your function
+    /// </summary>
+    [KernelFunction]
+    public Task TaskInjectingLoggerWithNoResult(ILogger logger)
+    {
+        logger.LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
+        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Example how to inject ILoggerFactory in your function
+    /// </summary>
+    [KernelFunction]
+    public Task TaskInjectingLoggerFactoryWithNoResult(ILoggerFactory loggerFactory)
+    {
+        loggerFactory
+            .CreateLogger<LocalExamplePlugin>()
+            .LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
+
+        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Example how to inject a service selector in your function and use a specific service
+    /// </summary>
+    [KernelFunction]
+    public async Task<string> TaskInjectingServiceSelectorWithStringResult(Kernel kernel, KernelFunction function, KernelArguments arguments, IAIServiceSelector serviceSelector)
+    {
+        ChatMessageContent? chatMessageContent = null;
+        if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function, arguments, out var chatCompletion, out var executionSettings))
+        {
+            chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new ChatHistory("How much is 5 + 5 ?"), executionSettings);
+        }
+
+        var result = chatMessageContent?.Content;
+        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}");
+        return result ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Example how to inject CultureInfo or IFormatProvider in your function
+    /// </summary>
+    public async Task<string> TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo, IFormatProvider formatProvider)
+    {
+        var result = $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}";
+        Console.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}");
+        return result;
+    }
+
+    /// <summary>
+    /// Example how to inject current CancellationToken in your function
+    /// </summary>
+    [KernelFunction]
+    public async Task<string> TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
+    {
+        var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
+        Console.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
         return result;
     }
 
