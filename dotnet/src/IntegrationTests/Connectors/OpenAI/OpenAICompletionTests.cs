@@ -438,7 +438,7 @@ public sealed class OpenAICompletionTests : IDisposable
             @"{
                 ""name"": ""FishMarket2"",
                 ""execution_settings"": {
-                    ""azure-text-davinci-003"": {
+                    ""azure-open-ai"": {
                         ""max_tokens"": 256
                     }
                 }
