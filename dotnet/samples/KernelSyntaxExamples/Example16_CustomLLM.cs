@@ -24,7 +24,6 @@ using Microsoft.SemanticKernel.TextGeneration;
  *
  * Refer to example 33 for streaming chat completion.
  */
-// ReSharper disable once InconsistentNaming
 public static class Example16_CustomLLM
 {
     public static async Task RunAsync()

@@ -16,6 +16,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
     azure_aisearch_settings_from_dot_env,
+    azure_aisearch_settings_from_dot_env_as_dict,
     azure_cosmos_db_settings_from_dot_env,
     azure_openai_settings_from_dot_env,
     bing_search_settings_from_dot_env,
@@ -34,6 +35,7 @@ __all__ = [
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",
     "azure_aisearch_settings_from_dot_env",
+    "azure_aisearch_settings_from_dot_env_as_dict",
     "postgres_settings_from_dot_env",
     "pinecone_settings_from_dot_env",
     "bing_search_settings_from_dot_env",

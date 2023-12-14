@@ -13,7 +13,6 @@ using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-// ReSharper disable once InconsistentNaming
 public static class Example24_OpenApiPlugin_Jira
 {
     /// <summary>

@@ -8,32 +8,29 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Resources;
 
-/**
- * Scenario:
- *  - the user is reading a wikipedia page, they select a piece of text and they ask AI to extract some information.
- *  - the app explicitly uses the Chat model to get a result.
- *
- * The following example shows how to:
- *
- * - Use the prompt template engine to render prompts, without executing them.
- *   This can be used to leverage the template engine (which executes functions internally)
- *   to generate prompts and use them programmatically, without executing them like prompt functions.
- *
- * - Use rendered prompts to create the context of System and User messages sent to Chat models
- *   like "gpt-3.5-turbo"
- *
- * Note: normally you would work with Prompt Functions to automatically send a prompt to a model
- *       and get a response. In this case we use the Chat model, sending a chat history object, which
- *       includes some instructions, some context (the text selected), and the user query.
- *
- *       We use the prompt template engine to craft the strings with all of this information.
- *
- *       Out of scope and not in the example: if needed, one could go further and use a semantic
- *       function (with extra cost) asking AI to generate the text to send to the Chat model.
- *
- */
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
+/// <summary>
+/// Scenario:
+///  - the user is reading a wikipedia page, they select a piece of text and they ask AI to extract some information.
+///  - the app explicitly uses the Chat model to get a result.
+///
+/// The following example shows how to:
+///
+/// - Use the prompt template engine to render prompts, without executing them.
+///   This can be used to leverage the template engine (which executes functions internally)
+///   to generate prompts and use them programmatically, without executing them like prompt functions.
+///
+/// - Use rendered prompts to create the context of System and User messages sent to Chat models
+///   like "gpt-3.5-turbo"
+///
+/// Note: normally you would work with Prompt Functions to automatically send a prompt to a model
+///       and get a response. In this case we use the Chat model, sending a chat history object, which
+///       includes some instructions, some context (the text selected), and the user query.
+///
+///       We use the prompt template engine to craft the strings with all of this information.
+///
+///       Out of scope and not in the example: if needed, one could go further and use a semantic
+///       function (with extra cost) asking AI to generate the text to send to the Chat model.
+/// </summary>
 public static class Example30_ChatWithPrompts
 {
     public static async Task RunAsync()

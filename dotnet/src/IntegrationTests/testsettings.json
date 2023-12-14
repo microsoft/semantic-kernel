@@ -34,5 +34,18 @@
   "MongoDB": {
     "ConnectionString": "",
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
+  },
+  "Planners": {
+    "AzureOpenAI": {
+      "ServiceId": "azure-gpt-35-turbo",
+      "DeploymentName": "gpt-35-turbo",
+      "Endpoint": "",
+      "ApiKey": ""
+    },
+    "OpenAI": {
+      "ServiceId": "text-davinci-003",
+      "ModelId": "text-davinci-003",
+      "ApiKey": ""
+    }
   }
 }

@@ -7,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-/**
- * The following examples show how to use SK SDK in applications using DI/IoC containers.
- */
+// The following examples show how to use SK SDK in applications using DI/IoC containers.
 public static class Example40_DIContainer
 {
     public static async Task RunAsync()
@@ -36,9 +34,7 @@ public static class Example40_DIContainer
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class KernelClient
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         private readonly Kernel _kernel;
         private readonly ILogger _logger;
