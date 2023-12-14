@@ -466,7 +466,7 @@ public class NativeKernelFunction extends AbstractKernelFunction {
         }
         return annotation.name();
     }
-
+`
     private static Set<Parameter> determineInputArgs(Method method) {
         // Something is bound to the input if either:
         // - it is annotated with @SKFunctionInputAttribute
@@ -539,5 +539,5 @@ public class NativeKernelFunction extends AbstractKernelFunction {
         }
 
         return params;
-    }
+    }`
 }

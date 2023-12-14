@@ -6,11 +6,11 @@ import java.util.List;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.PromptExecutionSettings;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

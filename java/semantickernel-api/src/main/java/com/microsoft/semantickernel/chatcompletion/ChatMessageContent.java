@@ -1,27 +1,46 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
+import com.microsoft.semantickernel.KernelContent;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-
-import com.microsoft.semantickernel.KernelContent;
-import com.microsoft.semantickernel.orchestration.ContextVariable;
+import javax.annotation.Nullable;
 
 public class ChatMessageContent extends KernelContent {
 
     private AuthorRole authorRole;
     private String content;
+    @Nullable
     private List<KernelContent> items;
+    @Nullable
     private Charset encoding;
 
     public ChatMessageContent(
         AuthorRole authorRole,
+        String content
+    ) {
+        this(
+            authorRole,
+            content,
+            null,
+            null,
+            null,
+            null);
+    }
+
+    public ChatMessageContent(
+        AuthorRole authorRole,
         String content,
+        @Nullable
         String modelId,
+        @Nullable
         Object innerContent,
+        @Nullable
         Charset encoding,
+        @Nullable
         Map<String, ContextVariable<?>> metadata
     ) {
         super(innerContent, modelId, metadata);
@@ -68,6 +87,7 @@ public class ChatMessageContent extends KernelContent {
         this.items = items;
     }
 
+    @Nullable
     public Charset getEncoding() {
         return encoding;
     }

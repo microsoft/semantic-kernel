@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.semantickernel.orchestration.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;

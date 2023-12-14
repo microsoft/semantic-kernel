@@ -10,7 +10,10 @@ public class KernelParameterMetadata {
     private final boolean isRequired;
     private Class parameterType;
 
-    public KernelParameterMetadata(String name, String description, String defaultValue,
+    public KernelParameterMetadata(
+        String name,
+        String description,
+        String defaultValue,
         boolean isRequired) {
         this.name = name;
         this.description = description;

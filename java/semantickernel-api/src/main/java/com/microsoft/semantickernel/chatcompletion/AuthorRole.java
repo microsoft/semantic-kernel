@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
+/**
+ * Role of the author of a chat message
+ */
 public enum AuthorRole {
-    
+
     SYSTEM("system"),
     ASSISTANT("assistant"),
     USER("user"),
@@ -21,8 +24,9 @@ public enum AuthorRole {
         }
         return null;
     }
-    
+
     private final String role;
+
     private AuthorRole(String role) {
         this.role = role;
     }

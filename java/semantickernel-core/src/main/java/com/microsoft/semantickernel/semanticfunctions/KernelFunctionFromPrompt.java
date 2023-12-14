@@ -2,18 +2,19 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.AIService;
-import com.microsoft.semantickernel.DefaultKernelFunction;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.ExecutionSettingsModel;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.VariableViewModel;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,15 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     private final PromptTemplateConfig promptConfig;
 
     public KernelFunctionFromPrompt(PromptTemplate template, PromptTemplateConfig promptConfig) {
+        super(
+            new KernelFunctionMetadata(
+                promptConfig.getName(),
+                promptConfig.getDescription(),
+                promptConfig.getKernelParametersMetadata(),
+                promptConfig.getKernelReturnParameterMetadata()
+            ),
+            promptConfig.getExecutionSettings()
+        );
         this.template = template;
         this.promptConfig = promptConfig;
     }
@@ -63,7 +73,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             T value = variableType
                                 .getConverter()
                                 .fromPromptString(
-                                    streamingChatMessageContent.innerContent.getContent());
+                                    streamingChatMessageContent.getContent());
                             return Flux.just(new StreamingContent<T>(value));
                         });
                 } else if (client instanceof TextGenerationService) {
@@ -125,12 +135,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         private PromptTemplate promptTemplate;
         private String name;
         private String pluginName;
-        private List<ExecutionSettingsModel> executionSettings;
+        private Map<String, PromptExecutionSettings> executionSettings;
         private String description;
-        private List<VariableViewModel> inputVariables;
+        private List<InputVariable> inputVariables;
         private String template;
         private String templateFormat;
-        private VariableViewModel outputVariable;
+        private OutputVariable outputVariable;
 
 
         @Override
@@ -140,7 +150,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         @Override
-        public FromPromptBuilder withInputParameters(List<VariableViewModel> inputVariables) {
+        public FromPromptBuilder withInputParameters(List<InputVariable> inputVariables) {
             this.inputVariables = inputVariables;
             return this;
         }
@@ -159,7 +169,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         @Override
         public FromPromptBuilder withExecutionSettings(
-            List<ExecutionSettingsModel> executionSettings) {
+            Map<String, PromptExecutionSettings> executionSettings) {
             this.executionSettings = executionSettings;
             return this;
         }
@@ -184,7 +194,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         @Override
-        public FromPromptBuilder withOutputVariable(VariableViewModel outputVariable) {
+        public FromPromptBuilder withOutputVariable(OutputVariable outputVariable) {
             this.outputVariable = outputVariable;
             return this;
         }

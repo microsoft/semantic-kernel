@@ -1,43 +1,40 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PromptTemplateConfig {
-    @JsonProperty("name")
+
     private String name;
 
-    @JsonProperty("template")
     private String template;
 
-    @JsonProperty("template_format")
     private String templateFormat;
 
-    @JsonProperty("description")
     private String description;
 
-    @JsonProperty("input_variables")
-    private List<VariableViewModel> inputVariables;
+    private List<InputVariable> inputVariables;
 
-    @JsonProperty("output_variable")
-    private VariableViewModel outputVariable;
+    private OutputVariable outputVariable;
 
-    @JsonProperty("execution_settings")
-    private List<ExecutionSettingsModel> executionSettings;
-
-    public PromptTemplateConfig() {}
+    private Map<String, PromptExecutionSettings> executionSettings;
 
     public PromptTemplateConfig(
-            String name,
-            String template,
-            String templateFormat,
-            String description,
-            List<VariableViewModel> inputVariables,
-            VariableViewModel outputVariable,
-            List<ExecutionSettingsModel> executionSettings) {
+        String name,
+        String template,
+        String templateFormat,
+        String description,
+        List<InputVariable> inputVariables,
+        OutputVariable outputVariable,
+        Map<String, PromptExecutionSettings> executionSettings) {
         this.name = name;
         this.template = template;
         this.templateFormat = templateFormat;
@@ -47,79 +44,54 @@ public class PromptTemplateConfig {
         this.executionSettings = executionSettings;
     }
 
-    public static class VariableViewModel {
+    @JsonCreator
+    public PromptTemplateConfig(
         @JsonProperty("name")
-        private String name;
-
-        @JsonProperty("type")
-        private String type;
-
+        String name,
+        @JsonProperty("template")
+        String template,
+        @JsonProperty("template_format")
+        String templateFormat,
         @JsonProperty("description")
-        private String description;
-
-        @JsonProperty("default_value")
-        private Object defaultValue;
-
-        @JsonProperty("is_required")
-        private boolean isRequired;
-
-        public VariableViewModel() {}
-
-        public VariableViewModel(
-                String name,
-                String type,
-                String description,
-                Object defaultValue,
-                boolean isRequired) {
-            this.name = name;
-            this.type = type;
-            this.description = description;
-            this.defaultValue = defaultValue;
-            this.isRequired = isRequired;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public Object getDefaultValue() {
-            return defaultValue;
-        }
-
-        public void setDefaultValue(Object defaultValue) {
-            this.defaultValue = defaultValue;
-        }
-
-        public boolean isRequired() {
-            return isRequired;
-        }
-
-        public void setRequired(boolean required) {
-            isRequired = required;
-        }
+        String description,
+        @JsonProperty("input_variables")
+        List<InputVariable> inputVariables,
+        @JsonProperty("output_variable")
+        OutputVariable outputVariable,
+        @JsonProperty("execution_settings")
+        List<PromptExecutionSettings> executionSettings) {
+        this.name = name;
+        this.template = template;
+        this.templateFormat = templateFormat;
+        this.description = description;
+        this.inputVariables = inputVariables;
+        this.outputVariable = outputVariable;
+        this.executionSettings = executionSettings
+            .stream()
+            .collect(Collectors.toMap(PromptExecutionSettings::getModelId, e -> e));
     }
 
+    public List<KernelParameterMetadata> getKernelParametersMetadata() {
+        return inputVariables
+            .stream()
+            .map(inputVariable -> new KernelParameterMetadata(
+                inputVariable.getName(),
+                inputVariable.getDescription(),
+                inputVariable.getDefaultValue(),
+                inputVariable.isRequired()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    public KernelReturnParameterMetadata getKernelReturnParameterMetadata() {
+        return new KernelReturnParameterMetadata(
+            outputVariable.getDescription()
+        );
+    }
+
+
     public static class ExecutionSettingsModel {
+
         @JsonProperty("model_id")
         private String modelId;
 
@@ -148,11 +120,11 @@ public class PromptTemplateConfig {
         }
 
         public ExecutionSettingsModel(
-                String modelId,
-                String modelIdPattern,
-                String serviceId,
-                String temperature,
-                Map<String, Object> additionalProperties) {
+            String modelId,
+            String modelIdPattern,
+            String serviceId,
+            String temperature,
+            Map<String, Object> additionalProperties) {
             this.modelId = modelId;
             this.modelIdPattern = modelIdPattern;
             this.serviceId = serviceId;
@@ -229,27 +201,27 @@ public class PromptTemplateConfig {
         this.description = description;
     }
 
-    public List<VariableViewModel> getInputVariables() {
+    public List<InputVariable> getInputVariables() {
         return inputVariables;
     }
 
-    public void setInputVariables(List<VariableViewModel> inputVariables) {
+    public void setInputVariables(List<InputVariable> inputVariables) {
         this.inputVariables = inputVariables;
     }
 
-    public VariableViewModel getOutputVariable() {
+    public OutputVariable getOutputVariable() {
         return outputVariable;
     }
 
-    public void setOutputVariable(VariableViewModel outputVariable) {
+    public void setOutputVariable(OutputVariable outputVariable) {
         this.outputVariable = outputVariable;
     }
 
-    public List<ExecutionSettingsModel> getExecutionSettings() {
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
         return executionSettings;
     }
 
-    public void setExecutionSettings(List<ExecutionSettingsModel> executionSettings) {
+    public void setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
         this.executionSettings = executionSettings;
     }
 }

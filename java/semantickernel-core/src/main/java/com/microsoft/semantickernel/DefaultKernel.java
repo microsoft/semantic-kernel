@@ -66,8 +66,9 @@ public class DefaultKernel implements Kernel {
             this.services = services;
         }
 
+        @Nullable
         @Override
-        public <T extends AIService> T getService(Class<T> clazz) {
+        public <T> T getService(Class<T> clazz) {
             T service = (T) services.get(clazz);
 
             if (service == null && clazz.equals(TextGenerationService.class)) {

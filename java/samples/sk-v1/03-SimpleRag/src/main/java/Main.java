@@ -54,7 +54,7 @@ public class Main {
             .withPlugins(searchPlugin)
             .build();
 
-        ChatHistory chatHistory = gpt35Turbo.createNewChat();
+        ChatHistory chatHistory = new ChatHistory();
         while (true) {
             String input = System.console().readLine("User > ");
             chatHistory.addUserMessage(input);

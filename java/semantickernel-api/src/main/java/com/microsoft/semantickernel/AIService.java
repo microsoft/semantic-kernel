@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.util.Map;
-
-import com.microsoft.semantickernel.orchestration.ContextVariable;
 
 /**
  * Marker interface for AI services 
  */
 public interface AIService {
 
-    Map<String,ContextVariable<?>> getAttributes();
+    Map<String, ContextVariable<?>> getAttributes();
     
     /**
      * Key used to store the model identifier in the {@code attributes} map.

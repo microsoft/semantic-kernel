@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -57,8 +58,7 @@ public class KernelPluginFactory {
                             DefineKernelFunction.class);
                         KernelReturnParameterMetadata kernelReturnParameterMetadata =
                             new KernelReturnParameterMetadata(
-                                annotation.returnDescription(),
-                                annotation.returnType()
+                                annotation.returnDescription()
                             );
 
                         return KernelFunctionFactory
@@ -85,8 +85,20 @@ public class KernelPluginFactory {
     public static KernelPlugin createFromFunctions(
         String pluginName,
         @Nullable List<KernelFunction> functions) {
-        throw new Todo();
 
+        if (functions == null) {
+            return new DefaultKernelPlugin(
+                pluginName,
+                null,
+                new HashMap<>()
+            );
+        }
+
+        return new DefaultKernelPlugin(
+            pluginName,
+            null,
+            functions.stream().collect(Collectors.toMap(KernelFunction::getName, f -> f))
+        );
     }
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>

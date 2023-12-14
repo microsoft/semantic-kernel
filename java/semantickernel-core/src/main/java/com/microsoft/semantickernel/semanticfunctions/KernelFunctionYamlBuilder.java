@@ -63,6 +63,7 @@ public class KernelFunctionYamlBuilder implements KernelFunctionYaml.Builder {
             .withPluginName(functionModel.getName()) // TODO: 1.0 add plugin name
             .withExecutionSettings(functionModel.getExecutionSettings())
             .withDescription(functionModel.getDescription())
+            .withOutputVariable(functionModel.getOutputVariable())
             .build();
     }
 }

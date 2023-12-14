@@ -2,15 +2,15 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.StreamingKernelContent;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.InputVariable;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.ExecutionSettingsModel;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.VariableViewModel;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -99,13 +99,14 @@ public interface KernelFunction extends Buildable {
 
         FromPromptBuilder withName(String name);
 
-        FromPromptBuilder withInputParameters(List<VariableViewModel> inputVariables);
+        FromPromptBuilder withInputParameters(List<InputVariable> inputVariables);
 
         FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
 
         FromPromptBuilder withPluginName(String name);
 
-        FromPromptBuilder withExecutionSettings(List<ExecutionSettingsModel> executionSettings);
+        FromPromptBuilder withExecutionSettings(
+            Map<String, PromptExecutionSettings> executionSettings);
 
         FromPromptBuilder withDescription(String description);
 
@@ -115,6 +116,6 @@ public interface KernelFunction extends Buildable {
 
         FromPromptBuilder withTemplateFormat(String templateFormat);
 
-        FromPromptBuilder withOutputVariable(VariableViewModel outputVariable);
+        FromPromptBuilder withOutputVariable(OutputVariable outputVariable);
     }
 }

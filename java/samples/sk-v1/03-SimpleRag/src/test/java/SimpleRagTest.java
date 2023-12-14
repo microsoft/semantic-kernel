@@ -1,9 +1,8 @@
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.AuthorRoles;
+import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
@@ -29,7 +28,6 @@ public class SimpleRagTest {
 
     private static ChatCompletionService mockService(List<Message> messages) {
         ChatCompletionService gpt35Turbo = Mockito.mock(ChatCompletionService.class);
-        Mockito.when(gpt35Turbo.createNewChat()).thenReturn(new ChatHistory());
 
         for (Message message : messages) {
             Mockito.when(gpt35Turbo.getStreamingChatMessageContentsAsync(
@@ -43,8 +41,8 @@ public class SimpleRagTest {
                         }),
                     Mockito.any(),
                     Mockito.any()))
-                .thenReturn(Flux.just(new StreamingChatMessageContent(
-                    new ChatMessageContent(AuthorRoles.Assistant, message.content()))));
+                .thenReturn(Flux.just(
+                    new StreamingChatMessageContent(AuthorRole.ASSISTANT, message.content())));
         }
         return gpt35Turbo;
     }

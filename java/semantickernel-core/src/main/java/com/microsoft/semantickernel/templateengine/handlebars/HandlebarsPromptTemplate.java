@@ -52,7 +52,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         public Object resolve(Object context, String name) {
             if (context instanceof ChatMessageContent) {
                 if ("role".equals(name.toLowerCase())) {
-                    return ((ChatMessageContent) context).getAuthorRoles().name();
+                    return ((ChatMessageContent) context).getAuthorRole().name();
                 } else if ("content".equals(name.toLowerCase())) {
                     return ((ChatMessageContent) context).getContent();
                 }
@@ -72,7 +72,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         public Set<Entry<String, Object>> propertySet(Object context) {
             if (context instanceof ChatMessageContent) {
                 HashMap<String, Object> result = new HashMap<>();
-                result.put("role", ((ChatMessageContent) context).getAuthorRoles().name());
+                result.put("role", ((ChatMessageContent) context).getAuthorRole().name());
                 result.put("content", ((ChatMessageContent) context).getContent());
                 return result.entrySet();
             }
@@ -136,7 +136,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                             ChatMessageContent message = ((Optional<ChatMessageContent>) context).orElse(
                                 null);
                             if (role == null || role.isEmpty()) {
-                                role = message.getAuthorRoles()
+                                role = message.getAuthorRole()
                                     .toString()
                                     .toLowerCase();
                             }

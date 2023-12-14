@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.azure.core.exception.HttpResponseException;
+import com.microsoft.semantickernel.DefaultKernelFunction;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.AIException;
@@ -32,7 +33,7 @@ import reactor.core.publisher.Mono;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public class DefaultCompletionSKFunction extends DefaultSemanticSKFunction
+public class DefaultCompletionSKFunction extends DefaultKernelFunction
         implements CompletionSKFunction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);

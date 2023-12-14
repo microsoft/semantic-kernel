@@ -1,13 +1,13 @@
 package com.microsoft.semantickernel.plugin;
 
+import com.microsoft.semantickernel.Todo;
+
 public class KernelReturnParameterMetadata {
 
     private final String description;
-    private final String parameterType;
 
-    public KernelReturnParameterMetadata(String description, String parameterType) {
+    public KernelReturnParameterMetadata(String description) {
         this.description = description;
-        this.parameterType = parameterType;
     }
 
     public String getDescription() {
@@ -15,6 +15,6 @@ public class KernelReturnParameterMetadata {
     }
 
     public String getParameterType() {
-        return parameterType;
+        throw new Todo();
     }
 }
