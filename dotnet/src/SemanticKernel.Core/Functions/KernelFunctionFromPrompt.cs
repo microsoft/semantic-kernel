@@ -277,12 +277,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
-        PromptExecutionSettings? executionSettings = null;
 
         // Try to use IChatCompletionService.
         if (serviceSelector.TrySelectAIService<IChatCompletionService>(
             kernel, this, arguments,
-            out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
+            out IChatCompletionService? chatService, out PromptExecutionSettings? executionSettings))
         {
             aiService = chatService;
         }

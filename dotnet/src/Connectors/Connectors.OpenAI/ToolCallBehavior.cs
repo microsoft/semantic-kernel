@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
 
@@ -74,6 +75,7 @@ public abstract class ToolCallBehavior
     /// The <see cref="ToolCallBehavior"/> that may be set into <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/>
     /// to indicate that the specified function should be requested by the model.
     /// </returns>
+    [Experimental("SKEXP0013")]
     public static ToolCallBehavior RequireFunction(OpenAIFunction function, bool autoInvoke = false)
     {
         Verify.NotNull(function);
@@ -100,6 +102,12 @@ public abstract class ToolCallBehavior
     /// To disable auto invocation, this can be set to 0.
     /// </remarks>
     internal int MaximumAutoInvokeAttempts { get; }
+
+    /// <summary>
+    /// Gets whether validation against a specified list is required before allowing the model to request a function from the kernel.
+    /// </summary>
+    /// <value>true if it's ok to invoke any kernel function requested by the model if it's found; false if a request needs to be validated against an allow list.</value>
+    internal virtual bool AllowAnyRequestedKernelFunction => false;
 
     /// <summary>Configures the <paramref name="options"/> with any tools this <see cref="ToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="options"/>.</param>
@@ -131,6 +139,8 @@ public abstract class ToolCallBehavior
                 }
             }
         }
+
+        internal override bool AllowAnyRequestedKernelFunction => true;
     }
 
     /// <summary>
