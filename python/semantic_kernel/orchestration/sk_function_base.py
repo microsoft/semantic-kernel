@@ -199,3 +199,10 @@ class SKFunctionBase(SKBaseModel):
             SKFunctionBase -- The function instance
         """
         pass
+
+    def __repr__(self):
+        """
+        Override how the classes are printed as strings so we don't include
+        the class attributes.
+        """
+        return f"{self.__class__.__name__}()"
