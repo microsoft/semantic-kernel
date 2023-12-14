@@ -12,15 +12,22 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
  */
 public static class Example54_AzureChatCompletionWithData
 {
+    /* Set-up
+    * Upload the following content in Azure Blob Storage in .txt file. 
+    * You can follow the steps here: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
+
+        Emily and David, two passionate scientists, met during a research expedition to Antarctica.
+        Bonded by their love for the natural world and shared curiosity,
+        they uncovered a groundbreaking phenomenon in glaciology that could
+        potentially reshape our understanding of climate change.
+
+    * Set your secrets:
+    * dotnet user-secrets set "AzureAISearch:Endpoint" "https://... .search.windows.net"
+    * dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your `Search service` resource}"
+    * dotnet user-secrets set "AzureAISearch:IndexName" "..."
+    */
     public static async Task RunAsync()
     {
-        // Uploaded content in Azure Blob Storage in .txt file:
-
-        // Emily and David, two passionate scientists, met during a research expedition to Antarctica.
-        // Bonded by their love for the natural world and shared curiosity,
-        // they uncovered a groundbreaking phenomenon in glaciology that could
-        // potentially reshape our understanding of climate change.
-
         await ExampleWithChatCompletionAsync();
         await ExampleWithKernelAsync();
     }
