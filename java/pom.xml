@@ -71,18 +71,16 @@
 <!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
 <!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
 
-        <module>aiservices/azureopenai</module>
-        <module>aiservices/huggingface</module>
-        <module>aiservices/ollama</module>
-        <module>aiservices/openai</module>
+<!--        <module>aiservices/azureopenai</module>-->
+<!--        <module>aiservices/huggingface</module>-->
+<!--        <module>aiservices/ollama</module>-->
+<!--        <module>aiservices/openai</module>-->
 
-        <module>misc/semantickernel-gpt3-tokenizer</module>
-        <module>misc/semantickernel-settings-loader</module>
+<!--        <module>misc/semantickernel-gpt3-tokenizer</module>-->
+<!--        <module>misc/semantickernel-settings-loader</module>-->
 
-        <!--
-        <module>plugins/semantickernel-planners</module>
-        -->
-        <module>plugins/semantickernel-plugin-core</module>
+<!--        <module>plugins/semantickernel-planners</module>-->
+<!--        <module>plugins/semantickernel-plugin-core</module>-->
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>

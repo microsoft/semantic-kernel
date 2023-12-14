@@ -170,6 +170,11 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+                <groupId>com.github.jknack</groupId>
+                <artifactId>handlebars</artifactId>
+                <version>4.3.1</version>
+            </dependency>
+            <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
                 <version>3.5.8</version>
@@ -203,6 +208,7 @@
                 <version>42.6.0</version>
             </dependency>
 -->
+
         </dependencies>
     </dependencyManagement>
 
