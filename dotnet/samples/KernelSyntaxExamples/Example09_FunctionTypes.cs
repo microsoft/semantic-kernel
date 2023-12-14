@@ -59,7 +59,6 @@ public static class Example09_FunctionTypes
 
         // You can also use the kernel.Plugins collection to invoke a function
         await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
-
     }
 }
 // Task functions when are imported as plugins loose the "Async" suffix if present.
