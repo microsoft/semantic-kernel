@@ -10,9 +10,9 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 public sealed class MathPlugin
 {
     /// <summary>
-    /// Returns the Addition result of initial and amount values provided.
+    /// Returns the addition result of initial and amount values provided.
     /// </summary>
-    /// <param name="value">Initial value to which to add the specified amount</param>
+    /// <param name="value">Initial value to which to add the specified amount.</param>
     /// <param name="amount">The amount to add as a string.</param>
     /// <returns>The resulting sum as a string.</returns>
     [KernelFunction, Description("Adds an amount to a value")]
@@ -23,9 +23,9 @@ public sealed class MathPlugin
         value + amount;
 
     /// <summary>
-    /// Returns the Sum of two provided numbers.
+    /// Returns the subtraction result of initial and amount values provided.
     /// </summary>
-    /// <param name="value">Initial value from which to subtract the specified amount</param>
+    /// <param name="value">Initial value from which to subtract the specified amount.</param>
     /// <param name="amount">The amount to subtract as a string.</param>
     /// <returns>The resulting subtraction as a string.</returns>
     [KernelFunction, Description("Subtracts an amount from a value")]
