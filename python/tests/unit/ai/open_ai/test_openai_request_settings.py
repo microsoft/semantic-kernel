@@ -121,28 +121,33 @@ def test_create_options_azure_data():
     assert False
 
 
-def test_azure_open_ai_chat_request_settings_with_datasources():
+def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
     input_dict = {
-        "dataSources": [
-            {
-                "type": "AzureCosmosDB",
-                "parameters": {
-                    "authentication": {
-                        "type": "ConnectionString",
-                        "connectionString": "mongodb+srv://onyourdatatest:{password}$@{cluster-name}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
+        "messages": [{'role': 'system', 'content': 'Hello'}],
+        "extra_body": {
+            "dataSources": [
+                {
+                    "type": "AzureCosmosDB",
+                    "parameters": {
+                        "authentication": {
+                            "type": "ConnectionString",
+                            "connectionString": "mongodb+srv://onyourdatatest:{password}$@{cluster-name}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
+                        },
+                        "databaseName": "vectordb",
+                        "containerName": "azuredocs",
+                        "indexName": "azuredocindex",
+                        "embeddingDependency": {
+                            "type": "DeploymentName",
+                            "deploymentName": "{embedding deployment name}",
+                        },
+                        "fieldsMapping": {"vectorFields": ["contentvector"]},
                     },
-                    "databaseName": "vectordb",
-                    "containerName": "azuredocs",
-                    "indexName": "azuredocindex",
-                    "embeddingDependency": {
-                        "type": "DeploymentName",
-                        "deploymentName": "{embedding deployment name}",
-                    },
-                    "fieldsMapping": {"vectorFields": ["contentvector"]},
-                },
-            }
-        ]
+                }
+            ]
+        }
     }
-    settings = AzureOpenAIChatRequestSettings.model_validate(input_dict)
+    settings = AzureOpenAIChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
     print(settings)
-    assert settings.data_sources[0].type == "AzureCosmosDB"
+    print(f"{settings.extra_body=}")
+    print(f"{type(settings.extra_body)=}")
+    assert settings.extra_body.data_sources[0].type == "AzureCosmosDB"

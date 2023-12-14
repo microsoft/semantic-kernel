@@ -325,7 +325,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         )
     )
 
-    complete_request_settings = ChatRequestSettings(
+    complete_request_settings = AzureOpenAIChatRequestSettings()(
         data_source_settings=azure_chat_with_data_settings
     )
 
@@ -398,7 +398,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     )
 
     functions = [{"name": "test-function", "description": "test-description"}]
-    complete_request_settings = ChatRequestSettings(
+    complete_request_settings = AzureOpenAIChatRequestSettings(
         function_call="test-function",
         data_source_settings=azure_chat_with_data_settings,
     )
@@ -445,7 +445,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     logger = Logger("test_logger")
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = ChatRequestSettings()
+    complete_request_settings = AzureOpenAIChatRequestSettings()
 
     stop = ["!"]
     complete_request_settings.stop_sequences = stop
