@@ -30,11 +30,6 @@ public static class Example09_FunctionTypes
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // Using Kernel.InvokeAsync you can use the plugin reference or the kernel.Plugins collection
-
-        await kernel.InvokeAsync(plugin["NoInputWithVoidResult"]);
-        await kernel.InvokeAsync(kernel.Plugins["Examples"]["NoInputWithVoidResult"]);
-
         // Different ways to invoke a function (not limited to these examples)
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithVoidResult)]);
@@ -61,6 +56,10 @@ public static class Example09_FunctionTypes
                                             with Visual Basic's simplicity. It's ideal for a wide range of applications, 
                                             emphasizing type safety, modularity, and modern programming paradigms."
             });
+
+        // You can also use the kernel.Plugins collection to invoke a function
+        await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
+
     }
 }
 // Task functions when are imported as plugins loose the "Async" suffix if present.
