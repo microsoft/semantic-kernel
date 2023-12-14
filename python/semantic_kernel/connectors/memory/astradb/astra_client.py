@@ -80,8 +80,7 @@ class AstraClient:
                        limit: Optional[int] = None,
                        include_vector: Optional[bool] = None,
                        include_similarity: Optional[bool] = None) -> List[Dict]:
-        find_query = {"filter": {}, "sort": {},
-                      "projection": {}, "options": {}}
+        find_query = {}
 
         if filter is not None:
             find_query["filter"] = filter
@@ -92,19 +91,27 @@ class AstraClient:
             }
 
         if include_vector is not None and include_vector == False:
-            find_query["projection"]["$vector"] = 0
+            find_query["projection"] = {
+                "$vector": 0
+            }
 
         if limit is not None:
-            find_query["options"]["limit"] = limit
+            find_query["options"] = {
+                "limit": limit
+            }
 
         if include_similarity is not None:
-            find_query["options"]["includeSimilarity"] = int(
-                include_similarity)
+            if "options" in find_query:
+                find_query["options"]["includeSimilarity"] = int(
+                    include_similarity)
+            else:
+                find_query["options"] = {
+                    "includeSimilarity": int(include_similarity)
+                }
 
         query = {"find": find_query}
         result = self._run_query(
             self._build_collection_query(collection_name), query)
-
         return result["data"]["documents"]
 
     def insert_document(self, collection_name: str, document: Dict) -> str:

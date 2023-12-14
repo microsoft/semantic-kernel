@@ -76,7 +76,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The list of collections.
         """
-        return self.get_collections(False)
+        return self.get_collections()
 
     async def create_collection_async(
         self,
@@ -182,6 +182,10 @@ class AstraDBMemoryStore(MemoryStoreBase):
         filter = {"_id": key}
         documents = self._client.find_documents(
             collection_name=collection_name, filter=filter, include_vector=with_embedding)
+
+        if len(documents) == 0:
+            raise KeyError(f"Record with key '{key}' does not exist")
+
         return parse_payload(documents[0])
 
     async def get_batch_async(
@@ -274,7 +278,6 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-
         matches = self._client.find_documents(collection_name=collection_name, vector=embedding.tolist(
         ), limit=limit, include_similarity=True, include_vector=with_embeddings)
 

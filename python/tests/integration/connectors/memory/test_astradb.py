@@ -111,9 +111,9 @@ def test_constructor(get_astradb_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with Astradb free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with Astradb free tier"
+# )
 async def test_create_and_get_collection_async(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -126,9 +126,9 @@ async def test_create_and_get_collection_async(get_astradb_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_get_collections_async(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -140,9 +140,9 @@ async def test_get_collections_async(get_astradb_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_delete_collection_async(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -155,9 +155,9 @@ async def test_delete_collection_async(get_astradb_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_does_collection_exist_async(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -169,9 +169,9 @@ async def test_does_collection_exist_async(get_astradb_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_upsert_async_and_get_async(get_astradb_config, memory_record1):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -196,9 +196,9 @@ async def test_upsert_async_and_get_async(get_astradb_config, memory_record1):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_upsert_batch_async_and_get_batch_async(
     get_astradb_config, memory_record1, memory_record2
 ):
@@ -227,9 +227,9 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_remove_async(get_astradb_config, memory_record1):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -246,9 +246,9 @@ async def test_remove_async(get_astradb_config, memory_record1):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_remove_batch_async(get_astradb_config, memory_record1, memory_record2):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
@@ -278,9 +278,9 @@ async def test_remove_batch_async(get_astradb_config, memory_record1, memory_rec
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_get_nearest_match_async(
     get_astradb_config, memory_record1, memory_record2
 ):
@@ -312,9 +312,9 @@ async def test_get_nearest_match_async(
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Test failed due to known unreliable communications with AstraDB free tier"
-)
+# @pytest.mark.xfail(
+#     reason="Test failed due to known unreliable communications with AstraDB free tier"
+# )
 async def test_get_nearest_matches_async(
     get_astradb_config, memory_record1, memory_record2, memory_record3
 ):
