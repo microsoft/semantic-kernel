@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict, Mapping, Optional, overload
+import logging
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
 
@@ -14,6 +15,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
     """OpenAI Text Completion class."""
@@ -23,6 +26,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         self,
         ai_model_id: str,
         async_client: AsyncOpenAI,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -40,6 +44,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -62,6 +67,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         ai_model_id: str,
         api_key: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -81,6 +87,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncOpenAI] = None,
     ) -> None:
         """
@@ -98,6 +105,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,

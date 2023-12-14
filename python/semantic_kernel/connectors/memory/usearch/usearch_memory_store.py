@@ -124,6 +124,7 @@ class USearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         persist_directory: Optional[os.PathLike] = None,
+        **kwargs,
     ) -> None:
         """
         Create a USearchMemoryStore instance.
@@ -140,6 +141,10 @@ class USearchMemoryStore(MemoryStoreBase):
             persist_directory (Optional[os.PathLike], default=None): Directory for loading and saving collections.
             If None, collections are not loaded nor saved.
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._persist_directory = (
             Path(persist_directory) if persist_directory is not None else None
         )

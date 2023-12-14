@@ -70,7 +70,12 @@ class Kernel:
         skill_collection: Optional[SkillCollectionBase] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
+        log: Optional[Any] = None,
     ) -> None:
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._skill_collection = (
             skill_collection if skill_collection else SkillCollection()
         )

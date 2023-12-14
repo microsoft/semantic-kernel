@@ -1,12 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import (
-    TYPE_CHECKING,
-    ClassVar,
-    Dict,
-    Optional,
-    Union,
-)
+import logging
+from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Union, Any
 
 from pydantic import Field
 
@@ -24,6 +19,8 @@ from semantic_kernel.skill_definition.skill_collection_base import SkillCollecti
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class SkillCollection(SkillCollectionBase):
     GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
@@ -33,9 +30,14 @@ class SkillCollection(SkillCollectionBase):
 
     def __init__(
         self,
+        log: Optional[Any] = None,
         skill_collection: Union[Dict[str, Dict[str, SKFunction]], None] = None,
         read_only_skill_collection_: Optional[ReadOnlySkillCollection] = None,
     ) -> None:
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if skill_collection and read_only_skill_collection_:
             raise ValueError(
                 "Only one of `skill_collection` and `read_only_skill_collection` can be"

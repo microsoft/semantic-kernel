@@ -15,7 +15,7 @@ class PassThroughWithoutRetry(RetryMechanismBase, SKBaseModel):
     """A retry mechanism that does not retry."""
 
     async def execute_with_retry_async(
-        self, action: Callable[[], Awaitable[T]]
+        self, action: Callable[[], Awaitable[T]], log: Optional[Any] = None
     ) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
@@ -25,6 +25,10 @@ class PassThroughWithoutRetry(RetryMechanismBase, SKBaseModel):
         Returns:
             Awaitable[T] -- An awaitable that will return the result of the action.
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         try:
             await action()
         except Exception as e:

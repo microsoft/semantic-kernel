@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 
 from openai.types.completion import Completion
@@ -14,12 +15,15 @@ if TYPE_CHECKING:
         CompleteRequestSettings,
     )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete_async(
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
+        **kwargs,
     ) -> Union[str, List[str]]:
         """Executes a completion request and returns the result.
 
@@ -30,6 +34,10 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=False
         )
@@ -46,6 +54,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
+        **kwargs,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
         Executes a completion request and streams the result.
@@ -58,6 +67,10 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=True
         )

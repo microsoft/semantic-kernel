@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import atexit
 import json
 from typing import List, Optional, Tuple
@@ -17,6 +18,8 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 MAX_DIMENSIONALITY = 2000
 DEFAULT_SCHEMA = "public"
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PostgresMemoryStore(MemoryStoreBase):
     """A memory store that uses Postgres with pgvector as the backend."""
@@ -33,6 +36,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -45,7 +49,10 @@ class PostgresMemoryStore(MemoryStoreBase):
             timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
             Expected format '-7:00'. Uses the local timezone offset when not provided.\n
         """
-
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string

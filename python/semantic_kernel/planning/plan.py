@@ -137,8 +137,13 @@ class Plan(SKFunctionBase):
         context: Optional[SKContext] = None,
         settings: Optional[CompleteRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
+        **kwargs,
         # TODO: cancellation_token: CancellationToken,
     ) -> SKContext:
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if input is not None and input != "":
             self._state.update(input)
 
@@ -177,7 +182,12 @@ class Plan(SKFunctionBase):
         context: Optional[SKContext] = None,
         settings: Optional[CompleteRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
+        **kwargs,
     ) -> SKContext:
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if input is not None and input != "":
             self._state.update(input)
 

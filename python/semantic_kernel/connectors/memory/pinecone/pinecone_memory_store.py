@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import List, Optional, Tuple
 
 import pinecone
@@ -21,6 +22,8 @@ MAX_QUERY_WITH_METADATA_BATCH_SIZE = 1000
 MAX_FETCH_BATCH_SIZE = 1000
 MAX_DELETE_BATCH_SIZE = 1000
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
@@ -34,6 +37,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key: str,
         environment: str,
         default_dimensionality: int,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
@@ -42,6 +46,10 @@ class PineconeMemoryStore(MemoryStoreBase):
             pinecone_environment {str} -- The Pinecone environment.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ValueError(
                 f"Dimensionality of {default_dimensionality} exceeds "

@@ -2,7 +2,7 @@
 
 import logging
 from re import match as re_match
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 
 import pydantic as pdt
 
@@ -17,8 +17,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 class VarBlock(Block):
     _name: str = pdt.PrivateAttr()
 
-    def __init__(self, content: Optional[str] = None):
+    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
         super().__init__(content=content and content.strip())
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         if len(self.content) < 2:
             err = "The variable name is empty"

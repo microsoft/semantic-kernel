@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import uuid
 from typing import List, Optional, Tuple
 
@@ -27,6 +28,8 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
@@ -39,6 +42,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         admin_key: Optional[str] = None,
         azure_credentials: Optional[AzureKeyCredential] = None,
         token_credentials: Optional[TokenCredential] = None,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
@@ -55,6 +59,10 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         try:
             pass
         except ImportError:

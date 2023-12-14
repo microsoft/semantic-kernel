@@ -29,8 +29,13 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
+        log: Optional[Any] = None,
     ) -> None:
         super().__init__(template, template_engine, prompt_config)
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._messages = []
         if self._prompt_config.completion.chat_system_prompt:
             self.add_system_message(self._prompt_config.completion.chat_system_prompt)
@@ -96,6 +101,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
+        log: Optional[Any] = None,
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.
 
@@ -103,6 +109,10 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         that takes precedence over the first message in the list of messages,
         if that is a system message.
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         chat_template = cls(template, template_engine, prompt_config)
         if (
             prompt_config.completion.chat_system_prompt

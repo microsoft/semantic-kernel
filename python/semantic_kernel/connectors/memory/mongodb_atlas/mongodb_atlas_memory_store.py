@@ -39,7 +39,12 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         connection_string: Optional[str] = None,
         database_name: Optional[str] = None,
         read_preference: Optional[ReadPreference] = ReadPreference.PRIMARY,
+        **kwargs,
     ):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string or mongodb_atlas_settings_from_dot_env(),
             read_preference=read_preference,

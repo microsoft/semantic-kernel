@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import TYPE_CHECKING, List
 
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
@@ -16,6 +17,8 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PromptTemplate(PromptTemplateBase):
     _template: str
@@ -27,7 +30,12 @@ class PromptTemplate(PromptTemplateBase):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
+        log: Optional[Any] = None,
     ) -> None:
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._template = template
         self._template_engine = template_engine
         self._prompt_config = prompt_config

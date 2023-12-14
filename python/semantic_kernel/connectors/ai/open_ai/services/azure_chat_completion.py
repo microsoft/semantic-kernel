@@ -57,6 +57,7 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -81,6 +82,8 @@ class AzureChatCompletion(
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
+            logger: deprecated, use 'log' instead.
         """
 
     @overload
@@ -93,6 +96,7 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -115,6 +119,8 @@ class AzureChatCompletion(
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
+            logger: deprecated, use 'log' instead.
         """
 
     @overload
@@ -122,6 +128,7 @@ class AzureChatCompletion(
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -133,6 +140,7 @@ class AzureChatCompletion(
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
+            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -185,9 +193,10 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        logger: Optional[logging.Logger] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
         use_extensions: bool = False,
+        **kwargs,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -216,14 +225,21 @@ class AzureChatCompletion(
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
             logger: deprecated.
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
             use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
                 When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
                 The default value is False.
         """
-        if logger:
-            logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
+        if kwargs.get("logger"):
+            logger.warning(
+                "The 'logger' argument is deprecated. Please use the `logging` module instead."
+            )
 
         if use_extensions:
             base_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"

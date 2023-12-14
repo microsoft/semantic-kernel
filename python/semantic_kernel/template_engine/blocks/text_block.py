@@ -14,7 +14,12 @@ class TextBlock(Block):
         text: Optional[str] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
+        log: Optional[Any] = None,
     ):
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:

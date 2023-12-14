@@ -62,7 +62,11 @@ class SKFunction(SKFunctionBase):
     _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
-    def from_native_method(method, skill_name="") -> "SKFunction":
+    def from_native_method(method, skill_name="", log=None) -> "SKFunction":
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if method is None:
             raise ValueError("Method cannot be `None`")
 
@@ -117,7 +121,12 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
+        log: Optional[Any] = None,
     ) -> "SKFunction":
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
@@ -317,10 +326,15 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
+        log: Optional[Any] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__()
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._delegate_type = delegate_type
         self._function = delegate_function
         self._parameters = parameters
@@ -390,7 +404,12 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Any] = None,
     ) -> "SKContext":
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         return self.invoke(
             input=input,
             variables=variables,
@@ -406,8 +425,14 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Any] = None,
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         if context is None:
             context = SKContext(
@@ -455,9 +480,15 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Any] = None,
         **kwargs: Dict[str, Any],
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         if context is None:
             context = SKContext(

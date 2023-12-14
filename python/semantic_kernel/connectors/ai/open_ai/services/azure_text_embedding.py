@@ -29,6 +29,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -40,6 +41,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
+            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -51,8 +53,9 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        logger: Optional[logging.Logger] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize an AzureTextEmbedding service.
@@ -78,11 +81,16 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             (Optional) The default value is False.
         :param default_headers: The default headers mapping of string keys to
             string values for HTTP requests. (Optional)
+        :param log: The logger instance to use. (Optional) (Deprecated)
         :param logger: Deprecated, please use log instead. (Optional)
         :param async_client: An existing client to use. (Optional)
 
         """
-        if logger:
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
+        if kwargs.get("logger"):
             logger.warning("The 'logger' argument is deprecated.")
         super().__init__(
             deployment_name=deployment_name,

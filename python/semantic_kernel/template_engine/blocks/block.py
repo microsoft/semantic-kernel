@@ -1,16 +1,26 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional, Tuple
+import logging
+from typing import Optional, Tuple, Any
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Block(SKBaseModel):
     content: Optional[str] = None
 
-    def __init__(self, content: Optional[str] = None) -> None:
+    def __init__(
+        self, content: Optional[str] = None, log: Optional[Any] = None
+    ) -> None:
         super().__init__(content=content)
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
     def is_valid(self) -> Tuple[bool, str]:
         raise NotImplementedError("Subclasses must implement this method.")

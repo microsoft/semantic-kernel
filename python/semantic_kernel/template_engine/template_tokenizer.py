@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List
+import logging
+from typing import List, Any, Optional
 
 from pydantic import PrivateAttr
 
@@ -11,6 +12,8 @@ from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 # BNF parsed by TemplateTokenizer:
@@ -24,8 +27,12 @@ from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 class TemplateTokenizer(SKBaseModel):
     _code_tokenizer: CodeTokenizer = PrivateAttr()
 
-    def __init__(self):
+    def __init__(self, log: Optional[Any] = None):
         super().__init__()
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._code_tokenizer = CodeTokenizer()
 
     def tokenize(self, text: str) -> List[Block]:

@@ -17,8 +17,13 @@ class FunctionIdBlock(Block):
     _skill_name: str = pdt.PrivateAttr()
     _function_name: str = pdt.PrivateAttr()
 
-    def __init__(self, content: Optional[str] = None):
+    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
         super().__init__(content=content and content.strip())
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         function_name_parts = self.content.split(".")
         if len(function_name_parts) > 2:

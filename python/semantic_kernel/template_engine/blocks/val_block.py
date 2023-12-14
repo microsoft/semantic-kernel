@@ -18,8 +18,13 @@ class ValBlock(Block):
     _last: str = pdt.PrivateAttr()
     _value: str = pdt.PrivateAttr()
 
-    def __init__(self, content: Optional[str] = None):
+    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
         super().__init__(content=content and content.strip())
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         if len(self.content) < 2:
             err = "A value must have single quotes or double quotes on both sides"

@@ -113,7 +113,11 @@ class WeaviateMemoryStore(MemoryStoreBase):
             """
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-    def __init__(self, config: WeaviateConfig):
+    def __init__(self, config: WeaviateConfig, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self.config = config
         self.client = self._initialize_client()
 

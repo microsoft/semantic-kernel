@@ -15,8 +15,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 class VolatileMemoryStore(MemoryStoreBase):
     _store: Dict[str, Dict[str, MemoryRecord]]
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         """Initializes a new instance of the VolatileMemoryStore class."""
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._store = {}
 
     async def create_collection_async(self, collection_name: str) -> None:

@@ -29,6 +29,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         ai_model_id: str,
         task: Optional[str] = "text2text-generation",
         device: Optional[int] = -1,
+        log: Optional[Any] = None,
         model_kwargs: Optional[Dict[str, Any]] = None,
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -47,6 +48,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 - text-generation: takes incomplete text and returns a set of completion candidates.
                 - text2text-generation (default): takes an input prompt and returns a completion.
                 text2text-generation is the default as it behaves more like GPT-3+.
+            log {Optional[Logger]} -- Logger instance. (Deprecated)
             model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments
                 passed along to the model's `from_pretrained(..., **model_kwargs)` function.
             pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along
@@ -69,12 +71,21 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 **pipeline_kwargs or {},
             ),
         )
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
     async def complete_async(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
+        **kwargs,
     ) -> Union[str, List[str]]:
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         try:
             generation_config = transformers.GenerationConfig(
                 temperature=request_settings.temperature,
@@ -111,6 +122,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
+        **kwargs,
     ):
         """
         Streams a text completion using a Hugging Face model.
@@ -123,6 +135,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         Yields:
             str -- Completion result.
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if request_settings.number_of_responses > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,

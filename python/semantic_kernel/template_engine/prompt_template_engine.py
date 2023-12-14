@@ -21,8 +21,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 class PromptTemplateEngine(SKBaseModel):
     _tokenizer: TemplateTokenizer = PrivateAttr()
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__()
+
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._tokenizer = TemplateTokenizer()
 
     def extract_blocks(

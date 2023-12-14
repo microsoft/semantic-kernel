@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -21,12 +22,15 @@ from semantic_kernel.connectors.ai.open_ai.utils import _parse_message
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat_async(
         self,
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
+        **kwargs,
     ) -> Union[str, List[str]]:
         """Executes a chat completion request and returns the result.
 
@@ -37,6 +41,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             messages=messages, request_settings=settings, stream=False
         )
@@ -51,6 +59,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         messages: List[Dict[str, str]],
         functions: List[Dict[str, Any]],
         request_settings: "ChatRequestSettings",
+        **kkwargs,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -65,7 +74,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             messages=messages,
             request_settings=request_settings,
@@ -82,6 +94,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
+        **kwargs,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """Executes a chat completion request and returns the result.
 
@@ -92,6 +105,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             messages=messages, request_settings=settings, stream=True
         )

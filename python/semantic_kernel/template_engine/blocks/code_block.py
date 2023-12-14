@@ -25,8 +25,14 @@ class CodeBlock(Block):
         self,
         content: str,
         tokens: Optional[List[Block]] = None,
+        log: Optional[Any] = None,
     ):
         super().__init__(content=content and content.strip())
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         self._tokens = tokens or CodeTokenizer().tokenize(content)
         self._validated = False

@@ -86,7 +86,7 @@ def query_results_to_records(
 
 
 def chroma_compute_similarity_scores(
-    embedding: ndarray, embedding_array: ndarray
+    embedding: ndarray, embedding_array: ndarray, **kwargs
 ) -> ndarray:
     """Computes the cosine similarity scores between a query embedding and a group of embeddings.
     Arguments:
@@ -95,6 +95,10 @@ def chroma_compute_similarity_scores(
     Returns:
         ndarray -- The cosine similarity scores.
     """
+    if kwargs.get("logger"):
+        logger.warning(
+            "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+        )
     query_norm = linalg.norm(embedding)
     collection_norm = linalg.norm(embedding_array, axis=1)
 

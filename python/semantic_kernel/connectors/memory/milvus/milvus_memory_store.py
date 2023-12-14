@@ -66,6 +66,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         self,
         uri: str = "http://localhost:19530",
         token: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """MilvusMemoryStore allows for searching for records using Milvus/Zilliz Cloud.
 
@@ -80,6 +81,10 @@ class MilvusMemoryStore(MemoryStoreBase):
             token (Optional[str], optional): The token to connect to the cluster if
                 authentication is required. Defaults to None.
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         self._uri = uri
         self._token = (token,)
         self._client = milvus_client.MilvusClient(

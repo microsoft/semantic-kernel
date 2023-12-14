@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import Any, Dict, Generic, Literal, Optional, Tuple, Union
 
 from pydantic import Field, PrivateAttr
@@ -17,6 +18,8 @@ from semantic_kernel.skill_definition.read_only_skill_collection import (
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
@@ -38,6 +41,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
         variables: ContextVariables,
         memory: SemanticTextMemoryBase,
         skill_collection: Union[ReadOnlySkillCollection, None],
+        **kwargs,
         # TODO: cancellation token?
     ) -> None:
         """
@@ -48,7 +52,10 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             memory {SemanticTextMemoryBase} -- The semantic text memory.
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
         """
-        # Local import to avoid circular dependency
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
         if skill_collection is None:
             skill_collection = ReadOnlySkillCollection()

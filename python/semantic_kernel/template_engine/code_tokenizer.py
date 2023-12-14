@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List
+import logging
+from typing import List, Optional, Any
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
@@ -9,6 +10,8 @@ from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdB
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 # BNF parsed by CodeTokenizer:
@@ -20,6 +23,14 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer(SKBaseModel):
+    def __init__(self, log: Optional[Any] = None):
+        super().__init__()
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
+
     def tokenize(self, text: str) -> List[Block]:
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""

@@ -27,8 +27,14 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
     def __init__(
         self,
         data: Dict[str, Dict[str, SKFunction]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         super().__init__(data=data or {})
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:
         s_name, f_name = self._normalize_names(skill_name, function_name, True)

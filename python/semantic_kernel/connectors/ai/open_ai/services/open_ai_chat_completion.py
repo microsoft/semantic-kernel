@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
@@ -17,6 +18,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAIChatCompletion(
     OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
@@ -28,6 +31,7 @@ class OpenAIChatCompletion(
         self,
         ai_model_id: str,
         async_client: AsyncOpenAI,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -36,6 +40,7 @@ class OpenAIChatCompletion(
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             async_client {AsyncOpenAI} -- An existing client to use.
+            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -45,6 +50,7 @@ class OpenAIChatCompletion(
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -59,6 +65,7 @@ class OpenAIChatCompletion(
                 account belongs to multiple organizations.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
+            log {Optional[Logger]} -- The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -67,6 +74,7 @@ class OpenAIChatCompletion(
         ai_model_id: str,
         api_key: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -78,6 +86,7 @@ class OpenAIChatCompletion(
                 https://platform.openai.com/account/api-keys
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
+            log {Optional[Logger]} -- The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -87,6 +96,7 @@ class OpenAIChatCompletion(
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -102,7 +112,12 @@ class OpenAIChatCompletion(
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+            log {Optional[Logger]} -- The logger instance to use. (Optional) (Deprecated)
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,

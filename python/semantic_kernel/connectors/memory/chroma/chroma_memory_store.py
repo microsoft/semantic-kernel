@@ -28,6 +28,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         self,
         persist_directory: Optional[str] = None,
         client_settings: Optional["chromadb.config.Settings"] = None,
+        **kwargs,
     ) -> None:
         """
         ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB.
@@ -61,6 +62,10 @@ class ChromaMemoryStore(MemoryStoreBase):
                 "Please install it with `pip install chromadb`."
             )
 
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         if client_settings:
             self._client_settings = client_settings
         else:

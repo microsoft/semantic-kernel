@@ -34,6 +34,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,
         default_headers: Union[Mapping[str, str], None] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
@@ -49,11 +50,16 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable
                 or coroutine function providing Azure AD tokens. (Optional)
             default_headers {Union[Mapping[str, str], None]} -- Default headers for HTTP requests. (Optional)
+            log {Optional[Logger]} -- Logger instance for logging purposes. (Optional) (Deprecated)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
 
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
         This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:

@@ -69,6 +69,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
+        log: Optional[Any] = None,
     ) -> "OpenAIChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.
 
@@ -76,6 +77,10 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         that takes precedence over the first message in the list of messages,
         if that is a system message.
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         chat_template = cls(template, template_engine, prompt_config)
         if (
             prompt_config.completion.chat_system_prompt

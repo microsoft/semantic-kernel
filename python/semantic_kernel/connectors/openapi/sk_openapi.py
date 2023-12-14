@@ -41,7 +41,11 @@ class PreparedRestApiRequest:
             f"request_body={self.request_body})"
         )
 
-    def validate_request(self, spec: Spec):
+    def validate_request(self, spec: Spec, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
         request = requests.Request(
             self.method,
             self.url,
@@ -160,6 +164,12 @@ class RestApiOperation:
 
 
 class OpenApiParser:
+    def __init__(self, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            )
+
     """
     Import an OpenAPI file.
     :param openapi_file: The path to the OpenAPI file which can be local or a URL.
