@@ -57,13 +57,13 @@ public sealed class HandlebarsPlan
     /// <returns>The plan result.</returns>
     public Task<string> InvokeAsync(
         Kernel kernel,
-        KernelArguments arguments,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
         var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan));
 
         return PlannerInstrumentation.InvokePlanAsync(
-            static (HandlebarsPlan plan, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+            static (HandlebarsPlan plan, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
                 => plan.InvokeCoreAsync(kernel, arguments, cancellationToken),
             this, kernel, arguments, logger, cancellationToken);
     }
