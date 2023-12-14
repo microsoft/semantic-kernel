@@ -185,7 +185,7 @@ public class LocalExamplePlugin
     }
 
     /// <summary>
-    /// Example how to inject the executing KernelFunction as a paremeter
+    /// Example how to inject the executing KernelFunction as a parameter
     /// </summary>
     [KernelFunction, Description("Example function injecting itself as a parameter")]
     public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction executingFunction)
