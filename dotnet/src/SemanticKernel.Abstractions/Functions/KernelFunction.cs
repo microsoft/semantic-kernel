@@ -96,7 +96,7 @@ public abstract class KernelFunction
         {
             Description = description,
             Parameters = parameters,
-            ReturnParameter = returnParameter ?? new()
+            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
         };
         this.ExecutionSettings = executionSettings;
     }
@@ -133,10 +133,7 @@ public abstract class KernelFunction
             cancellationToken.ThrowIfCancellationRequested();
 
             // Invoke pre-invocation event handler. If it requests cancellation, throw.
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            if (invokingEventArgs?.Cancel is true)
+            if (kernel.OnFunctionInvoking(this, arguments)?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
@@ -145,9 +142,7 @@ public abstract class KernelFunction
             functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             if (invokedEventArgs is not null)
             {
                 // Apply any changes from the event handlers to final result.
@@ -251,9 +246,7 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
                 var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
                 if (invokingEventArgs is not null && invokingEventArgs.Cancel)
                 {
                     throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");

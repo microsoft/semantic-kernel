@@ -326,6 +326,7 @@ public static class OpenApiKernelExtensions
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
+                ParameterType = p.Type switch { "string" => typeof(string), "boolean" => typeof(bool), _ => null },
                 Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
             })
             .ToList();
