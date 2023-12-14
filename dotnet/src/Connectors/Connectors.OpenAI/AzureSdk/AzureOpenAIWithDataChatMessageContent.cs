@@ -26,8 +26,8 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
     /// <param name="chatChoice">Azure Chat With Data Choice</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    internal AzureOpenAIWithDataChatMessageContent(ChatWithDataChoice chatChoice, string? modelId, IDictionary<string, object?>? metadata = null)
-        : base(default, string.Empty, modelId, chatChoice, System.Text.Encoding.UTF8, metadata ?? new Dictionary<string, object?>(1))
+    internal AzureOpenAIWithDataChatMessageContent(ChatWithDataChoice chatChoice, string? modelId, IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(default, string.Empty, modelId, chatChoice, System.Text.Encoding.UTF8, CreateMetadataDictionary(metadata))
     {
         // An assistant message content must be present, otherwise the chat is not valid.
         var chatMessage = chatChoice.Messages.First(m => string.Equals(m.Role, AuthorRole.Assistant.Label, StringComparison.OrdinalIgnoreCase));
@@ -36,6 +36,32 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
         this.Role = new AuthorRole(chatMessage.Role);
 
         this.ToolContent = chatChoice.Messages.FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.OrdinalIgnoreCase))?.Content;
-        this.Metadata!.Add(nameof(this.ToolContent), this.ToolContent);
+        ((Dictionary<string, object?>)this.Metadata!).Add(nameof(this.ToolContent), this.ToolContent);
+    }
+
+    private static Dictionary<string, object?> CreateMetadataDictionary(IReadOnlyDictionary<string, object?>? metadata)
+    {
+        Dictionary<string, object?> newDictionary;
+        if (metadata is null)
+        {
+            // There's no existing metadata to clone; just allocate a new dictionary.
+            newDictionary = new Dictionary<string, object?>(1);
+        }
+        else if (metadata is IDictionary<string, object?> origMutable)
+        {
+            // Efficiently clone the old dictionary to a new one.
+            newDictionary = new Dictionary<string, object?>(origMutable);
+        }
+        else
+        {
+            // There's metadata to clone but we have to do so one item at a time.
+            newDictionary = new Dictionary<string, object?>(metadata.Count + 1);
+            foreach (var kvp in metadata)
+            {
+                newDictionary[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return newDictionary;
     }
 }

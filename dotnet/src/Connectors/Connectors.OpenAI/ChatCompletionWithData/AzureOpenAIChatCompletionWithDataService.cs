@@ -116,7 +116,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
-        var metadata = GetResponseMetadata(chatWithDataResponse);
+        IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(chatWithDataResponse);
 
         return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).ToList();
     }
@@ -195,11 +195,11 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             }
 
             var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
-            var metadata = GetResponseMetadata(chatWithDataResponse);
+            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(chatWithDataResponse);
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, this.GetModelId()!, new Dictionary<string, object?>(metadata));
+                yield return new AzureOpenAIWithDataStreamingChatMessageContent(choice, choice.Index, this.GetModelId()!, metadata);
             }
         }
     }
