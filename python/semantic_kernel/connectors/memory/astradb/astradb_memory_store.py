@@ -58,7 +58,13 @@ class AstraDBMemoryStore(MemoryStoreBase):
             )
 
         self._client = AstraClient(
-            astra_id=astra_id, astra_region=astra_region, astra_application_token=astra_application_token, keyspace_name=keyspace_name, embedding_dim=embedding_dim, similarity_function=similarity)
+            astra_id=astra_id,
+            astra_region=astra_region,
+            astra_application_token=astra_application_token,
+            keyspace_name=keyspace_name,
+            embedding_dim=embedding_dim,
+            similarity_function=similarity,
+        )
 
         self._logger = logger or NullLogger()
 
@@ -98,15 +104,12 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         if dimension_num > MAX_DIMENSIONALITY:
             raise ValueError(
-                f"Dimensionality of {dimension_num} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
-        result = self._client.create_collection(
-            collection_name, dimension_num, distance_type)
+        result = self._client.create_collection(collection_name, dimension_num, distance_type)
         if result == True:
-            self._logger.info(
-                f"Collection {collection_name} created.")
+            self._logger.info(f"Collection {collection_name} created.")
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -119,11 +122,9 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         result = self._client.delete_collection(collection_name)
         if result == True:
-            self._logger.info(
-                f"Collection {collection_name} deleted.")
+            self._logger.info(f"Collection {collection_name} deleted.")
         else:
-            self._logger.warning(
-                f"Collection {collection_name} does not exist.")
+            self._logger.warning(f"Collection {collection_name} does not exist.")
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -150,14 +151,11 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         filter = {"_id": record._id}
         update = {"$set": build_payload(record)}
-        status = self._client.update_document(
-            collection_name, filter, update, True)
+        status = self._client.update_document(collection_name, filter, update, True)
 
         return status["upsertedId"] if "upsertedId" in status else record._id
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         upserted_ids = []
 
         for record in records:
@@ -166,9 +164,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         return upserted_ids
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record. Does not guarantee that the collection exists.
 
         Arguments:
@@ -181,7 +177,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         filter = {"_id": key}
         documents = self._client.find_documents(
-            collection_name=collection_name, filter=filter, include_vector=with_embedding)
+            collection_name=collection_name, filter=filter, include_vector=with_embedding
+        )
 
         if len(documents) == 0:
             raise KeyError(f"Record with key '{key}' does not exist")
@@ -204,7 +201,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         filter = {"_id": {"$in": keys}}
         documents = self._client.find_documents(
-            collection_name=collection_name, filter=filter, include_vector=with_embeddings)
+            collection_name=collection_name, filter=filter, include_vector=with_embeddings
+        )
         return [parse_payload(document) for document in documents]
 
     async def remove_async(self, collection_name: str, key: str) -> None:
@@ -278,12 +276,16 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        matches = self._client.find_documents(collection_name=collection_name, vector=embedding.tolist(
-        ), limit=limit, include_similarity=True, include_vector=with_embeddings)
+        matches = self._client.find_documents(
+            collection_name=collection_name,
+            vector=embedding.tolist(),
+            limit=limit,
+            include_similarity=True,
+            include_vector=with_embeddings,
+        )
 
         if min_relevance_score:
-            matches = [
-                match for match in matches if match["$similarity"] >= min_relevance_score]
+            matches = [match for match in matches if match["$similarity"] >= min_relevance_score]
 
         return (
             [

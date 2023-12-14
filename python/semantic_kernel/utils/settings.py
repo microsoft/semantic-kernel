@@ -130,14 +130,14 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return api_key, environment
 
 
-def astradb_settings_from_dot_env() -> Tuple[str, str, str, str]:
+def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
     Reads the Astradb API key and Environment from the .env file.
     Returns:
         Tuple[str, str]: The Astradb API key, the Astradb Environment
     """
 
-    app_token, db_id, region, keyspace = None, None
+    app_token, db_id, region, keyspace = None, None, None, None
     with open(".env", "r") as f:
         lines = f.readlines()
 

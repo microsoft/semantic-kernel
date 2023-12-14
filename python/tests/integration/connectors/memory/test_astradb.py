@@ -10,6 +10,8 @@ import semantic_kernel as sk
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
+from semantic_kernel.connectors.memory.astradb.exceptions import ForbiddenException, ServiceException
+
 """
 export ASTRADB_APP_TOKEN=AstraCS:ZUJZcHtgmQswaEDUGqvfDZKU:88c0442ab720e1bb574c8b838c2afa6fbcf7a53b7ef3cc6237d7d4b763c565bd
 export ASTRADB_ID=2ee186dc-3fa5-45b9-a585-5f978c3db9bd
@@ -33,10 +35,10 @@ async def retry(func, retries=1):
     for i in range(retries):
         try:
             return await func()
-        except semantic_kernel.connectors.memory.astradb.exceptions.ForbiddenException as e:
+        except ForbiddenException as e:
             print(e)
             time.sleep(i * 2)
-        except semantic_kernel.connectors.memory.astradb.exceptions.ServiceException as e:
+        except ServiceException as e:
             print(e)
             time.sleep(i * 2)
 
