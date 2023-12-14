@@ -78,7 +78,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         {
             (1024, 1024) => ImageSize.Size1024x1024,
             (1792, 1024) => ImageSize.Size1792x1024,
-            (1024,1792) => ImageSize.Size1024x1792,
+            (1024, 1792) => ImageSize.Size1024x1792,
             _ => throw new NotSupportedException("Dall-E 3 can only generate images of the following sizes 1024x1024, 1792x1024, or 1024x1792")
         };
 
