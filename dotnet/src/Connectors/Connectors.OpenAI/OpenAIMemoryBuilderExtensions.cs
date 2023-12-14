@@ -69,7 +69,7 @@ public static class OpenAIMemoryBuilderExtensions
                 endpoint: endpoint,
                 credential: credential,
                 modelId: modelId,
-                httpClient: httpClient,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory: loggerFactory));
     }
 
