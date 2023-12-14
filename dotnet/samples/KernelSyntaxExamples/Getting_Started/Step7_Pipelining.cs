@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-public static class Step5_Pipelining
+public static class Step7_Pipelining
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
