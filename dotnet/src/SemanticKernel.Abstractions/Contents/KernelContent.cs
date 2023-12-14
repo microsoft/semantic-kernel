@@ -27,7 +27,7 @@ public abstract class KernelContent
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
@@ -35,13 +35,10 @@ public abstract class KernelContent
     /// <param name="innerContent">The inner content representation</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected KernelContent(object? innerContent, string? modelId = null, IDictionary<string, object?>? metadata = null)
+    protected KernelContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;
-        if (metadata is not null)
-        {
-            this.Metadata = new Dictionary<string, object?>(metadata);
-        }
+        this.Metadata = metadata;
     }
 }

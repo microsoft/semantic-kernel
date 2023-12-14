@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0040,SKEXP0041</NoWarn>
+    <NoWarn>CA2007,VSTHRD111,SKEXP0040,SKEXP0041,SKEXP0042</NoWarn>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
   <ItemGroup>

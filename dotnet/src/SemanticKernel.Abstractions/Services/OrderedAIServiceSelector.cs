@@ -35,10 +35,11 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         else
         {
             PromptExecutionSettings? defaultExecutionSettings = null;
+            // Search by service id first
             foreach (var keyValue in executionSettings)
             {
                 var settings = keyValue.Value;
-                var serviceId = keyValue.Value.ServiceId ?? keyValue.Key;
+                var serviceId = keyValue.Key;
                 if (string.IsNullOrEmpty(serviceId) || serviceId!.Equals(PromptExecutionSettings.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
                 {
                     defaultExecutionSettings ??= settings;
@@ -52,6 +53,13 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                         return true;
                     }
                 }
+            }
+
+            // Search by model id next
+            foreach (var keyValue in executionSettings)
+            {
+                var settings = keyValue.Value;
+                var serviceId = keyValue.Key;
                 if (!string.IsNullOrEmpty(settings.ModelId))
                 {
                     service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
@@ -63,6 +71,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 }
             }
 
+            // Search for default service id last
             if (defaultExecutionSettings is not null)
             {
                 service = GetAnyService(kernel);

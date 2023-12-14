@@ -114,8 +114,8 @@ internal abstract class ClientCore
         }
 
         this.CaptureUsageDetails(responseData.Usage);
-        var metadata = GetResponseMetadata(responseData);
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, new Dictionary<string, object?>(metadata))).ToList();
+        IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, metadata)).ToList();
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -132,13 +132,13 @@ internal abstract class ClientCore
 
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        Dictionary<string, object?>? metadata = null;
+        IReadOnlyDictionary<string, object?>? metadata = null;
         await foreach (Completions completions in response)
         {
             metadata ??= GetResponseMetadata(completions);
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, new(metadata));
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, metadata);
             }
         }
     }
@@ -240,13 +240,13 @@ internal abstract class ClientCore
                 throw new KernelException("Chat completions not found");
             }
 
-            var metadata = GetResponseMetadata(responseData);
+            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, new(metadata))).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, metadata)).ToList();
             }
 
             Debug.Assert(kernel is not null);
@@ -374,7 +374,7 @@ internal abstract class ClientCore
             // Stream the response.
             contentBuilder?.Clear();
             List<ChatCompletionsFunctionToolCall>? functionCallResponses = null;
-            Dictionary<string, object?>? metadata = null;
+            IReadOnlyDictionary<string, object?>? metadata = null;
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
@@ -410,7 +410,7 @@ internal abstract class ClientCore
                     }
                 }
 
-                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, new(metadata));
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
             // If we don't have a function call to invoke, we're done.

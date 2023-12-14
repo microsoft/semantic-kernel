@@ -108,7 +108,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
-        var parameters = putOperation.GetParameters();
+        var parameters = putOperation.GetParameters(addPayloadParamsFromMetadata: false);
         Assert.NotNull(parameters);
         Assert.True(parameters.Count >= 5);
 
