@@ -186,7 +186,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder
             .AddOpenAIChatCompletion(
                 serviceId: openAIConfiguration.ServiceId,
-                modelId: openAIConfiguration.ModelId,
+                modelId: openAIConfiguration.ChatModelId,
                 apiKey: "INVALID_KEY"); // Use an invalid API key to force a 401 Unauthorized response
         this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
