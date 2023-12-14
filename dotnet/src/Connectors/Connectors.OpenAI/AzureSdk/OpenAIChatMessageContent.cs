@@ -63,22 +63,19 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <returns>The <see cref="OpenAIFunctionToolCall"/>, or null if no function was returned by the model.</returns>
     public IReadOnlyList<OpenAIFunctionToolCall> GetOpenAIFunctionToolCalls()
     {
-        if (this.ToolCalls is not null)
+        List<OpenAIFunctionToolCall>? functionToolCallList = null;
+
+        foreach (var toolCall in this.ToolCalls)
         {
-            List<OpenAIFunctionToolCall>? list = null;
-
-            for (int i = 0; i < this.ToolCalls.Count; i++)
+            if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
             {
-                if (this.ToolCalls[i] is ChatCompletionsFunctionToolCall ftc)
-                {
-                    (list ??= new List<OpenAIFunctionToolCall>()).Add(new OpenAIFunctionToolCall(ftc));
-                }
+                (functionToolCallList ??= new List<OpenAIFunctionToolCall>()).Add(new OpenAIFunctionToolCall(functionToolCall));
             }
+        }
 
-            if (list is not null)
-            {
-                return list;
-            }
+        if (functionToolCallList is not null)
+        {
+            return functionToolCallList;
         }
 
         return Array.Empty<OpenAIFunctionToolCall>();
@@ -89,7 +86,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         IReadOnlyDictionary<string, object?>? original)
     {
         // We only need to augment the metadata if there are any tool calls.
-        if (toolCalls?.Count > 0)
+        if (toolCalls.Count > 0)
         {
             Dictionary<string, object?> newDictionary;
             if (original is null)
