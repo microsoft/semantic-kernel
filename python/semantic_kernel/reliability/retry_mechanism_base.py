@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Awaitable, Callable, TypeVar
+from typing import Any, Awaitable, Callable, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -24,6 +24,6 @@ class RetryMechanismBase(ABC):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         pass

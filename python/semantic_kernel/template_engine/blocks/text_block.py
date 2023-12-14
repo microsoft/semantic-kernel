@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional, Tuple
+import logging
+from typing import Any, Optional, Tuple
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
@@ -18,7 +21,7 @@ class TextBlock(Block):
     ):
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if text is None:
             return cls(content="")

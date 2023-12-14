@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import itertools
+import logging
 import os
 from dataclasses import dataclass
 from enum import Enum
@@ -23,6 +24,8 @@ from usearch.index import (
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -143,7 +146,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         self._persist_directory = (
             Path(persist_directory) if persist_directory is not None else None

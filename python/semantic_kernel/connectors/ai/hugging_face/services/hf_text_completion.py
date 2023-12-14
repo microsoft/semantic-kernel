@@ -48,7 +48,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 - text-generation: takes incomplete text and returns a set of completion candidates.
                 - text2text-generation (default): takes an input prompt and returns a completion.
                 text2text-generation is the default as it behaves more like GPT-3+.
-            log {Optional[Logger]} -- Logger instance. (Deprecated)
+            log  -- Logger instance. (Deprecated)
             model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments
                 passed along to the model's `from_pretrained(..., **model_kwargs)` function.
             pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along
@@ -73,7 +73,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         )
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
     async def complete_async(
@@ -84,7 +84,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         try:
             generation_config = transformers.GenerationConfig(
@@ -137,7 +137,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         if request_settings.number_of_responses > 1:
             raise AIException(

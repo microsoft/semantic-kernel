@@ -2,7 +2,7 @@
 
 
 import logging
-from typing import Dict, Mapping, Optional, overload
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -88,7 +88,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if kwargs.get("logger"):
             logger.warning("The 'logger' argument is deprecated.")

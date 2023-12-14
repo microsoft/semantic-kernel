@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import logging
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, Union
 
 from openai import AsyncAzureOpenAI
@@ -17,6 +18,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 )
 from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.sk_pydantic import HttpsUrl
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AzureOpenAIConfigBase(OpenAIHandler):
@@ -50,7 +53,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable
                 or coroutine function providing Azure AD tokens. (Optional)
             default_headers {Union[Mapping[str, str], None]} -- Default headers for HTTP requests. (Optional)
-            log {Optional[Logger]} -- Logger instance for logging purposes. (Optional) (Deprecated)
+            log  -- Logger instance for logging purposes. (Optional) (Deprecated)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
 
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
@@ -58,7 +61,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}

@@ -65,7 +65,7 @@ class SKFunction(SKFunctionBase):
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if method is None:
             raise ValueError("Method cannot be `None`")
@@ -125,7 +125,7 @@ class SKFunction(SKFunctionBase):
     ) -> "SKFunction":
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
@@ -333,7 +333,7 @@ class SKFunction(SKFunctionBase):
         super().__init__()
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         self._delegate_type = delegate_type
         self._function = delegate_function
@@ -408,7 +408,7 @@ class SKFunction(SKFunctionBase):
     ) -> "SKContext":
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         return self.invoke(
             input=input,
@@ -431,7 +431,7 @@ class SKFunction(SKFunctionBase):
 
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
         if context is None:
@@ -487,7 +487,7 @@ class SKFunction(SKFunctionBase):
 
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
         if context is None:

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Union
+from typing import Any, List, Optional, Union
 
 import google.generativeai as palm
 from pydantic import constr
@@ -35,7 +35,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
     async def complete_async(
@@ -46,7 +46,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         response = await self._send_completion_request(prompt, request_settings)
 
@@ -62,7 +62,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     ):
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"

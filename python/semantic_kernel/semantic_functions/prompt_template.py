@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -34,7 +34,7 @@ class PromptTemplate(PromptTemplateBase):
     ) -> None:
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         self._template = template
         self._template_engine = template_engine

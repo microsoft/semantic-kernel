@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Union, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Union
 
 from pydantic import Field
 
@@ -36,7 +36,7 @@ class SkillCollection(SkillCollectionBase):
     ) -> None:
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if skill_collection and read_only_skill_collection_:
             raise ValueError(

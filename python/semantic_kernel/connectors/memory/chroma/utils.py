@@ -97,7 +97,7 @@ def chroma_compute_similarity_scores(
     """
     if kwargs.get("logger"):
         logger.warning(
-            "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            "The `logger` parameter is deprecated. Please use the `logging` module instead."
         )
     query_norm = linalg.norm(embedding)
     collection_norm = linalg.norm(embedding_array, axis=1)

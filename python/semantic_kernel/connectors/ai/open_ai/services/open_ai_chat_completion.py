@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Dict, Mapping, Optional, overload
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
 
@@ -65,7 +65,7 @@ class OpenAIChatCompletion(
                 account belongs to multiple organizations.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log {Optional[Logger]} -- The logger instance to use. (Optional) (Deprecated)
+            log  -- The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -86,7 +86,7 @@ class OpenAIChatCompletion(
                 https://platform.openai.com/account/api-keys
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log {Optional[Logger]} -- The logger instance to use. (Optional) (Deprecated)
+            log  -- The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -112,11 +112,11 @@ class OpenAIChatCompletion(
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
-            log {Optional[Logger]} -- The logger instance to use. (Optional) (Deprecated)
+            log  -- The logger instance to use. (Optional) (Deprecated)
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         super().__init__(
             ai_model_id=ai_model_id,

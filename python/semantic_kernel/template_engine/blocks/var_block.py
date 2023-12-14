@@ -2,7 +2,7 @@
 
 import logging
 from re import match as re_match
-from typing import Optional, Tuple, Any
+from typing import Any, Optional, Tuple
 
 import pydantic as pdt
 
@@ -22,7 +22,7 @@ class VarBlock(Block):
 
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
         if len(self.content) < 2:

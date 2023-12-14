@@ -4,8 +4,8 @@
 QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
-import logging
 import asyncio
+import logging
 import uuid
 from typing import List, Optional, Tuple
 
@@ -15,7 +15,6 @@ from qdrant_client import models as qdrant_models
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Initializes a new instance of the QdrantMemoryStore class."""
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         if local:
             if url:

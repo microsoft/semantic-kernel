@@ -36,7 +36,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=False
@@ -69,7 +69,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=True

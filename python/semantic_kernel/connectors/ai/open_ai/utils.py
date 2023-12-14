@@ -107,7 +107,7 @@ async def execute_function_call(
 ) -> str:
     if log:
         logger.warning(
-            "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            "The `log` parameter is deprecated. Please use the `logging` module instead."
         )
     result = await kernel.run_async(
         kernel.func(**function_call.split_name_dict()),
@@ -157,7 +157,7 @@ async def chat_completion_with_function_call(
     """
     if log:
         logger.warning(
-            "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            "The `log` parameter is deprecated. Please use the `logging` module instead."
         )
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
@@ -212,7 +212,7 @@ def _parse_message(
     """
     if kwargs.get("logger"):
         logger.warning(
-            "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+            "The `logger` parameter is deprecated. Please use the `logging` module instead."
         )
     content = message.content if hasattr(message, "content") else None
     function_call = message.function_call if hasattr(message, "function_call") else None

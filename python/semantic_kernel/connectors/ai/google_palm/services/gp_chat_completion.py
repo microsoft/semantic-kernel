@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Optional, Tuple, Union, Any
+from typing import Any, List, Optional, Tuple, Union
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
@@ -53,7 +53,7 @@ class GooglePalmChatCompletion(
         )
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         self._message_history = message_history
 
@@ -98,7 +98,7 @@ class GooglePalmChatCompletion(
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
@@ -131,7 +131,7 @@ class GooglePalmChatCompletion(
     ):
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"

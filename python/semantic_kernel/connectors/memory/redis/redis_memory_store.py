@@ -63,7 +63,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         if vector_size <= 0:
             raise ValueError("Vector dimension must be a positive integer")

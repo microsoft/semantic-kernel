@@ -107,7 +107,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         super().__init__(
             ai_model_id=ai_model_id,

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import logging
 import json
+import logging
 from typing import Any, Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
@@ -54,7 +54,7 @@ class OpenAIConfigBase(OpenAIHandler):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}

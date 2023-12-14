@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import logging
-from typing import Dict, Mapping, Optional, overload
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -17,6 +16,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
@@ -156,7 +157,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if kwargs.get("logger"):
             logger.warning("The 'logger' argument is deprecated.")

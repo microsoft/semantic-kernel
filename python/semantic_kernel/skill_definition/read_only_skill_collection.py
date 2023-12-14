@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
 
 from pydantic import ConfigDict, Field
 
@@ -33,7 +33,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
 
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:

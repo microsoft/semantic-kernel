@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from dataclasses import asdict
 import logging
+from dataclasses import asdict
 from typing import (
     Any,
     AsyncGenerator,
@@ -153,7 +153,7 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
         use_extensions: bool = False,
     ) -> None:
         """
@@ -234,7 +234,7 @@ class AzureChatCompletion(
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         if kwargs.get("logger"):
             logger.warning(
@@ -286,7 +286,7 @@ class AzureChatCompletion(
         self,
         messages: List[Dict[str, str]],
         request_settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
+        logger: Optional[Any] = None,
         functions: Optional[List[Dict[str, Any]]] = None,
     ) -> Union[
         Tuple[str, str],
@@ -299,7 +299,7 @@ class AzureChatCompletion(
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             request_settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            logger  -- The logger instance to use. (Optional)
             functions {Optional[List[Dict[str, Any]]]} -- The functions to use for the chat completion. (Optional)
 
         Returns:
@@ -323,14 +323,14 @@ class AzureChatCompletion(
         self,
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
+        logger: Optional[Any] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """Executes a chat completion request with data and returns the result.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            logger  -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Any, Optional
+from typing import Any, List, Optional
 
 from pydantic import PrivateAttr
 
@@ -31,7 +31,7 @@ class TemplateTokenizer(SKBaseModel):
         super().__init__()
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         self._code_tokenizer = CodeTokenizer()
 

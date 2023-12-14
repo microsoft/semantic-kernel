@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Optional, Tuple, Any
+from typing import Any, Optional, Tuple
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -19,7 +19,7 @@ class Block(SKBaseModel):
 
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
 
     def is_valid(self) -> Tuple[bool, str]:

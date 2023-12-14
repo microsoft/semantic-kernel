@@ -43,7 +43,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         response = await self._send_request(
             messages=messages, request_settings=settings, stream=False
@@ -59,7 +59,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         messages: List[Dict[str, str]],
         functions: List[Dict[str, Any]],
         request_settings: "ChatRequestSettings",
-        **kkwargs,
+        **kwargs,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -76,7 +76,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         response = await self._send_request(
             messages=messages,
@@ -107,7 +107,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """
         if kwargs.get("logger"):
             logger.warning(
-                "The `logger` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         response = await self._send_request(
             messages=messages, request_settings=settings, stream=True

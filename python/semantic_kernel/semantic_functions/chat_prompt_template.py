@@ -34,7 +34,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         super().__init__(template, template_engine, prompt_config)
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         self._messages = []
         if self._prompt_config.completion.chat_system_prompt:
@@ -111,7 +111,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         """
         if log:
             logger.warning(
-                "The `log` parameter is deprecated and will be removed in future versions. Please use the `logging` module instead."
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         chat_template = cls(template, template_engine, prompt_config)
         if (
