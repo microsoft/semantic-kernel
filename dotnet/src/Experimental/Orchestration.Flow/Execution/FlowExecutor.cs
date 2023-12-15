@@ -109,7 +109,7 @@ internal class FlowExecutor : IFlowExecutor
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor));
+        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor)) ?? NullLogger.Instance;
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;

@@ -8,8 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-
-#pragma warning disable CA1508 // Avoid dead conditional code
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
 
@@ -74,7 +73,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal List<PromptExecutionSettings>? ExecutionSettings { get; }
+    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -87,7 +86,7 @@ public abstract class KernelFunction
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
-    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, List<PromptExecutionSettings>? executionSettings = null)
+    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -118,7 +117,7 @@ public abstract class KernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
@@ -235,7 +234,7 @@ public abstract class KernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         arguments ??= new KernelArguments();
         logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);

@@ -2,9 +2,9 @@
 
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Pinecone connector.

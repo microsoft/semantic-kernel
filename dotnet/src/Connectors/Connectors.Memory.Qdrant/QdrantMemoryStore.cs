@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Qdrant Vector Database.
@@ -36,7 +36,7 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(string endpoint, int vectorSize, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = new QdrantVectorDbClient(endpoint, vectorSize, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(QdrantMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(HttpClient httpClient, int vectorSize, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = new QdrantVectorDbClient(httpClient, vectorSize, endpoint, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(QdrantMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(IQdrantVectorDbClient client, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = client;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(QdrantMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>

@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
@@ -10,9 +9,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
 
-/**
- * This example shows how to use the Handlebars sequential planner.
- */
+// This example shows how to use the Handlebars sequential planner.
 public static class Example65_HandlebarsPlanner
 {
     private static int s_sampleIndex;
@@ -112,7 +109,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 

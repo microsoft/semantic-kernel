@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
  * This example shows how to use Azure OpenAI Chat Completion with data.
  * More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
  */
-// ReSharper disable once InconsistentNaming
 public static class Example54_AzureChatCompletionWithData
 {
     public static async Task RunAsync()

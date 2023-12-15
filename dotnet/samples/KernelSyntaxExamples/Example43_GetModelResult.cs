@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
 {
     public static async Task RunAsync()

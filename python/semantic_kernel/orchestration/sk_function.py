@@ -3,7 +3,7 @@
 import asyncio
 import platform
 import sys
-import threading
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
@@ -436,18 +436,21 @@ class SKFunction(SKFunctionBase):
         if input is not None:
             context.variables.update(input)
 
-        # Check if there is an event loop
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
+        loop = (
+            asyncio.get_running_loop()
+            if asyncio.get_event_loop().is_running()
+            else None
+        )
 
-        # Handle "asyncio.run() cannot be called from a running event loop"
         if loop and loop.is_running():
-            if self.is_semantic:
-                return self._runThread(self._invoke_semantic_async(context, settings))
-            else:
-                return self._runThread(self._invoke_native_async(context))
+            coroutine_function = (
+                self._invoke_semantic_async
+                if self.is_semantic
+                else self._invoke_native_async
+            )
+            return self.run_async_in_executor(
+                lambda: coroutine_function(context, settings)
+            )
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
@@ -652,12 +655,24 @@ class SKFunction(SKFunctionBase):
     event loops such as Jupyter notebooks.
     """
 
-    def _runThread(self, code: Callable):
-        result = []
-        thread = threading.Thread(target=self._runCode, args=(code, result))
-        thread.start()
-        thread.join()
-        return result[0]
+    def run_async_in_executor(self, coroutine_func: Callable[[], Any]) -> Any:
+        """
+        A unified method for async execution for more efficient and safer thread management
 
-    def _runCode(self, code: Callable, result: List[Any]) -> None:
-        result.append(asyncio.run(code))
+        Arguments:
+            coroutine_func {Callable[[], Any]} -- The coroutine to run
+
+        Returns:
+            Any -- The result of the coroutine
+        """
+
+        def run_async_in_thread():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(coroutine_func())
+            loop.close()
+            return result
+
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(run_async_in_thread)
+            return future.result()

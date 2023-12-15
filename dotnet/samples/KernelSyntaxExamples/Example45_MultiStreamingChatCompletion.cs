@@ -7,10 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
 public static class Example45_MultiStreamingChatCompletion
 {
     // First procress multiple Azure OpenAI chat completions
@@ -26,10 +23,10 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.ChatModelId,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         await StreamingChatCompletionAsync(chatCompletionService, 3);
     }

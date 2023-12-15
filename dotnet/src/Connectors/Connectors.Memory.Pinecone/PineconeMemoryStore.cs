@@ -8,11 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
@@ -36,7 +35,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = pineconeClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -51,7 +50,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>

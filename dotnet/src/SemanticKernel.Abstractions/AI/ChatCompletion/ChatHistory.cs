@@ -66,7 +66,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
+    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
 
     /// <summary>
@@ -75,7 +75,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection items, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
+    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection items, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(authorRole, items, null, null, encoding, metadata));
 
     /// <summary>

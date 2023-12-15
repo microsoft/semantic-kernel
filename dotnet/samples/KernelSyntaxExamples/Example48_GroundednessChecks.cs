@@ -2,15 +2,12 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
 internal static class Example48_GroundednessChecks
 {
     private const string GroundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
@@ -147,7 +144,7 @@ Text:\n{GroundingText};
         Console.WriteLine($"======== Goal: ========\n{ask}");
         Console.WriteLine($"======== Plan ========\n{plan}");
 
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel);
 
         Console.WriteLine("======== Result ========");
         Console.WriteLine(result);
