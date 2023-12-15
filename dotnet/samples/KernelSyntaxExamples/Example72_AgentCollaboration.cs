@@ -47,7 +47,7 @@ public static class Example72_AgentCollaboration
     private static async Task RunCollaborationAsync()
     {
         Console.WriteLine("======== Run:Collaboration ========");
-        IChatThread? thread = null;
+        IAgentThread? thread = null;
         try
         {
             // Create copy-writer agent to generate ideas

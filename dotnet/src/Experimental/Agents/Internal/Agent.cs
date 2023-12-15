@@ -104,7 +104,7 @@ internal sealed class Agent : IAgent
     public AgentPlugin AsPlugin() => this._agentPlugin ??= this.DefinePlugin();
 
     /// <inheritdoc/>
-    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
+    public Task<IAgentThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
@@ -112,7 +112,7 @@ internal sealed class Agent : IAgent
     }
 
     /// <inheritdoc/>
-    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
+    public Task<IAgentThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 

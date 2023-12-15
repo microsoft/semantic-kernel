@@ -112,7 +112,7 @@ public sealed class RunHarness
             "What is the answer?").ConfigureAwait(true);
     }
 
-    private async Task ChatAsync(IChatThread thread, IAgent agent, params string[] messages)
+    private async Task ChatAsync(IAgentThread thread, IAgent agent, params string[] messages)
     {
         foreach (var message in messages)
         {

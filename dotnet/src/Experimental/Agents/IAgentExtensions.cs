@@ -23,7 +23,7 @@ public static class IAgentExtensions
         string input,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IChatThread thread = await agent.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        IAgentThread thread = await agent.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             await foreach (var message in thread.InvokeAsync(agent, input, cancellationToken))

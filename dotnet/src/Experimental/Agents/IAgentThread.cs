@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// <summary>
 /// Represents a thread that contains messages.
 /// </summary>
-public interface IChatThread
+public interface IAgentThread
 {
     /// <summary>
     /// The thread identifier (which can be referenced in API endpoints).

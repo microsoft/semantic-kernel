@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 /// <summary>
 /// Represents a thread that contains messages.
 /// </summary>
-internal sealed class ChatThread : IChatThread
+internal sealed class ChatThread : IAgentThread
 {
     /// <inheritdoc/>
     public string Id { get; private set; }
@@ -27,7 +27,7 @@ internal sealed class ChatThread : IChatThread
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
-    public static async Task<IChatThread> CreateAsync(OpenAIRestContext restContext, CancellationToken cancellationToken = default)
+    public static async Task<IAgentThread> CreateAsync(OpenAIRestContext restContext, CancellationToken cancellationToken = default)
     {
         // Common case is for failure exception to be raised by REST invocation.  Null result is a logical possibility, but unlikely edge case.
         var threadModel = await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false);
@@ -42,7 +42,7 @@ internal sealed class ChatThread : IChatThread
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="ChatThread"> instance.</see></returns>
-    public static async Task<IChatThread> GetAsync(OpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
+    public static async Task<IAgentThread> GetAsync(OpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
     {
         var threadModel = await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false);
         var messageListModel = await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false);

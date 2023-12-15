@@ -36,7 +36,7 @@ public static class Example71_AgentDelegation
             return;
         }
 
-        IChatThread? thread = null;
+        IAgentThread? thread = null;
 
         try
         {
