@@ -1,0 +1,17 @@
+Decide whether a message is spam or not from its content, and tone.
+
+Only use one of the two categories that follow and nothing else:
+Categories: spam, not spam 
+
+Examples
+Message: You've won!
+Category: spam
+
+Message: Claim your gift card!
+Category: spam
+
+Message: where do we request this for our customers?
+Category: not spam
+
+Message: "{{$input}}"
+Category:
