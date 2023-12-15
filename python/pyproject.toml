@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.4.2.dev"
+version = "0.4.3.dev"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
