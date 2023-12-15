@@ -260,7 +260,7 @@ public class KernelParameterMetadataExtensionsTests
 
         // Act
         var functionName = "Foo";
-        var result = returnParameter.ToSKParameterMetadata(functionName);
+        var result = returnParameter.ToKernelParameterMetadata(functionName);
 
         // Assert
         Assert.Equal("FooReturns", result.Name);
@@ -277,7 +277,7 @@ public class KernelParameterMetadataExtensionsTests
         var parameter = new KernelParameterMetadata("test") { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
-        var result = parameter.ToSKReturnParameterMetadata();
+        var result = parameter.ToKernelReturnParameterMetadata();
 
         // Assert
         Assert.Equal("test", result.Description);
