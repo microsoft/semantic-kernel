@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -57,13 +58,13 @@ public sealed class HandlebarsPlan
     /// <returns>The plan result.</returns>
     public Task<string> InvokeAsync(
         Kernel kernel,
-        KernelArguments arguments,
+        KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan));
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan)) ?? NullLogger.Instance;
 
         return PlannerInstrumentation.InvokePlanAsync(
-            static (HandlebarsPlan plan, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+            static (HandlebarsPlan plan, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
                 => plan.InvokeCoreAsync(kernel, arguments, cancellationToken),
             this, kernel, arguments, logger, cancellationToken);
     }

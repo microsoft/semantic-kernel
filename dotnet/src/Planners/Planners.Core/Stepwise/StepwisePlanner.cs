@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -61,7 +62,7 @@ public class StepwisePlanner
         this._nativeFunctions = this._kernel.ImportPluginFromObject(this, RestrictedPluginName);
 
         // Create context and logger
-        this._logger = loggerFactory.CreateLogger(this.GetType());
+        this._logger = loggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
