@@ -48,8 +48,8 @@ public sealed class FunctionCallingStepwisePlanner
         var logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
 
         return PlannerInstrumentation.InvokePlanAsync(
-            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string question, CancellationToken cancellationToken)
-                => plan.ExecuteCoreAsync(kernel, question, cancellationToken),
+            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string? question, CancellationToken cancellationToken)
+                => plan.ExecuteCoreAsync(kernel, question!, cancellationToken),
             this, kernel, question, logger, cancellationToken);
     }
 

@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Configuration;
@@ -81,7 +80,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None).ConfigureAwait(false);
+        var result = await plan.InvokeAsync(kernel).ConfigureAwait(false);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result);

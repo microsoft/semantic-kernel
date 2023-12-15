@@ -71,8 +71,8 @@ internal static partial class PlannerInstrumentation
 
     // <summary>Invokes the supplied <paramref name="InvokePlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlanResult> InvokePlanAsync<TPlan, TPlanInput, TPlanResult>(
-        Func<TPlan, Kernel, TPlanInput, CancellationToken, Task<TPlanResult>> InvokePlanAsync,
-        TPlan plan, Kernel kernel, TPlanInput input, ILogger logger, CancellationToken cancellationToken)
+        Func<TPlan, Kernel, TPlanInput?, CancellationToken, Task<TPlanResult>> InvokePlanAsync,
+        TPlan plan, Kernel kernel, TPlanInput? input, ILogger logger, CancellationToken cancellationToken)
         where TPlan : class
         where TPlanInput : class
         where TPlanResult : class
