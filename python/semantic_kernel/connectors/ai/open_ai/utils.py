@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from openai.types.chat import ChatCompletion
 
@@ -197,11 +197,8 @@ async def chat_completion_with_function_call(
 
 
 def _parse_message(
-    message: ChatCompletion, with_data: bool = False, **kwargs
-) -> Union[
-    Tuple[Optional[str], Optional[FunctionCall]],
-    Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
-]:
+    message: ChatCompletion, with_data: bool = False
+) -> Tuple[Optional[str], Optional[str], Optional[FunctionCall]]:
     """
     Parses the message.
 
@@ -211,10 +208,6 @@ def _parse_message(
     Returns:
         Tuple[Optional[str], Optional[Dict]] -- The parsed message.
     """
-    if kwargs.get("logger"):
-        logger.warning(
-            "The `logger` parameter is deprecated. Please use the `logging` module instead."
-        )
     content = message.content if hasattr(message, "content") else None
     function_call = message.function_call if hasattr(message, "function_call") else None
     if function_call:
@@ -224,7 +217,7 @@ def _parse_message(
         )
 
     if not with_data:
-        return (content, function_call)
+        return (content, None, function_call)
     else:
         tool_content = None
         if message.model_extra and "context" in message.model_extra:

@@ -221,11 +221,9 @@ class Kernel:
             raise ValueError("No functions passed to run")
 
         try:
-            completion = ""
             async for stream_message in stream_function.invoke_stream_async(
                 input=None, context=context
             ):
-                completion += stream_message
                 yield stream_message
 
         except Exception as ex:

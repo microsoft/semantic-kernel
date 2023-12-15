@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import Field
 from pydantic.dataclasses import dataclass
@@ -67,9 +67,7 @@ class AzureDataSources:
 
 # @dataclass
 class ExtraBody(SKBaseModel):
-    data_sources: Optional[List[AzureDataSources]] = Field(
-        None, alias="dataSources"
-    )
+    data_sources: Optional[List[AzureDataSources]] = Field(None, alias="dataSources")
     # input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
     # output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
 
@@ -78,7 +76,7 @@ class AzureOpenAIChatRequestSettings(OpenAIChatRequestSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
     response_format: Optional[str] = None
-    extra_body: Optional[ExtraBody] = None
+    extra_body: Optional[Union[Dict[str, Any], ExtraBody]] = None
 
 
 # Format

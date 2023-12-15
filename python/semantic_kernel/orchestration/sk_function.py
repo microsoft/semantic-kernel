@@ -149,8 +149,7 @@ class SKFunction(SKFunctionBase):
                 if isinstance(result, list):
                     # TODO: handle multiple completions
                     result = result[0]
-                if len(result) == 3:
-                    completion, function_call, tool_message = result
+                completion, tool_message, function_call = result
                 if tool_message:
                     context.objects["tool_message"] = tool_message
                     as_chat_prompt.add_message(role="tool", message=tool_message)
@@ -182,13 +181,20 @@ class SKFunction(SKFunctionBase):
                     async for partial_content in client.complete_chat_stream_async(
                         messages=messages, settings=request_settings
                     ):
-                        tool_message = await partial_content.get_tool_message()
-                        if tool_message:
-                            chat_prompt.add_message(role="tool", message=tool_message)
-                            context.objects["tool_message"] = tool_message
-                        # Get the completion
-                        completion += partial_content
-                        yield partial_content
+                        if isinstance(partial_content, str):
+                            completion += partial_content
+                            yield partial_content
+                        else:
+                            tool_message = await partial_content.get_tool_message()
+                            if tool_message:
+                                chat_prompt.add_message(
+                                    role="tool", message=tool_message
+                                )
+                                context.objects["tool_message"] = tool_message
+                            # Get the completion
+                            async for part in partial_content:
+                                completion += part
+                                yield part
                     # Use the full completion to update the chat_prompt_template and context
                     chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)

@@ -3,9 +3,12 @@
 
 import logging
 from typing import (
+    AsyncGenerator,
     Dict,
+    List,
     Mapping,
     Optional,
+    Tuple,
     Union,
     overload,
 )
@@ -17,6 +20,10 @@ from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 
 # from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
+    AzureChatWithDataStreamResponse,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_open_ai_request_settings import (
     AzureOpenAIChatRequestSettings,
 )
@@ -32,6 +39,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
+from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
 from semantic_kernel.sk_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -236,16 +244,15 @@ class AzureChatCompletion(
                 "The 'logger' argument is deprecated. Please use the `logging` module instead."
             )
 
-        if use_extensions:
-            base_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
-
-        if isinstance(endpoint, str):
-            endpoint = HttpsUrl(endpoint)
-        if isinstance(base_url, str):
+        if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
+        if use_extensions and endpoint and deployment_name:
+            base_url = HttpsUrl(
+                f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
+            )
         super().__init__(
             deployment_name=deployment_name,
-            endpoint=endpoint,
+            endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
             base_url=base_url,
             api_version=api_version,
             api_key=api_key,
@@ -276,6 +283,87 @@ class AzureChatCompletion(
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
         )
+
+    async def complete_chat_async(
+        self,
+        messages: List[Dict[str, str]],
+        settings: AzureOpenAIChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ) -> Union[
+        Tuple[Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[FunctionCall]]],
+    ]:
+        """Executes a chat completion request and returns the result.
+
+        Arguments:
+            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+
+        Returns:
+            Union[str, List[str]] -- The completion result(s).
+        """
+        settings.messages = messages
+        settings.stream = False
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
+        response = await self._send_request(request_settings=settings)
+
+        if len(response.choices) == 1:
+            return _parse_message(
+                response.choices[0].message,
+                with_data=settings.extra_body is not None,
+            )
+        else:
+            return [
+                _parse_message(
+                    choice.message,
+                    with_data=settings.extra_body is not None,
+                )
+                for choice in response.choices
+            ]
+
+    async def complete_chat_stream_async(
+        self,
+        messages: List[Dict[str, str]],
+        settings: AzureOpenAIChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ) -> Union[
+        AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse
+    ]:
+        """Executes a chat completion request and returns the result.
+
+        Arguments:
+            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+
+        Returns:
+            Union[str, List[str]] -- The completion result(s).
+        """
+        settings.messages = messages
+        settings.stream = True
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
+        response = await self._send_request(request_settings=settings)
+        if settings.extra_body is not None:
+            yield AzureChatWithDataStreamResponse(response, settings)
+        else:
+            # parse the completion text(s) and yield them
+            async for chunk in response:
+                if len(chunk.choices) == 0:
+                    continue
+                # if multiple responses are requested, keep track of them
+                if settings.number_of_responses > 1:
+                    completions = [""] * settings.number_of_responses
+                    for choice in chunk.choices:
+                        text, index = _parse_choices(choice)
+                        completions[index] = text
+                    yield completions
+                # if only one response is requested, yield it
+                else:
+                    text, index = _parse_choices(chunk.choices[0])
+                    yield text
 
     # async def complete_chat_with_data_async(
     #     self,
