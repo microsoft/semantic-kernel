@@ -628,7 +628,7 @@ public static class KernelExtensions
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
-         string? templateFormat = null,
+        string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         CancellationToken cancellationToken = default)
     {
