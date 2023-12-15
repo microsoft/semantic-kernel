@@ -138,10 +138,15 @@ internal static partial class PlannerInstrumentation
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            s_logPlan(
-                logger,
-                JsonSerializer.Serialize(plan),
-                null);
+            try
+            {
+                var jsonString = JsonSerializer.Serialize(plan);
+                s_logPlan(logger, jsonString, null);
+            }
+            catch (NotSupportedException ex)
+            {
+                s_logPlan(logger, "Failed to serialize plan to Json", ex);
+            }
         }
     }
 
@@ -182,10 +187,17 @@ internal static partial class PlannerInstrumentation
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            s_logPlanResult(
-                logger,
-                planResult.GetType() == typeof(string) ? planResult.ToString() : JsonSerializer.Serialize(planResult),
-                null);
+            try
+            {
+                var jsonString = planResult.GetType() == typeof(string)
+                    ? planResult.ToString()
+                    : JsonSerializer.Serialize(planResult);
+                s_logPlanResult(logger, jsonString, null);
+            }
+            catch (NotSupportedException ex)
+            {
+                s_logPlanResult(logger, "Failed to serialize plan result to Json", ex);
+            }
         }
     }
 

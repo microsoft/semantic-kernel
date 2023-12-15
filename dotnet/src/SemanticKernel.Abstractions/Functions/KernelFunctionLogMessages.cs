@@ -40,10 +40,15 @@ internal static partial class KernelFunctionLogMessages
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            s_logFunctionArguments(
-                logger,
-                JsonSerializer.Serialize(arguments),
-                null);
+            try
+            {
+                var jsonString = JsonSerializer.Serialize(arguments);
+                s_logFunctionArguments(logger, jsonString, null);
+            }
+            catch (NotSupportedException ex)
+            {
+                s_logFunctionResult(logger, "Failed to serialize arguments to Json", ex);
+            }
         }
     }
 
@@ -70,10 +75,15 @@ internal static partial class KernelFunctionLogMessages
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            s_logFunctionResult(
-                logger,
-                JsonSerializer.Serialize(result),
-                null);
+            try
+            {
+                var jsonString = JsonSerializer.Serialize(result);
+                s_logFunctionResult(logger, jsonString, null);
+            }
+            catch (NotSupportedException ex)
+            {
+                s_logFunctionResult(logger, "Failed to serialize result to Json", ex);
+            }
         }
     }
 
