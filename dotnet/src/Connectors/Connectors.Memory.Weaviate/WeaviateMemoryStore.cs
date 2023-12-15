@@ -55,6 +55,7 @@ public class WeaviateMemoryStore : IMemoryStore
     private readonly Uri? _endpoint = null;
     private readonly string? _apiVersion;
     private readonly string? _apiKey;
+    private static readonly string[] s_stringArray = { "vector" };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateMemoryStore"/> class.
@@ -295,7 +296,7 @@ public class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = new GetObjectRequest
         {
             Id = key,
-            Additional = withEmbedding ? new[] { "vector" } : null
+            Additional = withEmbedding ? s_stringArray : null
         }.Build();
 
         string responseContent;

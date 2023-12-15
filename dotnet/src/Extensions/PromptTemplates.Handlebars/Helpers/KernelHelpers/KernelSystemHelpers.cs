@@ -48,14 +48,14 @@ internal static class KernelSystemHelpers
             var parameters = (IDictionary<string, object>)arguments[0];
 
             // Verify that the message has a role
-            if (!parameters!.ContainsKey("role"))
+            if (!parameters!.TryGetValue("role", out object? value))
             {
                 throw new KernelException("Message must have a role.");
             }
 
-            writer.Write($"<{parameters["role"]}~>", false);
+            writer.Write($"<{value}~>", false);
             options.Template(writer, context);
-            writer.Write($"</{parameters["role"]}~>", false);
+            writer.Write($"</{value}~>", false);
         });
 
         handlebarsInstance.RegisterHelper("set", (writer, context, arguments) =>

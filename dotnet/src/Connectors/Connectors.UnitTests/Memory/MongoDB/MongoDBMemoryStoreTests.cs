@@ -187,7 +187,9 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock
             .Setup(c => c.AggregateAsync<MongoDBMemoryEntry>(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default))
             .ReturnsAsync(cursorMock);
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
         var match = await memoryStore.GetNearestMatchAsync(CollectionName, new(new[] { 1f }));
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
 
         // Assert
         AssertMemoryRecordEqual(memoryRecord, match.Value.Item1);
