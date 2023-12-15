@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Json.Schema;
@@ -79,6 +78,10 @@ public sealed class OpenAIFunction
     /// for this relatively common case.
     /// </remarks>
     private static readonly BinaryData s_zeroFunctionParametersSchema = new("{\"type\":\"object\",\"required\":[],\"properties\":{}}");
+    /// <summary>
+    /// Cached schema for a descriptionless string.
+    /// </summary>
+    private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("{\"type\":\"string\"}");
 
     /// <summary>Initializes the OpenAIFunction.</summary>
     internal OpenAIFunction(
@@ -142,16 +145,10 @@ public sealed class OpenAIFunction
             for (int i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-
-                KernelJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
-                if (schema is not null)
+                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description));
+                if (parameter.IsRequired)
                 {
-                    properties.Add(parameter.Name, schema);
-
-                    if (parameter.IsRequired)
-                    {
-                        required.Add(parameter.Name);
-                    }
+                    required.Add(parameter.Name);
                 }
             }
 
@@ -171,37 +168,20 @@ public sealed class OpenAIFunction
         };
     }
 
-    /// <summary>
-    /// Creates an <see cref="KernelJsonSchema"/> that contains a JSON Schema of the specified <see cref="Type"/> with the specified description.
-    /// </summary>
-    /// <param name="type">The object Type.</param>
-    /// <param name="description">The object description.</param>
-    /// <returns>Return JSON Schema document or null if the type is null</returns>
-    [return: NotNullIfNotNull("type")]
-    internal static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
+    /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
+    private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
     {
-        KernelJsonSchema? schema = null;
-        if (type is not null &&
-            !(type.IsPointer || // from RuntimeType.ThrowIfTypeNeverValidGenericArgument
-#if NET_8_OR_GREATER
-              type.IsFunctionPointer ||
-#endif
-              type.IsByRef || type == typeof(void)))
+        // If there's a description, incorporate it.
+        if (!string.IsNullOrWhiteSpace(description))
         {
-            try
-            {
-                schema = KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                    new JsonSchemaBuilder()
-                    .FromType(type)
-                    .Description(description ?? string.Empty)
-                    .Build()));
-            }
-            catch (ArgumentException)
-            {
-                // Invalid type; ignore, and leave schema as null
-            }
+            return KernelJsonSchema.Parse(JsonSerializer.Serialize(
+                new JsonSchemaBuilder()
+                .FromType(typeof(string))
+                .Description(description!)
+                .Build()));
         }
 
-        return schema;
+        // Otherwise, we can use a cached schema for a string with no description.
+        return s_stringNoDescriptionSchema;
     }
 }
