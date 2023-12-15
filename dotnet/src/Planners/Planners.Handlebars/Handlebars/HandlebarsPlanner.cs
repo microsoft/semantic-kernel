@@ -161,7 +161,7 @@ public sealed class HandlebarsPlanner
                 parameter = new(parameter) { ParameterType = taskResultType }; // Actual Return Type
             }
 
-            complexParameterTypes.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeMetadata());
+            complexParameterTypes.UnionWith(parameter.ParameterType!.ToHandlebarsParameterTypeMetadata());
         }
         else if (parameter.Schema is not null)
         {
