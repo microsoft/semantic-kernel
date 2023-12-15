@@ -2,14 +2,16 @@ import asyncio
 import json
 import time
 
-from semantic_kernel.connectors.memory.astradb.ai_sample.sample import kernel, memory_store
+import os
+
 from semantic_kernel.connectors.memory.astradb.ai_sample.utils import *
 
 import split_q_and_a
 
 
 def get_input_data():
-    scraped_results_file = 'scraped_results.json'
+    scraped_results_file = os.path.join(
+        os.path.dirname(__file__), 'scraped_results.json')
     with open(scraped_results_file) as f:
         scraped_data = json.load(f)
 
