@@ -4,10 +4,10 @@ package com.microsoft.semantickernel.chatcompletion;
 import java.util.List;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIClient;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 
@@ -56,15 +56,22 @@ public interface ChatCompletionService extends Buildable, AIService {
         Kernel kernel
     );
 
-    @SuppressWarnings("unchecked")
-    static Builder builder() {
-        return BuildersSingleton.INST.getInstance(ChatCompletionService.Builder.class);
+    interface Builder<T extends ChatCompletionService> extends SemanticKernelBuilder<T> {
+
+        /**
+         * Sets the model ID to use with the ChatCompletion service.
+         * @param modelId the model ID to use with the ChatCompletion service
+         * @return this builder
+         */
+        Builder<T> withModelId(String modelId);
+
+        /**
+         * Sets the {@link OpenAIClient} to use for communication with the ChatCompletion service.
+         * @param openAIClient the {@link OpenAIClient} to use for communication with the ChatCompletion service
+         * @return this builder
+         */
+        Builder<T> withOpenAIAsyncClient(OpenAIAsyncClient openAIClient);
+
     }
 
-    interface Builder extends SemanticKernelBuilder<ChatCompletionService> {
-
-        Builder withOpenAIClient(OpenAIAsyncClient client);
-
-        Builder withModelId(String modelId);
-    }
 }

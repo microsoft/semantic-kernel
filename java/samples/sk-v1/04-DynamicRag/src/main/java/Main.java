@@ -41,12 +41,12 @@ public class Main {
         SKFunction chatFunction = SemanticFunction.fromYaml("/Plugins/ChatPlugin/Chat.prompt.yaml");
 
         ChatCompletion<ChatHistory> gpt35Turbo = ChatCompletion.builder()
-            .withOpenAIClient(client)
+            .withOpenAIAsyncClient(client)
             .withModelId(GPT_35_TURBO_DEPLOYMENT_NAME)
             .build();
 
         ChatCompletion<ChatHistory> gpt4 = ChatCompletion.builder()
-                .withOpenAIClient(client)
+                .withOpenAIAsyncClient(client)
                 .withModelId(GPT_4_DEPLOYMENT_NAME)
                 .build();
 

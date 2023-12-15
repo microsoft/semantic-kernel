@@ -52,7 +52,7 @@ public class ActionPlannerTest {
                         .withDefaultAIService(
                                 SKBuilders.textCompletion()
                                         .withModelId("text-davinci-002")
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .build())
                         .build();
 

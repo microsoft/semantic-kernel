@@ -126,7 +126,7 @@ public class StepwisePlannerTest {
 
         TextCompletion textCompletion =
                 SKBuilders.chatCompletion()
-                        .withOpenAIClient(client)
+                        .withOpenAIAsyncClient(client)
                         .withModelId("gpt-35-turbo")
                         .build();
 

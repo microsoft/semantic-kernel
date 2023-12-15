@@ -28,7 +28,7 @@ public class Example06TemplateLanguageTest {
                         .withDefaultAIService(
                                 SKBuilders.textCompletion()
                                         .withModelId("text-davinci-003")
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .build())
                         .build();
 

@@ -104,7 +104,7 @@ public class SequentialPlannerTest {
         TextCompletion textCompletion =
                 SKBuilders.textCompletion()
                         .withModelId("text-davinci-002")
-                        .withOpenAIClient(client)
+                        .withOpenAIAsyncClient(client)
                         .build();
 
         return SKBuilders.kernel().withDefaultAIService(textCompletion).build();

@@ -35,7 +35,7 @@ public class Example33StreamingChatTest {
 
         ChatCompletion<?> chatCompletion =
                 SKBuilders.chatCompletion()
-                        .withOpenAIClient(client)
+                        .withOpenAIAsyncClient(client)
                         .withModelId("gpt-35-turbo")
                         .build();
 
