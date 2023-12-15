@@ -37,7 +37,7 @@ public static class Step1_Create_Kernel
         Console.WriteLine();
 
         // Example 4. Invoke the kernel with a templated prompt and execution settings
-        arguments = new(new OpenAIPromptExecutionSettings { MaxTokens = 500, Temperature = 1.5 }) { { "topic", "dogs" } };
+        arguments = new(new OpenAIPromptExecutionSettings { MaxTokens = 500, Temperature = 0.5 }) { { "topic", "dogs" } };
         Console.WriteLine(await kernel.InvokePromptAsync("Tell me a story about {{$topic}}", arguments));
     }
 }
