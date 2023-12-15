@@ -61,17 +61,17 @@ internal sealed class Agent : IAgent
     /// Create a new agent.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
-    /// <param name="agentModel">The agent definition</param>
+    /// <param name="assistantModel">The assistant definition</param>
     /// <param name="plugins">Plugins to initialize as agent tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Agent"> instance.</see></returns>
     public static async Task<IAgent> CreateAsync(
         OpenAIRestContext restContext,
-        AssistantModel agentModel,
+        AssistantModel assistantModel,
         IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        var resultModel = await restContext.CreateAssistantModelAsync(agentModel, cancellationToken).ConfigureAwait(false);
+        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
 
         return new Agent(resultModel, restContext, plugins);
     }
@@ -80,11 +80,11 @@ internal sealed class Agent : IAgent
     /// Initializes a new instance of the <see cref="Agent"/> class.
     /// </summary>
     internal Agent(
-        AssistantModel model,
+        AssistantModel assistantModel,
         OpenAIRestContext restContext,
         IEnumerable<KernelPlugin>? plugins = null)
     {
-        this._model = model;
+        this._model = assistantModel;
         this._restContext = restContext;
 
         IKernelBuilder builder = Kernel.CreateBuilder();

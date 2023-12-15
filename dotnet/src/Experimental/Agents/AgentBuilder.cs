@@ -79,7 +79,7 @@ public partial class AgentBuilder
     {
         var deserializer = new DeserializerBuilder().Build();
 
-        var agentKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(template);
+        var agentKernelModel = deserializer.Deserialize<AgentConfigurationModel>(template);
 
         return
             this

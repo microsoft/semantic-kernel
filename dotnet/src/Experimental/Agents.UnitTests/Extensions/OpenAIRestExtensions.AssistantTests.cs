@@ -20,7 +20,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     private const string BogusApiKey = "bogus";
     private const string TestAgentId = "agentId";
 
-    private readonly AssistantModel _agentModel = new();
+    private readonly AssistantModel _assistantModel = new();
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
 
@@ -36,7 +36,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     [Fact]
     public async Task CreateAgentModelAsync()
     {
-        await this._restContext.CreateAssistantModelAsync(this._agentModel).ConfigureAwait(true);
+        await this._restContext.CreateAssistantModelAsync(this._assistantModel).ConfigureAwait(true);
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.BaseAssistantUrl);
     }

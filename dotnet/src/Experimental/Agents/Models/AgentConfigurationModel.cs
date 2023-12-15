@@ -6,24 +6,24 @@ using YamlDotNet.Serialization;
 namespace Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 /// <summary>
-/// Represents a yaml configuration file for an assistant.
+/// Represents a yaml configuration file for an agent.
 /// </summary>
-internal sealed class AssistantConfigurationModel
+internal sealed class AgentConfigurationModel
 {
     /// <summary>
-    /// The assistant name
+    /// The agent name
     /// </summary>
     [YamlMember(Alias = "name")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// The assistant description
+    /// The agent description
     /// </summary>
     [YamlMember(Alias = "description")]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// The assistant instructions template
+    /// The agent instructions template
     /// </summary>
     [YamlMember(Alias = "instructions")]
     public string Instructions { get; set; } = string.Empty;
