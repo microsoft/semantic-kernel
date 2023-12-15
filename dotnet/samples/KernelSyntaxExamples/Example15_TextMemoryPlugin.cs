@@ -35,7 +35,7 @@ public static class Example15_TextMemoryPlugin
         ///////////////////////////////////////////////////////////////////////////////////////////
 
         // Volatile Memory Store - an in-memory store that is not persisted
-        // store = new VolatileMemoryStore();
+        store = new VolatileMemoryStore();
 
         // Sqlite Memory Store - a file-based store that persists data in a Sqlite database
         // store = await CreateSampleSqliteMemoryStoreAsync();
@@ -47,7 +47,7 @@ public static class Example15_TextMemoryPlugin
         // store = CreateSampleMongoDBMemoryStore();
 
         // Azure AI Search Memory Store - a store that persists data in a hosted Azure AI Search database
-        store = CreateSampleAzureAISearchMemoryStore();
+        // store = CreateSampleAzureAISearchMemoryStore();
 
         // Qdrant Memory Store - a store that persists data in a local or remote Qdrant database
         // store = CreateSampleQdrantMemoryStore();
