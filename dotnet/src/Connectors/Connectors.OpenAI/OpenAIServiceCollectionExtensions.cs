@@ -1066,6 +1066,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
     /// <param name="endpoint">Azure OpenAI deployment URL</param>
     /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="apiVersion">Azure OpenAI API version</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
