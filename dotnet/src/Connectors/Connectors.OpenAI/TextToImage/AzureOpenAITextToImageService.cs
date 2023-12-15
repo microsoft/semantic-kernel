@@ -57,7 +57,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         this._deploymentName = deploymentName;
-        this.Attributes = this._attributes;
 
         if (modelId is not null)
         {
@@ -79,7 +78,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     }
 
     /// <inheritdoc/>a
-    public IReadOnlyDictionary<string, object?> Attributes { get; }
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(
