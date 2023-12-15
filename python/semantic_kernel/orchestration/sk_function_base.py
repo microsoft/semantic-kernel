@@ -23,10 +23,6 @@ if TYPE_CHECKING:
 
 
 class SKFunctionBase(SKBaseModel):
-    FUNCTION_PARAM_NAME_REGEX: str = r"^[0-9A-Za-z_]*$"
-    FUNCTION_NAME_REGEX: str = r"^[0-9A-Za-z_]*$"
-    SKILL_NAME_REGEX: str = r"^[0-9A-Za-z_]*$"
-
     @property
     @abstractmethod
     def name(self) -> str:
@@ -199,10 +195,3 @@ class SKFunctionBase(SKBaseModel):
             SKFunctionBase -- The function instance
         """
         pass
-
-    def __repr__(self):
-        """
-        Override how the classes are printed as strings so we don't include
-        the class attributes.
-        """
-        return f"{self.__class__.__name__}()"
