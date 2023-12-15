@@ -77,7 +77,9 @@ internal static partial class KernelFunctionLogMessages
         {
             try
             {
-                var jsonString = JsonSerializer.Serialize(resultValue);
+                var jsonString = resultValue?.GetType() == typeof(string)
+                    ? resultValue.ToString()
+                    : JsonSerializer.Serialize(resultValue);
                 s_logFunctionResultValue(logger, jsonString, null);
             }
             catch (NotSupportedException ex)
