@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Web\Plugins.Web.csproj" />
+    <ProjectReference Include="..\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="testsettings.json">

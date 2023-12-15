@@ -13,8 +13,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
@@ -61,8 +61,8 @@ provides:
         // Load assemblies for external plugins
         Console.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
 
-        return RunExampleAsync();
-        //return RunInteractiveAsync();
+        //return RunExampleAsync();
+        return RunInteractiveAsync();
     }
 
     private static async Task RunInteractiveAsync()
@@ -107,11 +107,16 @@ provides:
 
             if (string.IsNullOrEmpty(goal))
             {
+                goal = input;
                 s_flow.Steps.First().Goal = input;
             }
 
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
-            Console.WriteLine("Assistant: " + result.ToString());
+            var responses = result.GetValue<List<string>>()!;
+            foreach (var response in responses)
+            {
+                Console.WriteLine("Assistant: " + response);
+            }
 
             if (result.IsComplete(s_flow))
             {
@@ -121,7 +126,7 @@ provides:
                 Console.WriteLine("Flow completed, exiting");
                 break;
             }
-        } while (!string.IsNullOrEmpty(result.ToString()) && result.ToString() != "[]");
+        } while (result.GetValue<List<string>>()?.Count > 0);
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
@@ -159,7 +164,7 @@ provides:
 
         Console.WriteLine("Question: " + question);
         Console.WriteLine("Answer: " + result.Metadata!["answer"]);
-        Console.WriteLine("Assistant: " + result.ToString());
+        Console.WriteLine("Assistant: " + result.GetValue<List<string>>()!.Single());
 
         string[] userInputs = new[]
         {
@@ -174,7 +179,11 @@ provides:
         {
             Console.WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
-            Console.WriteLine("Assistant: " + result.ToString());
+            var responses = result.GetValue<List<string>>()!;
+            foreach (var response in responses)
+            {
+                Console.WriteLine("Assistant: " + response);
+            }
 
             if (result.IsComplete(s_flow))
             {
@@ -208,8 +217,6 @@ provides:
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
-        // logger
-        //.AddLoggerFactory(loggerFactory);
     }
 
     public sealed class ChatPlugin
@@ -223,7 +230,9 @@ provides:
 The email should conform the regex: {EmailRegex}
 
 If I cannot answer, say that I don't know.
-Do not expose the regex unless asked.
+
+# IMPORTANT
+Do not expose the regex in your response.
 ";
 
         private readonly IChatCompletionService _chat;
@@ -247,7 +256,7 @@ Do not expose the regex unless asked.
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
         public async Task<string> CollectEmailAsync(
             [Description("The email address provided by the user, pass no matter what the value is")]
-            string email,
+            string email_addresses,
             KernelArguments arguments)
         {
             var chat = new ChatHistory(SystemPrompt);
@@ -259,17 +268,15 @@ Do not expose the regex unless asked.
                 chat.AddRange(chatHistory);
             }
 
-            if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
+            if (!string.IsNullOrEmpty(email_addresses) && IsValidEmail(email_addresses))
             {
-                arguments["email_addresses"] = email;
-
-                return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
+                return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_addresses;
             }
 
             arguments["email_addresses"] = string.Empty;
             arguments.PromptInput();
 
-            var response = await this._chat.GetChatMessageContentAsync(chat);
+            var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
             return response.Content ?? string.Empty;
         }
 
@@ -313,28 +320,29 @@ Do not expose the regex unless asked.
         }
     }
 }
+
 //*****************************************************
 //Executing RunExampleAsync
 //Flow: FlowOrchestrator_Example_Flow
 //Question: What is the tallest mountain on Earth? How tall is it divided by 2?
-//Answer: The tallest mountain on Earth is Mount Everest, which is 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters).
-//Assistant: ["Please provide a valid email address."]
+//Answer: The tallest mountain on Earth is Mount Everest, and its height divided by 2 is 14515.845.
+//Assistant: Please provide a valid email address. It should be in the format of username@domain.com.
 //User: my email is bad*email&address
-//Assistant: ["I\u0027m sorry, but \u0022bad*email\u0026address\u0022 is not a valid email address. A valid email address should have the format \u0022example@example.com\u0022."]
+//Assistant: I'm sorry, but "bad*email&address" is not a valid email address and does not match the correct format. An email address should include a username, the @ symbol, and a domain name like gmail.com or yahoo.com.
 //User: my email is sample@xyz.com
-//Assistant: ["Do you want to send it to another email address?"]
+//Assistant: Did the user indicate whether they want to repeat the previous step?
 //User: yes
-//Assistant: ["Please provide a valid email address."]
+//Assistant: Please provide a valid email address.
 //User: I also want to notify foo@bar.com
-//Assistant: ["Do you want to send it to another email address?"]
+//Assistant: Did the user indicate whether they want to repeat the previous step?
 //User: no I don't need notify any more address
-//Assistant: []
 //        Email Address: ["sample@xyz.com","foo@bar.com"]
 //        Email Payload: {
 //  "Address": "[\u0022sample@xyz.com\u0022,\u0022foo@bar.com\u0022]",
-//  "Content": "The tallest mountain on Earth is Mount Everest, which is 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters)."
+//  "Content": "The tallest mountain on Earth is Mount Everest, and its height divided by 2 is 14515.845."
 //}
-//Time Taken: 00:00:24.2450785
+//Time Taken: 00:00:22.8710799
+//*****************************************************
 //*****************************************************
 
 //*****************************************************
@@ -342,17 +350,17 @@ Do not expose the regex unless asked.
 //Flow: FlowOrchestrator_Example_Flow
 //Please type the question you'd like to ask
 //User:
-//What is the length of the longest river in ireland?
+//What is the length of the longest river in Ireland?
 //Assistant: ["Please provide a valid email address."]
 //User:
-//foo@bar.com
+//foo@hotmail.com
 //Assistant: ["Do you want to send it to another email address?"]
 //User:
 //no
 //Assistant: []
-//        Email Address: ["foo@bar.com"]
+//        Email Address: ["foo@hotmail.com"]
 //        Email Payload: {
-//  "Address": "[\u0022foo@bar.com\u0022]",
+//  "Address": "[\u0022foo@hotmail.com\u0022]",
 //  "Content": "The longest river in Ireland is the River Shannon with a length of 360 km (223 miles)."
 //}
 //Flow completed, exiting

@@ -103,49 +103,4 @@ public static class FunctionResultExtensions
 
         return string.Empty;
     }
-
-    /// <summary>
-    /// Signal the orchestrator to prompt user for input with current function response.
-    /// </summary>
-    /// <param name="result">Function result.</param>
-    public static void PromptInput(this FunctionResult result)
-    {
-        // Cant prompt the user for input and exit the execution at the same time
-        if (!result.Metadata!.ContainsKey(Constants.ChatPluginVariables.ExitLoopName))
-        {
-            result.Metadata[Constants.ChatPluginVariables.PromptInputName] = Constants.ChatPluginVariables.DefaultValue;
-        }
-    }
-
-    /// <summary>
-    /// Signal the orchestrator to exit out of the AtLeastOnce or ZeroOrMore loop. If response is non-null, that value will be outputted to the user.
-    /// </summary>
-    /// <param name="result">Function result.</param>
-    /// <param name="response">context</param>
-    public static void ExitLoop(this FunctionResult result, string? response = null)
-    {
-        // Cant prompt the user for input and exit the execution at the same time
-        if (!result.Metadata!.ContainsKey(Constants.ChatPluginVariables.PromptInputName))
-        {
-            result.Metadata[Constants.ChatPluginVariables.ExitLoopName] = response ?? string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// Signal the orchestrator to go to the next iteration of the loop in the AtLeastOnce or ZeroOrMore step.
-    /// </summary>
-    /// <param name="result">Function result.</param>
-    public static void ContinueLoop(this FunctionResult result)
-    {
-        result.Metadata![Constants.ChatPluginVariables.ContinueLoopName] = Constants.ChatPluginVariables.DefaultValue;
-    }
-
-    /// <summary>
-    /// Signal the orchestrator to terminate the flow.
-    /// </summary>
-    /// <param name="result">Function result.</param>
-    public static void TerminateFlow(this FunctionResult result)
-    {
-        result.Metadata![Constants.ChatPluginVariables.StopFlowName] = Constants.ChatPluginVariables.DefaultValue;
-    }
 }

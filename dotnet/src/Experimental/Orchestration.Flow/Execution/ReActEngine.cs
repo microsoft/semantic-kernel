@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -213,7 +214,7 @@ internal sealed class ReActEngine
 
             return result.GetValue<string>() ?? string.Empty;
         }
-        catch (Exception e) when (!e.IsCriticalException())
+        catch (Exception e) when (!e.IsNonRetryable())
         {
             this._logger?.LogError(e, "Something went wrong in action step: {0}.{1}. Error: {2}", targetFunction.PluginName, targetFunction.Name, e.Message);
             return $"Something went wrong in action step: {targetFunction.PluginName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";

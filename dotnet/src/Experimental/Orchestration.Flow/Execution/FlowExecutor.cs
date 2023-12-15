@@ -7,8 +7,10 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -257,13 +259,11 @@ internal class FlowExecutor : IFlowExecutor
                 else if (stepResult.TryGetExitLoopResponse(out string? exitResponse))
                 {
                     stepState.Status = ExecutionState.Status.Completed;
-                    foreach (var variable in step.Provides)
-                    {
-                        if (!stepResult.Metadata!.ContainsKey(variable))
-                        {
-                            stepResult.Metadata.Remove(variable);
-                        }
-                    }
+
+                    var metadata = stepResult.Metadata!
+                        .Where(kvp => step.Provides.Contains(kvp.Key))
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    stepResult = new FunctionResult(stepResult.Function, stepResult.GetValue<object>(), metadata: metadata);
 
                     if (!string.IsNullOrWhiteSpace(exitResponse))
                     {
@@ -628,7 +628,7 @@ internal class FlowExecutor : IFlowExecutor
 
                     continue;
                 }
-                catch (Exception ex) when (!ex.IsCriticalException())
+                catch (Exception ex) when (!ex.IsNonRetryable())
                 {
                     actionStep.Observation = $"Error invoking action {actionStep.Action} : {ex.Message}";
                     this._logger?.LogWarning(ex, "Error invoking action {Action}", actionStep.Action);
