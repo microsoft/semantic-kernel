@@ -147,3 +147,17 @@ class OpenAIChatCompletion(
             log=settings.get("log"),
             is_assistant=settings.get("is_assistant", False),
         )
+    
+    # --------------------------------- OpenAI Assistants -------------------------
+
+    def get_assistant_id(self) -> Optional[str]:
+        """
+        Get the assistant id if this is an assistant and has been initialized.
+
+        Returns:
+            Optional[str]: The assistant id or None if this is not an assistant or not initialized.
+        """
+        if self.is_assistant and self.assistant_id is not None:
+            return self.assistant_id
+        return None
+            

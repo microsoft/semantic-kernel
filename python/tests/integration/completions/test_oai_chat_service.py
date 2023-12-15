@@ -88,6 +88,34 @@ async def test_oai_chat_service_with_skills_with_provided_client(
 
 
 @pytest.mark.asyncio
+async def test_oai_assistant_initialize(get_oai_config):
+    api_key, _ = get_oai_config
+
+    print("* Service: OpenAI Chat Completion")
+    print("* Endpoint: OpenAI")
+    print("* Model: gpt-3.5-turbo")
+
+    assistant = sk_oai.OpenAIChatCompletion(
+        ai_model_id="gpt-3.5-turbo-1106",
+        api_key=api_key,
+        is_assistant=True,
+    )
+
+    assert assistant.get_assistant_id() is None
+
+    settings = OpenAIAssistantSettings(
+        name="Test Assistant",
+        description="Test Assistant",
+        instructions="(hyphenated words count as 1 word) Give me the TLDR \
+            in as few words as possible. The output must only be one sentence.",
+    )
+
+    await assistant.create_assistant_async(settings)
+
+    assert assistant.get_assistant_id() is not None
+
+
+@pytest.mark.asyncio
 async def test_oai_assistant(setup_tldr_function_for_oai_models, get_oai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 

@@ -151,3 +151,19 @@ def test_open_ai_assistant_with_org_id() -> None:
     # Assert that the 'User-agent' header is not present in the dumped_settings default headers
     assert USER_AGENT not in dumped_settings["default_headers"]
     assert dumped_settings["is_assistant"]
+
+def test_open_ai_assistant_get_id_at_initialize_is_none() -> None:
+    ai_model_id = "test_model_id"
+    api_key = "test_api_key"
+    logger = Logger("test_logger")
+
+    # Test successful initialization
+    assistant = OpenAIChatCompletion(
+        ai_model_id=ai_model_id,
+        api_key=api_key,
+        log=logger,
+        is_assistant=True,
+    )
+
+    assert assistant.get_assistant_id() is None
+
