@@ -11,6 +11,15 @@ using RepoUtils;
 
 public static class Program
 {
+    /// <summary>
+    /// We recommend using the Debug properties to set the filter as a command line argument.
+    /// If you don't want to use it, set the filter here.
+    /// Examples:
+    ///     DefaultFilter = "18"    => run only example 18 (also "180" if there is such test)
+    ///     DefaultFilter = "chat"  => run all examples with a name that contains "chat"
+    /// </summary>
+    public const string? DefaultFilter = "";
+
     public static async Task Main(string[] args)
     {
         // Load configuration from environment variables or user secrets.
@@ -20,10 +29,8 @@ public static class Program
         using CancellationTokenSource cancellationTokenSource = new();
         CancellationToken cancelToken = cancellationTokenSource.ConsoleCancellationToken();
 
-        string? defaultFilter = null; // Modify to filter examples
-
         // Check if args[0] is provided
-        string? filter = args.Length > 0 ? args[0] : defaultFilter;
+        string? filter = args.Length > 0 ? args[0] : DefaultFilter;
 
         // Run examples based on the filter
         await RunExamplesAsync(filter, cancelToken);
@@ -73,6 +80,7 @@ public static class Program
     private static void LoadUserSecrets()
     {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.Development.json", true)
             .AddEnvironmentVariables()
             .AddUserSecrets<Env>()
             .Build();
