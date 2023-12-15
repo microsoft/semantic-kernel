@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.TextToImage;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
