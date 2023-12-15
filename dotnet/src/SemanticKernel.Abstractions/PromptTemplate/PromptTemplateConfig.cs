@@ -136,7 +136,8 @@ public sealed class PromptTemplateConfig
                 Description = p.Description,
                 DefaultValue = p.Default,
                 IsRequired = p.IsRequired,
-                Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
+                ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : typeof(string),
+                Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
             }).ToList();
         }
 
@@ -153,7 +154,7 @@ public sealed class PromptTemplateConfig
             return new KernelReturnParameterMetadata
             {
                 Description = this.OutputVariable.Description,
-                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema),
+                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema)
             };
         }
 

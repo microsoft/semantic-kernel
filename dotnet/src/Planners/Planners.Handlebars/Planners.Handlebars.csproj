@@ -35,6 +35,5 @@
 
   <ItemGroup>
     <PackageReference Include="Handlebars.Net" />
-    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 </Project>
