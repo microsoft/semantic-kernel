@@ -160,7 +160,7 @@ public abstract class KernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionResult(functionResult.Value);
+            logger.LogFunctionResult(functionResult);
 
             return functionResult;
         }
