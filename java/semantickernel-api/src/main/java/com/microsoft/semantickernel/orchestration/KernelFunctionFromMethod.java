@@ -73,7 +73,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
-        return null;
+        return function.invoke(kernel, this, arguments)
+            .map(it -> {
+                return ContextVariable.of(variableType.getConverter().fromObject(it));
+            });
     }
 
     public interface ImplementationFunc {
@@ -146,12 +149,13 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             @Override
             public <T> Mono<T> invoke(Kernel kernel, KernelFunction function,
                 KernelArguments arguments) {
-                Set<Parameter> inputArgs = determineInputArgs(method);
+
+                //Set<Parameter> inputArgs = determineInputArgs(method);
 
                 try {
                     List<Object> args =
                         Arrays.stream(method.getParameters())
-                            .map(getParameters(method, arguments, inputArgs))
+                            .map(getParameters(method, arguments))
                             .collect(Collectors.toList());
 
                     Mono<?> mono;
@@ -223,22 +227,23 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     }
 
     private static Function<Parameter, Object> getParameters(
-        Method method, KernelArguments context, Set<Parameter> inputArgs) {
+        Method method, KernelArguments context) {
         return parameter -> {
             if (KernelArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
             } else {
-                return getArgumentValue(method, context, parameter, inputArgs);
+                return getArgumentValue(method, context, parameter);
             }
         };
     }
 
     private static Object getArgumentValue(
-        Method method, KernelArguments context, Parameter parameter, Set<Parameter> inputArgs) {
+        Method method, KernelArguments context, Parameter parameter) {
         String variableName = getGetVariableName(parameter);
 
         ContextVariable<?> arg = context.get(variableName);
         if (arg == null) {
+            /*
             // If this is bound to input get the input value
             if (inputArgs.contains(parameter)) {
                 ContextVariable<?> input = context.get(KernelArguments.MAIN_KEY);
@@ -246,6 +251,8 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                     arg = input;
                 }
             }
+
+             */
 
             if (arg == null) {
                 KernelFunctionParameter annotation =

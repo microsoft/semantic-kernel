@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -39,11 +39,11 @@ public class Example03_Arguments {
     }
 
     public static void main(String[] args) {
-        Kernel kernel = SKBuilders.kernel().build();
+        Kernel kernel = new DefaultKernel.Builder().build();
 
         // Load native skill
         KernelPlugin functionCollection =
-            KernelPluginFactory.createFromType(new StaticTextSkill(), "text", null);
+            KernelPluginFactory.createFromObject(new StaticTextSkill(), "text");
 
         KernelArguments arguments = KernelArguments.builder()
             .withInput("Today is: ")
@@ -53,7 +53,8 @@ public class Example03_Arguments {
 
         ContextVariable<String> resultValue = kernel.invokeAsync(
                 functionCollection.get("AppendDay"),
-                arguments, String.class)
+                arguments,
+                String.class)
             .block();
 
         System.out.println(resultValue.getValue());
