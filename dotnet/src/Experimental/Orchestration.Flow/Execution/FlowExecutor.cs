@@ -556,7 +556,7 @@ internal class FlowExecutor : IFlowExecutor
                     string prompt = actionStep.ActionVariables![Constants.StopAndPromptParameterName];
                     arguments.TerminateFlow();
 
-                    return new FunctionResult(this._executeStepFunction, prompt, metadata:arguments);
+                    return new FunctionResult(this._executeStepFunction, prompt, metadata: arguments);
                 }
 
                 var actionContextVariables = new KernelArguments();
