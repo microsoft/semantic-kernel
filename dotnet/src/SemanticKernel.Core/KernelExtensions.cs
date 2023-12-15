@@ -514,12 +514,14 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
         string? templateFormat = null,
-        IPromptTemplateFactory? promptTemplateFactory = null)
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
@@ -530,7 +532,7 @@ public static class KernelExtensions
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
 
-        return kernel.InvokeAsync(function, arguments);
+        return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
     #endregion
 

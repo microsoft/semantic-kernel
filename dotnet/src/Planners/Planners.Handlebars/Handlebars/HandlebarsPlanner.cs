@@ -77,7 +77,7 @@ public sealed class HandlebarsPlanner
     {
         // Get CreatePlan prompt template
         var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
-        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas).ConfigureAwait(false);
+        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
@@ -212,7 +212,8 @@ public sealed class HandlebarsPlanner
         Kernel kernel, string goal,
         List<KernelFunctionMetadata> availableFunctions,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        Dictionary<string, string> complexParameterSchemas)
+        Dictionary<string, string> complexParameterSchemas,
+        CancellationToken cancellationToken)
     {
         var createPlanPrompt = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var arguments = new KernelArguments()
@@ -236,7 +237,7 @@ public sealed class HandlebarsPlanner
         };
 
         var handlebarsTemplate = this._templateFactory.Create(promptTemplateConfig);
-        return await handlebarsTemplate!.RenderAsync(kernel, arguments, CancellationToken.None).ConfigureAwait(true);
+        return await handlebarsTemplate!.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(true);
     }
 
     private static string MinifyHandlebarsTemplate(string template)

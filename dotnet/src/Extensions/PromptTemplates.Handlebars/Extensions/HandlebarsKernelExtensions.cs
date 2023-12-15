@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
@@ -18,13 +19,15 @@ public static class HandlebarsKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using Handlebars prompt template language</param>
     /// <param name="arguments">The operation arguments</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Function execution result</returns>
     public static Task<FunctionResult> InvokeHandlebarsPromptAsync(
         this Kernel kernel,
         string promptTemplate,
-        KernelArguments? arguments = null) =>
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default) =>
         kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
             templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            promptTemplateFactory: s_promptTemplateFactory), arguments);
+            promptTemplateFactory: s_promptTemplateFactory), arguments, cancellationToken);
 }
