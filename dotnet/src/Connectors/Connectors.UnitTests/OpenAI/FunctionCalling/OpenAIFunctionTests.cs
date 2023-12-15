@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
@@ -90,4 +92,53 @@ public sealed class OpenAIFunctionTests
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }
+
+    [Fact]
+    public void ItCanConvertToFunctionDefinitionsWithNoParameterTypes()
+    {
+        // Arrange
+        OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
+            () => { },
+            parameters: new[] { new KernelParameterMetadata("param1") }).Metadata.ToOpenAIFunction();
+
+        // Act
+        FunctionDefinition result = f.ToFunctionDefinition();
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.Parameters.ToString())!;
+
+        // Assert
+        Assert.NotNull(pd.properties);
+        Assert.Single(pd.properties);
+        Assert.Equal(
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\" }")),
+            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+    }
+
+    [Fact]
+    public void ItCanConvertToFunctionDefinitionsWithNoParameterTypesButWithDescriptions()
+    {
+        // Arrange
+        OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
+            () => { },
+            parameters: new[] { new KernelParameterMetadata("param1") { Description = "something neat" } }).Metadata.ToOpenAIFunction();
+
+        // Act
+        FunctionDefinition result = f.ToFunctionDefinition();
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.Parameters.ToString())!;
+
+        // Assert
+        Assert.NotNull(pd.properties);
+        Assert.Single(pd.properties);
+        Assert.Equal(
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\", \"description\":\"something neat\" }")),
+            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+    }
+
+#pragma warning disable CA1812 // uninstantiated internal class
+    private sealed class ParametersData
+    {
+        public string? type { get; set; }
+        public string[]? required { get; set; }
+        public Dictionary<string, KernelJsonSchema>? properties { get; set; }
+    }
+#pragma warning restore CA1812
 }

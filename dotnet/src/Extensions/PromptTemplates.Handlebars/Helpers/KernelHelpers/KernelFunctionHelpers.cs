@@ -90,7 +90,9 @@ internal static class KernelFunctionHelpers
     /// <param name="argument">Handlebar argument.</param>
     private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object argument)
     {
-        var actualParameterType = parameterMetadata.ParameterType.TryGetGenericNullableType(out var nullableType) ? nullableType : parameterMetadata.ParameterType;
+        var actualParameterType = parameterMetadata.ParameterType is Type parameterType && Nullable.GetUnderlyingType(parameterType) is Type underlyingType
+            ? underlyingType
+            : parameterMetadata.ParameterType;
 
         bool parameterIsNumeric = KernelHelpersUtils.IsNumericType(actualParameterType)
             || (parameterMetadata.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number");

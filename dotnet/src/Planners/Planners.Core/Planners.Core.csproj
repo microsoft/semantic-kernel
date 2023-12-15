@@ -64,8 +64,4 @@
     <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="JsonSchema.Net.Generation" />
-  </ItemGroup>
 </Project>

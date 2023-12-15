@@ -30,6 +30,5 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
-    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 </Project>
