@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Json.Schema;
-using Json.Schema.Generation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
@@ -19,7 +18,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
-    internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
+    internal const string PlannerMemoryCollectionName = "Planning.KernelFunctionsManual";
 
     /// <summary>
     /// Returns a function callback that can be used to retrieve a function from the function provider.
@@ -74,17 +73,8 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        static KernelJsonSchema? CreateSchema(Type? type, string? description) =>
-            type is null ?
-                null :
-                KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                    new JsonSchemaBuilder()
-                        .FromType(type)
-                        .Description(description ?? string.Empty)
-                        .Build()));
-
         IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
 
