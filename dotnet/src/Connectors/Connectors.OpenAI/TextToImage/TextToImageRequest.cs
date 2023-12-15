@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Text to image request
 /// </summary>
 [Experimental("SKEXP0012")]
-public sealed class TextToImageRequest
+internal sealed class TextToImageRequest
 {
     /// <summary>
     /// Image prompt
