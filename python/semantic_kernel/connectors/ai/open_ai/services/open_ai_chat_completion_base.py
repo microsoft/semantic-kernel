@@ -42,6 +42,8 @@ from semantic_kernel.connectors.ai.open_ai.utils import _parse_message
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
+DEFAULT_TIMEOUT_SEC = 10
+
 
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """
@@ -257,7 +259,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             str: The ID of the created thread.
         """
-        thread = await self.client.beta.threads.create(timeout=10)
+        thread = await self.client.beta.threads.create(timeout=DEFAULT_TIMEOUT_SEC)
         return thread.id
 
     async def _handle_tool_output_async(
@@ -414,6 +416,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         run = await self.client.beta.threads.runs.create(
             thread_id=self.thread_id, assistant_id=self.assistant_id, tools=tools
         )
+
         return await self._poll_on_run_async(run)
 
     async def _poll_on_run_async(self, run: Run) -> Run:

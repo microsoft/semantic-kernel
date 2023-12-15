@@ -93,7 +93,7 @@ async def main() -> None:
     api_key, _ = sk.openai_settings_from_dot_env()
 
     client = AsyncOpenAI(api_key=api_key)
-    assistant = await create_assistant(client, api_key)
+    assistant = await create_assistant(client)
 
     kernel = sk.Kernel()
     kernel.add_chat_service("oai_assistant", assistant)
@@ -132,7 +132,12 @@ async def main() -> None:
     context.variables[
         "user_input"
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
-    await chat(context, kernel, functions, chat_function)
+    try:
+        await chat(context, kernel, functions, chat_function)
+    finally:
+        # clean up resources
+        await assistant.delete_thread_async()
+        await assistant.delete_assistant_async()
 
 
 if __name__ == "__main__":

@@ -11,6 +11,13 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_assistant_setting
 )
 
 
+async def clean_up_assistant_resources_async(
+    assistant: sk_oai.OpenAIChatCompletion,
+) -> None:
+    await assistant.delete_thread_async()
+    await assistant.delete_assistant_async()
+
+
 @pytest.mark.asyncio
 async def test_oai_chat_service_with_skills(
     setup_tldr_function_for_oai_models, get_oai_config
@@ -95,24 +102,27 @@ async def test_oai_assistant_initialize(get_oai_config):
     print("* Endpoint: OpenAI")
     print("* Model: gpt-3.5-turbo")
 
-    assistant = sk_oai.OpenAIChatCompletion(
-        ai_model_id="gpt-3.5-turbo-1106",
-        api_key=api_key,
-        is_assistant=True,
-    )
+    try:
+        assistant = sk_oai.OpenAIChatCompletion(
+            ai_model_id="gpt-3.5-turbo-1106",
+            api_key=api_key,
+            is_assistant=True,
+        )
 
-    assert assistant.get_assistant_id() is None
+        assert assistant.get_assistant_id() is None
 
-    settings = OpenAIAssistantSettings(
-        name="Test Assistant",
-        description="Test Assistant",
-        instructions="(hyphenated words count as 1 word) Give me the TLDR \
-            in as few words as possible. The output must only be one sentence.",
-    )
+        settings = OpenAIAssistantSettings(
+            name="Test Assistant",
+            description="Test Assistant",
+            instructions="(hyphenated words count as 1 word) Give me the TLDR \
+                in as few words as possible. The output must only be one sentence.",
+        )
 
-    await assistant.create_assistant_async(settings)
+        await assistant.create_assistant_async(settings)
 
-    assert assistant.get_assistant_id() is not None
+        assert assistant.get_assistant_id() is not None
+    finally:
+        await clean_up_assistant_resources_async(assistant)
 
 
 @pytest.mark.asyncio
@@ -125,43 +135,46 @@ async def test_oai_assistant(setup_tldr_function_for_oai_models, get_oai_config)
     print("* Endpoint: OpenAI")
     print("* Model: gpt-3.5-turbo")
 
-    assistant = sk_oai.OpenAIChatCompletion(
-        ai_model_id="gpt-3.5-turbo-1106",
-        api_key=api_key,
-        is_assistant=True,
-    )
+    try:
+        assistant = sk_oai.OpenAIChatCompletion(
+            ai_model_id="gpt-3.5-turbo-1106",
+            api_key=api_key,
+            is_assistant=True,
+        )
 
-    settings = OpenAIAssistantSettings(
-        name="Test Assistant",
-        description="Test Assistant",
-        instructions="(hyphenated words count as 1 word) Give me the TLDR \
-            in as few words as possible. The output must only be one sentence.",
-    )
+        settings = OpenAIAssistantSettings(
+            name="Test Assistant",
+            description="Test Assistant",
+            instructions="(hyphenated words count as 1 word) Give me the TLDR \
+                in as few words as possible. The output must only be one sentence.",
+        )
 
-    await assistant.create_assistant_async(settings)
+        await assistant.create_assistant_async(settings)
 
-    kernel.add_chat_service(
-        "assistant",
-        assistant,
-    )
+        kernel.add_chat_service(
+            "assistant",
+            assistant,
+        )
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-        max_tokens=2000, temperature=0.7, top_p=0.8
-    )
+        prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+            max_tokens=2000, temperature=0.7, top_p=0.8
+        )
 
-    prompt_template = sk.ChatPromptTemplate(
-        sk_prompt, kernel.prompt_template_engine, prompt_config
-    )
-    prompt_template.add_user_message(text_to_summarize)
-    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    chat_function = kernel.register_semantic_function(
-        "ChatBot", "Chat", function_config
-    )
+        prompt_template = sk.ChatPromptTemplate(
+            sk_prompt, kernel.prompt_template_engine, prompt_config
+        )
+        prompt_template.add_user_message(text_to_summarize)
+        function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+        chat_function = kernel.register_semantic_function(
+            "ChatBot", "Chat", function_config
+        )
 
-    summary = await retry(lambda: kernel.run_async(chat_function))
-    output = str(summary).strip()
-    print(f"TLDR using input string: '{output}'")
-    assert output is not None
+        summary = await retry(lambda: kernel.run_async(chat_function))
+        output = str(summary).strip()
+        print(f"TLDR using input string: '{output}'")
+        assert output is not None
+    finally:
+        await clean_up_assistant_resources_async(assistant)
 
 
 @pytest.mark.asyncio
@@ -181,40 +194,43 @@ async def test_oai_assistant_with_custom_client(
         organization=org_id,
     )
 
-    assistant = sk_oai.OpenAIChatCompletion(
-        ai_model_id="gpt-3.5-turbo-1106",
-        async_client=client,
-        is_assistant=True,
-    )
+    try:
+        assistant = sk_oai.OpenAIChatCompletion(
+            ai_model_id="gpt-3.5-turbo-1106",
+            async_client=client,
+            is_assistant=True,
+        )
 
-    settings = OpenAIAssistantSettings(
-        name="Test Assistant",
-        description="Test Assistant",
-        instructions="(hyphenated words count as 1 word) Give me the summary \
-            in as few words as possible. The output must only be one sentence. Keep it short.",
-    )
+        settings = OpenAIAssistantSettings(
+            name="Test Assistant",
+            description="Test Assistant",
+            instructions="(hyphenated words count as 1 word) Give me the summary \
+                in as few words as possible. The output must only be one sentence. Keep it short.",
+        )
 
-    await assistant.create_assistant_async(settings)
+        await assistant.create_assistant_async(settings)
 
-    kernel.add_chat_service(
-        "assistant",
-        assistant,
-    )
+        kernel.add_chat_service(
+            "assistant",
+            assistant,
+        )
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-        max_tokens=2000, temperature=0.7, top_p=0.8
-    )
+        prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+            max_tokens=2000, temperature=0.7, top_p=0.8
+        )
 
-    prompt_template = sk.ChatPromptTemplate(
-        sk_prompt, kernel.prompt_template_engine, prompt_config
-    )
-    prompt_template.add_user_message(text_to_summarize)
-    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    chat_function = kernel.register_semantic_function(
-        "ChatBot", "Chat", function_config
-    )
+        prompt_template = sk.ChatPromptTemplate(
+            sk_prompt, kernel.prompt_template_engine, prompt_config
+        )
+        prompt_template.add_user_message(text_to_summarize)
+        function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+        chat_function = kernel.register_semantic_function(
+            "ChatBot", "Chat", function_config
+        )
 
-    summary = await retry(lambda: kernel.run_async(chat_function))
-    output = str(summary).strip()
-    print(f"TLDR using input string: '{output}'")
-    assert output is not None
+        summary = await retry(lambda: kernel.run_async(chat_function))
+        output = str(summary).strip()
+        print(f"TLDR using input string: '{output}'")
+        assert output is not None
+    finally:
+        await clean_up_assistant_resources_async(assistant)

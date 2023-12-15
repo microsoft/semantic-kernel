@@ -20,7 +20,7 @@ class OpenAIAssistantSettings(SKBaseModel):
         try:
             with open(path, "r") as file:
                 yaml_data = yaml.safe_load(file)
-            
+
             return cls(
                 name=yaml_data.get("name", None),
                 description=yaml_data.get("description", None),
@@ -28,13 +28,13 @@ class OpenAIAssistantSettings(SKBaseModel):
             )
 
         except FileNotFoundError:
-            #logging.error(f"File not found: {path}")
+            # logging.error(f"File not found: {path}")
             raise
 
-        except yaml.YAMLError as e:
-            #logging.error(f"Error parsing YAML file: {e}")
+        except yaml.YAMLError:
+            # logging.error(f"Error parsing YAML file: {e}")
             raise
 
-        except Exception as e:
-            #logging.error(f"An unexpected error occurred: {e}")
+        except Exception:
+            # logging.error(f"An unexpected error occurred: {e}")
             raise

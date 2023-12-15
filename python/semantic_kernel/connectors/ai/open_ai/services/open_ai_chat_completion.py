@@ -147,7 +147,7 @@ class OpenAIChatCompletion(
             log=settings.get("log"),
             is_assistant=settings.get("is_assistant", False),
         )
-    
+
     # --------------------------------- OpenAI Assistants -------------------------
 
     def get_assistant_id(self) -> Optional[str]:
@@ -160,4 +160,27 @@ class OpenAIChatCompletion(
         if self.is_assistant and self.assistant_id is not None:
             return self.assistant_id
         return None
-            
+
+    async def delete_thread_async(self) -> None:
+        """
+        Delete the current thread if this is an assistant.
+
+        Returns:
+            None
+        """
+        if (
+            self.is_assistant
+            and self.assistant_id is not None
+            and self.thread_id is not None
+        ):
+            await self.client.beta.threads.delete(self.thread_id)
+
+    async def delete_assistant_async(self) -> None:
+        """
+        Delete the current assistant if this is an assistant.
+
+        Returns:
+            None
+        """
+        if self.is_assistant and self.assistant_id is not None:
+            await self.client.beta.assistants.delete(self.assistant_id)
