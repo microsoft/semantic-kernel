@@ -16,8 +16,8 @@ class TextMemorySkill(SKBaseModel):
     KEY_PARAM: ClassVar[str] = "key"
     LIMIT_PARAM: ClassVar[str] = "limit"
     DEFAULT_COLLECTION: ClassVar[str] = "generic"
-    DEFAULT_RELEVANCE: ClassVar[float] = 0.75
-    DEFAULT_LIMIT: ClassVar[int] = 1
+    DEFAULT_RELEVANCE: ClassVar[float] = "0.75"
+    DEFAULT_LIMIT: ClassVar[int] = "1"
 
     # @staticmethod
     @sk_function(

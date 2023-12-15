@@ -51,11 +51,7 @@ jobs:
         include:
           - { dotnet: "6.0-jammy", os: "ubuntu", configuration: Debug }
           - { dotnet: "7.0-jammy", os: "ubuntu", configuration: Release }
-          - {
-              dotnet: "8.0-jammy",
-              os: "ubuntu",
-              configuration: Release,
-            }
+          - { dotnet: "8.0-jammy", os: "ubuntu", configuration: Release }
           - { dotnet: "6.0", os: "windows", configuration: Release }
           - {
               dotnet: "7.0",
@@ -105,6 +101,9 @@ jobs:
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Planners__AzureOpenAI__ApiKey: ${{ secrets.PLANNERS__AZUREOPENAI__APIKEY }}
+          Planners__AzureOpenAI__Endpoint: ${{ secrets.PLANNERS__AZUREOPENAI__ENDPOINT }}
+          Planners__AzureOpenAI__DeploymentName: ${{ vars.PLANNERS__AZUREOPENAI__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
 
