@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -8,9 +9,12 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+#pragma warning disable SKEXP0003, SKEXP0001 // Experimental
+
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
+[Experimental("SKEXP0003")]
 public sealed class MemoryBuilder
 {
     private Func<IMemoryStore>? _memoryStoreFactory = null;
@@ -118,3 +122,5 @@ public sealed class MemoryBuilder
         return this;
     }
 }
+
+#pragma warning restore SKEXP0003, SKEXP0001 // Experimental
