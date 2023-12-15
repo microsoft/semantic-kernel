@@ -230,7 +230,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig.GetKernelReturnParameterMetadata(),
             promptConfig.ExecutionSettings)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptConfig = promptConfig;

@@ -37,7 +37,7 @@ public sealed class EmailPlugin
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(EmailPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(EmailPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
