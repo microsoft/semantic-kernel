@@ -79,8 +79,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: azureOpenAIConfiguration.ModelId!,
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
