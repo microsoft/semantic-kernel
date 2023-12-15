@@ -29,7 +29,7 @@ public sealed class CloudDrivePlugin
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDrivePlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(CloudDrivePlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
