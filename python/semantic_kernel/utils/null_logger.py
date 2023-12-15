@@ -40,7 +40,7 @@ class NullLogger(Logger, metaclass=_NullerMeta):
         logger.warning(
             (
                 "NullLogger is deprecated and will be removed in a future release,",
-                "same as any 'log' and 'logger' arguments.",
+                "the same goes for all 'log' and 'logger' arguments.",
             )
         )
 
