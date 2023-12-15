@@ -6,25 +6,26 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * This example shows how to use Azure OpenAI Chat Completion with data.
- */
+/// <summary>
+/// This example demonstrates how to use Azure OpenAI Chat Completion with data.
+/// </summary>
+/// <value>
+/// Set-up instructions:
+/// <para>1. Upload the following content in Azure Blob Storage in a .txt file.</para>
+/// <para>You can follow the steps here: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/></para>
+/// <para>
+/// Emily and David, two passionate scientists, met during a research expedition to Antarctica.
+/// Bonded by their love for the natural world and shared curiosity,
+/// they uncovered a groundbreaking phenomenon in glaciology that could
+/// potentially reshape our understanding of climate change.
+/// </para>
+/// 2. Set your secrets:
+/// <para> dotnet user-secrets set "AzureAISearch:Endpoint" "https://... .search.windows.net"</para>
+/// <para> dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your Search service resource}"</para>
+/// <para> dotnet user-secrets set "AzureAISearch:IndexName" "..."</para>
+/// </value>
 public static class Example54_AzureChatCompletionWithData
 {
-    /* Set-up
-    * Upload the following content in Azure Blob Storage in .txt file. 
-    * You can follow the steps here: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
-
-        Emily and David, two passionate scientists, met during a research expedition to Antarctica.
-        Bonded by their love for the natural world and shared curiosity,
-        they uncovered a groundbreaking phenomenon in glaciology that could
-        potentially reshape our understanding of climate change.
-
-    * Set your secrets:
-    * dotnet user-secrets set "AzureAISearch:Endpoint" "https://... .search.windows.net"
-    * dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your `Search service` resource}"
-    * dotnet user-secrets set "AzureAISearch:IndexName" "..."
-    */
     public static async Task RunAsync()
     {
         await ExampleWithChatCompletionAsync();
