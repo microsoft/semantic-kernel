@@ -239,10 +239,10 @@ Once the token is acquired, it is added to the HTTP authentication header via th
 
 To construct this provider, the caller must specify:
 
-- _Client ID_ – identifier of the calling application. This is acquired by [registering your application with the Microsoft Identity platform](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
-- _Tenant ID_ – identifier of the target service tenant, or “common”
-- _Scopes_ – permissions being requested
-- _Redirect URI_ – for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
+- _Client ID_ - identifier of the calling application. This is acquired by [registering your application with the Microsoft Identity platform](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- _Tenant ID_ - identifier of the target service tenant, or "common"
+- _Scopes_ - permissions being requested
+- _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
 ```csharp
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
