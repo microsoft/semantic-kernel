@@ -90,7 +90,7 @@ internal static class KernelFunctionHelpers
     /// <param name="argument">Handlebar argument.</param>
     private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object argument)
     {
-        var actualParameterType = parameterMetadata.Type.TryGetGenericNullableType(out var nullableType) ? nullableType : parameterMetadata.Type;
+        var actualParameterType = parameterMetadata.ParameterType.TryGetGenericNullableType(out var nullableType) ? nullableType : parameterMetadata.ParameterType;
 
         bool parameterIsNumeric = KernelHelpersUtils.IsNumericType(actualParameterType)
             || (parameterMetadata.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number");
@@ -129,7 +129,7 @@ internal static class KernelFunctionHelpers
                 }
                 else
                 {
-                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.Type ?? (object?)param.Schema} but received {value.GetType()}.");
+                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value.GetType()}.");
                 }
             }
             else if (param.IsRequired)
@@ -162,7 +162,7 @@ internal static class KernelFunctionHelpers
                 }
                 else
                 {
-                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.Type ?? (object?)param.Schema} but received {handlebarsArguments[argIndex].GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {handlebarsArguments[argIndex].GetType()}.");
                 }
             }
         }

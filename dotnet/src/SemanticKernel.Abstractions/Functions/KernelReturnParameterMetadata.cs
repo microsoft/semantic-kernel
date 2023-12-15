@@ -22,7 +22,7 @@ public sealed class KernelReturnParameterMetadata
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata)
     {
         this.Description = metadata.Description;
-        this.Type = metadata.Type;
+        this.ParameterType = metadata.ParameterType;
         this.Schema = metadata.Schema;
     }
 
@@ -35,7 +35,7 @@ public sealed class KernelReturnParameterMetadata
     }
 
     /// <summary>Gets the .NET type of the return parameter.</summary>
-    public Type? Type { get; init; }
+    public Type? ParameterType { get; init; }
 
     /// <summary>Gets a JSON Schema describing the type of the return parameter.</summary>
     public KernelJsonSchema? Schema { get; init; }

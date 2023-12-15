@@ -44,7 +44,7 @@ internal static class KernelParameterMetadataExtensions
                 {
                     Name = taskResultType.Name,
                     IsComplex = true,
-                    Properties = resultTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { Type = p.PropertyType }).ToList()
+                    Properties = resultTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
                 });
 
                 parameterTypes.AddNestedComplexTypes(resultTypeProperties);
@@ -59,7 +59,7 @@ internal static class KernelParameterMetadataExtensions
             {
                 Name = type.Name,
                 IsComplex = properties.Length is not 0,
-                Properties = properties.Select(p => new KernelParameterMetadata(p.Name) { Type = p.PropertyType }).ToList()
+                Properties = properties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
             });
 
             parameterTypes.AddNestedComplexTypes(properties);
@@ -102,7 +102,7 @@ internal static class KernelParameterMetadataExtensions
         {
             return new(parameter)
             {
-                Type = GetTypeFromSchema(type),
+                ParameterType = GetTypeFromSchema(type),
                 Schema = null
             };
         }
@@ -129,14 +129,14 @@ internal static class KernelParameterMetadataExtensions
     public static KernelParameterMetadata ToKernelParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) => new($"{functionName}Returns")
     {
         Description = parameter.Description,
-        Type = parameter.Type,
+        ParameterType = parameter.ParameterType,
         Schema = parameter.Schema
     };
 
     public static KernelReturnParameterMetadata ToKernelReturnParameterMetadata(this KernelParameterMetadata parameter) => new()
     {
         Description = parameter.Description,
-        Type = parameter.Type,
+        ParameterType = parameter.ParameterType,
         Schema = parameter.Schema
     };
 }

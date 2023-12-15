@@ -36,7 +36,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
         Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
-        Assert.Null(result.ReturnParameter.Type);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
         Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
-        Assert.Null(result.ReturnParameter.Type);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Theory]
@@ -75,7 +75,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             Description = "This is param1",
             DefaultValue = "1",
-            Type = typeof(int),
+            ParameterType = typeof(int),
             IsRequired = false,
             Schema = withSchema ? KernelJsonSchema.Parse("{\"type\":\"integer\"}") : null,
         };
@@ -102,7 +102,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
         Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
-        Assert.Null(result.ReturnParameter.Type);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
         Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
-        Assert.Null(result.ReturnParameter.Type);
+        Assert.Null(result.ReturnParameter.ParameterType);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         var param1 = new KernelParameterMetadata("param1")
         {
             Description = "This is param1",
-            Type = typeof(int),
+            ParameterType = typeof(int),
         };
 
         var sut = new KernelFunctionMetadata("foo")

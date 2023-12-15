@@ -41,7 +41,7 @@ internal static class AssistantsKernelFunctionExtensions
                     return
                         new OpenAIParameter
                         {
-                            Type = ConvertType(p.Type),
+                            Type = ConvertType(p.ParameterType),
                             Description = p.Description,
                         };
                 });

@@ -151,17 +151,17 @@ public sealed class HandlebarsPlanner
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
-        // TODO (@teresaqhoang): Handle case when schema and parameter.Type can exist i.e., when parameter.Type = RestApiResponse
-        if (parameter.Type is not null)
+        // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
+        if (parameter.ParameterType is not null)
         {
-            // Async return type - need to extract the actual return type and override parameter.Type property
-            var type = parameter.Type;
+            // Async return type - need to extract the actual return type and override ParameterType property
+            var type = parameter.ParameterType;
             if (type.TryGetGenericResultType(out var taskResultType))
             {
-                parameter = new(parameter) { Type = taskResultType }; // Actual Return Type
+                parameter = new(parameter) { ParameterType = taskResultType }; // Actual Return Type
             }
 
-            complexParameterTypes.UnionWith(parameter.Type.ToHandlebarsParameterTypeMetadata());
+            complexParameterTypes.UnionWith(parameter.ParameterType.ToHandlebarsParameterTypeMetadata());
         }
         else if (parameter.Schema is not null)
         {

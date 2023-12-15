@@ -19,12 +19,12 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public sealed class OpenAIFunctionParameter
 {
-    internal OpenAIFunctionParameter(string? name, string? description, bool isRequired, Type? type, KernelJsonSchema? schema)
+    internal OpenAIFunctionParameter(string? name, string? description, bool isRequired, Type? parameterType, KernelJsonSchema? schema)
     {
         this.Name = name ?? string.Empty;
         this.Description = description ?? string.Empty;
         this.IsRequired = isRequired;
-        this.Type = type;
+        this.ParameterType = parameterType;
         this.Schema = schema;
     }
 
@@ -38,7 +38,7 @@ public sealed class OpenAIFunctionParameter
     public bool IsRequired { get; }
 
     /// <summary>Gets the <see cref="Type"/> of the parameter, if known.</summary>
-    public Type? Type { get; }
+    public Type? ParameterType { get; }
 
     /// <summary>Gets a JSON schema for the parameter, if known.</summary>
     public KernelJsonSchema? Schema { get; }
@@ -49,18 +49,18 @@ public sealed class OpenAIFunctionParameter
 /// </summary>
 public sealed class OpenAIFunctionReturnParameter
 {
-    internal OpenAIFunctionReturnParameter(string? description, Type? type, KernelJsonSchema? schema)
+    internal OpenAIFunctionReturnParameter(string? description, Type? parameterType, KernelJsonSchema? schema)
     {
         this.Description = description ?? string.Empty;
         this.Schema = schema;
-        this.Type = type;
+        this.ParameterType = parameterType;
     }
 
     /// <summary>Gets a description of the return parameter.</summary>
     public string Description { get; }
 
     /// <summary>Gets the <see cref="Type"/> of the return parameter, if known.</summary>
-    public Type? Type { get; }
+    public Type? ParameterType { get; }
 
     /// <summary>Gets a JSON schema for the return parameter, if known.</summary>
     public KernelJsonSchema? Schema { get; }
@@ -143,7 +143,7 @@ public sealed class OpenAIFunction
             {
                 var parameter = parameters[i];
 
-                KernelJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.Type, parameter.Description);
+                KernelJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
                 if (schema is not null)
                 {
                     properties.Add(parameter.Name, schema);
