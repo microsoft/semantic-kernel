@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Text to image request
 /// </summary>
-[Experimental("SKEXP0012")]
 internal sealed class TextToImageRequest
 {
     /// <summary>
