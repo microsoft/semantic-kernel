@@ -1,78 +1,77 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net;
+using System;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Moq;
-using Moq.Protected;
+using Microsoft.SemanticKernel.Services;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAITextToImageTests"/> class.
+/// Unit tests for <see cref="AzureOpenAITextToImageServiceTests"/> class.
 /// </summary>
-public sealed class AzureOpenAITextToImageTests
+public sealed class AzureOpenAITextToImageServiceTests
 {
-    /// <summary>
-    /// Returns a mocked instance of <see cref="HttpClient"/>.
-    /// </summary>
-    /// <param name="generationResult">The <see cref="HttpResponseMessage"/> to return for text to image.</param>
-    /// <param name="imageResult">The <see cref="HttpResponseMessage"/> to return for image result.</param>
-    /// <returns>A mocked <see cref="HttpClient"/> instance.</returns>
-    private static HttpClient GetHttpClientMock(HttpResponseMessage generationResult, HttpResponseMessage imageResult)
+    [Theory]
+    [InlineData(1024, 1024, null)]
+    [InlineData(1792, 1024, null)]
+    [InlineData(1024, 1792, null)]
+    [InlineData(512, 512, typeof(NotSupportedException))]
+    [InlineData(256, 256, typeof(NotSupportedException))]
+    [InlineData(123, 456, typeof(NotSupportedException))]
+    public async Task ItValidatesTheModelIdAsync(int width, int height, Type? expectedExceptionType)
     {
-        var httpClientHandler = new Mock<HttpClientHandler>();
+        // Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+        messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(@"{
+                                            ""created"": 1702575371,
+                                            ""data"": [
+                                                {
+                                                    ""revised_prompt"": ""A photo capturing the diversity of the Earth's landscapes."",
+                                                    ""url"": ""https://dalleprodsec.blob.core.windows.net/private/images/0f20c621-7eb0-449d-87fd-8dd2a3a15fbe/generated_00.png?se=2023-12-15T17%3A36%3A25Z&sig=jd2%2Fa8jOM9NmclrUbOLdRgAxcFDFPezOpG%2BSF82d7zM%3D&ske=2023-12-20T10%3A10%3A28Z&skoid=e52d5ed7-0657-4f62-bc12-7e5dbb260a96&sks=b&skt=2023-12-13T10%3A10%3A28Z&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skv=2020-10-02&sp=r&spr=https&sr=b&sv=2020-10-02""
+                                                }
+                                            ]
+                                        }", Encoding.UTF8, "application/json")
+        };
 
-        httpClientHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(request => request.RequestUri!.AbsolutePath.Contains("openai/images/generations:submit")),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(generationResult);
+        var textToImageCompletion = new AzureOpenAITextToImageService(deploymentName: "gpt-35-turbo", modelId: "gpt-3.5-turbo", endpoint: "https://az.com", apiKey: "NOKEY", httpClient: httpClient);
 
-        httpClientHandler
-           .Protected()
-           .Setup<Task<HttpResponseMessage>>(
-               "SendAsync",
-               ItExpr.Is<HttpRequestMessage>(request => request.RequestUri!.AbsolutePath.Contains("openai/operations/images")),
-               ItExpr.IsAny<CancellationToken>())
-           .ReturnsAsync(imageResult);
+        if (expectedExceptionType is not null)
+        {
+            await Assert.ThrowsAsync(expectedExceptionType, () => textToImageCompletion.GenerateImageAsync("anything", width, height));
+        }
+        else
+        {
+            // Act
+            var result = await textToImageCompletion.GenerateImageAsync("anything", width, height);
 
-        return new HttpClient(httpClientHandler.Object);
+            // Assert
+            Assert.NotNull(result);
+        }
     }
 
-    /// <summary>
-    /// Creates an instance of <see cref="HttpResponseMessage"/> to return with test data.
-    /// </summary>
-    /// <param name="statusCode">The HTTP status code for the response.</param>
-    /// <param name="fileName">The name of the test response file.</param>
-    /// <returns>An instance of <see cref="HttpResponseMessage"/> with the specified test data.</returns>
-    private static HttpResponseMessage CreateResponseMessage(HttpStatusCode statusCode, string fileName)
+    [Theory]
+    [InlineData("gpt-35-turbo", "gpt-3.5-turbo")]
+    [InlineData("gpt-35-turbo", null)]
+    [InlineData("gpt-4-turbo", "gpt-4")]
+    public void ItHasPropertiesAsDefined(string deploymentName, string? modelId)
     {
-        var response = new HttpResponseMessage(statusCode);
-        response.Content = new StringContent(OpenAITestHelper.GetTestResponse(fileName), Encoding.UTF8, "application/json");
-        return response;
-    }
+        var service = new AzureOpenAITextToImageService(deploymentName, "https://az.com", "NOKEY", modelId);
+        Assert.Contains(AzureOpenAITextToImageService.DeploymentNameKey, service.Attributes);
+        Assert.Equal(deploymentName, service.Attributes[AzureOpenAITextToImageService.DeploymentNameKey]);
 
-    [Fact]
-    public async Task ItShouldGenerateImageSuccussedAsync()
-    {
-        //Arrange
-        using var generateResult = CreateResponseMessage(HttpStatusCode.Accepted, "image_generation_test_response.json");
-        using var imageResult = CreateResponseMessage(HttpStatusCode.OK, "image_result_test_response.json");
-        using var mockHttpClient = GetHttpClientMock(generateResult, imageResult);
+        if (modelId is null)
+        {
+            return;
+        }
 
-        var generation = new AzureOpenAITextToImageService("https://fake-endpoint/", "gake-model-id", "fake-api-key", mockHttpClient);
-
-        //Act
-        var result = await generation.GenerateImageAsync("description", 256, 256);
-
-        //Assert
-        Assert.NotNull(result);
+        Assert.Contains(AIServiceExtensions.ModelIdKey, service.Attributes);
+        Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 }
