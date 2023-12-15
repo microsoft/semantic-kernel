@@ -5,30 +5,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
 
 /// <summary>
-/// Showcase complex Open AI Assistant interactions using semantic kernel.
+/// Showcase complex Open AI Agent interactions using semantic kernel.
 /// </summary>
-public static class Example71_AssistantDelegation
+public static class Example71_AgentDelegation
 {
     /// <summary>
-    /// Specific model is required that supports assistants and function calling.
+    /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
-    // Track assistants for clean-up
-    private static readonly List<IAssistant> s_assistants = new();
+    // Track agents for clean-up
+    private static readonly List<IAgent> s_agents = new();
 
     /// <summary>
-    /// Show how to combine coordinate multiple assistants.
+    /// Show how to combine coordinate multiple agents.
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example71_AssistantDelegation ========");
+        Console.WriteLine("======== Example71_AgentDelegation ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
@@ -36,34 +36,34 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        IChatThread? thread = null;
+        IAgentThread? thread = null;
 
         try
         {
             var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-            var menuAssistant =
+            var menuAgent =
                 Track(
-                    await new AssistantBuilder()
+                    await new AgentBuilder()
                         .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
+                        .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
                         .WithDescription("Answer questions about how the menu uses the tool.")
                         .WithPlugin(plugin)
                         .BuildAsync());
 
-            var parrotAssistant =
+            var parrotAgent =
                 Track(
-                    await new AssistantBuilder()
+                    await new AgentBuilder()
                         .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
+                        .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
                         .BuildAsync());
 
-            var toolAssistant =
+            var toolAgent =
                 Track(
-                    await new AssistantBuilder()
+                    await new AgentBuilder()
                         .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Assistants.ToolAssistant.yaml"))
-                        .WithPlugin(parrotAssistant.AsPlugin())
-                        .WithPlugin(menuAssistant.AsPlugin())
+                        .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
+                        .WithPlugin(parrotAgent.AsPlugin())
+                        .WithPlugin(menuAgent.AsPlugin())
                         .BuildAsync());
 
             var messages = new string[]
@@ -73,8 +73,8 @@ public static class Example71_AssistantDelegation
                 "Thank you",
             };
 
-            thread = await toolAssistant.NewThreadAsync();
-            foreach (var response in messages.Select(m => thread.InvokeAsync(toolAssistant, m)))
+            thread = await toolAgent.NewThreadAsync();
+            foreach (var response in messages.Select(m => thread.InvokeAsync(toolAgent, m)))
             {
                 await foreach (var message in response)
                 {
@@ -88,14 +88,14 @@ public static class Example71_AssistantDelegation
             // Clean-up (storage costs $)
             await Task.WhenAll(
                 thread?.DeleteAsync() ?? Task.CompletedTask,
-                Task.WhenAll(s_assistants.Select(a => a.DeleteAsync())));
+                Task.WhenAll(s_agents.Select(a => a.DeleteAsync())));
         }
     }
 
-    private static IAssistant Track(IAssistant assistant)
+    private static IAgent Track(IAgent agent)
     {
-        s_assistants.Add(assistant);
+        s_agents.Add(agent);
 
-        return assistant;
+        return agent;
     }
 }

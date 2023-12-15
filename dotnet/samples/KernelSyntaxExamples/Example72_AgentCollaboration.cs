@@ -4,29 +4,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Agents;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
-/// Showcase complex Open AI Assistant collaboration using semantic kernel.
+/// Showcase complex Open AI Agent collaboration using semantic kernel.
 /// </summary>
-public static class Example72_AssistantCollaboration
+public static class Example72_AgentCollaboration
 {
     /// <summary>
-    /// Specific model is required that supports assistants and function calling.
+    /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-4-0613";
 
-    // Track assistants for clean-up
-    private static readonly List<IAssistant> s_assistants = new();
+    // Track agents for clean-up
+    private static readonly List<IAgent> s_agents = new();
 
     /// <summary>
-    /// Show how to combine and coordinate multiple assistants.
+    /// Show how to combine and coordinate multiple agents.
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example72_AssistantCollaboration ========");
+        Console.WriteLine("======== Example72_AgentCollaboration ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
@@ -42,20 +42,20 @@ public static class Example72_AssistantCollaboration
     }
 
     /// <summary>
-    /// Show how two assistants are able to collaborate as agents on a single thread.
+    /// Show how two agents are able to collaborate as agents on a single thread.
     /// </summary>
     private static async Task RunCollaborationAsync()
     {
         Console.WriteLine("======== Run:Collaboration ========");
-        IChatThread? thread = null;
+        IAgentThread? thread = null;
         try
         {
-            // Create copy-writer assistant to generate ideas
+            // Create copy-writer agent to generate ideas
             var copyWriter = await CreateCopyWriterAsync();
-            // Create art-director assistant to review ideas, provide feedback and final approval
+            // Create art-director agent to review ideas, provide feedback and final approval
             var artDirector = await CreateArtDirectorAsync();
 
-            // Create collaboration thread to which both assistants add messages.
+            // Create collaboration thread to which both agents add messages.
             thread = await copyWriter.NewThreadAsync();
 
             // Add the user message
@@ -66,15 +66,15 @@ public static class Example72_AssistantCollaboration
             do
             {
                 // Initiate copy-writer input
-                var assistantMessages = await thread.InvokeAsync(copyWriter).ToArrayAsync();
-                DisplayMessages(assistantMessages, copyWriter);
+                var agentMessages = await thread.InvokeAsync(copyWriter).ToArrayAsync();
+                DisplayMessages(agentMessages, copyWriter);
 
                 // Initiate art-director input
-                assistantMessages = await thread.InvokeAsync(artDirector).ToArrayAsync();
-                DisplayMessages(assistantMessages, artDirector);
+                agentMessages = await thread.InvokeAsync(artDirector).ToArrayAsync();
+                DisplayMessages(agentMessages, artDirector);
 
                 // Evaluate if goal is met.
-                if (assistantMessages.First().Content.Contains("PRINT IT", StringComparison.OrdinalIgnoreCase))
+                if (agentMessages.First().Content.Contains("PRINT IT", StringComparison.OrdinalIgnoreCase))
                 {
                     isComplete = true;
                 }
@@ -84,31 +84,31 @@ public static class Example72_AssistantCollaboration
         finally
         {
             // Clean-up (storage costs $)
-            await Task.WhenAll(s_assistants.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
         }
     }
 
     /// <summary>
-    /// Show how assistants can collaborate as agents using the plug-in model.
+    /// Show how agents can collaborate as agents using the plug-in model.
     /// </summary>
     /// <remarks>
     /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
-    /// it is not using shared thread state for assistant interaction.
+    /// it is not using shared thread state for agent interaction.
     /// </remarks>
     private static async Task RunAsPluginsAsync()
     {
         Console.WriteLine("======== Run:AsPlugins ========");
         try
         {
-            // Create copy-writer assistant to generate ideas
+            // Create copy-writer agent to generate ideas
             var copyWriter = await CreateCopyWriterAsync();
-            // Create art-director assistant to review ideas, provide feedback and final approval
+            // Create art-director agent to review ideas, provide feedback and final approval
             var artDirector = await CreateArtDirectorAsync();
 
-            // Create coordinator assistant to oversee collaboration
+            // Create coordinator agent to oversee collaboration
             var coordinator =
                 Track(
-                    await new AssistantBuilder()
+                    await new AgentBuilder()
                         .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                         .WithInstructions("Reply the provided concept and have the copy-writer generate an marketing idea (copy).  Then have the art-director reply to the copy-writer with a review of the copy.  Coordinate the repeated replies between the copy-writer and art-director until the art-director approves the copy.  Respond with the copy when approved by the art-director and summarize why it is good.")
                         .WithPlugin(copyWriter.AsPlugin())
@@ -124,28 +124,28 @@ public static class Example72_AssistantCollaboration
         finally
         {
             // Clean-up (storage costs $)
-            await Task.WhenAll(s_assistants.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
         }
     }
 
-    private async static Task<IAssistant> CreateCopyWriterAsync(IAssistant? assistant = null)
+    private async static Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
     {
         return
             Track(
-                await new AssistantBuilder()
+                await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                     .WithInstructions("You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
                     .WithName("Copywriter")
                     .WithDescription("Copywriter")
-                    .WithPlugin(assistant?.AsPlugin())
+                    .WithPlugin(agent?.AsPlugin())
                     .BuildAsync());
     }
 
-    private async static Task<IAssistant> CreateArtDirectorAsync()
+    private async static Task<IAgent> CreateArtDirectorAsync()
     {
         return
             Track(
-                await new AssistantBuilder()
+                await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                     .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
                     .WithName("Art Director")
@@ -153,20 +153,20 @@ public static class Example72_AssistantCollaboration
                     .BuildAsync());
     }
 
-    private static void DisplayMessages(IEnumerable<IChatMessage> messages, IAssistant? assistant = null)
+    private static void DisplayMessages(IEnumerable<IChatMessage> messages, IAgent? agent = null)
     {
         foreach (var message in messages)
         {
-            DisplayMessage(message, assistant);
+            DisplayMessage(message, agent);
         }
     }
 
-    private static void DisplayMessage(IChatMessage message, IAssistant? assistant = null)
+    private static void DisplayMessage(IChatMessage message, IAgent? agent = null)
     {
         Console.WriteLine($"[{message.Id}]");
-        if (assistant != null)
+        if (agent != null)
         {
-            Console.WriteLine($"# {message.Role}: ({assistant.Name}) {message.Content}");
+            Console.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }
         else
         {
@@ -174,10 +174,10 @@ public static class Example72_AssistantCollaboration
         }
     }
 
-    private static IAssistant Track(IAssistant assistant)
+    private static IAgent Track(IAgent agent)
     {
-        s_assistants.Add(assistant);
+        s_agents.Add(agent);
 
-        return assistant;
+        return agent;
     }
 }
