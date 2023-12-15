@@ -9,8 +9,6 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
-#pragma warning disable SKEXP0003, SKEXP0001 // Experimental
-
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
@@ -122,5 +120,3 @@ public sealed class MemoryBuilder
         return this;
     }
 }
-
-#pragma warning restore SKEXP0003, SKEXP0001 // Experimental
