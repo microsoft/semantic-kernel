@@ -2,7 +2,6 @@
 
 using System.Net;
 using Azure;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 

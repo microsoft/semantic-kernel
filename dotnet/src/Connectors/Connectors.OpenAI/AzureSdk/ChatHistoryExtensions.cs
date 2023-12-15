@@ -69,7 +69,7 @@ public static class ChatHistoryExtensions
 
         if (messageContents.Count != 0)
         {
-            chatHistory.AddMessage(new OpenAIChatMessageContent(
+            chatHistory.Add(new OpenAIChatMessageContent(
                 streamedRole ?? AuthorRole.Assistant,
                 contentBuilder.ToString(),
                 messageContents[0].ModelId!,
