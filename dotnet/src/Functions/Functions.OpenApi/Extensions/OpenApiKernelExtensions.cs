@@ -111,7 +111,7 @@ public static class OpenApiKernelExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -148,7 +148,7 @@ public static class OpenApiKernelExtensions
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
@@ -229,7 +229,7 @@ public static class OpenApiKernelExtensions
             executionParameters?.EnablePayloadNamespacing ?? false);
 
         var functions = new List<KernelFunction>();
-        ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
         foreach (var operation in operations)
         {
             try
@@ -271,7 +271,7 @@ public static class OpenApiKernelExtensions
             executionParameters?.EnablePayloadNamespacing ?? false
         );
 
-        var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) : NullLogger.Instance;
+        var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
 
         async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
         {
@@ -326,6 +326,7 @@ public static class OpenApiKernelExtensions
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
+                ParameterType = p.Type switch { "string" => typeof(string), "boolean" => typeof(bool), _ => null },
                 Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
             })
             .ToList();

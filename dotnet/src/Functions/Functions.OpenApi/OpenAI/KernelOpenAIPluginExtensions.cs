@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -111,7 +112,7 @@ public static class OpenAIPluginKernelExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
@@ -147,7 +148,7 @@ public static class OpenAIPluginKernelExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,

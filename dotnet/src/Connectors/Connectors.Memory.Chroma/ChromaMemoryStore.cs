@@ -51,7 +51,7 @@ public class ChromaMemoryStore : IMemoryStore
     public ChromaMemoryStore(IChromaClient client, ILoggerFactory? loggerFactory = null)
     {
         this._chromaClient = client;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(ChromaMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc />
