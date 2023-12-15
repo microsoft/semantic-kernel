@@ -33,13 +33,13 @@ public class Main {
 
         ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
             .withOpenAIClient(client)
-            .withModelId(GPT_35_DEPLOYMENT_NAME)
+            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-3.5-turbo")
             .build();
 
         /*
         ChatCompletion<ChatHistory> gpt4 = ChatCompletion.builder()
             .withOpenAIClient(client)
-            .withModelId(GPT_4_DEPLOYMENT_NAME)
+            .withModelId(GPT_4_DEPLOYMENT_NAME != null ? GPT_4_DEPLOYMENT_NAME : "gpt-4")
             .build();
          */
 
