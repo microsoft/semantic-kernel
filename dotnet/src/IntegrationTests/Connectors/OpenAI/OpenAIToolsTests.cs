@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -53,14 +54,13 @@ public sealed class OpenAIToolsTests : IDisposable
 
     private Kernel InitializeKernel()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("Planners:AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+            .AddOpenAIChatCompletion(
+                modelId: openAIConfiguration.ModelId,
+                apiKey: openAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
 
@@ -95,6 +95,7 @@ public sealed class OpenAIToolsTests : IDisposable
     public class TimeInformation
     {
         [KernelFunction]
+        [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
     }
 }
