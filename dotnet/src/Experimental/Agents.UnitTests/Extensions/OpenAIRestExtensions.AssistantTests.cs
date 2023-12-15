@@ -34,7 +34,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     }
 
     [Fact]
-    public async Task CreateAgentModelAsync()
+    public async Task CreateAssistantModelAsync()
     {
         await this._restContext.CreateAssistantModelAsync(this._assistantModel).ConfigureAwait(true);
 
@@ -42,7 +42,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     }
 
     [Fact]
-    public async Task GetAgentModelAsync()
+    public async Task GetAssistantModelAsync()
     {
         await this._restContext.GetAssistantModelAsync(TestAgentId).ConfigureAwait(true);
 
@@ -50,7 +50,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     }
 
     [Fact]
-    public async Task ListAgentModelsAsync()
+    public async Task ListAssistantModelsAsync()
     {
         await this._restContext.ListAssistantModelsAsync(10, false, "20").ConfigureAwait(true);
 
@@ -58,7 +58,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     }
 
     [Fact]
-    public async Task DeleteAgentModelAsync()
+    public async Task DeleteAssistantsModelAsync()
     {
         await this._restContext.DeleteAssistantModelAsync(TestAgentId).ConfigureAwait(true);
 
