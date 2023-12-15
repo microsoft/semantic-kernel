@@ -8,6 +8,7 @@ SKILL_NAME_REGEX = r"^[0-9A-Za-z_]*$"
 FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]*$"
 FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
 
+
 def validate_skill_name(value: Optional[str]) -> None:
     """
     Validates that the skill name is valid.
@@ -21,7 +22,6 @@ def validate_skill_name(value: Optional[str]) -> None:
     """
     if not value:
         raise ValueError("The skill name cannot be `None` or empty")
-
 
     if not re_match(SKILL_NAME_REGEX, value):
         raise ValueError(
