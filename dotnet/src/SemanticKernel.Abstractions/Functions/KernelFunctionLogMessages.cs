@@ -48,15 +48,6 @@ internal static partial class KernelFunctionLogMessages
     }
 
     /// <summary>
-    /// Logs cancellation of a <see cref="KernelFunction"/>.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Function canceled prior to invocation.")]
-    public static partial void LogFunctionCanceledPriorToInvoking(this ILogger logger);
-
-    /// <summary>
     /// Logs successful invocation of a <see cref="KernelFunction"/>.
     /// </summary>
     [LoggerMessage(
