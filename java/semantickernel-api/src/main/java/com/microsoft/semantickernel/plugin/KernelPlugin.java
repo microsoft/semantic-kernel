@@ -25,4 +25,6 @@ public abstract class KernelPlugin implements Iterable<KernelFunction> {
     public String getDescription() {
         return description;
     }
+
+    public abstract KernelFunction get(String functionName);
 }

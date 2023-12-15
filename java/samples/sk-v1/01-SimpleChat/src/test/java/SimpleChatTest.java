@@ -1,9 +1,8 @@
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.AuthorRoles;
+import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
@@ -40,8 +39,8 @@ public class SimpleChatTest {
                         }),
                     Mockito.any(),
                     Mockito.any()))
-                .thenReturn(Flux.just(new StreamingChatMessageContent(
-                    new ChatMessageContent(AuthorRoles.Assistant, message.content()))));
+                .thenReturn(Flux.just(
+                    new StreamingChatMessageContent(AuthorRole.ASSISTANT, message.content())));
         }
         return gpt35Turbo;
     }

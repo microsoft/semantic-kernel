@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.orchestration;
+package com.microsoft.semantickernel.orchestration.contextvariables;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.orchestration.contextvariables.WritableKernelArguments;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -14,7 +12,7 @@ import reactor.util.annotation.NonNull;
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
 /// It is accessed and manipulated by functions in the pipeline.
 /// </summary>
-class DefaultKernelArguments implements KernelArguments, WritableKernelArguments {
+public class DefaultKernelArguments implements KernelArguments, WritableKernelArguments {
 
     private final CaseInsensitiveMap<ContextVariable<?>> variables;
 

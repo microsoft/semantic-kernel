@@ -29,6 +29,7 @@ public class KernelPluginFactory {
     /// </remarks>
 
     public static KernelPlugin createFromType(
+        Object plugin,
         @Nullable
         String pluginName,
         @Nullable

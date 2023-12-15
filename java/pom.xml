@@ -725,7 +725,7 @@
         <profile>
             <id>with-samples</id>
             <modules>
-                <module>samples/sk-v1</module>
+                <module>samples</module>
 <!--                <module>api-test</module>-->
             </modules>
         </profile>

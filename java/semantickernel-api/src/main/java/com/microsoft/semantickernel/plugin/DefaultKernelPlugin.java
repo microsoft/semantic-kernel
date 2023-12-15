@@ -18,4 +18,9 @@ public class DefaultKernelPlugin extends KernelPlugin {
     public Map<String, KernelFunction> getFunctions() {
         return functions;
     }
+
+    @Override
+    public KernelFunction get(String functionName) {
+        return functions.get(functionName);
+    }
 }

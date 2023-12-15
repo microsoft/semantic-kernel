@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.orchestration;
+package com.microsoft.semantickernel.orchestration.contextvariables;
 
 import java.util.HashMap;
 import java.util.Locale;
