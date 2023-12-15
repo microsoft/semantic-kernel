@@ -47,7 +47,7 @@ internal static partial class KernelFunctionLogMessages
             }
             catch (NotSupportedException ex)
             {
-                s_logFunctionResult(logger, "Failed to serialize arguments to Json", ex);
+                s_logFunctionArguments(logger, "Failed to serialize arguments to Json", ex);
             }
         }
     }
@@ -66,23 +66,23 @@ internal static partial class KernelFunctionLogMessages
     /// The action provides the benefit of caching the template parsing result for better performance.
     /// And the public method is a helper to serialize the result.
     /// </summary>
-    private static readonly Action<ILogger, string, Exception?> s_logFunctionResult =
+    private static readonly Action<ILogger, string, Exception?> s_logFunctionResultValue =
         LoggerMessage.Define<string>(
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
-            "Function result: {Result}");
-    public static void LogFunctionResult(this ILogger logger, FunctionResult? result)
+            "Function result: {ResultValue}");
+    public static void LogFunctionResultValue(this ILogger logger, object? resultValue)
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
             try
             {
-                var jsonString = JsonSerializer.Serialize(result);
-                s_logFunctionResult(logger, jsonString, null);
+                var jsonString = JsonSerializer.Serialize(resultValue);
+                s_logFunctionResultValue(logger, jsonString, null);
             }
             catch (NotSupportedException ex)
             {
-                s_logFunctionResult(logger, "Failed to serialize result to Json", ex);
+                s_logFunctionResultValue(logger, "Failed to serialize result value to Json", ex);
             }
         }
     }
