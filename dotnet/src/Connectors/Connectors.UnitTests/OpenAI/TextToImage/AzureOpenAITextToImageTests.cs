@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Services;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
@@ -39,7 +40,7 @@ public sealed class AzureOpenAITextToImageServiceTests
                                         }", Encoding.UTF8, "application/json")
         };
 
-        var textToImageCompletion = new AzureOpenAITextToImageService(deploymentName: "gpt-3.5-turbo", endpoint: "https://az.com", apiKey: "NOKEY", httpClient: httpClient);
+        var textToImageCompletion = new AzureOpenAITextToImageService(deploymentName: "gpt-35-turbo", modelId: "gpt-3.5-turbo", endpoint: "https://az.com", apiKey: "NOKEY", httpClient: httpClient);
 
         if (expectedExceptionType is not null)
         {
@@ -53,5 +54,24 @@ public sealed class AzureOpenAITextToImageServiceTests
             // Assert
             Assert.NotNull(result);
         }
+    }
+
+    [Theory]
+    [InlineData("gpt-35-turbo", "gpt-3.5-turbo")]
+    [InlineData("gpt-35-turbo", null)]
+    [InlineData("gpt-4-turbo", "gpt-4")]
+    public void ItHasPropertiesAsDefined(string deploymentName, string? modelId)
+    {
+        var service = new AzureOpenAITextToImageService(deploymentName, "https://az.com", "NOKEY", modelId);
+        Assert.Contains(AzureOpenAITextToImageService.DeploymentNameKey, service.Attributes);
+        Assert.Equal(deploymentName, service.Attributes[AzureOpenAITextToImageService.DeploymentNameKey]);
+
+        if (modelId is null)
+        {
+            return;
+        }
+
+        Assert.Contains(AIServiceExtensions.ModelIdKey, service.Attributes);
+        Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 }

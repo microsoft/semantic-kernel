@@ -12,6 +12,7 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -26,12 +27,20 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private readonly OpenAIClient _client;
     private readonly ILogger _logger;
     private readonly string _deploymentName;
+    private readonly Dictionary<string, object?> _attributes = new();
+
+    /// <summary>
+    /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public static string DeploymentNameKey => "DeploymentName";
+
     /// <summary>
     /// Create a new instance of Azure OpenAI image generation service
     /// </summary>
     /// <param name="deploymentName">Deployment name identifier</param>
     /// <param name="endpoint">Azure OpenAI deployment URL</param>
     /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
@@ -39,6 +48,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         string deploymentName,
         string endpoint,
         string apiKey,
+        string? modelId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
         string? apiVersion = null)
@@ -47,6 +57,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         this._deploymentName = deploymentName;
+        this.Attributes = this._attributes;
+
+        if (modelId is not null)
+        {
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+        this.AddAttribute(DeploymentNameKey, deploymentName);
 
         this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
@@ -62,7 +79,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     }
 
     /// <inheritdoc/>a
-    public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
+    public IReadOnlyDictionary<string, object?> Attributes { get; }
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(
@@ -134,5 +151,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         }
 
         return options;
+    }
+
+    internal void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            this._attributes.Add(key, value);
+        }
     }
 }

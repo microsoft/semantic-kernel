@@ -1076,6 +1076,7 @@ public static class OpenAIServiceCollectionExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
+        string? modelId = null,
         string? serviceId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null)
@@ -1089,6 +1090,7 @@ public static class OpenAIServiceCollectionExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
+                modelId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 apiVersion));
@@ -1126,6 +1128,7 @@ public static class OpenAIServiceCollectionExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
+                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }

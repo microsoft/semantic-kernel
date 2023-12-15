@@ -12,9 +12,9 @@ using RepoUtils;
 public static class Program
 {
     /// <summary>
-    /// Change this filter to select one or more examples.
-    /// Only example with a "name" that contains the given string will be executed.
-    /// examples:
+    /// We recommend using the Debug properties to set the filter as a command line argument.
+    /// If you don't want to use it, set the filter here.
+    /// Examples:
     ///     DefaultFilter = "18"    => run only example 18 (also "180" if there is such test)
     ///     DefaultFilter = "chat"  => run all examples with a name that contains "chat"
     /// </summary>

@@ -92,6 +92,7 @@ public static class Example18_DallE
                 deploymentName: TestConfiguration.AzureOpenAI.ImageModelId,
                 endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ImageModelId,
                 apiVersion: "2023-12-01-preview") //Dall-E 3 is only supported in this version
             .AddAzureOpenAIChatCompletion( // Add your chat completion service
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
