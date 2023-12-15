@@ -32,7 +32,7 @@ internal static class KernelFunctionMetadataExtensions
         var requiredProperties = new List<string>();
         foreach (var parameter in function.Parameters)
         {
-            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description);
+            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.Type, parameter.Description);
             if (schema is not null)
             {
                 functionView.Parameters.Properties.Add(parameter.Name, schema);
@@ -50,7 +50,7 @@ internal static class KernelFunctionMetadataExtensions
                 Description = SuccessfulResponseDescription
             };
 
-            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType, SuccessfulResponseDescription);
+            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.Type, SuccessfulResponseDescription);
             functionResponse.Content.JsonResponse.Schema = schema;
 
             functionView.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);

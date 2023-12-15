@@ -51,7 +51,7 @@ internal sealed class HandlebarsParameterTypeMetadata
         // Compare the elements of the lists by comparing the Name and ParameterType properties
         for (int i = 0; i < list1.Count; i++)
         {
-            if (!list1[i].Name.Equals(list2[i].Name, System.StringComparison.Ordinal) || !list1[i].ParameterType!.Equals(list2[i].ParameterType))
+            if (!list1[i].Name.Equals(list2[i].Name, System.StringComparison.Ordinal) || !list1[i].Type!.Equals(list2[i].Type))
             {
                 return false;
             }
@@ -71,7 +71,7 @@ internal sealed class HandlebarsParameterTypeMetadata
         {
             // Combine the Name and ParameterType properties into one hash code
             hash.Add(
-                HashCode.Combine(item.Name, item.ParameterType)
+                HashCode.Combine(item.Name, item.Type)
             );
         }
 

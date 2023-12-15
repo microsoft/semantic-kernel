@@ -50,7 +50,7 @@ public class KernelFunctionMetadataTests
         var ReturnParameterViewA = new KernelReturnParameterMetadata
         {
             Description = "ReturnParameterA",
-            ParameterType = typeof(string),
+            Type = typeof(string),
             Schema = KernelJsonSchema.Parse("\"schema\""),
         };
 
@@ -61,7 +61,7 @@ public class KernelFunctionMetadataTests
         Assert.NotNull(funcViewA);
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
-        Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(string), funcViewA.ReturnParameter.Type);
         Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
     }
 
@@ -128,11 +128,11 @@ public class KernelFunctionMetadataTests
         // Assert
         Assert.Equal("function description", fv.Description);
         Assert.Equal("first parameter description", fv.Parameters[0].Description);
-        Assert.Equal(typeof(int), fv.Parameters[0].ParameterType);
+        Assert.Equal(typeof(int), fv.Parameters[0].Type);
         Assert.Equal("second parameter description", fv.Parameters[1].Description);
-        Assert.Equal(typeof(int), fv.Parameters[1].ParameterType);
+        Assert.Equal(typeof(int), fv.Parameters[1].Type);
         Assert.Equal("return parameter description", fv.ReturnParameter.Description);
-        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(void), fv.ReturnParameter.Type);
     }
 
     [Fact]
@@ -150,11 +150,11 @@ public class KernelFunctionMetadataTests
         // Assert
         Assert.Equal(string.Empty, fv.Description);
         Assert.Equal(string.Empty, fv.Parameters[0].Description);
-        Assert.Equal(typeof(int), fv.Parameters[0].ParameterType);
+        Assert.Equal(typeof(int), fv.Parameters[0].Type);
         Assert.Equal(string.Empty, fv.Parameters[1].Description);
-        Assert.Equal(typeof(int), fv.Parameters[1].ParameterType);
+        Assert.Equal(typeof(int), fv.Parameters[1].Type);
         Assert.Equal(string.Empty, fv.ReturnParameter.Description);
-        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(void), fv.ReturnParameter.Type);
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class KernelFunctionMetadataTests
         var emptyList = new List<KernelParameterMetadata>();
 
         Assert.Equal(emptyList, fv.Parameters);
-        Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(void), fv.ReturnParameter.Type);
     }
 
     private static void ValidFunctionName() { }

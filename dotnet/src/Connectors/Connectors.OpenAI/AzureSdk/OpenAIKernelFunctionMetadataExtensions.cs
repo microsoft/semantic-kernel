@@ -26,8 +26,8 @@ public static class OpenAIKernelFunctionMetadataExtensions
                 param.Name,
                 string.IsNullOrEmpty(param.DefaultValue) ? param.Description : $"{param.Description} (default value: {param.DefaultValue})",
                 param.IsRequired,
-                param.ParameterType,
-                param.Schema ?? OpenAIFunction.GetJsonSchema(param.ParameterType, param.Description));
+                param.Type,
+                param.Schema ?? OpenAIFunction.GetJsonSchema(param.Type, param.Description));
         }
 
         return new OpenAIFunction(
@@ -37,7 +37,7 @@ public static class OpenAIKernelFunctionMetadataExtensions
             openAIParams,
             new OpenAIFunctionReturnParameter(
                 metadata.ReturnParameter.Description,
-                metadata.ReturnParameter.ParameterType,
-                metadata.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchema(metadata.ReturnParameter.ParameterType, metadata.ReturnParameter.Description)));
+                metadata.ReturnParameter.Type,
+                metadata.ReturnParameter.Schema ?? OpenAIFunction.GetJsonSchema(metadata.ReturnParameter.Type, metadata.ReturnParameter.Description)));
     }
 }

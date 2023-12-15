@@ -64,9 +64,9 @@ public class KernelParameterMetadataExtensionsTests
         Assert.True(result.First().IsComplex);
         Assert.Equal(2, result.First().Properties.Count);
         Assert.Equal("Id", result.First().Properties[0].Name);
-        Assert.Equal(typeof(int), result.First().Properties[0].ParameterType);
+        Assert.Equal(typeof(int), result.First().Properties[0].Type);
         Assert.Equal("Name", result.First().Properties[1].Name);
-        Assert.Equal(typeof(string), result.First().Properties[1].ParameterType);
+        Assert.Equal(typeof(string), result.First().Properties[1].Type);
     }
 
     [Fact]
@@ -88,25 +88,25 @@ public class KernelParameterMetadataExtensionsTests
         Assert.True(nestedClass.IsComplex);
         Assert.Equal(3, nestedClass.Properties.Count);
         Assert.Equal("Id", nestedClass.Properties[0].Name);
-        Assert.Equal(typeof(int), nestedClass.Properties[0].ParameterType);
+        Assert.Equal(typeof(int), nestedClass.Properties[0].Type);
         Assert.Equal("Simple", nestedClass.Properties[1].Name);
-        Assert.Equal(typeof(SimpleClass), nestedClass.Properties[1].ParameterType);
+        Assert.Equal(typeof(SimpleClass), nestedClass.Properties[1].Type);
         Assert.Equal("Another", nestedClass.Properties[2].Name);
-        Assert.Equal(typeof(AnotherClass), nestedClass.Properties[2].ParameterType);
+        Assert.Equal(typeof(AnotherClass), nestedClass.Properties[2].Type);
 
         var simpleClass = result.First(r => r.Name == "SimpleClass");
         Assert.True(simpleClass.IsComplex);
         Assert.Equal(2, simpleClass.Properties.Count);
         Assert.Equal("Id", simpleClass.Properties[0].Name);
-        Assert.Equal(typeof(int), simpleClass.Properties[0].ParameterType);
+        Assert.Equal(typeof(int), simpleClass.Properties[0].Type);
         Assert.Equal("Name", simpleClass.Properties[1].Name);
-        Assert.Equal(typeof(string), simpleClass.Properties[1].ParameterType);
+        Assert.Equal(typeof(string), simpleClass.Properties[1].Type);
 
         var anotherClass = result.First(r => r.Name == "AnotherClass");
         Assert.True(anotherClass.IsComplex);
         Assert.Single(anotherClass.Properties);
         Assert.Equal("Value", anotherClass.Properties[0].Name);
-        Assert.Equal(typeof(double), anotherClass.Properties[0].ParameterType);
+        Assert.Equal(typeof(double), anotherClass.Properties[0].Type);
 
         // Should not contain primitive types
         Assert.DoesNotContain(result, r => r.Name == "Id");
@@ -131,9 +131,9 @@ public class KernelParameterMetadataExtensionsTests
         Assert.True(result.First().IsComplex);
         Assert.Equal(2, result.First().Properties.Count);
         Assert.Equal("Id", result.First().Properties[0].Name);
-        Assert.Equal(typeof(int), result.First().Properties[0].ParameterType);
+        Assert.Equal(typeof(int), result.First().Properties[0].Type);
         Assert.Equal("Name", result.First().Properties[1].Name);
-        Assert.Equal(typeof(string), result.First().Properties[1].ParameterType);
+        Assert.Equal(typeof(string), result.First().Properties[1].Type);
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class KernelParameterMetadataExtensionsTests
             var result = parameter.ParseJsonSchema();
 
             // Assert
-            Assert.Equal(pair.Value, result.ParameterType);
+            Assert.Equal(pair.Value, result.Type);
             Assert.Null(result.Schema);
         }
     }
@@ -216,7 +216,7 @@ public class KernelParameterMetadataExtensionsTests
         var result = parameter.ParseJsonSchema();
 
         // Assert
-        Assert.Null(result.ParameterType);
+        Assert.Null(result.Type);
         Assert.Equal(schema, result.Schema);
     }
 
@@ -256,7 +256,7 @@ public class KernelParameterMetadataExtensionsTests
     {
         // Arrange
         var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
-        var returnParameter = new KernelReturnParameterMetadata() { Description = "test", ParameterType = typeof(object), Schema = schema };
+        var returnParameter = new KernelReturnParameterMetadata() { Description = "test", Type = typeof(object), Schema = schema };
 
         // Act
         var functionName = "Foo";
@@ -265,7 +265,7 @@ public class KernelParameterMetadataExtensionsTests
         // Assert
         Assert.Equal("FooReturns", result.Name);
         Assert.Equal("test", result.Description);
-        Assert.Equal(typeof(object), result.ParameterType);
+        Assert.Equal(typeof(object), result.Type);
         Assert.Equal(schema, result.Schema);
     }
 
@@ -274,14 +274,14 @@ public class KernelParameterMetadataExtensionsTests
     {
         // Arrange
         var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
-        var parameter = new KernelParameterMetadata("test") { Description = "test", ParameterType = typeof(object), Schema = schema };
+        var parameter = new KernelParameterMetadata("test") { Description = "test", Type = typeof(object), Schema = schema };
 
         // Act
         var result = parameter.ToKernelReturnParameterMetadata();
 
         // Assert
         Assert.Equal("test", result.Description);
-        Assert.Equal(typeof(object), result.ParameterType);
+        Assert.Equal(typeof(object), result.Type);
         Assert.Equal(schema, result.Schema);
     }
 

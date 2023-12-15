@@ -219,7 +219,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             ReturnParameter = new KernelReturnParameterMetadata()
             {
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                ParameterType = method.ReturnType,
+                Type = method.ReturnType,
             }
         };
     }
@@ -374,7 +374,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
             DefaultValue = parameter.DefaultValue?.ToString(),
             IsRequired = !parameter.IsOptional,
-            ParameterType = type
+            Type = type
         };
 
         return (parameterFunc, parameterView);

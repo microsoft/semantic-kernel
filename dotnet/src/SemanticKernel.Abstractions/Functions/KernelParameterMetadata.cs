@@ -33,7 +33,7 @@ public sealed class KernelParameterMetadata
         this.Description = metadata.Description;
         this.DefaultValue = metadata.DefaultValue;
         this.IsRequired = metadata.IsRequired;
-        this.ParameterType = metadata.ParameterType;
+        this.Type = metadata.Type;
         this.Schema = metadata.Schema;
     }
 
@@ -63,7 +63,7 @@ public sealed class KernelParameterMetadata
     public bool IsRequired { get; init; }
 
     /// <summary>Gets the .NET type of the parameter.</summary>
-    public Type? ParameterType { get; init; }
+    public Type? Type { get; init; }
 
     /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
     public KernelJsonSchema? Schema { get; init; }
