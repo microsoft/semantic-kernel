@@ -52,27 +52,4 @@ internal static class TypeExtensions
 
         return false;
     }
-
-    /// <summary>
-    /// Tries to get the result type from a Nullable parameter.
-    /// </summary>
-    /// <param name="returnType">Return type.</param>
-    /// <param name="resultType">The result type of the Nullable Nullable parameter.</param>
-    /// <returns><c>true</c> if the result type was successfully retrieved; otherwise, <c>false</c>.</returns>
-    public static bool TryGetGenericNullableType(this Type? returnType, out Type resultType)
-    {
-        resultType = typeof(object);
-        if (returnType is null)
-        {
-            return false;
-        }
-
-        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            resultType = returnType.GetGenericArguments()[0];
-            return true;
-        }
-
-        return false;
-    }
 }
