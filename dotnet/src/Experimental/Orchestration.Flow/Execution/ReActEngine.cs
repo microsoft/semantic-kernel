@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -119,18 +119,18 @@ internal sealed class ReActEngine
             if (!string.IsNullOrEmpty(promptTemplate))
             {
                 var modelPromptTemplate = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.skprompt.txt", false);
-                promptTemplate = string.IsNullOrEmpty(modelPromptTemplate) ? promptTemplate : modelPromptTemplate!;
+                promptConfig.Template = string.IsNullOrEmpty(modelPromptTemplate) ? promptTemplate : modelPromptTemplate!;
             }
         }
 
-        this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
+        this._reActFunction = this.CreateSemanticFunction(systemKernel, "ReActFunction", promptConfig);
     }
 
-    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, ContextVariables variables, string question, List<ReActStep> previousSteps)
+    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, KernelArguments arguments, string question, List<ReActStep> previousSteps)
     {
-        variables.Set("question", question);
+        arguments["question"] = question;
         var scratchPad = this.CreateScratchPad(previousSteps);
-        variables.Set("agentScratchPad", scratchPad);
+        arguments["agentScratchPad"] = scratchPad;
 
         var availableFunctions = this.GetAvailableFunctions(kernel).ToArray();
         if (availableFunctions.Length == 1)
@@ -148,13 +148,13 @@ internal sealed class ReActEngine
         }
 
         var functionDesc = this.GetFunctionDescriptions(availableFunctions);
-        variables.Set("functionDescriptions", functionDesc);
+        arguments["functionDescriptions"] = functionDesc;
 
         this._logger?.LogInformation("question: {Question}", question);
         this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
-        var llmResponse = await this._reActFunction.InvokeAsync(kernel, variables).ConfigureAwait(false);
+        var llmResponse = await this._reActFunction.InvokeAsync(kernel, arguments).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
@@ -172,7 +172,7 @@ internal sealed class ReActEngine
         return actionStep;
     }
 
-    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, ContextVariables contextVariables)
+    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, KernelArguments contextVariables)
     {
         var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
 
@@ -190,13 +190,13 @@ internal sealed class ReActEngine
         var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
         var functionView = function.Metadata;
 
-        var actionContextVariables = this.CreateActionContextVariables(variables, kernel, contextVariables);
+        var actionContextVariables = this.CreateActionKernelArguments(variables, contextVariables);
 
         foreach (var parameter in functionView.Parameters)
         {
-            if (!actionContextVariables.ContainsKey(parameter.Name))
+            if (!actionContextVariables.ContainsName(parameter.Name))
             {
-                actionContextVariables.Set(parameter.Name, parameter.DefaultValue ?? string.Empty);
+                actionContextVariables[parameter.Name] = parameter.DefaultValue ?? string.Empty;
             }
         }
 
@@ -206,7 +206,7 @@ internal sealed class ReActEngine
 
             foreach (var variable in actionContextVariables)
             {
-                contextVariables.Set(variable.Key, variable.Value);
+                contextVariables[variable.Key] = variable.Value;
             }
 
             this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.GetValue<string>());
@@ -220,28 +220,23 @@ internal sealed class ReActEngine
         }
     }
 
-    private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables, Kernel kernel, ContextVariables contextVariables)
+    private KernelArguments CreateActionKernelArguments(Dictionary<string, string> actionVariables, KernelArguments context)
     {
-        var actionContext = contextVariables.Clone();
+        var actionContext = new KernelArguments(context);
 
         foreach (var kvp in actionVariables)
         {
-            actionContext.Set(kvp.Key, kvp.Value);
+            actionContext[kvp.Key] = kvp.Value;
         }
 
         return actionContext;
     }
 
-    private KernelFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
-        var template = factory.Create(promptTemplate, config);
 
-        var plugin = new KernelPlugin(RestrictedPluginName);
-
-        kernel.Plugins.Add(plugin);
-
-        return plugin.AddFunctionFromPrompt(template, config, functionName);
+        return kernel.CreateFunctionFromPrompt(config, factory);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
