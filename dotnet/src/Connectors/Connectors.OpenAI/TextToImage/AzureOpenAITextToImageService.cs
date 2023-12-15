@@ -29,6 +29,9 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private readonly string _deploymentName;
     private readonly Dictionary<string, object?> _attributes = new();
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+
     /// <summary>
     /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
@@ -76,9 +79,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             new AzureKeyCredential(apiKey),
             GetClientOptions(httpClient, apiVersion));
     }
-
-    /// <inheritdoc/>a
-    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(
