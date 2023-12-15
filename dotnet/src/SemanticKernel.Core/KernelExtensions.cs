@@ -96,7 +96,14 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, templateFormat, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(
+            promptTemplate,
+            executionSettings,
+            functionName,
+            description,
+            templateFormat,
+            promptTemplateFactory,
+            kernel.LoggerFactory);
     }
 
     /// <summary>
@@ -356,7 +363,7 @@ public static class KernelExtensions
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         var functions = new List<KernelFunction>();
-        ILogger logger = loggerFactory.CreateLogger(typeof(Kernel));
+        ILogger logger = loggerFactory.CreateLogger(typeof(Kernel)) ?? NullLogger.Instance;
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
         {
@@ -507,7 +514,42 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static Task<FunctionResult> InvokePromptAsync(
+        this Kernel kernel,
+        string promptTemplate,
+        KernelArguments? arguments = null,
+        string? templateFormat = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
+        KernelFunction function = KernelFunctionFromPrompt.Create(
+            promptTemplate,
+            templateFormat: templateFormat,
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
+
+        return kernel.InvokeAsync(function, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a prompt specified via a prompt template and return the results of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
+    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <returns>The <typeparamref name="T"/> of the function result value.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    public static Task<T?> InvokePromptAsync<T>(
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
@@ -517,14 +559,13 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
+        KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
-            arguments?.ExecutionSettings,
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
 
-        return kernel.InvokeAsync(function, arguments);
+        return kernel.InvokeAsync<T>(function, arguments);
     }
     #endregion
 
@@ -557,14 +598,50 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
+        KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
-            arguments?.ExecutionSettings,
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
 
         return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a prompt specified via a prompt template and streams its results of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
+    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public static IAsyncEnumerable<T> InvokePromptStreamingAsync<T>(
+        this Kernel kernel,
+        string promptTemplate,
+        KernelArguments? arguments = null,
+        string? templateFormat = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
+        KernelFunction function = KernelFunctionFromPrompt.Create(
+            promptTemplate,
+            templateFormat: templateFormat,
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
+
+        return function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
     }
     #endregion
 

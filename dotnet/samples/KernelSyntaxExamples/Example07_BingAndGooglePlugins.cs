@@ -73,7 +73,7 @@ public static class Example07_BingAndGooglePlugins
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
-        var result = await kernel.InvokeAsync(function, new() { ["input"] = question });
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");

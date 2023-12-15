@@ -39,7 +39,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         string promptTemplate,
-        PromptExecutionSettings? executionSettings = null,
+        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
         string? functionName = null,
         string? description = null,
         string? templateFormat = null,
@@ -66,7 +66,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (executionSettings is not null)
         {
-            promptConfig.ExecutionSettings.Add(executionSettings.ServiceId ?? PromptExecutionSettings.DefaultServiceId, executionSettings);
+            promptConfig.ExecutionSettings = executionSettings;
         }
 
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
@@ -134,9 +134,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        (var aiService, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
@@ -144,14 +142,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (aiService is IChatCompletionService chatCompletion)
         {
-            var chatContent = await chatCompletion.GetChatMessageContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(renderedPrompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
             return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
         }
 
         if (aiService is ITextGenerationService textGeneration)
         {
-            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
             return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
         }
@@ -167,9 +165,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        (var aiService, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
@@ -178,11 +174,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
         if (aiService is IChatCompletionService chatCompletion)
         {
-            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
         }
         else if (aiService is ITextGenerationService textGeneration)
         {
-            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
         }
         else
         {
@@ -230,7 +226,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig.GetKernelReturnParameterMetadata(),
             promptConfig.ExecutionSettings)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptConfig = promptConfig;
@@ -272,8 +268,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    private async Task<(IAIService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<(IAIService, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
@@ -281,7 +276,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // Try to use IChatCompletionService.
         if (serviceSelector.TrySelectAIService<IChatCompletionService>(
             kernel, this, arguments,
-            out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
+            out IChatCompletionService? chatService, out PromptExecutionSettings? executionSettings))
         {
             aiService = chatService;
         }
@@ -289,12 +284,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
             // throwing if it's not available.
-            (aiService, defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+            (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         }
 
         Verify.NotNull(aiService);
-
-        arguments.ExecutionSettings ??= defaultExecutionSettings;
 
         kernel.OnPromptRendering(this, arguments);
 
@@ -319,9 +312,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
 
-        return (aiService, renderedPrompt, renderedEventArgs);
+        return (aiService, executionSettings, renderedPrompt, renderedEventArgs);
     }
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
@@ -329,7 +321,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>
     /// Captures usage details, including token information.
     /// </summary>
-    private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? metadata, ILogger logger)
+    private void CaptureUsageDetails(string? modelId, IReadOnlyDictionary<string, object?>? metadata, ILogger logger)
     {
         if (!logger.IsEnabled(LogLevel.Information) &&
             !s_invocationTokenUsageCompletion.Enabled &&

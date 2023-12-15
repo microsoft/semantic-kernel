@@ -105,17 +105,17 @@ public sealed class RestApiOperation
     {
         var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
 
-        var path = this.ReplacePathParameters(this.Path, arguments);
+        var path = this.BuildPath(this.Path, arguments);
 
         return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
 
     /// <summary>
-    /// Renders operation request headers.
+    /// Builds operation request headers.
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
-    /// <returns>The rendered request headers.</returns>
-    public IDictionary<string, string> RenderHeaders(IDictionary<string, object?> arguments)
+    /// <returns>The request headers.</returns>
+    public IDictionary<string, string> BuildHeaders(IDictionary<string, object?> arguments)
     {
         var headers = new Dictionary<string, string>();
 
@@ -151,15 +151,56 @@ public sealed class RestApiOperation
         return headers;
     }
 
+    /// <summary>
+    /// Builds the operation query string.
+    /// </summary>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <returns>The query string.</returns>
+    public string BuildQueryString(IDictionary<string, object?> arguments)
+    {
+        var segments = new List<string>();
+
+        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Query);
+
+        foreach (var parameter in parameters)
+        {
+            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            {
+                // Throw an exception if the parameter is a required one but no value is provided.
+                if (parameter.IsRequired)
+                {
+                    throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
+                }
+
+                // Skipping not required parameter if no argument provided for it.
+                continue;
+            }
+
+            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Form;
+
+            if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
+            {
+                throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
+            }
+
+            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
+
+            // Serializing the parameter and adding it to the query string if there's an argument for it.
+            segments.Add(serializer.Invoke(parameter, node));
+        }
+
+        return string.Join("&", segments);
+    }
+
     #region private
 
     /// <summary>
-    /// Replaces path parameters by corresponding arguments.
+    /// Builds operation path.
     /// </summary>
-    /// <param name="path">Operation path to replace parameters in.</param>
-    /// <param name="arguments">Arguments to replace parameters by.</param>
-    /// <returns>Path with replaced parameters</returns>
-    private string ReplacePathParameters(string path, IDictionary<string, object?> arguments)
+    /// <param name="pathTemplate">The original path template.</param>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <returns>The path.</returns>
+    private string BuildPath(string pathTemplate, IDictionary<string, object?> arguments)
     {
         var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Path);
 
@@ -187,10 +228,10 @@ public sealed class RestApiOperation
             var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
 
             // Serializing the parameter and adding it to the path.
-            path = path.Replace($"{{{parameter.Name}}}", node.ToString().Trim('"'));
+            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", node.ToString().Trim('"'));
         }
 
-        return path;
+        return pathTemplate;
     }
 
     /// <summary>
@@ -227,6 +268,9 @@ public sealed class RestApiOperation
     private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, JsonNode, string>> s_parameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
 
     # endregion

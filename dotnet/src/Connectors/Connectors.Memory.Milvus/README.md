@@ -1,4 +1,4 @@
-# Microsoft.SemanticKernel.Connectors.Memory.Milvus
+# Microsoft.SemanticKernel.Connectors.Milvus
 
 This is an implementation of the Semantic Kernel Memory Store abstraction for the [Milvus vector database](https://milvus.io).
 

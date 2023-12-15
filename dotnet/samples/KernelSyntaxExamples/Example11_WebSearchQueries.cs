@@ -18,9 +18,17 @@ public static class Example11_WebSearchQueries
 
         // Run
         var ask = "What's the tallest building in Europe?";
-        var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["input"] = ask });
+        var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["query"] = ask });
 
         Console.WriteLine(ask + "\n");
         Console.WriteLine(result.GetValue<string>());
+
+        /* Expected output: 
+        * ======== WebSearchQueries ========
+        * What's the tallest building in Europe?
+        * 
+        * https://www.bing.com/search?q=What%27s%20the%20tallest%20building%20in%20Europe%3F
+        * == DONE ==
+        */
     }
 }
