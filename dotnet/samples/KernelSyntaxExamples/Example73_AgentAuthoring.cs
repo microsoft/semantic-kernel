@@ -4,29 +4,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Agents;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
-/// Showcase hiearchical Open AI Assistant interactions using semantic kernel.
+/// Showcase hiearchical Open AI Agent interactions using semantic kernel.
 /// </summary>
-public static class Example73_AssistantAuthoring
+public static class Example73_AgentAuthoring
 {
     /// <summary>
-    /// Specific model is required that supports assistants and parallel function calling.
+    /// Specific model is required that supports agents and parallel function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
 
-    // Track assistants for clean-up
-    private static readonly List<IAssistant> s_assistants = new();
+    // Track agents for clean-up
+    private static readonly List<IAgent> s_agents = new();
 
     /// <summary>
-    /// Show how to combine coordinate multiple assistants.
+    /// Show how to combine coordinate multiple agents.
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example73_AssistantAuthoring ========");
+        Console.WriteLine("======== Example73_AgentAuthoring ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
@@ -34,19 +34,19 @@ public static class Example73_AssistantAuthoring
             return;
         }
 
-        // Run demo by invoking assistant directly
-        await RunAssistantAsync();
+        // Run demo by invoking agent directly
+        await RunAgentAsync();
 
-        // Run demo by invoking assistant as a plugin
+        // Run demo by invoking agent as a plugin
         await RunAsPluginAsync();
     }
 
-    private static async Task RunAssistantAsync()
+    private static async Task RunAgentAsync()
     {
         try
         {
-            // Initialize the assistant with tools
-            IAssistant articleGenerator = await CreateArticleGeneratorAsync();
+            // Initialize the agent with tools
+            IAgent articleGenerator = await CreateArticleGeneratorAsync();
 
             // "Stream" messages as they become available
             await foreach (IChatMessage message in articleGenerator.InvokeAsync("Thai food is the best in the world"))
@@ -57,7 +57,7 @@ public static class Example73_AssistantAuthoring
         }
         finally
         {
-            await Task.WhenAll(s_assistants.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
         }
     }
 
@@ -65,8 +65,8 @@ public static class Example73_AssistantAuthoring
     {
         try
         {
-            // Initialize the assistant with tools
-            IAssistant articleGenerator = await CreateArticleGeneratorAsync();
+            // Initialize the agent with tools
+            IAgent articleGenerator = await CreateArticleGeneratorAsync();
 
             // Invoke as a plugin function
             string response = await articleGenerator.AsPlugin().InvokeAsync("Thai food is the best in the world");
@@ -76,21 +76,21 @@ public static class Example73_AssistantAuthoring
         }
         finally
         {
-            await Task.WhenAll(s_assistants.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
         }
     }
 
-    private static async Task<IAssistant> CreateArticleGeneratorAsync()
+    private static async Task<IAgent> CreateArticleGeneratorAsync()
     {
-        // Initialize the outline assistant
+        // Initialize the outline agent
         var outlineGenerator = await CreateOutlineGeneratorAsync();
-        // Initialize the research assistant
+        // Initialize the research agent
         var sectionGenerator = await CreateResearchGeneratorAsync();
 
-        // Initialize assistant so that it may be automatically deleted.
+        // Initialize agent so that it may be automatically deleted.
         return
             Track(
-                await new AssistantBuilder()
+                await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                     .WithInstructions("You write concise opinionated articles that are published online.  Use an outline to generate an article with one section of prose for each top-level outline element.  Each section is based on research with a maximum of 120 words.")
                     .WithName("Article Author")
@@ -100,12 +100,12 @@ public static class Example73_AssistantAuthoring
                     .BuildAsync());
     }
 
-    private static async Task<IAssistant> CreateOutlineGeneratorAsync()
+    private static async Task<IAgent> CreateOutlineGeneratorAsync()
     {
-        // Initialize assistant so that it may be automatically deleted.
+        // Initialize agent so that it may be automatically deleted.
         return
             Track(
-                await new AssistantBuilder()
+                await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                     .WithInstructions("Produce an single-level outline (no child elements) based on the given topic with at most 3 sections.")
                     .WithName("Outline Generator")
@@ -113,12 +113,12 @@ public static class Example73_AssistantAuthoring
                     .BuildAsync());
     }
 
-    private async static Task<IAssistant> CreateResearchGeneratorAsync()
+    private async static Task<IAgent> CreateResearchGeneratorAsync()
     {
-        // Initialize assistant so that it may be automatically deleted.
+        // Initialize agent so that it may be automatically deleted.
         return
             Track(
-                await new AssistantBuilder()
+                await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                     .WithInstructions("Provide insightful research that supports the given topic based on your knowledge of the outline topic.")
                     .WithName("Researcher")
@@ -126,10 +126,10 @@ public static class Example73_AssistantAuthoring
                     .BuildAsync());
     }
 
-    private static IAssistant Track(IAssistant assistant)
+    private static IAgent Track(IAgent agent)
     {
-        s_assistants.Add(assistant);
+        s_agents.Add(agent);
 
-        return assistant;
+        return agent;
     }
 }
