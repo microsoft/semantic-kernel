@@ -8,8 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-
-#pragma warning disable CA1508 // Avoid dead conditional code
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
 
@@ -118,7 +117,7 @@ public abstract class KernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
@@ -235,7 +234,7 @@ public abstract class KernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         arguments ??= new KernelArguments();
         logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);

@@ -43,7 +43,7 @@ internal static class KernelSystemHelpers
     {
         // TODO [@teresaqhoang]: Issue #3947 Isolate Handlebars Kernel System helpers in their own class
         // Should also consider standardizing the naming conventions for these helpers, i.e., 'Message' instead of 'message'
-        handlebarsInstance.RegisterHelper("message", (writer, options, context, arguments) =>
+        handlebarsInstance.RegisterHelper("message", static (writer, options, context, arguments) =>
         {
             var parameters = (IDictionary<string, object>)arguments[0];
 
@@ -90,7 +90,7 @@ internal static class KernelSystemHelpers
             return variables[arguments[0].ToString()];
         });
 
-        handlebarsInstance.RegisterHelper("json", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("json", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             if (arguments.Length == 0 || arguments[0] is null)
             {
@@ -101,17 +101,17 @@ internal static class KernelSystemHelpers
             return objectToSerialize.GetType() == typeof(string) ? objectToSerialize : JsonSerializer.Serialize(objectToSerialize);
         });
 
-        handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("concat", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             return string.Concat(arguments);
         });
 
-        handlebarsInstance.RegisterHelper("raw", (writer, options, context, arguments) =>
+        handlebarsInstance.RegisterHelper("raw", static (writer, options, context, arguments) =>
         {
             options.Template(writer, null);
         });
 
-        handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("array", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             return arguments.ToArray();
         });
@@ -126,12 +126,12 @@ internal static class KernelSystemHelpers
             return Enumerable.Range(start, count);
         });
 
-        handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("or", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             return arguments.Any(arg => arg != null && arg is not false);
         });
 
-        handlebarsInstance.RegisterHelper("equals", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("equals", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             if (arguments.Length < 2)
             {

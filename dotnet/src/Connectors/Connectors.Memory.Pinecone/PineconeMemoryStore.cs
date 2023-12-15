@@ -35,7 +35,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = pineconeClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet.Helpers.Enums;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
@@ -53,7 +54,7 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlanner));
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlanner)) ?? NullLogger.Instance;
 
         return PlannerInstrumentation.CreatePlanAsync(
             static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
@@ -117,26 +118,26 @@ public sealed class HandlebarsPlanner
             .ToList();
 
         var functionsMetadata = new List<KernelFunctionMetadata>();
-        foreach (var skFunction in availableFunctions)
+        foreach (var kernelFunction in availableFunctions)
         {
             // Extract any complex parameter types for isolated render in prompt template
             var parametersMetadata = new List<KernelParameterMetadata>();
-            foreach (var parameter in skFunction.Parameters)
+            foreach (var parameter in kernelFunction.Parameters)
             {
                 var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
                 parametersMetadata.Add(paramToAdd);
             }
 
-            var returnParameter = skFunction.ReturnParameter.ToSKParameterMetadata(skFunction.Name);
+            var returnParameter = kernelFunction.ReturnParameter.ToKernelParameterMetadata(kernelFunction.Name);
             returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
 
             // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
-            var functionMetadata = new KernelFunctionMetadata(skFunction.Name)
+            var functionMetadata = new KernelFunctionMetadata(kernelFunction.Name)
             {
-                PluginName = skFunction.PluginName,
-                Description = skFunction.Description,
+                PluginName = kernelFunction.PluginName,
+                Description = kernelFunction.Description,
                 Parameters = parametersMetadata,
-                ReturnParameter = returnParameter.ToSKReturnParameterMetadata()
+                ReturnParameter = returnParameter.ToKernelReturnParameterMetadata()
             };
             functionsMetadata.Add(functionMetadata);
         }

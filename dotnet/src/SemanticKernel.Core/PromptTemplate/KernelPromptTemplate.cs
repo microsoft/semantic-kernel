@@ -35,7 +35,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
         loggerFactory ??= NullLoggerFactory.Instance;
-        this._logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
+        this._logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate)) ?? NullLogger.Instance;
 
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);

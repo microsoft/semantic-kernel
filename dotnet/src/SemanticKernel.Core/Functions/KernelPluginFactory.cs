@@ -52,7 +52,7 @@ public static class KernelPluginFactory
 
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-        // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
+        // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
         var functions = new List<KernelFunction>();
         foreach (MethodInfo method in methods)
         {
@@ -66,13 +66,10 @@ public static class KernelPluginFactory
             throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
         }
 
-        if (loggerFactory is not null)
+        if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
         {
-            ILogger logger = loggerFactory.CreateLogger(target.GetType());
-            if (logger.IsEnabled(LogLevel.Trace))
-            {
-                logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
-            }
+            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
         }
 
         var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;

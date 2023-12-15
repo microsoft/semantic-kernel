@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
@@ -84,7 +85,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         maxRetryCount ??= 5;
         apiVersion ??= "2023-06-01-preview";
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance);
 
         this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
         this._apiKey = apiKey;

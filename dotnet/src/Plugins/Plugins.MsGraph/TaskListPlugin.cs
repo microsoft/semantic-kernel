@@ -31,7 +31,7 @@ public sealed class TaskListPlugin
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(TaskListPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(TaskListPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
