@@ -102,7 +102,7 @@ public sealed class KernelFunctionFromMethodTests2
             return referenceToExternalVariable;
         }
 
-        // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
+        // Act. Note: this will throw an exception if the KernelFunction doesn't handle the function type.
         KernelFunction function = KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
             description: "description",

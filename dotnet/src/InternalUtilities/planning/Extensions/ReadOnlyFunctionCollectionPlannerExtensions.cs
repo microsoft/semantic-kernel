@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
-    internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
+    internal const string PlannerMemoryCollectionName = "Planning.KernelFunctionsManual";
 
     /// <summary>
     /// Returns a function callback that can be used to retrieve a function from the function provider.

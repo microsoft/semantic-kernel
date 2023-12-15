@@ -120,15 +120,15 @@ internal static class KernelParameterMetadataExtensions
         return $"{parameter.Name}-{schemaType}";
     }
 
-    public static KernelParameterMetadata ToSKParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) =>
+    public static KernelParameterMetadata ToKernelParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) =>
         new($"{functionName}Returns")
         {
             Description = parameter.Description,
             ParameterType = parameter.ParameterType,
-            Schema = parameter.Schema,
+            Schema = parameter.Schema
         };
 
-    public static KernelReturnParameterMetadata ToSKReturnParameterMetadata(this KernelParameterMetadata parameter) =>
+    public static KernelReturnParameterMetadata ToKernelReturnParameterMetadata(this KernelParameterMetadata parameter) =>
         new()
         {
             Description = parameter.Description,
