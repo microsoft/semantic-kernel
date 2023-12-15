@@ -80,7 +80,7 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Planners.Core.UnitTests.csproj|Experimental.Orchestration.Flow.UnitTests.csproj)" | tr '\n' ' ')
+          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Planners.Core.UnitTests.csproj|Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
           for project in $UT_PROJECTS; do
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done

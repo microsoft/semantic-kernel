@@ -4,28 +4,28 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
 
 /// <summary>
-/// Showcase Open AI Assistant integration with semantic kernel:
-/// https://platform.openai.com/docs/api-reference/assistants
+/// Showcase Open AI Agent integration with semantic kernel:
+/// https://platform.openai.com/docs/api-reference/agents
 /// </summary>
-public static class Example70_Assistant
+public static class Example70_Agent
 {
     /// <summary>
-    /// Specific model is required that supports assistants and function calling.
+    /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     /// <summary>
-    /// Show how to define an use a single assistant using multiple patterns.
+    /// Show how to define an use a single agent using multiple patterns.
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example70_Assistant ========");
+        Console.WriteLine("======== Example70_Agent ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
@@ -33,21 +33,21 @@ public static class Example70_Assistant
             return;
         }
 
-        // "Hello assistant"
+        // "Hello agent"
         await RunSimpleChatAsync();
 
-        // Run assistant with "method" tool/function
+        // Run agent with "method" tool/function
         await RunWithMethodFunctionsAsync();
 
-        // Run assistant with "prompt" tool/function
+        // Run agent with "prompt" tool/function
         await RunWithPromptFunctionsAsync();
 
-        // Run assistant as function
+        // Run agent as function
         await RunAsFunctionAsync();
     }
 
     /// <summary>
-    /// Chat using the "Parrot" assistant.
+    /// Chat using the "Parrot" agent.
     /// Tools/functions: None
     /// </summary>
     private static async Task RunSimpleChatAsync()
@@ -56,7 +56,7 @@ public static class Example70_Assistant
 
         // Call the common chat-loop
         await ChatAsync(
-            "Assistants.ParrotAssistant.yaml", // Defined under ./Resources/Assistants
+            "Agents.ParrotAgent.yaml", // Defined under ./Resources/Agents
             plugin: null, // No plugin
             "Fortune favors the bold.",
             "I came, I saw, I conquered.",
@@ -64,7 +64,7 @@ public static class Example70_Assistant
     }
 
     /// <summary>
-    /// Chat using the "Tool" assistant and a method function.
+    /// Chat using the "Tool" agent and a method function.
     /// Tools/functions: MenuPlugin
     /// </summary>
     private static async Task RunWithMethodFunctionsAsync()
@@ -75,7 +75,7 @@ public static class Example70_Assistant
 
         // Call the common chat-loop
         await ChatAsync(
-            "Assistants.ToolAssistant.yaml", // Defined under ./Resources/Assistants
+            "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
             "Hello",
             "What is the special soup?",
@@ -84,7 +84,7 @@ public static class Example70_Assistant
     }
 
     /// <summary>
-    /// Chat using the "Tool" assistant and a prompt function.
+    /// Chat using the "Tool" agent and a prompt function.
     /// Tools/functions: spellChecker prompt function
     /// </summary>
     private static async Task RunWithPromptFunctionsAsync()
@@ -101,7 +101,7 @@ public static class Example70_Assistant
 
         // Call the common chat-loop
         await ChatAsync(
-            "Assistants.ToolAssistant.yaml", // Defined under ./Resources/Assistants
+            "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
             "Hello",
             "Is this spelled correctly: exercize",
@@ -110,39 +110,39 @@ public static class Example70_Assistant
     }
 
     /// <summary>
-    /// Invoke assistant just like any other <see cref="KernelFunction"/>.
+    /// Invoke agent just like any other <see cref="KernelFunction"/>.
     /// </summary>
     private static async Task RunAsFunctionAsync()
     {
         Console.WriteLine("======== Run:AsFunction ========");
 
-        // Create parrot assistant, same as the other cases.
-        var assistant =
-            await new AssistantBuilder()
+        // Create parrot agent, same as the other cases.
+        var agent =
+            await new AgentBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .FromTemplate(EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"))
+                .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
                 .BuildAsync();
 
         try
         {
-            // Invoke assistant plugin.
-            var response = await assistant.AsPlugin().InvokeAsync("Practice makes perfect.");
+            // Invoke agent plugin.
+            var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.");
 
             // Display result.
-            Console.WriteLine(response ?? $"No response from assistant: {assistant.Id}");
+            Console.WriteLine(response ?? $"No response from agent: {agent.Id}");
         }
         finally
         {
             // Clean-up (storage costs $)
-            await assistant.DeleteAsync();
+            await agent.DeleteAsync();
         }
     }
 
     /// <summary>
     /// Common chat loop used for: RunSimpleChatAsync, RunWithMethodFunctionsAsync, and RunWithPromptFunctionsAsync.
-    /// 1. Reads assistant definition from"resourcePath" parameter.
-    /// 2. Initializes assistant with definition and the specified "plugin".
-    /// 3. Display the assistant identifier
+    /// 1. Reads agent definition from"resourcePath" parameter.
+    /// 2. Initializes agent with definition and the specified "plugin".
+    /// 3. Display the agent identifier
     /// 4. Create a chat-thread
     /// 5. Process the provided "messages" on the chat-thread
     /// </summary>
@@ -151,26 +151,26 @@ public static class Example70_Assistant
         KernelPlugin? plugin = null,
         params string[] messages)
     {
-        // Read assistant resource
+        // Read agent resource
         var definition = EmbeddedResource.Read(resourcePath);
 
-        // Create assistant
-        var assistant =
-            await new AssistantBuilder()
+        // Create agent
+        var agent =
+            await new AgentBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(definition)
                 .WithPlugin(plugin)
                 .BuildAsync();
 
-        // Create chat thread.  Note: Thread is not bound to a single assistant.
-        var thread = await assistant.NewThreadAsync();
+        // Create chat thread.  Note: Thread is not bound to a single agent.
+        var thread = await agent.NewThreadAsync();
         try
         {
-            // Display assistant identifier.
-            Console.WriteLine($"[{assistant.Id}]");
+            // Display agent identifier.
+            Console.WriteLine($"[{agent.Id}]");
 
-            // Process each user message and assistant response.
-            foreach (var response in messages.Select(m => thread.InvokeAsync(assistant, m)))
+            // Process each user message and agent response.
+            foreach (var response in messages.Select(m => thread.InvokeAsync(agent, m)))
             {
                 await foreach (var message in response)
                 {
@@ -184,7 +184,7 @@ public static class Example70_Assistant
             // Clean-up (storage costs $)
             await Task.WhenAll(
                 thread?.DeleteAsync() ?? Task.CompletedTask,
-                assistant.DeleteAsync());
+                agent.DeleteAsync());
         }
     }
 }
