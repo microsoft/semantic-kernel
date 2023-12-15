@@ -34,6 +34,10 @@ public static class Example72_AgentCollaboration
             return;
         }
 
+        // NOTE: Either of these examples produce a conversation
+        // whose duration may vary depending on the collaboration dynamics.
+        // It is sometimes possible that agreement is never achieved.
+
         // Explicit collaboration
         await RunCollaborationAsync();
 
