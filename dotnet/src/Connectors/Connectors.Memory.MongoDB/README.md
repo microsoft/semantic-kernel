@@ -25,17 +25,17 @@ This connector uses [MongoDB Atlas Vector Search](https://www.mongodb.com/produc
 ```
 
 4. Create the MongoDB memory store
+   > See [Example 14](../../../samples/KernelSyntaxExamples/Example14_SemanticMemory.cs) and [Example 15](../../../samples/KernelSyntaxExamples/Example15_TextMemoryPlugin.cs) for more memory usage examples with the kernel.
 
 ```csharp
 var connectionString = "MONGODB ATLAS CONNECTION STRING"
 MongoDBMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
-Kernel kernel = Kernel.Builder
-    .WithLogger(ConsoleLogger.Log)
-    .WithOpenAITextGenerationService(modelId: TestConfiguration.OpenAI.ModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
-    .WithOpenAITextEmbeddingGenerationService(modelId: TestConfiguration.OpenAI.EmbeddingModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
-    .WithMemoryStorage(memoryStore)
-    .Build();
+var embeddingGenerator = new OpenAITextEmbeddingGenerationService("text-embedding-ada-002", apiKey);
+
+SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
+
+var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 ```
 
 > Guide to find the connection string: https://www.mongodb.com/docs/manual/reference/connection-string/
