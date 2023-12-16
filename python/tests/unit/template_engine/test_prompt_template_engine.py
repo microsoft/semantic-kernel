@@ -14,7 +14,6 @@ from semantic_kernel.skill_definition.read_only_skill_collection import (
 )
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-from semantic_kernel.utils.null_logger import NullLogger
 
 
 @fixture
@@ -34,7 +33,7 @@ def skills():
 
 @fixture
 def context(variables, skills):
-    return SKContext(variables, NullMemory(), skills, NullLogger())
+    return SKContext(variables, NullMemory(), skills)
 
 
 def test_it_renders_variables(

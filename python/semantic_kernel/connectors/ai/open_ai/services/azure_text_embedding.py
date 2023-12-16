@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from logging import Logger
-from typing import Dict, Mapping, Optional, overload
+import logging
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -18,6 +18,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
     OpenAITextEmbeddingBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     """Azure Text Embedding class."""
@@ -27,7 +29,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -39,7 +41,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -51,9 +53,9 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
-        logger: Optional[Logger] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize an AzureTextEmbedding service.
@@ -79,13 +81,17 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             (Optional) The default value is False.
         :param default_headers: The default headers mapping of string keys to
             string values for HTTP requests. (Optional)
-        :param log: The logger instance to use. (Optional)
+        :param log: The logger instance to use. (Optional) (Deprecated)
         :param logger: Deprecated, please use log instead. (Optional)
         :param async_client: An existing client to use. (Optional)
 
         """
-        if logger:
-            logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
+        if kwargs.get("logger"):
+            logger.warning("The 'logger' argument is deprecated.")
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint,
@@ -94,7 +100,6 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
-            log=log or logger,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             async_client=async_client,
         )
@@ -107,7 +112,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         Arguments:
             settings: A dictionary of settings for the service.
                 should contains keys: deployment_name, endpoint, api_key
-                and optionally: api_version, ad_auth, log
+                and optionally: api_version, ad_auth
         """
         return AzureTextEmbedding(
             deployment_name=settings["deployment_name"],
@@ -117,5 +122,4 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            log=settings.get("log"),
         )

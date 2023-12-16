@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -8,9 +7,8 @@ from semantic_kernel.template_engine.blocks.val_block import ValBlock
 
 
 def test_init():
-    val_block = ValBlock(content="'test value'", log=Logger("test_logger"))
+    val_block = ValBlock(content="'test value'")
     assert val_block.content == "'test value'"
-    assert isinstance(val_block.log, Logger)
 
 
 def test_type_property():
