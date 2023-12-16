@@ -27,7 +27,7 @@ public static class Example59_OpenAIFunctionCalling
         // Add a plugin with some helper functions we want to allow the model to utilize.
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("HelperFunctions", new[]
         {
-            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime"),
+            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName) =>
                 cityName switch
                 {
