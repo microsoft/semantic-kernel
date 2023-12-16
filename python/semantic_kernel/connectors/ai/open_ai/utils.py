@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
@@ -11,6 +11,8 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
     OpenAIChatPromptTemplate,
 )
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _describe_function(function: SKFunctionBase) -> Dict[str, str]:
@@ -101,14 +103,17 @@ def get_function_calling_object(
 
 
 async def execute_function_call(
-    kernel: Kernel, function_call: FunctionCall, log: Optional[Logger] = None
+    kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None
 ) -> str:
+    if log:
+        logger.warning(
+            "The `log` parameter is deprecated. Please use the `logging` module instead."
+        )
     result = await kernel.run_async(
         kernel.func(**function_call.split_name_dict()),
         input_vars=function_call.to_context_variables(),
     )
-    if log:
-        log.info(f"Function call result: {result}")
+    logger.info(f"Function call result: {result}")
     return str(result)
 
 
@@ -120,7 +125,7 @@ async def chat_completion_with_function_call(
     chat_function_name: Optional[str] = None,
     chat_function: Optional[SKFunctionBase] = None,
     *,
-    log: Optional[Logger] = None,
+    log: Optional[Any] = None,
     **kwargs: Dict[str, Any],
 ) -> SKContext:
     """Perform a chat completion with auto-executing function calling.
@@ -144,13 +149,16 @@ async def chat_completion_with_function_call(
             chat_function: the chat function, if not provided, it will be retrieved from the kernel.
                 make sure to provide either the chat_function or the chat_skill_name and chat_function_name.
 
-            log: the logger to use.
             max_function_calls: the maximum number of function calls to execute, defaults to 5.
             current_call_count: the current number of function calls executed.
 
     returns:
         the context with the result of the chat completion, just like a regular invoke_async/run_async.
     """
+    if log:
+        logger.warning(
+            "The `log` parameter is deprecated. Please use the `logging` module instead."
+        )
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
@@ -171,7 +179,7 @@ async def chat_completion_with_function_call(
     # if there is no function_call or if the content is not a FunctionCall object, return the context
     if function_call is None or not isinstance(function_call, FunctionCall):
         return context
-    result = await execute_function_call(kernel, function_call, log=log)
+    result = await execute_function_call(kernel, function_call)
     # add the result to the chat prompt template
     chat_function._chat_prompt_template.add_function_response_message(
         name=function_call.name, content=str(result)
@@ -182,14 +190,13 @@ async def chat_completion_with_function_call(
         chat_function=chat_function,
         functions=functions,
         context=context,
-        log=log,
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )
 
 
 def _parse_message(
-    message: ChatCompletion, logger: Optional[Logger] = None, with_data: bool = False
+    message: ChatCompletion, with_data: bool = False, **kwargs
 ) -> Union[
     Tuple[Optional[str], Optional[FunctionCall]],
     Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
@@ -203,6 +210,10 @@ def _parse_message(
     Returns:
         Tuple[Optional[str], Optional[Dict]] -- The parsed message.
     """
+    if kwargs.get("logger"):
+        logger.warning(
+            "The `logger` parameter is deprecated. Please use the `logging` module instead."
+        )
     content = message.content if hasattr(message, "content") else None
     function_call = message.function_call if hasattr(message, "function_call") else None
     if function_call:

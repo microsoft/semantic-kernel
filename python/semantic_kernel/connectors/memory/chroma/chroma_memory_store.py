@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import array, ndarray
@@ -12,23 +12,23 @@ from semantic_kernel.connectors.memory.chroma.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     import chromadb
     import chromadb.config
     from chromadb.api.models.Collection import Collection
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class ChromaMemoryStore(MemoryStoreBase):
     _client: "chromadb.Client"
-    _logger: Logger
 
     def __init__(
         self,
         persist_directory: Optional[str] = None,
         client_settings: Optional["chromadb.config.Settings"] = None,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """
         ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB.
@@ -62,6 +62,10 @@ class ChromaMemoryStore(MemoryStoreBase):
                 "Please install it with `pip install chromadb`."
             )
 
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         if client_settings:
             self._client_settings = client_settings
         else:
@@ -74,7 +78,6 @@ class ChromaMemoryStore(MemoryStoreBase):
         self._persist_directory = persist_directory
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
 
-        self._logger = logger or NullLogger()
         self._default_embedding_function = "DisableChromaEmbeddingFunction"
 
     async def create_collection_async(self, collection_name: str) -> None:
@@ -285,7 +288,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         if with_embeddings is False:
-            self._logger.warning(
+            logger.warning(
                 "Chroma returns distance score not cosine similarity score.\
                 So embeddings are automatically queried from database for calculation."
             )

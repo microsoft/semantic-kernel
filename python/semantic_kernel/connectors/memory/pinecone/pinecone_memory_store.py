@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple
 
 import pinecone
@@ -13,7 +13,6 @@ from semantic_kernel.connectors.memory.pinecone.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 # Limitations set by Pinecone at https://docs.pinecone.io/docs/limits
 MAX_DIMENSIONALITY = 20000
@@ -23,11 +22,12 @@ MAX_QUERY_WITH_METADATA_BATCH_SIZE = 1000
 MAX_FETCH_BATCH_SIZE = 1000
 MAX_DELETE_BATCH_SIZE = 1000
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 
-    _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str
     _default_dimensionality: int
@@ -37,7 +37,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key: str,
         environment: str,
         default_dimensionality: int,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
@@ -45,8 +45,11 @@ class PineconeMemoryStore(MemoryStoreBase):
             pinecone_api_key {str} -- The Pinecone API key.
             pinecone_environment {str} -- The Pinecone environment.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ValueError(
                 f"Dimensionality of {default_dimensionality} exceeds "
@@ -55,7 +58,6 @@ class PineconeMemoryStore(MemoryStoreBase):
         self._pinecone_api_key = api_key
         self._pinecone_environment = environment
         self._default_dimensionality = default_dimensionality
-        self._logger = logger or NullLogger()
 
         pinecone.init(
             api_key=self._pinecone_api_key, environment=self._pinecone_environment

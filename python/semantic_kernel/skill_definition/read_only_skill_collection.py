@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Tuple
+import logging
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
 
-from pydantic import ConfigDict, Field, PrivateAttr
+from pydantic import ConfigDict, Field
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.sk_function import SKFunction
@@ -12,25 +12,29 @@ from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
     GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
     data: Dict[str, Dict[str, SKFunction]] = Field(default_factory=dict)
-    _log: Logger = PrivateAttr(default_factory=NullLogger)
     model_config = ConfigDict(frozen=False)
 
     def __init__(
         self,
         data: Dict[str, Dict[str, SKFunction]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         super().__init__(data=data or {})
-        self._log = log or NullLogger()
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
@@ -61,7 +65,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
         if self.has_semantic_function(s_name, f_name):
             return self.data[s_name][f_name]
 
-        self._log.error(f"Function not available: {s_name}.{f_name}")
+        logger.error(f"Function not available: {s_name}.{f_name}")
         raise KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             f"Function not available: {s_name}.{f_name}",
@@ -74,7 +78,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
         if self.has_native_function(s_name, f_name):
             return self.data[s_name][f_name]
 
-        self._log.error(f"Function not available: {s_name}.{f_name}")
+        logger.error(f"Function not available: {s_name}.{f_name}")
         raise KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             f"Function not available: {s_name}.{f_name}",
@@ -101,7 +105,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
         if self.has_function(s_name, f_name):
             return self.data[s_name][f_name]
 
-        self._log.error(f"Function not available: {s_name}.{f_name}")
+        logger.error(f"Function not available: {s_name}.{f_name}")
         raise KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             f"Function not available: {s_name}.{f_name}",

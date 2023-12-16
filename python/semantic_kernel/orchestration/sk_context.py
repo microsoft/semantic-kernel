@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import Any, Dict, Generic, Literal, Optional, Tuple, Union
 
 from pydantic import Field, PrivateAttr
@@ -19,6 +19,8 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
@@ -33,14 +35,13 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
     _error_occurred: bool = PrivateAttr(False)
     _last_exception: Optional[Exception] = PrivateAttr(None)
     _last_error_description: str = PrivateAttr("")
-    _logger: Logger = PrivateAttr()
 
     def __init__(
         self,
         variables: ContextVariables,
         memory: SemanticTextMemoryBase,
         skill_collection: Union[ReadOnlySkillCollection, None],
-        logger: Optional[Logger] = None,
+        **kwargs,
         # TODO: cancellation token?
     ) -> None:
         """
@@ -50,10 +51,11 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             variables {ContextVariables} -- The context variables.
             memory {SemanticTextMemoryBase} -- The semantic text memory.
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
-            logger {Logger} -- The logger.
         """
-        # Local import to avoid circular dependency
-        from semantic_kernel import NullLogger
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
 
         if skill_collection is None:
             skill_collection = ReadOnlySkillCollection()
@@ -61,7 +63,6 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
         super().__init__(
             variables=variables, memory=memory, skill_collection=skill_collection
         )
-        self._logger = logger or NullLogger()
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
@@ -146,16 +147,6 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
         Set the value of skills collection
         """
         self.skill_collection = value
-
-    @property
-    def log(self) -> Logger:
-        """
-        The logger.
-
-        Returns:
-            Logger -- The logger.
-        """
-        return self._logger
 
     def __setitem__(self, key: str, value: Any) -> None:
         """

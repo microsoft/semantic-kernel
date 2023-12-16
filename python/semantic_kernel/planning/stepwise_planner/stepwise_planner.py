@@ -3,6 +3,7 @@
 import asyncio
 import itertools
 import json
+import logging
 import os
 import re
 from typing import TYPE_CHECKING, Dict, List
@@ -31,6 +32,7 @@ from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
+logger: logging.Logger = logging.getLogger(__name__)
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Skills/StepwiseStep/config.json")
@@ -99,7 +101,6 @@ class StepwisePlanner:
         self._native_functions = self._kernel.import_skill(self, RESTRICTED_SKILL_NAME)
 
         self._context = kernel.create_new_context()
-        self._logger = self._kernel.logger
 
     def create_plan(self, goal: str) -> Plan:
         if is_null_or_empty(goal):
@@ -154,13 +155,13 @@ class StepwisePlanner:
                     )
 
                 action_text = llm_response.result.strip()
-                self._logger.debug(f"Response: {action_text}")
+                logger.debug(f"Response: {action_text}")
 
                 next_step = self.parse_result(action_text)
                 steps_taken.append(next_step)
 
                 if not is_null_or_empty(next_step.final_answer):
-                    self._logger.debug(f"Final Answer: {next_step.final_answer}")
+                    logger.debug(f"Final Answer: {next_step.final_answer}")
 
                     context.variables.update(next_step.final_answer)
                     updated_scratch_pad = self.create_scratch_pad(question, steps_taken)
@@ -171,11 +172,11 @@ class StepwisePlanner:
 
                     return context
 
-                self._logger.debug("Thoughts: {next_step.thought}")
+                logger.debug("Thoughts: {next_step.thought}")
 
                 if not is_null_or_empty(next_step.action):
-                    self._logger.info(f"Action: {next_step.action}. Iteration: {i+1}.")
-                    self._logger.debug(
+                    logger.info(f"Action: {next_step.action}. Iteration: {i+1}.")
+                    logger.debug(
                         f"Action: {next_step.action}({next_step.action_variables}). Iteration: {i+1}.",
                     )
 
@@ -194,13 +195,11 @@ class StepwisePlanner:
                         next_step.observation = (
                             f"Error invoking action {next_step.action}: {str(e)}"
                         )
-                        self._logger.warning(
-                            f"Error invoking action {next_step.action}"
-                        )
+                        logger.warning(f"Error invoking action {next_step.action}")
 
-                    self._logger.debug(f"Observation: {next_step.observation}")
+                    logger.debug(f"Observation: {next_step.observation}")
                 else:
-                    self._logger.info("Action: No action to take")
+                    logger.info("Action: No action to take")
 
                 # sleep 3 seconds
                 await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
@@ -306,7 +305,7 @@ class StepwisePlanner:
 
         for i in reversed(range(len(steps_taken))):
             if len(scratch_pad_lines) / 4.0 > (self.config.max_tokens * 0.75):
-                self._logger.debug(
+                logger.debug(
                     f"Scratchpad is too long, truncating. Skipping {i + 1} steps."
                 )
                 break
@@ -330,7 +329,7 @@ class StepwisePlanner:
         scratch_pad = "\n".join(scratch_pad_lines).strip()
 
         if not (is_null_or_empty(scratch_pad.strip())):
-            self._logger.debug(f"Scratchpad: {scratch_pad}")
+            logger.debug(f"Scratchpad: {scratch_pad}")
 
         return scratch_pad
 
@@ -362,17 +361,15 @@ class StepwisePlanner:
             result = await function.invoke_async(context=action_context)
 
             if result.error_occurred:
-                self._logger.error(f"Error occurred: {result.last_exception}")
+                logger.error(f"Error occurred: {result.last_exception}")
                 return f"Error occurred: {result.last_exception}"
 
-            self._logger.debug(
-                f"Invoked {target_function.name}. Result: {result.result}"
-            )
+            logger.debug(f"Invoked {target_function.name}. Result: {result.result}")
 
             return result.result
 
         except Exception as e:
-            self._logger.error(
+            logger.error(
                 e,
                 f"Something went wrong in system step: {target_function.skill_name}.{target_function.name}. Error: {e}",
             )

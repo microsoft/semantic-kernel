@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from functools import wraps
-from logging import Logger
+from logging import Logger, getLogger
 from typing import Any, Callable
+
+logger: Logger = getLogger(__name__)
 
 
 def _nullify(fn) -> Callable[[Any], None]:
@@ -35,6 +37,12 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 
     def __init__(self):
         super().__init__(None)
+        logger.warning(
+            (
+                "NullLogger is deprecated and will be removed in a future release,",
+                "the same goes for all 'log' and 'logger' arguments.",
+            )
+        )
 
 
 __all__ = ["NullLogger"]

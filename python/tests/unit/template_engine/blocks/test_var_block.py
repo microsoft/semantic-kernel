@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 
 from pytest import mark, raises
 
@@ -11,9 +10,8 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
 def test_init():
-    var_block = VarBlock(content="$test_var", log=Logger("test_logger"))
+    var_block = VarBlock(content="$test_var")
     assert var_block.content == "$test_var"
-    assert isinstance(var_block.log, Logger)
 
 
 def test_type_property():

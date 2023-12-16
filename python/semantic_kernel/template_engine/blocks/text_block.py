@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import Optional, Tuple
+import logging
+from typing import Any, Optional, Tuple
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
@@ -15,10 +17,14 @@ class TextBlock(Block):
         text: Optional[str] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ):
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         if text is None:
-            return cls(content="", log=log)
+            return cls(content="")
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
                 raise ValueError(
@@ -35,7 +41,7 @@ class TextBlock(Block):
         elif stop_index is not None:
             text = text[:stop_index]
 
-        return cls(content=text, log=log)
+        return cls(content=text)
 
     @property
     def type(self) -> BlockTypes:

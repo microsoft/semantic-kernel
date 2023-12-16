@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import uuid
-from logging import Logger
 from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
@@ -27,13 +27,13 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
-    _logger: Logger = None
 
     def __init__(
         self,
@@ -42,7 +42,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         admin_key: Optional[str] = None,
         azure_credentials: Optional[AzureKeyCredential] = None,
         token_credentials: Optional[TokenCredential] = None,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
@@ -54,12 +54,15 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
             token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
-            logger {Optional[Logger]}                        -- The logger to use (default: {None}).
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         try:
             pass
         except ImportError:
@@ -68,7 +71,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 "Please install Azure Cognitive Search client"
             )
 
-        self._logger = logger or NullLogger()
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint, admin_key, azure_credentials, token_credentials

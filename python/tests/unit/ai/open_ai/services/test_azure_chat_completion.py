@@ -30,7 +30,6 @@ def test_azure_chat_completion_init() -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     # Test successful initialization
     azure_chat_completion = AzureChatCompletion(
@@ -38,7 +37,6 @@ def test_azure_chat_completion_init() -> None:
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
     )
 
     assert azure_chat_completion.client is not None
@@ -52,7 +50,6 @@ def test_azure_chat_completion_init_base_url() -> None:
     base_url = "https://test-endpoint.com/openai/deployment/test_deployment"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     # Custom header for testing
     default_headers = {"X-Unit-Test": "test-guid"}
@@ -62,7 +59,6 @@ def test_azure_chat_completion_init_base_url() -> None:
         base_url=base_url,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
         default_headers=default_headers,
     )
 
@@ -80,7 +76,6 @@ def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="ai_model_id"):
         AzureChatCompletion(
@@ -88,7 +83,6 @@ def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -97,7 +91,6 @@ def test_azure_chat_completion_init_with_empty_api_key() -> None:
     endpoint = "https://test-endpoint.com"
     # api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(AIException, match="api_key"):
         AzureChatCompletion(
@@ -105,7 +98,6 @@ def test_azure_chat_completion_init_with_empty_api_key() -> None:
             endpoint=endpoint,
             api_key="",
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -114,7 +106,6 @@ def test_azure_chat_completion_init_with_empty_endpoint() -> None:
     # endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="url"):
         AzureChatCompletion(
@@ -122,7 +113,6 @@ def test_azure_chat_completion_init_with_empty_endpoint() -> None:
             endpoint="",
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -131,7 +121,6 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
     endpoint = "http://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="url"):
         AzureChatCompletion(
@@ -139,7 +128,6 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -148,7 +136,6 @@ def test_azure_chat_completion_init_with_base_url() -> None:
     base_url = "http://test-endpoint.com/openai/deployment/test_deployment"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="url"):
         AzureChatCompletion(
@@ -156,7 +143,6 @@ def test_azure_chat_completion_init_with_base_url() -> None:
             base_url=base_url,
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -167,7 +153,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
+
     prompt = "hello world"
     messages_in = [{"role": "user", "content": prompt}]
     messages_out = [{"role": "user", "content": prompt}]
@@ -178,7 +164,6 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         endpoint=endpoint,
         api_version=api_version,
         api_key=api_key,
-        log=logger,
     )
     await azure_chat_completion.complete_chat_async(
         messages=messages_in, settings=complete_request_settings
@@ -207,7 +192,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
+
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
     complete_request_settings = ChatRequestSettings()
@@ -220,7 +205,6 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
     )
 
     await azure_chat_completion.complete_chat_async(
@@ -251,7 +235,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
+
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
     complete_request_settings = ChatRequestSettings()
@@ -264,7 +248,6 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
     )
 
     await azure_chat_completion.complete_async(prompt, complete_request_settings)
@@ -290,14 +273,12 @@ def test_azure_chat_completion_serialize() -> None:
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     default_headers = {"X-Test": "test"}
-    logger = Logger("test_logger")
 
     settings = {
         "deployment_name": deployment_name,
         "endpoint": endpoint,
         "api_key": api_key,
         "api_version": api_version,
-        "log": logger,
         "default_headers": default_headers,
     }
 

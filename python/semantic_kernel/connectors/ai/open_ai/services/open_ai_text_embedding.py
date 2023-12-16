@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import Dict, Mapping, Optional, overload
+import logging
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
 
@@ -15,6 +15,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
     OpenAITextEmbeddingBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
     """OpenAI Text Embedding class."""
@@ -24,7 +26,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         ai_model_id: str,
         async_client: AsyncOpenAI,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAITextEmbedding service.
@@ -33,7 +35,6 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             async_client {AsyncOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional)
         """
 
     def __init__(
@@ -42,8 +43,8 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
         async_client: Optional[AsyncOpenAI] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.
@@ -58,7 +59,6 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 account belongs to multiple organizations.
             default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log {Optional[Logger]} -- The logger instance to use. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
         """
         super().__init__(
@@ -67,9 +67,12 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=org_id,
             default_headers=default_headers,
-            log=log,
             async_client=async_client,
         )
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
     @classmethod
     def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextEmbedding":
@@ -85,5 +88,4 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
             default_headers=settings.get("default_headers"),
-            log=settings.get("log"),
         )

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -23,7 +22,6 @@ def test_azure_text_completion_init() -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     # Test successful initialization
     azure_text_completion = AzureTextCompletion(
@@ -31,7 +29,6 @@ def test_azure_text_completion_init() -> None:
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
     )
 
     assert azure_text_completion.client is not None
@@ -45,7 +42,6 @@ def test_azure_text_completion_init_with_custom_header() -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     # Custom header for testing
     default_headers = {"X-Unit-Test": "test-guid"}
@@ -56,7 +52,6 @@ def test_azure_text_completion_init_with_custom_header() -> None:
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
         default_headers=default_headers,
     )
 
@@ -74,7 +69,6 @@ def test_azure_text_completion_init_with_empty_deployment_name() -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="ai_model_id"):
         AzureTextCompletion(
@@ -82,7 +76,6 @@ def test_azure_text_completion_init_with_empty_deployment_name() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -91,7 +84,6 @@ def test_azure_text_completion_init_with_empty_api_key() -> None:
     endpoint = "https://test-endpoint.com"
     # api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(AIException, match="api_key"):
         AzureTextCompletion(
@@ -99,7 +91,6 @@ def test_azure_text_completion_init_with_empty_api_key() -> None:
             endpoint=endpoint,
             api_key="",
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -108,7 +99,6 @@ def test_azure_text_completion_init_with_empty_endpoint() -> None:
     # endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="endpoint"):
         AzureTextCompletion(
@@ -116,7 +106,6 @@ def test_azure_text_completion_init_with_empty_endpoint() -> None:
             endpoint="",
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -125,7 +114,6 @@ def test_azure_text_completion_init_with_invalid_endpoint() -> None:
     endpoint = "http://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
 
     with pytest.raises(ValidationError, match="https"):
         AzureTextCompletion(
@@ -133,7 +121,6 @@ def test_azure_text_completion_init_with_invalid_endpoint() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            log=logger,
         )
 
 
@@ -144,7 +131,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
+
     prompt = "hello world"
     complete_request_settings = CompleteRequestSettings()
     azure_text_completion = AzureTextCompletion(
@@ -152,7 +139,6 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
     )
 
     await azure_text_completion.complete_async(prompt, complete_request_settings)
@@ -182,7 +168,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
+
     prompt = "hello world"
     complete_request_settings = CompleteRequestSettings()
 
@@ -194,7 +180,6 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        log=logger,
     )
 
     await azure_text_completion.complete_async(prompt, complete_request_settings)
@@ -221,14 +206,12 @@ def test_azure_text_completion_serialize() -> None:
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     default_headers = {"X-Test": "test"}
-    logger = Logger("test_logger")
 
     settings = {
         "deployment_name": deployment_name,
         "endpoint": endpoint,
         "api_key": api_key,
         "api_version": api_version,
-        "log": logger,
         "default_headers": default_headers,
     }
 

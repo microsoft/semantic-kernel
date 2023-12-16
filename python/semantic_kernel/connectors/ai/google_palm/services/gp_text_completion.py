@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List, Optional, Union
+import logging
+from typing import Any, List, Optional, Union
 
 import google.generativeai as palm
 from pydantic import constr
@@ -15,11 +15,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     api_key: constr(strip_whitespace=True, min_length=1)
 
-    def __init__(self, ai_model_id: str, api_key: str, log: Optional[Logger] = None):
+    def __init__(self, ai_model_id: str, api_key: str, log: Optional[Any] = None):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
@@ -28,16 +30,24 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
-            log {Optional[Logger]} -- The logger instance to use. (Optional)
+            log {Optional[Any]} -- The logger instance to use. (Optional) (Deprecated)
         """
-        super().__init__(ai_model_id=ai_model_id, api_key=api_key, log=log)
+        super().__init__(ai_model_id=ai_model_id, api_key=api_key)
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
     async def complete_async(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> Union[str, List[str]]:
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         response = await self._send_completion_request(prompt, request_settings)
 
         if request_settings.number_of_responses > 1:
@@ -48,8 +58,12 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"
         )

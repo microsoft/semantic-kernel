@@ -3,8 +3,8 @@
 import glob
 import importlib
 import inspect
+import logging
 import os
-from logging import Logger
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
@@ -53,14 +53,14 @@ from semantic_kernel.template_engine.prompt_template_engine import PromptTemplat
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 T = TypeVar("T")
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class Kernel:
-    _log: Logger
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
@@ -70,16 +70,17 @@ class Kernel:
         skill_collection: Optional[SkillCollectionBase] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
-        self._log = log if log else NullLogger()
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         self._skill_collection = (
-            skill_collection if skill_collection else SkillCollection(self._log)
+            skill_collection if skill_collection else SkillCollection()
         )
         self._prompt_template_engine = (
-            prompt_template_engine
-            if prompt_template_engine
-            else PromptTemplateEngine(self._log)
+            prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
         )
         self._memory = memory if memory else NullMemory()
 
@@ -101,10 +102,6 @@ class Kernel:
 
         self._function_invoking_handlers = {}
         self._function_invoked_handlers = {}
-
-    @property
-    def logger(self) -> Logger:
-        return self._log
 
     @property
     def memory(self) -> SemanticTextMemoryBase:
@@ -157,7 +154,7 @@ class Kernel:
         validate_skill_name(skill_name)
         validate_function_name(function_name)
 
-        function = SKFunction.from_native_method(sk_function, skill_name, self.logger)
+        function = SKFunction.from_native_method(sk_function, skill_name)
 
         if self.skills.has_function(skill_name, function_name):
             raise KernelException(
@@ -222,7 +219,6 @@ class Kernel:
                     variables,
                     self._memory,
                     self._skill_collection.read_only_skill_collection,
-                    self._log,
                 )
         else:
             raise ValueError("No functions passed to run")
@@ -237,7 +233,7 @@ class Kernel:
 
         except Exception as ex:
             # TODO: "critical exceptions"
-            self._log.error(
+            logger.error(
                 "Something went wrong in stream function. During function invocation:"
                 f" '{stream_function.skill_name}.{stream_function.name}'. Error"
                 f" description: '{str(ex)}'"
@@ -286,7 +282,6 @@ class Kernel:
                 variables,
                 self._memory,
                 self._skill_collection.read_only_skill_collection,
-                self._log,
             )
 
         pipeline_step = 0
@@ -298,7 +293,7 @@ class Kernel:
                 )
 
                 if context.error_occurred:
-                    self._log.error(
+                    logger.error(
                         f"Something went wrong in pipeline step {pipeline_step}. "
                         f"Error description: '{context.last_error_description}'"
                     )
@@ -315,7 +310,7 @@ class Kernel:
                         and function_invoking_args.is_cancel_requested
                     ):
                         cancel_message = "Execution was cancelled on function invoking event of pipeline step"
-                        self._log.info(
+                        logger.info(
                             f"{cancel_message} {pipeline_step}: {func.skill_name}.{func.name}."
                         )
                         return context
@@ -325,7 +320,7 @@ class Kernel:
                         and function_invoking_args.is_skip_requested
                     ):
                         skip_message = "Execution was skipped on function invoking event of pipeline step"
-                        self._log.info(
+                        logger.info(
                             f"{skip_message} {pipeline_step}: {func.skill_name}.{func.name}."
                         )
                         break
@@ -335,7 +330,7 @@ class Kernel:
                     )
 
                     if context.error_occurred:
-                        self._log.error(
+                        logger.error(
                             f"Something went wrong in pipeline step {pipeline_step}. "
                             f"During function invocation: '{func.skill_name}.{func.name}'. "
                             f"Error description: '{context.last_error_description}'"
@@ -351,7 +346,7 @@ class Kernel:
                         and function_invoked_args.is_cancel_requested
                     ):
                         cancel_message = "Execution was cancelled on function invoked event of pipeline step"
-                        self._log.info(
+                        logger.info(
                             f"{cancel_message} {pipeline_step}: {func.skill_name}.{func.name}."
                         )
                         return context
@@ -360,7 +355,7 @@ class Kernel:
                         and function_invoked_args.is_repeat_requested
                     ):
                         repeat_message = "Execution was repeated on function invoked event of pipeline step"
-                        self._log.info(
+                        logger.info(
                             f"{repeat_message} {pipeline_step}: {func.skill_name}.{func.name}."
                         )
                         continue
@@ -368,7 +363,7 @@ class Kernel:
                         break
 
                 except Exception as ex:
-                    self._log.error(
+                    logger.error(
                         f"Something went wrong in pipeline step {pipeline_step}. "
                         f"During function invocation: '{func.skill_name}.{func.name}'. "
                         f"Error description: '{str(ex)}'"
@@ -422,7 +417,6 @@ class Kernel:
             ContextVariables() if not variables else variables,
             self._memory,
             self.skills,
-            self._log,
         )
 
     def on_function_invoking(
@@ -450,9 +444,9 @@ class Kernel:
     ) -> Dict[str, SKFunctionBase]:
         if skill_name.strip() == "":
             skill_name = SkillCollection.GLOBAL_SKILL
-            self._log.debug(f"Importing skill {skill_name} into the global namespace")
+            logger.debug(f"Importing skill {skill_name} into the global namespace")
         else:
-            self._log.debug(f"Importing skill {skill_name}")
+            logger.debug(f"Importing skill {skill_name}")
 
         functions = []
 
@@ -466,11 +460,9 @@ class Kernel:
             if not hasattr(candidate, "__sk_function__"):
                 continue
 
-            functions.append(
-                SKFunction.from_native_method(candidate, skill_name, self.logger)
-            )
+            functions.append(SKFunction.from_native_method(candidate, skill_name))
 
-        self.logger.debug(f"Methods imported: {len(functions)}")
+        logger.debug(f"Methods imported: {len(functions)}")
 
         # Uniqueness check on function names
         function_names = [f.name for f in functions]
