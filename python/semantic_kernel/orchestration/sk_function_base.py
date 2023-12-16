@@ -23,10 +23,6 @@ if TYPE_CHECKING:
 
 
 class SKFunctionBase(SKBaseModel):
-    FUNCTION_PARAM_NAME_REGEX: str = r"^[0-9A-Za-z_]*$"
-    FUNCTION_NAME_REGEX: str = r"^[0-9A-Za-z_]*$"
-    SKILL_NAME_REGEX: str = r"^[0-9A-Za-z_]*$"
-
     @property
     @abstractmethod
     def name(self) -> str:

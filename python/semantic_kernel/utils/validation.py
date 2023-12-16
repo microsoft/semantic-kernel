@@ -3,6 +3,11 @@
 from re import match as re_match
 from typing import Optional
 
+# Validation regexes
+SKILL_NAME_REGEX = r"^[0-9A-Za-z_]*$"
+FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]*$"
+FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
+
 
 def validate_skill_name(value: Optional[str]) -> None:
     """
@@ -18,7 +23,6 @@ def validate_skill_name(value: Optional[str]) -> None:
     if not value:
         raise ValueError("The skill name cannot be `None` or empty")
 
-    SKILL_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     if not re_match(SKILL_NAME_REGEX, value):
         raise ValueError(
             f"Invalid skill name: {value}. Skill "
@@ -41,7 +45,6 @@ def validate_function_name(value: Optional[str]) -> None:
     if not value:
         raise ValueError("The function name cannot be `None` or empty")
 
-    FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     if not re_match(FUNCTION_NAME_REGEX, value):
         raise ValueError(
             f"Invalid function name: {value}. Function "
@@ -64,7 +67,6 @@ def validate_function_param_name(value: Optional[str]) -> None:
     if not value:
         raise ValueError("The function parameter name cannot be `None` or empty")
 
-    FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     if not re_match(FUNCTION_PARAM_NAME_REGEX, value):
         raise ValueError(
             f"Invalid function parameter name: {value}. Function parameter "
