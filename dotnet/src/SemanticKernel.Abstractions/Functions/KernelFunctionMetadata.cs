@@ -84,7 +84,7 @@ public sealed class KernelFunctionMetadata
     /// <remarks>If the function has no return parameter, the returned value will be a default instance of a <see cref="KernelReturnParameterMetadata"/>.</remarks>
     public KernelReturnParameterMetadata ReturnParameter
     {
-        get => this._returnParameter ??= new();
+        get => this._returnParameter ??= KernelReturnParameterMetadata.Empty;
         init
         {
             Verify.NotNull(value);
