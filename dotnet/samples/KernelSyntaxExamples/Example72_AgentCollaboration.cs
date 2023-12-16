@@ -34,6 +34,10 @@ public static class Example72_AgentCollaboration
             return;
         }
 
+        // NOTE: Either of these examples produce a conversation
+        // whose duration may vary depending on the collaboration dynamics.
+        // It is sometimes possible that agreement is never achieved.
+
         // Explicit collaboration
         await RunCollaborationAsync();
 
@@ -110,7 +114,7 @@ public static class Example72_AgentCollaboration
                 Track(
                     await new AgentBuilder()
                         .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .WithInstructions("Reply the provided concept and have the copy-writer generate an marketing idea (copy).  Then have the art-director reply to the copy-writer with a review of the copy.  Coordinate the repeated replies between the copy-writer and art-director until the art-director approves the copy.  Respond with the copy when approved by the art-director and summarize why it is good.")
+                        .WithInstructions("Reply the provided concept and have the copy-writer generate an marketing idea (copy).  Then have the art-director reply to the copy-writer with a review of the copy.  Always include the source copy in any message.  Always include the art-director comments when interacting with the copy-writer.  Coordinate the repeated replies between the copy-writer and art-director until the art-director approves the copy.")
                         .WithPlugin(copyWriter.AsPlugin())
                         .WithPlugin(artDirector.AsPlugin())
                         .BuildAsync());
@@ -147,7 +151,7 @@ public static class Example72_AgentCollaboration
             Track(
                 await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
+                    .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print, even if it isn't perfect.  If not, provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
                     .WithName("Art Director")
                     .WithDescription("Art Director")
                     .BuildAsync());
