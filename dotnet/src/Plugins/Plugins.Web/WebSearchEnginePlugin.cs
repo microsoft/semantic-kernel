@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,6 +59,6 @@ public sealed class WebSearchEnginePlugin
 
         return count == 1
             ? results.FirstOrDefault() ?? string.Empty
-            : JsonSerializer.Serialize(results);
+            : JsonSerializer.Serialize(results, new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
     }
 }
