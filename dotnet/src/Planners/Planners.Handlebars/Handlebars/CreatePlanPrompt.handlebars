@@ -168,7 +168,7 @@ Output:
 {{~#if ReturnParameter}}
   {{~#if ReturnParameter.ParameterType}} {{ReturnParameter.ParameterType.Name}}
   {{~else}}
-    {{~#if ReturnParameter.Schema}} {{getSchemaReturnTypeName ReturnParameter}}
+    {{~#if ReturnParameter.Schema}} {{getSchemaReturnTypeName ReturnParameter ReturnParameter.Schema}}
     {{else}} string{{/if}}
   {{~/if}}
   {{~#if ReturnParameter.Description}} - {{ReturnParameter.Description}}{{/if}}
