@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -28,7 +27,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { };
 
         // Assert
-        Assert.Same(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
         Assert.Empty(sut);
     }
 
@@ -56,7 +55,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { { "fake-key", "fake-value" } };
 
         // Assert
-        Assert.Same(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
 
         var argument = Assert.Single(sut);
         Assert.Equal("fake-key", argument.Key);
@@ -114,6 +113,6 @@ public class KernelArgumentsTests
         Assert.True(sut.ContainsName("fake-key"));
         Assert.Equal("fake-value", sut["fake-key"]);
 
-        Assert.Same(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
     }
 }

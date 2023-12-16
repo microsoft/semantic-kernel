@@ -22,23 +22,23 @@ public class KernelPluginTests
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         };
 
-        plugin = new KernelPlugin("name");
+        plugin = KernelPluginFactory.CreateFromFunctions("name", null, null);
         Assert.Equal("name", plugin.Name);
         Assert.Equal("", plugin.Description);
         Assert.Equal(0, plugin.FunctionCount);
 
-        plugin = new KernelPlugin("name", functions);
+        plugin = KernelPluginFactory.CreateFromFunctions("name", "", functions);
         Assert.Equal("name", plugin.Name);
         Assert.Equal("", plugin.Description);
         Assert.Equal(3, plugin.FunctionCount);
         Assert.All(functions, f => Assert.True(plugin.Contains(f)));
 
-        plugin = new KernelPlugin("name", "description");
+        plugin = KernelPluginFactory.CreateFromFunctions("name", "description");
         Assert.Equal("name", plugin.Name);
         Assert.Equal("description", plugin.Description);
         Assert.Equal(0, plugin.FunctionCount);
 
-        plugin = new KernelPlugin("name", "description", functions);
+        plugin = KernelPluginFactory.CreateFromFunctions("name", "description", functions);
         Assert.Equal("name", plugin.Name);
         Assert.Equal("description", plugin.Description);
         Assert.Equal(3, plugin.FunctionCount);
@@ -51,7 +51,7 @@ public class KernelPluginTests
         KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
         KernelFunction func2 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function2");
 
-        KernelPlugin plugin = new("name", new[] { func1, func2 });
+        KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("name", "description", new[] { func1, func2 });
 
         foreach (KernelFunction func in new[] { func1, func2 })
         {
@@ -80,39 +80,49 @@ public class KernelPluginTests
         KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
         KernelFunction func2 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function2");
 
-        KernelPlugin plugin = new("name");
-        Assert.Equal(0, plugin.FunctionCount);
+        KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("name", "description", new[] { func1, func2 });
+        Assert.Equal(2, plugin.FunctionCount);
 
-        plugin.AddFunction(func1);
-        Assert.Equal(1, plugin.FunctionCount);
         Assert.True(plugin.TryGetFunction(func1.Name, out _));
         Assert.Equal(func1, plugin[func1.Name]);
 
-        plugin.AddFunction(func2);
-        Assert.Equal(2, plugin.FunctionCount);
         Assert.True(plugin.TryGetFunction(func2.Name, out _));
         Assert.Equal(func2, plugin[func2.Name]);
+    }
 
-        Assert.Throws<ArgumentException>(() => plugin.AddFunction(func1));
-        Assert.Throws<ArgumentException>(() => plugin.AddFunction(KernelFunctionFactory.CreateFromMethod(() => { }, "function1")));
-        Assert.Throws<ArgumentException>(() => plugin.AddFunction(KernelFunctionFactory.CreateFromMethod(() => { }, "FUNCTION2")));
+    [Fact]
+    public void ItExposesFunctionMetadataForAllFunctions()
+    {
+        Assert.Empty(KernelPluginFactory.CreateFromFunctions("plugin1").GetFunctionsMetadata());
+
+        IList<KernelFunctionMetadata> metadata = KernelPluginFactory.CreateFromFunctions("plugin2", "description1", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
+        }).GetFunctionsMetadata();
+
+        Assert.NotNull(metadata);
+        Assert.Equal(2, metadata.Count);
+
+        Assert.Equal("plugin2", metadata[0].PluginName);
+        Assert.Equal("Function1", metadata[0].Name);
+
+        Assert.Equal("plugin2", metadata[1].PluginName);
+        Assert.Equal("Function2", metadata[1].Name);
     }
 
     [Fact]
     public void ItThrowsForInvalidArguments()
     {
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin(null!));
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin(null!, ""));
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin(null!, "", Array.Empty<KernelFunction>()));
-        Assert.Throws<ArgumentNullException>(() => new KernelPlugin("name", "", new KernelFunction[] { null! }));
+        Assert.Throws<ArgumentNullException>(() => KernelPluginFactory.CreateFromFunctions(null!));
+        Assert.Throws<ArgumentNullException>(() => KernelPluginFactory.CreateFromFunctions(null!, ""));
+        Assert.Throws<ArgumentNullException>(() => KernelPluginFactory.CreateFromFunctions(null!, "", Array.Empty<KernelFunction>()));
+        Assert.Throws<ArgumentNullException>(() => KernelPluginFactory.CreateFromFunctions("name", "", new KernelFunction[] { null! }));
 
-        KernelPlugin plugin = new("name");
-        Assert.Throws<ArgumentNullException>(() => plugin.AddFunction(null!));
-        Assert.Throws<ArgumentNullException>(() => plugin.AddFunctions(null!));
+        KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("name");
         Assert.Throws<ArgumentNullException>(() => plugin[null!]);
         Assert.Throws<ArgumentNullException>(() => plugin.TryGetFunction(null!, out _));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((string)null!));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((KernelFunction)null!));
-        Assert.Throws<ArgumentNullException>(() => ((IKernelPlugin)null!).Contains("functionName"));
     }
 }

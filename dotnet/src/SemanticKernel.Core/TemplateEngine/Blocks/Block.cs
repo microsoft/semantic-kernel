@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Base class for blocks parsed from a prompt template
@@ -32,7 +32,7 @@ internal abstract class Block
     private protected Block(string? content, ILoggerFactory? loggerFactory)
     {
         this.Content = content ?? string.Empty;
-        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
+        this.Logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>

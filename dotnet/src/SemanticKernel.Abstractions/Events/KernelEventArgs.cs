@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>
+[Experimental("SKEXP0004")]
 public abstract class KernelEventArgs : EventArgs
 {
     /// <summary>
@@ -14,7 +16,7 @@ public abstract class KernelEventArgs : EventArgs
     /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
-    internal KernelEventArgs(KernelFunction function, KernelArguments arguments, IDictionary<string, object?>? metadata)
+    internal KernelEventArgs(KernelFunction function, KernelArguments arguments, IReadOnlyDictionary<string, object?>? metadata)
     {
         Verify.NotNull(function);
         Verify.NotNull(arguments);
@@ -37,5 +39,5 @@ public abstract class KernelEventArgs : EventArgs
     /// <summary>
     /// Gets a dictionary of metadata related to the event.
     /// </summary>
-    public IDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 }

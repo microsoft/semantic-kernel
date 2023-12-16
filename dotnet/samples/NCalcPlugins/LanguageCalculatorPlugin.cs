@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using NCalc;
 
 namespace NCalcPlugins;
@@ -87,7 +86,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await kernel.InvokeAsync(this._mathTranslator, new(input)).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(this._mathTranslator, new() { ["input"] = input }).ConfigureAwait(false);
             answer = result?.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

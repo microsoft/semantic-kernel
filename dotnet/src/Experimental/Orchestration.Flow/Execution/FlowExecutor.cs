@@ -29,7 +29,7 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// The kernel builder
     /// </summary>
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
 
     /// <summary>
     /// The logger
@@ -94,12 +94,12 @@ internal class FlowExecutor : IFlowExecutor
     /// </summary>
     private readonly KernelFunction _checkStartStepFunction;
 
-    internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
+    internal FlowExecutor(IKernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
     {
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor));
+        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor)) ?? NullLogger.Instance;
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;

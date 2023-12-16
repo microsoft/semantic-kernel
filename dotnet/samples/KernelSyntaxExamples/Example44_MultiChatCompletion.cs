@@ -3,14 +3,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
 public static class Example44_MultiChatCompletion
 {
     public static async Task RunAsync()
@@ -61,7 +57,7 @@ public static class Example44_MultiChatCompletion
         // First bot assistant message
         foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, chatExecutionSettings))
         {
-            chatHistory.AddMessage(chatMessageChoice!);
+            chatHistory.Add(chatMessageChoice!);
             await MessageOutputAsync(chatHistory);
         }
 

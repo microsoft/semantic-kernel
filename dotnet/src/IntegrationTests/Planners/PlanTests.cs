@@ -562,36 +562,37 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var kernel = new KernelBuilder().WithServices(c =>
-        {
-            if (useChatModel)
-            {
-                c.AddAzureOpenAIChatCompletion(
-                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
-            else
-            {
-                c.AddAzureOpenAITextGeneration(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
-            if (useEmbeddings)
-            {
-                c.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-            }
-        }).Build();
+        if (useChatModel)
+        {
+            c.AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            c.AddAzureOpenAITextGeneration(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+
+        if (useEmbeddings)
+        {
+            c.AddAzureOpenAITextEmbeddingGeneration(
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+        }
+
+        Kernel kernel = builder.Build();
 
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
 
-        kernel.ImportPluginFromObject<EmailPluginFake>();
+        kernel.ImportPluginFromType<EmailPluginFake>();
         return kernel;
     }
 

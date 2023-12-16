@@ -6,9 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
-using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example66_FunctionCallingStepwisePlanner
 {
     public static async Task RunAsync()
@@ -35,7 +33,7 @@ public static class Example66_FunctionCallingStepwisePlanner
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
-            // Console.WriteLine($"Chat history:\n{result.ChatHistory?.AsJson()}");
+            // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");
         }
     }
 
@@ -45,18 +43,17 @@ public static class Example66_FunctionCallingStepwisePlanner
     /// <returns>A kernel instance</returns>
     private static Kernel InitializeKernel()
     {
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
-        kernel.ImportPluginFromObject(new EmailPlugin(), "EmailPlugin");
-        kernel.ImportPluginFromObject(new MathPlugin(), "MathPlugin");
-        kernel.ImportPluginFromObject(new TimePlugin(), "TimePlugin");
+        kernel.ImportPluginFromType<EmailPlugin>();
+        kernel.ImportPluginFromType<MathPlugin>();
+        kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
     }

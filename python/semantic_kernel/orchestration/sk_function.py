@@ -3,7 +3,7 @@
 import asyncio
 import platform
 import sys
-import threading
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
@@ -152,12 +152,31 @@ class SKFunction(SKFunctionBase):
                 log.warning("Function call is not None, but functions is None")
             try:
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
-                    (
-                        completion,
-                        function_call,
-                    ) = await client.complete_chat_with_functions_async(
-                        messages, functions, request_settings
-                    )
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and hasattr(request_settings, "data_source_settings")
+                        and request_settings.data_source_settings is not None
+                    ):
+                        (
+                            completion,
+                            tool_message,
+                            function_call,
+                        ) = await client.complete_chat_with_data_async(
+                            messages, request_settings, functions=functions
+                        )
+                        if tool_message:
+                            context.objects["tool_message"] = tool_message
+                            as_chat_prompt.add_message(
+                                role="tool", message=tool_message
+                            )
+                    else:
+                        (
+                            completion,
+                            function_call,
+                        ) = await client.complete_chat_with_functions_async(
+                            messages, functions, request_settings
+                        )
+
                     as_chat_prompt.add_message(
                         "assistant", message=completion, function_call=function_call
                     )
@@ -166,9 +185,26 @@ class SKFunction(SKFunctionBase):
                     if function_call is not None:
                         context.objects["function_call"] = function_call
                 else:
-                    completion = await client.complete_chat_async(
-                        messages, request_settings
-                    )
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and hasattr(request_settings, "data_source_settings")
+                        and request_settings.data_source_settings is not None
+                    ):
+                        # third item is function_call, None in this case
+                        (
+                            completion,
+                            tool_message,
+                            _,
+                        ) = await client.complete_chat_with_data_async(
+                            messages, request_settings
+                        )
+                        context.objects["tool_message"] = tool_message
+                        as_chat_prompt.add_message(role="tool", message=tool_message)
+                    else:
+                        completion = await client.complete_chat_async(
+                            messages, request_settings
+                        )
+
                     as_chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
             except Exception as exc:
@@ -189,11 +225,32 @@ class SKFunction(SKFunctionBase):
                     # list of <role, content> messages)
                     completion = ""
                     messages = await chat_prompt.render_messages_async(context)
-                    async for partial_content in client.complete_chat_stream_async(
-                        messages, request_settings
+
+                    # With data case - stream and get the tool message for citations
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and hasattr(request_settings, "data_source_settings")
+                        and request_settings.data_source_settings is not None
                     ):
-                        completion += partial_content
-                        yield partial_content
+                        response = await client.complete_chat_stream_with_data_async(
+                            messages, request_settings
+                        )
+                        # Get the tool message
+                        tool_message = await response.get_tool_message()
+                        if tool_message:
+                            chat_prompt.add_message(role="tool", message=tool_message)
+                            context.objects["tool_message"] = tool_message
+                        # Get the completion
+                        async for partial_content in response:
+                            completion += partial_content
+                            yield partial_content
+
+                    else:
+                        async for partial_content in client.complete_chat_stream_async(
+                            messages, request_settings
+                        ):
+                            completion += partial_content
+                            yield partial_content
                     # Use the full completion to update the chat_prompt_template and context
                     chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
@@ -379,18 +436,21 @@ class SKFunction(SKFunctionBase):
         if input is not None:
             context.variables.update(input)
 
-        # Check if there is an event loop
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
+        loop = (
+            asyncio.get_running_loop()
+            if asyncio.get_event_loop().is_running()
+            else None
+        )
 
-        # Handle "asyncio.run() cannot be called from a running event loop"
         if loop and loop.is_running():
-            if self.is_semantic:
-                return self._runThread(self._invoke_semantic_async(context, settings))
-            else:
-                return self._runThread(self._invoke_native_async(context))
+            coroutine_function = (
+                self._invoke_semantic_async
+                if self.is_semantic
+                else self._invoke_native_async
+            )
+            return self.run_async_in_executor(
+                lambda: coroutine_function(context, settings)
+            )
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
@@ -565,9 +625,21 @@ class SKFunction(SKFunctionBase):
             yield stream_msg
 
     async def _invoke_native_stream_async(self, context):
-        result = await self._invoke_native_async(context)
+        self._verify_is_native()
 
-        yield result
+        self._ensure_context_has_skills(context)
+
+        delegate = DelegateHandlers.get_handler(self._delegate_type)
+        # for python3.9 compatibility (staticmethod is not callable)
+        if not hasattr(delegate, "__call__"):
+            delegate = delegate.__func__
+
+        completion = ""
+        async for partial in delegate(self._function, context):
+            completion += partial
+            yield partial
+
+        context.variables.update(completion)
 
     def _ensure_context_has_skills(self, context) -> None:
         if context.skills is not None:
@@ -583,12 +655,24 @@ class SKFunction(SKFunctionBase):
     event loops such as Jupyter notebooks.
     """
 
-    def _runThread(self, code: Callable):
-        result = []
-        thread = threading.Thread(target=self._runCode, args=(code, result))
-        thread.start()
-        thread.join()
-        return result[0]
+    def run_async_in_executor(self, coroutine_func: Callable[[], Any]) -> Any:
+        """
+        A unified method for async execution for more efficient and safer thread management
 
-    def _runCode(self, code: Callable, result: List[Any]) -> None:
-        result.append(asyncio.run(code))
+        Arguments:
+            coroutine_func {Callable[[], Any]} -- The coroutine to run
+
+        Returns:
+            Any -- The result of the coroutine
+        """
+
+        def run_async_in_thread():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(coroutine_func())
+            loop.close()
+            return result
+
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(run_async_in_thread)
+            return future.result()

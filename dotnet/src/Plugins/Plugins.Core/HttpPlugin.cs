@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -20,7 +21,7 @@ public sealed class HttpPlugin
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
     /// </summary>
-    public HttpPlugin() : this(HttpClientProvider.GetHttpClient())
+    public HttpPlugin() : this(null)
     {
     }
 
@@ -31,8 +32,9 @@ public sealed class HttpPlugin
     /// <remarks>
     /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the plugin is disposed.
     /// </remarks>
-    public HttpPlugin(HttpClient client) =>
-        this._client = client;
+    [ActivatorUtilitiesConstructor]
+    public HttpPlugin(HttpClient? client = null) =>
+        this._client = client ?? HttpClientProvider.GetHttpClient();
 
     /// <summary>
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.

@@ -3,12 +3,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 /// <summary>
 /// Integration tests of <see cref="MongoDBMemoryStore"/>.

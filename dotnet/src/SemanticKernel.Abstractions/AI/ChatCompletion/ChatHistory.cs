@@ -8,7 +8,7 @@ using System.Text;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Provides a history of chat messages from a chat conversation.
@@ -52,22 +52,22 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public int Count => this._messages.Count;
 
     /// <summary>
-    /// Add a message to the chat history
-    /// </summary>
-    /// <param name="chatMessageContent">Chat message content</param>
-    public void AddMessage(ChatMessageContent chatMessageContent)
-    {
-        this.Add(chatMessageContent);
-    }
-
-    /// <summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
+    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+
+    /// <summary>
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    /// <param name="encoding">Encoding of the message content</param>
+    /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// </summary>
+    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
+        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata));
 
     /// <summary>
     /// Add a user message to the chat history
@@ -75,6 +75,13 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="content">Message content</param>
     public void AddUserMessage(string content) =>
         this.AddMessage(AuthorRole.User, content);
+
+    /// <summary>
+    /// Add a user message to the chat history
+    /// </summary>
+    /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    public void AddUserMessage(ChatMessageContentItemCollection contentItems) =>
+        this.AddMessage(AuthorRole.User, contentItems);
 
     /// <summary>
     /// Add an assistant message to the chat history

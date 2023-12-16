@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 internal sealed class FunctionIdBlock : Block, ITextRendering
 {
@@ -53,7 +53,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
     }
 
     /// <inheritdoc/>
-    public string Render(KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }

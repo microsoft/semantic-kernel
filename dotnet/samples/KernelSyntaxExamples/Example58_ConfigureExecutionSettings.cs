@@ -4,10 +4,8 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using RepoUtils;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-// ReSharper disable once InconsistentNaming
 public static class Example58_ConfigureExecutionSettings
 {
     /// <summary>
@@ -23,20 +21,19 @@ public static class Example58_ConfigureExecutionSettings
         string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
-                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: serviceId,
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         var prompt = "Hello AI, what can you do for me?";
