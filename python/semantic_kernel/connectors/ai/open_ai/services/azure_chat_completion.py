@@ -3,6 +3,7 @@
 
 import logging
 from typing import (
+    Any,
     AsyncGenerator,
     Dict,
     List,
@@ -45,9 +46,7 @@ from semantic_kernel.sk_pydantic import HttpsUrl
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureChatCompletion(
-    AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
-):
+class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
     """Azure Chat completion class."""
 
     @overload
@@ -196,9 +195,9 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
         use_extensions: bool = False,
+        log: Optional[Any] = None,
         **kwargs,
     ) -> None:
         """
@@ -236,20 +235,14 @@ class AzureChatCompletion(
                 The default value is False.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if kwargs.get("logger"):
-            logger.warning(
-                "The 'logger' argument is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The 'logger' argument is deprecated. Please use the `logging` module instead.")
 
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
         if use_extensions and endpoint and deployment_name:
-            base_url = HttpsUrl(
-                f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
-            )
+            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions")
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
@@ -288,7 +281,7 @@ class AzureChatCompletion(
         self,
         messages: List[Dict[str, str]],
         settings: AzureOpenAIChatRequestSettings,
-        logger: Optional[Logger] = None,
+        logger: Optional[Any] = None,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
         List[Tuple[Optional[str], Optional[FunctionCall]]],
@@ -327,10 +320,8 @@ class AzureChatCompletion(
         self,
         messages: List[Dict[str, str]],
         settings: AzureOpenAIChatRequestSettings,
-        logger: Optional[Logger] = None,
-    ) -> Union[
-        AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse
-    ]:
+        logger: Optional[Any] = None,
+    ) -> Union[AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
