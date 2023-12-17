@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Runtime.Serialization;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Xunit;
 
