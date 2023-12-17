@@ -57,13 +57,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         """
         try:
             response = await (
-                self.client.chat.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                self.client.chat.completions.create(**request_settings.prepare_settings_dict())
                 if self.ai_model_type == OpenAIModelTypes.CHAT
-                else self.client.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                else self.client.completions.create(**request_settings.prepare_settings_dict())
             )
             self.store_usage(response)
             return response
@@ -97,8 +93,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 "top_p": request_settings.top_p,
                 "stop": (
                     request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None
-                    and len(request_settings.stop_sequences) > 0
+                    if request_settings.stop_sequences is not None and len(request_settings.stop_sequences) > 0
                     else None
                 ),
                 "max_tokens": request_settings.max_tokens,
@@ -123,11 +118,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         if functions and request_settings.function_call is not None:
             model_args["function_call"] = request_settings.function_call
             if request_settings.function_call != "auto":
-                model_args["functions"] = [
-                    func
-                    for func in functions
-                    if func["name"] == request_settings.function_call
-                ]
+                model_args["functions"] = [func for func in functions if func["name"] == request_settings.function_call]
             else:
                 model_args["functions"] = functions
 
@@ -179,13 +170,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     #             model_args["functions"] = functions
     #     return model_args
 
-    async def _send_embedding_request(
-        self, settings: OpenAIEmbeddingRequestSettings
-    ) -> List[array]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingRequestSettings) -> List[array]:
         try:
-            response = await self.client.embeddings.create(
-                **settings.prepare_settings_dict()
-            )
+            response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
             # make numpy arrays from the response
             # TODO: the openai response is cast to a list[float], could be used instead of nparray
