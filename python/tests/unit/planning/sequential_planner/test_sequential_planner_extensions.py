@@ -49,7 +49,7 @@ async def test_can_call_get_available_functions_with_no_functions_async():
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext(variables, memory, skills.read_only_skill_collection, Mock())
+    context = SKContext(variables, memory, skills.read_only_skill_collection)
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
@@ -195,7 +195,6 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
         memory=memory,
         skill_collection=skills,
     )
-    context._logger = Mock()
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 

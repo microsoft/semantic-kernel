@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
+import logging
+from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 
 from openai.types.completion import Completion
 
@@ -15,24 +15,29 @@ if TYPE_CHECKING:
         CompleteRequestSettings,
     )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete_async(
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> Union[str, List[str]]:
         """Executes a completion request and returns the result.
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
             settings {CompleteRequestSettings} -- The settings to use for the completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=False
         )
@@ -49,7 +54,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
         Executes a completion request and streams the result.
@@ -58,11 +63,14 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
             settings {CompleteRequestSettings} -- The settings to use for the completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=True
         )
