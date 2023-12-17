@@ -80,7 +80,7 @@ internal static class KernelSystemHelpers
             variables[name] = value;
         });
 
-        // TODO [@teresaqhoang]: Add tigher restrictions here.
+        // TODO [@teresaqhoang]: Add tighter restrictions here.
         handlebarsInstance.RegisterHelper("get", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             // Return object or extract specified property from object
