@@ -73,7 +73,10 @@ internal static class KernelParameterMetadataExtensions
         // Add nested complex types
         foreach (var property in properties)
         {
-            parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata());
+            if (!parameterTypes.Any(pt => pt.Name == property.PropertyType.Name))
+            {
+                parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata());
+            }
         }
     }
 
