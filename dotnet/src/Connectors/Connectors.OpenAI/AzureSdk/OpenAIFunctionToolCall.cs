@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Azure.AI.OpenAI;
@@ -83,5 +85,93 @@ public sealed class OpenAIFunctionToolCall
         sb.Append(')');
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Tracks tooling updates from streaming responses.
+    /// </summary>
+    /// <param name="update">The tool call update to incorporate.</param>
+    /// <param name="toolCallIdsByIndex">Lazily-initialized dictionary mapping indices to IDs.</param>
+    /// <param name="functionNamesByIndex">Lazily-initialized dictionary mapping indices to names.</param>
+    /// <param name="functionArgumentBuildersByIndex">Lazily-initialized dictionary mapping indices to arguments.</param>
+    internal static void TrackStreamingToolingUpdate(
+        StreamingToolCallUpdate? update,
+        ref Dictionary<int, string>? toolCallIdsByIndex,
+        ref Dictionary<int, string>? functionNamesByIndex,
+        ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
+    {
+        if (update is null)
+        {
+            // Nothing to track.
+            return;
+        }
+
+        // If we have an ID, ensure the index is being tracked. Even if it's not a function update,
+        // we want to keep track of it so we can send back an error.
+        if (update.Id is string id)
+        {
+            (toolCallIdsByIndex ??= new())[update.ToolCallIndex] = id;
+        }
+
+        if (update is StreamingFunctionToolCallUpdate ftc)
+        {
+            // Ensure we're tracking the function's name.
+            if (ftc.Name is string name)
+            {
+                (functionNamesByIndex ??= new())[ftc.ToolCallIndex] = name;
+            }
+
+            // Ensure we're tracking the function's arguments.
+            if (ftc.ArgumentsUpdate is string argumentsUpdate)
+            {
+                if (!(functionArgumentBuildersByIndex ??= new()).TryGetValue(ftc.ToolCallIndex, out StringBuilder? arguments))
+                {
+                    functionArgumentBuildersByIndex[ftc.ToolCallIndex] = arguments = new();
+                }
+
+                arguments.Append(argumentsUpdate);
+            }
+        }
+    }
+
+    // TODO: Remove this temporary hack once the Azure SDK has been updated to set `base.Type = "function"` in the ChatCompletionsFunctionToolCall ctor
+
+    /// <summary>Temporary hack: PropertyInfo for ChatCompletionsToolCall.Type.</summary>
+    private static readonly PropertyInfo? s_type = typeof(ChatCompletionsToolCall).GetProperty("Type", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+    /// <summary>
+    /// Converts the data built up by <see cref="TrackStreamingToolingUpdate"/> into an array of <see cref="ChatCompletionsFunctionToolCall"/>s.
+    /// </summary>
+    /// <param name="toolCallIdsByIndex">Dictionary mapping indices to IDs.</param>
+    /// <param name="functionNamesByIndex">Dictionary mapping indices to names.</param>
+    /// <param name="functionArgumentBuildersByIndex">Dictionary mapping indices to arguments.</param>
+    internal static ChatCompletionsFunctionToolCall[] ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+        ref Dictionary<int, string>? toolCallIdsByIndex,
+        ref Dictionary<int, string>? functionNamesByIndex,
+        ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
+    {
+        ChatCompletionsFunctionToolCall[] toolCalls = Array.Empty<ChatCompletionsFunctionToolCall>();
+        if (toolCallIdsByIndex is { Count: > 0 })
+        {
+            toolCalls = new ChatCompletionsFunctionToolCall[toolCallIdsByIndex.Count];
+
+            int i = 0;
+            foreach (KeyValuePair<int, string> toolCallIndexAndId in toolCallIdsByIndex)
+            {
+                string? functionName = null;
+                StringBuilder? functionArguments = null;
+
+                functionNamesByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionName);
+                functionArgumentBuildersByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionArguments);
+
+                toolCalls[i] = new ChatCompletionsFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
+                s_type?.SetValue(toolCalls[i], "function"); // TEMPORARY HACK: Set the Type property to "function" so that the JSON serializer will serialize it as a function.
+                i++;
+            }
+
+            Debug.Assert(i == toolCalls.Length);
+        }
+
+        return toolCalls;
     }
 }
