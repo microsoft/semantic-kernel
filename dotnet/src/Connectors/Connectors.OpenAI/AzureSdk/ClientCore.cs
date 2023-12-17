@@ -840,11 +840,30 @@ internal abstract class ClientCore
         {
             var asstMessage = new ChatRequestAssistantMessage(message.Content);
 
-            IEnumerable<ChatCompletionsToolCall>? tools =
-                (message as OpenAIChatMessageContent)?.ToolCalls ??
-                (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true ?
-                    toolCallsObject as IEnumerable<ChatCompletionsToolCall> :
-                    null);
+            IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
+            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true)
+            {
+                tools = toolCallsObject as IEnumerable<ChatCompletionsToolCall>;
+                if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
+                {
+                    int length = array.GetArrayLength();
+                    var ftcs = new List<ChatCompletionsFunctionToolCall>(length);
+                    for (int i = 0; i < length; i++)
+                    {
+                        JsonElement e = array[i];
+                        if (e.TryGetProperty("Id", out JsonElement id) &&
+                            e.TryGetProperty("Name", out JsonElement name) &&
+                            e.TryGetProperty("Arguments", out JsonElement arguments) &&
+                            id.ValueKind == JsonValueKind.String &&
+                            name.ValueKind == JsonValueKind.String &&
+                            arguments.ValueKind == JsonValueKind.String)
+                        {
+                            ftcs.Add(OpenAIFunctionToolCall.CreateChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                        }
+                    }
+                    tools = ftcs;
+                }
+            }
 
             if (tools is not null)
             {
