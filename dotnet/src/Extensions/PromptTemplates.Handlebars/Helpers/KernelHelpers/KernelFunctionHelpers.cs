@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
@@ -198,9 +200,29 @@ internal static class KernelFunctionHelpers
     private static object? ParseResult(FunctionResult result)
     {
         var resultAsObject = result.GetValue<object?>();
-        if (result.ValueType is not null && resultAsObject is not null && result.ValueType == typeof(OpenAIChatMessageContent))
+        if (result.ValueType is not null && resultAsObject is not null)
         {
-            resultAsObject = ((OpenAIChatMessageContent)resultAsObject).Content;
+#pragma warning disable SKEXP0042 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
+            {
+                if (restApiOperationResponse.ExpectedSchema is not null)
+                {
+                    var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
+                    return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
+                }
+
+                return restApiOperationResponse.Content;
+#pragma warning restore SKEXP0042 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            }
+            else if (resultAsObject is OpenAIChatMessageContent openAIChatMessageContent)
+            {
+                return openAIChatMessageContent.Content;
+            }
+            else if (result.ValueType != typeof(string))
+            {
+                var serializedResult = JsonSerializer.Serialize(resultAsObject);
+                return JsonSerializer.Deserialize(serializedResult, result.ValueType);
+            }
         }
 
         return resultAsObject;

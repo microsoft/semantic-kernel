@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
@@ -79,15 +80,48 @@ internal static class KernelSystemHelpers
             variables[name] = value;
         });
 
+        // TODO [@teresaqhoang]: Add tigher restrictions here.
         handlebarsInstance.RegisterHelper("get", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
+            // Return object or extract specified property from object
+            object? GetObject(string key, string? propertyName = null)
+            {
+                if (propertyName is null)
+                {
+                    var names = key.Split('.');
+                    if (names.Length == 1)
+                    {
+                        return variables[key];
+                    }
+
+                    key = names[0];
+                    propertyName = names[1];
+                }
+
+                var obj = variables[key];
+                if (obj is JsonObject jsonObj)
+                {
+                    var result = jsonObj.TryGetPropertyValue(propertyName, out var jsonProp) ? jsonProp : jsonObj;
+                    return KernelHelpersUtils.DeserializeJsonNode(result);
+                }
+
+                var property = obj?.GetType().GetProperty(propertyName, System.Reflection.BindingFlags.IgnoreCase);
+                return property?.GetValue(obj, null);
+            }
+
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 var parameters = (IDictionary<string, object>)arguments[0];
-                return variables[(string)parameters!["name"]];
+                return GetObject(parameters!["name"].ToString());
             }
 
-            return variables[arguments[0].ToString()];
+            // Process positional arguments
+            if (arguments.Length > 1)
+            {
+                return GetObject(arguments[0].ToString(), arguments[1].ToString());
+            }
+
+            return GetObject(arguments[0].ToString());
         });
 
         handlebarsInstance.RegisterHelper("json", static (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -98,7 +132,11 @@ internal static class KernelSystemHelpers
             }
 
             object objectToSerialize = arguments[0];
-            return objectToSerialize.GetType() == typeof(string) ? objectToSerialize : JsonSerializer.Serialize(objectToSerialize);
+            var type = objectToSerialize.GetType();
+
+            return type == typeof(string) ? objectToSerialize
+                : type == typeof(JsonNode) ? objectToSerialize.ToString()
+                : JsonSerializer.Serialize(objectToSerialize);
         });
 
         handlebarsInstance.RegisterHelper("concat", static (in HelperOptions options, in Context context, in Arguments arguments) =>
