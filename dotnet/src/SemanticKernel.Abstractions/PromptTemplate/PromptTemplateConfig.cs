@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -136,7 +137,7 @@ public sealed class PromptTemplateConfig
                 Description = p.Description,
                 DefaultValue = p.Default,
                 IsRequired = p.IsRequired,
-                ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : typeof(string),
+                ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType(),
                 Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
             }).ToList();
         }
@@ -169,7 +170,29 @@ public sealed class PromptTemplateConfig
     /// <exception cref="ArgumentException">Thrown when the deserialization returns null.</exception>
     public static PromptTemplateConfig FromJson(string json)
     {
-        var result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
-        return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
+        if (promptTemplateConfig == null)
+        {
+            throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
+        }
+
+        // Prevent the default value from being any type other than a string.
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            // The value of the default property becomes a JsonElement after deserialization because that is how the JsonSerializer handles properties of the object type.
+            if (inputVariable.Default is JsonElement element)
+            {
+                if (element.ValueKind == JsonValueKind.String)
+                {
+                    inputVariable.Default = element.ToString();
+                }
+                else
+                {
+                    throw new ArgumentException($"Default value for input variable '{inputVariable.Name}' must be a string. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
+                }
+            }
+        }
+
+        return promptTemplateConfig;
     }
 }

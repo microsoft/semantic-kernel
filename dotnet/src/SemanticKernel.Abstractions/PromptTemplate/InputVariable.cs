@@ -26,7 +26,7 @@ public sealed class InputVariable
     /// Default value when nothing is provided.
     /// </summary>
     [JsonPropertyName("default")]
-    public string Default { get; set; } = string.Empty;
+    public object? Default { get; set; }
 
     /// <summary>
     /// True to indicate the input variable is required. True by default.

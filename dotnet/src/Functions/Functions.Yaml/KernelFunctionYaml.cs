@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -29,6 +30,15 @@ public static class KernelFunctionYaml
             .Build();
 
         var promptTemplateConfig = deserializer.Deserialize<PromptTemplateConfig>(text);
+
+        // Prevent the default value from being any type other than a string.
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            if (inputVariable.Default != null && inputVariable.Default is not string)
+            {
+                throw new ArgumentException($"Default value for input variable '{inputVariable.Name}' must be a string. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
+            }
+        }
 
         return KernelFunctionFactory.CreateFromPrompt(
             promptTemplateConfig,
