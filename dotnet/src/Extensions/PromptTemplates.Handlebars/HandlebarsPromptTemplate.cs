@@ -96,7 +96,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
         foreach (var p in this._promptModel.InputVariables)
         {
-            if (!string.IsNullOrEmpty(p.Default))
+            if (p.Default is not null)
             {
                 result[p.Name] = p.Default;
             }

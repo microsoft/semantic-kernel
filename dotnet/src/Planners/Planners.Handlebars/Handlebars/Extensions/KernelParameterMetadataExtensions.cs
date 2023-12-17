@@ -95,7 +95,7 @@ internal static class KernelParameterMetadataExtensions
         var type = "object";
         if (schema.RootElement.TryGetProperty("type", out var typeNode))
         {
-            type = typeNode.GetString()!;
+            type = typeNode.Deserialize<string>()!;
         }
 
         if (IsPrimitiveOrStringType(type) || type == "null")

@@ -104,7 +104,8 @@ internal static class KernelFunctionHelpers
 
         return actualParameterType is null
             || actualParameterType == argument.GetType()
-            || (parameterIsNumeric && argIsNumeric);
+            || (argIsNumeric && parameterIsNumeric)
+            || actualParameterType == typeof(string); // The kernel should handle this conversion
     }
 
     /// <summary>
