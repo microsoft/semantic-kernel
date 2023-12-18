@@ -57,10 +57,10 @@ public static class Example17_ChatGPT
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.ChatModelId,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         await StartChatAsync(chatCompletionService);
     }
