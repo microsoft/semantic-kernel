@@ -68,7 +68,7 @@ public sealed class FunctionResult
         {
             if (typeof(T) == typeof(string))
             {
-                return (T)(object)content.ToString();
+                return (T?)(object?)content.ToString();
             }
 
             if (content.InnerContent is T innerContent)
