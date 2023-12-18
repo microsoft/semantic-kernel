@@ -301,13 +301,20 @@ internal abstract class ClientCore
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
             for (int i = 0; i < result.ToolCalls.Count; i++)
             {
-                ChatCompletionsFunctionToolCall toolCall = result.ToolCalls[i];
+                ChatCompletionsToolCall toolCall = result.ToolCalls[i];
+
+                // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
+                if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
+                {
+                    AddResponseMessage(chatOptions, chat, result: null, "Error: Tool call was not a function call.", toolCall.Id, this.Logger);
+                    continue;
+                }
 
                 // Parse the function call arguments.
                 OpenAIFunctionToolCall? openAIFunctionToolCall;
                 try
                 {
-                    openAIFunctionToolCall = new(toolCall);
+                    openAIFunctionToolCall = new(functionToolCall);
                 }
                 catch (JsonException)
                 {
@@ -833,8 +840,8 @@ internal abstract class ClientCore
         {
             var asstMessage = new ChatRequestAssistantMessage(message.Content);
 
-            IEnumerable<ChatCompletionsFunctionToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
-            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true)
+            IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
+            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
             {
                 tools = toolCallsObject as IEnumerable<ChatCompletionsFunctionToolCall>;
                 if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
@@ -860,7 +867,7 @@ internal abstract class ClientCore
 
             if (tools is not null)
             {
-                foreach (ChatCompletionsFunctionToolCall tool in tools)
+                foreach (ChatCompletionsToolCall tool in tools)
                 {
                     asstMessage.ToolCalls.Add(tool);
                 }

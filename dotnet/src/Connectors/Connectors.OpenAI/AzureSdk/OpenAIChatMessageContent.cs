@@ -21,7 +21,12 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
     /// </summary>
-    public static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.{nameof(ChatResponseMessage.ToolCalls)}";
+    public static string FunctionToolCallsProperty => $"{nameof(ChatResponseMessage)}.FunctionToolCalls";
+
+    /// <summary>
+    /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
+    /// </summary>
+    public static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.ToolCalls";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
@@ -32,13 +37,13 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     internal OpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList(), metadata))
     {
-        this.ToolCalls = chatMessage.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
+        this.ToolCalls = chatMessage.ToolCalls.OfType<ChatCompletionsToolCall>().ToList();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsFunctionToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
@@ -47,7 +52,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsFunctionToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
@@ -56,7 +61,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
-    public IReadOnlyList<ChatCompletionsFunctionToolCall> ToolCalls { get; }
+    public IReadOnlyList<ChatCompletionsToolCall> ToolCalls { get; }
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -68,7 +73,10 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
 
         foreach (var toolCall in this.ToolCalls)
         {
-            (functionToolCallList ??= new List<OpenAIFunctionToolCall>()).Add(new OpenAIFunctionToolCall(toolCall));
+            if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
+            {
+                (functionToolCallList ??= new List<OpenAIFunctionToolCall>()).Add(new OpenAIFunctionToolCall(functionToolCall));
+            }
         }
 
         if (functionToolCallList is not null)
@@ -80,7 +88,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     }
 
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
-        IReadOnlyList<ChatCompletionsFunctionToolCall> toolCalls,
+        IReadOnlyList<ChatCompletionsToolCall> toolCalls,
         IReadOnlyDictionary<string, object?>? original)
     {
         // We only need to augment the metadata if there are any tool calls.
@@ -108,6 +116,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             }
 
             // Add the additional entry.
+            newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList());
             newDictionary.Add(ToolCallsProperty, toolCalls);
 
             return newDictionary;
