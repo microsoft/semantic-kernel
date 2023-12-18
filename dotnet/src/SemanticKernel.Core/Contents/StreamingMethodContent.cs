@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -24,13 +25,15 @@ public sealed class StreamingMethodContent : StreamingKernelContent
         }
 
         // By default if a native value is not Byte[] we output the UTF8 string representation of the value
-        return Encoding.UTF8.GetBytes(this.Content?.ToString());
+        return this.Content?.ToString() is string s ?
+            Encoding.UTF8.GetBytes(s) :
+            Array.Empty<byte>();
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content.ToString();
+        return this.Content.ToString() ?? string.Empty;
     }
 
     /// <summary>
