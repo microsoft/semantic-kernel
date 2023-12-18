@@ -87,10 +87,24 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
         if (functionResult.Value is TResult result)
         {
             yield return result;
+            yield break;
+        }
+
+        // If the function returns an IAsyncEnumerable<T>, we can stream the results directly.
+        // This helps to enable composition, with a KernelFunctionFromMethod that returns an
+        // Invoke{Prompt}StreamingAsync and returns its result enumerable directly.
+        if (functionResult.Value is IAsyncEnumerable<TResult> asyncEnumerable)
+        {
+            await foreach (TResult item in asyncEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                yield return item;
+            }
+
             yield break;
         }
 

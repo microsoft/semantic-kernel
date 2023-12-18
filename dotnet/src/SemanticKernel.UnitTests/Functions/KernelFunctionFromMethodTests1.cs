@@ -1123,6 +1123,74 @@ public sealed class KernelFunctionFromMethodTests1
     }
 
     [Fact]
+    public async Task ItCanStreamAsyncEnumerableTypeAsync()
+    {
+        // Arrange
+        bool invoked = false;
+        async IAsyncEnumerable<int> TestAsyncEnumerableTypeAsync()
+        {
+            invoked = true;
+            for (int i = 0; i < 10; i++)
+            {
+                await Task.Yield();
+                yield return i;
+            }
+        }
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(TestAsyncEnumerableTypeAsync);
+
+        // Act / Assert
+        IAsyncEnumerable<int> enumerable = function.InvokeStreamingAsync<int>(this._kernel);
+        Assert.False(invoked);
+        IAsyncEnumerator<int> enumerator = enumerable.GetAsyncEnumerator();
+        Assert.NotNull(enumerator);
+        Assert.False(invoked);
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.True(invoked);
+        Assert.Equal(0, enumerator.Current);
+        for (int i = 1; i < 10; i++)
+        {
+            Assert.True(await enumerator.MoveNextAsync());
+            Assert.Equal(i, enumerator.Current);
+        }
+        Assert.False(await enumerator.MoveNextAsync());
+        await enumerator.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task ItCanStreamAsyncEnumerablePassthroughAsync()
+    {
+        // Arrange
+        bool invoked = false;
+        async IAsyncEnumerable<StreamingMethodContent> TestAsyncEnumerableTypeAsync()
+        {
+            invoked = true;
+            for (int i = 0; i < 10; i++)
+            {
+                await Task.Yield();
+                yield return new StreamingMethodContent(i);
+            }
+        }
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(TestAsyncEnumerableTypeAsync);
+
+        // Act / Assert
+        IAsyncEnumerable<StreamingMethodContent> enumerable = function.InvokeStreamingAsync<StreamingMethodContent>(this._kernel);
+        Assert.False(invoked);
+        IAsyncEnumerator<StreamingMethodContent> enumerator = enumerable.GetAsyncEnumerator();
+        Assert.NotNull(enumerator);
+        Assert.False(invoked);
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.True(invoked);
+        Assert.Equal(0, enumerator.Current.Content);
+        for (int i = 1; i < 10; i++)
+        {
+            Assert.True(await enumerator.MoveNextAsync());
+            Assert.Equal(i, enumerator.Current.Content);
+        }
+        Assert.False(await enumerator.MoveNextAsync());
+        await enumerator.DisposeAsync();
+    }
+
+    [Fact]
     public async Task ItPropagatesOriginalExceptionTypeAsync()
     {
         // Arrange
