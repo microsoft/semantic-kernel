@@ -2280,18 +2280,19 @@ traitlets = "*"
 
 [[package]]
 name = "milvus"
-version = "2.3.3"
+version = "2.2.16"
 description = "Embeded Milvus"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "milvus-2.3.3-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:9dba3c89e3e23fd679659ba93198a07396cea8b186ac668ed7386ba7b9eb8560"},
-    {file = "milvus-2.3.3-py3-none-macosx_11_0_arm64.whl", hash = "sha256:28469736ce9cc792f6ed6f4a50a3613b3c3fcbe2e3206bcec9b98e0336fcf4a8"},
-    {file = "milvus-2.3.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:39c26ebb54808e1d46a063d3c3799ffe60fe4576aebef61be8ee6653ae600bc0"},
+    {file = "milvus-2.2.16-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:ada1fef174aa42d5117b4a784a48f9106141df8e799bccd7092ad88f4a34f67c"},
+    {file = "milvus-2.2.16-py3-none-macosx_11_0_arm64.whl", hash = "sha256:8df249e791758a94a3e3b6606e6efa6cda136eadf718dd37053b58729173f64e"},
+    {file = "milvus-2.2.16-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ea5bd32251b7bcad629d7e46c307414a586c96b4a50491d04a08db42fca8fba9"},
+    {file = "milvus-2.2.16-py3-none-win_amd64.whl", hash = "sha256:f906990a6d7bbb5955bb03541992d0072ed213f8665c1101b003cea995cb97d9"},
 ]
 
 [package.extras]
-client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
+client = ["pymilvus (>=2.2.0,!=2.2.14,<2.3.0)"]
 
 [[package]]
 name = "minio"
@@ -4096,23 +4097,22 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymilvus"
-version = "2.3.4"
+version = "2.2.16"
 description = "Python Sdk for Milvus"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pymilvus-2.3.4-py3-none-any.whl", hash = "sha256:3f56a61aaafe1f255c32b92c76cf98fc6de254d15e4d1127757b4a426622f140"},
-    {file = "pymilvus-2.3.4.tar.gz", hash = "sha256:4b5fdabb15901b63a6afbccb6af9ded5c0a05ccd657189e1658710ac73f09f80"},
+    {file = "pymilvus-2.2.16-py3-none-any.whl", hash = "sha256:874c68a361a71badaa880fa32000983d2d716dd8ee5daf2c53e9d928dbe932e3"},
+    {file = "pymilvus-2.2.16.tar.gz", hash = "sha256:2921454762c79713e7cc48490c88847734c8d84cf0801dfc57cc224ee84b17ab"},
 ]
 
 [package.dependencies]
 environs = "<=9.5.0"
 grpcio = ">=1.49.1,<=1.58.0"
-minio = ">=7.0.0"
+minio = "*"
 numpy = {version = "<1.25.0", markers = "python_version <= \"3.8\""}
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
-pyarrow = ">=12.0.0"
 requests = "*"
 ujson = ">=2.0.0"
 
@@ -6526,4 +6526,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "63afb1ed4527a095d545ab52a0c8fcad0192e0e557207071e5b34b419ccd50cc"
+content-hash = "c991644ce0f9d0d9032ec38afc9efa13c6d125b3a80a80cd41b7957626ed8281"
