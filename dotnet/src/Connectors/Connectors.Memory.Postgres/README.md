@@ -9,6 +9,7 @@ This connector uses Postgres to implement Semantic Memory. It requires the [pgve
 How to install the pgvector extension, please refer to its [documentation](https://github.com/pgvector/pgvector#installation).
 
 This extension is also available for **Azure Database for PostgreSQL - Flexible Server** and **Azure Cosmos DB for PostgreSQL**.
+
 - [Azure Database for Postgres](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-use-pgvector)
 - [Azure Cosmos DB for PostgreSQL](https://learn.microsoft.com/en-us/azure/cosmos-db/postgresql/howto-use-pgvector)
 
@@ -33,20 +34,20 @@ sk_demo=# CREATE EXTENSION vector;
 > Note, "Azure Cosmos DB for PostgreSQL" uses `SELECT CREATE_EXTENSION('vector');` to enable the extension.
 
 3. To use Postgres as a semantic memory store:
+   > See [Example 14](../../../samples/KernelSyntaxExamples/Example14_SemanticMemory.cs) and [Example 15](../../../samples/KernelSyntaxExamples/Example15_TextMemoryPlugin.cs) for more memory usage examples with the kernel.
 
 ```csharp
 NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_demo;User Id=postgres;Password=mysecretpassword");
 dataSourceBuilder.UseVector();
 NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
-PostgresMemoryStore memoryStore = new PostgresMemoryStore(dataSource, vectorSize: 1536/*, schema: "public" */);
-
-Kernel kernel = new KernelBuilder()
-    .WithLogger(ConsoleLogger.Logger)
-    .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
-    .WithMemoryStorage(memoryStore)
-    //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.
+var memoryWithPostgres = new MemoryBuilder()
+    .WithPostgresMemoryStore(dataSource, vectorSize: 1536/*, schema: "public" */)
+    .WithLoggerFactory(loggerFactory)
+    .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", apiKey)
     .Build();
+
+var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(memoryWithPostgres));
 ```
 
 ### Create Index
@@ -56,6 +57,7 @@ Kernel kernel = new KernelBuilder()
 > You can add an index to use approximate nearest neighbor search, which trades some recall for performance. Unlike typical indexes, you will see different results for queries after adding an approximate index.
 
 > Three keys to achieving good recall are:
+>
 > - Create the index after the table has some data
 > - Choose an appropriate number of lists - a good place to start is rows / 1000 for up to 1M rows and sqrt(rows) for over 1M rows
 > - When querying, specify an appropriate number of probes (higher is better for recall, lower is better for speed) - a good place to start is sqrt(lists)
@@ -87,6 +89,7 @@ END $$;
 ```
 
 ## Migration from older versions
+
 Since Postgres Memory connector has been re-implemented, the new implementation uses a separate table to store each Collection.
 
 We provide the following migration script to help you migrate to the new structure. However, please note that due to the use of collections as table names, you need to make sure that all Collections conform to the [Postgres naming convention](https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS) before migrating.
@@ -140,7 +143,7 @@ DECLARE
 BEGIN
     FOR r IN SELECT DISTINCT collection FROM sk_memory_table LOOP
         EXECUTE format('INSERT INTO public.%I (key, metadata, embedding, timestamp)
-            SELECT key, metadata::JSONB, embedding, to_timestamp(timestamp / 1000.0) AT TIME ZONE ''UTC'' 
+            SELECT key, metadata::JSONB, embedding, to_timestamp(timestamp / 1000.0) AT TIME ZONE ''UTC''
             FROM sk_memory_table WHERE collection = %L AND key <> '''';', r.collection, r.collection);
     END LOOP;
 END $$;

@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import Any, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
@@ -15,6 +15,8 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIChatPromptTemplate(ChatPromptTemplate):
@@ -38,16 +40,14 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         """
         name = kwargs.get("name")
         if name is not None and role != "function":
-            self._log.warning("name is only used with role: function, ignoring")
+            logger.warning("name is only used with role: function, ignoring")
             name = None
         function_call = kwargs.get("function_call")
         if function_call is not None and role != "assistant":
-            self._log.warning(
-                "function_call is only used with role: assistant, ignoring"
-            )
+            logger.warning("function_call is only used with role: assistant, ignoring")
             function_call = None
             if function_call and not isinstance(function_call, FunctionCall):
-                self._log.warning(
+                logger.warning(
                     "function_call is not a FunctionCall, ignoring: %s", function_call
                 )
                 function_call = None
@@ -69,7 +69,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> "OpenAIChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.
 
@@ -77,7 +77,11 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         that takes precedence over the first message in the list of messages,
         if that is a system message.
         """
-        chat_template = cls(template, template_engine, prompt_config, log)
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
+        chat_template = cls(template, template_engine, prompt_config)
         if (
             prompt_config.completion.chat_system_prompt
             and messages[0]["role"] == "system"
@@ -87,7 +91,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
                 existing_system_message["message"]
                 != prompt_config.completion.chat_system_prompt
             ):
-                chat_template._log.info(
+                logger.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],
                     prompt_config.completion.chat_system_prompt,
