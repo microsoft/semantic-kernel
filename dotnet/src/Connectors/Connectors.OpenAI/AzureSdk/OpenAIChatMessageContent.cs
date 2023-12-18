@@ -26,7 +26,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Gets the metadata key for the list of <see cref="ChatCompletionsToolCall"/>.
     /// </summary>
-    internal static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.ToolCalls";
+    public static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.{nameof(ChatResponseMessage.ToolCalls)}";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
