@@ -15,6 +15,11 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 public static class Example24_OpenApiPlugin_Jira
 {
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// This sample shows how to connect the Semantic Kernel to Jira as an Open API plugin based on the Open API schema.
     /// This format of registering the plugin and its operations, and subsequently executing those operations can be applied
@@ -87,11 +92,7 @@ public static class Example24_OpenApiPlugin_Jira
 
         Console.WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
-            result.GetValue<RestApiOperationResponse>(),
-            new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            });
+            result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
 
         // AddComment Function
@@ -103,12 +104,7 @@ public static class Example24_OpenApiPlugin_Jira
 
         Console.WriteLine("\n\n\n");
 
-        formattedContent = JsonSerializer.Serialize(
-            result.GetValue<RestApiOperationResponse>(),
-            new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            });
+        formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
     }
 
