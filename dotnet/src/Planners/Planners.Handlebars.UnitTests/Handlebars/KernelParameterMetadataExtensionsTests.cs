@@ -70,6 +70,26 @@ public class KernelParameterMetadataExtensionsTests
     }
 
     [Fact]
+    public void ReturnsSetWithOneElementForRecursiveClassType()
+    {
+        // Arrange
+        var recursiveClassType = typeof(RecursiveClass);
+
+        // Act
+        var result = recursiveClassType.ToHandlebarsParameterTypeMetadata();
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal(nameof(RecursiveClass), result.First().Name);
+        Assert.True(result.First().IsComplex);
+        Assert.Equal(2, result.First().Properties.Count);
+        Assert.Equal(nameof(RecursiveClass.Name), result.First().Properties[0].Name);
+        Assert.Equal(typeof(string), result.First().Properties[0].ParameterType);
+        Assert.Equal(nameof(RecursiveClass.Next), result.First().Properties[1].Name);
+        Assert.Equal(typeof(RecursiveClass), result.First().Properties[1].ParameterType);
+    }
+
+    [Fact]
     public void ReturnsSetWithMultipleElementsForNestedClassType()
     {
         // Arrange
@@ -302,6 +322,13 @@ public class KernelParameterMetadataExtensionsTests
         public static int Id { get; set; }
         public static SimpleClass Simple { get; set; } = new SimpleClass();
         public static AnotherClass Another { get; set; } = new AnotherClass();
+    }
+
+    private sealed class RecursiveClass
+    {
+        public string Name { get; set; } = "";
+
+        public RecursiveClass Next { get; set; } = new();
     }
 
     #endregion  
