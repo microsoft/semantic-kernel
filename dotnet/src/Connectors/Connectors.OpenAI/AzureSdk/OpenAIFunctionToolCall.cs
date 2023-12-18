@@ -176,5 +176,5 @@ public sealed class OpenAIFunctionToolCall
         s_type?.SetValue(c, "function");
         return c;
     }
-    private static readonly PropertyInfo? s_type = typeof(ChatCompletionsToolCall).GetProperty("Type", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+    private static readonly PropertyInfo? s_type = typeof(ChatCompletionsFunctionToolCall).GetProperty("Type", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 }
