@@ -32,10 +32,10 @@ public sealed class KernelSystemHelpersTests
     }
 
     [Fact]
-    public async Task ItRendersTemplateWithSetAndGetHelpersAsync()
+    public async Task ItRendersTemplateWithSetHelperAsync()
     {
         // Arrange
-        var template = "{{set name=\"x\" value=10}}{{get name=\"x\"}}";
+        var template = "{{set name=\"x\" value=10}}{{json x}}";
         var arguments = new KernelArguments();
 
         // Act
@@ -63,27 +63,10 @@ public sealed class KernelSystemHelpersTests
     }
 
     [Fact]
-    public async Task GetHelperWithTwoArgumentsReturnsPropertyValueAsync()
+    public async Task ComplexVariableTypeReturnsObjectAsync()
     {
         // Arrange
-        var template = @"{{get ""person"" ""name""}}";
-        var arguments = new KernelArguments
-            {
-                { "person", new { name = "Alice", age = 25 } }
-            };
-
-        // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
-
-        // Assert
-        Assert.Equal("Alice", result);
-    }
-
-    [Fact]
-    public async Task GetHelperWithHashParameterReturnsObjectAsync()
-    {
-        // Arrange
-        var template = @"{{get name=""person""}}";
+        var template = "{{person}}";
         var arguments = new KernelArguments
             {
                 { "person", new { name = "Alice", age = 25 } }
@@ -97,10 +80,27 @@ public sealed class KernelSystemHelpersTests
     }
 
     [Fact]
-    public async Task GetHelperWithNestedObjectReturnsNestedObjectAsync()
+    public async Task VariableWithPropertyReferenceReturnsPropertyValueAsync()
+    {
+        // Arrange
+        var template = "{{person.name}}";
+        var arguments = new KernelArguments
+            {
+                { "person", new { name = "Alice", age = 25 } }
+            };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+
+        // Assert
+        Assert.Equal("Alice", result);
+    }
+
+    [Fact]
+    public async Task VariableWithNestedObjectReturnsNestedObjectAsync()
     {
         // Arrange  
-        var template = @"{{get ""person.Address""}}";
+        var template = "{{person.Address}}";
         var arguments = new KernelArguments
         {
             { "person", new { Name = "Alice", Age = 25, Address = new { City = "New York", Country = "USA" } } }
@@ -124,6 +124,24 @@ public sealed class KernelSystemHelpersTests
 
         // Assert
         Assert.Equal("123", result);
+    }
+
+    [Fact]
+    public async Task ItRendersTemplateWithArrayHelperAndVariableReferenceAsync()
+    {
+        // Arrange
+        var template = @"{{array ""hi"" "" "" name ""!"" ""Welcome to"" "" "" Address.City}}";
+        var arguments = new KernelArguments
+        {
+            { "name", "Alice" },
+            { "Address", new { City = "New York", Country = "USA"  } }
+        };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+
+        // Assert
+        Assert.Equal("hi, ,Alice,!,Welcome to, ,New York", result);
     }
 
     [Fact]
@@ -156,13 +174,31 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithConcatHelperAsync()
     {
         // Arrange
-        var template = "{{concat \"Hello\" \" \" \"World\" \"!\"}}";
+        var template = "{{concat \"Hello\" \" \" name \"!\"}}";
+        var arguments = new KernelArguments
+            {
+                { "name", "Alice" }
+            };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+
+        // Assert
+        Assert.Equal("Hello Alice!", result);
+    }
+
+    [Fact]
+    public async Task ItRendersTemplateWithdSetAndConcatHelpersAsync()
+    {
+        // Arrange
+        var template = "{{set name=\"name\" value=\"Alice\"}}{{concat \"Hello\" \" \" name \"!\"}}";
+
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
 
         // Assert
-        Assert.Equal("Hello World!", result);
+        Assert.Equal("Hello Alice!", result);
     }
 
     [Fact]
