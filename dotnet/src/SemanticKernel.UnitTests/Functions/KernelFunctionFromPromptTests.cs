@@ -58,7 +58,7 @@ public class KernelFunctionFromPromptTests
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string? providedSystemChatPrompt, string expectedSystemChatPrompt)
     {
         // Arrange
         var mockTextGeneration = new Mock<ITextGenerationService>();
@@ -72,11 +72,14 @@ public class KernelFunctionFromPromptTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.AddExecutionSettings(new OpenAIPromptExecutionSettings()
-        {
-            ChatSystemPrompt = providedSystemChatPrompt
-        });
+        var openAIExecutionSettings = providedSystemChatPrompt is null
+            ? new OpenAIPromptExecutionSettings()
+            : new OpenAIPromptExecutionSettings
+            {
+                ChatSystemPrompt = providedSystemChatPrompt
+            };
 
+        promptConfig.AddExecutionSettings(openAIExecutionSettings);
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act

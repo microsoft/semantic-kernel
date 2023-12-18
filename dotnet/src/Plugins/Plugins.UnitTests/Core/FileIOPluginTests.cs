@@ -31,7 +31,7 @@ public class FileIOPluginTests
         // Arrange
         var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
-        File.WriteAllText(path, "hello world");
+        await File.WriteAllTextAsync(path, "hello world");
 
         // Act
         var result = await plugin.ReadAsync(path);
