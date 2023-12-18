@@ -75,7 +75,7 @@ pyarrow = ">=12.0.1,<15.0.0"
 addopts = "--cov=semantic_kernel --cov-report term-missing"
 
 [tool.isort]
-profile = "black"
+profile = "ruff"
 
 [tool.ruff]
 select = ["E", "F", "I"]
