@@ -303,13 +303,6 @@ internal abstract class ClientCore
             {
                 ChatCompletionsFunctionToolCall toolCall = result.ToolCalls[i];
 
-                // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
-                //if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
-                //{
-                //    AddResponseMessage(chatOptions, chat, result: null, "Error: Tool call was not a function call.", toolCall.Id, this.Logger);
-                //    continue;
-                //}
-
                 // Parse the function call arguments.
                 OpenAIFunctionToolCall? openAIFunctionToolCall;
                 try
