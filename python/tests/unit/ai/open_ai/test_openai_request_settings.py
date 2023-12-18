@@ -115,7 +115,9 @@ def test_create_options():
 
 
 def test_create_options_azure_data():
-    az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
+    az_source = AzureAISearchDataSources(
+        indexName="test-index", endpoint="test-endpoint", key="test-key"
+    )
     az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
     extra = ExtraBody(dataSources=[az_data])
     settings = AzureChatRequestSettings(extra_body=extra)
@@ -148,5 +150,7 @@ def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
             ]
         },
     }
-    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatRequestSettings.model_validate(
+        input_dict, strict=True, from_attributes=True
+    )
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"

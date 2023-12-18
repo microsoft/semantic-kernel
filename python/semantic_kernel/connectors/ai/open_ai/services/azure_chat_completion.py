@@ -14,6 +14,7 @@ from typing import (
     overload,
 )
 
+from connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
@@ -31,9 +32,6 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_s
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
-    OpenAIChatCompletionBase,
-)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
@@ -46,7 +44,7 @@ from semantic_kernel.sk_pydantic import HttpsUrl
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
+class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
     """Azure Chat completion class."""
 
     @overload
@@ -355,106 +353,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 else:
                     text, index = _parse_choices(chunk.choices[0])
                     yield text
-
-    # async def complete_chat_with_data_async(
-    #     self,
-    #     messages: List[Dict[str, str]],
-    #     request_settings: "ChatRequestSettings",
-    #     logger: Optional[Logger] = None,
-    #     functions: Optional[List[Dict[str, Any]]] = None,
-    # ) -> Union[
-    #     Tuple[str, str],
-    #     List[Tuple[str, str]],
-    #     Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
-    #     List[Tuple[Optional[str], Optional[str], Optional[FunctionCall]]],
-    # ]:
-    #     """Executes a chat completion request with data (and optionally functions) and returns the result.
-
-    #     Arguments:
-    #         messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-    #         request_settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-    #         logger {Optional[Logger]} -- The logger instance to use. (Optional)
-    #         functions {Optional[List[Dict[str, Any]]]} -- The functions to use for the chat completion. (Optional)
-
-    #     Returns:
-    #         The completion result(s) in the format (assistant_message, tool_message) or
-    #         (assistant_message, tool_message, function_call).
-    #         The tool message contains additional information about the data source including citations.
-    #     """
-    #     response = await self._send_request(
-    #         messages=messages,
-    #         request_settings=request_settings,
-    #         stream=False,
-    #         functions=functions,
-    #     )
-
-    #     if len(response.choices) == 1:
-    #         return _parse_message(response.choices[0].message, with_data=True)
-    #     else:
-    #         return [_parse_message(choice.message) for choice in response.choices]
-
-    # async def complete_chat_stream_with_data_async(
-    #     self,
-    #     messages: List[Dict[str, str]],
-    #     settings: "ChatRequestSettings",
-    #     logger: Optional[Logger] = None,
-    # ) -> AsyncGenerator[Union[str, List[str]], None]:
-    #     """Executes a chat completion request with data and returns the result.
-
-    #     Arguments:
-    #         messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-    #         settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-    #         logger {Optional[Logger]} -- The logger instance to use. (Optional)
-
-    #     Returns:
-    #         Union[str, List[str]] -- The completion result(s).
-    #     """
-    #     response = await self._send_request(
-    #         messages=messages, request_settings=settings, stream=True
-    #     )
-
-    #     return AzureChatWithDataStreamResponse(response, settings)
-
-    # def _create_model_args(
-    #     self, request_settings, stream, prompt, messages, functions, chat_mode
-    # ):
-    #     model_args = super()._create_model_args(
-    #         request_settings, stream, prompt, messages, functions, chat_mode
-    #     )
-
-    #     if (
-    #         hasattr(request_settings, "data_source_settings")
-    #         and request_settings.data_source_settings is not None
-    #     ):
-    #         model_args["extra_body"] = asdict(request_settings.data_source_settings)
-
-    #         # Remove embeddingDeploymentName if not using vector search.
-    #         if (
-    #             model_args["extra_body"]["dataSources"][0]["parameters"][
-    #                 "embeddingDeploymentName"
-    #             ]
-    #             is None
-    #         ):
-    #             del model_args["extra_body"]["dataSources"][0]["parameters"][
-    #                 "embeddingDeploymentName"
-    #             ]
-
-    #         if request_settings.inputLanguage is not None:
-    #             model_args["extra_body"][
-    #                 "inputLanguage"
-    #             ] = request_settings.inputLanguage
-    #         if request_settings.outputLanguage is not None:
-    #             model_args["extra_body"][
-    #                 "outputLanguage"
-    #             ] = request_settings.outputLanguage
-
-    #         # Remove args that are not supported by the with-data extensions API (yet).
-    #         del model_args["n"]
-    #         del model_args["logit_bias"]
-    #         del model_args["presence_penalty"]
-    #         del model_args["frequency_penalty"]
-
-    #     return model_args
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""

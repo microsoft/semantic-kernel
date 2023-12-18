@@ -24,7 +24,7 @@ class PromptTemplate(PromptTemplateBase):
     template: str
     template_engine: PromptTemplatingEngine
     prompt_config: PromptTemplateConfig
-    
+
     def __init__(
         self,
         template: str,

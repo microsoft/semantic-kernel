@@ -70,7 +70,9 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             async_client=async_client,
         )
         if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
     @classmethod
     def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextEmbedding":
