@@ -96,7 +96,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
         foreach (var p in this._promptModel.InputVariables)
         {
-            if (p.Default == null || (p.Default is string stringDefault && string.IsNullOrEmpty(stringDefault)))
+            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
             {
                 continue;
             }
