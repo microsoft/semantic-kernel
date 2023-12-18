@@ -18,7 +18,7 @@ internal static class InternalTypeConverter
     /// <param name="value">The object to convert.</param>
     /// <param name="culture">The CultureInfo to consider during conversion.</param>
     /// <returns>A string representation of the object value, considering the specified CultureInfo.</returns>
-    public static string? ConvertToString(object? value, CultureInfo culture)
+    public static string? ConvertToString(object? value, CultureInfo? culture = null)
     {
         if (value == null) { return null; }
 
@@ -28,7 +28,7 @@ internal static class InternalTypeConverter
 
         return converterDelegate == null
             ? value.ToString()
-            : converterDelegate(value, culture);
+            : converterDelegate(value, culture ?? CultureInfo.InvariantCulture);
     }
 
     /// <summary>
