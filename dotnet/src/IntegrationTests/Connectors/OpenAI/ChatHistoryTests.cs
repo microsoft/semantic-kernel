@@ -25,12 +25,15 @@ public sealed class ChatHistoryTests : IDisposable
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+    private readonly HttpClient _httpClient;
+    private readonly MyHttpMessageHandler _myHttpMessageHandler = new();
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
     public ChatHistoryTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
         Console.SetOut(this._testOutputHelper);
+        this._httpClient = new HttpClient(this._myHttpMessageHandler);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -87,7 +90,7 @@ public sealed class ChatHistoryTests : IDisposable
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
-            httpClient: new HttpClient(new MyHttpMessageHandler()),
+            httpClient: this._httpClient,
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
 
@@ -130,6 +133,8 @@ public sealed class ChatHistoryTests : IDisposable
     {
         if (disposing)
         {
+            this._httpClient.Dispose();
+            this._myHttpMessageHandler.Dispose();
             this._logger.Dispose();
             this._testOutputHelper.Dispose();
         }

@@ -24,11 +24,6 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     internal static string FunctionToolCallsProperty => $"{nameof(ChatResponseMessage)}.FunctionToolCalls";
 
     /// <summary>
-    /// Gets the metadata key for the list of <see cref="ChatCompletionsToolCall"/>.
-    /// </summary>
-    public static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.{nameof(ChatResponseMessage.ToolCalls)}";
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     /// <param name="chatMessage">Azure SDK chat message</param>
@@ -117,7 +112,6 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
 
             // Add the additional entry.
             newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList());
-            newDictionary.Add(ToolCallsProperty, toolCalls);
 
             return newDictionary;
         }
