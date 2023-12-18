@@ -203,25 +203,22 @@ internal static class KernelFunctionHelpers
         // Extract content from wrapper types and deserialize as needed.
         if (resultAsObject is ChatMessageContent chatMessageContent)
         {
-            // If the content is null, then something is wrong with response. Throw an exception.
-            if (chatMessageContent.Content == null)
-            {
-                throw new KernelException("ChatMessageContent.Content is null.");
-            }
+            return chatMessageContent.Content;
+        }
 
-            try
+        if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
+        {
+            // Deserialize any JSON content or return the content as a string
+            if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
-                // Attempt to parse the content as JSON
-                var parsedJson = JsonValue.Parse(chatMessageContent.Content);
+                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
-            catch (JsonException)
-            {
-                // Parser will throw if the content is not valid JSON. In this case, just return the content as-is.
-                return chatMessageContent.Content;
-            }
+
+            return restApiOperationResponse.Content;
         }
-        else if (result.ValueType is not null && result.ValueType != typeof(string))
+
+        if (result.ValueType is not null && result.ValueType != typeof(string))
         {
             // Serialize then deserialize the result to ensure it is parsed as the correct type with appropriate property casing
             var serializedResult = JsonSerializer.Serialize(resultAsObject);
