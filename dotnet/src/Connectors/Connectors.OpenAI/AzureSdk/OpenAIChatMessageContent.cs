@@ -19,12 +19,12 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     public static string ToolIdProperty => $"{nameof(ChatCompletionsToolCall)}.{nameof(ChatCompletionsToolCall.Id)}";
 
     /// <summary>
-    /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
+    /// Gets the metadata key for the list of <see cref="ChatCompletionsFunctionToolCall"/>.
     /// </summary>
     public static string FunctionToolCallsProperty => $"{nameof(ChatResponseMessage)}.FunctionToolCalls";
 
     /// <summary>
-    /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
+    /// Gets the metadata key for the list of <see cref="ChatCompletionsToolCall"/>.
     /// </summary>
     public static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.ToolCalls";
 
@@ -35,9 +35,9 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
     internal OpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList(), metadata))
+        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls, metadata))
     {
-        this.ToolCalls = chatMessage.ToolCalls.OfType<ChatCompletionsToolCall>().ToList();
+        this.ToolCalls = chatMessage.ToolCalls;
     }
 
     /// <summary>

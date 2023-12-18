@@ -551,7 +551,7 @@ internal abstract class ClientCore
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
 
                 static void AddResponseMessage(
-                    ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsFunctionToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
+                    ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
                     string? result, string? errorMessage, ILogger logger)
                 {
                     if (errorMessage is not null && logger.IsEnabled(LogLevel.Debug))
@@ -847,7 +847,7 @@ internal abstract class ClientCore
                 if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
                 {
                     int length = array.GetArrayLength();
-                    var ftcs = new List<ChatCompletionsFunctionToolCall>(length);
+                    var ftcs = new List<ChatCompletionsToolCall>(length);
                     for (int i = 0; i < length; i++)
                     {
                         JsonElement e = array[i];

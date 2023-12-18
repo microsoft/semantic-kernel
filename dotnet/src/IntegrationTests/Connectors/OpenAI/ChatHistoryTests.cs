@@ -56,6 +56,7 @@ public sealed class ChatHistoryTests : IDisposable
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         ChatHistory history = new();
 
+        // Act
         history.AddUserMessage("Make me a special poem");
         var historyBeforeJson = JsonSerializer.Serialize(history.ToList(), s_jsonOptionsCache);
         var service = kernel.GetRequiredService<IChatCompletionService>();
@@ -65,7 +66,10 @@ public sealed class ChatHistoryTests : IDisposable
         ChatMessageContent resultOriginalWorking = await service.GetChatMessageContentAsync(history, settings, kernel);
         var historyJson = JsonSerializer.Serialize(history, s_jsonOptionsCache);
         var historyAfterSerialization = JsonSerializer.Deserialize<ChatHistory>(historyJson);
-        ChatMessageContent shouldNotThrow = await service.GetChatMessageContentAsync(historyAfterSerialization!, settings, kernel);
+        var exception = await Record.ExceptionAsync(() => service.GetChatMessageContentAsync(historyAfterSerialization!, settings, kernel));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     private void ConfigureAzureOpenAIChatAsText(IKernelBuilder kernelBuilder)
