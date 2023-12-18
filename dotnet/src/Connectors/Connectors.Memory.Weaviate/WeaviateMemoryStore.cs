@@ -43,7 +43,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
     private const string DefaultApiVersion = "v1";
 
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -124,7 +124,7 @@ public class WeaviateMemoryStore : IMemoryStore
         {
             (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-            CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
+            CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonOptionsCache);
 
             if (result == null || result.Description != description)
             {
@@ -155,7 +155,7 @@ public class WeaviateMemoryStore : IMemoryStore
         {
             (_, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-            GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonSerializerOptions);
+            GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonOptionsCache);
 
             if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
             {
@@ -200,7 +200,7 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
+        GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonOptionsCache);
         if (getSchemaResponse == null)
         {
             throw new KernelException("Unable to deserialize list collections response");
@@ -274,7 +274,7 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
+        BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonOptionsCache);
 
         if (result == null)
         {
@@ -311,7 +311,7 @@ public class WeaviateMemoryStore : IMemoryStore
             return null;
         }
 
-        WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonSerializerOptions);
+        WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonOptionsCache);
         if (weaviateObject == null)
         {
             this._logger.LogError("Unable to deserialize response to WeaviateObject");
@@ -419,7 +419,7 @@ public class WeaviateMemoryStore : IMemoryStore
         {
             (_, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-            GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonSerializerOptions);
+            GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonOptionsCache);
 
             if (data == null)
             {

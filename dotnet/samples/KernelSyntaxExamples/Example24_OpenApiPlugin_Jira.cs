@@ -15,7 +15,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 public static class Example24_OpenApiPlugin_Jira
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         WriteIndented = true
     };
@@ -92,7 +92,7 @@ public static class Example24_OpenApiPlugin_Jira
 
         Console.WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
-            result.GetValue<RestApiOperationResponse>(), s_jsonOptions);
+            result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
 
         // AddComment Function
@@ -104,7 +104,7 @@ public static class Example24_OpenApiPlugin_Jira
 
         Console.WriteLine("\n\n\n");
 
-        formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptions);
+        formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
     }
 
