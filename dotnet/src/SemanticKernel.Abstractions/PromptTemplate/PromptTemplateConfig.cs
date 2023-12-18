@@ -73,6 +73,10 @@ public sealed class PromptTemplateConfig
             }
 
             // Prevent the default value from being any type other than a string.
+            // It's a temporary limitation that helps shape the public API surface
+            // (changing the type of the Default property to object) now, before the release.
+            // This helps avoid a breaking change while a proper solution for
+            // dealing with the different deserialization outputs of JSON/YAML prompt configurations is being evaluated.
             foreach (var inputVariable in config.InputVariables)
             {
                 // The value of the default property becomes a JsonElement after deserialization because that is how the JsonSerializer handles properties of the object type.

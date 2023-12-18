@@ -35,6 +35,10 @@ public static class KernelFunctionYaml
         var promptTemplateConfig = deserializer.Deserialize<PromptTemplateConfig>(text);
 
         // Prevent the default value from being any type other than a string.
+        // It's a temporary limitation that helps shape the public API surface
+        // (changing the type of the Default property to object) now, before the release.
+        // This helps avoid a breaking change while a proper solution for
+        // dealing with the different deserialization outputs of JSON/YAML prompt configurations is being evaluated.
         foreach (var inputVariable in promptTemplateConfig.InputVariables)
         {
             if (inputVariable.Default is not null && inputVariable.Default is not string)
