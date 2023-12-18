@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
-from logging import Logger
-from typing import Dict, Mapping, Optional, overload
+import logging
+from typing import Any, Dict, Mapping, Optional, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -18,6 +17,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     """Azure Text Completion class."""
@@ -31,7 +32,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -54,8 +55,8 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional)
-            logger: deprecated, use 'log' instead.
+            log: The logger instance to use. (Optional) (Deprecated)
+            logger: deprecated.
         """
 
     @overload
@@ -68,7 +69,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -91,7 +92,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
             logger: deprecated, use 'log' instead.
         """
 
@@ -100,7 +101,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -112,7 +113,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -125,9 +126,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
-        logger: Optional[Logger] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -150,12 +151,16 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
             logger: deprecated, use 'log' instead.
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use.
         """
-        if logger:
-            logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
+        if kwargs.get("logger"):
+            logger.warning("The 'logger' argument is deprecated.")
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint,
@@ -165,7 +170,6 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
-            log=log or logger,
             ai_model_type=OpenAIModelTypes.TEXT,
             async_client=async_client,
         )
@@ -178,7 +182,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         Arguments:
             settings: A dictionary of settings for the service.
                 should contains keys: deployment_name, endpoint, api_key
-                and optionally: api_version, ad_auth, log
+                and optionally: api_version, ad_auth
         """
 
         return AzureTextCompletion(
@@ -190,5 +194,4 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            log=settings.get("log"),
         )

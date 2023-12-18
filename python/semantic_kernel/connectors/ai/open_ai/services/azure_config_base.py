@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from logging import Logger
+import logging
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, Union
 
 from openai import AsyncAzureOpenAI
@@ -19,6 +19,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.sk_pydantic import HttpsUrl
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class AzureOpenAIConfigBase(OpenAIHandler):
     """Internal class for configuring a connection to an Azure OpenAI service."""
@@ -35,7 +37,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,
         default_headers: Union[Mapping[str, str], None] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
@@ -51,12 +53,16 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable
                 or coroutine function providing Azure AD tokens. (Optional)
             default_headers {Union[Mapping[str, str], None]} -- Default headers for HTTP requests. (Optional)
-            log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
+            log  -- Logger instance for logging purposes. (Optional) (Deprecated)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
 
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
         This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
         """
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -95,7 +101,6 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 
         super().__init__(
             ai_model_id=deployment_name,
-            log=log,
             client=async_client,
             ai_model_type=ai_model_type,
         )

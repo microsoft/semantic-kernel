@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import logging
 from dataclasses import asdict
-from logging import Logger
 from typing import (
     Any,
     AsyncGenerator,
@@ -39,6 +39,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 from semantic_kernel.connectors.ai.open_ai.utils import _parse_message
 from semantic_kernel.sk_pydantic import HttpsUrl
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class AzureChatCompletion(
     AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
@@ -55,7 +57,7 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -80,7 +82,7 @@ class AzureChatCompletion(
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
             logger: deprecated, use 'log' instead.
         """
 
@@ -94,7 +96,7 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -117,7 +119,7 @@ class AzureChatCompletion(
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
             logger: deprecated, use 'log' instead.
         """
 
@@ -126,7 +128,7 @@ class AzureChatCompletion(
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -138,7 +140,7 @@ class AzureChatCompletion(
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional)
+            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -151,7 +153,7 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
         use_extensions: bool = False,
     ) -> None:
         """
@@ -191,10 +193,10 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Logger] = None,
-        logger: Optional[Logger] = None,
+        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
         use_extensions: bool = False,
+        **kwargs,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -223,15 +225,21 @@ class AzureChatCompletion(
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional)
-            logger: deprecated, use 'log' instead.
+            log: The logger instance to use. (Optional) (Deprecated)
+            logger: deprecated.
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
             use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
                 When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
                 The default value is False.
         """
-        if logger:
-            logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
+        if kwargs.get("logger"):
+            logger.warning(
+                "The 'logger' argument is deprecated. Please use the `logging` module instead."
+            )
 
         if use_extensions:
             base_url = f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
@@ -249,7 +257,6 @@ class AzureChatCompletion(
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
-            log=log or logger,
             ai_model_type=OpenAIModelTypes.CHAT,
             async_client=async_client,
         )
@@ -262,7 +269,7 @@ class AzureChatCompletion(
         Arguments:
             settings: A dictionary of settings for the service.
                 should contains keys: deployment_name, endpoint, api_key
-                and optionally: api_version, ad_auth, default_headers, log
+                and optionally: api_version, ad_auth, default_headers
         """
         return AzureChatCompletion(
             deployment_name=settings.get("deployment_name"),
@@ -273,14 +280,13 @@ class AzureChatCompletion(
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            log=settings.get("log"),
         )
 
     async def complete_chat_with_data_async(
         self,
         messages: List[Dict[str, str]],
         request_settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
+        logger: Optional[Any] = None,
         functions: Optional[List[Dict[str, Any]]] = None,
     ) -> Union[
         Tuple[str, str],
@@ -293,7 +299,7 @@ class AzureChatCompletion(
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             request_settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            logger  -- The logger instance to use. (Optional)
             functions {Optional[List[Dict[str, Any]]]} -- The functions to use for the chat completion. (Optional)
 
         Returns:
@@ -317,14 +323,14 @@ class AzureChatCompletion(
         self,
         messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
-        logger: Optional[Logger] = None,
+        logger: Optional[Any] = None,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """Executes a chat completion request with data and returns the result.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             settings {ChatRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            logger  -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
