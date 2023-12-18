@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -108,6 +109,9 @@ public interface KernelFunction extends Buildable {
         FromPromptBuilder withExecutionSettings(
             Map<String, PromptExecutionSettings> executionSettings);
 
+        FromPromptBuilder withDefaultExecutionSettings(
+            PromptExecutionSettings executionSettings);
+
         FromPromptBuilder withDescription(String description);
 
         FromPromptBuilder withTemplate(String template);
@@ -117,5 +121,7 @@ public interface KernelFunction extends Buildable {
         FromPromptBuilder withTemplateFormat(String templateFormat);
 
         FromPromptBuilder withOutputVariable(OutputVariable outputVariable);
+
+        FromPromptBuilder withPromptTemplateFactory(PromptTemplateFactory promptTemplateFactory);
     }
 }

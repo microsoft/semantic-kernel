@@ -1,35 +1,37 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Provides the base exception from which all Semantic Kernel exceptions derive. */
-public class SKException extends RuntimeException {
+/** Provides the base exception from which all CHECKED Semantic Kernel exceptions derive. */
+public class SKCheckedException extends Exception {
 
-    /** Initializes a new instance of the {@code SKException} class with a default message. */
-    protected SKException() {
+    /**
+     * Initializes a new instance of the {@code SKCheckedException} class with a default message.
+     */
+    protected SKCheckedException() {
         super();
     }
 
     /**
-     * Initializes a new instance of the {@code SKException} class with its message set to {@code
-     * message}.
+     * Initializes a new instance of the {@code SKCheckedException} class with its message set to
+     * {@code message}.
      *
      * @param message A string that describes the error.
      */
-    protected SKException(@Nullable String message) {
+    protected SKCheckedException(@Nullable String message) {
         super(message);
     }
 
     /**
-     * Initializes a new instance of the {@code SKException} class with its message set to {@code
-     * message}.
+     * Initializes a new instance of the {@code SKCheckedException} class with its message set to
+     * {@code message}.
      *
      * @param message A string that describes the error.
      * @param cause The exception that is the cause of the current exception.
      */
-    protected SKException(@Nullable String message, @Nullable Throwable cause) {
+    protected SKCheckedException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 
@@ -42,6 +44,6 @@ public class SKException extends RuntimeException {
      */
     protected static String formatDefaultMessage(
             @Nonnull String errorMessage, @Nullable String message) {
-        return String.format("%s: %s", errorMessage, message);
+        return SKException.formatDefaultMessage(errorMessage, message);
     }
 }

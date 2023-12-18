@@ -12,7 +12,9 @@ import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -26,7 +28,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelFunctionFromPrompt.class);
 
     private final PromptTemplate template;
-    private final PromptTemplateConfig promptConfig;
 
     public KernelFunctionFromPrompt(PromptTemplate template, PromptTemplateConfig promptConfig) {
         super(
@@ -39,7 +40,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             promptConfig.getExecutionSettings()
         );
         this.template = template;
-        this.promptConfig = promptConfig;
     }
 
     @Override
@@ -47,7 +47,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
-
         return this
             .template
             .renderAsync(kernel, arguments)
@@ -127,7 +126,48 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     @Override
     public <T> Mono<ContextVariable<T>> invokeAsync(Kernel kernel,
         @Nullable KernelArguments arguments, ContextVariableType<T> variableType) {
-        return null;
+        return invokeStreamingAsync(kernel, arguments, variableType)
+            .collectList()
+            .map(streamingContents -> {
+                StringBuilder result = streamingContents
+                    .stream()
+                    .reduce(
+                        new StringBuilder(),
+                        (sb, streamingContent) -> sb.append(streamingContent.innerContent),
+                        StringBuilder::append);
+                T x = variableType.getConverter().fromPromptString(result.toString());
+                return new ContextVariable<>(variableType, x);
+            });
+    }
+
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
+    /// </summary>
+    /// <param name="promptTemplate">Prompt template for the function, defined using the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.</param>
+    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="description">The description to use for the function.</param>
+    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static KernelFunction create(
+        String promptTemplate,
+        @Nullable Map<String, PromptExecutionSettings> executionSettings,
+        @Nullable String functionName,
+        @Nullable String description,
+        @Nullable String templateFormat,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
+
+        return new KernelFunctionFromPrompt.Builder()
+            .withName(functionName)
+            .withDescription(description)
+            .withPromptTemplateFactory(promptTemplateFactory)
+            .withTemplate(promptTemplate)
+            .withTemplateFormat(templateFormat)
+            .withExecutionSettings(executionSettings)
+            .build();
     }
 
     public static final class Builder implements FromPromptBuilder {
@@ -141,6 +181,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         private String template;
         private String templateFormat;
         private OutputVariable outputVariable;
+        private PromptTemplateFactory promptTemplateFactory;
 
 
         @Override
@@ -175,6 +216,16 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         @Override
+        public FromPromptBuilder withDefaultExecutionSettings(
+            PromptExecutionSettings executionSettings) {
+            if (this.executionSettings == null) {
+                this.executionSettings = new HashMap<>();
+            }
+            this.executionSettings.put("default", executionSettings);
+            return this;
+        }
+
+        @Override
         public FromPromptBuilder withDescription(String description) {
             this.description = description;
             return this;
@@ -200,19 +251,35 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         @Override
+        public FromPromptBuilder withPromptTemplateFactory(
+            PromptTemplateFactory promptTemplateFactory) {
+            this.promptTemplateFactory = promptTemplateFactory;
+            return this;
+        }
+
+        @Override
         public KernelFunction build() {
-            return new KernelFunctionFromPrompt(
-                promptTemplate,
-                new PromptTemplateConfig(
-                    name,
-                    template,
-                    templateFormat,
-                    description,
-                    inputVariables,
-                    outputVariable,
-                    executionSettings
-                )
+            PromptTemplateConfig config = new PromptTemplateConfig(
+                name,
+                template,
+                templateFormat,
+                description,
+                inputVariables,
+                outputVariable,
+                executionSettings
             );
+
+            PromptTemplate temp;
+            if (promptTemplate != null) {
+                temp = promptTemplate;
+            } else if (promptTemplateFactory != null) {
+                temp = promptTemplateFactory.tryCreate(config);
+            } else {
+                temp = new HandlebarsPromptTemplate(config);
+            }
+
+            return new KernelFunctionFromPrompt(temp, config);
+
         }
 
         public KernelFunction build(PromptTemplateConfig functionModel) {

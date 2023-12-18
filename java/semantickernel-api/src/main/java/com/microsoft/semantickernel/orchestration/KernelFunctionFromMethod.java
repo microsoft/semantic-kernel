@@ -2,8 +2,8 @@ package com.microsoft.semantickernel.orchestration;
 
 import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
 
-import com.microsoft.semantickernel.AIException;
-import com.microsoft.semantickernel.AIException.ErrorCodes;
+import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;

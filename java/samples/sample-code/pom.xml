@@ -75,15 +75,17 @@
             <artifactId>jackson-core</artifactId>
             <scope>compile</scope>
         </dependency>
-        <!--
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-settings-loader</artifactId>
         </dependency>
-        -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>aiservices-azureopenai</artifactId>
         </dependency>
     </dependencies>
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,9 @@ public class PromptTemplateConfig {
     }
 
     public List<KernelParameterMetadata> getKernelParametersMetadata() {
+        if (inputVariables == null) {
+            return Collections.emptyList();
+        }
         return inputVariables
             .stream()
             .map(inputVariable -> new KernelParameterMetadata(
@@ -84,6 +88,10 @@ public class PromptTemplateConfig {
     }
 
     public KernelReturnParameterMetadata getKernelReturnParameterMetadata() {
+        if (outputVariable == null) {
+            return new KernelReturnParameterMetadata("");
+        }
+
         return new KernelReturnParameterMetadata(
             outputVariable.getDescription()
         );
