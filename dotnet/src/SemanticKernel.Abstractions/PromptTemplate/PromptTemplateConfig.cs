@@ -84,7 +84,7 @@ public sealed class PromptTemplateConfig
                     }
                     else
                     {
-                        throw new ArgumentException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
+                        throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
                             $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{config.Name ?? config.Description}'.");
                     }
                 }

@@ -119,7 +119,7 @@ public class KernelFunctionYamlTests
         }
 
         // Act
-        Assert.Throws<ArgumentException>(() => KernelFunctionYaml.FromPromptYaml(CreateYaml(new { p1 = "v1" })));
+        Assert.Throws<NotSupportedException>(() => KernelFunctionYaml.FromPromptYaml(CreateYaml(new { p1 = "v1" })));
     }
 
     private readonly string _yamlNoExecutionSettings = @"

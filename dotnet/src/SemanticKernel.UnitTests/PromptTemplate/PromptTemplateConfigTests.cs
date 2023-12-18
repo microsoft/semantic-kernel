@@ -248,22 +248,22 @@ public class PromptTemplateConfigTests
 
         // int
         var json = CreateJson((int)1);
-        Assert.Throws<ArgumentException>(() => PromptTemplateConfig.FromJson(json));
+        Assert.Throws<NotSupportedException>(() => PromptTemplateConfig.FromJson(json));
 
         // double
         json = CreateJson((double)1.1);
-        Assert.Throws<ArgumentException>(() => PromptTemplateConfig.FromJson(json));
+        Assert.Throws<NotSupportedException>(() => PromptTemplateConfig.FromJson(json));
 
         // bool
         json = CreateJson((bool)true);
-        Assert.Throws<ArgumentException>(() => PromptTemplateConfig.FromJson(json));
+        Assert.Throws<NotSupportedException>(() => PromptTemplateConfig.FromJson(json));
 
         // array
         json = CreateJson(new[] { "1", "2", "3" });
-        Assert.Throws<ArgumentException>(() => PromptTemplateConfig.FromJson(json));
+        Assert.Throws<NotSupportedException>(() => PromptTemplateConfig.FromJson(json));
 
         // object
         json = CreateJson(new { p1 = "v1" });
-        Assert.Throws<ArgumentException>(() => PromptTemplateConfig.FromJson(json));
+        Assert.Throws<NotSupportedException>(() => PromptTemplateConfig.FromJson(json));
     }
 }

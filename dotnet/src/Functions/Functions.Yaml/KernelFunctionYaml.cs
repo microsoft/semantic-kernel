@@ -39,7 +39,7 @@ public static class KernelFunctionYaml
         {
             if (inputVariable.Default is not null && inputVariable.Default is not string)
             {
-                throw new ArgumentException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
+                throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
                         $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
             }
         }
