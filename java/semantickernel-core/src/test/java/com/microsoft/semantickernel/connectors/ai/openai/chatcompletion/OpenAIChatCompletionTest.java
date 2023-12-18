@@ -33,7 +33,7 @@ public class OpenAIChatCompletionTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.chatCompletion()
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .withModelId("gpt-3.5-turbo-0301")
                                         .build())
                         .build();
@@ -66,7 +66,7 @@ public class OpenAIChatCompletionTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.chatCompletion()
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .withModelId("gpt-3.5-turbo-0301")
                                         .build())
                         .build();

@@ -35,7 +35,7 @@ public class Main {
             .buildAsyncClient();
 
         ChatCompletion<ChatHistory> gpt4Turbo = ChatCompletion.builder()
-                .withOpenAIClient(client)
+                .withOpenAIAsyncClient(client)
                 .withModelId(GPT_4_DEPLOYMENT_NAME)
                 .build();
 

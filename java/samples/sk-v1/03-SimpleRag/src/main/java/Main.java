@@ -38,7 +38,7 @@ public class Main {
             Path.of("Plugins/ChatPlugin/GroundedChat.prompt.yaml"));
 
         ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
-            .withOpenAIClient(client)
+            .withOpenAIAsyncClient(client)
             .withModelId(GPT_35_DEPLOYMENT_NAME)
             .build();
 

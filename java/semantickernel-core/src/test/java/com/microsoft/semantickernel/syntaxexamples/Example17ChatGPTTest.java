@@ -40,7 +40,7 @@ public class Example17ChatGPTTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.chatCompletion()
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .withModelId("gpt-3.5-turbo-0301")
                                         .build())
                         .build();

@@ -8,6 +8,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -31,15 +32,15 @@ public class Main {
             .endpoint(AZURE_OPENAI_ENDPOINT)
             .buildAsyncClient();
 
-        ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
-            .withOpenAIClient(client)
-            .withModelId(GPT_35_DEPLOYMENT_NAME)
+        ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
+            .withOpenAIAsyncClient(client)
+            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-3.5-turbo")
             .build();
 
         /*
         ChatCompletion<ChatHistory> gpt4 = ChatCompletion.builder()
             .withOpenAIClient(client)
-            .withModelId(GPT_4_DEPLOYMENT_NAME)
+            .withModelId(GPT_4_DEPLOYMENT_NAME != null ? GPT_4_DEPLOYMENT_NAME : "gpt-4")
             .build();
          */
 
