@@ -10,6 +10,11 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal static class KernelParameterMetadataExtensions
 {
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
+    {
+        WriteIndented = true,
+    };
+
     /// <summary>
     /// Checks if type is primitive or string
     /// </summary>
@@ -106,12 +111,7 @@ internal static class KernelParameterMetadataExtensions
 
     public static string ToJsonString(this JsonElement jsonProperties)
     {
-        var options = new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-        };
-
-        return JsonSerializer.Serialize(jsonProperties, options);
+        return JsonSerializer.Serialize(jsonProperties, s_jsonOptionsCache);
     }
 
     public static string GetSchemaTypeName(this KernelParameterMetadata parameter)
