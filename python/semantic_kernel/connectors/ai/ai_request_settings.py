@@ -55,7 +55,9 @@ class AIRequestSettings(SKBaseModel):
                 setattr(self, key, getattr(config, key))
 
     @classmethod
-    def from_ai_request_settings(cls, config: "AIRequestSettings") -> "AIRequestSettings":
+    def from_ai_request_settings(
+        cls, config: "AIRequestSettings"
+    ) -> "AIRequestSettings":
         """Create a request settings from a completion config."""
         return cls(
             service_id=config.service_id,
