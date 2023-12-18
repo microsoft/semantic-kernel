@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
-    <ProjectReference Include="..\..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />

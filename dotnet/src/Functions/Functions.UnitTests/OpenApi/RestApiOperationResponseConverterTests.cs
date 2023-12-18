@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
