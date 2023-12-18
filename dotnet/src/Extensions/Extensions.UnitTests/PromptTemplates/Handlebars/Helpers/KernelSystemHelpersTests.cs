@@ -57,7 +57,6 @@ public sealed class KernelSystemHelpersTests
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
-        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
 
         // Assert
         Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
@@ -75,7 +74,6 @@ public sealed class KernelSystemHelpersTests
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
-        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
 
         // Assert
         Assert.Equal("Alice", result);
@@ -93,7 +91,6 @@ public sealed class KernelSystemHelpersTests
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
-        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
 
         // Assert  
         Assert.Equal("{ name = Alice, age = 25 }", result);
@@ -111,7 +108,6 @@ public sealed class KernelSystemHelpersTests
 
         // Act  
         var result = await this.RenderPromptTemplateAsync(template, arguments);
-        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
 
         // Assert  
         Assert.Equal("{ City = New York, Country = USA }", result);

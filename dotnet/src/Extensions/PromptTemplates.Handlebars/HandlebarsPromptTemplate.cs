@@ -46,7 +46,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-        return template(arguments).Trim();
+        return template(arguments).Trim().Replace("&quot;", "\"");
     }
 
     #region private

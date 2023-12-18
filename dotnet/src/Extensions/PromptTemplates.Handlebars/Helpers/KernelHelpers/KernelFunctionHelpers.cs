@@ -201,12 +201,15 @@ internal static class KernelFunctionHelpers
     private static object? ParseResult(FunctionResult result)
     {
         var resultAsObject = result.GetValue<object?>();
+
+        // Extract content from wrapper types and deserialize accordingly
         if (result.ValueType is not null && resultAsObject is not null)
         {
 #pragma warning disable SKEXP0042 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
             {
-                if (restApiOperationResponse.ExpectedSchema is not null)
+                // Deserialize any JSON content or return the content as a string
+                if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
                 {
                     var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
                     return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
@@ -221,6 +224,7 @@ internal static class KernelFunctionHelpers
             }
             else if (result.ValueType != typeof(string))
             {
+                // Serialize and deserialize the result to ensure it is deserialized as the correct type with appropriate property casing
                 var serializedResult = JsonSerializer.Serialize(resultAsObject);
                 return JsonSerializer.Deserialize(serializedResult, result.ValueType);
             }
