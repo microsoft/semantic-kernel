@@ -16,9 +16,7 @@ if sys.version_info >= (3, 9):
     )
 
 
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
-)
+pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
 
 
 def test_google_palm_chat_completion_init() -> None:

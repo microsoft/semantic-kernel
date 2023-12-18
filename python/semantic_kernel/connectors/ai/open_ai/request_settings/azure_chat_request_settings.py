@@ -52,9 +52,7 @@ class AzureCosmosDBDataSource(AzureDataSourceParameters):
 class AzureAISearchDataSources(AzureDataSourceParameters):
     endpoint: Optional[str] = None
     key: Optional[str] = None
-    queryType: Literal[
-        "simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"
-    ] = "simple"
+    queryType: Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"] = "simple"
 
 
 @dataclass
@@ -72,7 +70,7 @@ class ExtraBody(SKBaseModel):
     # output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
 
 
-class AzureOpenAIChatRequestSettings(OpenAIChatRequestSettings):
+class AzureChatRequestSettings(OpenAIChatRequestSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
     response_format: Optional[str] = None

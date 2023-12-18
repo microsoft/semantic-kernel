@@ -25,8 +25,8 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_resp
     AzureChatWithDataStreamResponse,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_open_ai_request_settings import (
-    AzureOpenAIChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+    AzureChatRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
@@ -280,7 +280,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     async def complete_chat_async(
         self,
         messages: List[Dict[str, str]],
-        settings: AzureOpenAIChatRequestSettings,
+        settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
     ) -> Union[
         Tuple[Optional[str], Optional[FunctionCall]],
@@ -319,7 +319,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     async def complete_chat_stream_async(
         self,
         messages: List[Dict[str, str]],
-        settings: AzureOpenAIChatRequestSettings,
+        settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
     ) -> Union[AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse]:
         """Executes a chat completion request and returns the result.
@@ -458,4 +458,4 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
-        return AzureOpenAIChatRequestSettings
+        return AzureChatRequestSettings

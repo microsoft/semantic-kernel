@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_open_ai_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureAISearchDataSources,
-    AzureOpenAIChatRequestSettings,
+    AzureChatRequestSettings,
+    AzureDataSources,
+    ExtraBody,
 )
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
@@ -113,17 +115,17 @@ def test_create_options():
 
 
 def test_create_options_azure_data():
-    az_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
-    settings = AzureOpenAIChatRequestSettings(data_sources=[az_source])
-    print(settings.model_dump(exclude_none=True, by_alias=True))
-    assert False
+    az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
+    az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
+    extra = ExtraBody(dataSources=[az_data])
+    settings = AzureChatRequestSettings(extra_body=extra)
+    options = settings.prepare_settings_dict()
+    assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
 
 
 def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
     input_dict = {
-        "messages": [{'role': 'system', 'content': 'Hello'}],
+        "messages": [{"role": "system", "content": "Hello"}],
         "extra_body": {
             "dataSources": [
                 {
@@ -144,10 +146,7 @@ def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
                     },
                 }
             ]
-        }
+        },
     }
-    settings = AzureOpenAIChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
-    print(settings)
-    print(f"{settings.extra_body=}")
-    print(f"{type(settings.extra_body)=}")
-    assert settings.extra_body.data_sources[0].type == "AzureCosmosDB"
+    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"

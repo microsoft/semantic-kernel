@@ -69,60 +69,54 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 f"{type(self)} service failed to complete the prompt",
                 ex,
             ) from ex
-        if not isinstance(response, AsyncStream):
-            logger.info(f"OpenAI usage: {response.usage}")
-            self.prompt_tokens += response.usage.prompt_tokens
-            self.completion_tokens += response.usage.completion_tokens
-            self.total_tokens += response.usage.total_tokens
-        return response
 
-    def _create_model_args(
-        self,
-        request_settings,
-        stream,
-        prompt,
-        messages,
-        functions,
-        chat_mode,
-    ):
-        model_args = self.get_model_args()
-        model_args.update(
-            {
-                "stream": stream,
-                "temperature": request_settings.temperature,
-                "top_p": request_settings.top_p,
-                "stop": (
-                    request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None and len(request_settings.stop_sequences) > 0
-                    else None
-                ),
-                "max_tokens": request_settings.max_tokens,
-                "presence_penalty": request_settings.presence_penalty,
-                "frequency_penalty": request_settings.frequency_penalty,
-                "logit_bias": (
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-                "n": request_settings.number_of_responses,
-            }
-        )
-        if not chat_mode:
-            model_args["prompt"] = prompt
-            if hasattr(request_settings, "logprobs"):
-                model_args["logprobs"] = request_settings.logprobs
-            return model_args
+    # def _create_model_args(
+    #     self,
+    #     request_settings,
+    #     stream,
+    #     prompt,
+    #     messages,
+    #     functions,
+    #     chat_mode,
+    # ):
+    #     model_args = self.get_model_args()
+    #     model_args.update(
+    #         {
+    #             "stream": stream,
+    #             "temperature": request_settings.temperature,
+    #             "top_p": request_settings.top_p,
+    #             "stop": (
+    #                 request_settings.stop_sequences
+    #                 if request_settings.stop_sequences is not None and len(request_settings.stop_sequences) > 0
+    #                 else None
+    #             ),
+    #             "max_tokens": request_settings.max_tokens,
+    #             "presence_penalty": request_settings.presence_penalty,
+    #             "frequency_penalty": request_settings.frequency_penalty,
+    #             "logit_bias": (
+    #                 request_settings.token_selection_biases
+    #                 if request_settings.token_selection_biases is not None
+    #                 and len(request_settings.token_selection_biases) > 0
+    #                 else {}
+    #             ),
+    #             "n": request_settings.number_of_responses,
+    #         }
+    #     )
+    #     if not chat_mode:
+    #         model_args["prompt"] = prompt
+    #         if hasattr(request_settings, "logprobs"):
+    #             model_args["logprobs"] = request_settings.logprobs
+    #         return model_args
 
-        model_args["messages"] = messages or [{"role": "user", "content": prompt}]
-        if functions and request_settings.function_call is not None:
-            model_args["function_call"] = request_settings.function_call
-            if request_settings.function_call != "auto":
-                model_args["functions"] = [func for func in functions if func["name"] == request_settings.function_call]
-            else:
-                model_args["functions"] = functions
+    #     model_args["messages"] = messages or [{"role": "user", "content": prompt}]
+    #     if functions and request_settings.function_call is not None:
+    #         model_args["function_call"] = request_settings.function_call
+    #         if request_settings.function_call != "auto":
+    #             model_args["functions"] = [func for func in functions if func["name"] == request_settings.function_call]
+    #         else:
+    #             model_args["functions"] = functions
 
-        return model_args
+    #     return model_args
 
     # def _create_model_args(
     #     self, request_settings, stream, prompt, messages, functions, chat_mode
@@ -186,7 +180,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
 
     def store_usage(self, response):
         if not isinstance(response, AsyncStream):
-            self.log.info(f"OpenAI usage: {response.usage}")
+            logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.total_tokens += response.usage.total_tokens
             if hasattr(response.usage, "completion_tokens"):

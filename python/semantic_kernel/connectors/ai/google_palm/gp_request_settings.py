@@ -1,11 +1,11 @@
-from typing import Any, Dict, Iterable, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from pydantic import Field, model_validator
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 
 # TODO: replace back with google types once pydantic issue is fixed.
-MessageOptions = Union[str, Dict[str, Any]]
+MessageOptions = Union[str, Dict[str, Any], List[Tuple[str, str]]]
 MessagesOptions = Union[MessageOptions, Iterable[MessageOptions]]
 
 MessagePromptOption = Union[str, dict]
@@ -39,6 +39,4 @@ class GooglePalmChatRequestSettings(GooglePalmRequestSettings):
     def validate_input(self):
         if self.prompt is not None:
             if self.messages or self.context or self.examples:
-                raise ValueError(
-                    "Prompt cannot be used with messages, context or examples"
-                )
+                raise ValueError("Prompt cannot be used with messages, context or examples")

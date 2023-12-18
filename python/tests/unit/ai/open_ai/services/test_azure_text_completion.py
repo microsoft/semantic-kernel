@@ -171,7 +171,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
     prompt = "hello world"
     complete_request_settings = OpenAITextRequestSettings()
 
-    token_bias = {200: 100}
+    token_bias = {"200": 100}
     complete_request_settings.logit_bias = token_bias
 
     azure_text_completion = AzureTextCompletion(
