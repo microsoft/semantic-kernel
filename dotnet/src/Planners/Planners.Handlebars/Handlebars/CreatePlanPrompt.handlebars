@@ -25,15 +25,11 @@ What's the sum of 5+10+15?
     count
   )
 }}
-  \{{set
-    "index"
-    this
-  }}
   \{{!-- Step 3: Create random number --}}
   \{{set
     "randomNumber"
     (Example{{nameDelimiter}}Random
-      seed=index
+      seed=this
     )
   }}
   \{{!-- Step 4: Call example helper with random number and print the result to the screen --}}
