@@ -16,7 +16,9 @@ from typing import (
 from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
@@ -36,7 +38,9 @@ from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_m
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
+class OpenAIChatCompletion(
+    OpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase
+):
     """OpenAI Chat completion class."""
 
     @overload
@@ -128,7 +132,9 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
             log  -- The logger instance to use. (Optional) (Deprecated)
         """
         if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
