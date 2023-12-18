@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using HandlebarsDotNet;
@@ -86,7 +87,7 @@ internal static class KernelSystemHelpers
             // Return object or extract specified property from object
             object? GetObject(string key, string? propertyName = null)
             {
-                if (propertyName is null)
+                if (string.IsNullOrEmpty(propertyName))
                 {
                     var names = key.Split('.');
                     if (names.Length == 1)
@@ -98,14 +99,14 @@ internal static class KernelSystemHelpers
                     propertyName = names[1];
                 }
 
-                var obj = variables[key];
+                object? obj = variables[key];
                 if (obj is JsonObject jsonObj)
                 {
-                    var result = jsonObj.TryGetPropertyValue(propertyName, out var jsonProp) ? jsonProp : jsonObj;
+                    var result = jsonObj.TryGetPropertyValue(propertyName!, out var jsonProp) ? jsonProp : jsonObj;
                     return KernelHelpersUtils.DeserializeJsonNode(result);
                 }
 
-                var property = obj?.GetType().GetProperty(propertyName, System.Reflection.BindingFlags.IgnoreCase);
+                PropertyInfo? property = obj?.GetType().GetProperty(propertyName);
                 return property?.GetValue(obj, null);
             }
 

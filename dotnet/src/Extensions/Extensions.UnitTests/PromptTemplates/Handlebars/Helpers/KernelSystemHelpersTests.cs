@@ -64,6 +64,60 @@ public sealed class KernelSystemHelpersTests
     }
 
     [Fact]
+    public async Task GetHelperWithTwoArgumentsReturnsPropertyValueAsync()
+    {
+        // Arrange
+        var template = @"{{get ""person"" ""name""}}";
+        var arguments = new KernelArguments
+            {
+                { "person", new { name = "Alice", age = 25 } }
+            };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
+
+        // Assert
+        Assert.Equal("Alice", result);
+    }
+
+    [Fact]
+    public async Task GetHelperWithHashParameterReturnsObjectAsync()
+    {
+        // Arrange
+        var template = @"{{get name=""person""}}";
+        var arguments = new KernelArguments
+            {
+                { "person", new { name = "Alice", age = 25 } }
+            };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
+
+        // Assert  
+        Assert.Equal("{ name = Alice, age = 25 }", result);
+    }
+
+    [Fact]
+    public async Task GetHelperWithNestedObjectReturnsNestedObjectAsync()
+    {
+        // Arrange  
+        var template = @"{{get ""person.Address""}}";
+        var arguments = new KernelArguments
+        {
+            { "person", new { Name = "Alice", Age = 25, Address = new { City = "New York", Country = "USA" } } }
+        };
+
+        // Act  
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        result = result.Replace("&quot;", "\"", StringComparison.CurrentCultureIgnoreCase);
+
+        // Assert  
+        Assert.Equal("{ City = New York, Country = USA }", result);
+    }
+
+    [Fact]
     public async Task ItRendersTemplateWithArrayHelperAsync()
     {
         // Arrange
