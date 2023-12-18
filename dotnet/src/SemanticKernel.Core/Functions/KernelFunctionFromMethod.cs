@@ -114,7 +114,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             if (functionResult.Value is not null)
             {
-                yield return (TResult)(object)new StreamingMethodContent(functionResult.Value);
+                yield return (TResult)(object)new StreamingMethodContent(functionResult.Value, functionResult.Metadata);
             }
             yield break;
         }
