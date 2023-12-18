@@ -2,7 +2,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -21,7 +20,7 @@ public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParamet
         HttpClient? httpClient = null,
         OpenAIAuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
-        string userAgent = HttpHeaderValues.UserAgent,
+        string? userAgent = null,
         bool ignoreNonCompliantErrors = false,
         bool enableDynamicOperationPayload = true,
         bool enablePayloadNamespacing = false) : base(httpClient, null, serverUrlOverride, userAgent, ignoreNonCompliantErrors, enableDynamicOperationPayload, enablePayloadNamespacing)

@@ -24,11 +24,11 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
-    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
     public static KernelFunction CreateFunctionFromMethod(
         this Kernel kernel,
         Delegate method,
@@ -38,6 +38,7 @@ public static class KernelExtensions
         KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(method);
 
         return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
@@ -49,11 +50,11 @@ public static class KernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
-    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
     public static KernelFunction CreateFunctionFromMethod(
         this Kernel kernel,
         MethodInfo method,
@@ -64,27 +65,28 @@ public static class KernelExtensions
         KernelReturnParameterMetadata? returnParameter = null)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(method);
 
         return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
     #endregion
 
     #region CreateFunctionFromPrompt
-    // TODO: Revise these CreateFunctionFromPrompt method XML comments
 
     /// <summary>
-    /// Creates a string-to-string prompt function, with no direct support for input context.
-    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
-    /// can only pass in a string in input and receive a string in output.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
-    /// <param name="executionSettings">Optional LLM execution settings</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">Optional description, useful for the planner</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
-    /// <returns>A function ready to use</returns>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
+    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to a randomly generated name.</param>
+    /// <param name="description">The description to use for the function.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
@@ -95,6 +97,7 @@ public static class KernelExtensions
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(promptTemplate);
 
         return KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
@@ -107,18 +110,22 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptConfig">Prompt template configuration.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A function ready to use</returns>
+    /// <param name="promptConfig">Configuration information describing the prompt.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptConfig"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
+        Verify.NotNull(promptConfig);
 
         return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
     }
@@ -131,6 +138,7 @@ public static class KernelExtensions
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -149,6 +157,7 @@ public static class KernelExtensions
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -167,6 +176,7 @@ public static class KernelExtensions
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -184,6 +194,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -202,6 +213,7 @@ public static class KernelExtensions
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -217,7 +229,7 @@ public static class KernelExtensions
     /// <summary>Adds the <paramref name="plugin"/> to the <paramref name="plugins"/>.</summary>
     /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
     /// <param name="plugin">The plugin to add.</param>
-    /// <returns></returns>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     public static IKernelBuilderPlugins Add(this IKernelBuilderPlugins plugins, KernelPlugin plugin)
     {
         Verify.NotNull(plugins);
@@ -236,6 +248,7 @@ public static class KernelExtensions
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -253,6 +266,7 @@ public static class KernelExtensions
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -270,6 +284,7 @@ public static class KernelExtensions
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
@@ -289,6 +304,7 @@ public static class KernelExtensions
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
@@ -330,10 +346,13 @@ public static class KernelExtensions
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
+    /// <param name="pluginDirectory">Path to the directory containing the plugin.</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting discovered prompts into <see cref="IPromptTemplate"/>s.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing prompt functions created from the specified directory.</returns>
     public static KernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -437,8 +456,11 @@ public static class KernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting discovered prompts into <see cref="IPromptTemplate"/>s.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing prompt functions created from the specified directory.</returns>
     public static KernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -482,8 +504,11 @@ public static class KernelExtensions
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="pluginDirectory">Path to the directory containing the plugin, e.g. "/myAppPlugins/StrategyPlugin"</param>
     /// <param name="pluginName">The name of the plugin. If null, the name is derived from the <paramref name="pluginDirectory"/> directory name.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
-    /// <returns>A list of all the prompt functions found in the directory, indexed by plugin name.</returns>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting discovered prompts into <see cref="IPromptTemplate"/>s.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     public static IKernelBuilderPlugins AddFromPromptDirectory(
         this IKernelBuilderPlugins plugins,
         string pluginDirectory,
@@ -504,10 +529,13 @@ public static class KernelExtensions
     /// Invokes a prompt specified via a prompt template.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
     /// <returns>The result of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
@@ -536,13 +564,16 @@ public static class KernelExtensions
     }
 
     /// <summary>
-    /// Invokes a prompt specified via a prompt template and return the results of type <typeparamref name="T"/>.
+    /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
     /// <returns>The <typeparamref name="T"/> of the function result value.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
@@ -574,10 +605,13 @@ public static class KernelExtensions
     /// Invokes a prompt specified via a prompt template and streams its results.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
@@ -591,7 +625,7 @@ public static class KernelExtensions
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
-         string? templateFormat = null,
+        string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -611,10 +645,13 @@ public static class KernelExtensions
     /// Invokes a prompt specified via a prompt template and streams its results of type <typeparamref name="T"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>

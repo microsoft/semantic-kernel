@@ -39,6 +39,8 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
+        Verify.NotNull(kernel);
+
         arguments = this.GetVariables(arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
