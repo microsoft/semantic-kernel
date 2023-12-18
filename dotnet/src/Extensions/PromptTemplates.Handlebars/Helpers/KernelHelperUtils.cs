@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
@@ -63,5 +65,19 @@ internal static class KernelHelpersUtils
             ulong.TryParse(input, out _) ||
             double.TryParse(input, out _) ||
             decimal.TryParse(input, out _);
+    }
+
+    /// <summary>
+    /// Tries to convert a <see cref="JsonNode"/> object to a specific type.
+    /// </summary>
+    public static object? DeserializeJsonNode(JsonNode? jsonContent)
+    {
+        return jsonContent?.GetValueKind() switch
+        {
+            JsonValueKind.Array => jsonContent.AsArray(),
+            JsonValueKind.Object => jsonContent.AsObject(),
+            JsonValueKind.String => jsonContent.GetValue<string>(),
+            _ => jsonContent
+        };
     }
 }

@@ -33,7 +33,7 @@ public sealed class HandlebarsPlanTests
 {{set ""stringifiedInt"" (Foo-StringifyInt x=42)}}  
 
 {{!-- Step 5: Output the results --}}  
-{{json (concat (get ""barResult"") (get ""bazAsyncResult"") (get ""combinedWords"") (get ""stringifiedInt""))}}";
+{{concat barResult bazAsyncResult combinedWords stringifiedInt}}";
 
     [Fact]
     public async Task InvokeValidPlanAsync()
