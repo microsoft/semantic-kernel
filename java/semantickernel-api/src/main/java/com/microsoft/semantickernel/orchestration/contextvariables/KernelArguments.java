@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.orchestration.contextvariables;
 // Copyright (c) Microsoft. All rights reserved.
 
 import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Map;
@@ -65,7 +64,7 @@ public interface KernelArguments extends Buildable, Map<String, ContextVariable<
     PromptExecutionSettings getExecutionSettings();
 
     static Builder builder() {
-        return BuildersSingleton.INST.getInstance(Builder.class);
+        return new DefaultKernelArguments.Builder();
     }
 
     boolean isNullOrEmpty(String key);

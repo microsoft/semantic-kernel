@@ -14,28 +14,6 @@ import javax.annotation.Nullable;
 
 public class KernelPluginFactory {
 
-    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
-    /// <param name="pluginName">
-    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
-    /// </param>
-    /// <param name="serviceProvider">
-    /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
-    /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
-    /// </param>
-    /// <remarks>
-    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
-    /// Attributed methods must all have different names; overloads are not supported.
-    /// </remarks>
-
-    public static KernelPlugin createFromType(
-        @Nullable
-        String pluginName,
-        @Nullable
-        ServiceProvider serviceProvider) {
-        throw new Todo();
-    }
-
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">

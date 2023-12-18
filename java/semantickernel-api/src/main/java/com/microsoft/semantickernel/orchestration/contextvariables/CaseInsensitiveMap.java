@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.orchestration;
+package com.microsoft.semantickernel.orchestration.contextvariables;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CaseInsensitiveMap<T> extends HashMap<String, T> {
+
     public CaseInsensitiveMap(Map<String, T> kvMap) {
         super();
         putAll(kvMap);
@@ -28,7 +29,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
 
     @Override
     public T computeIfPresent(
-            String key, BiFunction<? super String, ? super T, ? extends T> remappingFunction) {
+        String key, BiFunction<? super String, ? super T, ? extends T> remappingFunction) {
         if (key == null) {
             return super.computeIfPresent(null, remappingFunction);
         }
@@ -37,7 +38,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
 
     @Override
     public T compute(
-            String key, BiFunction<? super String, ? super T, ? extends T> remappingFunction) {
+        String key, BiFunction<? super String, ? super T, ? extends T> remappingFunction) {
         if (key == null) {
             return super.compute(null, remappingFunction);
         }
@@ -70,7 +71,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
 
     @Override
     public T merge(
-            String key, T value, BiFunction<? super T, ? super T, ? extends T> remappingFunction) {
+        String key, T value, BiFunction<? super T, ? super T, ? extends T> remappingFunction) {
         if (key == null) {
             return super.merge(null, value, remappingFunction);
         }
@@ -88,11 +89,11 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
     @Override
     public void putAll(Map<? extends String, ? extends T> m) {
         super.putAll(
-                m.entrySet().stream()
-                        .collect(
-                                Collectors.toMap(
-                                        key -> key.getKey().toLowerCase(Locale.ROOT),
-                                        Entry::getValue)));
+            m.entrySet().stream()
+                .collect(
+                    Collectors.toMap(
+                        key -> key.getKey().toLowerCase(Locale.ROOT),
+                        Entry::getValue)));
     }
 
     @Override
