@@ -44,6 +44,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(kernel);
+
         return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
     }
 

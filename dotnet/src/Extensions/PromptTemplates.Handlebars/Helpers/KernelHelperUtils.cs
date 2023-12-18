@@ -72,19 +72,12 @@ internal static class KernelHelpersUtils
     /// </summary>
     public static object? DeserializeJsonNode(JsonNode? jsonContent)
     {
-        if (jsonContent?.GetValueKind() == JsonValueKind.Array)
+        return jsonContent?.GetValueKind() switch
         {
-            return jsonContent.AsArray();
-        }
-        else if (jsonContent?.GetValueKind() == JsonValueKind.Object)
-        {
-            return jsonContent.AsObject();
-        }
-        else if (jsonContent?.GetValueKind() == JsonValueKind.String)
-        {
-            return jsonContent.GetValue<string>();
-        }
-
-        return jsonContent;
+            JsonValueKind.Array => jsonContent.AsArray(),
+            JsonValueKind.Object => jsonContent.AsObject(),
+            JsonValueKind.String => jsonContent.GetValue<string>(),
+            _ => jsonContent
+        };
     }
 }

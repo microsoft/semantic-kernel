@@ -8,8 +8,6 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
@@ -194,7 +192,7 @@ internal static class KernelFunctionHelpers
     }
 
     /// <summary>
-    /// Parse the <see cref="FunctionResult"/> into an object, extracting the appropriate value if the return type is <see cref="OpenAIChatMessageContent"/>.
+    /// Parse the <see cref="FunctionResult"/> into an object, extracting wrapped content as necessary.
     /// </summary>
     /// <param name="result">Function result.</param>
     /// <returns>Deserialized object</returns>
@@ -202,32 +200,32 @@ internal static class KernelFunctionHelpers
     {
         var resultAsObject = result.GetValue<object?>();
 
-        // Extract content from wrapper types and deserialize accordingly
-        if (result.ValueType is not null && resultAsObject is not null)
+        // Extract content from wrapper types and deserialize as needed.
+        if (resultAsObject is ChatMessageContent chatMessageContent)
         {
-#pragma warning disable SKEXP0042 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
+            // If the content is null, then something is wrong with response. Throw an exception.
+            if (chatMessageContent.Content == null)
             {
-                // Deserialize any JSON content or return the content as a string
-                if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
-                {
-                    var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
-                    return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
-                }
+                throw new KernelException("ChatMessageContent.Content is null.");
+            }
 
-                return restApiOperationResponse.Content;
-#pragma warning restore SKEXP0042 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            }
-            else if (resultAsObject is OpenAIChatMessageContent openAIChatMessageContent)
+            try
             {
-                return openAIChatMessageContent.Content;
+                // Attempt to parse the content as JSON
+                var parsedJson = JsonValue.Parse(chatMessageContent.Content);
+                return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
-            else if (result.ValueType != typeof(string))
+            catch (JsonException)
             {
-                // Serialize and deserialize the result to ensure it is deserialized as the correct type with appropriate property casing
-                var serializedResult = JsonSerializer.Serialize(resultAsObject);
-                return JsonSerializer.Deserialize(serializedResult, result.ValueType);
+                // Parser will throw if the content is not valid JSON. In this case, just return the content as-is.
+                return chatMessageContent.Content;
             }
+        }
+        else if (result.ValueType is not null && result.ValueType != typeof(string))
+        {
+            // Serialize then deserialize the result to ensure it is parsed as the correct type with appropriate property casing
+            var serializedResult = JsonSerializer.Serialize(resultAsObject);
+            return JsonSerializer.Deserialize(serializedResult, result.ValueType);
         }
 
         return resultAsObject;
