@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
@@ -101,7 +102,8 @@ internal static class KernelFunctionHelpers
 
         return actualParameterType is null
             || actualParameterType == argument.GetType()
-            || (parameterIsNumeric && argIsNumeric);
+            || (argIsNumeric && parameterIsNumeric)
+            || actualParameterType == typeof(string); // The kernel should handle this conversion
     }
 
     /// <summary>
@@ -190,16 +192,37 @@ internal static class KernelFunctionHelpers
     }
 
     /// <summary>
-    /// Parse the <see cref="FunctionResult"/> into an object, extracting the appropriate value if the return type is <see cref="ChatMessageContent"/>.
+    /// Parse the <see cref="FunctionResult"/> into an object, extracting wrapped content as necessary.
     /// </summary>
     /// <param name="result">Function result.</param>
     /// <returns>Deserialized object</returns>
     private static object? ParseResult(FunctionResult result)
     {
         var resultAsObject = result.GetValue<object?>();
+
+        // Extract content from wrapper types and deserialize as needed.
         if (resultAsObject is ChatMessageContent chatMessageContent)
         {
-            resultAsObject = chatMessageContent.Content;
+            return chatMessageContent.Content;
+        }
+
+        if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
+        {
+            // Deserialize any JSON content or return the content as a string
+            if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
+                return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
+            }
+
+            return restApiOperationResponse.Content;
+        }
+
+        if (result.ValueType is not null && result.ValueType != typeof(string))
+        {
+            // Serialize then deserialize the result to ensure it is parsed as the correct type with appropriate property casing
+            var serializedResult = JsonSerializer.Serialize(resultAsObject);
+            return JsonSerializer.Deserialize(serializedResult, result.ValueType);
         }
 
         return resultAsObject;
