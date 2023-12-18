@@ -47,7 +47,7 @@ public sealed class InputVariable
     /// Gets or sets a default value for the variable.
     /// </summary>
     [JsonPropertyName("default")]
-    public string? Default { get; set; }
+    public object? Default { get; set; }
 
     /// <summary>
     /// Gets or sets whether the variable is considered required (rather than optional).
