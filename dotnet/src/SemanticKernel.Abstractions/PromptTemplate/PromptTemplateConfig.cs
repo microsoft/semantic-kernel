@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -10,47 +10,125 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Prompt template configuration.
+/// Provides the configuration information necessary to create a prompt template.
 /// </summary>
+/// <remarks>
+/// A prompt template is a template that can be used to generate a prompt to be submitted to an AI service.
+/// For basic prompts, the template may be supplied as a simple string. For more complex prompts, more information
+/// is desirable for describing the prompt template, such as details on input variables expected by the template.
+/// This can all be provided by a <see cref="PromptTemplateConfig"/>, where its <see cref="PromptTemplateConfig.Template"/>
+/// is the prompt template string itself, then with other properties set with additional information. To create the
+/// actual prompt template, a <see cref="IPromptTemplateFactory"/> is used to create an <see cref="IPromptTemplate"/>;
+/// this is done automatically by the APIs that accept a <see cref="PromptTemplateConfig"/>, using a default template
+/// factory that understands the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> format, but with the
+/// ability to supply other factories for interpreting other formats.
+/// </remarks>
 public sealed class PromptTemplateConfig
 {
-    /// <summary>
-    /// Semantic Kernel template format.
-    /// </summary>
-    public const string SemanticKernelTemplateFormat = "semantic-kernel";
-
+    /// <summary>The format of the prompt template.</summary>
+    private string? _templateFormat;
+    /// <summary>The prompt template string.</summary>
+    private string _template = string.Empty;
     /// <summary>Lazily-initialized input variables.</summary>
     private List<InputVariable>? _inputVariables;
-
-    /// <summary>Lazily-initialized execution settings. The key is the service id or "default" for the default execution settings.</summary>
+    /// <summary>Lazily-initialized execution settings. The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.</summary>
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
-    /// Name of the kernel function.
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
+    public PromptTemplateConfig()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
+    /// </summary>
+    /// <param name="template">The prompt template string that defines the prompt.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
+    public PromptTemplateConfig(string template)
+    {
+        this.Template = template;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
+    /// </summary>
+    /// <param name="json">A string containing a JSON representation of the <see cref="PromptTemplateConfig"/>.</param>
+    /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    public static PromptTemplateConfig FromJson(string json)
+    {
+        Verify.NotNullOrWhiteSpace(json);
+
+        Exception? innerException = null;
+        PromptTemplateConfig? result = null;
+        try
+        {
+            result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
+        }
+        catch (JsonException e)
+        {
+            innerException = e;
+        }
+
+        return
+            result ??
+            throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
+    }
+
+    /// <summary>
+    /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
+    /// </summary>
+    /// <remarks>
+    /// If the name is null or empty, a random name will be generated dynamically when creating a function.
+    /// </remarks>
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; }
 
     /// <summary>
-    /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
-    /// </summary>
-    [JsonPropertyName("template_format")]
-    public string TemplateFormat { get; set; } = SemanticKernelTemplateFormat;
-
-    /// <summary>
-    /// The prompt template
-    /// </summary>
-    [JsonPropertyName("template")]
-    public string Template { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Description
+    /// Gets or sets a function description to use by default when creating prompt functions using this configuration.
     /// </summary>
     [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
 
     /// <summary>
-    /// Input variables.
+    /// Gets the identifier of the Semantic Kernel template format.
+    /// </summary>
+    public static string SemanticKernelTemplateFormat => "semantic-kernel";
+
+    /// <summary>
+    /// Gets or sets the format of the prompt template.
+    /// </summary>
+    /// <remarks>
+    /// If no template format is specified, a default format of <see cref="SemanticKernelTemplateFormat"/> is used.
+    /// </remarks>
+    [JsonPropertyName("template_format")]
+    [AllowNull]
+    public string TemplateFormat
+    {
+        get => this._templateFormat ?? SemanticKernelTemplateFormat;
+        set => this._templateFormat = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the prompt template string that defines the prompt.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+    [JsonPropertyName("template")]
+    public string Template
+    {
+        get => this._template;
+        set
+        {
+            Verify.NotNull(value);
+            this._template = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the collection of input variables used by the prompt template.
     /// </summary>
     [JsonPropertyName("input_variables")]
     public List<InputVariable> InputVariables
@@ -64,14 +142,17 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Output variable.
+    /// Gets or sets the output variable used by the prompt template.
     /// </summary>
     [JsonPropertyName("output_variable")]
     public OutputVariable? OutputVariable { get; set; }
 
     /// <summary>
-    /// Prompt execution settings.
+    /// Gets or sets the collection of execution settings used by the prompt template.
     /// </summary>
+    /// <remarks>
+    /// The settings dictionary is keyed by the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// </remarks>
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
@@ -84,33 +165,22 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Default execution settings.
-    /// </summary>
-    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings is not null && this._executionSettings.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) ? settings : null;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
-    /// </summary>
-    public PromptTemplateConfig()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
-    /// </summary>
-    public PromptTemplateConfig(string template)
-    {
-        this.Template = template;
-    }
-
-    /// <summary>
-    /// Adds the <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
+    /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
     /// </summary>
     /// <remarks>
-    /// The key is the service id or "default" for the default execution settings.
+    /// If no default is specified, this will return null.
     /// </remarks>
-    /// <param name="settings">Instance of <see cref="PromptExecutionSettings"/></param>
-    /// <param name="serviceId">Service id</param>
+    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true ? settings : null;
+
+    /// <summary>
+    /// Adds the specified <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
+    /// </summary>
+    /// <remarks>
+    /// The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// If the service ID is null, <see cref="PromptExecutionSettings.DefaultServiceId"/> will be used.
+    /// </remarks>
+    /// <param name="settings">The <see cref="PromptExecutionSettings"/> to add to the dictionary.</param>
+    /// <param name="serviceId">The service ID with which to associated <paramref name="settings"/>, or null if this should be the default settings.</param>
     public void AddExecutionSettings(PromptExecutionSettings settings, string? serviceId = null)
     {
         Verify.NotNull(settings);
@@ -118,58 +188,47 @@ public sealed class PromptTemplateConfig
         var key = serviceId ?? PromptExecutionSettings.DefaultServiceId;
         if (this.ExecutionSettings.ContainsKey(key))
         {
-            throw new ArgumentException($"Execution settings for service id '{key}' already exists.");
+            throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
         this.ExecutionSettings[key] = settings;
     }
 
     /// <summary>
-    /// Return the input variables metadata.
+    /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
     /// </summary>
     internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
+        KernelParameterMetadata[] result = Array.Empty<KernelParameterMetadata>();
         if (this._inputVariables is List<InputVariable> inputVariables)
         {
-            return inputVariables.Select(p => new KernelParameterMetadata(p.Name)
+            result = new KernelParameterMetadata[inputVariables.Count];
+            for (int i = 0; i < result.Length; i++)
             {
-                Description = p.Description,
-                DefaultValue = p.Default,
-                IsRequired = p.IsRequired,
-                ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : typeof(string),
-                Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
-            }).ToList();
+                InputVariable p = inputVariables[i];
+                result[i] = new KernelParameterMetadata(p.Name)
+                {
+                    Description = p.Description,
+                    DefaultValue = p.Default,
+                    IsRequired = p.IsRequired,
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : typeof(string),
+                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
+                };
+            }
         }
 
-        return Array.Empty<KernelParameterMetadata>();
+        return result;
     }
 
     /// <summary>
-    /// Return the output variable metadata.
+    /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
-    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
-    {
-        if (this.OutputVariable is not null)
-        {
-            return new KernelReturnParameterMetadata
+    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
+        this.OutputVariable is OutputVariable outputVariable ?
+            new KernelReturnParameterMetadata
             {
-                Description = this.OutputVariable.Description,
-                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema)
-            };
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Creates a prompt template configuration from JSON.
-    /// </summary>
-    /// <param name="json">JSON of the prompt template configuration.</param>
-    /// <returns>Prompt template configuration.</returns>
-    /// <exception cref="ArgumentException">Thrown when the deserialization returns null.</exception>
-    public static PromptTemplateConfig FromJson(string json)
-    {
-        var result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
-        return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
-    }
+                Description = outputVariable.Description,
+                Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
+            } :
+            null;
 }
