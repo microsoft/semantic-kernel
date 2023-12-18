@@ -43,7 +43,7 @@ public sealed class WebFileDownloadPlugin
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WebFileDownloadPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>

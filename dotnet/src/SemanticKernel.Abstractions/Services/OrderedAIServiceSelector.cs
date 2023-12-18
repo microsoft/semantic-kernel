@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,9 +22,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         out PromptExecutionSettings? serviceSettings) where T : class, IAIService
     {
         // Allow the execution settings from the kernel arguments to take precedence
-        var executionSettings = arguments.ExecutionSettings is not null
-             ? new List<PromptExecutionSettings> { arguments.ExecutionSettings }
-             : function.ExecutionSettings;
+        var executionSettings = arguments.ExecutionSettings ?? function.ExecutionSettings;
         if (executionSettings is null || executionSettings.Count == 0)
         {
             service = GetAnyService(kernel);
@@ -37,18 +35,32 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         else
         {
             PromptExecutionSettings? defaultExecutionSettings = null;
-            foreach (var settings in executionSettings)
+            // Search by service id first
+            foreach (var keyValue in executionSettings)
             {
-                if (!string.IsNullOrEmpty(settings.ServiceId))
+                var settings = keyValue.Value;
+                var serviceId = keyValue.Key;
+                if (string.IsNullOrEmpty(serviceId) || serviceId!.Equals(PromptExecutionSettings.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
                 {
-                    service = (kernel.Services as IKeyedServiceProvider)?.GetKeyedService<T>(settings.ServiceId);
+                    defaultExecutionSettings ??= settings;
+                }
+                else if (!string.IsNullOrEmpty(serviceId))
+                {
+                    service = (kernel.Services as IKeyedServiceProvider)?.GetKeyedService<T>(serviceId);
                     if (service is not null)
                     {
                         serviceSettings = settings;
                         return true;
                     }
                 }
-                else if (!string.IsNullOrEmpty(settings.ModelId))
+            }
+
+            // Search by model id next
+            foreach (var keyValue in executionSettings)
+            {
+                var settings = keyValue.Value;
+                var serviceId = keyValue.Key;
+                if (!string.IsNullOrEmpty(settings.ModelId))
                 {
                     service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
                     if (service is not null)
@@ -57,13 +69,9 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                         return true;
                     }
                 }
-                else
-                {
-                    // First execution settings with empty or null service id is the default
-                    defaultExecutionSettings ??= settings;
-                }
             }
 
+            // Search for default service id last
             if (defaultExecutionSettings is not null)
             {
                 service = GetAnyService(kernel);

@@ -10,6 +10,11 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal static class KernelParameterMetadataExtensions
 {
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
+    {
+        WriteIndented = true,
+    };
+
     /// <summary>
     /// Checks if type is primitive or string
     /// </summary>
@@ -77,22 +82,16 @@ internal static class KernelParameterMetadataExtensions
         }
     }
 
-    private static Type GetTypeFromSchema(string schemaType)
-    {
-        var typeMap = new Dictionary<string, Type>
-            {
-                {"string", typeof(string)},
-                {"integer", typeof(long)},
-                {"number", typeof(double)},
-                {"boolean", typeof(bool)},
-                {"object", typeof(object)},
-                {"array", typeof(object[])},
-                // If type is null, default to object
-                {"null", typeof(object)}
-            };
-
-        return typeMap[schemaType];
-    }
+    private static Type GetTypeFromSchema(string schemaType) =>
+        schemaType switch
+        {
+            "string" => typeof(string),
+            "integer" => typeof(long),
+            "number" => typeof(double),
+            "boolean" => typeof(bool),
+            "array" => typeof(object[]),
+            _ => typeof(object) // default to object for "object", "null", or anything unexpected
+        };
 
     public static KernelParameterMetadata ParseJsonSchema(this KernelParameterMetadata parameter)
     {
@@ -103,7 +102,7 @@ internal static class KernelParameterMetadataExtensions
             return new(parameter)
             {
                 ParameterType = GetTypeFromSchema(type),
-                Schema = null
+                Schema = null,
             };
         }
 
@@ -112,31 +111,28 @@ internal static class KernelParameterMetadataExtensions
 
     public static string ToJsonString(this JsonElement jsonProperties)
     {
-        var options = new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-        };
-
-        return JsonSerializer.Serialize(jsonProperties, options);
+        return JsonSerializer.Serialize(jsonProperties, s_jsonOptionsCache);
     }
 
     public static string GetSchemaTypeName(this KernelParameterMetadata parameter)
     {
-        var schemaType = parameter.Schema is not null && parameter.Schema.RootElement.TryGetProperty("type", out var typeElement) ? typeElement.ToString() : "object";
+        var schemaType = parameter.Schema?.RootElement.TryGetProperty("type", out var typeElement) is true ? typeElement.ToString() : "object";
         return $"{parameter.Name}-{schemaType}";
     }
 
-    public static KernelParameterMetadata ToSKParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) => new($"{functionName}Returns")
-    {
-        Description = parameter.Description,
-        ParameterType = parameter.ParameterType,
-        Schema = parameter.Schema
-    };
+    public static KernelParameterMetadata ToKernelParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) =>
+        new($"{functionName}Returns")
+        {
+            Description = parameter.Description,
+            ParameterType = parameter.ParameterType,
+            Schema = parameter.Schema
+        };
 
-    public static KernelReturnParameterMetadata ToSKReturnParameterMetadata(this KernelParameterMetadata parameter) => new()
-    {
-        Description = parameter.Description,
-        ParameterType = parameter.ParameterType,
-        Schema = parameter.Schema
-    };
+    public static KernelReturnParameterMetadata ToKernelReturnParameterMetadata(this KernelParameterMetadata parameter) =>
+        new()
+        {
+            Description = parameter.Description,
+            ParameterType = parameter.ParameterType,
+            Schema = parameter.Schema
+        };
 }

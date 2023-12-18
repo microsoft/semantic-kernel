@@ -11,12 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Chroma.
@@ -52,7 +50,7 @@ public class ChromaMemoryStore : IMemoryStore
     public ChromaMemoryStore(IChromaClient client, ILoggerFactory? loggerFactory = null)
     {
         this._chromaClient = client;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(ChromaMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc />

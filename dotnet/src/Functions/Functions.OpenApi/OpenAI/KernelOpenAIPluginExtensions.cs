@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -19,7 +20,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </summary>
 public static class OpenAIPluginKernelExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptionsOpenAIManifest =
+    private static readonly JsonSerializerOptions s_jsonOptionsCache =
         new()
         {
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
@@ -111,7 +112,7 @@ public static class OpenAIPluginKernelExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
             filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
@@ -147,7 +148,7 @@ public static class OpenAIPluginKernelExtensions
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
             uri,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)),
+            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
             httpClient,
             null, // auth is not needed when loading the manifest
             executionParameters?.UserAgent,
@@ -204,7 +205,7 @@ public static class OpenAIPluginKernelExtensions
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
-            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsOpenAIManifest)!;
+            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsCache)!;
         }
         catch (JsonException ex)
         {

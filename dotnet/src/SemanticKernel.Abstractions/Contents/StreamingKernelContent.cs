@@ -32,7 +32,7 @@ public abstract class StreamingKernelContent
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
@@ -59,14 +59,11 @@ public abstract class StreamingKernelContent
     /// <param name="choiceIndex">Choice index</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="metadata">Additional metadata associated with the content.</param>
-    protected StreamingKernelContent(object? innerContent, int choiceIndex = 0, string? modelId = null, IDictionary<string, object?>? metadata = null)
+    protected StreamingKernelContent(object? innerContent, int choiceIndex = 0, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;
         this.ChoiceIndex = choiceIndex;
-        if (metadata is not null)
-        {
-            this.Metadata = new Dictionary<string, object?>(metadata);
-        }
+        this.Metadata = metadata;
     }
 }

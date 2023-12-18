@@ -8,19 +8,22 @@ using Microsoft.SemanticKernel.TextGeneration;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Execution settings for an AI request.
-/// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend this
-/// if the service they are calling supports additional properties. For an example please reference
-/// the Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIPromptExecutionSettings implementation.
+/// Provides execution settings for an AI request.
 /// </summary>
+/// <remarks>
+/// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend this
+/// if the service they are calling supports additional properties. For an example, please reference
+/// the Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIPromptExecutionSettings implementation.
+/// </remarks>
 public class PromptExecutionSettings
 {
     /// <summary>
-    /// Service identifier.
-    /// This identifies a service and is set when the AI service is registered.
+    /// Gets the default service identifier.
     /// </summary>
-    [JsonPropertyName("service_id")]
-    public string? ServiceId { get; set; }
+    /// <remarks>
+    /// In a dictionary of <see cref="PromptExecutionSettings"/>, this is the key that should be used settings considered the default.
+    /// </remarks>
+    public static string DefaultServiceId => "default";
 
     /// <summary>
     /// Model identifier.

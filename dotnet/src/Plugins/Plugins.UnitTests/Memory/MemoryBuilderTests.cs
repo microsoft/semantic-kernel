@@ -5,11 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Memory;
+namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
 /// Unit tests for <see cref="MemoryBuilder"/> class.

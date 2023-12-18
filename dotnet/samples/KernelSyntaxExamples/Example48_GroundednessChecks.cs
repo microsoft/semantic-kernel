@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
@@ -145,7 +144,7 @@ Text:\n{GroundingText};
         Console.WriteLine($"======== Goal: ========\n{ask}");
         Console.WriteLine($"======== Plan ========\n{plan}");
 
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel);
 
         Console.WriteLine("======== Result ========");
         Console.WriteLine(result);

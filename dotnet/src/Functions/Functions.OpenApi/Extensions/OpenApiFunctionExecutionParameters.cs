@@ -78,16 +78,16 @@ public class OpenApiFunctionExecutionParameters
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
-        string userAgent = HttpHeaderValues.UserAgent,
+        string? userAgent = null,
         bool ignoreNonCompliantErrors = false,
-        bool enableDynamicOperationPayload = false,
+        bool enableDynamicOperationPayload = true,
         bool enablePayloadNamespacing = false,
         IList<string>? operationsToExclude = null)
     {
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
         this.ServerUrlOverride = serverUrlOverride;
-        this.UserAgent = userAgent;
+        this.UserAgent = userAgent ?? HttpHeaderValues.UserAgent;
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;

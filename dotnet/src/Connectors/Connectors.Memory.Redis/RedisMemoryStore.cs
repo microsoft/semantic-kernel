@@ -15,7 +15,7 @@ using NRedisStack.Search.Literals.Enums;
 using StackExchange.Redis;
 using static NRedisStack.Search.Schema.VectorField;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
+namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Redis.

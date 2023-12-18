@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
+import logging
 import typing as t
 from typing import ClassVar
 
@@ -9,6 +10,8 @@ from semantic_kernel.skill_definition import sk_function, sk_function_context_pa
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class TextMemorySkill(SKBaseModel):
     COLLECTION_PARAM: ClassVar[str] = "collection"
@@ -16,8 +19,8 @@ class TextMemorySkill(SKBaseModel):
     KEY_PARAM: ClassVar[str] = "key"
     LIMIT_PARAM: ClassVar[str] = "limit"
     DEFAULT_COLLECTION: ClassVar[str] = "generic"
-    DEFAULT_RELEVANCE: ClassVar[float] = 0.75
-    DEFAULT_LIMIT: ClassVar[int] = 1
+    DEFAULT_RELEVANCE: ClassVar[float] = "0.75"
+    DEFAULT_LIMIT: ClassVar[int] = "1"
 
     # @staticmethod
     @sk_function(
@@ -90,8 +93,7 @@ class TextMemorySkill(SKBaseModel):
             min_relevance_score=float(relevance),
         )
         if results is None or len(results) == 0:
-            if context.log is not None:
-                context.log.warning(f"Memory not found in collection: {collection}")
+            logger.warning(f"Memory not found in collection: {collection}")
             return ""
 
         return results[0].text if limit == 1 else json.dumps([r.text for r in results])
