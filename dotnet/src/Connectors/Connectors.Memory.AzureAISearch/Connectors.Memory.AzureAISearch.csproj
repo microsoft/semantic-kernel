@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureAISearch</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Connectors.AzureAISearch</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-
+    <VersionSuffix>alpha</VersionSuffix>
     <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
     <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
