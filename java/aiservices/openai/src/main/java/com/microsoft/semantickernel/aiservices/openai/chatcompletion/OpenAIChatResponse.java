@@ -1,10 +1,10 @@
-package com.microsoft.semantickernel.aiservices.openai;
+package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public interface AzureOpenAIChatResponse {
+public interface OpenAIChatResponse {
 
     interface Usage {
 

@@ -24,12 +24,10 @@ public enum BuildersSingleton {
     // Fallback classes in case the META-INF/services directory is missing
     // Keep this list in alphabetical order by fallback variable name
 
-    private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
-        "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
     private static final String FALLBACK_OPENAI_CHAT_COMPLETION_BUILDER_CLASS = 
-        "com.microsoft.semantickernel.aiservices.openai.OpenAIChatCompletion$Builder";
+        "com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion$Builder";
     private static final String FALLBACK_AZURE_OPENAI_CHAT_COMPLETION_BUILDER_CLASS = 
-        "com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAIChatCompletion$Builder";
+        "com.microsoft.semantickernel.aiservices.azureopenai.chatcompletion.AzureOpenAIChatCompletion$Builder";
     private static final String FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS =
         "com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig$CompletionConfigBuilder";
     private static final String FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS =

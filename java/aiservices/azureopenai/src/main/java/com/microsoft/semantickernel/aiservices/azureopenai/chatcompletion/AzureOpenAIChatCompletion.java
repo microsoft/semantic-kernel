@@ -1,13 +1,13 @@
-package com.microsoft.semantickernel.aiservices.openai;
+package com.microsoft.semantickernel.aiservices.azureopenai.chatcompletion;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
@@ -19,17 +19,17 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion {
+public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion {
     
     private final OpenAIAsyncClient client;
     private final String modelId;
 
-    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
+    public AzureOpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
         this.client = client;
         this.modelId = modelId;
     }
 
-    public OpenAIChatCompletion(TokenCredential tokenCredential, String modelId, String endpoint) {
+    public AzureOpenAIChatCompletion(TokenCredential tokenCredential, String modelId, String endpoint) {
         this.modelId = modelId;
         this.client = new OpenAIClientBuilder()
             .credential(tokenCredential)
@@ -37,7 +37,7 @@ public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatco
             .buildAsyncClient();   
     }
 
-    public OpenAIChatCompletion(String modelId, String apiKey, String endpoint, String organization) {
+    public AzureOpenAIChatCompletion(String modelId, String apiKey, String endpoint, String organization) {
         this.modelId = modelId;
         this.client = new OpenAIClientBuilder()
             .credential(new KeyCredential(apiKey))
@@ -91,53 +91,57 @@ public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatco
         throw new UnsupportedOperationException("Unimplemented method 'getStreamingChatMessageContentsAsync'");
     }
 
-    public static class Builder implements com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder {
+    public static class Builder implements com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder {
             
             private OpenAIAsyncClient client;
             private String modelId;
             private String apiKey;
             private String organization;
             private TokenCredential tokenCredential;
-    
-            @Override
-            public OpenAIChatCompletion build() {
-                Objects.requireNonNull(client, "OpenAI client must be set");
-                Objects.requireNonNull(modelId, "Model ID must be set");
-                return new OpenAIChatCompletion(client, modelId);
-            }
 
             @Override
-            public com.microsoft.semantickernel.chatcompletion.ChatCompletionService.Builder withOpenAIAsyncClient(
-                    OpenAIAsyncClient openAIClient) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withOpenAIClient'");
-            }
-
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withApiKey(String apiKey) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withApiKey'");
-            }
-
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withOrganization(
-                    String organization) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withOrganization'");
-            }
-
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withTokenCredential(
-                    TokenCredential tokenCredential) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withTokenCredential'");
-            }
-
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.ChatCompletionService.Builder withModelId(
+            public com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder withModelId(
                     String modelId) {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'withModelId'");
             }
+            @Override
+            public com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder withOpenAIAsyncClient(
+                    OpenAIAsyncClient openAIClient) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'withOpenAIClient'");
+            }
+            @Override
+            public AzureOpenAIChatCompletion build() {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'build'");
+            }
+            @Override
+            public com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder withApiKey(
+                    String apiKey) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'withApiKey'");
+            }
+            @Override
+            public com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder withEndpoint(
+                    String endpoint) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'withEndpoint'");
+            }
+            @Override
+            public com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder withTokenCredential(
+                    TokenCredential tokenCredential) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'withTokenCredential'");
+            }
+            @Override
+            public com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion.Builder withHttpClient(
+                    HttpClient httpClient) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'withHttpClient'");
+            }
+    
+
+
     }
 }

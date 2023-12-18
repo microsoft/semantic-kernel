@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.chatcompletion;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.builders.BuildersSingleton;

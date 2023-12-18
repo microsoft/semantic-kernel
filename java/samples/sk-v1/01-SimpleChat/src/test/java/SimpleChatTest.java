@@ -1,6 +1,6 @@
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.AuthorRoles;
+import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
@@ -41,7 +41,7 @@ public class SimpleChatTest {
                     Mockito.any(),
                     Mockito.any()))
                 .thenReturn(Flux.just(new StreamingChatMessageContent(
-                    new ChatMessageContent(AuthorRoles.Assistant, message.content()))));
+                    new ChatMessageContent(AuthorRole.Assistant, message.content()))));
         }
         return gpt35Turbo;
     }
