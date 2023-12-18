@@ -43,15 +43,6 @@ public interface AzureOpenAIChatCompletion extends ChatCompletionService {
          */
         Builder withTokenCredential(TokenCredential   tokenCredential);
 
-
-        /**
-         * Sets the Azure HttpClient to use with the Azure OpenAI service.
-         * Note that this is an {@code com.azure.core.http.HttpClient} and not a {@code java.net.HttpClient}.
-         * @param httpClient the Azure HttpClient to use with the Azure OpenAI service
-         * @return this builder
-         */
-        Builder withHttpClient(HttpClient httpClient);
-
     }
     
 }

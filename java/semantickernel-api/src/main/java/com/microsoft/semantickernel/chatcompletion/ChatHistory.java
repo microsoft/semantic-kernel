@@ -23,6 +23,11 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
         this.chatMessageContents = new ArrayList<>();
     }
 
+    public ChatHistory(String instructions) {
+        this.chatMessageContents = new ArrayList<>();
+        this.chatMessageContents.add(new ChatMessageContent(AuthorRole.ASSISTANT, instructions));
+    }
+
     public ChatHistory(List<ChatMessageContent> chatMessageContents) {
         this.chatMessageContents = new ArrayList<>(chatMessageContents);
     }

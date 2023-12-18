@@ -28,22 +28,6 @@ public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatco
         this.client = client;
         this.modelId = modelId;
     }
-
-    public OpenAIChatCompletion(TokenCredential tokenCredential, String modelId, String endpoint) {
-        this.modelId = modelId;
-        this.client = new OpenAIClientBuilder()
-            .credential(tokenCredential)
-            .endpoint(endpoint)
-            .buildAsyncClient();   
-    }
-
-    public OpenAIChatCompletion(String modelId, String apiKey, String endpoint, String organization) {
-        this.modelId = modelId;
-        this.client = new OpenAIClientBuilder()
-            .credential(new KeyCredential(apiKey))
-            .endpoint(endpoint)
-            .buildAsyncClient();
-    }
     
     @Override
     public ChatHistory createNewChat(String instructions) {
@@ -93,51 +77,64 @@ public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatco
 
     public static class Builder implements com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder {
             
-            private OpenAIAsyncClient client;
-            private String modelId;
-            private String apiKey;
-            private String organization;
-            private TokenCredential tokenCredential;
-    
-            @Override
-            public OpenAIChatCompletion build() {
-                Objects.requireNonNull(client, "OpenAI client must be set");
-                Objects.requireNonNull(modelId, "Model ID must be set");
-                return new OpenAIChatCompletion(client, modelId);
-            }
+        private OpenAIAsyncClient client;
+        private String modelId;
+        private String apiKey;
+        private String organization;
+        private TokenCredential tokenCredential;
 
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.ChatCompletionService.Builder withOpenAIAsyncClient(
-                    OpenAIAsyncClient openAIClient) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withOpenAIClient'");
+        @Override
+        public OpenAIChatCompletion build() {
+            OpenAIAsyncClient asyncClient;
+            if ((asyncClient = this.client) == null) {
+                if (tokenCredential != null) {
+                    asyncClient = new OpenAIClientBuilder()
+                        .credential(tokenCredential)
+                        .buildAsyncClient();
+                } else {
+                    Objects.requireNonNull(apiKey, "API key must be set");
+                    asyncClient = new OpenAIClientBuilder()
+                        .credential(new KeyCredential(apiKey))
+                        .buildAsyncClient();
+                }   
             }
+            Objects.requireNonNull(modelId, "Model ID must be set");
+            return new OpenAIChatCompletion(asyncClient, modelId);
+        }
 
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withApiKey(String apiKey) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withApiKey'");
-            }
+        @Override
+        public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withOpenAIAsyncClient(
+                OpenAIAsyncClient openAIClient) {
+            this.client = openAIClient;
+            return this;
+        }
 
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withOrganization(
-                    String organization) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withOrganization'");
-            }
+        @Override
+        public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withApiKey(String apiKey) {
+            this.apiKey = apiKey;
+            return this;
 
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withTokenCredential(
-                    TokenCredential tokenCredential) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withTokenCredential'");
-            }
+        }
 
-            @Override
-            public com.microsoft.semantickernel.chatcompletion.ChatCompletionService.Builder withModelId(
-                    String modelId) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'withModelId'");
-            }
+        @Override
+        public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withOrganization(
+                String organization) {
+            this.organization = organization;
+            return this;
+        }
+
+        @Override
+        public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withTokenCredential(
+                TokenCredential tokenCredential) {
+            this.tokenCredential = tokenCredential;
+            return this;
+        }
+
+        @Override
+        public com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion.Builder withModelId(
+                String modelId) {
+            this.modelId = modelId;
+            return this;
+        }
     }
 }

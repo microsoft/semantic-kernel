@@ -41,8 +41,5 @@ public interface OpenAIChatCompletion extends ChatCompletionService {
          */
         Builder withTokenCredential(TokenCredential   tokenCredential);
 
-        // TODO: java.net.HttpClient is Java 11+ and we're stuck on Java 8
-        // Builder withHttpClient(HttpClient httpClient);*
-
     }    
 }
