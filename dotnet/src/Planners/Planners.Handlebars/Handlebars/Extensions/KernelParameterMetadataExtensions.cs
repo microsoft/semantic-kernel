@@ -34,6 +34,11 @@ internal static class KernelParameterMetadataExtensions
     /// </summary>
     public static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type)
     {
+        return type.ToHandlebarsParameterTypeMetadata(new HashSet<Type>());
+    }
+
+    private static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type, HashSet<Type> processedTypes)
+    {
         var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
         if (type.TryGetGenericResultType(out var taskResultType))
         {
@@ -47,7 +52,8 @@ internal static class KernelParameterMetadataExtensions
                     Properties = resultTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
                 });
 
-                parameterTypes.AddNestedComplexTypes(resultTypeProperties);
+                processedTypes.Add(taskResultType);
+                parameterTypes.AddNestedComplexTypes(resultTypeProperties, processedTypes);
             }
         }
         else if (type.IsClass && type != typeof(string))
@@ -62,20 +68,22 @@ internal static class KernelParameterMetadataExtensions
                 Properties = properties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
             });
 
-            parameterTypes.AddNestedComplexTypes(properties);
+            processedTypes.Add(type);
+            parameterTypes.AddNestedComplexTypes(properties, processedTypes);
         }
 
         return parameterTypes;
     }
 
-    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties)
+    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties, HashSet<Type> processedTypes)
     {
         // Add nested complex types
         foreach (var property in properties)
         {
-            if (!parameterTypes.Any(pt => pt.Name == property.PropertyType.Name))
+            // Only convert the property type if we have not already done so.
+            if (!processedTypes.Contains(property.PropertyType))
             {
-                parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata());
+                parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata(processedTypes));
             }
         }
     }
