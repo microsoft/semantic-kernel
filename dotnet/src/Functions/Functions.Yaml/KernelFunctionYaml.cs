@@ -34,9 +34,10 @@ public static class KernelFunctionYaml
         // Prevent the default value from being any type other than a string.
         foreach (var inputVariable in promptTemplateConfig.InputVariables)
         {
-            if (inputVariable.Default != null && inputVariable.Default is not string)
+            if (inputVariable.Default is not null && inputVariable.Default is not string)
             {
-                throw new ArgumentException($"Default value for input variable '{inputVariable.Name}' must be a string. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
+                throw new ArgumentException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
+                        $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
             }
         }
 

@@ -95,6 +95,7 @@ public class KernelFunctionYamlTests
     }
 
     [Fact]
+    // This test checks that the logic of imposing a temporary limitation on the default value being a string is in place and works as expected.
     public void ItShouldThrowExceptionWhileCreatingFunctionWithDefaultValueOtherThanString()
     {
         string CreateYaml(object defaultValue)
@@ -177,7 +178,7 @@ public class KernelFunctionYamlTests
             default:       John
           - name:          language
             description:   The language to generate the greeting in
-            default: English
+            default:       English
         execution_settings:
           service1:
             model_id:          gpt-4

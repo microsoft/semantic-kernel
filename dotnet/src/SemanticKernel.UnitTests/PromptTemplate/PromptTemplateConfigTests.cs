@@ -222,6 +222,7 @@ public class PromptTemplateConfigTests
     }
 
     [Fact]
+    // This test checks that the logic of imposing a temporary limitation on the default value being a string is in place and works as expected.
     public void ItShouldThrowExceptionWhenDeserializingConfigWithDefaultValueOtherThanString()
     {
         // Arrange
