@@ -197,7 +197,7 @@ internal static class KernelFunctionHelpers
     private static object? ParseResult(FunctionResult result)
     {
         var resultAsObject = result.GetValue<object?>();
-        if (resultAsObject is not null && resultAsObject is ChatMessageContent chatMessageContent)
+        if (resultAsObject is ChatMessageContent chatMessageContent)
         {
             resultAsObject = chatMessageContent.Content;
         }
