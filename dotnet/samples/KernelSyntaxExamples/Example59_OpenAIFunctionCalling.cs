@@ -98,64 +98,7 @@ public static class Example59_OpenAIFunctionCalling
             Console.WriteLine();
         }
 
-        Console.WriteLine("======== Example 4: Use manual function calling with a streaming prompt ========");
-        {
-            var chat = kernel.GetRequiredService<IChatCompletionService>();
-            var chatHistory = new ChatHistory();
-
-            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
-            chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
-            while (true)
-            {
-                List<ChatCompletionsFunctionToolCall> calls = new();
-                StringBuilder contents = new();
-                await foreach (OpenAIStreamingChatMessageContent update in chat.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
-                {
-                    if (update.Content is not null)
-                    {
-                        Console.Write(update.Content);
-                        contents.Append(update.Content);
-                    }
-
-                    if (update.ToolCallUpdate is ChatCompletionsFunctionToolCall toolCall)
-                    {
-                        if (toolCall.Id is not null &&
-                            (calls.Count == 0 || calls[^1].Id != toolCall.Id))
-                        {
-                            calls.Add(toolCall);
-                        }
-                        else if (calls.Count > 0)
-                        {
-                            ChatCompletionsFunctionToolCall last = calls[^1];
-                            last.Name ??= toolCall.Name;
-                            last.Arguments += toolCall.Arguments;
-                        }
-                    }
-                }
-
-                if (calls.Count == 0)
-                {
-                    break;
-                }
-
-                chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, contents.ToString(), metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.ToolCallsProperty, calls } }));
-                foreach (ChatCompletionsFunctionToolCall toolCall in calls)
-                {
-                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
-                        JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
-                        "Unable to find function. Please try again!";
-
-                    chatHistory.Add(new ChatMessageContent(
-                        AuthorRole.Tool,
-                        content,
-                        metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
-                }
-            }
-
-            Console.WriteLine();
-        }
-
-        Console.WriteLine("======== Example 5: Use automated function calling with a streaming chat ========");
+        Console.WriteLine("======== Example 4: Use automated function calling with a streaming chat ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             var chat = kernel.GetRequiredService<IChatCompletionService>();

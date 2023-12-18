@@ -420,14 +420,21 @@ internal abstract class ClientCore
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         StringBuilder? contentBuilder = null;
+        Dictionary<int, string>? toolCallIdsByIndex = null;
+        Dictionary<int, string>? functionNamesByIndex = null;
+        Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
         for (int iteration = 1; ; iteration++)
         {
             // Make the request.
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
-            // Stream the response.
+            // Reset state
             contentBuilder?.Clear();
-            List<ChatCompletionsToolCall>? toolCalls = null;
+            toolCallIdsByIndex?.Clear();
+            functionNamesByIndex?.Clear();
+            functionArgumentBuildersByIndex?.Clear();
+
+            // Stream the response.
             IReadOnlyDictionary<string, object?>? metadata = null;
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
@@ -440,37 +447,12 @@ internal abstract class ClientCore
                 // If we're intending to invoke function calls, we need to consume that function call information.
                 if (autoInvoke)
                 {
-                    if (update.ContentUpdate is string contentUpdate)
+                    if (update.ContentUpdate is { Length: > 0 } contentUpdate)
                     {
                         (contentBuilder ??= new()).Append(contentUpdate);
                     }
 
-                    if (update.ToolCallUpdate is ChatCompletionsToolCall toolCall)
-                    {
-                        if (toolCall is ChatCompletionsFunctionToolCall ftc)
-                        {
-                            ChatCompletionsToolCall? lastToolCall = toolCalls is { Count: > 0 } ? toolCalls[toolCalls.Count - 1] : null;
-
-                            if (ftc.Id is not null && (lastToolCall is not ChatCompletionsFunctionToolCall || lastToolCall.Id != ftc.Id))
-                            {
-                                // This update has an ID, but either it's the first tool call we've seen, or it's a different ID
-                                // than the last one we saw, or it's not a function call. In any of those cases, add it as a new call.
-                                (toolCalls ??= new()).Add(ftc);
-                            }
-                            else if (lastToolCall is ChatCompletionsFunctionToolCall lastFtc)
-                            {
-                                // This update is for augmenting the last function call we saw. Merge it into the last one.
-                                lastFtc.Name ??= ftc.Name;
-                                lastFtc.Arguments += ftc.Arguments;
-                            }
-                        }
-                        else
-                        {
-                            // This was unexpectedly a non-function tool call. Just add it to the list.
-                            // We'll respond later with an error.
-                            (toolCalls ??= new()).Add(toolCall);
-                        }
-                    }
+                    OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                 }
 
                 yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
@@ -479,29 +461,40 @@ internal abstract class ClientCore
             // If we don't have a function call to invoke, we're done.
             if (!autoInvoke ||
                 finishReason != CompletionsFinishReason.ToolCalls ||
-                toolCalls is not { Count: > 0 })
+                toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
             }
 
+            // Get any response content that was streamed.
+            string content = contentBuilder?.ToString() ?? string.Empty;
+
+            // Translate all entries into ChatCompletionsFunctionToolCall instances.
+            ChatCompletionsFunctionToolCall[] toolCalls = OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+                ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+
+            // Log the requests
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", toolCalls.OfType<ChatCompletionsFunctionToolCall>().Select(fcr => $"{fcr.Name}({fcr.Arguments})")));
+                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", toolCalls.Select(fcr => $"{fcr.Name}({fcr.Arguments})")));
             }
             else if (this.Logger.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug("Function call requests: {Requests}", toolCalls.Count);
+                this.Logger.LogDebug("Function call requests: {Requests}", toolCalls.Length);
             }
 
-            string content = contentBuilder?.ToString() ?? string.Empty;
-            for (int i = 0; i < toolCalls.Count; i++)
-            {
-                ChatCompletionsToolCall toolCall = toolCalls[i];
+            // Add the original assistant message to the chatOptions; this is required for the service
+            // to understand the tool call responses.
+            chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, toolCalls));
+            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata));
 
+            // Respond to each tooling request.
+            foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
+            {
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
-                if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
+                if (string.IsNullOrEmpty(toolCall.Name))
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, content, this.DeploymentOrModelName, toolCall, toolCalls, metadata, result: null, "Error: Tool call was not a function call.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Tool call was not a function call.", this.Logger);
                     continue;
                 }
 
@@ -509,11 +502,11 @@ internal abstract class ClientCore
                 OpenAIFunctionToolCall? openAIFunctionToolCall;
                 try
                 {
-                    openAIFunctionToolCall = new(functionToolCall);
+                    openAIFunctionToolCall = new(toolCall);
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, content, this.DeploymentOrModelName, toolCall, toolCalls, metadata, result: null, "Error: Function call arguments were invalid JSON.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Function call arguments were invalid JSON.", this.Logger);
                     continue;
                 }
 
@@ -523,14 +516,14 @@ internal abstract class ClientCore
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, content, this.DeploymentOrModelName, toolCall, toolCalls, metadata, result: null, "Error: Function call request for a function that wasn't defined.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Function call request for a function that wasn't defined.", this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, content, this.DeploymentOrModelName, toolCall, toolCalls, metadata, result: null, "Error: Requested function could not be found.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Requested function could not be found.", this.Logger);
                     continue;
                 }
 
@@ -548,18 +541,17 @@ internal abstract class ClientCore
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, content, this.DeploymentOrModelName, toolCall, toolCalls, metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
                     continue;
                 }
                 finally
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, streamedRole, content, this.DeploymentOrModelName, toolCall, toolCalls, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
+                AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
 
                 static void AddResponseMessage(
-                    ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, string content,
-                    string deployment, ChatCompletionsToolCall tool, IReadOnlyList<ChatCompletionsToolCall> functionCallResponses, IReadOnlyDictionary<string, object?>? metadata,
+                    ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
                     string? result, string? errorMessage, ILogger logger)
                 {
                     if (errorMessage is not null && logger.IsEnabled(LogLevel.Debug))
@@ -567,11 +559,6 @@ internal abstract class ClientCore
                         Debug.Assert(result is null);
                         logger.LogDebug("Failed to handle tool request ({ToolId}). {Error}", tool.Id, errorMessage);
                     }
-
-                    // Add the original assistant message to the chatOptions; this is required for the service
-                    // to understand the tool call responses.
-                    chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, tool));
-                    chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, deployment, functionCallResponses, metadata));
 
                     // Add the tool response message to both the chat options and to the chat history.
                     result ??= errorMessage ?? string.Empty;
@@ -793,7 +780,7 @@ internal abstract class ClientCore
         return options;
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsToolCall? tool)
+    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsFunctionToolCall[]? tools)
     {
         if (chatRole == ChatRole.User)
         {
@@ -808,9 +795,12 @@ internal abstract class ClientCore
         if (chatRole == ChatRole.Assistant)
         {
             var msg = new ChatRequestAssistantMessage(contents);
-            if (tool is not null)
+            if (tools is not null)
             {
-                msg.ToolCalls.Add(tool);
+                foreach (ChatCompletionsFunctionToolCall tool in tools)
+                {
+                    msg.ToolCalls.Add(tool);
+                }
             }
             return msg;
         }
@@ -850,11 +840,30 @@ internal abstract class ClientCore
         {
             var asstMessage = new ChatRequestAssistantMessage(message.Content);
 
-            IEnumerable<ChatCompletionsToolCall>? tools =
-                (message as OpenAIChatMessageContent)?.ToolCalls ??
-                (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true ?
-                    toolCallsObject as IEnumerable<ChatCompletionsToolCall> :
-                    null);
+            IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
+            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true)
+            {
+                tools = toolCallsObject as IEnumerable<ChatCompletionsToolCall>;
+                if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
+                {
+                    int length = array.GetArrayLength();
+                    var ftcs = new List<ChatCompletionsFunctionToolCall>(length);
+                    for (int i = 0; i < length; i++)
+                    {
+                        JsonElement e = array[i];
+                        if (e.TryGetProperty("Id", out JsonElement id) &&
+                            e.TryGetProperty("Name", out JsonElement name) &&
+                            e.TryGetProperty("Arguments", out JsonElement arguments) &&
+                            id.ValueKind == JsonValueKind.String &&
+                            name.ValueKind == JsonValueKind.String &&
+                            arguments.ValueKind == JsonValueKind.String)
+                        {
+                            ftcs.Add(OpenAIFunctionToolCall.CreateChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                        }
+                    }
+                    tools = ftcs;
+                }
+            }
 
             if (tools is not null)
             {
