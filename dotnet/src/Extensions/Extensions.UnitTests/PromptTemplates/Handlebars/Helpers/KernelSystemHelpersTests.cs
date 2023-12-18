@@ -193,7 +193,6 @@ public sealed class KernelSystemHelpersTests
         // Arrange
         var template = "{{set name=\"name\" value=\"Alice\"}}{{concat \"Hello\" \" \" name \"!\"}}";
 
-
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
 

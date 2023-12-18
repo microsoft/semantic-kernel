@@ -33,11 +33,13 @@ What's the sum of 5+10+15?
     )
   }}
   \{{!-- Step 4: Call example helper with random number and print the result to the screen --}}
-  \{{json
+  \{{set
+    "result"
     (Example{{nameDelimiter}}Helper
       input=randomNumber
     )
   }}
+  \{{json (concat "The result" " " "is:" " " result)}}
 \{{/each}}
 {{else}}
 \{{!-- Step 1: Initialize the variables --}}
@@ -63,7 +65,7 @@ What's the sum of 5+10+15?
   )
 }}
 \{{!-- Step 3: Print the result using the json helper --}}
-\{{json sum}}
+\{{json (concat "The sum of " num1 "+" num2 "+" num3 " " "is" " " sum)}}
 {{/if}}
 ```{{/message}}
 {{#message role="system"}}Now let's try the real thing.{{/message}}
