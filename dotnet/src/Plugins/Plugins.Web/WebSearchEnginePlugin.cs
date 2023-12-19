@@ -28,10 +28,10 @@ public sealed class WebSearchEnginePlugin
     private readonly IWebSearchEngineConnector _connector;
 
     /// <summary>
-    /// The usage of JavaScriptEncoder.UnsafeRelaxedJsonEscaping here is considered safe in this context 
+    /// The usage of JavaScriptEncoder.UnsafeRelaxedJsonEscaping here is considered safe in this context
     /// because the JSON result is not used for any security sensitive operations like HTML injection.
     /// </summary>
-    private static readonly JsonSerializerOptions s_searchResultSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
@@ -63,14 +63,14 @@ public sealed class WebSearchEnginePlugin
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await this._connector.SearchAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
-        if (!results.Any())
+        var results = (await this._connector.SearchAsync(query, count, offset, cancellationToken).ConfigureAwait(false)).ToArray();
+        if (results.Length == 0)
         {
             throw new InvalidOperationException("Failed to get a response from the web search engine.");
         }
 
         return count == 1
-            ? results.FirstOrDefault() ?? string.Empty
-            : JsonSerializer.Serialize(results, s_searchResultSerializerOptions);
+            ? results[0] ?? string.Empty
+            : JsonSerializer.Serialize(results, s_jsonOptionsCache);
     }
 }
