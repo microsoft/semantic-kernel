@@ -23,14 +23,17 @@ public static class Example65_HandlebarsPlanner
     {
         s_sampleIndex = 1;
 
-        // Using Complex Types as inputs and outputs
+        // Plugin with Complex Types as inputs and outputs
         await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt: true);
 
-        // Using primitive types as inputs and outputs
+        // Plugin with primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
         await RunDictionaryWithBasicTypesSampleAsync();
         await RunPoetrySampleAsync();
         await RunBookSampleAsync();
+
+        // OpenAPI plugin
+        await RunCourseraSampleAsync(true);
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -137,6 +140,12 @@ public static class Example65_HandlebarsPlanner
             */
             Console.WriteLine($"\n{ex.Message}\n");
         }
+    }
+
+    private static async Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
+    {
+        WriteSampleHeadingToConsole("Coursera");
+        await RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
     }
 
     private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)

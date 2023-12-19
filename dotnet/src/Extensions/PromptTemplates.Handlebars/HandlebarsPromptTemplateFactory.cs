@@ -9,8 +9,8 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// </summary>
 public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 {
-    /// <summary>The name of the Handlebars template format.</summary>
-    public const string HandlebarsTemplateFormat = "handlebars";
+    /// <summary>Gets the name of the Handlebars template format.</summary>
+    public static string HandlebarsTemplateFormat => "handlebars";
 
     /// <summary>
     /// Default options for built-in Handlebars helpers.
