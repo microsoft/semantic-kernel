@@ -14,9 +14,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.IntegrationTests.Planners.Sequential;
-#pragma warning restore IDE0130
 
 public sealed class SequentialPlannerTests : IDisposable
 {
@@ -41,7 +39,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportPluginFromObject<EmailPluginFake>();
+        kernel.ImportPluginFromType<EmailPluginFake>();
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         var planner = new SequentialPlanner(kernel);
@@ -89,7 +87,7 @@ public sealed class SequentialPlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel(useEmbeddings);
         ISemanticTextMemory memory = this.InitializeMemory(kernel.GetService<ITextEmbeddingGeneration>());
 
-        kernel.ImportPluginFromObject<EmailPluginFake>();
+        kernel.ImportPluginFromType<EmailPluginFake>();
 
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
@@ -116,31 +114,32 @@ public sealed class SequentialPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        return new KernelBuilder().ConfigureServices(c =>
-        {
-            if (useChatModel)
-            {
-                c.AddAzureOpenAIChatCompletion(
-                    deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
-            else
-            {
-                c.AddAzureOpenAITextCompletion(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            }
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
-            if (useEmbeddings)
-            {
-                c.AddAzureOpenAITextEmbeddingGeneration(
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-            }
-        }).Build();
+        if (useChatModel)
+        {
+            builder.Services.AddAzureOpenAIChatCompletion(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.Services.AddAzureOpenAITextGeneration(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+
+        if (useEmbeddings)
+        {
+            builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+        }
+
+        return builder.Build();
     }
 
     private ISemanticTextMemory InitializeMemory(ITextEmbeddingGeneration textEmbeddingGeneration)

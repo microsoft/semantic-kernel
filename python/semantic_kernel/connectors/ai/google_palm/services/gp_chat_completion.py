@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List, Optional, Tuple, Union
+import logging
+from typing import Any, List, Optional, Tuple, Union
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
@@ -20,6 +20,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class GooglePalmChatCompletion(
     ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
@@ -32,7 +34,7 @@ class GooglePalmChatCompletion(
         ai_model_id: str,
         api_key: str,
         message_history: Optional[ChatResponse] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -43,13 +45,16 @@ class GooglePalmChatCompletion(
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
             message_history {Optional[ChatResponse]} -- The message history to use for context. (Optional)
-            log {Optional[Logger]} -- The logger instance to use. (Optional)
+            log {Optional[Any]} -- A logger to use for logging. (Optional)
         """
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
-            log=log,
         )
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         self._message_history = message_history
 
     async def complete_chat_async(
@@ -89,8 +94,12 @@ class GooglePalmChatCompletion(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> Union[str, List[str]]:
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
             temperature=request_settings.temperature,
@@ -118,8 +127,12 @@ class GooglePalmChatCompletion(
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"
         )

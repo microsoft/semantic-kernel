@@ -6,11 +6,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
+namespace SemanticKernel.IntegrationTests.Connectors.Chroma;
 
 /// <summary>
 /// Integration tests for <see cref="ChromaMemoryStore"/> class.

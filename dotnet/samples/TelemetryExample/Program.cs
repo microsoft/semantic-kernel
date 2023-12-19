@@ -1,19 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
-using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Web;
-using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using NCalcPlugins;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -43,7 +39,10 @@ public sealed class Program
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task Main()
     {
-        var connectionString = Env.Var("ApplicationInsights__ConnectionString");
+        // Load configuration from environment variables or user secrets.
+        LoadUserSecrets();
+
+        var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
 
         using var traceProvider = Sdk.CreateTracerProviderBuilder()
             .AddSource("Microsoft.SemanticKernel*")
@@ -81,39 +80,43 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel).ConfigureAwait(false);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
-        var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(loggerFactory)
-            .WithAzureOpenAIChatCompletion(
-                Env.Var("AzureOpenAI__ChatDeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+        builder.Services.AddSingleton(loggerFactory);
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey
+        ).Build();
 
-        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
-        kernel.ImportPluginFromObject<TimePlugin>();
+        builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        return kernel;
+        return builder.Build();
     }
 
     private static HandlebarsPlanner CreatePlanner(int maxTokens = 1024)
     {
-        var plannerConfig = new HandlebarsPlannerConfig { MaxTokens = maxTokens };
+        var plannerConfig = new HandlebarsPlannerOptions { MaxTokens = maxTokens };
         return new HandlebarsPlanner(plannerConfig);
+    }
+
+    private static void LoadUserSecrets()
+    {
+        IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Program>()
+            .Build();
+        TestConfiguration.Initialize(configRoot);
     }
 }

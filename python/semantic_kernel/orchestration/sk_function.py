@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 import platform
 import sys
-import threading
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
-from logging import Logger
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -35,13 +35,14 @@ from semantic_kernel.skill_definition.parameter_view import ParameterView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SKFunction(SKFunctionBase):
@@ -54,7 +55,6 @@ class SKFunction(SKFunctionBase):
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
     _skill_collection: Optional[ReadOnlySkillCollectionBase]
-    _log: Logger
     _ai_service: Optional[TextCompletionClientBase]
     _ai_request_settings: CompleteRequestSettings
     _chat_service: Optional[ChatCompletionClientBase]
@@ -63,6 +63,10 @@ class SKFunction(SKFunctionBase):
 
     @staticmethod
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         if method is None:
             raise ValueError("Method cannot be `None`")
 
@@ -110,7 +114,6 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
-            log=log,
         )
 
     @staticmethod
@@ -118,8 +121,12 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> "SKFunction":
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
@@ -149,15 +156,34 @@ class SKFunction(SKFunctionBase):
                 else None
             )
             if request_settings.function_call is not None and functions is None:
-                log.warning("Function call is not None, but functions is None")
+                logger.warning("Function call is not None, but functions is None")
             try:
                 if functions and hasattr(client, "complete_chat_with_functions_async"):
-                    (
-                        completion,
-                        function_call,
-                    ) = await client.complete_chat_with_functions_async(
-                        messages, functions, request_settings
-                    )
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and hasattr(request_settings, "data_source_settings")
+                        and request_settings.data_source_settings is not None
+                    ):
+                        (
+                            completion,
+                            tool_message,
+                            function_call,
+                        ) = await client.complete_chat_with_data_async(
+                            messages, request_settings, functions=functions
+                        )
+                        if tool_message:
+                            context.objects["tool_message"] = tool_message
+                            as_chat_prompt.add_message(
+                                role="tool", message=tool_message
+                            )
+                    else:
+                        (
+                            completion,
+                            function_call,
+                        ) = await client.complete_chat_with_functions_async(
+                            messages, functions, request_settings
+                        )
+
                     as_chat_prompt.add_message(
                         "assistant", message=completion, function_call=function_call
                     )
@@ -166,9 +192,26 @@ class SKFunction(SKFunctionBase):
                     if function_call is not None:
                         context.objects["function_call"] = function_call
                 else:
-                    completion = await client.complete_chat_async(
-                        messages, request_settings
-                    )
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and hasattr(request_settings, "data_source_settings")
+                        and request_settings.data_source_settings is not None
+                    ):
+                        # third item is function_call, None in this case
+                        (
+                            completion,
+                            tool_message,
+                            _,
+                        ) = await client.complete_chat_with_data_async(
+                            messages, request_settings
+                        )
+                        context.objects["tool_message"] = tool_message
+                        as_chat_prompt.add_message(role="tool", message=tool_message)
+                    else:
+                        completion = await client.complete_chat_async(
+                            messages, request_settings
+                        )
+
                     as_chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
             except Exception as exc:
@@ -189,11 +232,32 @@ class SKFunction(SKFunctionBase):
                     # list of <role, content> messages)
                     completion = ""
                     messages = await chat_prompt.render_messages_async(context)
-                    async for partial_content in client.complete_chat_stream_async(
-                        messages, request_settings
+
+                    # With data case - stream and get the tool message for citations
+                    if (
+                        hasattr(client, "complete_chat_with_data_async")
+                        and hasattr(request_settings, "data_source_settings")
+                        and request_settings.data_source_settings is not None
                     ):
-                        completion += partial_content
-                        yield partial_content
+                        response = await client.complete_chat_stream_with_data_async(
+                            messages, request_settings
+                        )
+                        # Get the tool message
+                        tool_message = await response.get_tool_message()
+                        if tool_message:
+                            chat_prompt.add_message(role="tool", message=tool_message)
+                            context.objects["tool_message"] = tool_message
+                        # Get the completion
+                        async for partial_content in response:
+                            completion += partial_content
+                            yield partial_content
+
+                    else:
+                        async for partial_content in client.complete_chat_stream_async(
+                            messages, request_settings
+                        ):
+                            completion += partial_content
+                            yield partial_content
                     # Use the full completion to update the chat_prompt_template and context
                     chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
@@ -220,7 +284,6 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=function_name,
             is_semantic=True,
-            log=log,
             chat_prompt_template=function_config.prompt_template
             if function_config.has_chat_prompt
             else None,
@@ -263,11 +326,15 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__()
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         self._delegate_type = delegate_type
         self._function = delegate_function
         self._parameters = parameters
@@ -275,7 +342,6 @@ class SKFunction(SKFunctionBase):
         self._skill_name = skill_name
         self._name = function_name
         self._is_semantic = is_semantic
-        self._log = log if log is not None else NullLogger()
         self._stream_function = delegate_stream_function
         self._skill_collection = None
         self._ai_service = None
@@ -338,15 +404,18 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> "SKContext":
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         return self.invoke(
             input=input,
             variables=variables,
             context=context,
             memory=memory,
             settings=settings,
-            log=log,
         )
 
     def invoke(
@@ -356,16 +425,20 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
-                logger=log if log is not None else self._log,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -379,18 +452,21 @@ class SKFunction(SKFunctionBase):
         if input is not None:
             context.variables.update(input)
 
-        # Check if there is an event loop
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
+        loop = (
+            asyncio.get_running_loop()
+            if asyncio.get_event_loop().is_running()
+            else None
+        )
 
-        # Handle "asyncio.run() cannot be called from a running event loop"
         if loop and loop.is_running():
-            if self.is_semantic:
-                return self._runThread(self._invoke_semantic_async(context, settings))
-            else:
-                return self._runThread(self._invoke_native_async(context))
+            coroutine_function = (
+                self._invoke_semantic_async
+                if self.is_semantic
+                else self._invoke_native_async
+            )
+            return self.run_async_in_executor(
+                lambda: coroutine_function(context, settings)
+            )
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
@@ -404,17 +480,21 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
         **kwargs: Dict[str, Any],
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
+
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
-                logger=log if log is not None else self._log,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -479,7 +559,7 @@ class SKFunction(SKFunctionBase):
         if self._is_semantic:
             return
 
-        self._log.error("The function is not semantic")
+        logger.error("The function is not semantic")
         raise KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function",
@@ -489,7 +569,7 @@ class SKFunction(SKFunctionBase):
         if not self._is_semantic:
             return
 
-        self._log.error("The function is not native")
+        logger.error("The function is not native")
         raise KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a native function",
@@ -502,7 +582,6 @@ class SKFunction(SKFunctionBase):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
     ):
         from semantic_kernel.orchestration.sk_context import SKContext
 
@@ -511,7 +590,6 @@ class SKFunction(SKFunctionBase):
                 variables=ContextVariables("") if variables is None else variables,
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
-                logger=log if log is not None else self._log,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -565,9 +643,21 @@ class SKFunction(SKFunctionBase):
             yield stream_msg
 
     async def _invoke_native_stream_async(self, context):
-        result = await self._invoke_native_async(context)
+        self._verify_is_native()
 
-        yield result
+        self._ensure_context_has_skills(context)
+
+        delegate = DelegateHandlers.get_handler(self._delegate_type)
+        # for python3.9 compatibility (staticmethod is not callable)
+        if not hasattr(delegate, "__call__"):
+            delegate = delegate.__func__
+
+        completion = ""
+        async for partial in delegate(self._function, context):
+            completion += partial
+            yield partial
+
+        context.variables.update(completion)
 
     def _ensure_context_has_skills(self, context) -> None:
         if context.skills is not None:
@@ -575,20 +665,32 @@ class SKFunction(SKFunctionBase):
 
         context.skills = self._skill_collection
 
-    def _trace_function_type_Call(self, type: Enum, log: Logger) -> None:
-        log.debug(f"Executing function type {type}: {type.name}")
+    def _trace_function_type_Call(self, type: Enum) -> None:
+        logger.debug(f"Executing function type {type}: {type.name}")
 
     """
     Async code wrapper to allow running async code inside external
     event loops such as Jupyter notebooks.
     """
 
-    def _runThread(self, code: Callable):
-        result = []
-        thread = threading.Thread(target=self._runCode, args=(code, result))
-        thread.start()
-        thread.join()
-        return result[0]
+    def run_async_in_executor(self, coroutine_func: Callable[[], Any]) -> Any:
+        """
+        A unified method for async execution for more efficient and safer thread management
 
-    def _runCode(self, code: Callable, result: List[Any]) -> None:
-        result.append(asyncio.run(code))
+        Arguments:
+            coroutine_func {Callable[[], Any]} -- The coroutine to run
+
+        Returns:
+            Any -- The result of the coroutine
+        """
+
+        def run_async_in_thread():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(coroutine_func())
+            loop.close()
+            return result
+
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(run_async_in_thread)
+            return future.result()

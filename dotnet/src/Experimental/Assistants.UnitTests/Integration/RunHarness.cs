@@ -3,11 +3,14 @@
 #define DISABLEHOST // Comment line to enable
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
+
+#pragma warning disable CA1812 // Uninstantiated internal types
 
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
@@ -68,10 +71,11 @@ public sealed class RunHarness
     public async Task VerifyRunFromDefinitionAsync()
     {
         var assistant =
-            await AssistantBuilder.FromTemplateAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                definitionPath: "Templates/PoetAssistant.yaml").ConfigureAwait(true);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .FromTemplatePath("Templates/PoetAssistant.yaml")
+                .BuildAsync()
+                .ConfigureAwait(true);
 
         var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
@@ -88,14 +92,15 @@ public sealed class RunHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
-        var gamePlugin = KernelPluginFactory.CreateFromObject<GuessingGame>();
+        var gamePlugin = KernelPluginFactory.CreateFromType<GuessingGame>();
 
         var assistant =
-            await AssistantBuilder.FromTemplateAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                definitionPath: "Templates/GameAssistant.yaml",
-                plugins: new[] { gamePlugin }).ConfigureAwait(true);
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .FromTemplatePath("Templates/GameAssistant.yaml")
+                .WithPlugin(gamePlugin)
+                .BuildAsync()
+                .ConfigureAwait(true);
 
         var thread = await assistant.NewThreadAsync().ConfigureAwait(true);
 
@@ -114,7 +119,7 @@ public sealed class RunHarness
             var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
             this.LogMessage(messageUser);
 
-            var assistantMessages = await thread.InvokeAsync(assistant).ConfigureAwait(true);
+            var assistantMessages = await thread.InvokeAsync(assistant).ToArrayAsync().ConfigureAwait(true);
             this.LogMessages(assistantMessages);
         }
     }

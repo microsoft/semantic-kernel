@@ -3,18 +3,14 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
-using RepoUtils;
+using Microsoft.SemanticKernel.Plugins.Grpc;
 
-/**
- * This example shows how to use gRPC plugins.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use gRPC plugins.
 public static class Example35_GrpcPlugins
 {
     public static async Task RunAsync()
     {
-        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         // Import a gRPC plugin using one of the following Kernel extension methods
         // kernel.ImportGrpcPlugin

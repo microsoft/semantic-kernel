@@ -4,14 +4,14 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAIChatCompletionWithData"/>
+/// Unit tests for <see cref="AzureOpenAIChatCompletionWithDataService"/>
 /// </summary>
 public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
 {
@@ -33,10 +33,10 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     {
         // Arrange
         const string ExpectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/extensions/chat/completions?api-version=fake-api-version";
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(this._config, this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory());
+        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory());
 
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;
@@ -58,10 +58,10 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         var config = this.GetConfig();
         config.CompletionApiVersion = string.Empty;
 
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(config, this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(config, this._httpClient);
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory());
+        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory());
 
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;

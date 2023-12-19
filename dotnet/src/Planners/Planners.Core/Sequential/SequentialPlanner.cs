@@ -4,12 +4,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -52,7 +50,7 @@ public sealed class SequentialPlanner
             });
 
         this._kernel = kernel;
-        this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
