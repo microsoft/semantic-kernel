@@ -103,7 +103,7 @@ Plugin: StaticTextPlugin
 Plugin: AnotherTextPlugin
    Trim: Trim whitespace from the start and end of a string.
       Params:
-      - input: 
+      - input:
         default: ''
 
 Plugin: AnotherTextPlugin
