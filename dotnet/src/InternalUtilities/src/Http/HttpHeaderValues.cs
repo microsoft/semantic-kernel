@@ -6,5 +6,5 @@ namespace Microsoft.SemanticKernel.Http;
 internal static class HttpHeaderValues
 {
     /// <summary>User agent string to use for all HTTP requests issued by Semantic Kernel.</summary>
-    public const string UserAgent = "Semantic-Kernel";
+    public static string UserAgent => "Semantic-Kernel";
 }

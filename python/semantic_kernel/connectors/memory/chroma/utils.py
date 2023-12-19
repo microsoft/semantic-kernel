@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import TYPE_CHECKING, List
 
 from numpy import array, linalg, ndarray
@@ -8,6 +9,8 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 if TYPE_CHECKING:
     from chromadb.api.types import QueryResult
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def camel_to_snake(camel_str):
@@ -83,7 +86,7 @@ def query_results_to_records(
 
 
 def chroma_compute_similarity_scores(
-    embedding: ndarray, embedding_array: ndarray, logger=None
+    embedding: ndarray, embedding_array: ndarray, **kwargs
 ) -> ndarray:
     """Computes the cosine similarity scores between a query embedding and a group of embeddings.
     Arguments:
@@ -92,6 +95,10 @@ def chroma_compute_similarity_scores(
     Returns:
         ndarray -- The cosine similarity scores.
     """
+    if kwargs.get("logger"):
+        logger.warning(
+            "The `logger` parameter is deprecated. Please use the `logging` module instead."
+        )
     query_norm = linalg.norm(embedding)
     collection_norm = linalg.norm(embedding_array, axis=1)
 
@@ -106,7 +113,7 @@ def chroma_compute_similarity_scores(
         similarity_scores[valid_indices] = embedding.dot(
             embedding_array[valid_indices].T
         ) / (query_norm * collection_norm[valid_indices])
-        if not valid_indices.all() and logger:
+        if not valid_indices.all():
             logger.warning(
                 "Some vectors in the embedding collection are zero vectors."
                 "Ignoring cosine similarity score computation for those vectors."
