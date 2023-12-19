@@ -134,7 +134,7 @@ public sealed class Kernel
     /// </summary>
     public KernelPluginCollection Plugins =>
         this._plugins ??
-        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
+        Interlocked.CompareExchange(ref this._plugins, [], null) ??
         this._plugins;
 
     /// <summary>
@@ -202,7 +202,7 @@ public sealed class Kernel
     /// </remarks>
     public IDictionary<string, object?> Data =>
         this._data ??
-        Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
+        Interlocked.CompareExchange(ref this._data, [], null) ??
         this._data;
 
     #region GetServices

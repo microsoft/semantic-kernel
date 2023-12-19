@@ -116,9 +116,11 @@ internal sealed class GrpcOperationRunner
         var content = JsonSerializer.Serialize(response, responseType, s_camelCaseOptions);
 
         //First iteration allowing to associate additional metadata with the returned content.
-        var result = new JsonObject();
-        result.Add("content", content);
-        result.Add("contentType", "application/json; charset=utf-8");
+        var result = new JsonObject
+        {
+            { "content", content },
+            { "contentType", "application/json; charset=utf-8" }
+        };
         return result;
     }
 
@@ -225,7 +227,7 @@ internal sealed class GrpcOperationRunner
             getterIl.Emit(OpCodes.Ret);
 
             //Creating the property set method and binding it to the private filed
-            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, new[] { propertyType });
+            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, [propertyType]);
             var setterIl = setterBuilder.GetILGenerator();
             setterIl.Emit(OpCodes.Ldarg_0);
             setterIl.Emit(OpCodes.Ldarg_1);
@@ -237,12 +239,12 @@ internal sealed class GrpcOperationRunner
             propertyBuilder.SetSetMethod(setterBuilder);
 
             //Add ProtoMember attribute to the data contract with tag/number
-            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) })!, new object[] { field.Number });
+            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor([typeof(int)])!, [field.Number]);
             propertyBuilder.SetCustomAttribute(dataMemberAttributeBuilder);
         }
 
         //Add ProtoContract attribute to the data contract
-        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
+        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, []);
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
         return typeBuilder.CreateTypeInfo() ??

@@ -85,12 +85,13 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             );
         }
 
-        var arguments = new KernelArguments();
-
-        // GetIssue Function
-        // Set Properties for the Get Issue operation in the openAPI.swagger.json
-        // Make sure the issue exists in your Jira instance or it will return a 404
-        arguments["issueKey"] = "TEST-1";
+        var arguments = new KernelArguments
+        {
+            // GetIssue Function
+            // Set Properties for the Get Issue operation in the openAPI.swagger.json
+            // Make sure the issue exists in your Jira instance or it will return a 404
+            ["issueKey"] = "TEST-1"
+        };
 
         // Run operation via the semantic kernel
         var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);

@@ -35,7 +35,7 @@ internal static class KernelParameterMetadataExtensions
     /// </summary>
     public static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type)
     {
-        return type.ToHandlebarsParameterTypeMetadata(new HashSet<Type>());
+        return type.ToHandlebarsParameterTypeMetadata([]);
     }
 
     private static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type, HashSet<Type> processedTypes)

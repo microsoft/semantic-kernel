@@ -155,8 +155,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        List<PineconeDocument> upsertDocuments = new();
-        List<PineconeDocument> updateDocuments = new();
+        List<PineconeDocument> upsertDocuments = [];
+        List<PineconeDocument> updateDocuments = [];
 
         foreach (MemoryRecord? record in records)
         {
@@ -184,7 +184,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             }
         }
 
-        List<Task> tasks = new();
+        List<Task> tasks = [];
 
         if (upsertDocuments.Count > 0)
         {
@@ -199,7 +199,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             tasks.AddRange(updates);
         }
 
-        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
+        PineconeDocument[] vectorData = [.. upsertDocuments, .. updateDocuments];
 
         try
         {

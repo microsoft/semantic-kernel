@@ -106,6 +106,6 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
 
         public string Description => this._plugin.Description;
 
-        public KernelFunction[] Functions => this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        public KernelFunction[] Functions => [.. this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)];
     }
 }

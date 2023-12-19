@@ -148,6 +148,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         public TypeProxy(KernelPluginCollection collection) => this._collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KernelPlugin[] Plugins => this._collection._plugins.Values.ToArray();
+        public KernelPlugin[] Plugins => [.. this._collection._plugins.Values];
     }
 }

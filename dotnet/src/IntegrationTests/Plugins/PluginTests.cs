@@ -31,11 +31,13 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelArguments();
-        arguments["q"] = query;
-        arguments["size"] = size;
-        arguments["max_price"] = budget;
-        arguments["countryCode"] = countryCode;
+        var arguments = new KernelArguments
+        {
+            ["q"] = query,
+            ["size"] = size,
+            ["max_price"] = budget,
+            ["countryCode"] = countryCode
+        };
 
         // Act
         await plugin[functionName].InvokeAsync(kernel, arguments);
@@ -61,11 +63,13 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelArguments();
-        arguments["q"] = query;
-        arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        arguments["max_price"] = budget;
-        arguments["countryCode"] = countryCode;
+        var arguments = new KernelArguments
+        {
+            ["q"] = query,
+            ["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["max_price"] = budget,
+            ["countryCode"] = countryCode
+        };
 
         // Act
         await plugin[functionName].InvokeAsync(kernel, arguments);
@@ -91,11 +95,13 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var arguments = new KernelArguments();
-        arguments["q"] = query;
-        arguments["size"] = size;
-        arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        arguments["countryCode"] = countryCode;
+        var arguments = new KernelArguments
+        {
+            ["q"] = query,
+            ["size"] = size,
+            ["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["countryCode"] = countryCode
+        };
 
         // Act
         var result = (await kernel.InvokeAsync(plugin[functionName], arguments)).GetValue<RestApiOperationResponse>();
@@ -129,8 +135,10 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-        var arguments = new KernelArguments();
-        arguments["payload"] = payload;
+        var arguments = new KernelArguments
+        {
+            ["payload"] = payload
+        };
 
         // Act
         await plugin[functionName].InvokeAsync(kernel, arguments);
@@ -160,8 +168,10 @@ public class PluginTests
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-            var arguments = new KernelArguments();
-            arguments["payload"] = payload;
+            var arguments = new KernelArguments
+            {
+                ["payload"] = payload
+            };
 
             // Act
             await plugin[functionName].InvokeAsync(kernel, arguments);
@@ -190,8 +200,10 @@ public class PluginTests
             pluginFilePath,
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-        var arguments = new KernelArguments();
-        arguments["payload"] = payload;
+        var arguments = new KernelArguments
+        {
+            ["payload"] = payload
+        };
 
         // Act
         await plugin[functionName].InvokeAsync(kernel, arguments);
@@ -216,12 +228,14 @@ public class PluginTests
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true }); ;
 
-            var arguments = new KernelArguments();
-            arguments["title"] = "Shopping List";
-            arguments["ingredients"] = new string[] { "Flour", "Sugar", "Eggs" };
-            arguments["instructions"] = new string[] { "Cream softened butter and granulated sugar", "Add eggs one at a time, mix well, and stir in vanilla extract", "Combine dry ingredients and mix" };
-            arguments["question"] = "what ingredients do I need to make chocolate cookies?";
-            arguments["partner_name"] = "OpenAI";
+            var arguments = new KernelArguments
+            {
+                ["title"] = "Shopping List",
+                ["ingredients"] = new string[] { "Flour", "Sugar", "Eggs" },
+                ["instructions"] = new string[] { "Cream softened butter and granulated sugar", "Add eggs one at a time, mix well, and stir in vanilla extract", "Combine dry ingredients and mix" },
+                ["question"] = "what ingredients do I need to make chocolate cookies?",
+                ["partner_name"] = "OpenAI"
+            };
 
             // Act
             await plugin[functionName].InvokeAsync(kernel, arguments);

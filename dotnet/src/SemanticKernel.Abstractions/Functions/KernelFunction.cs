@@ -130,7 +130,7 @@ public abstract class KernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
-        arguments ??= new KernelArguments();
+        arguments ??= [];
         logger.LogFunctionInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
@@ -272,7 +272,7 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
-        arguments ??= new KernelArguments();
+        arguments ??= [];
         logger.LogFunctionStreamingInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 

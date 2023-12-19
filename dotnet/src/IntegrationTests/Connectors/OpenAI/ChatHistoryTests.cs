@@ -52,7 +52,7 @@ public sealed class ChatHistoryTests : IDisposable
         var kernel = builder.Build();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Act
         history.AddUserMessage("Make me a special poem");

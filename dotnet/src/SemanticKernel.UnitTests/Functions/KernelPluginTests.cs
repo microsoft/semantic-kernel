@@ -65,7 +65,7 @@ public class KernelPluginTests
             Assert.Equal(func, plugin[func.Name.ToUpperInvariant()]);
         }
 
-        KernelFunction[] actual = plugin.OrderBy(f => f.Name).ToArray();
+        KernelFunction[] actual = [.. plugin.OrderBy(f => f.Name)];
         Assert.Equal(actual[0], func1);
         Assert.Equal(actual[1], func2);
 

@@ -492,14 +492,14 @@ public class KernelFunctionFromPromptTests
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         // Act
-        KernelArguments arguments1 = new();
+        KernelArguments arguments1 = [];
         arguments1.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service1", new OpenAIPromptExecutionSettings { MaxTokens = 1000 } }
         };
         var result1 = await kernel.InvokeAsync(function, arguments1);
 
-        KernelArguments arguments2 = new();
+        KernelArguments arguments2 = [];
         arguments2.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service2", new OpenAIPromptExecutionSettings { MaxTokens = 2000 } }
@@ -533,14 +533,14 @@ public class KernelFunctionFromPromptTests
         KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Template = "Prompt2", ExecutionSettings = new() { ["service2"] = new OpenAIPromptExecutionSettings { MaxTokens = 2000 } } });
 
         // Act
-        KernelArguments arguments1 = new();
+        KernelArguments arguments1 = [];
         arguments1.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service2", new OpenAIPromptExecutionSettings { MaxTokens = 2000 } }
         };
         var result1 = await kernel.InvokeAsync(function1, arguments1);
 
-        KernelArguments arguments2 = new();
+        KernelArguments arguments2 = [];
         arguments2.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service1", new OpenAIPromptExecutionSettings { MaxTokens = 1000 } }

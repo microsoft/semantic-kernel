@@ -90,7 +90,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), record.Timestamp);
 
         Assert.Equal(
-            withEmbeddings ? new[] { 10f, 11f, 12f, 13f, 14f } : Array.Empty<float>(),
+            withEmbeddings ? [10f, 11f, 12f, 13f, 14f] : [],
             record.Embedding.ToArray());
     }
 
@@ -128,7 +128,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), r.Timestamp);
 
                 Assert.Equal(
-                    withEmbeddings ? new[] { 10f, 11f, 12f, 13f, 14f } : Array.Empty<float>(),
+                    withEmbeddings ? [10f, 11f, 12f, 13f, 14f] : [],
                     r.Embedding.ToArray());
             },
             r =>
@@ -143,7 +143,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 Assert.Null(r.Timestamp);
 
                 Assert.Equal(
-                    withEmbeddings ? new[] { 20f, 21f, 22f, 23f, 24f } : Array.Empty<float>(),
+                    withEmbeddings ? [20f, 21f, 22f, 23f, 24f] : [],
                     r.Embedding.ToArray());
             });
     }
@@ -201,7 +201,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), r.Timestamp);
 
                 Assert.Equal(
-                    withEmbeddings ? new[] { 10f, 11f, 12f, 13f, 14f } : Array.Empty<float>(),
+                    withEmbeddings ? [10f, 11f, 12f, 13f, 14f] : [],
                     r.Embedding.ToArray());
             },
             r =>
@@ -216,7 +216,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 Assert.Null(r.Timestamp);
 
                 Assert.Equal(
-                    withEmbeddings ? new[] { 20f, 21f, 22f, 23f, 24f } : Array.Empty<float>(),
+                    withEmbeddings ? [20f, 21f, 22f, 23f, 24f] : [],
                     r.Embedding.ToArray());
             });
     }
@@ -255,7 +255,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
 
         Assert.Equal("Some other id", record.Metadata.Id);
         Assert.Equal(
-            withEmbeddings ? new[] { 20f, 21f, 22f, 23f, 24f } : Array.Empty<float>(),
+            withEmbeddings ? [20f, 21f, 22f, 23f, 24f] : [],
             record.Embedding.ToArray());
     }
 
@@ -287,7 +287,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 timestamp: null),
         });
 
-        List<string> idList = new();
+        List<string> idList = [];
 
         await foreach (string id in ids)
         {

@@ -92,7 +92,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         { Content = new StringContent(ChatCompletionResponse) };
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -113,7 +113,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._executionSettings.ToolCallBehavior = ToolCallBehavior.RequireFunction(this._timepluginNow);
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
@@ -133,7 +133,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._executionSettings.ToolCallBehavior = null;
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+        await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
 
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);

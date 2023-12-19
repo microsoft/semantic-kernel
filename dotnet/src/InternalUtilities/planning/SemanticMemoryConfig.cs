@@ -13,7 +13,7 @@ public class SemanticMemoryConfig
     /// <summary>
     /// A list of functions to be included regardless of relevancy.
     /// </summary>
-    public HashSet<(string PluginName, string FunctionName)> IncludedFunctions { get; } = new();
+    public HashSet<(string PluginName, string FunctionName)> IncludedFunctions { get; } = [];
 
     /// <summary>
     /// Semantic memory to use for filtering function lookup during plan creation.

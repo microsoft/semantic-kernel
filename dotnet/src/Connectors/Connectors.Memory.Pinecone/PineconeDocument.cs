@@ -99,7 +99,7 @@ public class PineconeDocument
     {
         this.Id = id ?? Guid.NewGuid().ToString();
         this.Values = values;
-        this.Metadata = metadata ?? new Dictionary<string, object>();
+        this.Metadata = metadata ?? [];
         this.SparseValues = sparseValues;
         this.Score = score;
     }

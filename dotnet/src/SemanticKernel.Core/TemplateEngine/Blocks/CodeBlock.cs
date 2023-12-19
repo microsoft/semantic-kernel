@@ -107,7 +107,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (this._tokens.Count > 1)
         {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
-            arguments = this.EnrichFunctionArguments(kernel, fBlock, arguments is null ? new KernelArguments() : new KernelArguments(arguments));
+            arguments = this.EnrichFunctionArguments(kernel, fBlock, arguments is null ? [] : new KernelArguments(arguments));
         }
         try
         {

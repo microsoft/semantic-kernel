@@ -520,7 +520,7 @@ public sealed class OpenAICompletionTests : IDisposable
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
 
-    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = new();
+    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = [];
 
     public void Dispose()
     {

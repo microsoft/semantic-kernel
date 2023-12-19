@@ -26,7 +26,7 @@ public sealed class EmailPlugin
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
-    private static readonly char[] s_separator = { ',', ';' };
+    private static readonly char[] s_separator = [',', ';'];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmailPlugin"/> class.

@@ -150,7 +150,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             id: "test",
             text: "text",
             description: "description",
-            embedding: new ReadOnlyMemory<float>(new float[] { 1, 2, 3 }),
+            embedding: new ReadOnlyMemory<float>([1, 2, 3]),
             key: null,
             timestamp: null);
         string collection = "test_collection";
@@ -281,7 +281,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
-        string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
+        string[] testCollections = ["random_collection1", "random_collection2", "random_collection3"];
         await memoryStore.CreateCollectionAsync(testCollections[0]);
         await memoryStore.CreateCollectionAsync(testCollections[1]);
         await memoryStore.CreateCollectionAsync(testCollections[2]);
@@ -571,7 +571,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await memoryStore.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in memoryStore.UpsertBatchAsync(collection, records))

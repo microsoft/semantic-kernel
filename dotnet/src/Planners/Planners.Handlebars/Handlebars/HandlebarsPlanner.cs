@@ -27,7 +27,7 @@ public sealed class HandlebarsPlanner
     public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
     {
         // Options for built-in Handlebars helpers
-        Categories = new Category[] { Category.DateTime },
+        Categories = [Category.DateTime],
         UseCategoryPrefix = false,
 
         // Custom helpers
@@ -124,8 +124,8 @@ public sealed class HandlebarsPlanner
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas)
     {
-        complexParameterTypes = new();
-        complexParameterSchemas = new();
+        complexParameterTypes = [];
+        complexParameterSchemas = [];
 
         var functionsMetadata = new List<KernelFunctionMetadata>();
         foreach (var kernelFunction in availableFunctions)

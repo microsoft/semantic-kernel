@@ -228,7 +228,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
-    private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
+    private readonly List<string> _defaultEmbeddingIncludeTypes = [IncludeMetadatas];
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
@@ -265,7 +265,7 @@ public class ChromaMemoryStore : IMemoryStore
             includeList.Add(IncludeDistances);
         }
 
-        return includeList.ToArray();
+        return [.. includeList];
     }
 
     private MemoryRecord GetMemoryRecordFromEmbeddingsModel(ChromaEmbeddingsModel embeddingsModel, int recordIndex)

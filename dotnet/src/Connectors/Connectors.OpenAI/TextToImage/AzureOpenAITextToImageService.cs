@@ -27,7 +27,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private readonly OpenAIClient _client;
     private readonly ILogger _logger;
     private readonly string _deploymentName;
-    private readonly Dictionary<string, object?> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = [];
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;

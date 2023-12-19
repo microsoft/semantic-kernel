@@ -327,14 +327,9 @@ public class MongoDBMemoryStoreTests
 
     private sealed class AsyncCursorMock<T> : IAsyncCursor<T>
     {
-        private T[] _items;
+        private T[] _items = items ?? [];
 
         public IEnumerable<T>? Current { get; private set; }
-
-        public AsyncCursorMock(params T[] items)
-        {
-            this._items = items ?? Array.Empty<T>();
-        }
 
         public void Dispose()
         {
@@ -343,7 +338,7 @@ public class MongoDBMemoryStoreTests
         public bool MoveNext(CancellationToken cancellationToken = default)
         {
             this.Current = this._items;
-            this._items = Array.Empty<T>();
+            this._items = [];
 
             return this.Current.Any();
         }

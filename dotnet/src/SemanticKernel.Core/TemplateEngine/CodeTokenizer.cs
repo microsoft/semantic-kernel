@@ -61,7 +61,7 @@ internal sealed class CodeTokenizer
         text = text?.Trim();
 
         // Render NULL to ""
-        if (string.IsNullOrEmpty(text)) { return new List<Block>(); }
+        if (string.IsNullOrEmpty(text)) { return []; }
 
         // Track what type of token we're reading
         TokenTypes currentTokenType = TokenTypes.None;

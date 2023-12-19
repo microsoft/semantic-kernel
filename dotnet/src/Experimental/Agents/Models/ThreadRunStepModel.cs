@@ -125,7 +125,7 @@ internal sealed class ThreadRunStepModel
         /// Details of tool calls.
         /// </summary>
         [JsonPropertyName("tool_calls")]
-        public ToolCallsDetailsModel[] ToolCalls { get; set; } = Array.Empty<ToolCallsDetailsModel>();
+        public ToolCallsDetailsModel[] ToolCalls { get; set; } = [];
     }
 
     /// <summary>

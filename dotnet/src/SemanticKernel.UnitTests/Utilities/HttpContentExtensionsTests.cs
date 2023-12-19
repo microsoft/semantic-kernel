@@ -79,7 +79,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
     public async Task ShouldReturnHttpContentAsByteArrayAsync()
     {
         //Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent(new byte[] { 1, 2, 3 });
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([1, 2, 3]);
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 
