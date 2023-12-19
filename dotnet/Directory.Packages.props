@@ -10,7 +10,7 @@
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.1.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.3" />
-    <PackageVersion Include="Markdig" Version="0.33.0" />
+    <PackageVersion Include="Markdig" Version="0.34.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
