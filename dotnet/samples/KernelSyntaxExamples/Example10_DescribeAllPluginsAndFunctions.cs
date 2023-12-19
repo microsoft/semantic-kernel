@@ -18,8 +18,6 @@ public static class Example10_DescribeAllPluginsAndFunctions
     /// </summary>
     public static Task RunAsync()
     {
-        Console.WriteLine("======== Describe all plugins and functions ========");
-
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
@@ -48,9 +46,9 @@ public static class Example10_DescribeAllPluginsAndFunctions
 
         var functions = kernel.Plugins.GetFunctionsMetadata();
 
-        Console.WriteLine("*****************************************");
+        Console.WriteLine("**********************************************");
         Console.WriteLine("****** Registered plugins and functions ******");
-        Console.WriteLine("*****************************************");
+        Console.WriteLine("**********************************************");
         Console.WriteLine();
 
         foreach (KernelFunctionMetadata func in functions)
@@ -82,9 +80,9 @@ public static class Example10_DescribeAllPluginsAndFunctions
 
 /** Sample output:
 
-*****************************************
+**********************************************
 ****** Registered plugins and functions ******
-*****************************************
+**********************************************
 
 Plugin: StaticTextPlugin
    Uppercase: Change all string chars to uppercase
