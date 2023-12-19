@@ -6,10 +6,16 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>10</LangVersion>
+    <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Use newest available compiler to support C# 12. -->
+    <!-- This can be removed once we no longer target the .NET 6/7 SDKs in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+  </ItemGroup>
 
   <PropertyGroup>
     <!-- Disable NuGet packaging by default. Projects can override. -->
