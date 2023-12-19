@@ -78,8 +78,8 @@ requirements and setup instructions.
 5. [Using Kernel Arguments to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
 6. [Creating and Executing Plans](./notebooks/05-using-the-planner.ipynb)
 7. [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-8. [Creating images with DALL-E 2](./notebooks/07-DALL-E-2.ipynb)
-9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-2.ipynb)
+8. [Creating images with DALL-E 3](./notebooks/07-DALL-E-3.ipynb)
+9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-3.ipynb)
 10. [BingSearch using Kernel](./notebooks/10-BingSearch-using-kernel.ipynb)
 
 # Nuget packages
