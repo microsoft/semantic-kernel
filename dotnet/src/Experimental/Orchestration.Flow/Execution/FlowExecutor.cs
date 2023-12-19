@@ -159,12 +159,12 @@ internal class FlowExecutor : IFlowExecutor
 
             // init step execution state
             string stepKey = $"{stepIndex}_{step.Goal}";
-            if (!executionState.StepStates.ContainsKey(stepKey))
+            if (!executionState.StepStates.TryGetValue(stepKey, out ExecutionState.StepExecutionState? stepState))
             {
-                executionState.StepStates.Add(stepKey, new ExecutionState.StepExecutionState());
+                stepState = new ExecutionState.StepExecutionState();
+                executionState.StepStates.Add(stepKey, stepState);
             }
 
-            ExecutionState.StepExecutionState stepState = executionState.StepStates[stepKey];
             var stepId = $"{stepKey}_{stepState.ExecutionCount}";
 
             var continueLoop = false;

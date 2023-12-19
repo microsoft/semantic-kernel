@@ -2,7 +2,6 @@
 
 using System;
 using System.Net;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 

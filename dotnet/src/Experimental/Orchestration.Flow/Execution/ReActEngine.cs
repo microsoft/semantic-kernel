@@ -140,7 +140,7 @@ internal sealed class ReActEngine
             if (firstActionFunction.Parameters.Count == 0)
             {
                 var action = $"{firstActionFunction.PluginName}.{firstActionFunction.Name}";
-                this._logger?.LogDebug($"Auto selecting {Action} as it is the only function available and it has no parameters.", action);
+                this._logger?.LogDebug("Auto selecting {Action} as it is the only function available and it has no parameters.", action);
                 return new ReActStep
                 {
                     Action = action
@@ -408,7 +408,7 @@ internal sealed class ReActEngine
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"(default='{parameter.DefaultValue}')";
+            var defaultValueString = parameter.DefaultValue is not string value || string.IsNullOrEmpty(value) ? string.Empty : $"(default='{parameter.DefaultValue}')";
             return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
         }));
 

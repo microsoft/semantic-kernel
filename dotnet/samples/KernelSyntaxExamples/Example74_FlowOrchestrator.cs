@@ -29,7 +29,7 @@ public static class Example74_FlowOrchestrator
 name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
 steps:
-  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
+  - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
       - LanguageCalculatorPlugin
@@ -61,8 +61,8 @@ provides:
         // Load assemblies for external plugins
         Console.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
 
-        return RunExampleAsync();
-        //return RunInteractiveAsync();
+        //return RunExampleAsync();
+        return RunInteractiveAsync();
     }
 
     private static async Task RunInteractiveAsync()
@@ -92,7 +92,7 @@ provides:
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
         Console.WriteLine("Please type the question you'd like to ask");
-        FunctionResult? result;
+        FunctionResult? result = null;
         string? goal = null;
         do
         {
@@ -111,7 +111,17 @@ provides:
                 s_flow.Steps.First().Goal = input;
             }
 
-            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
+            try
+            {
+                result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
+            }
+            catch (KernelException ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine("Please try again.");
+                continue;
+            }
+
             var responses = result.GetValue<List<string>>()!;
             foreach (var response in responses)
             {
@@ -126,7 +136,7 @@ provides:
                 Console.WriteLine("Flow completed, exiting");
                 break;
             }
-        } while (result.GetValue<List<string>>()?.Count > 0);
+        } while (result == null || result.GetValue<List<string>>()?.Count > 0);
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
@@ -290,6 +300,8 @@ Do not expose the regex in your response.
 
     public sealed class EmailPluginV2
     {
+        private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
+
         [KernelFunction]
         [Description("Send email")]
         public string SendEmail(
@@ -306,7 +318,7 @@ Do not expose the regex in your response.
             };
 
             // for demo purpose only
-            string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
+            string emailPayload = JsonSerializer.Serialize(contract, this._serializerOptions);
             arguments["email"] = emailPayload;
 
             return "Here's the API contract I will post to mail server: " + emailPayload;
@@ -324,25 +336,24 @@ Do not expose the regex in your response.
 //*****************************************************
 //Executing RunExampleAsync
 //Flow: FlowOrchestrator_Example_Flow
-//Question: What is the tallest mountain on Earth? How tall is it divided by 2?
-//Answer: The tallest mountain on Earth is Mount Everest, and its height divided by 2 is 14515.845.
-//Assistant: Please provide a valid email address. It should be in the format of username@domain.com.
+//Question: What is the tallest mountain in Asia? How tall is it divided by 2?
+//Answer: The tallest mountain in Asia is Mount Everest and its height divided by 2 is 14516.
+//Assistant: Please provide a valid email address.
 //User: my email is bad*email&address
-//Assistant: I'm sorry, but "bad*email&address" is not a valid email address and does not match the correct format. An email address should include a username, the @ symbol, and a domain name like gmail.com or yahoo.com.
+//Assistant: I'm sorry, but "bad*email&address" does not conform to the standard email format. Please provide a valid email address.
 //User: my email is sample@xyz.com
 //Assistant: Did the user indicate whether they want to repeat the previous step?
 //User: yes
-//Assistant: Please provide a valid email address.
+//Assistant: Please enter a valid email address.
 //User: I also want to notify foo@bar.com
 //Assistant: Did the user indicate whether they want to repeat the previous step?
 //User: no I don't need notify any more address
 //        Email Address: ["sample@xyz.com","foo@bar.com"]
 //        Email Payload: {
 //  "Address": "[\u0022sample@xyz.com\u0022,\u0022foo@bar.com\u0022]",
-//  "Content": "The tallest mountain on Earth is Mount Everest, and its height divided by 2 is 14515.845."
+//  "Content": "The tallest mountain in Asia is Mount Everest and its height divided by 2 is 14516."
 //}
-//Time Taken: 00:00:22.8710799
-//*****************************************************
+//Time Taken: 00:00:21.9681103
 //*****************************************************
 
 //*****************************************************
@@ -350,19 +361,18 @@ Do not expose the regex in your response.
 //Flow: FlowOrchestrator_Example_Flow
 //Please type the question you'd like to ask
 //User:
-//What is the length of the longest river in Ireland?
-//Assistant: ["Please provide a valid email address."]
+//What is the tallest mountain in Asia? How tall is it divided by 2?
+//Assistant: Please enter a valid email address.
 //User:
 //foo@hotmail.com
-//Assistant: ["Do you want to send it to another email address?"]
+//Assistant: Do you want to send it to another email address?
 //User:
-//no
-//Assistant: []
+//no I don't
 //        Email Address: ["foo@hotmail.com"]
 //        Email Payload: {
 //  "Address": "[\u0022foo@hotmail.com\u0022]",
-//  "Content": "The longest river in Ireland is the River Shannon with a length of 360 km (223 miles)."
+//  "Content": "The tallest mountain in Asia is Mount Everest and its height divided by 2 is 14515.845."
 //}
 //Flow completed, exiting
-//Time Taken: 00:00:44.0215449
+//Time Taken: 00:01:47.0752303
 //*****************************************************

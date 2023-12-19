@@ -58,7 +58,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow = FlowSerializer.DeserializeFromYaml(@"
 goal: answer question and sent email
 steps:
-  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
+  - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
     provides:
@@ -85,7 +85,7 @@ steps:
             config: new FlowOrchestratorConfig() { MaxStepIterations = 20 });
 
         // Act
-        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain on Earth? How tall is it divided by 2?");
+        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain in Asia? How tall is it divided by 2?");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
