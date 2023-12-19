@@ -136,7 +136,11 @@ internal class FlowExecutor : IFlowExecutor
     {
         Verify.NotNull(flow, nameof(flow));
 
-        this._logger?.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
+        }
+
         var sortedSteps = flow.SortSteps();
 
         var rootContext = new KernelArguments(kernelArguments);
@@ -192,7 +196,11 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         stepState.Status = ExecutionState.Status.InProgress;
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Need to start step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Need to start step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
                     }
                     else
                     {
@@ -203,15 +211,23 @@ internal class FlowExecutor : IFlowExecutor
                         }
 
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
+
                         continue;
                     }
                 }
 
                 // execute step
-                this._logger?.LogInformation(
-                    "Executing step {StepIndex} for iteration={Iteration}, goal={StepGoal}, input={Input}.", stepIndex,
-                    stepState.ExecutionCount, step.Goal, input);
+                if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                {
+                    this._logger.LogInformation(
+                        "Executing step {StepIndex} for iteration={Iteration}, goal={StepGoal}, input={Input}.", stepIndex,
+                        stepState.ExecutionCount, step.Goal, input);
+                }
 
                 Kernel stepKernel = this._kernelBuilder.Build();
                 var stepArguments = new KernelArguments();
@@ -270,12 +286,19 @@ internal class FlowExecutor : IFlowExecutor
                         outputs.Add(exitResponse!);
                     }
 
-                    this._logger?.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                    if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                    {
+                        this._logger.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                    }
                 }
                 else if (stepResult.IsContinueLoop())
                 {
                     continueLoop = true;
-                    this._logger?.LogInformation("Continuing to the next loop iteration for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                    if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                    {
+                        this._logger.LogInformation("Continuing to the next loop iteration for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                    }
                 }
 
                 // check if current execution is complete by checking whether all arguments are already provided
@@ -314,7 +337,10 @@ internal class FlowExecutor : IFlowExecutor
 
             if (completed)
             {
-                this._logger?.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                {
+                    this._logger.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                }
 
                 if (step.CompletionType is CompletionType.AtLeastOnce or CompletionType.ZeroOrMore && stepState.Status != ExecutionState.Status.Completed)
                 {
@@ -332,7 +358,12 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         // unconfirmed, prompt user
                         outputs.Add(repeatStep.Prompt!);
-                        this._logger?.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
+                        }
+
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
                         break;
                     }
@@ -346,13 +377,21 @@ internal class FlowExecutor : IFlowExecutor
 
                         stepState.ExecutionCount++;
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Need repeat step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Need repeat step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
                     }
                     else
                     {
                         // completed
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
                     }
                 }
                 else
@@ -367,9 +406,12 @@ internal class FlowExecutor : IFlowExecutor
             }
         }
 
-        foreach (var output in outputs)
+        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
         {
-            this._logger?.LogInformation("[Output] {Output}", output);
+            foreach (var output in outputs)
+            {
+                this._logger?.LogInformation("[Output] {Output}", output);
+            }
         }
 
         return new FunctionResult(this._executeFlowFunction, outputs, metadata: rootContext);
@@ -451,12 +493,20 @@ internal class FlowExecutor : IFlowExecutor
 
         var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
         context["agentScratchPad"] = scratchPad;
-        this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
+
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
+        }
 
         var llmResponse = await this._systemKernel.InvokeAsync(function, context).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()?.Trim() ?? string.Empty;
-        this._logger?.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+        }
 
         Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
         if (finalAnswerMatch.Success)
@@ -487,7 +537,7 @@ internal class FlowExecutor : IFlowExecutor
             return new RepeatOrStartStepResult(null, prompt);
         }
 
-        this._logger?.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+        this._logger.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
         chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
         return null;
@@ -548,7 +598,11 @@ internal class FlowExecutor : IFlowExecutor
 
             stepsTaken.Add(actionStep);
 
-            this._logger?.LogInformation("Thought: {Thought}", actionStep.Thought);
+            if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+            {
+                this._logger.LogInformation("Thought: {Thought}", actionStep.Thought);
+            }
+
             if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
@@ -636,7 +690,11 @@ internal class FlowExecutor : IFlowExecutor
                     continue;
                 }
 
-                this._logger?.LogInformation("Observation: {Observation}", actionStep.Observation);
+                if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                {
+                    this._logger.LogInformation("Observation: {Observation}", actionStep.Observation);
+                }
+
                 await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(actionResult))
@@ -667,7 +725,7 @@ internal class FlowExecutor : IFlowExecutor
                     continue;
                 }
 
-                this._logger?.LogInformation("Action: No result from action");
+                this._logger?.LogWarning("Action: No result from action");
             }
             else if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
             {
@@ -680,7 +738,7 @@ internal class FlowExecutor : IFlowExecutor
             else
             {
                 actionStep.Observation = "ACTION $JSON_BLOB must be provided as part of thought process.";
-                this._logger?.LogInformation("Action: No action to take");
+                this._logger?.LogWarning("Action: No action to take");
             }
 
             // continue to next iteration

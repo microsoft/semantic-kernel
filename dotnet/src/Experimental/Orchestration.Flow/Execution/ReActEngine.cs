@@ -124,7 +124,7 @@ internal sealed class ReActEngine
             }
         }
 
-        this._reActFunction = this.CreateSemanticFunction(systemKernel, "ReActFunction", promptConfig);
+        this._reActFunction = systemKernel.CreateFunctionFromPrompt(promptConfig);
     }
 
     internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, KernelArguments arguments, string question, List<ReActStep> previousSteps)
@@ -140,7 +140,12 @@ internal sealed class ReActEngine
             if (firstActionFunction.Parameters.Count == 0)
             {
                 var action = $"{firstActionFunction.PluginName}.{firstActionFunction.Name}";
-                this._logger?.LogDebug("Auto selecting {Action} as it is the only function available and it has no parameters.", action);
+
+                if (this._logger.IsEnabled(LogLevel.Debug))
+                {
+                    this._logger?.LogDebug("Auto selecting {Action} as it is the only function available and it has no parameters.", action);
+                }
+
                 return new ReActStep
                 {
                     Action = action
@@ -151,14 +156,21 @@ internal sealed class ReActEngine
         var functionDesc = this.GetFunctionDescriptions(availableFunctions);
         arguments["functionDescriptions"] = functionDesc;
 
-        this._logger?.LogInformation("question: {Question}", question);
-        this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
-        this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger?.LogInformation("question: {Question}", question);
+            this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
+            this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
+        }
 
         var llmResponse = await this._reActFunction.InvokeAsync(kernel, arguments).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
-        this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
+
+        if (this._logger?.IsEnabled(LogLevel.Debug) ?? false)
+        {
+            this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
+        }
 
         var actionStep = this.ParseResult(llmResponseText);
 
@@ -179,15 +191,14 @@ internal sealed class ReActEngine
 
         variables[Constants.ActionVariableNames.ChatInput] = chatInput;
         variables[Constants.ActionVariableNames.ChatHistory] = ChatHistorySerializer.Serialize(chatHistory);
-        this._logger?.LogInformation("Action: {Action}({ActionVariables})", actionStep.Action, JsonSerializer.Serialize(variables));
 
-        var availableFunctions = this.GetAvailableFunctions(kernel);
-        var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionStep.Action);
-        if (targetFunction is null)
+        if (this._logger.IsEnabled(LogLevel.Information))
         {
-            throw new MissingMethodException($"The function '{actionStep.Action}' was not found.");
+            this._logger?.LogInformation("Action: {Action}({ActionVariables})", actionStep.Action, JsonSerializer.Serialize(variables));
         }
 
+        var availableFunctions = this.GetAvailableFunctions(kernel);
+        var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionStep.Action) ?? throw new MissingMethodException($"The function '{actionStep.Action}' was not found.");
         var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
         var functionView = function.Metadata;
 
@@ -210,7 +221,10 @@ internal sealed class ReActEngine
                 contextVariables[variable.Key] = variable.Value;
             }
 
-            this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.GetValue<string>());
+            if (this._logger?.IsEnabled(LogLevel.Debug) ?? false)
+            {
+                this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.GetValue<string>());
+            }
 
             return result.GetValue<string>() ?? string.Empty;
         }
@@ -231,13 +245,6 @@ internal sealed class ReActEngine
         }
 
         return actionContext;
-    }
-
-    private KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, PromptTemplateConfig config)
-    {
-        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
-
-        return kernel.CreateFunctionFromPrompt(config, factory);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
@@ -262,7 +269,11 @@ internal sealed class ReActEngine
         {
             if (scratchPadLines.Count / 4.0 > (this._config.MaxTokens * 0.75))
             {
-                this._logger.LogDebug("Scratchpad is too long, truncating. Skipping {CountSkipped} steps.", i + 1);
+                if (this._logger.IsEnabled(LogLevel.Debug))
+                {
+                    this._logger.LogDebug("Scratchpad is too long, truncating. Skipping {CountSkipped} steps.", i + 1);
+                }
+
                 break;
             }
 

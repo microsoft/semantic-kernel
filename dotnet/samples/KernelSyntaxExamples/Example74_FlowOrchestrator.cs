@@ -61,8 +61,8 @@ provides:
         // Load assemblies for external plugins
         Console.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
 
-        //return RunExampleAsync();
-        return RunInteractiveAsync();
+        return RunExampleAsync();
+        //return RunInteractiveAsync();
     }
 
     private static async Task RunInteractiveAsync()
