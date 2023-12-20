@@ -91,18 +91,18 @@ As an alternative to providing the key/endpoint properties via a file, you can s
 ie:
 
 ```shell
-# OpenAI
-../../mvnw exec:java \
--DOPENAI_CLIENT_TYPE=AZURE_OPEN_AI \
--Dclient.openai.key="my-key" \
--Dclient.openai.organizationid="my-org-id" \
--Dsample=Example04_CombineLLMPromptsAndNativeCode
-
 # Azure
 ../../mvnw exec:java \
 -DOPENAI_CLIENT_TYPE=AZURE_OPEN_AI \
 -Dclient.azureopenai.key="my-key" \
 -Dclient.azureopenai.endpoint="url of azure openai endpoint" \
+-Dsample=Example04_CombineLLMPromptsAndNativeCode
+
+# OpenAI
+../../mvnw exec:java \
+-DOPENAI_CLIENT_TYPE=AZURE_OPEN_AI \
+-Dclient.openai.key="my-key" \
+-Dclient.openai.organizationid="my-org-id" \
 -Dsample=Example04_CombineLLMPromptsAndNativeCode
 ```
 
