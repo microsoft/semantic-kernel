@@ -54,9 +54,11 @@ public sealed class GrpcRunnerTests : IDisposable
 
         var sut = new GrpcOperationRunner(this._httpClient);
 
-        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata);
-        operation.Package = "greet";
-        operation.Address = "https://fake-random-test-host";
+        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        {
+            Package = "greet",
+            Address = "https://fake-random-test-host"
+        };
 
         var arguments = new KernelArguments
         {
@@ -86,9 +88,11 @@ public sealed class GrpcRunnerTests : IDisposable
 
         var sut = new GrpcOperationRunner(this._httpClient);
 
-        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata);
-        operation.Package = "greet";
-        operation.Address = "https://fake-random-test-host";
+        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        {
+            Package = "greet",
+            Address = "https://fake-random-test-host"
+        };
 
         var arguments = new KernelArguments
         {
@@ -122,9 +126,11 @@ public sealed class GrpcRunnerTests : IDisposable
 
         var sut = new GrpcOperationRunner(this._httpClient);
 
-        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata);
-        operation.Package = "greet";
-        operation.Address = "https://fake-random-test-host";
+        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        {
+            Package = "greet",
+            Address = "https://fake-random-test-host"
+        };
 
         var arguments = new KernelArguments
         {
@@ -180,8 +186,10 @@ public sealed class GrpcRunnerTests : IDisposable
 
         public HttpMessageHandlerStub()
         {
-            this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+            this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+            };
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -70,8 +70,6 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
         var openAIExecutionSettings = providedSystemChatPrompt is null
             ? new OpenAIPromptExecutionSettings()
             : new OpenAIPromptExecutionSettings
@@ -79,6 +77,7 @@ public class KernelFunctionFromPromptTests
                 ChatSystemPrompt = providedSystemChatPrompt
             };
 
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(openAIExecutionSettings);
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -105,8 +104,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service1");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -130,8 +128,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 

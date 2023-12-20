@@ -28,8 +28,7 @@ public class MultipleModelTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service1");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -53,8 +52,7 @@ public class MultipleModelTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -86,8 +84,7 @@ public class MultipleModelTests
         builder.Services.AddKeyedSingleton("service3", mockTextGeneration3.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         foreach (var serviceId in serviceIds)
         {
             promptConfig.AddExecutionSettings(new PromptExecutionSettings(), serviceId);

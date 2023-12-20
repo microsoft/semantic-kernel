@@ -58,10 +58,10 @@ internal sealed class ProtoDocumentParser
 
                 var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
 
-                var operation = new GrpcOperation(service.Name, method.Name, requestContract, responseContract);
-                operation.Package = model.Package;
-
-                operations.Add(operation);
+                operations.Add(new GrpcOperation(service.Name, method.Name, requestContract, responseContract)
+                {
+                    Package = model.Package
+                });
             }
         }
 

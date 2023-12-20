@@ -41,8 +41,10 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         this._connectionString = connectionString;
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
-        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString);
-        connectionStringBuilder.Database = this._databaseName;
+        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString)
+        {
+            Database = this._databaseName
+        };
 
         NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ToString());
         dataSourceBuilder.UseVector();
