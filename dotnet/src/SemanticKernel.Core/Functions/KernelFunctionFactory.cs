@@ -115,7 +115,7 @@ public static class KernelFunctionFactory
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
-    [return: NotNullIfNotNull("settings")]
+    [return: NotNullIfNotNull(nameof(settings))]
     private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(PromptExecutionSettings? settings) =>
         settings is null ? null :
             new Dictionary<string, PromptExecutionSettings>(1)

@@ -378,7 +378,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     /// <param name="indexName">Value to normalize</param>
     /// <param name="parameterName">The name of the argument used with <paramref name="indexName"/>.</param>
     /// <returns>Normalized name</returns>
-    private string NormalizeIndexName(string indexName, [CallerArgumentExpression("indexName")] string? parameterName = null)
+    private string NormalizeIndexName(string indexName, [CallerArgumentExpression(nameof(indexName))] string? parameterName = null)
     {
         if (indexName.Length > 128)
         {
