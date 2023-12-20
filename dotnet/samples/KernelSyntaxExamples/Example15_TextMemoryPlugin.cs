@@ -148,6 +148,17 @@ public static class Example15_TextMemoryPlugin
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
+        if (!ConfigurationValidator.Validate(nameof(Example15_TextMemoryPlugin),
+                new[]
+                {
+                    TestConfiguration.OpenAI.ApiKey,
+                    TestConfiguration.OpenAI.ChatModelId,
+                    TestConfiguration.OpenAI.EmbeddingModelId
+                }))
+        {
+            return;
+        }
+
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
@@ -228,12 +239,12 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
-            collection: MemoryCollectionName,
-            query: "where did I grow up?",
-            limit: 2,
-            minRelevanceScore: 0.79,
-            withEmbeddings: true,
-            cancellationToken: cancellationToken))
+                           collection: MemoryCollectionName,
+                           query: "where did I grow up?",
+                           limit: 2,
+                           minRelevanceScore: 0.79,
+                           withEmbeddings: true,
+                           cancellationToken: cancellationToken))
         {
             Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
@@ -318,6 +329,7 @@ Answer:
         {
             Console.WriteLine(collection);
         }
+
         Console.WriteLine();
 
         Console.WriteLine("Removing Collection {0}", MemoryCollectionName);

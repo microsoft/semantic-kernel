@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using RepoUtils;
 
 public static class Example05_InlineFunctionDefinition
 {
@@ -11,12 +12,9 @@ public static class Example05_InlineFunctionDefinition
     {
         Console.WriteLine("======== Inline Function Definition ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (openAIModelId is null || openAIApiKey is null)
+        if (!ConfigurationValidator.Validate(nameof(Example05_InlineFunctionDefinition),
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -28,8 +26,8 @@ public static class Example05_InlineFunctionDefinition
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey)
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Function defined using few-shot design pattern

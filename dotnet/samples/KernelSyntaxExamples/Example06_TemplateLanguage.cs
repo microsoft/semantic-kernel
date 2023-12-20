@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
+using RepoUtils;
 
 public static class Example06_TemplateLanguage
 {
@@ -16,19 +17,16 @@ public static class Example06_TemplateLanguage
     {
         Console.WriteLine("======== TemplateLanguage ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (openAIModelId == null || openAIApiKey == null)
+        if (!ConfigurationValidator.Validate(nameof(Example06_TemplateLanguage),
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey)
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates

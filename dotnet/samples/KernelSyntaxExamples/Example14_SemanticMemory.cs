@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
+using RepoUtils;
 
 /* The files contains two examples about SK Semantic Memory.
  *
@@ -25,18 +26,33 @@ public static class Example14_SemanticMemory
         Console.WriteLine("======== Semantic Memory using Azure AI Search ========");
         Console.WriteLine("==============================================================");
 
+        if (!ConfigurationValidator.Validate(nameof(Example14_SemanticMemory),
+                new[] { TestConfiguration.OpenAI.ApiKey }))
+        {
+            return;
+        }
+
         /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
          * Azure AI Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
 
-        var memoryWithACS = new MemoryBuilder()
-            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
-            .Build();
+        if (ConfigurationValidator.Validate(nameof(Example14_SemanticMemory),
+                exampleNameSuffix: "Azure AI Search",
+                args: new[]
+                {
+                    TestConfiguration.AzureAISearch.Endpoint,
+                    TestConfiguration.AzureAISearch.ApiKey
+                }))
+        {
+            var memoryWithACS = new MemoryBuilder()
+                .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+                .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
+                .Build();
 
-        await RunExampleAsync(memoryWithACS);
+            await RunExampleAsync(memoryWithACS);
+        }
 
         Console.WriteLine("====================================================");
         Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");

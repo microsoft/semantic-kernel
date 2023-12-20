@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
+using RepoUtils;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
@@ -17,30 +18,24 @@ public static class Example07_BingAndGooglePlugins
 {
     public static async Task RunAsync()
     {
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (openAIModelId == null || openAIApiKey == null)
+        if (!ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey)
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Load Bing plugin
-        string bingApiKey = TestConfiguration.Bing.ApiKey;
-        if (bingApiKey == null)
+        if (ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
+                exampleNameSuffix: "Bing",
+                args: new[] { TestConfiguration.Bing.ApiKey }))
         {
-            Console.WriteLine("Bing credentials not found. Skipping example.");
-        }
-        else
-        {
-            var bingConnector = new BingConnector(bingApiKey);
+            var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
             kernel.ImportPluginFromObject(bing, "bing");
             await Example1Async(kernel, "bing");
@@ -48,18 +43,13 @@ public static class Example07_BingAndGooglePlugins
         }
 
         // Load Google plugin
-        string googleApiKey = TestConfiguration.Google.ApiKey;
-        string googleSearchEngineId = TestConfiguration.Google.SearchEngineId;
-
-        if (googleApiKey == null || googleSearchEngineId == null)
-        {
-            Console.WriteLine("Google credentials not found. Skipping example.");
-        }
-        else
+        if (ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
+                exampleNameSuffix: "Google",
+                args: new[] { TestConfiguration.Google.ApiKey, TestConfiguration.Google.SearchEngineId }))
         {
             using var googleConnector = new GoogleConnector(
-                apiKey: googleApiKey,
-                searchEngineId: googleSearchEngineId);
+                apiKey: TestConfiguration.Google.ApiKey,
+                searchEngineId: TestConfiguration.Google.SearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
             kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");

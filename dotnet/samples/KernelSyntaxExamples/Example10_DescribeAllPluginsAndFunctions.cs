@@ -18,6 +18,12 @@ public static class Example10_DescribeAllPluginsAndFunctions
     /// </summary>
     public static Task RunAsync()
     {
+        if (!ConfigurationValidator.Validate(nameof(Example10_DescribeAllPluginsAndFunctions),
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
+        {
+            return Task.CompletedTask;
+        }
+
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,

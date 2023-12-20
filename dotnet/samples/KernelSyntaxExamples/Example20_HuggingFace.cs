@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using RepoUtils;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
 public static class Example20_HuggingFace
@@ -20,6 +21,17 @@ public static class Example20_HuggingFace
     private static async Task RunInferenceApiExampleAsync()
     {
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
+
+        if (!ConfigurationValidator.Validate(nameof(Example20_HuggingFace),
+                exampleNameSuffix: "Inference Api",
+                args: new[]
+                {
+                    TestConfiguration.HuggingFace.ModelId,
+                    TestConfiguration.HuggingFace.ApiKey
+                }))
+        {
+            return;
+        }
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
@@ -48,6 +60,13 @@ public static class Example20_HuggingFace
     private static async Task RunLlamaExampleAsync()
     {
         Console.WriteLine("\n======== HuggingFace Llama 2 example ========\n");
+
+        if (!ConfigurationValidator.Validate(nameof(Example20_HuggingFace),
+                exampleNameSuffix: "Llama local",
+                args: new[] { TestConfiguration.HuggingFace.ApiKey }))
+        {
+            return;
+        }
 
         // HuggingFace Llama 2 model: https://huggingface.co/meta-llama/Llama-2-7b-hf
         const string Model = "meta-llama/Llama-2-7b-hf";

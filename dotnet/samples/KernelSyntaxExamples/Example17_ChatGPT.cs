@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using RepoUtils;
 
 // The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
 public static class Example17_ChatGPT
@@ -47,6 +48,17 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
+        if (!ConfigurationValidator.Validate(nameof(Example17_ChatGPT),
+                exampleNameSuffix: "OpenAI",
+                args: new[]
+                {
+                    TestConfiguration.OpenAI.ChatModelId,
+                    TestConfiguration.OpenAI.ApiKey
+                }))
+        {
+            return;
+        }
+
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await StartChatAsync(chatCompletionService);
@@ -55,6 +67,19 @@ public static class Example17_ChatGPT
     private static async Task AzureOpenAIChatSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
+
+        if (!ConfigurationValidator.Validate(nameof(Example17_ChatGPT),
+                exampleNameSuffix: "Azure",
+                args: new[]
+                {
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    TestConfiguration.AzureOpenAI.ApiKey,
+                    TestConfiguration.AzureOpenAI.ChatModelId
+                }))
+        {
+            return;
+        }
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,

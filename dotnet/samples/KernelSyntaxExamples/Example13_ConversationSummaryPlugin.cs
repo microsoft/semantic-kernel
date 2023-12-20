@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
+using RepoUtils;
 
 internal static class Example13_ConversationSummaryPlugin
 {
@@ -117,15 +118,16 @@ Jane: Goodbye!
 
     public static async Task RunAsync()
     {
-        await ConversationSummaryPluginAsync();
-        await GetConversationActionItemsAsync();
-        await GetConversationTopicsAsync();
+        if (InitializeKernel() is not { } kernel) { return; }
+
+        await ConversationSummaryPluginAsync(kernel);
+        await GetConversationActionItemsAsync(kernel);
+        await GetConversationTopicsAsync(kernel);
     }
 
-    private static async Task ConversationSummaryPluginAsync()
+    private static async Task ConversationSummaryPluginAsync(Kernel kernel)
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
-        Kernel kernel = InitializeKernel();
 
         KernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
@@ -136,10 +138,9 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
-    private static async Task GetConversationActionItemsAsync()
+    private static async Task GetConversationActionItemsAsync(Kernel kernel)
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
-        Kernel kernel = InitializeKernel();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
@@ -150,10 +151,9 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
-    private static async Task GetConversationTopicsAsync()
+    private static async Task GetConversationTopicsAsync(Kernel kernel)
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
-        Kernel kernel = InitializeKernel();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
@@ -164,17 +164,27 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
-    private static Kernel InitializeKernel()
+    private static Kernel? InitializeKernel()
     {
-        Kernel kernel = Kernel.CreateBuilder()
+        if (!ConfigurationValidator.Validate(nameof(Example13_ConversationSummaryPlugin),
+                new[]
+                {
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    TestConfiguration.AzureOpenAI.ApiKey,
+                    TestConfiguration.AzureOpenAI.ChatModelId
+                }))
+        {
+            return null;
+        }
+
+        return Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
-
-        return kernel;
     }
 }
 

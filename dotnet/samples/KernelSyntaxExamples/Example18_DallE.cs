@@ -7,6 +7,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextToImage;
+using RepoUtils;
 
 // The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
 public static class Example18_DallE
@@ -20,6 +21,17 @@ public static class Example18_DallE
     private static async Task OpenAIDallEAsync()
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
+
+        if (!ConfigurationValidator.Validate(nameof(Example18_DallE),
+                exampleNameSuffix: "OpenAI",
+                args: new[]
+                {
+                    TestConfiguration.OpenAI.ChatModelId,
+                    TestConfiguration.OpenAI.ApiKey
+                }))
+        {
+            return;
+        }
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey) // Add your text to image service
@@ -45,10 +57,10 @@ public static class Example18_DallE
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
-           "You're chatting with a user. Instead of replying directly to the user" +
-           " provide the description of an image that expresses what you want to say." +
-           " The user won't see your message, they will see only the image. The system " +
-           " generates an image using your description, so it's important you describe the image with details.");
+            "You're chatting with a user. Instead of replying directly to the user" +
+            " provide the description of an image that expresses what you want to say." +
+            " The user won't see your message, they will see only the image. The system " +
+            " generates an image using your description, so it's important you describe the image with details.");
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);
@@ -86,6 +98,21 @@ public static class Example18_DallE
     public static async Task AzureOpenAIDallEAsync()
     {
         Console.WriteLine("========Azure OpenAI Dall-E 3 Text To Image ========");
+
+        if (!ConfigurationValidator.Validate(nameof(Example18_DallE),
+                exampleNameSuffix: "Azure",
+                args: new[]
+                {
+                    TestConfiguration.AzureOpenAI.ImageModelId,
+                    TestConfiguration.AzureOpenAI.ImageApiKey,
+                    TestConfiguration.AzureOpenAI.ImageEndpoint,
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    TestConfiguration.AzureOpenAI.ApiKey
+                }))
+        {
+            return;
+        }
 
         var builder = Kernel.CreateBuilder()
             .AddAzureOpenAITextToImage( // Add your text to image service
