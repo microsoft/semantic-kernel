@@ -247,7 +247,8 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         return
         [
-            new() {
+            new()
+            {
                 Parameters = new ChatWithDataSourceParameters
                 {
                     Endpoint = this._config.DataSourceEndpoint,
