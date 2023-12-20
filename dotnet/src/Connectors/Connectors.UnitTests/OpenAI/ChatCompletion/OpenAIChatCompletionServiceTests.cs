@@ -277,91 +277,95 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-    private const string ChatCompletionResponse = @"{
-  ""id"": ""chatcmpl-8IlRBQU929ym1EqAY2J4T7GGkW5Om"",
-  ""object"": ""chat.completion"",
-  ""created"": 1699482945,
-  ""model"": ""gpt-3.5-turbo"",
-  ""choices"": [
-    {
-      ""index"": 0,
-      ""message"": {
-        ""role"": ""assistant"",
-        ""content"": null,
-        ""function_call"": {
-          ""name"": ""TimePlugin_Date"",
-          ""arguments"": ""{}""
-        }
-      },
-      ""finish_reason"": ""stop""
-    }
-  ],
-  ""usage"": {
-    ""prompt_tokens"": 52,
-    ""completion_tokens"": 1,
-    ""total_tokens"": 53
-  }
-}";
-    private const string AzureChatCompletionResponse = @"{
-    ""id"": ""chatcmpl-8S914omCBNQ0KU1NFtxmupZpzKWv2"",
-    ""object"": ""chat.completion"",
-    ""created"": 1701718534,
-    ""model"": ""gpt-3.5-turbo"",
-    ""prompt_filter_results"": [
+    private const string ChatCompletionResponse = """
         {
-            ""prompt_index"": 0,
-            ""content_filter_results"": {
-                ""hate"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                },
-                ""self_harm"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                },
-                ""sexual"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                },
-                ""violence"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
+          "id": "chatcmpl-8IlRBQU929ym1EqAY2J4T7GGkW5Om",
+          "object": "chat.completion",
+          "created": 1699482945,
+          "model": "gpt-3.5-turbo",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": null,
+                "function_call": {
+                  "name": "TimePlugin_Date",
+                  "arguments": "{}"
                 }
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 52,
+            "completion_tokens": 1,
+            "total_tokens": 53
+          }
+        }
+        """;
+    private const string AzureChatCompletionResponse = """
+        {
+            "id": "chatcmpl-8S914omCBNQ0KU1NFtxmupZpzKWv2",
+            "object": "chat.completion",
+            "created": 1701718534,
+            "model": "gpt-3.5-turbo",
+            "prompt_filter_results": [
+                {
+                    "prompt_index": 0,
+                    "content_filter_results": {
+                        "hate": {
+                            "filtered": false,
+                            "severity": "safe"
+                        },
+                        "self_harm": {
+                            "filtered": false,
+                            "severity": "safe"
+                        },
+                        "sexual": {
+                            "filtered": false,
+                            "severity": "safe"
+                        },
+                        "violence": {
+                            "filtered": false,
+                            "severity": "safe"
+                        }
+                    }
+                }
+            ],
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {
+                        "role": "assistant",
+                        "content": "Hello! How can I help you today? Please provide me with a question or topic you would like information on."
+                    },
+                    "content_filter_results": {
+                        "hate": {
+                            "filtered": false,
+                            "severity": "safe"
+                        },
+                        "self_harm": {
+                            "filtered": false,
+                            "severity": "safe"
+                        },
+                        "sexual": {
+                            "filtered": false,
+                            "severity": "safe"
+                        },
+                        "violence": {
+                            "filtered": false,
+                            "severity": "safe"
+                        }
+                    }
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 23,
+                "completion_tokens": 23,
+                "total_tokens": 46
             }
         }
-    ],
-    ""choices"": [
-        {
-            ""index"": 0,
-            ""finish_reason"": ""stop"",
-            ""message"": {
-                ""role"": ""assistant"",
-                ""content"": ""Hello! How can I help you today? Please provide me with a question or topic you would like information on.""
-            },
-            ""content_filter_results"": {
-                ""hate"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                },
-                ""self_harm"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                },
-                ""sexual"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                },
-                ""violence"": {
-                    ""filtered"": false,
-                    ""severity"": ""safe""
-                }
-            }
-        }
-    ],
-    ""usage"": {
-        ""prompt_tokens"": 23,
-        ""completion_tokens"": 23,
-        ""total_tokens"": 46
-    }
-}";
+        """;
 }

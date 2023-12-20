@@ -91,7 +91,7 @@ public class KernelJsonSchemaTests
 
     [Theory]
     [InlineData("invalid")]
-    [InlineData("{ \"type\":\"invalid\" }")]
+    [InlineData("""{ "type":"invalid" }""")]
     public void ItThrowsOnInvalidJsonSchema(string invalidSchema)
     {
         Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(invalidSchema));

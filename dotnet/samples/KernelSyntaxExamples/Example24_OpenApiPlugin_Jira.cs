@@ -103,7 +103,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 
         // AddComment Function
         arguments["issueKey"] = "TEST-2";
-        arguments[RestApiOperation.PayloadArgumentName] = "{\"body\": \"Here is a rad comment\"}";
+        arguments[RestApiOperation.PayloadArgumentName] = """{"body": "Here is a rad comment"}""";
 
         // Run operation via the semantic kernel
         result = await kernel.InvokeAsync(jiraFunctions["AddComment"], arguments);
