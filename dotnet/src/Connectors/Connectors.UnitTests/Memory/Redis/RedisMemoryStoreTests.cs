@@ -94,7 +94,7 @@ public class RedisMemoryStoreTests
 
         // Assert
         var collections2 = store.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
     [Fact]

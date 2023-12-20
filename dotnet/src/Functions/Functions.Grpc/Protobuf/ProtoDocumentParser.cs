@@ -87,11 +87,8 @@ internal sealed class ProtoDocumentParser
             typeName = fullTypeName.Replace($"{package}.", "");
         }
 
-        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
-        if (messageType == null)
-        {
+        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ??
             throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
-        }
 
         var fields = this.GetDataContractFields(messageType.Fields);
 

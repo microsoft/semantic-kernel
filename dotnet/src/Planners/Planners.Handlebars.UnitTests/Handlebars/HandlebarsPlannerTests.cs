@@ -241,9 +241,9 @@ public sealed class HandlebarsPlannerTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         IChatCompletionService resultService = chatCompletion.Object;
-        PromptExecutionSettings resultSettings = new();
+        PromptExecutionSettings? resultSettings = new();
         serviceSelector
-            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
+            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings))
             .Returns(true);
 
         var serviceCollection = new ServiceCollection();

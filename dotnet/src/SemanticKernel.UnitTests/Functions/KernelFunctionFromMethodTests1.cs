@@ -624,7 +624,7 @@ public sealed class KernelFunctionFromMethodTests1
     [Fact]
     public async Task ItSupportFunctionResultAsync()
     {
-        FunctionResult Test() => new(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
+        static FunctionResult Test() => new(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -642,7 +642,7 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItSupportFunctionResultTaskAsync()
     {
         // Arrange
-        Task<FunctionResult> Test()
+        static Task<FunctionResult> Test()
         {
             var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
             return Task.FromResult(functionResult);
@@ -664,7 +664,7 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItSupportFunctionResultValueTaskAsync()
     {
         // Arrange
-        ValueTask<FunctionResult> Test()
+        static ValueTask<FunctionResult> Test()
         {
             var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
             return ValueTask.FromResult(functionResult);

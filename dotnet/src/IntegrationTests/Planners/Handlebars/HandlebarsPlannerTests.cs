@@ -116,7 +116,7 @@ public sealed class HandlebarsPlannerTests(ITestOutputHelper output) : IDisposab
         {
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId!,
+                modelId: azureOpenAIConfiguration.ChatModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
         }
@@ -133,7 +133,7 @@ public sealed class HandlebarsPlannerTests(ITestOutputHelper output) : IDisposab
         {
             builder.Services.AddAzureOpenAITextEmbeddingGeneration(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
+                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                 apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
@@ -141,7 +141,7 @@ public sealed class HandlebarsPlannerTests(ITestOutputHelper output) : IDisposab
         return builder.Build();
     }
 
-    private readonly RedirectOutput _testOutputHelper = new RedirectOutput(output);
+    private readonly RedirectOutput _testOutputHelper = new(output);
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)

@@ -20,7 +20,7 @@ internal static class KernelParameterMetadataExtensions
     /// Checks if stringified type is primitive or string
     /// </summary>
     public static bool IsPrimitiveOrStringType(string type) =>
-        type == "string" || type == "number" || type == "integer" || type == "boolean";
+        type is "string" or "number" or "integer" or "boolean";
 
     /// <summary>
     /// Converts non-primitive types to a data class definition and returns a hash set of complex type metadata.

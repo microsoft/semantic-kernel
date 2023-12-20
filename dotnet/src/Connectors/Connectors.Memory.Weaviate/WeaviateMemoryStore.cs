@@ -200,11 +200,8 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonOptionsCache);
-        if (getSchemaResponse == null)
-        {
+        GetSchemaResponse getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonOptionsCache) ??
             throw new KernelException("Unable to deserialize list collections response");
-        }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
         {
@@ -274,12 +271,8 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonOptionsCache);
-
-        if (result == null)
-        {
+        BatchResponse[] result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonOptionsCache) ??
             throw new KernelException("Unable to deserialize batch response");
-        }
 
         foreach (BatchResponse batchResponse in result)
         {

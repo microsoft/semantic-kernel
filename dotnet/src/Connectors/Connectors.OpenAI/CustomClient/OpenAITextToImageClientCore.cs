@@ -63,7 +63,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value!);
+            this.Attributes.Add(key, value);
         }
     }
 

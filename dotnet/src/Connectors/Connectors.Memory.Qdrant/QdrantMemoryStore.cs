@@ -95,12 +95,8 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
-
-        if (vectorData == null)
-        {
+        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
-        }
 
         try
         {
@@ -411,17 +407,11 @@ public class QdrantMemoryStore : IMemoryStore
             }
         }
 
-        var vectorData = QdrantVectorRecord.FromJsonMetadata(
+        return QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
             embedding: record.Embedding,
-            json: record.GetSerializedMetadata());
-
-        if (vectorData == null)
-        {
+            json: record.GetSerializedMetadata()) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
-        }
-
-        return vectorData;
     }
 
     #endregion

@@ -11,7 +11,7 @@ namespace SemanticKernel.IntegrationTests;
 public class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogger, ILoggerFactory
 {
     private readonly ITestOutputHelper _output = output;
-    private readonly StringBuilder _logs = new StringBuilder();
+    private readonly StringBuilder _logs = new();
 
     public override Encoding Encoding { get; } = Encoding.UTF8;
 

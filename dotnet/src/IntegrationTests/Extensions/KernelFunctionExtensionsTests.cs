@@ -96,7 +96,7 @@ public sealed class KernelFunctionExtensionsTests(ITestOutputHelper output) : ID
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
-    private readonly RedirectOutput _logger = new RedirectOutput(output);
+    private readonly RedirectOutput _logger = new(output);
 
     public void Dispose()
     {

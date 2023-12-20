@@ -129,7 +129,7 @@ public class DuckDBMemoryStoreTests
 
         // Assert
         var collections2 = db.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
     [Fact]

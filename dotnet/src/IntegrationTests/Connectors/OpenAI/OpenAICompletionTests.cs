@@ -140,7 +140,7 @@ public sealed class OpenAICompletionTests : IDisposable
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
             fullResult.Append(content);
-        };
+        }
 
         // Assert
         Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);

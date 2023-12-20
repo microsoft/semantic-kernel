@@ -60,29 +60,28 @@ internal sealed class GrpcOperationRunner
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
-        using (var channel = GrpcChannel.ForAddress(address, channelOptions))
-        {
-            var requestType = BuildGrpcOperationDataContractType(operation.Request);
+        using var channel = GrpcChannel.ForAddress(address, channelOptions);
 
-            var responseType = BuildGrpcOperationDataContractType(operation.Response);
+        var requestType = BuildGrpcOperationDataContractType(operation.Request);
 
-            var method = new Method<object, object>
-            (
-                MethodType.Unary,
-                operation.FullServiceName,
-                operation.Name,
-                this.CreateMarshaller<object>(requestType),
-                this.CreateMarshaller<object>(responseType)
-            );
+        var responseType = BuildGrpcOperationDataContractType(operation.Response);
 
-            var invoker = channel.CreateCallInvoker();
+        var method = new Method<object, object>
+        (
+            MethodType.Unary,
+            operation.FullServiceName,
+            operation.Name,
+            this.CreateMarshaller<object>(requestType),
+            this.CreateMarshaller<object>(responseType)
+        );
 
-            var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
+        var invoker = channel.CreateCallInvoker();
 
-            var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+        var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
 
-            return ConvertResponse(response, responseType);
-        }
+        var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+
+        return ConvertResponse(response, responseType);
     }
 
     /// <summary>

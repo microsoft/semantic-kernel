@@ -98,7 +98,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
@@ -160,7 +160,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
@@ -331,7 +331,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
@@ -490,7 +490,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
@@ -611,7 +611,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
@@ -652,7 +652,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
@@ -695,7 +695,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Assert
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
@@ -741,7 +741,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Assert
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Length != 0);
+        Assert.NotEmpty(messageContent);
 
         var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);

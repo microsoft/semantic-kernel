@@ -29,7 +29,7 @@ public class GrpcOperationExtensionsTests
     public void ThereShouldBeAddressParameter()
     {
         // Act
-        var parameters = this._operation.GetParameters();
+        var parameters = GrpcOperation.CreateParameters();
 
         // Assert
         Assert.NotNull(parameters);
@@ -44,7 +44,7 @@ public class GrpcOperationExtensionsTests
     public void ThereShouldBePayloadParameter()
     {
         // Act
-        var parameters = this._operation.GetParameters();
+        var parameters = GrpcOperation.CreateParameters();
 
         // Assert
         Assert.NotNull(parameters);

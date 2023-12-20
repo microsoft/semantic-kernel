@@ -590,7 +590,7 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
 
 #pragma warning disable CS0618 // Events are deprecated
-        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
+        static void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
         }

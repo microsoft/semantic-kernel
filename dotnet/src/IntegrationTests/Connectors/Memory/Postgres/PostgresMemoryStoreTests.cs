@@ -636,10 +636,8 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
-            await using (NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn))
-            {
-                await command.ExecuteNonQueryAsync();
-            }
+            await using NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn);
+            await command.ExecuteNonQueryAsync();
         }
 
         await using (NpgsqlConnection conn = await this._dataSource.OpenConnectionAsync())
@@ -656,13 +654,9 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     private async Task DropDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
-        await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
-        {
-            await using (NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn))
-            {
-                await command.ExecuteNonQueryAsync();
-            }
-        }
+        await using NpgsqlConnection conn = await dataSource.OpenConnectionAsync();
+        await using NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
+        await command.ExecuteNonQueryAsync();
     }
 
     private PostgresMemoryStore CreateMemoryStore()

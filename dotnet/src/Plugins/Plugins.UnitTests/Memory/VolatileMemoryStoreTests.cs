@@ -573,7 +573,7 @@ public class VolatileMemoryStoreTests
         // Assert
         collections = this._db.GetCollectionsAsync().ToEnumerable();
         numCollections = collections.Count();
-        Assert.True(numCollections == 0);
+        Assert.Equal(0, numCollections);
         this._collectionNum = 0;
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection

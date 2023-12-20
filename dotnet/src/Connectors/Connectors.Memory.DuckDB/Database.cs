@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -136,7 +135,7 @@ internal sealed class Database
             }
 
             string metadata = dataReader.GetFieldValue<string>("metadata");
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            float[] embeddingFromSearch = [.. dataReader.GetFieldValue<List<float>>("embedding")];
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
             float score = dataReader.GetFieldValue<float>("score");
 
@@ -168,7 +167,7 @@ internal sealed class Database
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string metadata = dataReader.GetFieldValue<string>("metadata");
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            float[] embeddingFromSearch = [.. dataReader.GetFieldValue<List<float>>("embedding")];
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
 
             return new DatabaseEntry

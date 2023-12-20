@@ -157,25 +157,23 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        using (var stream = System.IO.File.OpenRead(pluginFilePath))
+        using var stream = System.IO.File.OpenRead(pluginFilePath);
+        using HttpClient httpClient = new();
+        var kernel = new Kernel();
+
+        // note that this plugin is not compliant according to the underlying validator in SK
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
+            name,
+            stream,
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+
+        var arguments = new KernelArguments
         {
-            var kernel = new Kernel();
-            using HttpClient httpClient = new();
+            ["payload"] = payload
+        };
 
-            // note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportPluginFromOpenAIAsync(
-                name,
-                stream,
-                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
-
-            var arguments = new KernelArguments
-            {
-                ["payload"] = payload
-            };
-
-            // Act
-            await plugin[functionName].InvokeAsync(kernel, arguments);
-        }
+        // Act
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
     [Theory]
@@ -217,28 +215,26 @@ public class PluginTests
         string functionName)
     {
         // Arrange
-        using (var stream = System.IO.File.OpenRead(pluginFilePath))
+        using var stream = System.IO.File.OpenRead(pluginFilePath);
+        using HttpClient httpClient = new();
+        var kernel = new Kernel();
+
+        // note that this plugin is not compliant according to the underlying validator in SK
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
+            name,
+            stream,
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true });
+
+        var arguments = new KernelArguments
         {
-            var kernel = new Kernel();
-            using HttpClient httpClient = new();
+            ["title"] = "Shopping List",
+            ["ingredients"] = new string[] { "Flour", "Sugar", "Eggs" },
+            ["instructions"] = new string[] { "Cream softened butter and granulated sugar", "Add eggs one at a time, mix well, and stir in vanilla extract", "Combine dry ingredients and mix" },
+            ["question"] = "what ingredients do I need to make chocolate cookies?",
+            ["partner_name"] = "OpenAI"
+        };
 
-            // note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportPluginFromOpenAIAsync(
-                name,
-                stream,
-                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true }); ;
-
-            var arguments = new KernelArguments
-            {
-                ["title"] = "Shopping List",
-                ["ingredients"] = new string[] { "Flour", "Sugar", "Eggs" },
-                ["instructions"] = new string[] { "Cream softened butter and granulated sugar", "Add eggs one at a time, mix well, and stir in vanilla extract", "Combine dry ingredients and mix" },
-                ["question"] = "what ingredients do I need to make chocolate cookies?",
-                ["partner_name"] = "OpenAI"
-            };
-
-            // Act
-            await plugin[functionName].InvokeAsync(kernel, arguments);
-        }
+        // Act
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 }

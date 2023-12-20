@@ -200,8 +200,6 @@ public static class GrpcKernelExtensions
         GrpcOperation operation,
         ILoggerFactory loggerFactory)
     {
-        var operationParameters = operation.GetParameters();
-
         async Task<JsonObject> ExecuteAsync(KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
@@ -217,7 +215,7 @@ public static class GrpcKernelExtensions
 
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
-            parameters: operationParameters.ToList(),
+            parameters: GrpcOperation.CreateParameters(),
             description: operation.Name,
             functionName: operation.Name,
             loggerFactory: loggerFactory);

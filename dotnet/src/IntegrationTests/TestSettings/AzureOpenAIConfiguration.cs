@@ -14,7 +14,7 @@ internal sealed class AzureOpenAIConfiguration(string serviceId, string deployme
 
     public string ModelId { get; set; } = modelId ?? deploymentName;
 
-    public string? ChatDeploymentName { get; set; } = deploymentName;
+    public string? ChatDeploymentName { get; set; } = chatDeploymentName;
 
     public string ChatModelId { get; set; } = chatModelId ?? deploymentName;
 

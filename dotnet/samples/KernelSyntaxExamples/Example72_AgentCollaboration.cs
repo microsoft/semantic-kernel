@@ -131,7 +131,7 @@ public class Example72_AgentCollaboration : BaseTest
                     .BuildAsync());
     }
 
-    private async static Task<IAgent> CreateArtDirectorAsync()
+    private static async Task<IAgent> CreateArtDirectorAsync()
     {
         return
             Track(

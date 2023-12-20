@@ -129,15 +129,11 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
 
     public override void Write(Utf8JsonWriter writer, PodType value, JsonSerializerOptions options)
     {
-        EnumMemberAttribute? enumMemberAttr = value.GetType().GetMember(value.ToString())[0].GetCustomAttribute(typeof(EnumMemberAttribute)) as EnumMemberAttribute;
-
-        if (enumMemberAttr != null)
-        {
-            writer.WriteStringValue(enumMemberAttr.Value);
-        }
-        else
+        if (value.GetType().GetMember(value.ToString())[0].GetCustomAttribute(typeof(EnumMemberAttribute)) is not EnumMemberAttribute enumMemberAttr)
         {
             throw new JsonException($"Unable to find EnumMember attribute for PodType '{value}'.");
         }
+
+        writer.WriteStringValue(enumMemberAttr.Value);
     }
 }

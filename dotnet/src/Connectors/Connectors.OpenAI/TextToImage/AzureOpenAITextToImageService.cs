@@ -69,11 +69,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
-        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
-        if (connectorEndpoint is null)
-        {
+        var connectorEndpoint = (!string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri) ??
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
-        }
 
         this._client = new(new Uri(connectorEndpoint),
             new AzureKeyCredential(apiKey),

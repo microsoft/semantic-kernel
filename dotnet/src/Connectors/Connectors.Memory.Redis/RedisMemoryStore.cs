@@ -336,6 +336,8 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
     private async Task<MemoryRecord?> InternalGetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         HashEntry[] hashEntries = await this._database.HashGetAllAsync(GetRedisKey(collectionName, key), flags: CommandFlags.None).ConfigureAwait(false);
 
         if (hashEntries.Length == 0) { return null; }
