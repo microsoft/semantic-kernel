@@ -19,7 +19,7 @@ public static class ConfigurationValidator
         string? exampleNameSuffix = null,
         [CallerArgumentExpression("args")] string argsExpression = "")
     {
-        var paramsNames = Regex.Matches(argsExpression!, @$"(?<={nameof(TestConfiguration)}\.)[A-Za-z-_.]+");
+        var paramsNames = Regex.Matches(argsExpression!, @$"(?<={nameof(TestConfiguration)}\.)[A-Za-z0-9-_.]+");
         if (paramsNames.Count == 0 || string.IsNullOrWhiteSpace(exampleName) || args.Length != paramsNames.Count)
         {
             throw new ArgumentException("Invalid arguments to validate configuration.");
