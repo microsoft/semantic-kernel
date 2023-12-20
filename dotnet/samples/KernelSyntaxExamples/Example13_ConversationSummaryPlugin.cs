@@ -128,6 +128,7 @@ Jane: Goodbye!
     private static async Task ConversationSummaryPluginAsync(Kernel kernel)
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
+        kernel = kernel.Clone();
 
         KernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
@@ -141,6 +142,7 @@ Jane: Goodbye!
     private static async Task GetConversationActionItemsAsync(Kernel kernel)
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
+        kernel = kernel.Clone();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
@@ -154,6 +156,7 @@ Jane: Goodbye!
     private static async Task GetConversationTopicsAsync(Kernel kernel)
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
+        kernel = kernel.Clone();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
