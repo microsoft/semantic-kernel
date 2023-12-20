@@ -62,16 +62,10 @@ public sealed class ComplexParamsDictionaryPlugin
 /// It's possible to choose any format (e.g. XML, JSON, YAML) to represent your object.
 /// </remarks>
 [TypeConverter(typeof(DictionaryEntryConverter))]
-public sealed class DictionaryEntry
+public sealed class DictionaryEntry(string word, string definition)
 {
-    public string Word { get; set; } = string.Empty;
-    public string Definition { get; set; } = string.Empty;
-
-    public DictionaryEntry(string word, string definition)
-    {
-        this.Word = word;
-        this.Definition = definition;
-    }
+    public string Word { get; set; } = word;
+    public string Definition { get; set; } = definition;
 }
 
 /// <summary>

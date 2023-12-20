@@ -13,17 +13,12 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 /// <summary>
 /// Integration tests of <see cref="MongoDBMemoryStore"/>.
 /// </summary>
-public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixture>
+public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : IClassFixture<MongoDBMemoryStoreTestsFixture>
 {
     // If null, all tests will be enabled
     private const string? SkipReason = "MongoDB Atlas cluster is required";
 
-    private readonly MongoDBMemoryStoreTestsFixture _fixture;
-
-    public MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture)
-    {
-        this._fixture = fixture;
-    }
+    private readonly MongoDBMemoryStoreTestsFixture _fixture = fixture;
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateAndGetCollectionAsync()

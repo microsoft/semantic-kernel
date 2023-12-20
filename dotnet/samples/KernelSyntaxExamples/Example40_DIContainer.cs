@@ -39,16 +39,10 @@ public class Example40_DIContainer : BaseTest
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
-    private sealed class KernelClient
+    private sealed class KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
     {
-        private readonly Kernel _kernel;
-        private readonly ILogger _logger;
-
-        public KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
-        {
-            this._kernel = kernel;
-            this._logger = loggerFactory.CreateLogger(nameof(KernelClient));
-        }
+        private readonly Kernel _kernel = kernel;
+        private readonly ILogger _logger = loggerFactory.CreateLogger(nameof(KernelClient));
 
         public async Task SummarizeAsync(string ask)
         {

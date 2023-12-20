@@ -15,21 +15,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
-public sealed class HandlebarsPlannerTests : IDisposable
+public sealed class HandlebarsPlannerTests(ITestOutputHelper output) : IDisposable
 {
-    public HandlebarsPlannerTests(ITestOutputHelper output)
-    {
-        this._testOutputHelper = new RedirectOutput(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<HandlebarsPlannerTests>()
-            .Build();
-    }
-
     [Theory]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
@@ -154,8 +141,13 @@ public sealed class HandlebarsPlannerTests : IDisposable
         return builder.Build();
     }
 
-    private readonly RedirectOutput _testOutputHelper;
-    private readonly IConfigurationRoot _configuration;
+    private readonly RedirectOutput _testOutputHelper = new RedirectOutput(output);
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .AddUserSecrets<HandlebarsPlannerTests>()
+            .Build();
 
     private static readonly HandlebarsPlannerOptions s_defaultPlannerOptions = new()
     {

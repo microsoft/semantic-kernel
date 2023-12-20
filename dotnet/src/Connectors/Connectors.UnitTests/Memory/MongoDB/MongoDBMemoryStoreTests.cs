@@ -325,7 +325,7 @@ public class MongoDBMemoryStoreTests
 
     #region private ================================================================================
 
-    private sealed class AsyncCursorMock<T> : IAsyncCursor<T>
+    private sealed class AsyncCursorMock<T>(params T[] items) : IAsyncCursor<T>
     {
         private T[] _items = items ?? [];
 

@@ -9,14 +9,9 @@ namespace SemanticKernel.IntegrationTests;
 /// <summary>
 /// A logger that writes to the Xunit test output
 /// </summary>
-internal sealed class XunitLogger<T> : ILoggerFactory, ILogger, IDisposable
+internal sealed class XunitLogger<T>(ITestOutputHelper output) : ILoggerFactory, ILogger, IDisposable
 {
-    private readonly ITestOutputHelper _output;
-
-    public XunitLogger(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <inheritdoc/>
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

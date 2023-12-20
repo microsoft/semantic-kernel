@@ -19,7 +19,7 @@ namespace SemanticKernel.Experimental.Agents.UnitTests.Integration;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class ThreadHarness
+public sealed class ThreadHarness(ITestOutputHelper output)
 {
 #if DISABLEHOST
     private const string SkipReason = "Harness only for local/dev environment";
@@ -27,15 +27,7 @@ public sealed class ThreadHarness
     private const string SkipReason = null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public ThreadHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <summary>
     /// Verify creation and retrieval of thread.
