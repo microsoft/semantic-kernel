@@ -13,9 +13,12 @@ public sealed class SendEmailPlugin
     [KernelFunction]
     [Description("Send email")]
     public string SendEmail(
+        // ReSharper disable once InconsistentNaming
+#pragma warning disable CA1707 // Identifiers should not contain underscores
         string email_address,
+#pragma warning restore CA1707 // Identifiers should not contain underscores
         string answer,
-        ContextVariables variables)
+        KernelArguments variables)
     {
         var contract = new Email()
         {

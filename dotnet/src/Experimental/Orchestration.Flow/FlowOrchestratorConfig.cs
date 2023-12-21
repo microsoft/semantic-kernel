@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
