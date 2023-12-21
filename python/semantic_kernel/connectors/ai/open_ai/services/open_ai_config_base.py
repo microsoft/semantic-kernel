@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from logging import Logger
+import logging
 from typing import Any, Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
@@ -19,6 +19,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
 )
 from semantic_kernel.connectors.telemetry import APP_INFO
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class OpenAIConfigBase(OpenAIHandler):
     @validate_call(config=dict(arbitrary_types_allowed=True))
@@ -30,7 +32,7 @@ class OpenAIConfigBase(OpenAIHandler):
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -48,10 +50,12 @@ class OpenAIConfigBase(OpenAIHandler):
                 unless the account belongs to multiple organizations.
             default_headers {Optional[Mapping[str, str]]} -- Default headers
                 for HTTP requests. (Optional)
-            log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
 
         """
-
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -72,7 +76,6 @@ class OpenAIConfigBase(OpenAIHandler):
         super().__init__(
             ai_model_id=ai_model_id,
             client=async_client,
-            log=log,
             ai_model_type=ai_model_type,
         )
 
