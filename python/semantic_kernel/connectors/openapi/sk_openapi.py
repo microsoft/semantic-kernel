@@ -11,10 +11,14 @@ from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
 from semantic_kernel import Kernel, SKContext
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PreparedRestApiRequest:
@@ -37,7 +41,11 @@ class PreparedRestApiRequest:
             f"request_body={self.request_body})"
         )
 
-    def validate_request(self, spec: Spec, logger: logging.Logger = NullLogger()):
+    def validate_request(self, spec: Spec, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         request = requests.Request(
             self.method,
             self.url,
@@ -128,8 +136,8 @@ class RestApiOperation:
             processed_headers["Content-Type"] = content_type
             processed_payload = request_body
 
-        processed_headers["User-Agent"] = " ".join(
-            (HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))
+        processed_headers[USER_AGENT] = " ".join(
+            (HTTP_USER_AGENT, processed_headers.get(USER_AGENT, ""))
         ).rstrip()
 
         req = PreparedRestApiRequest(
@@ -156,8 +164,11 @@ class RestApiOperation:
 
 
 class OpenApiParser:
-    def __init__(self, logger: logging.Logger = NullLogger()):
-        self.logger = logger
+    def __init__(self, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
 
     """
     Import an OpenAPI file.
@@ -211,9 +222,7 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
-        logger: logging.Logger = NullLogger(),
     ):
-        self.logger = logger
         self.spec = Spec.from_dict(parsed_openapi_document)
 
     async def run_operation(
@@ -230,7 +239,7 @@ class OpenApiRunner:
             headers=headers,
             request_body=request_body,
         )
-        is_valid = prepared_request.validate_request(spec=self.spec, logger=self.logger)
+        is_valid = prepared_request.validate_request(spec=self.spec)
         if not is_valid:
             return None
 
@@ -259,12 +268,10 @@ def register_openapi_skill(
     skill_name: str,
     openapi_document: str,
 ) -> Dict[str, SKFunctionBase]:
-    parser = OpenApiParser(logger=kernel.logger)
+    parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
-    openapi_runner = OpenApiRunner(
-        parsed_openapi_document=parsed_doc, logger=kernel.logger
-    )
+    openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc)
 
     skill = {}
 
@@ -307,8 +314,6 @@ def register_openapi_skill(
         return run_openapi_operation
 
     for operation_id, operation in operations.items():
-        kernel.logger.info(
-            f"Registering OpenAPI operation: {skill_name}.{operation_id}"
-        )
+        logger.info(f"Registering OpenAPI operation: {skill_name}.{operation_id}")
         skill[operation_id] = create_run_operation_function(openapi_runner, operation)
     return kernel.import_skill(skill, skill_name)

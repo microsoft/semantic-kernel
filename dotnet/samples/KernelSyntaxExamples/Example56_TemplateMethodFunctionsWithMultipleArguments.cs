@@ -2,12 +2,12 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 {
     /// <summary>
@@ -21,29 +21,31 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string deploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
+        if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
-                deploymentName: deploymentName,
-                endpoint: endpoint,
-                serviceId: serviceId,
-                apiKey: apiKey)
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddLogging(c => c.AddConsole());
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: deploymentName,
+            endpoint: endpoint,
+            serviceId: serviceId,
+            apiKey: apiKey,
+            modelId: modelId);
+        Kernel kernel = builder.Build();
 
         var arguments = new KernelArguments();
         arguments["word2"] = " Potter";
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel.ImportPluginFromObject<TextPlugin>("text");
+        kernel.ImportPluginFromType<TextPlugin>("text");
 
         // Prompt Function invoking text.Concat method function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"

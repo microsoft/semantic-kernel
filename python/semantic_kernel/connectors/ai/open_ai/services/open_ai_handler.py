@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
@@ -18,6 +19,8 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIHandler(AIServiceClientBase, ABC):
@@ -58,7 +61,12 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
         self._validate_request(request_settings, prompt, messages, chat_mode)
         model_args = self._create_model_args(
-            request_settings, stream, prompt, messages, functions, chat_mode
+            request_settings,
+            stream,
+            prompt,
+            messages,
+            functions,
+            chat_mode,
         )
         try:
             response = await (
@@ -73,7 +81,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
         if not isinstance(response, AsyncStream):
-            self.log.info(f"OpenAI usage: {response.usage}")
+            logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.completion_tokens += response.usage.completion_tokens
             self.total_tokens += response.usage.total_tokens
@@ -106,7 +114,13 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ) from exc
 
     def _create_model_args(
-        self, request_settings, stream, prompt, messages, functions, chat_mode
+        self,
+        request_settings,
+        stream,
+        prompt,
+        messages,
+        functions,
+        chat_mode,
     ):
         model_args = self.get_model_args()
         model_args.update(
@@ -149,6 +163,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ]
             else:
                 model_args["functions"] = functions
+
         return model_args
 
     async def _send_embedding_request(
@@ -173,7 +188,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 # TODO: the openai response is cast to a list[float], could be used instead of nparray
                 raw_embeddings.extend([array(x.embedding) for x in response.data])
                 if response.usage:
-                    self.log.info(f"OpenAI usage: {response.usage}")
+                    logger.info(f"OpenAI usage: {response.usage}")
                     self.prompt_tokens += response.usage.prompt_tokens
                     self.total_tokens += response.usage.total_tokens
             return array(raw_embeddings)

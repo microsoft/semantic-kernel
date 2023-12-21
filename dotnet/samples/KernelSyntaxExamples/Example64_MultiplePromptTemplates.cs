@@ -3,13 +3,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using RepoUtils;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-/**
- * This example shows how to use multiple prompt template formats.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use multiple prompt template formats.
 public static class Example64_MultiplePromptTemplates
 {
     /// <summary>
@@ -21,21 +17,22 @@ public static class Example64_MultiplePromptTemplates
 
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || endpoint == null || chatModelId == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
         var promptTemplateFactory = new AggregatorPromptTemplateFactory(

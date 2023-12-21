@@ -3,7 +3,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// A <see cref="Block"/> that represents a named argument for a function call.
@@ -20,6 +20,11 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// Gets the name of the function argument.
     /// </summary>
     internal string Name { get; } = string.Empty;
+
+    /// <summary>
+    /// VarBlock associated with this named argument.
+    /// </summary>
+    internal VarBlock? VarBlock { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedArgBlock"/> class.
@@ -48,7 +53,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
         if (argValue[0] == Symbols.VarPrefix)
         {
-            this._argValueAsVarBlock = new VarBlock(argValue);
+            this.VarBlock = new VarBlock(argValue);
         }
         else
         {
@@ -62,7 +67,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// </summary>
     /// <param name="arguments">Arguments to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
     /// <returns></returns>
-    internal string GetValue(KernelArguments? arguments)
+    internal object? GetValue(KernelArguments? arguments)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
@@ -70,17 +75,17 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return this._valBlock!.Render(arguments);
         }
 
-        var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
+        var valueIsValidVarBlock = this.VarBlock != null && this.VarBlock.IsValid(out var errorMessage2);
         if (valueIsValidVarBlock)
         {
-            return this._argValueAsVarBlock!.Render(arguments);
+            return this.VarBlock!.Render(arguments);
         }
 
         return string.Empty;
     }
 
     /// <inheritdoc/>
-    public string Render(KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }
@@ -107,13 +112,13 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             this.Logger.LogError(errorMsg);
             return false;
         }
-        else if (this._argValueAsVarBlock != null && !this._argValueAsVarBlock.IsValid(out var variableErrorMsg))
+        else if (this.VarBlock != null && !this.VarBlock.IsValid(out var variableErrorMsg))
         {
             errorMsg = $"There was an issue with the named argument value for '{this.Name}': {variableErrorMsg}";
             this.Logger.LogError(errorMsg);
             return false;
         }
-        else if (this._valBlock == null && this._argValueAsVarBlock == null)
+        else if (this._valBlock == null && this.VarBlock == null)
         {
             errorMsg = "A named argument must have a value";
             this.Logger.LogError(errorMsg);
@@ -136,7 +141,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     private readonly VarBlock _argNameAsVarBlock;
     private readonly ValBlock? _valBlock;
-    private readonly VarBlock? _argValueAsVarBlock;
 
     private static string? TrimWhitespace(string? text)
     {

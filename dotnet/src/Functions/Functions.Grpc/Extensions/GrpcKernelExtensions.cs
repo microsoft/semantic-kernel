@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,10 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
-using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for gRPC functionality.
@@ -28,12 +31,12 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin ImportPluginFromGrpcDirectory(
+    public static KernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
+        KernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -45,12 +48,12 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin ImportPluginFromGrpcFile(
+    public static KernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
+        KernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -62,12 +65,12 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin ImportPluginFromGrpc(
+    public static KernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
     {
-        IKernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
+        KernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -79,7 +82,7 @@ public static class GrpcKernelExtensions
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin CreatePluginFromGrpcDirectory(
+    public static KernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
         string pluginDirectoryName)
@@ -97,7 +100,11 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 
@@ -111,7 +118,7 @@ public static class GrpcKernelExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin CreatePluginFromGrpcFile(
+    public static KernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
         string pluginName)
@@ -121,7 +128,11 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 
@@ -135,7 +146,7 @@ public static class GrpcKernelExtensions
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
-    public static IKernelPlugin CreatePluginFromGrpc(
+    public static KernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
         string pluginName)
@@ -148,7 +159,7 @@ public static class GrpcKernelExtensions
 
         var operations = parser.Parse(documentStream, pluginName);
 
-        var plugin = new KernelPlugin(pluginName);
+        var functions = new List<KernelFunction>();
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
@@ -156,13 +167,13 @@ public static class GrpcKernelExtensions
 
         var runner = new GrpcOperationRunner(client);
 
-        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) ?? NullLogger.Instance;
         foreach (var operation in operations)
         {
             try
             {
                 logger.LogTrace("Registering gRPC function {0}.{1}", pluginName, operation.Name);
-                plugin.AddFunction(CreateGrpcFunction(runner, operation, loggerFactory));
+                functions.Add(CreateGrpcFunction(runner, operation, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -172,7 +183,7 @@ public static class GrpcKernelExtensions
             }
         }
 
-        return plugin;
+        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
 
     #region private
@@ -197,9 +208,9 @@ public static class GrpcKernelExtensions
             {
                 return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex) when (!ex.IsCriticalException() && loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Warning))
             {
-                loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
+                logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
                 throw;
             }
         }

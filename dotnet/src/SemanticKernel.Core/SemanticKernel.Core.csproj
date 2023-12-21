@@ -7,6 +7,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <NoWarn>$(NoWarn);SKEXP0004</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -36,7 +37,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
   </ItemGroup>
 
 </Project>

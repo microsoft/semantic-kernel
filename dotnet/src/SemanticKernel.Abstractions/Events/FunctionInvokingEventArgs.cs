@@ -1,17 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Events;
+
+using System.Diagnostics.CodeAnalysis;
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Event arguments available to the Kernel.FunctionInvoking event.
+/// Provides a <see cref="CancelKernelEventArgs"/> used in events just before a function is invoked.
 /// </summary>
-public class FunctionInvokingEventArgs : KernelCancelEventArgs
+[Experimental("SKEXP0004")]
+public sealed class FunctionInvokingEventArgs : CancelKernelEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingEventArgs"/> class.
     /// </summary>
-    /// <param name="function">Kernel function</param>
-    /// <param name="arguments">Kernel function arguments</param>
-    public FunctionInvokingEventArgs(KernelFunction function, KernelArguments arguments) : base(function, arguments)
+    /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
+    /// <param name="arguments">The arguments associated with the operation.</param>
+    public FunctionInvokingEventArgs(KernelFunction function, KernelArguments arguments) :
+        base(function, arguments, metadata: null)
     {
     }
 }

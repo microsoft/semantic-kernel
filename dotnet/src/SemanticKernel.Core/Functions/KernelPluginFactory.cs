@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -16,13 +19,20 @@ public static class KernelPluginFactory
     /// <param name="pluginName">
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
     /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceProvider">
+    /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
+    /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
+    /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static IKernelPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
-        CreateFromObject(new T(), pluginName, loggerFactory);
+    public static KernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
+    {
+        serviceProvider ??= EmptyServiceProvider.Instance;
+        return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+    }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -30,11 +40,12 @@ public static class KernelPluginFactory
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static IKernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    public static KernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 
@@ -43,25 +54,51 @@ public static class KernelPluginFactory
 
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-        // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
-        KernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
+        // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
+        var functions = new List<KernelFunction>();
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
             {
-                plugin.AddFunctionFromMethod(method, target, loggerFactory: loggerFactory);
+                functions.Add(KernelFunctionFactory.CreateFromMethod(method, target, loggerFactory: loggerFactory));
             }
         }
-
-        if (loggerFactory is not null)
+        if (functions.Count == 0)
         {
-            ILogger logger = loggerFactory.CreateLogger(target.GetType());
-            if (logger.IsEnabled(LogLevel.Trace))
-            {
-                logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);
-            }
+            throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
         }
 
-        return plugin;
+        if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
+        }
+
+        var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
+
+    /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreateFromFunctions(string pluginName, IEnumerable<KernelFunction>? functions) =>
+        CreateFromFunctions(pluginName, description: null, functions);
+
+    /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
+        new DefaultKernelPlugin(pluginName, description, functions);
 }

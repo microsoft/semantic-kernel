@@ -15,7 +15,7 @@ public interface IFlowExecutor
     /// <param name="flow">Flow</param>
     /// <param name="sessionId">Session id, which is used to track the execution status.</param>
     /// <param name="input">The input from client to continue the execution.</param>
-    /// <param name="contextVariables">The request context variables </param>
+    /// <param name="kernelArguments">The request kernel arguments </param>
     /// <returns>The execution context</returns>
-    Task<ContextVariables> ExecuteAsync(Flow flow, string sessionId, string input, ContextVariables contextVariables);
+    Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments);
 }

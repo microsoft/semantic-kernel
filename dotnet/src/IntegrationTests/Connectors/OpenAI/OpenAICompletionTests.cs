@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +23,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAICompletionTests : IDisposable
 {
-    private readonly KernelBuilder _kernelBuilder;
+    private const string InputParameterName = "input";
+    private readonly IKernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
 
     public OpenAICompletionTests(ITestOutputHelper output)
@@ -40,7 +41,7 @@ public sealed class OpenAICompletionTests : IDisposable
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
 
-        this._kernelBuilder = new KernelBuilder();
+        this._kernelBuilder = Kernel.CreateBuilder();
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -51,9 +52,9 @@ public sealed class OpenAICompletionTests : IDisposable
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder
-            .WithLoggerFactory(this._logger)
-            .WithOpenAITextCompletion(
+            .AddOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey)
@@ -62,7 +63,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt });
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -73,7 +74,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIChatAsTextTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        KernelBuilder builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        IKernelBuilder builder = this._kernelBuilder;
 
         this.ConfigureChatOpenAI(builder);
 
@@ -82,17 +84,18 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt });
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
-    public async Task CanUseOpenAiChatForTextCompletionAsync()
+    public async Task CanUseOpenAiChatForTextGenerationAsync()
     {
         // Note: we use OpenAI Chat Completion and GPT 3.5 Turbo
-        KernelBuilder builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        IKernelBuilder builder = this._kernelBuilder;
         this.ConfigureChatOpenAI(builder);
 
         Kernel target = builder.Build();
@@ -101,7 +104,7 @@ public sealed class OpenAICompletionTests : IDisposable
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
             new OpenAIPromptExecutionSettings());
 
-        var result = await func.InvokeAsync(target, "Jupiter");
+        var result = await func.InvokeAsync(target, new() { [InputParameterName] = "Jupiter" });
 
         Assert.NotNull(result);
         Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
@@ -114,7 +117,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIStreamingTestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
 
         if (useChatModel)
         {
@@ -131,7 +135,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         StringBuilder fullResult = new();
         // Act
-        await foreach (var content in target.InvokeStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
+        await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
             fullResult.Append(content);
         };
@@ -146,7 +150,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAITestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
 
         if (useChatModel)
         {
@@ -162,7 +167,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt });
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -176,26 +181,26 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        Kernel target = this._kernelBuilder
-            .WithLoggerFactory(this._testOutputHelper)
-            .WithOpenAITextCompletion(
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
+        this._kernelBuilder
+            .AddOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
-                apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
-            .ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
-                {
-                    // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-                    c.AddStandardResilienceHandler().Configure(o =>
-                    {
-                        o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-                    });
-                }))
-            .Build();
+                apiKey: "INVALID_KEY"); // Use an invalid API key to force a 401 Unauthorized response
+        this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
+        {
+            // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+            c.AddStandardResilienceHandler().Configure(o =>
+            {
+                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+            });
+        });
+        Kernel target = this._kernelBuilder.Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = prompt }));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -206,36 +211,75 @@ public sealed class OpenAICompletionTests : IDisposable
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Resilience event occurred")]
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
-        KernelBuilder builder = this._kernelBuilder
-            .WithLoggerFactory(this._testOutputHelper);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
+        IKernelBuilder builder = this._kernelBuilder;
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        builder.WithAzureOpenAITextCompletion(
+        builder.AddAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
+            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        builder.ConfigureServices(c => c.ConfigureHttpClientDefaults(c =>
+        builder.Services.ConfigureHttpClientDefaults(c =>
+        {
+            // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
+            c.AddStandardResilienceHandler().Configure(o =>
             {
-                // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-                c.AddStandardResilienceHandler().Configure(o =>
-                {
-                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-                });
-            }));
+                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+            });
+        });
 
         Kernel target = builder.Build();
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = prompt }));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AzureOpenAIShouldReturnTokenUsageInMetadataAsync(bool useChatModel)
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+
+        if (useChatModel)
+        {
+            this.ConfigureAzureOpenAIChatAsText(builder);
+        }
+        else
+        {
+            this.ConfigureAzureOpenAI(builder);
+        }
+
+        Kernel target = builder.Build();
+
+        IReadOnlyKernelPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+
+        // Act and Assert
+        FunctionResult result = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
+
+        Assert.NotNull(result.Metadata);
+        Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
+        Assert.NotNull(usageObject);
+
+        var jsonObject = JsonSerializer.SerializeToElement(usageObject);
+        Assert.True(jsonObject.TryGetProperty("PromptTokens", out JsonElement promptTokensJson));
+        Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
+        Assert.NotEqual(0, promptTokens);
+        Assert.True(jsonObject.TryGetProperty("CompletionTokens", out JsonElement completionTokensJson));
+        Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
+        Assert.NotEqual(0, completionTokens);
     }
 
     [Fact]
@@ -246,8 +290,9 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         Kernel target = this._kernelBuilder
-            .WithOpenAITextCompletion(
+            .AddOpenAITextGeneration(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
@@ -256,7 +301,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
-        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
@@ -268,10 +313,11 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         Kernel target = this._kernelBuilder
-            .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureOpenAITextCompletion(
+            .AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
+                modelId: azureOpenAIConfiguration.ModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: "INVALID_KEY",
                 serviceId: azureOpenAIConfiguration.ServiceId)
@@ -280,7 +326,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
-        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
@@ -292,10 +338,11 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._testOutputHelper);
         Kernel target = this._kernelBuilder
-            .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureOpenAITextCompletion(
+            .AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
+                modelId: azureOpenAIConfiguration.ModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
                 serviceId: azureOpenAIConfiguration.ServiceId)
@@ -305,7 +352,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, string.Join('.', Enumerable.Range(1, 40000))));
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join('.', Enumerable.Range(1, 40000)) }));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -323,14 +370,15 @@ public sealed class OpenAICompletionTests : IDisposable
 
         const string ExpectedAnswerContains = "<result>John</result>";
 
-        Kernel target = this._kernelBuilder.WithLoggerFactory(this._logger).Build();
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        Kernel target = this._kernelBuilder.Build();
 
         this._serviceConfiguration[service](target);
 
         IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt });
 
         // Assert
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -340,7 +388,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIInvokePromptTestAsync()
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         Kernel target = builder.Build();
 
@@ -357,7 +406,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIDefaultValueTestAsync()
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         Kernel target = builder.Build();
 
@@ -374,7 +424,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task MultipleServiceLoadPromptConfigTestAsync()
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 
@@ -385,12 +436,11 @@ public sealed class OpenAICompletionTests : IDisposable
         var azurePromptModel = PromptTemplateConfig.FromJson(
             @"{
                 ""name"": ""FishMarket2"",
-                ""execution_settings"": [
-                    {
-                        ""max_tokens"": 256,
-                        ""service_id"": ""azure-text-davinci-003""
+                ""execution_settings"": {
+                    ""azure-text-davinci-003"": {
+                        ""max_tokens"": 256
                     }
-                ]
+                }
             }");
         azurePromptModel.Template = prompt;
 
@@ -405,7 +455,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
@@ -433,7 +482,7 @@ public sealed class OpenAICompletionTests : IDisposable
         }
     }
 
-    private void ConfigureChatOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureChatOpenAI(IKernelBuilder kernelBuilder)
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
@@ -442,13 +491,13 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        kernelBuilder.WithOpenAIChatCompletion(
+        kernelBuilder.AddOpenAIChatCompletion(
             modelId: openAIConfiguration.ChatModelId,
             apiKey: openAIConfiguration.ApiKey,
             serviceId: openAIConfiguration.ServiceId);
     }
 
-    private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -458,13 +507,14 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAITextCompletion(
+        kernelBuilder.AddAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
+            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
-    private void ConfigureInvalidAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureInvalidAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -472,14 +522,15 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        kernelBuilder.WithAzureOpenAITextCompletion(
+        kernelBuilder.AddAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
+            modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "invalid-api-key",
             serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}");
     }
 
-    private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAIChatAsText(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -489,8 +540,9 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAIChatCompletion(
+        kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
+            modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);

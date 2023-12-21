@@ -2,10 +2,10 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class KernelArgumentsTests
 {
     [Fact]
@@ -27,7 +27,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { };
 
         // Assert
-        Assert.Same(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
         Assert.Empty(sut);
     }
 
@@ -55,7 +55,7 @@ public class KernelArgumentsTests
         KernelArguments sut = new(executionSettings) { { "fake-key", "fake-value" } };
 
         // Assert
-        Assert.Same(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
 
         var argument = Assert.Single(sut);
         Assert.Equal("fake-key", argument.Key);
@@ -71,7 +71,7 @@ public class KernelArgumentsTests
         Assert.True(sut.ContainsName("fake-key"));
 
         //Constructor 2
-        IDictionary<string, string?> source = new Dictionary<string, string?> { { "FAKE-key", "fake-value" } };
+        IDictionary<string, object?> source = new Dictionary<string, object?> { { "FAKE-key", "fake-value" } };
         sut = new(source);
         Assert.True(sut.ContainsName("fake-key"));
 
@@ -85,7 +85,7 @@ public class KernelArgumentsTests
     public void ItCanBeInitializedFromIDictionary()
     {
         // Arrange
-        IDictionary<string, string?> source = new Dictionary<string, string?> { { "fake-key", "fake-value" } };
+        IDictionary<string, object?> source = new Dictionary<string, object?> { { "fake-key", "fake-value" } };
 
         // Act
         KernelArguments sut = new(source);
@@ -113,6 +113,6 @@ public class KernelArgumentsTests
         Assert.True(sut.ContainsName("fake-key"));
         Assert.Equal("fake-value", sut["fake-key"]);
 
-        Assert.Same(executionSettings, sut.ExecutionSettings);
+        Assert.Same(executionSettings, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
     }
 }

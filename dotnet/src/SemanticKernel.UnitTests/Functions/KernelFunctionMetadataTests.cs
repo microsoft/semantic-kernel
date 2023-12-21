@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -53,7 +51,7 @@ public class KernelFunctionMetadataTests
         {
             Description = "ReturnParameterA",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("\"schema\""),
+            Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
         };
 
         // Act
@@ -64,14 +62,14 @@ public class KernelFunctionMetadataTests
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
         Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
-        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), funcViewA.ReturnParameter.Schema);
     }
 
     [Fact]
     public void ItSupportsValidFunctionName()
     {
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(ValidFunctionName, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var fv = function.Metadata;
@@ -84,7 +82,7 @@ public class KernelFunctionMetadataTests
     public void ItSupportsValidFunctionAsyncName()
     {
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(ValidFunctionNameAsync, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
         KernelFunctionMetadata fv = function.Metadata;
 
@@ -93,7 +91,7 @@ public class KernelFunctionMetadataTests
     }
 
     [Fact]
-    public void ItSupportsValidFunctionSKNameAttributeOverride()
+    public void ItSupportsValidFunctionKernelFunctionNameAttributeOverride()
     {
         // Arrange
         [KernelFunction("NewTestFunctionName")]
@@ -101,7 +99,7 @@ public class KernelFunctionMetadataTests
         { }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         KernelFunctionMetadata fv = function.Metadata;
@@ -122,7 +120,7 @@ public class KernelFunctionMetadataTests
         { }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         KernelFunctionMetadata fv = function.Metadata;
@@ -144,7 +142,7 @@ public class KernelFunctionMetadataTests
         static void TestFunctionName(int p1, int p2) { }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         KernelFunctionMetadata fv = function.Metadata;
@@ -166,7 +164,7 @@ public class KernelFunctionMetadataTests
         static void TestFunctionName() { }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         KernelFunctionMetadata fv = function.Metadata;
@@ -181,12 +179,7 @@ public class KernelFunctionMetadataTests
     private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()
     {
-        var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionName));
-        var result = await function.InvokeAsync(new Kernel(new Mock<IServiceProvider>().Object));
-    }
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
+        var function = KernelFunctionFactory.CreateFromMethod(ValidFunctionName);
+        var result = await function.InvokeAsync(new());
     }
 }
