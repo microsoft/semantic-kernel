@@ -33,6 +33,7 @@ class PromptTemplate(PromptTemplateBase):
         log: Optional[Any] = None,
     ) -> None:
         if log:
+<<<<<<< HEAD
             logger.warning(
                 "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
@@ -41,6 +42,12 @@ class PromptTemplate(PromptTemplateBase):
             template_engine=template_engine,
             prompt_config=prompt_config,
         )
+=======
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+        self._template = template
+        self._template_engine = template_engine
+        self._prompt_config = prompt_config
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
     def get_parameters(self) -> List[ParameterView]:
         seen = set()
@@ -71,9 +78,7 @@ class PromptTemplate(PromptTemplateBase):
             if var_block.name in seen:
                 continue
 
-            result.append(
-                ParameterView(name=var_block.name, description="", default_value="")
-            )
+            result.append(ParameterView(name=var_block.name, description="", default_value=""))
 
             seen.add(var_block.name)
 

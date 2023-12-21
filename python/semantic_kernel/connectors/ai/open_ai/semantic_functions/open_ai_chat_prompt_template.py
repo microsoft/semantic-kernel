@@ -21,13 +21,15 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
     def add_function_response_message(self, name: str, content: Any) -> None:
         """Add a function response message to the chat template."""
+<<<<<<< HEAD
         self.messages.append(
             OpenAIChatMessage(role="function", name=name, fixed_content=str(content))
         )
+=======
+        self._messages.append(OpenAIChatMessage(role="function", name=name, fixed_content=str(content)))
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
-    def add_message(
-        self, role: str, message: Optional[str] = None, **kwargs: Any
-    ) -> None:
+    def add_message(self, role: str, message: Optional[str] = None, **kwargs: Any) -> None:
         """Add a message to the chat template.
 
         Arguments:
@@ -42,6 +44,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
             logger.warning("name is only used with role: function, ignoring")
             name = None
         function_call = kwargs.get("function_call")
+<<<<<<< HEAD
         if function_call is not None:
             if role == "assistant":
                 self.messages.append(
@@ -63,6 +66,18 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
                 content_template=PromptTemplate(
                     message, self.template_engine, self.prompt_config
                 ),
+=======
+        if function_call is not None and role != "assistant":
+            logger.warning("function_call is only used with role: assistant, ignoring")
+            function_call = None
+            if function_call and not isinstance(function_call, FunctionCall):
+                logger.warning("function_call is not a FunctionCall, ignoring: %s", function_call)
+                function_call = None
+        self._messages.append(
+            OpenAIChatMessage(
+                role=role,
+                content_template=PromptTemplate(message, self._template_engine, self._prompt_config),
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
                 name=name,
                 function_call=function_call,
             )
@@ -84,19 +99,11 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
         if that is a system message.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         chat_template = cls(template, template_engine, prompt_config)
-        if (
-            prompt_config.completion.chat_system_prompt
-            and messages[0]["role"] == "system"
-        ):
+        if prompt_config.completion.chat_system_prompt and messages[0]["role"] == "system":
             existing_system_message = messages.pop(0)
-            if (
-                existing_system_message["message"]
-                != prompt_config.completion.chat_system_prompt
-            ):
+            if existing_system_message["message"] != prompt_config.completion.chat_system_prompt:
                 logger.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],

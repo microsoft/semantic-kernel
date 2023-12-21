@@ -60,9 +60,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         super().__init__(
             ai_model_id=ai_model_id,
             task=task,
-            device=(
-                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-            ),
+            device=(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"),
             generator=transformers.pipeline(
                 task=task,
                 model=ai_model_id,
@@ -72,9 +70,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             ),
         )
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     async def complete_async(
         self,
@@ -83,9 +79,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
             results = self.generator(**request_settings.prepare_settings_dict(prompt))
             result_field_name = (
@@ -116,10 +110,15 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             str -- Completion result.
         """
         if kwargs.get("logger"):
+<<<<<<< HEAD
             logger.warning(
                 "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         if request_settings.num_return_sequences > 1:
+=======
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        if request_settings.number_of_responses > 1:
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \

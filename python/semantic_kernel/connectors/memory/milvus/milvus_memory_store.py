@@ -82,9 +82,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                 authentication is required. Defaults to None.
         """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._uri = uri
         self._token = (token,)
         self._client = milvus_client.MilvusClient(
@@ -151,9 +149,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         return self._client.list_collections()
 
-    async def delete_collection_async(
-        self, collection_name: str = "", all: bool = False
-    ) -> None:
+    async def delete_collection_async(self, collection_name: str = "", all: bool = False) -> None:
         """Delete the specified collection.
 
         If all is True, all collections in the cluster will be removed.
@@ -198,9 +194,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         )
         return res[0]
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord], batch_size=100
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord], batch_size=100) -> List[str]:
         """_summary_
 
         Args:
@@ -219,9 +213,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         # Check if the collection exists.
         if collection_name not in self._client.list_collections():
             logger.debug(f"Collection {collection_name} does not exist, cannot insert.")
-            raise Exception(
-                f"Collection {collection_name} does not exist, cannot insert."
-            )
+            raise Exception(f"Collection {collection_name} does not exist, cannot insert.")
         # Convert the records to dicts
         insert_list = [memoryrecord_to_milvus_dict(record) for record in records]
         # The ids to remove
@@ -229,16 +221,12 @@ class MilvusMemoryStore(MemoryStoreBase):
         try:
             # First delete then insert to have upsert
             self._client.delete(collection_name=collection_name, pks=delete_ids)
-            return self._client.insert(
-                collection_name=collection_name, data=insert_list, batch_size=batch_size
-            )
+            return self._client.insert(collection_name=collection_name, data=insert_list, batch_size=batch_size)
         except Exception as e:
             logger.debug(f"Upsert failed due to: {e}")
             raise e
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Get the MemoryRecord corresponding to the key.
 
         Args:
@@ -249,14 +237,10 @@ class MilvusMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord: The MemoryRecord for the key.
         """
-        res = await self.get_batch_async(
-            collection_name=collection_name, keys=[key], with_embeddings=with_embedding
-        )
+        res = await self.get_batch_async(collection_name=collection_name, keys=[key], with_embeddings=with_embedding)
         return res[0]
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Get the MemoryRecords corresponding to the keys
 
         Args:
@@ -308,9 +292,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._client.list_collections():
             logger.debug(f"Collection {collection_name} does not exist, cannot remove.")
-            raise Exception(
-                f"Collection {collection_name} does not exist, cannot remove."
-            )
+            raise Exception(f"Collection {collection_name} does not exist, cannot remove.")
         try:
             self._client.delete(
                 collection_name=collection_name,
@@ -381,9 +363,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         # Check if collection exists
         if collection_name not in self._client.list_collections():
             logger.debug(f"Collection {collection_name} does not exist, cannot search.")
-            raise Exception(
-                f"Collection {collection_name} does not exist, cannot search."
-            )
+            raise Exception(f"Collection {collection_name} does not exist, cannot search.")
         # Search requests takes a list of requests.
         if len(embedding.shape) == 1:
             embedding = expand_dims(embedding, axis=0)
@@ -427,10 +407,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             for res in results:
                 res["entity"][EMBEDDING_FIELD] = vectors[res[ID_FIELD]]
 
-        results = [
-            (milvus_dict_to_memoryrecord(result["entity"]), result["distance"])
-            for result in results
-        ]
+        results = [(milvus_dict_to_memoryrecord(result["entity"]), result["distance"]) for result in results]
 
         return results
 

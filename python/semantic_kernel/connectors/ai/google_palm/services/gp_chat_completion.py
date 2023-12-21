@@ -24,9 +24,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class GooglePalmChatCompletion(
-    ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
-):
+class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase):
     api_key: constr(strip_whitespace=True, min_length=1)
     _message_history: Optional[ChatResponse] = PrivateAttr()
 
@@ -53,9 +51,7 @@ class GooglePalmChatCompletion(
             api_key=api_key,
         )
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._message_history = message_history
 
     async def complete_chat_async(
@@ -63,16 +59,18 @@ class GooglePalmChatCompletion(
         messages: List[Tuple[str, str]],
         settings: GooglePalmRequestSettings,
     ) -> Union[str, List[str]]:
+<<<<<<< HEAD
         settings.messages = messages
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
+=======
+        response = await self._send_chat_request(messages, request_settings, context, examples, prompt)
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         if settings.candidate_count > 1:
             return [
-                candidate["output"]
-                if candidate["output"] is not None
-                else "I don't know."
+                candidate["output"] if candidate["output"] is not None else "I don't know."
                 for candidate in response.candidates
             ]
         if response.last is None:
@@ -84,9 +82,7 @@ class GooglePalmChatCompletion(
         messages: List[Tuple[str, str]],
         settings: GooglePalmRequestSettings,
     ):
-        raise NotImplementedError(
-            "Google Palm API does not currently support streaming"
-        )
+        raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def complete_async(
         self,
@@ -95,6 +91,7 @@ class GooglePalmChatCompletion(
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
+<<<<<<< HEAD
             logger.warning(
                 "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
@@ -102,12 +99,24 @@ class GooglePalmChatCompletion(
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
+=======
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        prompt_to_message = [("user", prompt)]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+            number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases,
+        )
+        response = await self._send_chat_request(prompt_to_message, chat_settings)
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         if settings.candidate_count > 1:
             return [
-                candidate["output"]
-                if candidate["output"] is not None
-                else "I don't know."
+                candidate["output"] if candidate["output"] is not None else "I don't know."
                 for candidate in response.candidates
             ]
         if response.last is None:
@@ -121,12 +130,8 @@ class GooglePalmChatCompletion(
         **kwargs,
     ):
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        raise NotImplementedError(
-            "Google Palm API does not currently support streaming"
-        )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(
         self,
@@ -165,7 +170,23 @@ class GooglePalmChatCompletion(
         if settings is None:
             raise ValueError("The request settings cannot be `None`")
 
+<<<<<<< HEAD
         if settings.messages[-1][0] != "user":
+=======
+        if request_settings.max_tokens < 1:
+            raise AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                "The max tokens must be greater than 0, " f"but was {request_settings.max_tokens}",
+            )
+
+        if len(messages) <= 0:
+            raise AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                "To complete a chat you need at least one message",
+            )
+
+        if messages[-1][0] != "user":
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
                 "The last message must be from the user",

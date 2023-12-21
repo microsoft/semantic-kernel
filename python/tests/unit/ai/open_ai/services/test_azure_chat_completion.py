@@ -162,9 +162,13 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
         api_key=api_key,
     )
+<<<<<<< HEAD
     await azure_chat_completion.complete_chat_async(
         messages=messages, settings=complete_request_settings
     )
+=======
+    await azure_chat_completion.complete_chat_async(messages=messages_in, settings=complete_request_settings)
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         frequency_penalty=complete_request_settings.frequency_penalty,
@@ -203,9 +207,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_chat_async(
-        messages=messages, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -307,6 +309,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     messages_in = [{"role": "user", "content": prompt}]
     messages_out = [{"role": "user", "content": prompt}]
 
+<<<<<<< HEAD
     expected_data_settings = {
         "dataSources": [
             {
@@ -323,6 +326,20 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     complete_request_settings = AzureChatRequestSettings(
         extra_body=expected_data_settings
     )
+=======
+    azure_aisearch_datasource = OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
+        parameters=OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
+            indexName="test_index",
+            endpoint="https://test-endpoint-search.com",
+            key="test_key",
+        )
+    )
+    azure_chat_with_data_settings = OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        dataSources=[azure_aisearch_datasource]
+    )
+
+    complete_request_settings = ChatRequestSettings(data_source_settings=azure_chat_with_data_settings)
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -335,6 +352,13 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         messages=messages_in, settings=complete_request_settings
     )
 
+<<<<<<< HEAD
+=======
+    expected_data_settings = asdict(azure_chat_with_data_settings)
+    # No embeddingDeploymentName if not using vectors.
+    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"]
+
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages_out,
@@ -365,10 +389,15 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     ai_source = AzureAISearchDataSources(
         indexName="test-index", endpoint="test-endpoint", key="test-key"
     )
+<<<<<<< HEAD
     extra = ExtraBody(
         data_sources=[
             AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)
         ]
+=======
+    azure_chat_with_data_settings = OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        dataSources=[azure_aisearch_datasource]
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     )
 
     azure_chat_completion = AzureChatCompletion(
@@ -385,12 +414,18 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         extra_body=extra,
     )
 
+<<<<<<< HEAD
     await azure_chat_completion.complete_chat_async(
         messages=messages,
         settings=complete_request_settings,
     )
 
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
+=======
+    expected_data_settings = asdict(azure_chat_with_data_settings)
+    # No embeddingDeploymentName if not using vectors.
+    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"]
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -427,10 +462,15 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     ai_source = AzureAISearchDataSources(
         indexName="test-index", endpoint="test-endpoint", key="test-key"
     )
+<<<<<<< HEAD
     extra = ExtraBody(
         data_sources=[
             AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)
         ]
+=======
+    azure_chat_with_data_settings = OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+        dataSources=[azure_aisearch_datasource]
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     )
 
     complete_request_settings.extra_body = extra
@@ -444,7 +484,13 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
 
     await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
 
+<<<<<<< HEAD
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
+=======
+    expected_data_settings = asdict(azure_chat_with_data_settings)
+    # No embeddingDeploymentName if not using vectors.
+    del expected_data_settings["dataSources"][0]["parameters"]["embeddingDeploymentName"]
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,

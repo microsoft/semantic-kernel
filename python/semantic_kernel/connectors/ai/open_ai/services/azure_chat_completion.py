@@ -46,9 +46,13 @@ from semantic_kernel.sk_pydantic import HttpsUrl
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+<<<<<<< HEAD
 class AzureChatCompletion(
     AzureOpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase
 ):
+=======
+class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     """Azure Chat completion class."""
 
     @overload
@@ -237,13 +241,9 @@ class AzureChatCompletion(
                 The default value is False.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if kwargs.get("logger"):
-            logger.warning(
-                "The 'logger' argument is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The 'logger' argument is deprecated. Please use the `logging` module instead.")
 
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
@@ -304,11 +304,15 @@ class AzureChatCompletion(
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
+<<<<<<< HEAD
         settings.messages = messages
         settings.stream = False
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
+=======
+        response = await self._send_request(messages=messages, request_settings=settings, stream=True)
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         if len(response.choices) == 1:
             return _parse_message(
@@ -324,6 +328,7 @@ class AzureChatCompletion(
                 for choice in response.choices
             ]
 
+<<<<<<< HEAD
     async def complete_chat_stream_async(
         self,
         messages: List[Dict[str, str]],
@@ -369,3 +374,27 @@ class AzureChatCompletion(
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return AzureChatRequestSettings
+=======
+    def _create_model_args(self, request_settings, stream, prompt, messages, functions, chat_mode):
+        model_args = super()._create_model_args(request_settings, stream, prompt, messages, functions, chat_mode)
+
+        if hasattr(request_settings, "data_source_settings") and request_settings.data_source_settings is not None:
+            model_args["extra_body"] = asdict(request_settings.data_source_settings)
+
+            # Remove embeddingDeploymentName if not using vector search.
+            if model_args["extra_body"]["dataSources"][0]["parameters"]["embeddingDeploymentName"] is None:
+                del model_args["extra_body"]["dataSources"][0]["parameters"]["embeddingDeploymentName"]
+
+            if request_settings.inputLanguage is not None:
+                model_args["extra_body"]["inputLanguage"] = request_settings.inputLanguage
+            if request_settings.outputLanguage is not None:
+                model_args["extra_body"]["outputLanguage"] = request_settings.outputLanguage
+
+            # Remove args that are not supported by the with-data extensions API (yet).
+            del model_args["n"]
+            del model_args["logit_bias"]
+            del model_args["presence_penalty"]
+            del model_args["frequency_penalty"]
+
+        return model_args
+>>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
