@@ -9,7 +9,7 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_sett
 )
 from semantic_kernel.sk_pydantic import SKBaseModel
 
-_LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -52,9 +52,7 @@ class AzureCosmosDBDataSource(AzureDataSourceParameters):
 class AzureAISearchDataSources(AzureDataSourceParameters):
     endpoint: Optional[str] = None
     key: Optional[str] = None
-    queryType: Literal[
-        "simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"
-    ] = "simple"
+    queryType: Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"] = "simple"
 
 
 @dataclass
@@ -77,18 +75,3 @@ class AzureChatRequestSettings(OpenAIChatRequestSettings):
 
     response_format: Optional[str] = None
     extra_body: Optional[Union[Dict[str, Any], ExtraBody]] = None
-
-
-# Format
-# extra_body = {
-#     "dataSources": [
-#         {
-#             "type": "AzureCognitiveSearch",
-#             "parameters": {
-#                 "endpoint": os.environ["SEARCH_ENDPOINT"],
-#                 "key": os.environ["SEARCH_KEY"],
-#                 "indexName": os.environ["SEARCH_INDEX_NAME"],
-#             },
-#         }
-#     ]
-# }

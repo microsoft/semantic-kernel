@@ -21,4 +21,4 @@ class AIServiceClientBase(SKBaseModel, ABC):
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
-        return AIRequestSettings
+        return AIRequestSettings  # pragma: no cover

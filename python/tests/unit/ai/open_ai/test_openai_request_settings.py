@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+from pydantic import ValidationError
+
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureAISearchDataSources,
@@ -9,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_s
 )
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
+    OpenAITextRequestSettings,
 )
 
 
@@ -51,7 +55,7 @@ def test_custom_openai_chat_request_settings():
 
 def test_openai_chat_request_settings_from_default_completion_config():
     settings = AIRequestSettings(service_id="test_service")
-    chat_settings = OpenAIChatRequestSettings.from_ai_request(settings)
+    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature == 0.0
     assert chat_settings.top_p == 1.0
@@ -61,6 +65,25 @@ def test_openai_chat_request_settings_from_default_completion_config():
     assert chat_settings.stop is None
     assert chat_settings.number_of_responses == 1
     assert chat_settings.logit_bias == {}
+
+
+def test_openai_chat_request_settings_from_openai_request_settings():
+    chat_settings = OpenAIChatRequestSettings(service_id="test_service", temperature=1.0)
+    new_settings = OpenAIChatRequestSettings(service_id="test_2", temperature=0.0)
+    chat_settings.update_from_ai_request_settings(new_settings)
+    assert chat_settings.service_id == "test_2"
+    assert chat_settings.temperature == 0.0
+
+
+def test_openai_text_request_settings_validation():
+    with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
+        OpenAITextRequestSettings(best_of=1, number_of_responses=2)
+
+
+def test_openai_text_request_settings_validation_manual():
+    text_oai = OpenAITextRequestSettings(best_of=1, number_of_responses=1)
+    with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
+        text_oai.number_of_responses = 2
 
 
 def test_openai_chat_request_settings_from_custom_completion_config():
@@ -79,7 +102,7 @@ def test_openai_chat_request_settings_from_custom_completion_config():
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatRequestSettings.from_ai_request(settings)
+    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -88,6 +111,63 @@ def test_openai_chat_request_settings_from_custom_completion_config():
     assert chat_settings.stop == ["\n"]
     assert chat_settings.number_of_responses == 2
     assert chat_settings.logit_bias == {"1": 1}
+
+
+def test_openai_chat_request_settings_from_custom_completion_config_with_none():
+    settings = AIRequestSettings(
+        service_id="test_service",
+        extension_data={
+            "temperature": 0.5,
+            "top_p": 0.5,
+            "presence_penalty": 0.5,
+            "frequency_penalty": 0.5,
+            "max_tokens": 128,
+            "stop": ["\n"],
+            "number_of_responses": 2,
+            "functions": None,
+            "logit_bias": {"1": 1},
+            "messages": [{"role": "system", "content": "Hello"}],
+        },
+    )
+    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
+    assert chat_settings.temperature == 0.5
+    assert chat_settings.top_p == 0.5
+    assert chat_settings.presence_penalty == 0.5
+    assert chat_settings.frequency_penalty == 0.5
+    assert chat_settings.max_tokens == 128
+    assert chat_settings.stop == ["\n"]
+    assert chat_settings.number_of_responses == 2
+    assert chat_settings.logit_bias == {"1": 1}
+    assert chat_settings.functions is None
+
+
+def test_openai_chat_request_settings_from_custom_completion_config_with_functions():
+    settings = AIRequestSettings(
+        service_id="test_service",
+        extension_data={
+            "temperature": 0.5,
+            "top_p": 0.5,
+            "presence_penalty": 0.5,
+            "frequency_penalty": 0.5,
+            "max_tokens": 128,
+            "stop": ["\n"],
+            "number_of_responses": 2,
+            "functions": [{}],
+            "function_call": "auto",
+            "logit_bias": {"1": 1},
+            "messages": [{"role": "system", "content": "Hello"}],
+        },
+    )
+    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
+    assert chat_settings.temperature == 0.5
+    assert chat_settings.top_p == 0.5
+    assert chat_settings.presence_penalty == 0.5
+    assert chat_settings.frequency_penalty == 0.5
+    assert chat_settings.max_tokens == 128
+    assert chat_settings.stop == ["\n"]
+    assert chat_settings.number_of_responses == 2
+    assert chat_settings.logit_bias == {"1": 1}
+    assert chat_settings.functions == [{}]
 
 
 def test_create_options():
@@ -101,6 +181,7 @@ def test_create_options():
         number_of_responses=2,
         logit_bias={"1": 1},
         messages=[{"role": "system", "content": "Hello"}],
+        function_call="auto",
     )
     options = settings.prepare_settings_dict()
     assert options["temperature"] == 0.5
@@ -115,9 +196,7 @@ def test_create_options():
 
 
 def test_create_options_azure_data():
-    az_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
+    az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
     az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
     extra = ExtraBody(dataSources=[az_data])
     settings = AzureChatRequestSettings(extra_body=extra)
@@ -150,7 +229,5 @@ def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
             ]
         },
     }
-    settings = AzureChatRequestSettings.model_validate(
-        input_dict, strict=True, from_attributes=True
-    )
+    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"

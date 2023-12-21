@@ -6,7 +6,7 @@ from pydantic import Field, field_validator, model_validator
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_CHAT_SYSTEM_PROMPT
 
-_LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class OpenAIRequestSettings(AIRequestSettings):
@@ -25,37 +25,6 @@ class OpenAIRequestSettings(AIRequestSettings):
     top_p: float = Field(1.0, ge=0.0, le=1.0)
     user: Optional[str] = None
 
-    def update_from_openai_request_settings(
-        self, new_settings: "OpenAIRequestSettings"
-    ) -> None:
-        """Update the request settings from another request settings."""
-        for key, value in new_settings.model_dump().items():
-            if key in self.keys:
-                setattr(self, key, value)
-
-    def update_from_extension_data(self, extension_data: Dict[str, Any]) -> None:
-        """Update the request settings from extension data."""
-        for key, value in extension_data.items():
-            if key in self.keys:
-                setattr(self, key, value)
-
-    def update_from_ai_request_settings(
-        self, ai_request_settings: AIRequestSettings
-    ) -> None:
-        """Update the request settings from another request settings."""
-        self.service_id = ai_request_settings.service_id
-        self.extension_data = ai_request_settings.extension_data
-        self.update_from_extension_data(self.extension_data)
-
-    @classmethod
-    def from_ai_request(cls, ai_request: AIRequestSettings) -> "OpenAIRequestSettings":
-        """Create OpenAI Request Settings from a generic AI Request Setting."""
-        if isinstance(ai_request, cls):
-            return ai_request
-        return cls(
-            service_id=ai_request.service_id, extension_data=ai_request.extension_data
-        )
-
 
 class OpenAITextRequestSettings(OpenAIRequestSettings):
     """Specific settings for the completions endpoint."""
@@ -69,7 +38,13 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
     @model_validator(mode="after")
     def check_best_of_and_n(self) -> "OpenAITextRequestSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
-        if self.best_of and self.best_of < self.number_of_responses:
+        if self.best_of is not None and self.best_of < self.number_of_responses:
+            raise ValueError(
+                "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
+            )
+        if self.extension_data.get("best_of") is not None and self.extension_data.get(
+            "best_of"
+        ) < self.extension_data.get("number_of_responses"):
             raise ValueError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
@@ -84,17 +59,16 @@ class OpenAIChatRequestSettings(OpenAIRequestSettings):
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
-    messages: Optional[List[Dict[str, Any]]] = [
-        {"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}
-    ]
+    messages: Optional[List[Dict[str, Any]]] = [{"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}]
 
-    @field_validator("function_call", "functions")
+    @field_validator("functions", "function_call", mode="after")
     @classmethod
-    def validate_function_call(cls, v: Any):
+    def validate_function_call(cls, v: Optional[Union[str, List[Dict[str, Any]]]] = None):
         if v is not None:
-            _LOGGER.warning(
+            logger.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
             )
+        return v
 
 
 class OpenAIEmbeddingRequestSettings(AIRequestSettings):

@@ -26,13 +26,9 @@ class AIRequestSettings(SKBaseModel):
 
     def __init__(self, service_id: Optional[str] = None, **kwargs: Any):
         extension_data = kwargs.pop("extension_data", {})
+        extension_data.update(kwargs)
         super().__init__(service_id=service_id, extension_data=extension_data)
-        for key, value in self.extension_data.items():
-            if key in self.keys:
-                setattr(self, key, value)
-        for key, value in kwargs.items():
-            if key in self.keys:
-                setattr(self, key, value)
+        self.unpack_extension_data()
 
     @property
     def keys(self):
@@ -48,18 +44,34 @@ class AIRequestSettings(SKBaseModel):
 
     def update_from_ai_request_settings(self, config: "AIRequestSettings") -> None:
         """Update the request settings from a completion config."""
-        self.service_id = config.service_id
+        if config.service_id is not None:
+            self.service_id = config.service_id
+        config.pack_extension_data()
         self.extension_data.update(config.extension_data)
-        for key in self.keys:
-            if hasattr(config, key):
-                setattr(self, key, getattr(config, key))
+        self.unpack_extension_data()
 
     @classmethod
-    def from_ai_request_settings(
-        cls, config: "AIRequestSettings"
-    ) -> "AIRequestSettings":
+    def from_ai_request_settings(cls, config: "AIRequestSettings") -> "AIRequestSettings":
         """Create a request settings from a completion config."""
+        config.pack_extension_data()
         return cls(
             service_id=config.service_id,
             extension_data=config.extension_data,
         )
+
+    def unpack_extension_data(self) -> None:
+        """Update the request settings from extension data.
+
+        Does not overwrite existing values with None.
+        """
+        for key, value in self.extension_data.items():
+            if value is None:
+                continue
+            if key in self.keys:
+                setattr(self, key, value)
+
+    def pack_extension_data(self) -> None:
+        """Update the extension data from the request settings."""
+        for key in self.model_fields_set:
+            if key not in ["service_id", "extension_data"] and getattr(self, key) is not None:
+                self.extension_data[key] = getattr(self, key)
