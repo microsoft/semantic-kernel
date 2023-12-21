@@ -52,7 +52,9 @@ class AzureCosmosDBDataSource(AzureDataSourceParameters):
 class AzureAISearchDataSources(AzureDataSourceParameters):
     endpoint: Optional[str] = None
     key: Optional[str] = None
-    queryType: Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"] = "simple"
+    queryType: Literal[
+        "simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"
+    ] = "simple"
 
 
 @dataclass
