@@ -6,7 +6,7 @@
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0102</NoWarn>
+    <NoWarn>CA2007,VSTHRD111,SKEXP0102,SKEXP0052,SKEXP0054</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Web\Plugins.Web.csproj" />
+    <ProjectReference Include="..\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="testsettings.json">

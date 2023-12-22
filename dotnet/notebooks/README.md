@@ -60,8 +60,8 @@ For a quick dive, look at the [getting started notebook](00-getting-started.ipyn
 4. [Using Kernel Arguments to Build a Chat Experience](04-kernel-arguments-chat.ipynb)
 5. [Creating and Executing Plans](05-using-the-planner.ipynb)
 6. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
-7. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
-8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)
+7. [Creating images with DALL-E 3](07-DALL-E-3.ipynb)
+8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-3.ipynb)
 9. [Building Semantic Memory with Chroma](09-memory-with-chroma.ipynb)
 10. [BingSearch using Kernel](10-BingSearch-using-kernel.ipynb)
 
