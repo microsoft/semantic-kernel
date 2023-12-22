@@ -63,28 +63,31 @@ public static class Example65_HandlebarsPlanner
                 modelId: chatModelId)
             .Build();
 
-        if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
+        if (pluginDirectoryNames.Length > 0)
         {
-            kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
-        {
-            kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == CourseraPluginName)
-        {
-            await kernel.ImportPluginFromOpenApiAsync(
-                CourseraPluginName,
-                new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
-            );
-        }
-        else
-        {
-            string folder = RepoFiles.SamplePluginsPath();
-
-            foreach (var pluginDirectoryName in pluginDirectoryNames)
+            if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
             {
-                kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+                kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
+            }
+            else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
+            {
+                kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
+            }
+            else if (pluginDirectoryNames[0] == CourseraPluginName)
+            {
+                await kernel.ImportPluginFromOpenApiAsync(
+                    CourseraPluginName,
+                    new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
+                );
+            }
+            else
+            {
+                string folder = RepoFiles.SamplePluginsPath();
+
+                foreach (var pluginDirectoryName in pluginDirectoryNames)
+                {
+                    kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+                }
             }
         }
 
