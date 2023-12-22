@@ -13,7 +13,7 @@ What's the sum of 5+10+15?
 {{#message role="assistant"}}Here's the Handlebars template that achieves the goal:
 ```handlebars
 {{#if allowLoops}}
-\{{!-- Step 1: Initialize the count --}}
+\{{!-- Step 1: Identify key values --}}
 \{{set
   "count"
   10
@@ -55,7 +55,7 @@ What's the sum of 5+10+15?
   "num3"
   15
 }}
-\{{!-- Step 2: Call the Example-AddNums helper with the variables and store the result --}}
+\{{!-- Step 2: Call the Example helper with the variables and store the result --}}
 \{{set
   "sum"
   (Example{{nameDelimiter}}AddNums
@@ -87,12 +87,12 @@ If you need to loop through a list of values with `\{{#each}}`, you can use the 
 - `\{{range}}` – Generates a list of integral numbers within a specified range, inclusive of the first and last value.
 - `\{{array}}` – Generates an array of values from the given values (zero-indexed).
 
-IMPORTANT: `range` and `array` are the only supported data structures. Others like `hash` are not supported. Also, you cannot use any methods or properties on the built-in data structures, such as `array.push` or `range.length`.
+IMPORTANT: `range` and `array` are the only supported data structures. Others like `hash` are not supported. Also, you cannot use any methods or properties on the built-in data structures.
 
 ## Math helpers
 If you need to do basic operations, you can use these two helpers with numerical values:
-- `\{{Add}}` – Adds two values together.
-- `\{{Subtract}}` – Subtracts the second value from the first.
+- `\{{add}}` – Adds two values together.
+- `\{{subtract}}` – Subtracts the second value from the first.
 
 {{/if}}
 ## Comparison helpers
@@ -102,8 +102,8 @@ To use the {{#if allowLoops}}math and {{/if}}comparison helpers, you must pass i
 ## Variable helpers
 If you need to create or retrieve a variable, you can use the following helpers:
 - `\{{set}}` – Creates a variable with the given name and value. It does not print anything to the template, so you must use `\{{json}}` to print the value.
-- `\{{json}}` – Generates a JSON string from the given value; no need to use on strings.
-- `\{{concat}}` – Concatenates the given values into a string.
+- `\{{json}}` – Generates and prints a JSON string from the given value.
+- `\{{concat}}` – Concatenates the given values into one string.
 
 {{#if (or complexTypeDefinitions complexSchemaDefinitions)}}
 ## Complex types
@@ -130,7 +130,7 @@ Some helpers require arguments that are complex objects. The JSON schemas for th
 {{/each}}
 {{/if}}
 ## Custom helpers
-Lastly, you also have the following helpers you can use:
+Lastly, you also have the following custom helpers to use. Custom helpers should only be used if they are necessary to achieve the goal.
 
 {{#each functions}}
 ### `{{doubleOpen}}{{PluginName}}{{../nameDelimiter}}{{Name}}{{doubleClose}}`
@@ -160,23 +160,31 @@ IMPORTANT: You can only use the helpers that are listed above. Do not use any ot
 {{#message role="system"}}
 ## Tips and tricks
 - Add a comment above each step to describe what the step does.
-- Use the `\{{set}}` helper to save and retrieve the results of another helper so you can use it later in the template without wasting resources.
-- There are no initial variables available to you. You must create them yourself using the `\{{set}}` helper.
 - Do not make up values. Use the helpers to generate the data you need or extract it from the goal.
-- Keep data well-defined. Each variable should have a unique name. Create and assign each variable only once, and always use the full name when calling helpers.
+- Keep data well-defined. Each variable should have a unique name.
 - Do not pass raw data to helpers. Use variables instead.
 - Be extremely careful about types. For example, if you pass an array to a helper that expects a number, the template will error out.
-{{#if allowLoops}}- Avoid using loops. Try a solution without before you deploy a loop.{{/if}}
-- There is no need to check your results in the template.
-- Do not nest sub-expressions or helpers because it will cause the template to error out.
 - Each step should contain only one helper call.
 
 ## Start
-Now take a deep breath and accomplish the task:
-1. Keep the template short and sweet. Be as efficient as possible.
-2. Do not make up helpers or functions that were not provided to you, and be especially careful to NOT assume or use any helpers or operations that were not explicitly defined already.
-3. If you can't fully accomplish the goal with the available helpers, just print "{{insufficientFunctionsErrorMessage}}".
-4. Always start by identifying any important values in the goal. Then, use the `\{{set}}` helper to create variables for each of these values.
-5. The template should use the \{{json}} helper at least once to output the result of the final step.
-6. Don't forget to use the tips and tricks otherwise the template will not work.
-7. Don't close the ``` handlebars block until you're done with all the steps.{{/message}}
+Follow these steps to create one Handlebars template to achieve the goal:
+1. Identify Key Values:
+  - Read the goal carefully and note any numbers, strings, or conditions that you'll need. Keep data in its original state. Do not manipulate it yet.
+  - Use the `\{{set}}` helper to create a variable for each key value.
+2. Choose the Right Helpers:
+  - Use the provided helpers to manipulate the variables you've created. Start with the basic helpers and only use custom helpers if necessary to accomplish the goal.
+  - Always reference a custom helper by its full name.
+3. Don't Create or Assume Unlisted Helpers:
+  - Only use the helpers explicitly provided. Do not invent or assume the existence of any custom helpers not defined in the instructions.
+4. What if Helpers are Not Enough?
+  - If the goal cannot be fully achieved with the provided helpers, print the following message: "{{insufficientFunctionsErrorMessage}}".
+5. Keep It Simple:
+  - Your template should be succinct and efficient, avoiding unnecessary complexity or redundant steps.
+{{#if allowLoops}}  - Avoid using loops. Loops are allowed but not always necessary, try to find a solution that does not use them.{{/if}}
+6. No Nested Helpers:
+  - Do not nest helpers or conditionals inside other helpers. This can cause errors in the template.
+7. Output the Result:
+  - Once you have completed the necessary steps to reach the goal, use the `\{{json}}` helper to output the final result.
+  - Don't close the ``` handlebars block until you're done with all the steps.
+
+Remember the goal is not to use all the helpers available, but to use the correct ones to achieve the desired outcome with a clear and concise template.{{/message}}

@@ -25,7 +25,7 @@ public sealed class HandlebarsPlanner
     public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
     {
         // Options for built-in Handlebars helpers
-        Categories = new Category[] { Category.Math },
+        Categories = new Category[] { Category.DateTime },
         UseCategoryPrefix = false,
 
         // Custom helpers
