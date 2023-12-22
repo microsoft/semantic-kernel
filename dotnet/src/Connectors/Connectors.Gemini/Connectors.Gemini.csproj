@@ -19,7 +19,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TextEmbedding\" />
   </ItemGroup>
 
 </Project>
