@@ -58,17 +58,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(prompt);
-        if (executionSettings is not GeminiPromptExecutionSettings geminiExecutionSettings)
-        {
-            throw new ArgumentException($"The execution settings must be of type {nameof(GeminiPromptExecutionSettings)}.");
-        }
-
-        var httpContent = GetHttpJsonContent(prompt, geminiExecutionSettings);
-        Uri uri = this.GetUriForGetText();
-        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-        httpRequestMessage.Content = httpContent;
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        using var httpRequestMessage = this.VerifyArgumentsAndGetHTTPRequestMessage(prompt, executionSettings);
 
         using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
@@ -84,6 +74,28 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
 
         return textGenerationResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
             this.GetModelId(), textGenerationResponse)).ToList().AsReadOnly();
+    }
+
+    private HttpRequestMessage VerifyArgumentsAndGetHTTPRequestMessage(string prompt, PromptExecutionSettings? executionSettings)
+    {
+        Verify.NotNullOrWhiteSpace(prompt);
+        if (executionSettings is not GeminiPromptExecutionSettings geminiExecutionSettings)
+        {
+            throw new ArgumentException($"The execution settings must be of type {nameof(GeminiPromptExecutionSettings)}.");
+        }
+
+        var httpRequestMessage = this.GetHTTPRequestMessage(prompt, geminiExecutionSettings);
+        return httpRequestMessage;
+    }
+
+    private HttpRequestMessage GetHTTPRequestMessage(string prompt, GeminiPromptExecutionSettings geminiExecutionSettings)
+    {
+        var httpContent = GetHttpJsonContent(prompt, geminiExecutionSettings);
+        Uri uri = this.GetUriForGetText();
+        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+        httpRequestMessage.Content = httpContent;
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        return httpRequestMessage;
     }
 
     private Uri GetUriForGetText() => new($"{GeminiApiEndpointBase}/{this._model}:generateContent?key={this._apiKey}");
@@ -104,6 +116,6 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 }
