@@ -43,7 +43,7 @@ public class Example15_MemorySkill {
 
         TextCompletion textCompletionService =
                 SKBuilders.textCompletion()
-                        .withModelId("text-davinci-003")
+                        .withModelId("davinci-002")
                         .withOpenAIClient(client)
                         .build();
 

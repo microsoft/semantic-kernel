@@ -121,7 +121,7 @@ public class Example51_StepwisePlanner {
     } else {
       textCompletion = SKBuilders.textCompletion()
           .withOpenAIClient(client)
-          .withModelId("text-davinci-003")
+          .withModelId("davinci-002")
           .build();
     }
 
