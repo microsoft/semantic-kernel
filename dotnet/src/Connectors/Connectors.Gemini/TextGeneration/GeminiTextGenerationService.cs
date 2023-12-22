@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -81,11 +82,8 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
             };
         }
 
-        return new List<TextContent>
-        {
-            new TextContent(textGenerationResponse.Candidates[0].Content.Parts[0].Text,
-                this.GetModelId(), textGenerationResponse)
-        }.AsReadOnly();
+        return textGenerationResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
+            this.GetModelId(), textGenerationResponse)).ToList().AsReadOnly();
     }
 
     private Uri GetUriForGetText() => new($"{GeminiApiEndpointBase}/{this._model}:generateContent?key={this._apiKey}");
