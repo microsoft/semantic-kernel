@@ -34,7 +34,7 @@ public class Main {
 
         ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-3.5-turbo")
+            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-35-turbo")
             .build();
 
         /*
@@ -53,7 +53,7 @@ public class Main {
         KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
-        ChatHistory chatHistory = gpt35Turbo.createNewChat();
+        ChatHistory chatHistory = new ChatHistory();
 
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
         while (true) {

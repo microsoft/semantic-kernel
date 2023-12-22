@@ -9,7 +9,6 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.credential.TokenCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
@@ -27,18 +26,6 @@ public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatco
     public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
         this.client = client;
         this.modelId = modelId;
-    }
-    
-    @Override
-    public ChatHistory createNewChat(String instructions) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createNewChat'");
-    }
-
-    @Override
-    public ChatHistory createNewChat() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createNewChat'");
     }
 
     @Override
@@ -61,11 +48,11 @@ public class OpenAIChatCompletion implements com.microsoft.semantickernel.chatco
         throw new UnsupportedOperationException("Unimplemented method 'getStreamingChatMessageContentsAsync'");
     }
 
-    @Override
+      @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
             PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getChatMessageContentsAsync'");
+        throw new UnsupportedOperationException("Unimplemented method 'getStreamingChatMessageContentsAsync'");
     }
 
     @Override

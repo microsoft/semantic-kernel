@@ -1,15 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.builders;
 
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
+import com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 
 /**
  * Enum singleton that service loads builder implementations
@@ -53,7 +56,7 @@ public enum BuildersSingleton {
         "com.microsoft.semantickernel.orchestration.DefaultContextVariables$Builder";
 
     private static final String FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS =
-        "com.microsoft.semantickernel.orchestration.DefaultKernelArguments$Builder";
+        "com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments$Builder";
 
 
     private static final String FALLBACK_KERNEL_FUNCTION_YAML_BUILDER_CLASS =
@@ -67,8 +70,8 @@ public enum BuildersSingleton {
             registerBuilder(KernelArguments.Builder.class, FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS);
             registerBuilder(KernelFunctionYaml.Builder.class, FALLBACK_KERNEL_FUNCTION_YAML_BUILDER_CLASS);
             registerBuilder(OpenAIChatCompletion.Builder.class, FALLBACK_OPENAI_CHAT_COMPLETION_BUILDER_CLASS);
-            /*
             registerBuilder(AzureOpenAIChatCompletion.Builder.class, FALLBACK_AZURE_OPENAI_CHAT_COMPLETION_BUILDER_CLASS);
+            /*
 
             // Keep this list in alphabetical order by fallback variable name
             registerBuilder(ChatCompletionService.Builder.class,

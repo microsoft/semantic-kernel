@@ -1,5 +1,14 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
@@ -14,12 +23,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -63,6 +67,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 Flux<StreamingContent<T>> result;
 
                 if (client instanceof ChatCompletionService) {
+
+                    prompt = "<messages>" + prompt + "</messages>";
                     result = ((ChatCompletionService) client)
                         .getStreamingChatMessageContentsAsync(
                             prompt,
@@ -73,8 +79,10 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                                 .getConverter()
                                 .fromPromptString(
                                     streamingChatMessageContent.getContent());
-                            return Flux.just(new StreamingContent<T>(value));
+                            return Flux.just(new StreamingContent<>(value));
                         });
+                        return result;
+
                 } else if (client instanceof TextGenerationService) {
                     result = ((TextGenerationService) client)
                         .getStreamingTextContentsAsync(

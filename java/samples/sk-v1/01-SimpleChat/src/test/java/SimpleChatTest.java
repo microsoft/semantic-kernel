@@ -1,3 +1,12 @@
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
@@ -8,13 +17,7 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 import reactor.core.publisher.Flux;
 
 public class SimpleChatTest {
@@ -25,7 +28,6 @@ public class SimpleChatTest {
 
     private static ChatCompletionService mockService(List<Message> messages) {
         ChatCompletionService gpt35Turbo = Mockito.mock(ChatCompletionService.class);
-        Mockito.when(gpt35Turbo.createNewChat()).thenReturn(new ChatHistory());
 
         for (Message message : messages) {
             Mockito.when(gpt35Turbo.getStreamingChatMessageContentsAsync(
@@ -69,7 +71,7 @@ public class SimpleChatTest {
         KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
-        ChatHistory chatHistory = gpt35Turbo.createNewChat();
+        ChatHistory chatHistory = new ChatHistory();
 
         messages.forEach(message -> {
             chatHistory.addUserMessage(message.matcher);

@@ -1,11 +1,17 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PromptExecutionSettings {
 
     public static final int DEFAULT_MAX_TOKENS = 256;
+    public static final double DEFAULT_TEMPERATURE = 1.0;
+    public static final double DEFAULT_TOP_P = 1.0;
+    public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
+    public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
+    public static final int DEFAULT_BEST_OF = 1;    
 
     /// <summary>
     /// Service identifier.
@@ -61,7 +67,7 @@ public class PromptExecutionSettings {
     }
 
     public double getTemperature() {
-        return temperature;
+        return Double.isNaN(temperature) ? DEFAULT_TEMPERATURE : temperature;
     }
 
     public double getTopP() {
@@ -81,6 +87,7 @@ public class PromptExecutionSettings {
     }
 
     public int getBestOf() {
+        // TODO: not present in com.azure:azure-ai-openai
         return bestOf;
     }
 
@@ -97,12 +104,12 @@ public class PromptExecutionSettings {
 
         private String serviceId;
         private String modelId;
-        private double temperature;
-        private double topP;
-        private double presencePenalty;
-        private double frequencyPenalty;
-        private int maxTokens;
-        private int bestOf;
+        private double temperature = Double.NaN;
+        private double topP = Double.NaN;
+        private double presencePenalty = Double.NaN;
+        private double frequencyPenalty = Double.NaN;
+        private int maxTokens = Integer.MIN_VALUE;
+        private int bestOf = Integer.MIN_VALUE;
         private String user;
         private List<String> stopSequences;
 
@@ -157,8 +164,18 @@ public class PromptExecutionSettings {
         }
 
         public PromptExecutionSettings build() {
-            return new PromptExecutionSettings(serviceId, modelId, temperature, topP,
-                presencePenalty, frequencyPenalty, maxTokens, bestOf, user, stopSequences);
+            return new PromptExecutionSettings(
+                serviceId,
+                modelId, 
+                Double.isNaN(temperature) ? DEFAULT_TEMPERATURE : temperature,
+                Double.isNaN(topP) ? DEFAULT_TOP_P : topP,
+                Double.isNaN(presencePenalty) ? DEFAULT_PRESENCE_PENALTY : presencePenalty,
+                Double.isNaN(frequencyPenalty) ? DEFAULT_FREQUENCY_PENALTY : frequencyPenalty,
+                maxTokens == Integer.MIN_VALUE ? DEFAULT_MAX_TOKENS : maxTokens,
+                bestOf == Integer.MIN_VALUE ? DEFAULT_BEST_OF : bestOf,
+                user, 
+                stopSequences
+            );
         }
     }
 }

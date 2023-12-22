@@ -1,25 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Helper;
-import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 public class HandlebarsPromptTemplate implements PromptTemplate {
@@ -126,9 +129,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             this.handlebars = new Handlebars();
             this.handlebars.registerHelper(
                 "message",
-                new Helper<Object>() {
-                    @Override
-                    public Object apply(Object context, Options options) throws IOException {
+                (context, options) -> {
                         String role = options.hash("role");
                         String content = (String) options.fn(context);
 
@@ -136,9 +137,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                             ChatMessageContent message = ((Optional<ChatMessageContent>) context).orElse(
                                 null);
                             if (role == null || role.isEmpty()) {
-                                role = message.getAuthorRole()
-                                    .toString()
-                                    .toLowerCase();
+                                role = message.getAuthorRole().name();
                             }
                             content = message.getContent();
                         }
@@ -147,12 +146,26 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                             return new Handlebars.SafeString(
                                 String.format(
                                     "<message role=\"%s\">%s</message>",
-                                    role, content));
+                                    role.toLowerCase(Locale.ROOT), content));
                         }
                         return "";
                     }
-                });
-            // TODO: 1.0 Add more helpers
+                )
+
+                .registerHelper(
+                "each",
+                    (context, options) -> {
+                        if (context instanceof ChatHistory) {
+                            StringBuilder sb = new StringBuilder();
+                            for(ChatMessageContent message : (ChatHistory) context) {
+                                sb.append(options.fn(message));
+                            }
+                            return new Handlebars.SafeString(sb.toString());
+                        }
+                        return "";
+                    }
+                );
+                // TODO: 1.0 Add more helpers
         }
 
 

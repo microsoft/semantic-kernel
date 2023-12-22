@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,20 +11,29 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+
 /**
  * Provides a history of messages between the User, Assistant and System
  */
 public class ChatHistory implements Iterable<ChatMessageContent> {
 
+    private final static String DEFAULT_CHAT_SYSTEM_PROMPT = "Assistant is a large language model.";
+
     private final List<ChatMessageContent> chatMessageContents;
 
     public ChatHistory() {
-        this.chatMessageContents = new ArrayList<>();
+        this(DEFAULT_CHAT_SYSTEM_PROMPT);
     }
 
     public ChatHistory(String instructions) {
         this.chatMessageContents = new ArrayList<>();
-        this.chatMessageContents.add(new ChatMessageContent(AuthorRole.ASSISTANT, instructions));
+        this.chatMessageContents.add(
+            new ChatMessageContent(
+                AuthorRole.ASSISTANT, 
+                instructions == null || instructions.isEmpty() ? DEFAULT_CHAT_SYSTEM_PROMPT : instructions
+            )
+        );
     }
 
     public ChatHistory(List<ChatMessageContent> chatMessageContents) {
