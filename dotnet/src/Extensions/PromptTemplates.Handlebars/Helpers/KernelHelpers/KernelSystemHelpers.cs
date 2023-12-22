@@ -97,7 +97,7 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = arguments.ToList().Select(arg =>
+            var args = arguments.Select(arg =>
             {
                 if (arg is UndefinedBindingResult result)
                 {
@@ -107,7 +107,7 @@ internal static class KernelSystemHelpers
                 return arg;
             });
 
-            return string.Concat(arguments);
+            return string.Concat(args);
         });
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
