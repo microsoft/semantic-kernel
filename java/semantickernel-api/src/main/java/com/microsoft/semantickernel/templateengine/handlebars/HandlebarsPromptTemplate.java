@@ -164,6 +164,29 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         }
                         return "";
                     }
+                )
+
+                .registerHelper(
+                "functions",
+                    (context, options) -> {
+                        StringBuilder functions = new StringBuilder("<functions>");
+                        // What to do here? 
+                        functions.append("</functions>");
+                        
+                        return functions.toString();
+                    }
+                )
+
+                .registerHelper(
+                "function",
+                    (context, options) -> {
+                        String pluginName = options.hash("pluginName");
+                        String functionName = options.hash("name");
+                        // What to do here?
+                        return String.format(
+                            "<function pluginName=\"%s\" name=\"%s\" />",
+                            pluginName, functionName);
+                    }
                 );
                 // TODO: 1.0 Add more helpers
         }

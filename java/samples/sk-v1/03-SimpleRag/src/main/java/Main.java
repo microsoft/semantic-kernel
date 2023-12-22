@@ -3,6 +3,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -11,6 +12,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.KernelArgumen
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -37,9 +39,9 @@ public class Main {
         KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/GroundedChat.prompt.yaml"));
 
-        ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
+        ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId(GPT_35_DEPLOYMENT_NAME)
+            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-35-turbo")
             .build();
 
         // Create the search plugin

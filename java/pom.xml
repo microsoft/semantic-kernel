@@ -80,7 +80,7 @@
 <!--        <module>misc/semantickernel-settings-loader</module>-->
 
 <!--        <module>plugins/semantickernel-planners</module>-->
-<!--        <module>plugins/semantickernel-plugin-core</module>-->
+        <module>plugins/semantickernel-plugin-core</module>
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
