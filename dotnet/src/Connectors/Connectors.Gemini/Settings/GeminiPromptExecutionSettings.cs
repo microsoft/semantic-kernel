@@ -16,6 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {
+    // todo load defaults settings from rest api
+
     /// <summary>
     /// Default max tokens for a text generation
     /// </summary>
@@ -24,7 +26,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
-    /// Default is 1.0.
+    /// Default is 1.0. Range is 0.0 do 1.0.
     /// </summary>
     public double Temperature { get; set; } = 1;
 
@@ -40,7 +42,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The TopK property represents the maximum value of a collection or dataset.
     /// The default value is 50.
     /// </summary>
-    public double TopK { get; set; } = 50;
+    public int TopK { get; set; } = 50;
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
@@ -48,7 +50,13 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     public int? MaxTokens { get; set; }
 
     /// <summary>
+    /// The count of candidates. Possible values range from 1 to 8.
+    /// </summary>
+    public int? CandidateCount { get; set; }
+
+    /// <summary>
     /// Sequences where the completion will stop generating further tokens.
+    /// Maximum number of stop sequences is 5.
     /// </summary>
     public IList<string>? StopSequences { get; set; }
 
@@ -71,14 +79,12 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// </returns>
     public static GeminiPromptExecutionSettings FromPromptExecutionSettings(PromptExecutionSettings? executionSettings)
     {
-        if (executionSettings is null)
+        switch (executionSettings)
         {
-            return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
-        }
-
-        if (executionSettings is GeminiPromptExecutionSettings)
-        {
-            return (GeminiPromptExecutionSettings)executionSettings;
+            case null:
+                return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+            case GeminiPromptExecutionSettings settings:
+                return settings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);

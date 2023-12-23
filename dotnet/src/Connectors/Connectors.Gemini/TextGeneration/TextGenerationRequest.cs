@@ -20,19 +20,32 @@ internal static class TextGenerationRequest
         return obj;
     }
 
-    private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, JsonObject obj)
+    private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, JsonNode obj)
     {
         obj["generationConfig"] = new JsonObject()
         {
             ["temperature"] = executionSettings.Temperature,
             ["topP"] = executionSettings.TopP,
             ["topK"] = executionSettings.TopK,
-            ["maxTokens"] = executionSettings.MaxTokens ?? int.MaxValue,
-            ["stopSequences"] = executionSettings.StopSequences?.Select(s => JsonValue.Create(s)).ToJsonArray() ?? new JsonArray()
         };
+
+        if (executionSettings.MaxTokens.HasValue)
+        {
+            obj["maxOutputTokens"] = executionSettings.MaxTokens;
+        }
+
+        if (executionSettings.StopSequences is { Count: > 0 } stopSequences)
+        {
+            obj["stopSequences"] = stopSequences.Select(s => JsonValue.Create(s)).ToJsonArray();
+        }
+
+        if (executionSettings.CandidateCount.HasValue)
+        {
+            obj["candidateCount"] = executionSettings.CandidateCount;
+        }
     }
 
-    private static void AddSafetySetting(GeminiPromptExecutionSettings executionSettings, JsonObject obj)
+    private static void AddSafetySetting(GeminiPromptExecutionSettings executionSettings, JsonNode obj)
     {
         if (executionSettings.SafetySettings is { } safety)
         {
