@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
-internal class TextGenerationResponse
+internal sealed class TextGenerationResponse
 {
     [JsonPropertyName("candidates")]
     public TextGenerationResponseCandidates[] Candidates { get; set; }
@@ -15,7 +15,7 @@ internal class TextGenerationResponse
     public TextGenerationResponsePromptFeedback PromptFeedback { get; set; }
 }
 
-internal class TextGenerationResponseCandidates
+internal sealed class TextGenerationResponseCandidates
 {
     [JsonPropertyName("content")]
     public TextGenerationResponseContent Content { get; set; }
@@ -30,7 +30,7 @@ internal class TextGenerationResponseCandidates
     public TextGenerationResponseSafetyRatings[] SafetyRatings { get; set; }
 }
 
-internal class TextGenerationResponseContent
+internal sealed class TextGenerationResponseContent
 {
     [JsonPropertyName("parts")]
     public TextGenerationResponseParts[] Parts { get; set; }
@@ -39,13 +39,13 @@ internal class TextGenerationResponseContent
     public string Role { get; set; }
 }
 
-internal class TextGenerationResponseParts
+internal sealed class TextGenerationResponseParts
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
-internal class TextGenerationResponseSafetyRatings
+internal sealed class TextGenerationResponseSafetyRatings
 {
     [JsonPropertyName("category")]
     public string Category { get; set; }
@@ -54,7 +54,7 @@ internal class TextGenerationResponseSafetyRatings
     public string Probability { get; set; }
 }
 
-internal class TextGenerationResponsePromptFeedback
+internal sealed class TextGenerationResponsePromptFeedback
 {
     [JsonPropertyName("safetyRatings")]
     public TextGenerationResponseSafetyRatings[] SafetyRatings { get; set; }
