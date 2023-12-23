@@ -3,6 +3,7 @@
 import glob
 import importlib
 import inspect
+import locale
 import logging
 import os
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
@@ -828,7 +829,7 @@ class Kernel:
         return {}
 
     def import_semantic_skill_from_directory(
-        self, parent_directory: str, skill_directory_name: str
+        self, parent_directory: str, skill_directory_name: str, encoding=locale.getencoding()
     ) -> Dict[str, SKFunctionBase]:
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
@@ -855,11 +856,11 @@ class Kernel:
 
             config = PromptTemplateConfig()
             config_path = os.path.join(directory, CONFIG_FILE)
-            with open(config_path, "r") as config_file:
+            with open(config_path, "r", encoding=encoding) as config_file:
                 config = config.from_json(config_file.read())
 
             # Load Prompt Template
-            with open(prompt_path, "r") as prompt_file:
+            with open(prompt_path, "r", encoding=encoding) as prompt_file:
                 template = PromptTemplate(
                     prompt_file.read(), self.prompt_template_engine, config
                 )
