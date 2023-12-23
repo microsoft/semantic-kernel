@@ -50,11 +50,16 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetTextContentsAsync(prompt, executionSettings, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<TextContent>> InternalGetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
         using var httpRequestMessage = this.VerifyArgumentsAndGetHTTPRequestMessage(prompt, executionSettings);
 
