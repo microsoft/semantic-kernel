@@ -25,6 +25,10 @@
   "HuggingFace": {
     "ApiKey": ""
   },
+  "Gemini": {
+    "ModelId": "gemini-pro",
+    "ApiKey": ""
+  },
   "Bing": {
     "ApiKey": ""
   },
