@@ -103,7 +103,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     private static ByteArrayContent GetHttpJsonContent(string prompt, GeminiPromptExecutionSettings geminiExecutionSettings)
     {
         var requestJsonObject = TextGenerationRequest.GenerateJsonFromPromptExecutionSettings(prompt, geminiExecutionSettings);
-        var requestUtf8Bytes = Encoding.UTF8.GetBytes(requestJsonObject.ToJsonString());
+        var requestUtf8Bytes = JsonSerializer.SerializeToUtf8Bytes(requestJsonObject);
         var httpContent = new ByteArrayContent(requestUtf8Bytes);
         httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         return httpContent;
