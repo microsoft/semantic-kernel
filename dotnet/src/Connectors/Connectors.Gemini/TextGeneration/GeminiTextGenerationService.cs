@@ -73,7 +73,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         }
 
         return textGenerationResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
-            this.GetModelId(), textGenerationResponse)).ToList().AsReadOnly();
+            this.GetModelId(), textGenerationResponse)).ToList();
     }
 
     private HttpRequestMessage VerifyArgumentsAndGetHTTPRequestMessage(string prompt, PromptExecutionSettings? executionSettings)
