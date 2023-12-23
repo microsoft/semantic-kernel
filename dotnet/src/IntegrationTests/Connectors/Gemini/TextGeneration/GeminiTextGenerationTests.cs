@@ -20,8 +20,7 @@ public class GeminiTextGenerationTests
         .Build();
 
     // Load configuration
-    //[Fact(Skip = "This test is for manual verification.")]
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task GeminiTextGenerationAsync()
     {
         // Arrange
