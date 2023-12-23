@@ -14,16 +14,16 @@ internal static class GeminiEndpoints
     /// <summary>
     /// Gets the base endpoint for the Gemini API.
     /// </summary>
-    public static Uri BaseEndpoint { get; } = new("https://generativelanguage.googleapis.com/v1beta");
+    public static Uri BaseEndpoint { get; } = new("https://generativelanguage.googleapis.com/v1beta/");
 
     /// <summary>
     /// Gets the endpoint URI for accessing the models in the Gemini API.
     /// </summary>
-    public static Uri ModelsEndpoint { get; } = new(BaseEndpoint, "models");
+    public static Uri ModelsEndpoint { get; } = new(BaseEndpoint, "models/");
 
     public static Uri GetGenerateContentEndpoint(string modelId, string apiKey)
-        => new(ModelsEndpoint, $"{modelId}:generateContent?key={apiKey}");
+        => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:generateContent?key={apiKey}");
 
     public static Uri GetStreamGenerateContentEndpoint(string modelId, string apiKey)
-        => new(ModelsEndpoint, $"{modelId}:streamGenerateContent?key={apiKey}");
+        => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent?key={apiKey}");
 }
