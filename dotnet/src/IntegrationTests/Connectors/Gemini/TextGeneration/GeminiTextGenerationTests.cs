@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Gemini.TextGeneration;
 
-public class GeminiTextGenerationTests
+public sealed class GeminiTextGenerationTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
