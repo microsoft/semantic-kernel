@@ -75,6 +75,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
             };
         }
 
+        // todo add metadata to text content
         return textGenerationResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
             this.GetModelId(), textGenerationResponse)).ToList();
     }
