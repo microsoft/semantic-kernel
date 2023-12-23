@@ -27,8 +27,8 @@ internal static class TextGenerationRequest
             ["temperature"] = executionSettings.Temperature,
             ["topP"] = executionSettings.TopP,
             ["topK"] = executionSettings.TopK,
-            ["maxTokens"] = executionSettings.MaxTokens,
-            ["stopSequences"] = executionSettings.StopSequences?.Select(s => JsonValue.Create(s)).ToJsonArray()
+            ["maxTokens"] = executionSettings.MaxTokens ?? int.MaxValue,
+            ["stopSequences"] = executionSettings.StopSequences?.Select(s => JsonValue.Create(s)).ToJsonArray() ?? new JsonArray()
         };
     }
 
