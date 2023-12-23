@@ -22,7 +22,7 @@ internal static class TextGenerationRequest
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, JsonNode obj)
     {
-        obj["generationConfig"] = new JsonObject()
+        var config = obj["generationConfig"] = new JsonObject()
         {
             ["temperature"] = executionSettings.Temperature,
             ["topP"] = executionSettings.TopP,
@@ -31,17 +31,17 @@ internal static class TextGenerationRequest
 
         if (executionSettings.MaxTokens.HasValue)
         {
-            obj["maxOutputTokens"] = executionSettings.MaxTokens;
+            config["maxOutputTokens"] = executionSettings.MaxTokens;
         }
 
         if (executionSettings.StopSequences is { Count: > 0 } stopSequences)
         {
-            obj["stopSequences"] = stopSequences.Select(s => JsonValue.Create(s)).ToJsonArray();
+            config["stopSequences"] = stopSequences.Select(s => JsonValue.Create(s)).ToJsonArray();
         }
 
         if (executionSettings.CandidateCount.HasValue)
         {
-            obj["candidateCount"] = executionSettings.CandidateCount;
+            config["candidateCount"] = executionSettings.CandidateCount;
         }
     }
 

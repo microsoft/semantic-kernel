@@ -25,7 +25,7 @@ public class GeminiTextGenerationTests
     public async Task GeminiTextGenerationAsync()
     {
         // Arrange
-        const string Input = "This is test";
+        const string Input = "Expand this abbreviation: LLM";
 
         var geminiService = new GeminiTextGenerationService(this.GetModel(), this.GetApiKey());
 
@@ -34,7 +34,7 @@ public class GeminiTextGenerationTests
 
         // Assert
         Assert.NotNull(response.Text);
-        Assert.StartsWith(Input, response.Text, StringComparison.Ordinal);
+        Assert.Contains("Large Language Model", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     private string GetModel() => this._configuration.GetSection("Gemini:ModelId").Get<string>()!;
