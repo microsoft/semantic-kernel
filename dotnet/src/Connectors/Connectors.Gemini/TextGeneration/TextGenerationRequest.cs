@@ -22,7 +22,7 @@ internal static class TextGenerationRequest
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, JsonObject obj)
     {
-        obj["configuration"] = new JsonObject()
+        obj["generationConfig"] = new JsonObject()
         {
             ["temperature"] = executionSettings.Temperature,
             ["topP"] = executionSettings.TopP,

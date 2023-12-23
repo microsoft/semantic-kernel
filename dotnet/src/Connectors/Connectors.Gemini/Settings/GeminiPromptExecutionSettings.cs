@@ -17,6 +17,11 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
+    /// Default max tokens for a text generation
+    /// </summary>
+    internal static int DefaultTextMaxTokens { get; } = 256;
+
+    /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// Default is 1.0.
@@ -68,7 +73,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     {
         if (executionSettings is null)
         {
-            return new GeminiPromptExecutionSettings();
+            return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
         }
 
         if (executionSettings is GeminiPromptExecutionSettings)
