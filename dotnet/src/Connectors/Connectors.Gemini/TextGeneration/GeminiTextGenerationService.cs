@@ -27,7 +27,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly string _model;
     private readonly HttpClient _httpClient;
-    private readonly string? _apiKey;
+    private readonly string _apiKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiTextGenerationService"/> class.
@@ -89,14 +89,12 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     private HttpRequestMessage GetHTTPRequestMessage(string prompt, GeminiPromptExecutionSettings geminiExecutionSettings)
     {
         var httpContent = GetHttpJsonContent(prompt, geminiExecutionSettings);
-        Uri uri = this.GetUriForGetText();
+        var uri = GeminiEndpoints.GetGenerateContentEndpoint(this._model, this._apiKey);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
         httpRequestMessage.Content = httpContent;
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         return httpRequestMessage;
     }
-
-    private Uri GetUriForGetText() => new($"{GeminiApiEndpointBase}/{this._model}:generateContent?key={this._apiKey}");
 
     private static ByteArrayContent GetHttpJsonContent(string prompt, GeminiPromptExecutionSettings geminiExecutionSettings)
     {
@@ -114,6 +112,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        // todo: implement streaming
         throw new NotImplementedException();
     }
 }
