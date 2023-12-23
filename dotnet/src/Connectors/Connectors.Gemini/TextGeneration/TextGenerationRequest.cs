@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
+// todo: maybe better create a class for this instead manual creating JsonObject?
 internal static class TextGenerationRequest
 {
     public static JsonObject GenerateJsonFromPromptExecutionSettings(string prompt, GeminiPromptExecutionSettings executionSettings)

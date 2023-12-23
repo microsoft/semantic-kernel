@@ -2,8 +2,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 #endregion
 
+using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
@@ -48,4 +51,40 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Represents a list of safety settings.
     /// </summary>
     public IList<SafetySetting>? SafetySettings { get; set; }
+
+    /// <summary>
+    /// Converts a <see cref="PromptExecutionSettings"/> object to a <see cref="GeminiPromptExecutionSettings"/> object.
+    /// </summary>
+    /// <param name="executionSettings">The <see cref="PromptExecutionSettings"/> object to convert.</param>
+    /// <returns>
+    /// The converted <see cref="GeminiPromptExecutionSettings"/> object. If <paramref name="executionSettings"/> is null,
+    /// a new instance of <see cref="GeminiPromptExecutionSettings"/> is returned. If <paramref name="executionSettings"/>
+    /// is already a <see cref="GeminiPromptExecutionSettings"/> object, it is casted and returned. Otherwise, the method
+    /// tries to deserialize <paramref name="executionSettings"/> to a <see cref="GeminiPromptExecutionSettings"/> object.
+    /// If deserialization is successful, the converted object is returned. If deserialization fails or the converted object
+    /// is null, an <see cref="ArgumentException"/> is thrown.
+    /// </returns>
+    public static GeminiPromptExecutionSettings FromPromptExecutionSettings(PromptExecutionSettings? executionSettings)
+    {
+        if (executionSettings is null)
+        {
+            return new GeminiPromptExecutionSettings();
+        }
+
+        if (executionSettings is GeminiPromptExecutionSettings)
+        {
+            return (GeminiPromptExecutionSettings)executionSettings;
+        }
+
+        var json = JsonSerializer.Serialize(executionSettings);
+        var geminiExecutionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        if (geminiExecutionSettings is not null)
+        {
+            return geminiExecutionSettings;
+        }
+
+        throw new ArgumentException(
+            $"Invalid execution settings, cannot convert to {nameof(GeminiPromptExecutionSettings)}",
+            nameof(executionSettings));
+    }
 }

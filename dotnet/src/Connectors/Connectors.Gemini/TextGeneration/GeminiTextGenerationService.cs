@@ -1,5 +1,7 @@
 ﻿#region HEADER
+
 // Copyright (c) Microsoft. All rights reserved.
+
 #endregion
 
 using System;
@@ -22,8 +24,6 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 /// </summary>
 public sealed class GeminiTextGenerationService : ITextGenerationService
 {
-    private const string GeminiApiEndpointBase = "https://generativelanguage.googleapis.com/v1beta/models";
-
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly string _model;
     private readonly HttpClient _httpClient;
@@ -77,11 +77,8 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     private HttpRequestMessage VerifyArgumentsAndGetHTTPRequestMessage(string prompt, PromptExecutionSettings? executionSettings)
     {
         Verify.NotNullOrWhiteSpace(prompt);
-        if (executionSettings is not GeminiPromptExecutionSettings geminiExecutionSettings)
-        {
-            throw new ArgumentException($"The execution settings must be of type {nameof(GeminiPromptExecutionSettings)}.");
-        }
 
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromPromptExecutionSettings(executionSettings);
         var httpRequestMessage = this.GetHTTPRequestMessage(prompt, geminiExecutionSettings);
         return httpRequestMessage;
     }
