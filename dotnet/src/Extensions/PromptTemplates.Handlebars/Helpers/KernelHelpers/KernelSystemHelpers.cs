@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
+using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers.KernelHelpersUtils;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
@@ -42,26 +43,6 @@ internal static class KernelSystemHelpers
         Kernel kernel,
         KernelArguments variables)
     {
-        object? GetArgumentValue(object argument)
-        {
-            if (argument is UndefinedBindingResult result)
-            {
-                return variables.TryGetValue(result.Value, out var variable) ? variable : result.Value;
-            }
-
-            return argument;
-        }
-
-        Arguments ProcessArguments(Arguments arguments)
-        {
-            var processedArguments = arguments.Select(arg =>
-            {
-                return GetArgumentValue(arg);
-            });
-
-            return new Arguments(processedArguments.ToArray());
-        }
-
         // TODO [@teresaqhoang]: Issue #3947 Isolate Handlebars Kernel System helpers in their own class
         // Should also consider standardizing the naming conventions for these helpers, i.e., 'Message' instead of 'message'
         handlebarsInstance.RegisterHelper("message", static (writer, options, context, arguments) =>
@@ -88,11 +69,11 @@ internal static class KernelSystemHelpers
                 // Get the parameters from the template arguments
                 var parameters = (IDictionary<string, object>)arguments[0];
                 name = (string)parameters!["name"];
-                value = GetArgumentValue(parameters!["value"]);
+                value = GetArgumentValue(parameters!["value"], variables);
             }
             else
             {
-                var args = ProcessArguments(arguments);
+                var args = ProcessArguments(arguments, variables);
                 name = args[0].ToString();
                 value = args[1];
             }
@@ -108,7 +89,7 @@ internal static class KernelSystemHelpers
                 throw new HandlebarsRuntimeException("`json` helper requires a value to be passed in.");
             }
 
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             object objectToSerialize = args[0];
             var type = objectToSerialize.GetType();
 
@@ -119,13 +100,13 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             return string.Concat(args);
         });
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             return args.ToArray();
         });
 
@@ -136,7 +117,7 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
 
             // Create list with numbers from start to end (inclusive)
             var start = int.Parse(args[0].ToString(), kernel.Culture);
@@ -148,19 +129,19 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             return args.Any(arg => arg != null && arg is not false);
         });
 
         handlebarsInstance.RegisterHelper("add", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             return args.Sum(arg => decimal.Parse(arg.ToString(), kernel.Culture));
         });
 
         handlebarsInstance.RegisterHelper("subtract", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             return args.Aggregate((a, b) => decimal.Parse(a.ToString(), kernel.Culture) - decimal.Parse(b.ToString(), kernel.Culture));
         });
 
@@ -171,7 +152,7 @@ internal static class KernelSystemHelpers
                 return false;
             }
 
-            var args = ProcessArguments(arguments);
+            var args = ProcessArguments(arguments, variables);
             object? left = args[0];
             object? right = args[1];
 
