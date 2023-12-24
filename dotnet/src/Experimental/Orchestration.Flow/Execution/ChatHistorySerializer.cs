@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -33,7 +33,7 @@ internal static class ChatHistorySerializer
             return string.Empty;
         }
 
-        var messages = history.Messages.Select(m => new SerializableChatMessage()
+        var messages = history.Select(m => new SerializableChatMessage()
         {
             Role = m.Role.Label,
             Content = m.Content,

@@ -23,3 +23,7 @@ class DelegateTypes(Enum):
     InContextOutTask = 16
     InStringAndContextOutTask = 17
     OutTask = 18
+    OutAsyncGenerator = 19
+    InStringOutAsyncGenerator = 20
+    InContextOutAsyncGenerator = 21
+    InStringAndContextOutAsyncGenerator = 22

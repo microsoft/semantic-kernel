@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using NRedisStack;
 using NRedisStack.RedisStackCommands;
@@ -16,7 +15,7 @@ using NRedisStack.Search.Literals.Enums;
 using StackExchange.Redis;
 using static NRedisStack.Search.Schema.VectorField;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
+namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Redis.
@@ -364,7 +363,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
         if (vectorScoreValue.IsNullOrEmpty || !vectorScoreValue.TryParse(out double vectorScore))
         {
-            throw new SKException("Invalid or missing vector score value.");
+            throw new KernelException("Invalid or missing vector score value.");
         }
 
         return 1 - vectorScore;

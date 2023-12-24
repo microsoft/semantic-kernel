@@ -24,11 +24,8 @@ public class TimePluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        Assert.NotNull(KernelPluginFactory.CreateFromType<TimePlugin>("time"));
     }
 
     [Fact]
@@ -57,9 +54,9 @@ public class TimePluginTests
     [Fact]
     public async Task LastMatchingDayBadInputAsync()
     {
-        var plugin = new TimePlugin();
+        KernelFunction func = KernelPluginFactory.CreateFromType<TimePlugin>()["DateMatchingLastDayName"];
 
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(plugin, "DateMatchingLastDayName", ("input", "not a day name")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new(), new() { ["input"] = "not a day name" }));
 
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "input", "not a day name");
     }

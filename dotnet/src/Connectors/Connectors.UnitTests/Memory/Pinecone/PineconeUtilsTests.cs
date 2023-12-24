@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public class PineconeUtilsTests
 {
@@ -75,10 +75,10 @@ public class PineconeUtilsTests
         // Assert
         Assert.Equal(new Dictionary<string, object>
         {
-            { "key1", new Dictionary<string, string> { { "$eq", "value1" } } },
+            { "key1", new Dictionary<string, object> { { "$eq", "value1" } } },
             { "key2", new Dictionary<string, object> { { "$in", new List<int> { 1, 2, 3 } } } },
-            { "key3", new Dictionary<string, long> { { "$eq", new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds() } } },
-            { "key4", new Dictionary<string, string> { { "$eq", "value4" } } }
+            { "key3", new Dictionary<string, object> { { "$eq", new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds() } } },
+            { "key4", new Dictionary<string, object> { { "$eq", "value4" } } }
         }, result);
     }
 }

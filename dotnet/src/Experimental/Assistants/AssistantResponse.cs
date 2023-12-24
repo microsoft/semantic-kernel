@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
-/// Response from assistant when called as a <see cref="ISKFunction"/>.
+/// Response from assistant when called as a <see cref="KernelFunction"/>.
 /// </summary>
 public class AssistantResponse
 {
@@ -19,7 +19,7 @@ public class AssistantResponse
     /// The assistant response.
     /// </summary>
     [JsonPropertyName("response")]
-    public string Response { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
 
     /// <summary>
     /// Instructions from assistant on next steps.

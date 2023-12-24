@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 /// <summary>
 /// list of run steps belonging to a run.
 /// </summary>
-internal class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
+internal sealed class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
 {
     // No specialization
 }
