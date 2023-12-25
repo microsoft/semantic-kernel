@@ -212,7 +212,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         };
 
         // Act
+#pragma warning disable CA1849 // Call async methods when in an async method
         registerCancellationToken.Cancel();
+#pragma warning restore CA1849
         var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
         // Assert

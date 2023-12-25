@@ -242,22 +242,20 @@ public sealed class RestApiOperation
     /// <returns>The operation server url.</returns>
     private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl)
     {
-        string serverUrlString;
-
-        if (serverUrlOverride is not null)
-        {
-            serverUrlString = serverUrlOverride.AbsoluteUri;
-        }
-        else
-        {
-            serverUrlString =
-                this.ServerUrl?.AbsoluteUri ??
-                apiHostUrl?.AbsoluteUri ??
-                throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
-        }
+        string serverUrlString =
+            serverUrlOverride is not null ? serverUrlOverride.AbsoluteUri :
+            this.ServerUrl?.AbsoluteUri ??
+            apiHostUrl?.AbsoluteUri ??
+            throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
 
         // Make sure base url ends with trailing slash
-        if (!serverUrlString.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+        if (!serverUrlString.EndsWith(
+#if NET6_0_OR_GREATER
+            '/'
+#else
+            "/", StringComparison.Ordinal
+#endif
+            ))
         {
             serverUrlString += "/";
         }
@@ -272,6 +270,5 @@ public sealed class RestApiOperation
         { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
-
-    # endregion
+    #endregion
 }

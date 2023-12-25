@@ -26,7 +26,7 @@ internal sealed class HandlebarsPromptTemplateExtensions
         registerHelper("getSchemaReturnTypeName", static (Context context, Arguments arguments) =>
         {
             KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
-            var functionName = arguments[1].ToString();
+            var functionName = arguments[1].ToString() ?? string.Empty;
             return parameter.ToKernelParameterMetadata(functionName).GetSchemaTypeName();
         });
     }

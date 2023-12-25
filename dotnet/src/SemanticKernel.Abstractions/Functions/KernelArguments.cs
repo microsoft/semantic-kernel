@@ -31,7 +31,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 
         if (executionSettings is not null)
         {
-            this.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
+            this.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>(1) { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
         }
     }
 

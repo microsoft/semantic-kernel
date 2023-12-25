@@ -186,7 +186,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
 
         //Act
-        var contents = await sut.GetTextContentsAsync("fake-test");
+        await sut.GetTextContentsAsync("fake-test");
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(@"
@@ -214,7 +214,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
 
         //Act
-        var contents = await sut.GetTextContentsAsync("fake-test");
+        await sut.GetTextContentsAsync("fake-test");
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(@"

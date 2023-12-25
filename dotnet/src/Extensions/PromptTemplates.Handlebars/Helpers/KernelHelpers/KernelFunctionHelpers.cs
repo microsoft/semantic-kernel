@@ -209,9 +209,10 @@ internal static class KernelFunctionHelpers
         if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
         {
             // Deserialize any JSON content or return the content as a string
-            if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) &&
+                restApiOperationResponse.Content.ToString() is string content)
             {
-                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
+                var parsedJson = JsonValue.Parse(content);
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
 

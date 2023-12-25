@@ -24,11 +24,11 @@ internal struct DatabaseEntry
     public float Score { get; set; }
 }
 
-internal sealed class Database
+internal static class Database
 {
     private const string TableName = "SKMemoryTable";
 
-    public async Task CreateTableAsync(DuckDBConnection conn, CancellationToken cancellationToken = default)
+    public static async Task CreateTableAsync(DuckDBConnection conn, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
@@ -42,9 +42,9 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task CreateCollectionAsync(DuckDBConnection conn, string collectionName, CancellationToken cancellationToken = default)
+    public static async Task CreateCollectionAsync(DuckDBConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancellationToken).ConfigureAwait(false))
+        if (await DoesCollectionExistsAsync(conn, collectionName, cancellationToken).ConfigureAwait(false))
         {
             // Collection already exists
             return;
@@ -68,10 +68,10 @@ internal sealed class Database
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method serializing array of float and numbers")]
-    public async Task UpdateOrInsertAsync(DuckDBConnection conn,
+    public static async Task UpdateOrInsertAsync(DuckDBConnection conn,
         string collectionName, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
-        await this.DeleteAsync(conn, collectionName, key, cancellationToken).ConfigureAwait(true);
+        await DeleteAsync(conn, collectionName, key, cancellationToken).ConfigureAwait(true);
         var embeddingArrayString = EncodeFloatArrayToString(embedding ?? Array.Empty<float>());
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $"INSERT INTO {TableName} VALUES(${nameof(collectionName)}, ${nameof(key)}, ${nameof(metadata)}, {embeddingArrayString}, ${nameof(timestamp)})";
@@ -82,15 +82,15 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<bool> DoesCollectionExistsAsync(DuckDBConnection conn,
+    public static async Task<bool> DoesCollectionExistsAsync(DuckDBConnection conn,
         string collectionName,
         CancellationToken cancellationToken = default)
     {
-        var collections = await this.GetCollectionsAsync(conn, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var collections = await GetCollectionsAsync(conn, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return collections.Contains(collectionName);
     }
 
-    public async IAsyncEnumerable<string> GetCollectionsAsync(DuckDBConnection conn,
+    public static async IAsyncEnumerable<string> GetCollectionsAsync(DuckDBConnection conn,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
@@ -106,7 +106,7 @@ internal sealed class Database
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method serializing array of float and numbers")]
-    public async IAsyncEnumerable<DatabaseEntry> GetNearestMatchesAsync(
+    public static async IAsyncEnumerable<DatabaseEntry> GetNearestMatchesAsync(
         DuckDBConnection conn,
         string collectionName,
         float[] embedding,
@@ -151,7 +151,7 @@ internal sealed class Database
         }
     }
 
-    public async Task<DatabaseEntry?> ReadAsync(DuckDBConnection conn,
+    public static async Task<DatabaseEntry?> ReadAsync(DuckDBConnection conn,
         string collectionName,
         string key,
         CancellationToken cancellationToken = default)
@@ -183,7 +183,7 @@ internal sealed class Database
         return null;
     }
 
-    public async Task DeleteCollectionAsync(DuckDBConnection conn, string collectionName, CancellationToken cancellationToken = default)
+    public static async Task DeleteCollectionAsync(DuckDBConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
@@ -193,7 +193,7 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task DeleteAsync(DuckDBConnection conn, string collectionName, string key, CancellationToken cancellationToken = default)
+    public static async Task DeleteAsync(DuckDBConnection conn, string collectionName, string key, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"

@@ -8,16 +8,11 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// ListIndexesRequest
 /// See https://docs.pinecone.io/reference/list_indexes
 /// </summary>
-internal sealed class ListIndexesRequest
+internal static class ListIndexesRequest
 {
-    public static ListIndexesRequest Create()
+    public static HttpRequestMessage Build()
     {
-        return new ListIndexesRequest();
-    }
-
-    public HttpRequestMessage Build()
-    {
-        HttpRequestMessage? request = HttpRequest.CreateGetRequest("/databases");
+        HttpRequestMessage request = HttpRequest.CreateGetRequest("/databases");
 
         request.Headers.Add("accept", "application/json; charset=utf-8");
 

@@ -20,7 +20,7 @@ public class VolatileMemoryStoreTests
         this._db = new VolatileMemoryStore();
     }
 
-    private int _collectionNum = 0;
+    private int _collectionNum;
 
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {

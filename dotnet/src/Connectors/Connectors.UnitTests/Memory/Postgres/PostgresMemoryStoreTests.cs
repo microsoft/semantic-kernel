@@ -91,8 +91,8 @@ public class PostgresMemoryStoreTests
     public async Task ItCanUpsertAsync()
     {
         // Arrange
-        var expectedMemoryRecord = this.GetRandomMemoryRecord();
-        var postgresMemoryEntry = this.GetPostgresMemoryEntryFromMemoryRecord(expectedMemoryRecord)!;
+        var expectedMemoryRecord = GetRandomMemoryRecord();
+        var postgresMemoryEntry = GetPostgresMemoryEntryFromMemoryRecord(expectedMemoryRecord)!;
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -108,9 +108,9 @@ public class PostgresMemoryStoreTests
     public async Task ItCanUpsertBatchAsyncAsync()
     {
         // Arrange
-        var memoryRecord1 = this.GetRandomMemoryRecord();
-        var memoryRecord2 = this.GetRandomMemoryRecord();
-        var memoryRecord3 = this.GetRandomMemoryRecord();
+        var memoryRecord1 = GetRandomMemoryRecord();
+        var memoryRecord2 = GetRandomMemoryRecord();
+        var memoryRecord3 = GetRandomMemoryRecord();
 
         var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
@@ -123,7 +123,7 @@ public class PostgresMemoryStoreTests
         // Assert
         foreach (var memoryRecord in batchUpsertMemoryRecords)
         {
-            var postgresMemoryEntry = this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)!;
+            var postgresMemoryEntry = GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)!;
             this._postgresDbClientMock.Verify(client => client.UpsertAsync(CollectionName, postgresMemoryEntry.Key, postgresMemoryEntry.MetadataString, It.Is<Pgvector.Vector>(x => x.ToArray().SequenceEqual(postgresMemoryEntry.Embedding!.ToArray())), postgresMemoryEntry.Timestamp, CancellationToken.None), Times.Once());
         }
 
@@ -137,8 +137,8 @@ public class PostgresMemoryStoreTests
     public async Task ItCanGetMemoryRecordFromCollectionAsync()
     {
         // Arrange
-        var expectedMemoryRecord = this.GetRandomMemoryRecord();
-        var postgresMemoryEntry = this.GetPostgresMemoryEntryFromMemoryRecord(expectedMemoryRecord);
+        var expectedMemoryRecord = GetRandomMemoryRecord();
+        var postgresMemoryEntry = GetPostgresMemoryEntryFromMemoryRecord(expectedMemoryRecord);
 
         this._postgresDbClientMock
             .Setup(client => client.ReadAsync(CollectionName, expectedMemoryRecord.Key, true, CancellationToken.None))
@@ -151,7 +151,7 @@ public class PostgresMemoryStoreTests
 
         // Assert
         Assert.NotNull(actualMemoryRecord);
-        this.AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
+        AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
     }
 
     [Fact]
@@ -177,9 +177,9 @@ public class PostgresMemoryStoreTests
     public async Task ItCanGetMemoryRecordBatchFromCollectionAsync()
     {
         // Arrange
-        var memoryRecord1 = this.GetRandomMemoryRecord();
-        var memoryRecord2 = this.GetRandomMemoryRecord();
-        var memoryRecord3 = this.GetRandomMemoryRecord();
+        var memoryRecord1 = GetRandomMemoryRecord();
+        var memoryRecord2 = GetRandomMemoryRecord();
+        var memoryRecord3 = GetRandomMemoryRecord();
 
         var expectedMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
         var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).ToList();
@@ -188,7 +188,7 @@ public class PostgresMemoryStoreTests
         {
             this._postgresDbClientMock
                 .Setup(client => client.ReadAsync(CollectionName, memoryRecord.Key, true, CancellationToken.None))
-                .ReturnsAsync(this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord));
+                .ReturnsAsync(GetPostgresMemoryEntryFromMemoryRecord(memoryRecord));
         }
 
         memoryRecordKeys.Insert(0, "non-existent-record-key-1");
@@ -197,7 +197,7 @@ public class PostgresMemoryStoreTests
 
         this._postgresDbClientMock
                 .Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None))
-                .Returns(expectedMemoryRecords.Select(memoryRecord => this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
+                .Returns(expectedMemoryRecords.Select(memoryRecord => GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -210,7 +210,7 @@ public class PostgresMemoryStoreTests
 
         for (var i = 0; i < expectedMemoryRecords.Length; i++)
         {
-            this.AssertMemoryRecordEqual(expectedMemoryRecords[i], actualMemoryRecords[i]);
+            AssertMemoryRecordEqual(expectedMemoryRecords[i], actualMemoryRecords[i]);
         }
     }
 
@@ -268,7 +268,7 @@ public class PostgresMemoryStoreTests
 
     #region private ================================================================================
 
-    private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
+    private static void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
         Assert.True(expectedRecord.Embedding.Span.SequenceEqual(actualRecord.Embedding.Span));
@@ -280,7 +280,7 @@ public class PostgresMemoryStoreTests
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-    private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
+    private static MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
         var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };
@@ -295,7 +295,7 @@ public class PostgresMemoryStoreTests
             timestamp: DateTimeOffset.Now);
     }
 
-    private PostgresMemoryEntry GetPostgresMemoryEntryFromMemoryRecord(MemoryRecord memoryRecord)
+    private static PostgresMemoryEntry GetPostgresMemoryEntryFromMemoryRecord(MemoryRecord memoryRecord)
     {
         return new PostgresMemoryEntry()
         {

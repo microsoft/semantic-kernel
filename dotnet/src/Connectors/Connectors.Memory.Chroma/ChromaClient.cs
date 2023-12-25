@@ -94,7 +94,7 @@ public class ChromaClient : IChromaClient
     {
         this._logger.LogDebug("Listing collections");
 
-        using var request = ListCollectionsRequest.Create().Build();
+        using var request = ListCollectionsRequest.Build();
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -160,28 +160,25 @@ public class ChromaClient : IChromaClient
 
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private readonly string? _endpoint = null;
+    private readonly string? _endpoint;
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
         string endpoint = this._endpoint ?? this._httpClient.BaseAddress!.ToString();
-        endpoint = this.SanitizeEndpoint(endpoint);
+        endpoint = SanitizeEndpoint(endpoint);
 
         string operationName = request.RequestUri!.ToString();
 
         request.RequestUri = new Uri(new Uri(endpoint), operationName);
 
-        HttpResponseMessage? response = null;
-
-        string? responseContent = null;
-
+        HttpResponseMessage? response;
+        string? responseContent;
         try
         {
             response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-
-            responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+            responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e)
         {
@@ -192,11 +189,17 @@ public class ChromaClient : IChromaClient
         return (response, responseContent);
     }
 
-    private string SanitizeEndpoint(string endpoint)
+    private static string SanitizeEndpoint(string endpoint)
     {
         StringBuilder builder = new(endpoint);
 
-        if (!endpoint.EndsWith("/", StringComparison.Ordinal))
+        if (!endpoint.EndsWith(
+#if NET6_0_OR_GREATER
+            '/'
+#else
+            "/", StringComparison.Ordinal
+#endif
+            ))
         {
             builder.Append('/');
         }
@@ -205,6 +208,5 @@ public class ChromaClient : IChromaClient
 
         return builder.ToString();
     }
-
     #endregion
 }

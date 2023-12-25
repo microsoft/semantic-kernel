@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
@@ -49,7 +48,7 @@ internal sealed class VarBlock : Block, ITextRendering
             return false;
         }
 
-        if (!s_validNameRegex.IsMatch(this.Name))
+        if (!Verify.AsciiLettersDigitsUnderscoreRegex().IsMatch(this.Name))
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                        "Only alphanumeric chars and underscore are allowed.";
@@ -82,6 +81,4 @@ internal sealed class VarBlock : Block, ITextRendering
 
         return null;
     }
-
-    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");
 }

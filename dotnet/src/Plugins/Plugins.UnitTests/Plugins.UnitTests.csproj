@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Plugins.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Plugins.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>

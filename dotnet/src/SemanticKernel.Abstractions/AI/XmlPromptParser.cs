@@ -30,7 +30,9 @@ internal static class XmlPromptParser
         // - it would need to contain a closing tag, which could include either </ or />
         int startPos;
         if (prompt is null ||
+#pragma warning disable CA1307 // Specify StringComparison for clarity
             (startPos = prompt.IndexOf('<')) < 0 ||
+#pragma warning restore CA1307 // Specify StringComparison for clarity
             (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
              prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0))
         {

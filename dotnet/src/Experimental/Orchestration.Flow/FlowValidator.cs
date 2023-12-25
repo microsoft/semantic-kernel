@@ -16,14 +16,18 @@ public class FlowValidator : IFlowValidator
     {
         Verify.NotNullOrWhiteSpace(flow.Goal, nameof(flow.Goal));
 
-        this.ValidateNonEmpty(flow);
-        this.ValidatePartialOrder(flow);
-        this.ValidateReferenceStep(flow);
-        this.ValidateStartingMessage(flow);
-        this.ValidatePassthroughVariables(flow);
+        ValidateNonEmpty(flow);
+
+        ValidatePartialOrder(flow);
+
+        ValidateReferenceStep(flow);
+
+        ValidateStartingMessage(flow);
+
+        ValidatePassthroughVariables(flow);
     }
 
-    private void ValidateStartingMessage(Flow flow)
+    private static void ValidateStartingMessage(Flow flow)
     {
         foreach (var step in flow.Steps)
         {
@@ -36,7 +40,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
-    private void ValidateNonEmpty(Flow flow)
+    private static void ValidateNonEmpty(Flow flow)
     {
         if (flow.Steps.Count == 0)
         {
@@ -44,7 +48,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
-    private void ValidatePartialOrder(Flow flow)
+    private static void ValidatePartialOrder(Flow flow)
     {
         try
         {
@@ -56,7 +60,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
-    private void ValidateReferenceStep(Flow flow)
+    private static void ValidateReferenceStep(Flow flow)
     {
         var steps = flow.Steps
             .Select(step => step as ReferenceFlowStep)
@@ -83,7 +87,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
-    private void ValidatePassthroughVariables(Flow flow)
+    private static void ValidatePassthroughVariables(Flow flow)
     {
         foreach (var step in flow.Steps)
         {

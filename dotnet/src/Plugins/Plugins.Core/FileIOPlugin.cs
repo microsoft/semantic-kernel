@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -20,12 +21,17 @@ public sealed class FileIOPlugin
     /// {{file.readAsync $path }} => "hello world"
     /// </example>
     /// <param name="path"> Source file </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns> File content </returns>
     [KernelFunction, Description("Read a file")]
-    public async Task<string> ReadAsync([Description("Source file")] string path)
+    public async Task<string> ReadAsync([Description("Source file")] string path, CancellationToken cancellationToken = default)
     {
         using var reader = File.OpenText(path);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+        return await reader.ReadToEndAsync(
+#if NET6_0_OR_GREATER
+            cancellationToken
+#endif
+            ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -36,11 +42,13 @@ public sealed class FileIOPlugin
     /// </example>
     /// <param name="path">The destination file path</param>
     /// <param name="content">The file content to write</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns> An awaitable task </returns>
     [KernelFunction, Description("Write a file")]
     public async Task WriteAsync(
         [Description("Destination file")] string path,
-        [Description("File content")] string content)
+        [Description("File content")] string content,
+        CancellationToken cancellationToken = default)
     {
         byte[] text = Encoding.UTF8.GetBytes(content);
         if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
@@ -50,6 +58,12 @@ public sealed class FileIOPlugin
         }
 
         using var writer = File.OpenWrite(path);
-        await writer.WriteAsync(text, 0, text.Length).ConfigureAwait(false);
+        await writer.WriteAsync(
+#if NET6_0_OR_GREATER
+            text
+#else
+            text, 0, text.Length
+#endif
+            , cancellationToken).ConfigureAwait(false);
     }
 }

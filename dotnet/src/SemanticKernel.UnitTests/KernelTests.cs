@@ -46,7 +46,9 @@ public class KernelTests
         var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         using CancellationTokenSource cts = new();
+#pragma warning disable CA1849 // Call async methods when in an async method
         cts.Cancel();
+#pragma warning restore CA1849
 
         // Act
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => kernel.InvokeAsync(functions["GetAnyValue"], cancellationToken: cts.Token));

@@ -44,7 +44,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     /// <inheritdoc/>
     public async Task<ExecutionState> GetExecutionStateAsync(string sessionId)
     {
-        var result = await (this._memoryStore.GetAsync(this._collectionName, this.GetExecutionStateStorageKey(sessionId))).ConfigureAwait(false);
+        var result = await (this._memoryStore.GetAsync(this._collectionName, GetExecutionStateStorageKey(sessionId))).ConfigureAwait(false);
         var text = result?.Metadata.Text ?? string.Empty;
 
         if (!string.IsNullOrEmpty(text))
@@ -69,11 +69,12 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public async Task SaveExecutionStateAsync(string sessionId, ExecutionState state)
     {
         var json = JsonSerializer.Serialize(state);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetExecutionStateStorageKey(sessionId), json))
+
+        await this._memoryStore.UpsertAsync(this._collectionName, CreateMemoryRecord(GetExecutionStateStorageKey(sessionId), json))
             .ConfigureAwait(false);
     }
 
-    private string GetExecutionStateStorageKey(string sessionId)
+    private static string GetExecutionStateStorageKey(string sessionId)
     {
         return $"FlowStatus_{sessionId}";
     }
@@ -81,7 +82,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     /// <inheritdoc/>
     public async Task<ChatHistory?> GetChatHistoryAsync(string sessionId, string stepId)
     {
-        var result = await this._memoryStore.GetAsync(this._collectionName, this.GetChatHistoryStorageKey(sessionId, stepId)).ConfigureAwait(false);
+        var result = await this._memoryStore.GetAsync(this._collectionName, GetChatHistoryStorageKey(sessionId, stepId)).ConfigureAwait(false);
         var text = result?.Metadata.Text ?? string.Empty;
 
         if (!string.IsNullOrEmpty(text))
@@ -106,11 +107,12 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public async Task SaveChatHistoryAsync(string sessionId, string stepId, ChatHistory history)
     {
         var json = ChatHistorySerializer.Serialize(history);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetChatHistoryStorageKey(sessionId, stepId), json))
+
+        await this._memoryStore.UpsertAsync(this._collectionName, CreateMemoryRecord(GetChatHistoryStorageKey(sessionId, stepId), json))
             .ConfigureAwait(false);
     }
 
-    private string GetChatHistoryStorageKey(string sessionId, string stepId)
+    private static string GetChatHistoryStorageKey(string sessionId, string stepId)
     {
         return $"ChatHistory_{sessionId}_{stepId}";
     }
@@ -118,7 +120,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     /// <inheritdoc/>
     public async Task<List<ReActStep>> GetReActStepsAsync(string sessionId, string stepId)
     {
-        var result = await this._memoryStore.GetAsync(this._collectionName, this.GetStepsStorageKey(sessionId, stepId)).ConfigureAwait(false);
+        var result = await this._memoryStore.GetAsync(this._collectionName, GetStepsStorageKey(sessionId, stepId)).ConfigureAwait(false);
         var text = result?.Metadata.Text ?? string.Empty;
 
         if (!string.IsNullOrEmpty(text))
@@ -141,7 +143,8 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public async Task SaveReActStepsAsync(string sessionId, string stepId, List<ReActStep> steps)
     {
         var json = JsonSerializer.Serialize(steps);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetStepsStorageKey(sessionId, stepId), json))
+
+        await this._memoryStore.UpsertAsync(this._collectionName, CreateMemoryRecord(GetStepsStorageKey(sessionId, stepId), json))
             .ConfigureAwait(false);
     }
 
@@ -155,12 +158,12 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         return flowProvider;
     }
 
-    private string GetStepsStorageKey(string sessionId, string stepId)
+    private static string GetStepsStorageKey(string sessionId, string stepId)
     {
         return $"Steps_{sessionId}_{stepId}";
     }
 
-    private MemoryRecord CreateMemoryRecord(string key, string text)
+    private static MemoryRecord CreateMemoryRecord(string key, string text)
     {
         return MemoryRecord.LocalRecord(key, text, null, ReadOnlyMemory<float>.Empty);
     }

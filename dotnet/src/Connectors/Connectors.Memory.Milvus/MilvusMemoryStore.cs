@@ -362,7 +362,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         for (int rowNum = 0; rowNum < rowCount; rowNum++)
         {
-            yield return this.ReadMemoryRecord(fields, rowNum);
+            yield return ReadMemoryRecord(fields, rowNum);
         }
     }
 
@@ -478,13 +478,13 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             if (results.Scores[rowNum] >= minRelevanceScore)
             {
                 yield return (
-                    this.ReadMemoryRecord(data, rowNum, withEmbeddings ? embeddingMap![ids[rowNum]] : null),
+                    ReadMemoryRecord(data, rowNum, withEmbeddings ? embeddingMap![ids[rowNum]] : null),
                     results.Scores[rowNum]);
             }
         }
     }
 
-    private MemoryRecord ReadMemoryRecord(IReadOnlyList<FieldData> data, int rowNum, ReadOnlyMemory<float>? externalEmbedding = null)
+    private static MemoryRecord ReadMemoryRecord(IReadOnlyList<FieldData> data, int rowNum, ReadOnlyMemory<float>? externalEmbedding = null)
     {
         bool isReference = false;
         string externalSourceName = string.Empty;

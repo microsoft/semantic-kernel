@@ -15,8 +15,8 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0003")]
 public sealed class MemoryBuilder
 {
-    private Func<IMemoryStore>? _memoryStoreFactory = null;
-    private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory = null;
+    private Func<IMemoryStore>? _memoryStoreFactory;
+    private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory;
     private HttpClient? _httpClient;
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 

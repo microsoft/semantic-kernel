@@ -159,7 +159,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
-            new HashEntry("embedding", this.ConvertEmbeddingToBytes(record.Embedding)),
+            new HashEntry("embedding", ConvertEmbeddingToBytes(record.Embedding)),
             new HashEntry("timestamp", ToTimestampLong(record.Timestamp))
         }, flags: CommandFlags.None).ConfigureAwait(false);
 
@@ -202,7 +202,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
 
         var query = new Query($"*=>[KNN {limit} @embedding $embedding AS vector_score]")
-                    .AddParam("embedding", this.ConvertEmbeddingToBytes(embedding))
+                    .AddParam("embedding", ConvertEmbeddingToBytes(embedding))
                     .SetSortBy("vector_score")
                     .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
                     .Limit(0, limit)
@@ -212,7 +212,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
         foreach (var document in results.Documents)
         {
-            double similarity = this.GetSimilarity(document);
+            double similarity = GetSimilarity(document);
             if (similarity < minRelevanceScore)
             {
                 yield break;
@@ -357,7 +357,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             timestamp: ParseTimestamp((long?)hashEntries.FirstOrDefault(x => x.Name == "timestamp").Value));
     }
 
-    private double GetSimilarity(Document document)
+    private static double GetSimilarity(Document document)
     {
         RedisValue vectorScoreValue = document["vector_score"];
 
@@ -369,7 +369,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         return 1 - vectorScore;
     }
 
-    private byte[] ConvertEmbeddingToBytes(ReadOnlyMemory<float> embedding)
+    private static byte[] ConvertEmbeddingToBytes(ReadOnlyMemory<float> embedding)
     {
         return MemoryMarshal.AsBytes(embedding.Span).ToArray();
     }

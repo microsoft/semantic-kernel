@@ -110,8 +110,6 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
     private sealed class RedirectTextGenerationService : ITextGenerationService
     {
-        public string? ModelId => null;
-
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)

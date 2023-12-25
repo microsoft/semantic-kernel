@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.UnitTests</AssemblyName>
-    <TargetFrameworks>net6.0</TargetFrameworks>    <!-- ;net48 -->
+    <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>

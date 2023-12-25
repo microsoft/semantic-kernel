@@ -19,7 +19,7 @@ namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
-    private bool _disposedValue = false;
+    private bool _disposedValue;
 
     public SqliteMemoryStoreTests()
     {
@@ -51,9 +51,9 @@ public class SqliteMemoryStoreTests : IDisposable
         }
     }
 
-    private int _collectionNum = 0;
+    private int _collectionNum;
 
-    private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
+    private static IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
         Assert.True(numRecords % 2 == 0, "Number of records must be even");
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
@@ -614,7 +614,8 @@ public class SqliteMemoryStoreTests : IDisposable
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
 
         // Act
         await db.CreateCollectionAsync(collection);
@@ -635,7 +636,8 @@ public class SqliteMemoryStoreTests : IDisposable
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         var keys = db.UpsertBatchAsync(collection, records);
 
         // Act
@@ -656,7 +658,8 @@ public class SqliteMemoryStoreTests : IDisposable
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
         List<string> keys = new();

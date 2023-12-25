@@ -81,7 +81,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
         T result = JsonDeserialize<T>(responseJson);
         return result;
     }

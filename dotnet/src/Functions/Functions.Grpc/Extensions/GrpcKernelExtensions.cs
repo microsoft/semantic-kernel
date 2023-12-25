@@ -155,9 +155,7 @@ public static class GrpcKernelExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
         // Parse
-        var parser = new ProtoDocumentParser();
-
-        var operations = parser.Parse(documentStream, pluginName);
+        var operations = ProtoDocumentParser.Parse(documentStream, pluginName);
 
         var functions = new List<KernelFunction>();
 

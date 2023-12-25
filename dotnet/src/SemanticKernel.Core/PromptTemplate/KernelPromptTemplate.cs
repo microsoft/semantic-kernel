@@ -46,7 +46,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
+        return KernelPromptTemplate.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
     }
 
     #region private
@@ -87,7 +87,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The prompt template ready to be used for an AI request.</returns>
-    private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
+    private static async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
         var result = new StringBuilder();
         foreach (var block in blocks)

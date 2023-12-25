@@ -40,7 +40,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this.ValidateConfig(config);
+        ValidateConfig(config);
 
         this._config = config;
 
@@ -90,7 +90,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Dictionary<string, object?> _attributes = new();
-    private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
+    private static void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);
 
@@ -113,7 +113,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         using var request = this.GetRequest(chat, openAIExecutionSettings, isStreamEnabled: false);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(chatWithDataResponse);
@@ -177,12 +177,16 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
         const string ServerEventPayloadPrefix = "data:";
 
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         using var reader = new StreamReader(stream);
 
         while (!reader.EndOfStream)
         {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+            var body = await reader.ReadLineAsync(
+#if NET6_0_OR_GREATER
+                cancellationToken
+#endif
+                ).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(body))
             {
@@ -236,7 +240,8 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             FrequencyPenalty = executionSettings.FrequencyPenalty,
             TokenSelectionBiases = executionSettings.TokenSelectionBiases ?? new Dictionary<int, int>(),
             DataSources = this.GetDataSources(),
-            Messages = this.GetMessages(chat)
+
+            Messages = GetMessages(chat)
         };
 
         return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
@@ -257,7 +262,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         };
     }
 
-    private List<ChatWithDataMessage> GetMessages(ChatHistory chat)
+    private static List<ChatWithDataMessage> GetMessages(ChatHistory chat)
     {
         // The system role as the unique message is not allowed in the With Data APIs.
         // This avoids the error: Invalid message request body. Learn how to use Completions extension API, please refer to https://learn.microsoft.com/azure/ai-services/openai/reference#completions-extensions

@@ -155,7 +155,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanGetMemoryRecordFromCollectionAsync()
     {
         // Arrange
-        var expectedMemoryRecord = this.GetRandomMemoryRecord();
+        var expectedMemoryRecord = GetRandomMemoryRecord();
         var embeddingsModel = this.GetEmbeddingsModelFromMemoryRecord(expectedMemoryRecord);
 
         this._chromaClientMock
@@ -169,7 +169,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         // Assert
         Assert.NotNull(actualMemoryRecord);
-        this.AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
+        AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
     }
 
     [Fact]
@@ -217,9 +217,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanGetMemoryRecordBatchFromCollectionAsync()
     {
         // Arrange
-        var memoryRecord1 = this.GetRandomMemoryRecord();
-        var memoryRecord2 = this.GetRandomMemoryRecord();
-        var memoryRecord3 = this.GetRandomMemoryRecord();
+        var memoryRecord1 = GetRandomMemoryRecord();
+        var memoryRecord2 = GetRandomMemoryRecord();
+        var memoryRecord3 = GetRandomMemoryRecord();
 
         var expectedMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
         var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).ToArray();
@@ -240,7 +240,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         for (var i = 0; i < expectedMemoryRecords.Length; i++)
         {
-            this.AssertMemoryRecordEqual(expectedMemoryRecords[i], actualMemoryRecords[i]);
+            AssertMemoryRecordEqual(expectedMemoryRecords[i], actualMemoryRecords[i]);
         }
     }
 
@@ -276,7 +276,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     #region private ================================================================================
 
-    private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
+    private static void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
         Assert.True(expectedRecord.Embedding.Span.SequenceEqual(actualRecord.Embedding.Span));
@@ -293,7 +293,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         return new HttpClient(this._messageHandlerStub, false);
     }
 
-    private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
+    private static MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
         var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };

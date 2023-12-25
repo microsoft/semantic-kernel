@@ -34,7 +34,7 @@ public sealed class ProtoDocumentParserV30Tests
     public void ShouldCreateOperationsForAllServicesInProtoDocument()
     {
         // Act
-        var operations = this._sut.Parse(this._protoDocument, "fake_name");
+        var operations = ProtoDocumentParser.Parse(this._protoDocument, "fake_name");
 
         // Assert
         Assert.NotNull(operations);
@@ -53,7 +53,7 @@ public sealed class ProtoDocumentParserV30Tests
     public void ShouldParseSimpleOperationRequestDataContract()
     {
         // Act
-        var operations = this._sut.Parse(this._protoDocument, "fake_name");
+        var operations = ProtoDocumentParser.Parse(this._protoDocument, "fake_name");
 
         // Assert
         Assert.NotNull(operations);
@@ -81,7 +81,7 @@ public sealed class ProtoDocumentParserV30Tests
     public void ShouldParseSimpleOperationResponseDataContract()
     {
         // Act
-        var operations = this._sut.Parse(this._protoDocument, "fake_name");
+        var operations = ProtoDocumentParser.Parse(this._protoDocument, "fake_name");
 
         // Assert
         Assert.NotNull(operations);

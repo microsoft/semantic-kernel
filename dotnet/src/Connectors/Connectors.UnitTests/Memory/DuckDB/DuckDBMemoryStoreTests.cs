@@ -18,14 +18,14 @@ namespace SemanticKernel.Connectors.UnitTests.DuckDB;
 [Collection("Sequential")]
 public class DuckDBMemoryStoreTests
 {
-    private int _collectionNum = 0;
+    private int _collectionNum;
 
     private string GetTestCollectionName([CallerMemberName] string testName = "")
     {
         return testName + this._collectionNum++;
     }
 
-    private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
+    private static IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
         Assert.True(numRecords % 2 == 0, "Number of records must be even");
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
@@ -577,7 +577,7 @@ public class DuckDBMemoryStoreTests
         int numRecords = 10;
         string collection = this.GetTestCollectionName();
 
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
 
         // Act
         await db.CreateCollectionAsync(collection);
@@ -598,7 +598,7 @@ public class DuckDBMemoryStoreTests
         int numRecords = 10;
         string collection = this.GetTestCollectionName();
 
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         var keys = db.UpsertBatchAsync(collection, records);
 
         // Act
@@ -619,7 +619,7 @@ public class DuckDBMemoryStoreTests
         int numRecords = 10;
         string collection = this.GetTestCollectionName();
 
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
         List<string> keys = new();

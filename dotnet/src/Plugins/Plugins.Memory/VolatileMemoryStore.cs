@@ -163,7 +163,7 @@ public class VolatileMemoryStore : IMemoryStore
             return AsyncEnumerable.Empty<(MemoryRecord, double)>();
         }
 
-        TopNCollection<MemoryRecord> embeddings = new(limit);
+        PriorityQueue<MemoryRecord, double> embeddings = new(limit);
 
         foreach (var record in embeddingCollection)
         {
@@ -173,14 +173,31 @@ public class VolatileMemoryStore : IMemoryStore
                 if (similarity >= minRelevanceScore)
                 {
                     var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
-                    embeddings.Add(new(entry, similarity));
+
+                    // PQ is a min heap, so we negate the similarity to get the top N matches.
+                    if (embeddings.Count == limit)
+                    {
+                        embeddings.DequeueEnqueue(entry, -similarity);
+                    }
+                    else
+                    {
+                        embeddings.Enqueue(entry, -similarity);
+                    }
                 }
             }
         }
 
-        embeddings.SortByScore();
+        return ToAsyncEnumerable(embeddings);
 
-        return embeddings.Select(x => (x.Value, x.Score)).ToAsyncEnumerable();
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        static async IAsyncEnumerable<(MemoryRecord, double)> ToAsyncEnumerable(PriorityQueue<MemoryRecord, double> embeddings)
+#pragma warning restore CS1998
+        {
+            while (embeddings.TryDequeue(out MemoryRecord? element, out double negatedScore))
+            {
+                yield return (element, -negatedScore);
+            }
+        }
     }
 
     /// <inheritdoc/>

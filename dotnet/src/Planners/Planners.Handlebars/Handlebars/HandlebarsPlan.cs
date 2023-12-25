@@ -27,7 +27,7 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Gets the prompt template used to generate the plan.
     /// </summary>
-    public string? Prompt { get; set; } = null;
+    public string? Prompt { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.

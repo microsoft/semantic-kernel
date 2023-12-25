@@ -21,7 +21,7 @@ internal sealed class ProtoDocumentParser
     /// <param name="protoDocument">The .proto document.</param>
     /// <param name="protoFileName">The .proto file logical name.</param>
     /// <returns>List of gRPC operations.</returns>
-    public IList<GrpcOperation> Parse(Stream protoDocument, string protoFileName)
+    public static IList<GrpcOperation> Parse(Stream protoDocument, string protoFileName)
     {
         Verify.NotNull(protoDocument);
         Verify.NotNullOrWhiteSpace(protoFileName);
@@ -38,7 +38,7 @@ internal sealed class ProtoDocumentParser
             throw new KernelException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
 
-        return this.GetGrpcOperations(descriptor.Files.Single());
+        return GetGrpcOperations(descriptor.Files.Single());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ internal sealed class ProtoDocumentParser
     /// </summary>
     /// <param name="model">The .proto document model.</param>
     /// <returns>List of gRPC operations.</returns>
-    private List<GrpcOperation> GetGrpcOperations(FileDescriptorProto model)
+    private static List<GrpcOperation> GetGrpcOperations(FileDescriptorProto model)
     {
         var operations = new List<GrpcOperation>();
 
@@ -54,9 +54,9 @@ internal sealed class ProtoDocumentParser
         {
             foreach (var method in service.Methods)
             {
-                var requestContract = this.CreateDataContract(model.MessageTypes, method.InputType, model.Package, method.Name);
+                var requestContract = CreateDataContract(model.MessageTypes, method.InputType, model.Package, method.Name);
 
-                var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
+                var responseContract = CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
 
                 var operation = new GrpcOperation(service.Name, method.Name, requestContract, responseContract);
                 operation.Package = model.Package;
@@ -76,7 +76,7 @@ internal sealed class ProtoDocumentParser
     /// <param name="package">The .proto file 'package' specifier.</param>
     /// <param name="methodName">The method to create data contract for.</param>
     /// <returns>The operation data contract.</returns>
-    private GrpcOperationDataContractType CreateDataContract(IList<DescriptorProto> allMessageTypes, string messageTypeName, string package, string methodName)
+    private static GrpcOperationDataContractType CreateDataContract(IList<DescriptorProto> allMessageTypes, string messageTypeName, string package, string methodName)
     {
         var fullTypeName = messageTypeName.TrimStart('.');
 
@@ -93,7 +93,7 @@ internal sealed class ProtoDocumentParser
             throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
         }
 
-        var fields = this.GetDataContractFields(messageType.Fields);
+        var fields = GetDataContractFields(messageType.Fields);
 
         return new GrpcOperationDataContractType(fullTypeName, fields);
     }
@@ -103,7 +103,7 @@ internal sealed class ProtoDocumentParser
     /// </summary>
     /// <param name="fields">Message type fields.</param>
     /// <returns>The data contract fields.</returns>
-    private List<GrpcOperationDataContractTypeFiled> GetDataContractFields(List<FieldDescriptorProto> fields)
+    private static List<GrpcOperationDataContractTypeFiled> GetDataContractFields(List<FieldDescriptorProto> fields)
     {
         var result = new List<GrpcOperationDataContractTypeFiled>();
 

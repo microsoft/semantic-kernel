@@ -90,7 +90,7 @@ public sealed class FunctionCallingStepwisePlanner
             chatHistoryForSteps.Add(chatResult);
 
             // Check for function response
-            if (!this.TryGetFunctionResponse(chatResult, out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? functionResponseError))
+            if (!TryGetFunctionResponse(chatResult, out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? functionResponseError))
             {
                 // No function response found. Either AI returned a chat message, or something went wrong when parsing the function.
                 // Log the error (if applicable), then let the planner continue.
@@ -104,7 +104,7 @@ public sealed class FunctionCallingStepwisePlanner
             // Check for final answer in the function response
             foreach (OpenAIFunctionToolCall functionResponse in functionResponses)
             {
-                if (this.TryFindFinalAnswer(functionResponse, out string finalAnswer, out string? finalAnswerError))
+                if (TryFindFinalAnswer(functionResponse, out string finalAnswer, out string? finalAnswerError))
                 {
                     if (finalAnswerError is not null)
                     {
@@ -211,7 +211,7 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
-    private bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? errorMessage)
+    private static bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? errorMessage)
     {
         OpenAIChatMessageContent? openAiChatMessage = chatMessage as OpenAIChatMessageContent;
         Verify.NotNull(openAiChatMessage, nameof(openAiChatMessage));
@@ -230,7 +230,7 @@ public sealed class FunctionCallingStepwisePlanner
         return functionResponses is { Count: > 0 };
     }
 
-    private bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, out string finalAnswer, out string? errorMessage)
+    private static bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, out string finalAnswer, out string? errorMessage)
     {
         finalAnswer = string.Empty;
         errorMessage = null;
@@ -252,7 +252,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     private static string ParseObjectAsString(object? valueObj)
     {
-        string resultStr = string.Empty;
+        string resultStr;
 
         if (valueObj is RestApiOperationResponse apiResponse)
         {

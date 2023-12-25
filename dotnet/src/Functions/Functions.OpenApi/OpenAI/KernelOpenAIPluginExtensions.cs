@@ -181,7 +181,7 @@ public static class OpenAIPluginKernelExtensions
         Verify.NotNull(kernel);
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
-        var openAIManifest = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
+        var openAIManifest = await DocumentLoader.LoadDocumentFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
 
         return await CreateAsync(
             kernel,

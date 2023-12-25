@@ -11,10 +11,6 @@ internal sealed class DeleteCollectionRequest
         return new DeleteCollectionRequest(collectionName);
     }
 
-    public void Validate()
-    {
-    }
-
     public HttpRequestMessage Build()
     {
         Verify.NotNullOrWhiteSpace(this._collectionName, "collectionName");

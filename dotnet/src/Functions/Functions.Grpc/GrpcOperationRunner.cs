@@ -56,7 +56,7 @@ internal sealed class GrpcOperationRunner
 
         var stringArgument = CastToStringArguments(arguments, operation);
 
-        var address = this.GetAddress(operation, stringArgument);
+        var address = GetAddress(operation, stringArgument);
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
@@ -71,13 +71,13 @@ internal sealed class GrpcOperationRunner
                 MethodType.Unary,
                 operation.FullServiceName,
                 operation.Name,
-                this.CreateMarshaller<object>(requestType),
-                this.CreateMarshaller<object>(responseType)
+                CreateMarshaller<object>(requestType),
+                CreateMarshaller<object>(responseType)
             );
 
             var invoker = channel.CreateCallInvoker();
 
-            var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
+            var request = GenerateOperationRequest(operation, requestType, stringArgument);
 
             var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
 
@@ -128,7 +128,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="operation">The gRPC operation.</param>
     /// <param name="arguments">The gRPC operation arguments.</param>
     /// <returns>The channel address.</returns>
-    private string GetAddress(GrpcOperation operation, Dictionary<string, string> arguments)
+    private static string GetAddress(GrpcOperation operation, Dictionary<string, string> arguments)
     {
         if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
         {
@@ -148,7 +148,7 @@ internal sealed class GrpcOperationRunner
     /// </summary>
     /// <param name="contractType">The message contract data type.</param>
     /// <returns>The marshaller.</returns>
-    private Marshaller<T> CreateMarshaller<T>(Type contractType)
+    private static Marshaller<T> CreateMarshaller<T>(Type contractType)
     {
         byte[] Serialize(T instance)
         {
@@ -176,7 +176,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="type">The operation request data type.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation request instance.</returns>
-    private object GenerateOperationRequest(GrpcOperation operation, Type type, Dictionary<string, string> arguments)
+    private static object GenerateOperationRequest(GrpcOperation operation, Type type, Dictionary<string, string> arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
         if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) ||

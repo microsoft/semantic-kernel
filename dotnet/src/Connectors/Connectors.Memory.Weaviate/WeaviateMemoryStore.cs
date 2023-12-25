@@ -52,7 +52,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly Uri? _endpoint = null;
+    private readonly Uri? _endpoint;
     private readonly string? _apiVersion;
     private readonly string? _apiKey;
     private static readonly string[] s_stringArray = { "vector" };
@@ -186,7 +186,7 @@ public class WeaviateMemoryStore : IMemoryStore
     {
         this._logger.LogDebug("Listing collections");
 
-        using HttpRequestMessage request = GetSchemaRequest.Create().Build();
+        using HttpRequestMessage request = GetSchemaRequest.Build();
 
         string responseContent;
 
@@ -522,7 +522,7 @@ public class WeaviateMemoryStore : IMemoryStore
     // Execute the HTTP request
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         var apiVersion = !string.IsNullOrWhiteSpace(this._apiVersion) ? this._apiVersion : DefaultApiVersion;
         var baseAddress = this._endpoint ?? this._httpClient.BaseAddress;
@@ -536,9 +536,9 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancel).ConfigureAwait(false);
+            HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-            string? responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+            string? responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
             this._logger.LogDebug("Weaviate responded with {StatusCode}", response.StatusCode);
 

@@ -184,10 +184,10 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
-        var upsertedId1 = await memoryStore.UpsertAsync(collectionName, testRecord1);
+        await memoryStore.UpsertAsync(collectionName, testRecord1);
         var actual1 = await memoryStore.GetAsync(collectionName, Id, true);
 
-        var upsertedId2 = await memoryStore.UpsertAsync(collectionName, testRecord2);
+        await memoryStore.UpsertAsync(collectionName, testRecord2);
         var actual2 = await memoryStore.GetAsync(collectionName, Id, true);
 
         // Assert

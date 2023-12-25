@@ -162,7 +162,7 @@ public class FlowStep
     /// <param name="requiredArguments">Array of required arguments</param>
     public void AddRequires(params string[] requiredArguments)
     {
-        this.ValidateArguments(requiredArguments);
+        ValidateArguments(requiredArguments);
         this._requires.AddRange(requiredArguments);
     }
 
@@ -172,7 +172,7 @@ public class FlowStep
     /// <param name="providedArguments">Array of provided arguments</param>
     public void AddProvides(params string[] providedArguments)
     {
-        this.ValidateArguments(providedArguments);
+        ValidateArguments(providedArguments);
         this._provides.AddRange(providedArguments);
     }
 
@@ -192,7 +192,7 @@ public class FlowStep
             throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce or ZeroOrMore completion type");
         }
 
-        this.ValidateArguments(passthroughArguments);
+        ValidateArguments(passthroughArguments);
         this._passthrough.AddRange(passthroughArguments);
     }
 
@@ -222,7 +222,7 @@ public class FlowStep
         return this.Requires.Intersect(otherStep.Provides).Any();
     }
 
-    private void ValidateArguments(string[] arguments)
+    private static void ValidateArguments(string[] arguments)
     {
         var invalidArguments = arguments.Intersect(Constants.ActionVariableNames.All).ToArray();
 

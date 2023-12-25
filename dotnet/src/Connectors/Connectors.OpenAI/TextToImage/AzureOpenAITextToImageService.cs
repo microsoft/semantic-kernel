@@ -10,7 +10,6 @@ using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
@@ -25,7 +24,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAIClient _client;
-    private readonly ILogger _logger;
     private readonly string _deploymentName;
     private readonly Dictionary<string, object?> _attributes = new();
 
@@ -66,8 +64,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
         this.AddAttribute(DeploymentNameKey, deploymentName);
-
-        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
         var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
         if (connectorEndpoint is null)

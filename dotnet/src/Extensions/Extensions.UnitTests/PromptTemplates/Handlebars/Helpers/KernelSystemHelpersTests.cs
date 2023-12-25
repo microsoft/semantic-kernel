@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -15,7 +14,6 @@ public sealed class KernelSystemHelpersTests
     {
         this._factory = new();
         this._kernel = new();
-        this._arguments = new() { ["input"] = Guid.NewGuid().ToString("X") };
     }
 
     [Fact]
@@ -36,7 +34,6 @@ public sealed class KernelSystemHelpersTests
     {
         // Arrange
         var template = "{{set name=\"x\" value=10}}{{json x}}";
-        var arguments = new KernelArguments();
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
@@ -218,7 +215,6 @@ public sealed class KernelSystemHelpersTests
 
     private readonly HandlebarsPromptTemplateFactory _factory;
     private readonly Kernel _kernel;
-    private readonly KernelArguments _arguments;
 
     private async Task<string> RenderPromptTemplateAsync(string template, KernelArguments? args = null)
     {
