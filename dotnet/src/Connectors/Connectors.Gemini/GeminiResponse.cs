@@ -1,24 +1,26 @@
 ﻿#region HEADER
+
 // Copyright (c) Microsoft. All rights reserved.
+
 #endregion
 
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
-internal sealed class TextGenerationResponse
+internal sealed class GeminiResponse
 {
     [JsonPropertyName("candidates")]
-    public TextGenerationResponseCandidates[] Candidates { get; set; }
+    public GeminiResponseCandidate[] Candidates { get; set; }
 
     [JsonPropertyName("promptFeedback")]
-    public TextGenerationResponsePromptFeedback PromptFeedback { get; set; }
+    public GeminiResponsePromptFeedback PromptFeedback { get; set; }
 }
 
-internal sealed class TextGenerationResponseCandidates
+internal sealed class GeminiResponseCandidate
 {
     [JsonPropertyName("content")]
-    public TextGenerationResponseContent Content { get; set; }
+    public GeminiResponseContent Content { get; set; }
 
     [JsonPropertyName("finishReason")]
     public string FinishReason { get; set; }
@@ -27,35 +29,44 @@ internal sealed class TextGenerationResponseCandidates
     public int Index { get; set; }
 
     [JsonPropertyName("safetyRatings")]
-    public TextGenerationResponseSafetyRatings[] SafetyRatings { get; set; }
+    public GeminiResponseSafetyRating[] SafetyRatings { get; set; }
+
+    [JsonPropertyName("tokenCount")]
+    public int TokenCount { get; set; }
 }
 
-internal sealed class TextGenerationResponseContent
+internal sealed class GeminiResponseContent
 {
     [JsonPropertyName("parts")]
-    public TextGenerationResponseParts[] Parts { get; set; }
+    public GeminiResponsePart[] Parts { get; set; }
 
     [JsonPropertyName("role")]
     public string Role { get; set; }
 }
 
-internal sealed class TextGenerationResponseParts
+internal sealed class GeminiResponsePart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
-internal sealed class TextGenerationResponseSafetyRatings
+internal sealed class GeminiResponseSafetyRating
 {
     [JsonPropertyName("category")]
     public string Category { get; set; }
 
     [JsonPropertyName("probability")]
     public string Probability { get; set; }
+
+    [JsonPropertyName("block")]
+    public bool Block { get; set; }
 }
 
-internal sealed class TextGenerationResponsePromptFeedback
+internal sealed class GeminiResponsePromptFeedback
 {
+    [JsonPropertyName("blockReason")]
+    public string BlockReason { get; set; }
+
     [JsonPropertyName("safetyRatings")]
-    public TextGenerationResponseSafetyRatings[] SafetyRatings { get; set; }
+    public GeminiResponseSafetyRating[] SafetyRatings { get; set; }
 }

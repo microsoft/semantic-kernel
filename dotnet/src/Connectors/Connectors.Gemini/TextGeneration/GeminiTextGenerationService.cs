@@ -65,7 +65,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        var textGenerationResponse = JsonSerializer.Deserialize<TextGenerationResponse>(body);
+        var textGenerationResponse = JsonSerializer.Deserialize<GeminiResponse>(body);
         if (textGenerationResponse is null)
         {
             throw new KernelException("Unexpected response from model")
