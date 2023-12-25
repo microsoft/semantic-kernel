@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
-// todo: maybe better create a class for this instead manual creating JsonObject?
 internal sealed class GeminiRequest
 {
     public GeminiRequest(IEnumerable<GeminiRequestContent> contents)
