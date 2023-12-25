@@ -11,13 +11,10 @@ using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
+// TODO: Add required attributes to non-nullable properties after updating solution to C# 12.0
+
 internal sealed class GeminiRequest
 {
-    public GeminiRequest(IEnumerable<GeminiRequestContent> contents)
-    {
-        this.Contents = contents;
-    }
-
     [JsonPropertyName("contents")]
     public IEnumerable<GeminiRequestContent> Contents { get; set; }
 
@@ -39,13 +36,22 @@ internal sealed class GeminiRequest
 
     private static GeminiRequest CreateGeminiRequest(string prompt)
     {
-        GeminiRequest obj = new GeminiRequest(new[]
+        GeminiRequest obj = new()
         {
-            new GeminiRequestContent(parts: new[]
+            Contents = new[]
             {
-                new GeminiRequestPart(text: prompt)
-            })
-        });
+                new GeminiRequestContent()
+                {
+                    Parts = new[]
+                    {
+                        new GeminiRequestPart()
+                        {
+                            Text = prompt
+                        }
+                    }
+                }
+            }
+        };
         return obj;
     }
 
@@ -64,10 +70,11 @@ internal sealed class GeminiRequest
 
     private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
     {
-        if (executionSettings.SafetySettings is { Count: > 0 } safety)
+        obj.SafetySettings = executionSettings.SafetySettings?.Select(s => new GeminiRequestSafetySetting
         {
-            obj.SafetySettings = safety.Select(s => new GeminiRequestSafetySetting(s.Category, s.Threshold));
-        }
+            Category = s.Category,
+            Threshold = s.Threshold
+        });
     }
 }
 
@@ -100,11 +107,6 @@ internal sealed class GeminiRequestConfiguration
 
 internal sealed class GeminiRequestContent
 {
-    public GeminiRequestContent(IEnumerable<GeminiRequestPart> parts)
-    {
-        this.Parts = parts;
-    }
-
     [JsonPropertyName("parts")]
     public IEnumerable<GeminiRequestPart> Parts { get; set; }
 
@@ -115,23 +117,12 @@ internal sealed class GeminiRequestContent
 
 internal sealed class GeminiRequestPart
 {
-    public GeminiRequestPart(string text)
-    {
-        this.Text = text;
-    }
-
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
 internal sealed class GeminiRequestSafetySetting
 {
-    public GeminiRequestSafetySetting(string category, string threshold)
-    {
-        this.Category = category;
-        this.Threshold = threshold;
-    }
-
     [JsonPropertyName("category")]
     public string Category { get; set; }
 
