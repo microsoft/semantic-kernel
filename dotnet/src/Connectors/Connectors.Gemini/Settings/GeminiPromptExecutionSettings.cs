@@ -26,19 +26,19 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The higher the temperature, the more random the completion.
     /// Range is 0.0 to 1.0.
     /// </summary>
-    public double? Temperature { get; set; };
+    public double? Temperature { get; set; }
 
     /// <summary>
     /// TopP controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
-    public double? TopP { get; set; };
+    public double? TopP { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the TopK property.
     /// The TopK property represents the maximum value of a collection or dataset.
     /// </summary>
-    public int? TopK { get; set; };
+    public int? TopK { get; set; }
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
