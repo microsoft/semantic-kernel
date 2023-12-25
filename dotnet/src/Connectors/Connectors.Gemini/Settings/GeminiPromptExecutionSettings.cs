@@ -63,7 +63,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Represents a list of safety settings.
     /// </summary>
-    public IList<SafetySetting>? SafetySettings { get; set; }
+    public IList<GeminiSafetySetting>? SafetySettings { get; set; }
 
     /// <summary>
     /// Converts a <see cref="PromptExecutionSettings"/> object to a <see cref="GeminiPromptExecutionSettings"/> object.

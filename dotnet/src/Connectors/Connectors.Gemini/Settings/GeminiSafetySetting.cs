@@ -6,14 +6,14 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
-public sealed class SafetySetting
+public sealed class GeminiSafetySetting
 {
     /// <summary>
-    /// Initializes a new instance of the Gemini <see cref="SafetySetting"/> class.
+    /// Initializes a new instance of the Gemini <see cref="GeminiSafetySetting"/> class.
     /// </summary>
     /// <param name="category">Category of safety</param>
     /// <param name="threshold">Value</param>
-    public SafetySetting(string category, string threshold)
+    public GeminiSafetySetting(string category, string threshold)
     {
         this.Category = category;
         this.Threshold = threshold;
