@@ -1,5 +1,7 @@
 ﻿#region HEADER
+
 // Copyright (c) Microsoft. All rights reserved.
+
 #endregion
 
 using System;

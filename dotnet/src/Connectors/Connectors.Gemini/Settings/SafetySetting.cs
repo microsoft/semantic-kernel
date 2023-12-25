@@ -22,13 +22,11 @@ public sealed class SafetySetting
     /// <summary>
     /// Gets or sets the safety category.
     /// </summary>
-    [JsonPropertyName("category")]
     public string Category { get; set; }
 
     /// <summary>
     /// Gets or sets the safety threshold.
     /// </summary>
-    [JsonPropertyName("threshold")]
     public string Threshold { get; set; }
 }
 

@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,21 +90,11 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
 
     private HttpRequestMessage GetHTTPRequestMessage(string prompt, GeminiPromptExecutionSettings geminiExecutionSettings)
     {
-        var httpContent = GetHttpJsonContent(prompt, geminiExecutionSettings);
+        var geminiRequest = GeminiRequest.FromPromptExecutionSettings(prompt, geminiExecutionSettings);
         var uri = GeminiEndpoints.GetGenerateContentEndpoint(this._model, this._apiKey);
-        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-        httpRequestMessage.Content = httpContent;
+        var httpRequestMessage = HttpRequest.CreatePostRequest(uri, geminiRequest);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         return httpRequestMessage;
-    }
-
-    private static ByteArrayContent GetHttpJsonContent(string prompt, GeminiPromptExecutionSettings geminiExecutionSettings)
-    {
-        var requestJsonObject = TextGenerationRequest.GenerateJsonFromPromptExecutionSettings(prompt, geminiExecutionSettings);
-        var requestUtf8Bytes = JsonSerializer.SerializeToUtf8Bytes(requestJsonObject);
-        var httpContent = new ByteArrayContent(requestUtf8Bytes);
-        httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-        return httpContent;
     }
 
     /// <inheritdoc />
