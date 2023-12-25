@@ -1,11 +1,14 @@
 ﻿#region HEADER
-// Copyright (c) Microsoft. All rights reserved.
-#endregion
 
-using System.Text.Json.Serialization;
+// Copyright (c) Microsoft. All rights reserved.
+
+#endregion
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
+/// <summary>
+/// Represents a safety setting for the Gemini prompt.
+/// </summary>
 public sealed class GeminiSafetySetting
 {
     /// <summary>
@@ -30,7 +33,10 @@ public sealed class GeminiSafetySetting
     public string Threshold { get; set; }
 }
 
-public static class SafetyCategory
+/// <summary>
+/// Represents safety categories for content filtering.
+/// </summary>
+public static class GeminiSafetyCategory
 {
     /// <summary>
     /// Category is unspecified.
@@ -83,7 +89,10 @@ public static class SafetyCategory
     public const string HarmCategoryDangerousContent = "HARM_CATEGORY_DANGEROUS_CONTENT";
 }
 
-public static class SafetyThreshold
+/// <summary>
+/// Provides constant values for defining different safety thresholds for blocking unsafe content.
+/// </summary>
+public static class GeminiSafetyThreshold
 {
     /// <summary>
     /// Always show regardless of probability of unsafe content.

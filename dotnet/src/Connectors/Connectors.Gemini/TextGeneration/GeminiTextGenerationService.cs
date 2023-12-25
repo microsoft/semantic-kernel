@@ -83,7 +83,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromPromptExecutionSettings(executionSettings);
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var httpRequestMessage = this.GetHTTPRequestMessage(prompt, geminiExecutionSettings);
         return httpRequestMessage;
     }
