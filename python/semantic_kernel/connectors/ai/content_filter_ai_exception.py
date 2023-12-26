@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 
@@ -15,18 +15,19 @@ class ContentFilterAIException(AIException):
 
     @dataclass
     class ContentFilterResult:
-        
         class Severity(Enum):
             High = "high"
             Medium = "medium"
             Safe = "safe"
-            
+
         filtered: bool = False
         detected: bool = False
         severity: Severity = Severity.Safe
 
         @classmethod
-        def from_inner_error_result(cls, inner_error_results: Dict[str, Any]) -> "ContentFilterAIException.ContentFilterResult":
+        def from_inner_error_result(
+            cls, inner_error_results: Dict[str, Any]
+        ) -> "ContentFilterAIException.ContentFilterResult":
             """Creates a ContentFilterResult from the inner error results.
 
             Arguments:
@@ -39,9 +40,11 @@ class ContentFilterAIException(AIException):
             return cls(
                 filtered=inner_error_results.get("filtered", False),
                 detected=inner_error_results.get("detected", False),
-                severity=cls.Severity(inner_error_results.get("severity", cls.Severity.Safe.value)),
+                severity=cls.Severity(
+                    inner_error_results.get("severity", cls.Severity.Safe.value)
+                ),
             )
-    
+
     # The parameter that caused the error.
     _param: str
 
@@ -91,7 +94,7 @@ class ContentFilterAIException(AIException):
             ContentFilterCode -- The error code specific to the content filter.
         """
         return self._content_filter_code
-    
+
     @property
     def content_filter_result(self) -> Dict[str, ContentFilterResult]:
         """Gets the result of the content filter checks.
