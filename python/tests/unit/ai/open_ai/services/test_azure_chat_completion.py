@@ -3,6 +3,8 @@
 from dataclasses import asdict
 from logging import Logger
 from unittest.mock import AsyncMock, patch
+from httpx import Request, Response
+import openai
 
 import pytest
 from openai import AsyncAzureOpenAI
@@ -495,3 +497,70 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         # logit_bias={},
         extra_body=expected_data_settings,
     )
+
+CONTENT_FILTERED_ERROR_MESSAGE = (
+    "The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please "
+    "modify your prompt and retry. To learn more about our content filtering policies please read our "
+    "documentation: https://go.microsoft.com/fwlink/?linkid=2198766"
+)
+CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
+    "Error code: 400 - {'error': {'message': \"%s\", 'type': null, 'param': 'prompt', 'code': 'content_filter', "
+    "'status': 400, 'innererror': {'code': 'ResponsibleAIPolicyViolation', 'content_filter_result': {'hate': "
+    "{'filtered': True, 'severity': 'high'}, 'self_harm': {'filtered': False, 'severity': 'safe'}, 'sexual': "
+    "{'filtered': False, 'severity': 'safe'}, 'violence': {'filtered': False, 'severity': 'safe'}}}}}"
+) % CONTENT_FILTERED_ERROR_MESSAGE
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create",  new_callable=AsyncMock(side_effect=openai.BadRequestError(
+    CONTENT_FILTERED_ERROR_FULL_MESSAGE,
+    response=Response(400, request=Request("POST", "https://test-endpoint.com")),
+    body={
+        'message': CONTENT_FILTERED_ERROR_MESSAGE,
+        'type': None, 
+        'param': 'prompt', 
+        'code': 'content_filter', 
+        'status': 400, 
+        'innererror': {
+            'code': 'ResponsibleAIPolicyViolation', 
+            'content_filter_result': {
+                'hate': {
+                    'filtered': True, 
+                    'severity': 'high'
+                }, 
+                'self_harm': {
+                    'filtered': False, 
+                    'severity': 'safe'
+                }, 
+                'sexual': {
+                    'filtered': False, 
+                    'severity': 'safe'
+                }, 
+                'violence': {
+                    'filtered': False, 
+                    'severity': 'safe'
+                }
+            }
+        }
+    },
+)))
+async def test_azure_chat_completion_content_filtering_raises_correct_exception(_mock_create) -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    prompt = "some prompt that would trigger the content filtering"
+    messages = [{"role": "user", "content": prompt}]
+    complete_request_settings = ChatRequestSettings()
+
+    azure_chat_completion = AzureChatCompletion(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version,
+    )
+
+    with pytest.raises(AIException, match="service failed to complete the prompt") as ai_exception:
+        await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
+    
+    assert ai_exception.inner_exception.code == 'ResponsibleAIPolicyViolation'
+    assert ai_exception.inner_exception.content_filter_result.hate.filtered

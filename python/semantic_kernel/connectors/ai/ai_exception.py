@@ -47,6 +47,7 @@ class AIException(Exception):
         """
         super().__init__(error_code, message, inner_exception)
         self._error_code = error_code
+        self.inner_exception = inner_exception
 
     @property
     def error_code(self) -> ErrorCodes:
