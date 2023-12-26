@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 from numpy import array, ndarray
-from openai import AsyncOpenAI, AsyncStream
+from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import Field
@@ -15,6 +15,9 @@ from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClient
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.content_filter_ai_exception import (
+    ContentFilterAIException,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
@@ -74,6 +77,30 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 if chat_mode
                 else self.client.completions.create(**model_args)
             )
+        except BadRequestError as ex:
+            if ex.code == "content_filter":
+                inner_error = ex.body.get("innererror", {})
+                content_filter_code = inner_error.get("code", "")
+                content_filter_results = inner_error.get("content_filter_result", {})
+                raise ContentFilterAIException(
+                    f"{type(self)} service failed to complete the prompt",
+                    ex.param,
+                    ContentFilterAIException.ContentFilterCodes(content_filter_code),
+                    dict(
+                        [
+                            key,
+                            ContentFilterAIException.ContentFilterResult.from_inner_error_result(
+                                values
+                            ),
+                        ]
+                        for key, values in content_filter_results.items()
+                    ),
+                )
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,

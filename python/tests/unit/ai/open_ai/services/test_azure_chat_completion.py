@@ -16,6 +16,9 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.content_filter_ai_exception import (
+    ContentFilterAIException,
+)
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
@@ -513,36 +516,9 @@ CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
 
 
 @pytest.mark.asyncio
-@patch.object(
-    AsyncChatCompletions,
-    "create",
-    new_callable=AsyncMock(
-        side_effect=openai.BadRequestError(
-            CONTENT_FILTERED_ERROR_FULL_MESSAGE,
-            response=Response(
-                400, request=Request("POST", "https://test-endpoint.com")
-            ),
-            body={
-                "message": CONTENT_FILTERED_ERROR_MESSAGE,
-                "type": None,
-                "param": "prompt",
-                "code": "content_filter",
-                "status": 400,
-                "innererror": {
-                    "code": "ResponsibleAIPolicyViolation",
-                    "content_filter_result": {
-                        "hate": {"filtered": True, "severity": "high"},
-                        "self_harm": {"filtered": False, "severity": "safe"},
-                        "sexual": {"filtered": False, "severity": "safe"},
-                        "violence": {"filtered": False, "severity": "safe"},
-                    },
-                },
-            },
-        )
-    ),
-)
+@patch.object(AsyncChatCompletions, "create")
 async def test_azure_chat_completion_content_filtering_raises_correct_exception(
-    _mock_create,
+    mock_create,
 ) -> None:
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
@@ -552,6 +528,27 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     messages = [{"role": "user", "content": prompt}]
     complete_request_settings = ChatRequestSettings()
 
+    mock_create.side_effect = openai.BadRequestError(
+        CONTENT_FILTERED_ERROR_FULL_MESSAGE,
+        response=Response(400, request=Request("POST", endpoint)),
+        body={
+            "message": CONTENT_FILTERED_ERROR_MESSAGE,
+            "type": None,
+            "param": "prompt",
+            "code": "content_filter",
+            "status": 400,
+            "innererror": {
+                "code": "ResponsibleAIPolicyViolation",
+                "content_filter_result": {
+                    "hate": {"filtered": True, "severity": "high"},
+                    "self_harm": {"filtered": False, "severity": "safe"},
+                    "sexual": {"filtered": False, "severity": "safe"},
+                    "violence": {"filtered": False, "severity": "safe"},
+                },
+            },
+        },
+    )
+
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
         endpoint=endpoint,
@@ -560,13 +557,20 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     )
 
     with pytest.raises(
-        AIException, match="service failed to complete the prompt"
+        ContentFilterAIException, match="service failed to complete the prompt"
     ) as exc_info:
         await azure_chat_completion.complete_chat_async(
             messages, complete_request_settings
         )
 
-    ai_exception = exc_info.value
-    print(ai_exception.inner_exception)
-    assert ai_exception.inner_exception.code == "ResponsibleAIPolicyViolation"
-    assert ai_exception.inner_exception.content_filter_result.hate.filtered
+    content_filter_exc = exc_info.value
+    assert content_filter_exc.param == "prompt"
+    assert (
+        content_filter_exc.content_filter_code
+        == ContentFilterAIException.ContentFilterCodes.ResponsibleAIPolicyViolation
+    )
+    assert content_filter_exc.content_filter_result["hate"].filtered
+    assert (
+        content_filter_exc.content_filter_result["hate"].severity
+        == ContentFilterAIException.ContentFilterResult.Severity.High
+    )
