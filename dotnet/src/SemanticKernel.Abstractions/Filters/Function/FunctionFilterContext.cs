@@ -1,9 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
 
+/// <summary>
+/// Base class with data related to function invocation.
+/// </summary>
+[Experimental("SKEXP0005")]
 public abstract class FunctionFilterContext
 {
     /// <summary>
