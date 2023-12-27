@@ -29,7 +29,6 @@ public class GeminiRequestTests
         var request = GeminiRequest.FromPromptExecutionSettings(prompt, executionSettings);
 
         // Assert
-        Assert.NotNull(request);
         Assert.NotNull(request.Configuration);
         Assert.Equal(executionSettings.Temperature, request.Configuration.Temperature);
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
@@ -53,7 +52,6 @@ public class GeminiRequestTests
         var request = GeminiRequest.FromPromptExecutionSettings(prompt, executionSettings);
 
         // Assert
-        Assert.NotNull(request);
         Assert.NotNull(request.SafetySettings);
         Assert.Equal(executionSettings.SafetySettings[0].Category, request.SafetySettings[0].Category);
         Assert.Equal(executionSettings.SafetySettings[0].Threshold, request.SafetySettings[0].Threshold);
@@ -70,7 +68,6 @@ public class GeminiRequestTests
         var request = GeminiRequest.FromPromptExecutionSettings(prompt, executionSettings);
 
         // Assert
-        Assert.NotNull(request);
         Assert.Equal(prompt, request.Contents[0].Parts[0].Text);
     }
 }
