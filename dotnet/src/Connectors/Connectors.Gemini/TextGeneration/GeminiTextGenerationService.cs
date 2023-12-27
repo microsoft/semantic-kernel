@@ -58,15 +58,18 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         return this.InternalGetTextContentsAsync(prompt, executionSettings, cancellationToken);
     }
 
-    private async Task<IReadOnlyList<TextContent>> InternalGetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<TextContent>> InternalGetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
     {
         using var httpRequestMessage = this.VerifyArgumentsAndGetHTTPRequestMessage(prompt, executionSettings);
 
         using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        var textGenerationResponse = JsonSerializer.Deserialize<GeminiResponse>(body);
-        if (textGenerationResponse is null)
+        var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(body);
+        if (geminiResponse is null)
         {
             throw new KernelException("Unexpected response from model")
             {
@@ -74,10 +77,21 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
             };
         }
 
-        // todo add metadata to text content
-        return textGenerationResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
-            this.GetModelId(), textGenerationResponse)).ToList();
+        return geminiResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
+            this.GetModelId(), geminiResponse, metadata: GetResponseMetadata(geminiResponse, c))).ToList();
     }
+
+    private static Dictionary<string, object?> GetResponseMetadata(
+        GeminiResponse geminiResponse,
+        GeminiResponseCandidate candidate) => new()
+    {
+        ["FinishReason"] = candidate.FinishReason,
+        ["Index"] = candidate.Index,
+        ["TokenCount"] = candidate.TokenCount,
+        ["SafetyRatings"] = candidate.SafetyRatings?.Select(sr => (sr.Block, sr.Category, sr.Probability)),
+        ["PromptFeedbackBlockReason"] = geminiResponse.PromptFeedback?.BlockReason,
+        ["PromptFeedbackSafetyRatings"] = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr => (sr.Block, sr.Category, sr.Probability)),
+    };
 
     private HttpRequestMessage VerifyArgumentsAndGetHTTPRequestMessage(string prompt, PromptExecutionSettings? executionSettings)
     {
