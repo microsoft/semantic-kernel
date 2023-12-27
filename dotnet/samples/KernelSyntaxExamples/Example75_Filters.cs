@@ -36,20 +36,18 @@ public static class Example75_Filters
 
     public static async Task RunAsync()
     {
-        var serviceCollection = new ServiceCollection();
+        var builder = Kernel.CreateBuilder();
 
-        var services = new ServiceCollection();
-
-        services.AddAzureOpenAIChatCompletion(
+        builder.AddAzureOpenAIChatCompletion(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
             apiKey: TestConfiguration.AzureOpenAI.ApiKey);
 
-        services.AddSingleton<IFunctionFilter, FirstFunctionFilter>();
-        services.AddSingleton<IFunctionFilter, SecondFunctionFilter>();
-        services.AddSingleton<IPromptFilter, FirstPromptFilter>();
+        builder.Services.AddSingleton<IFunctionFilter, FirstFunctionFilter>();
+        builder.Services.AddSingleton<IFunctionFilter, SecondFunctionFilter>();
+        builder.Services.AddSingleton<IPromptFilter, FirstPromptFilter>();
 
-        Kernel kernel = new(services.BuildServiceProvider());
+        var kernel = builder.Build();
 
         var function = kernel.CreateFunctionFromPrompt("What is Seattle", functionName: "MyFunction");
         var result = await kernel.InvokeAsync(function);
