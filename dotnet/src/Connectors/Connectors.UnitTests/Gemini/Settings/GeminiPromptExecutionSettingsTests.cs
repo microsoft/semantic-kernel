@@ -12,7 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Gemini.Settings;
 
-public class GeminiPromptExecutionSettingsTest
+public class GeminiPromptExecutionSettingsTests
 {
     [Fact]
     public void ItCreatesGeminiExecutionSettingsWithCorrectDefaults()

@@ -5,19 +5,20 @@
 #endregion
 
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
-internal sealed class GeminiResponse
+public class GeminiResponse
 {
     [JsonPropertyName("candidates")]
-    public GeminiResponseCandidate[] Candidates { get; set; }
+    public IList<GeminiResponseCandidate> Candidates { get; set; }
 
     [JsonPropertyName("promptFeedback")]
     public GeminiResponsePromptFeedback PromptFeedback { get; set; }
 }
 
-internal sealed class GeminiResponseCandidate
+public class GeminiResponseCandidate
 {
     [JsonPropertyName("content")]
     public GeminiResponseContent Content { get; set; }
@@ -29,28 +30,28 @@ internal sealed class GeminiResponseCandidate
     public int Index { get; set; }
 
     [JsonPropertyName("safetyRatings")]
-    public GeminiResponseSafetyRating[] SafetyRatings { get; set; }
+    public IList<GeminiResponseSafetyRating> SafetyRatings { get; set; }
 
     [JsonPropertyName("tokenCount")]
     public int TokenCount { get; set; }
 }
 
-internal sealed class GeminiResponseContent
+public class GeminiResponseContent
 {
     [JsonPropertyName("parts")]
-    public GeminiResponsePart[] Parts { get; set; }
+    public IList<GeminiResponsePart> Parts { get; set; }
 
     [JsonPropertyName("role")]
     public string Role { get; set; }
 }
 
-internal sealed class GeminiResponsePart
+public class GeminiResponsePart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
-internal sealed class GeminiResponseSafetyRating
+public class GeminiResponseSafetyRating
 {
     [JsonPropertyName("category")]
     public string Category { get; set; }
@@ -62,11 +63,11 @@ internal sealed class GeminiResponseSafetyRating
     public bool Block { get; set; }
 }
 
-internal sealed class GeminiResponsePromptFeedback
+public class GeminiResponsePromptFeedback
 {
     [JsonPropertyName("blockReason")]
     public string BlockReason { get; set; }
 
     [JsonPropertyName("safetyRatings")]
-    public GeminiResponseSafetyRating[] SafetyRatings { get; set; }
+    public IList<GeminiResponseSafetyRating> SafetyRatings { get; set; }
 }

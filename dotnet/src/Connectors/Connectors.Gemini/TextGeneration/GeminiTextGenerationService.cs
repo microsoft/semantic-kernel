@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -88,9 +89,19 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         ["FinishReason"] = candidate.FinishReason,
         ["Index"] = candidate.Index,
         ["TokenCount"] = candidate.TokenCount,
-        ["SafetyRatings"] = candidate.SafetyRatings?.Select(sr => (sr.Block, sr.Category, sr.Probability)),
+        ["SafetyRatings"] = candidate.SafetyRatings?.Select(sr => new Dictionary<string, object?>
+        {
+            ["Block"] = sr.Block,
+            ["Category"] = sr.Category,
+            ["Probability"] = sr.Probability,
+        } as IReadOnlyDictionary<string, object?>),
         ["PromptFeedbackBlockReason"] = geminiResponse.PromptFeedback?.BlockReason,
-        ["PromptFeedbackSafetyRatings"] = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr => (sr.Block, sr.Category, sr.Probability)),
+        ["PromptFeedbackSafetyRatings"] = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr => new Dictionary<string, object?>
+        {
+            ["Block"] = sr.Block,
+            ["Category"] = sr.Category,
+            ["Probability"] = sr.Probability,
+        } as IReadOnlyDictionary<string, object?>),
     };
 
     private HttpRequestMessage VerifyArgumentsAndGetHTTPRequestMessage(string prompt, PromptExecutionSettings? executionSettings)

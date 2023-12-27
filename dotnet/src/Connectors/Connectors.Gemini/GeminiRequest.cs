@@ -13,14 +13,14 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
 // TODO: Add required attributes to non-nullable properties after updating solution to C# 12.0
 
-internal sealed class GeminiRequest
+public sealed class GeminiRequest
 {
     [JsonPropertyName("contents")]
-    public IEnumerable<GeminiRequestContent> Contents { get; set; }
+    public IList<GeminiRequestContent> Contents { get; set; }
 
     [JsonPropertyName("safetySettings")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IEnumerable<GeminiRequestSafetySetting>? SafetySettings { get; set; }
+    public IList<GeminiRequestSafetySetting>? SafetySettings { get; set; }
 
     [JsonPropertyName("generationConfig")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -38,13 +38,13 @@ internal sealed class GeminiRequest
     {
         GeminiRequest obj = new()
         {
-            Contents = new[]
+            Contents = new List<GeminiRequestContent>
             {
-                new GeminiRequestContent()
+                new()
                 {
-                    Parts = new[]
+                    Parts = new List<GeminiRequestPart>
                     {
-                        new GeminiRequestPart()
+                        new()
                         {
                             Text = prompt
                         }
@@ -74,11 +74,11 @@ internal sealed class GeminiRequest
         {
             Category = s.Category,
             Threshold = s.Threshold
-        });
+        }).ToList();
     }
 }
 
-internal sealed class GeminiRequestConfiguration
+public sealed class GeminiRequestConfiguration
 {
     [JsonPropertyName("temperature")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -105,23 +105,23 @@ internal sealed class GeminiRequestConfiguration
     public int? CandidateCount { get; set; }
 }
 
-internal sealed class GeminiRequestContent
+public sealed class GeminiRequestContent
 {
     [JsonPropertyName("parts")]
-    public IEnumerable<GeminiRequestPart> Parts { get; set; }
+    public IList<GeminiRequestPart> Parts { get; set; }
 
     [JsonPropertyName("role")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Role { get; set; }
 }
 
-internal sealed class GeminiRequestPart
+public sealed class GeminiRequestPart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
-internal sealed class GeminiRequestSafetySetting
+public sealed class GeminiRequestSafetySetting
 {
     [JsonPropertyName("category")]
     public string Category { get; set; }
