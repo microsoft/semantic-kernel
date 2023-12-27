@@ -26,6 +26,12 @@ public sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiRequestConfiguration? Configuration { get; set; }
 
+    /// <summary>
+    /// Creates a <see cref="GeminiRequest"/> object from the given prompt and execution settings.
+    /// </summary>
+    /// <param name="prompt">The prompt to be assigned to the GeminiRequest.</param>
+    /// <param name="executionSettings">The execution settings to be applied to the GeminiRequest.</param>
+    /// <returns>A new instance of <see cref="GeminiRequest"/>.</returns>
     public static GeminiRequest FromPromptExecutionSettings(string prompt, GeminiPromptExecutionSettings executionSettings)
     {
         GeminiRequest obj = CreateGeminiRequest(prompt);
