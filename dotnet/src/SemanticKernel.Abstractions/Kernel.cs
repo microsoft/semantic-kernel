@@ -32,6 +32,10 @@ public sealed class Kernel
     private CultureInfo _culture = CultureInfo.InvariantCulture;
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
+    /// <summary>Contains collection of function filters.</summary>
+    private IList<IFunctionFilter>? _functionFilters;
+    /// <summary>Contains collection of prompt filters.</summary>
+    private IList<IPromptFilter>? _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -54,6 +58,11 @@ public sealed class Kernel
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+
+        // Store the provided function and prompt filters if they were registered.
+        this._functionFilters = this.Services.GetServices<IFunctionFilter>().ToList();
+        this._promptFilters = this.Services.GetServices<IPromptFilter>().ToList();
+
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
@@ -105,6 +114,8 @@ public sealed class Kernel
             PromptRendering = this.PromptRendering,
             PromptRendered = this.PromptRendered,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
+            _functionFilters = this._functionFilters is { Count: > 0 } ? new List<IFunctionFilter>(this._functionFilters) : null,
+            _promptFilters = this._promptFilters is { Count: > 0 } ? new List<IPromptFilter>(this._promptFilters) : null,
             _culture = this._culture,
         };
 
@@ -189,6 +200,24 @@ public sealed class Kernel
     /// </summary>
     [Experimental("SKEXP0004")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    /// <summary>
+    /// Contains collection of function filters.
+    /// </summary>
+    [Experimental("SKEXP0005")]
+    public IList<IFunctionFilter>? FunctionFilters =>
+        this._functionFilters ??
+        Interlocked.CompareExchange(ref this._functionFilters, new List<IFunctionFilter>(), null) ??
+        this._functionFilters;
+
+    /// <summary>
+    /// Contains collection of prompt filters.
+    /// </summary>
+    [Experimental("SKEXP0005")]
+    public IList<IPromptFilter>? PromptFilters =>
+        this._promptFilters ??
+        Interlocked.CompareExchange(ref this._promptFilters, new List<IPromptFilter>(), null) ??
+        this._promptFilters;
 
     #region GetServices
     /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
@@ -316,6 +345,82 @@ public sealed class Kernel
 
         return eventArgs;
     }
+    #endregion
+
+    #region Internal Filtering
+
+    [Experimental("SKEXP0005")]
+    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
+    {
+        FunctionInvokingContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            foreach (var filter in this._functionFilters)
+            {
+                filter.OnFunctionInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    [Experimental("SKEXP0005")]
+    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelFunction function, KernelArguments arguments, FunctionResult result)
+    {
+        FunctionInvokedContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(function, arguments, result);
+
+            foreach (var filter in this._functionFilters)
+            {
+                filter.OnFunctionInvoked(context);
+            }
+        }
+
+        return context;
+    }
+
+    [Experimental("SKEXP0005")]
+    internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
+    {
+        PromptRenderingContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            foreach (var filter in this._promptFilters)
+            {
+                filter.OnPromptRendering(context);
+            }
+        }
+
+        return context;
+    }
+
+    [Experimental("SKEXP0005")]
+    internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    {
+        PromptRenderedContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
+        {
+            context = new(function, arguments, renderedPrompt);
+
+            foreach (var filter in this._promptFilters)
+            {
+                filter.OnPromptRendered(context);
+            }
+        }
+
+        return context;
+    }
+
     #endregion
 
     #region InvokeAsync
