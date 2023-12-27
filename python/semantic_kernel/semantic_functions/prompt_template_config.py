@@ -47,7 +47,7 @@ class PromptTemplateConfig:
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
-        keys = ["schema", "type", "description"]
+        keys = ["schema", "type", "description", "default_services"]
         for key in keys:
             if key in data:
                 setattr(config, key, data[key])
@@ -64,7 +64,6 @@ class PromptTemplateConfig:
             "number_of_responses",
             "stop_sequences",
             "token_selection_biases",
-            "default_services",
             "chat_system_prompt",
             "function_call",
         ]
