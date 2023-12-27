@@ -138,9 +138,14 @@ public abstract class KernelFunction
             // Invoke pre-invocation filter. If it requests cancellation, throw.
             var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
 
-            if (invokingEventArgs?.Cancel is true || invokingContext?.Cancel is true)
+            if (invokingEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
+            }
+
+            if (invokingContext?.Cancel is true)
+            {
+                throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
             }
 
             // Invoke the function.
@@ -160,13 +165,18 @@ public abstract class KernelFunction
 
             if (invokedContext is not null)
             {
-                // Apply any changes from the function filter to final result.
+                // Apply any changes from the function filters to final result.
                 functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
             }
 
-            if (invokedEventArgs?.Cancel is true || invokedContext?.Cancel is true)
+            if (invokedEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
+            }
+
+            if (invokedContext?.Cancel is true)
+            {
+                throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
             }
 
             logger.LogFunctionInvokedSuccess(this.Name);
@@ -268,9 +278,14 @@ public abstract class KernelFunction
                 // Invoke pre-invocation filter. If it requests cancellation, throw.
                 var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
 
-                if (invokingEventArgs?.Cancel is true || invokingContext?.Cancel is true)
+                if (invokingEventArgs?.Cancel is true)
                 {
                     throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
+                }
+
+                if (invokingContext?.Cancel is true)
+                {
+                    throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
                 }
 
                 // Invoke the function and get its streaming enumerator.

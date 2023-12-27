@@ -124,9 +124,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        if (result.RenderedEventArgs?.Cancel is true || result.RenderedContext?.Cancel is true)
+        if (result.RenderedEventArgs?.Cancel is true)
         {
-            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
+            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation after prompt rendering.");
+        }
+
+        if (result.RenderedContext?.Cancel is true)
+        {
+            throw new OperationCanceledException("A prompt filter requested cancellation after prompt rendering.");
         }
 
         if (result.AIService is IChatCompletionService chatCompletion)
