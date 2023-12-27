@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
-public static class Example74_Filters
+public static class Example75_Filters
 {
     public class FirstFunctionFilter : IFunctionFilter
     {
@@ -40,7 +40,10 @@ public static class Example74_Filters
 
         var services = new ServiceCollection();
 
-        services.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        services.AddAzureOpenAIChatCompletion(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey);
 
         services.AddSingleton<IFunctionFilter, FirstFunctionFilter>();
         services.AddSingleton<IFunctionFilter, SecondFunctionFilter>();
