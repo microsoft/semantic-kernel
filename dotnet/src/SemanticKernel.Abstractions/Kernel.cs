@@ -201,24 +201,6 @@ public sealed class Kernel
     [Experimental("SKEXP0004")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
-    /// <summary>
-    /// Contains collection of function filters.
-    /// </summary>
-    [Experimental("SKEXP0005")]
-    public IList<IFunctionFilter>? FunctionFilters =>
-        this._functionFilters ??
-        Interlocked.CompareExchange(ref this._functionFilters, new List<IFunctionFilter>(), null) ??
-        this._functionFilters;
-
-    /// <summary>
-    /// Contains collection of prompt filters.
-    /// </summary>
-    [Experimental("SKEXP0005")]
-    public IList<IPromptFilter>? PromptFilters =>
-        this._promptFilters ??
-        Interlocked.CompareExchange(ref this._promptFilters, new List<IPromptFilter>(), null) ??
-        this._promptFilters;
-
     #region GetServices
     /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
     /// <typeparam name="T">Specifies the type of the service to get.</typeparam>
