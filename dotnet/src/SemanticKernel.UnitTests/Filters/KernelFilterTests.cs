@@ -450,6 +450,43 @@ public class KernelFilterTests
         Assert.Equal("FunctionFilter2-Invoked", executionOrder[7]);
     }
 
+    [Fact]
+    public async Task MultipleFunctionFiltersCancellationWorksCorrectlyAsync()
+    {
+        // Arrange
+        var functionInvocations = 0;
+        var filterInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
+
+        var functionFilter1 = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        {
+            filterInvocations++;
+            context.Cancel = true;
+        });
+
+        var functionFilter2 = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        {
+            Assert.True(context.Cancel);
+
+            filterInvocations++;
+            context.Cancel = false;
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+
+        var kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(2, filterInvocations);
+    }
+
     private Kernel GetKernelWithFilters(
         Action<FunctionInvokingContext>? onFunctionInvoking = null,
         Action<FunctionInvokedContext>? onFunctionInvoked = null,
