@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Connectors.UnitTests;
+namespace SemanticKernel.UnitTests;
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {

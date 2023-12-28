@@ -14,15 +14,16 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
+using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Gemini.TextGeneration;
+namespace SemanticKernel.Connectors.Gemini.UnitTests.TextGeneration;
 
 public sealed class GeminiTextGenerationServiceTextGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
-    private const string TestDataFilePath = "./Gemini/TestData/completion_one_response.json";
+    private const string TestDataFilePath = "./TestData/completion_one_response.json";
 
     public GeminiTextGenerationServiceTextGenerationTests()
     {

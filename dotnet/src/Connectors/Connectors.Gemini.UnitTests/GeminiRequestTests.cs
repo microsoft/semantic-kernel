@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Gemini;
+namespace SemanticKernel.Connectors.Gemini.UnitTests;
 
 public class GeminiRequestTests
 {

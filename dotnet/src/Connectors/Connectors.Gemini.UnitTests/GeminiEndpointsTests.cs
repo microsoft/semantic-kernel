@@ -8,7 +8,7 @@ using System;
 using Microsoft.SemanticKernel.Connectors.Gemini;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Gemini;
+namespace SemanticKernel.Connectors.Gemini.UnitTests;
 
 public class GeminiEndpointsTests
 {

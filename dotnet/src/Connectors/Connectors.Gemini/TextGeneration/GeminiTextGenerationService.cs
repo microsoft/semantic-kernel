@@ -152,7 +152,7 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         using var response = await this._httpClient
             .SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
         using var streamReader = new StreamReader(responseStream, Encoding.UTF8);

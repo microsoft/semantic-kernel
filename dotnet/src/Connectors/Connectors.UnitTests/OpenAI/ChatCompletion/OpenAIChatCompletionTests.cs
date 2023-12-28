@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletion;

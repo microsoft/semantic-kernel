@@ -4,6 +4,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Qdrant;

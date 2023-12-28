@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.Gemini.UnitTests"/>
+  </ItemGroup>
+
 </Project>

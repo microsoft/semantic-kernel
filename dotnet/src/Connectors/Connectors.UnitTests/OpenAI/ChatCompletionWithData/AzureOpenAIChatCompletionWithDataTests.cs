@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
