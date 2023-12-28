@@ -71,6 +71,9 @@
     <None Update="Gemini\TestData\completion_one_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Gemini\TestData\completion_stream_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

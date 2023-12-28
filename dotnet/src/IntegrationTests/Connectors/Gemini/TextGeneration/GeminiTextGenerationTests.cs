@@ -1,8 +1,11 @@
 ﻿#region HEADER
+
 // Copyright (c) Microsoft. All rights reserved.
+
 #endregion
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.Gemini;
@@ -19,7 +22,6 @@ public sealed class GeminiTextGenerationTests
         .AddEnvironmentVariables()
         .Build();
 
-    // Load configuration
     [Fact(Skip = "This test is for manual verification.")]
     public async Task GeminiTextGenerationAsync()
     {
@@ -34,6 +36,23 @@ public sealed class GeminiTextGenerationTests
         // Assert
         Assert.NotNull(response.Text);
         Assert.Contains("Large Language Model", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task GeminiStreamTextGenerationAsync()
+    {
+        // Arrange
+        const string Input = "Write a story about a magic backpack.";
+
+        var geminiService = new GeminiTextGenerationService(this.GetModel(), this.GetApiKey());
+
+        // Act
+        var response = await geminiService.GetStreamingTextContentsAsync(Input).ToListAsync();
+
+        // Assert
+        Assert.NotEmpty(response);
+        Assert.True(response.Count > 1);
+        Assert.DoesNotContain(response, content => string.IsNullOrEmpty(content.Text));
     }
 
     private string GetModel() => this._configuration.GetSection("Gemini:ModelId").Get<string>()!;

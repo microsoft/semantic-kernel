@@ -15,7 +15,7 @@ public class GeminiResponse
     public IList<GeminiResponseCandidate> Candidates { get; set; }
 
     [JsonPropertyName("promptFeedback")]
-    public GeminiResponsePromptFeedback PromptFeedback { get; set; }
+    public GeminiResponsePromptFeedback? PromptFeedback { get; set; }
 }
 
 public class GeminiResponseCandidate
@@ -66,7 +66,7 @@ public class GeminiResponseSafetyRating
 public class GeminiResponsePromptFeedback
 {
     [JsonPropertyName("blockReason")]
-    public string BlockReason { get; set; }
+    public string? BlockReason { get; set; }
 
     [JsonPropertyName("safetyRatings")]
     public IList<GeminiResponseSafetyRating> SafetyRatings { get; set; }
