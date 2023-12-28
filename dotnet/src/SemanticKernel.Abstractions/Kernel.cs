@@ -451,7 +451,6 @@ public sealed class Kernel
     /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
     /// <param name="functionName">The name of the function to invoke.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="timeout">Test parameter</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
@@ -465,7 +464,6 @@ public sealed class Kernel
         string? pluginName,
         string functionName,
         KernelArguments? arguments = null,
-        TimeSpan timeout = default,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(functionName);
