@@ -57,4 +57,47 @@ public static class Example75_Filters
 
         Console.ReadKey();
     }
+
+    #region Filter capabilities
+
+    private class FunctionFilterExample : IFunctionFilter
+    {
+        public void OnFunctionInvoked(FunctionInvokedContext context)
+        {
+            // Example: get function result value
+            var value = context.Result.GetValue<object>();
+
+            // Example: override function result value
+            context.SetResultValue("new result value");
+
+            // Example: get token usage from metadata
+            var usage = context.Result.Metadata?["Usage"];
+        }
+
+        public void OnFunctionInvoking(FunctionInvokingContext context)
+        {
+            // Example: override kernel arguments
+            context.Arguments["input"] = "new input";
+
+            // Example: cancel function execution
+            context.Cancel = true;
+        }
+    }
+
+    private class PromptFilterExample : IPromptFilter
+    {
+        public void OnPromptRendered(PromptRenderedContext context)
+        {
+            // Example: override rendered prompt before sending it to AI
+            context.RenderedPrompt = "Safe prompt";
+        }
+
+        public void OnPromptRendering(PromptRenderingContext context)
+        {
+            // Example: get function information
+            var functionName = context.Function.Name;
+        }
+    }
+
+    #endregion
 }
