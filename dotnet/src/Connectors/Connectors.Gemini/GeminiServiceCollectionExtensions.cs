@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extensions for adding Gemini text generation services to the application.
 /// </summary>
-public static class GeminiKernelBuilderExtensions
+public static class GeminiServiceCollectionExtensions
 {
     /// <summary>
     /// Adds Gemini Text Generation service to the kernel builder.
