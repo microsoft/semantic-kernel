@@ -103,7 +103,7 @@ public static class Step7_Observability
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    private class TimeInformation
+    private sealed class TimeInformation
     {
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
@@ -113,7 +113,7 @@ public static class Step7_Observability
     /// <summary>
     /// Function filter for observability.
     /// </summary>
-    private class MyFunctionFilter : IFunctionFilter
+    private sealed class MyFunctionFilter : IFunctionFilter
     {
         public void OnFunctionInvoked(FunctionInvokedContext context)
         {
@@ -134,7 +134,7 @@ public static class Step7_Observability
     /// <summary>
     /// Prompt filter for observability.
     /// </summary>
-    private class MyPromptFilter : IPromptFilter
+    private sealed class MyPromptFilter : IPromptFilter
     {
         public void OnPromptRendered(PromptRenderedContext context)
         {

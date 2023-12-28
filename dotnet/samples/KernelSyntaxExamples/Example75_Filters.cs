@@ -60,7 +60,7 @@ public static class Example75_Filters
 
     #region Filter capabilities
 
-    private class FunctionFilterExample : IFunctionFilter
+    private sealed class FunctionFilterExample : IFunctionFilter
     {
         public void OnFunctionInvoked(FunctionInvokedContext context)
         {
@@ -84,7 +84,7 @@ public static class Example75_Filters
         }
     }
 
-    private class PromptFilterExample : IPromptFilter
+    private sealed class PromptFilterExample : IPromptFilter
     {
         public void OnPromptRendered(PromptRenderedContext context)
         {
