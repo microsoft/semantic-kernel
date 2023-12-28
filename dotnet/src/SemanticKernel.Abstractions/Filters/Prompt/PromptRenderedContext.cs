@@ -21,7 +21,6 @@ public sealed class PromptRenderedContext : PromptFilterContext
     public PromptRenderedContext(KernelFunction function, KernelArguments arguments, string renderedPrompt)
         : base(function, arguments, metadata: null)
     {
-        Verify.NotNull(renderedPrompt);
         this._renderedPrompt = renderedPrompt;
     }
 
@@ -51,7 +50,7 @@ public sealed class PromptRenderedContext : PromptFilterContext
         get => this._renderedPrompt;
         set
         {
-            Verify.NotNull(value);
+            Verify.NotNullOrWhiteSpace(value);
             this._renderedPrompt = value;
         }
     }
