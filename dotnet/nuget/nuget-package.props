@@ -11,7 +11,7 @@
 
     <!-- Package validation. Baseline Version should be lower than current version. -->
     <PackageValidationBaselineVersion>1.0.1</PackageValidationBaselineVersion>
-    <NoWarn Condition="'$(Configuration)' != 'Publish'">CP0003</NoWarn> <!-- Validate assembly attributes only for Publish builds -->
+    <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn> <!-- Validate assembly attributes only for Publish builds -->
 
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>
