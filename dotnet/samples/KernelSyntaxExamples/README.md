@@ -89,6 +89,9 @@ dotnet user-secrets set "KeyVault:TenantId" "..."
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
 
+dotnet user-secrets set "Gemini:ApiKey" "..."
+dotnet user-secrets set "Gemini:ModelId" "..."
+
 dotnet user-secrets set "Pinecone:ApiKey" "..."
 dotnet user-secrets set "Pinecone:Environment" "..."
 
@@ -153,6 +156,10 @@ KeyVault__TenantId
 # Hugging Face
 HuggingFace__ApiKey
 HuggingFace__ModelId
+
+# Gemini
+Gemini__ApiKey
+Gemini__ModelId
 
 # Pinecone
 Pinecone__ApiKey
