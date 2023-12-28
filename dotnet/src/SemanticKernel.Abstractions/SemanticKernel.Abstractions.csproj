@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);SKEXP0004</NoWarn>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

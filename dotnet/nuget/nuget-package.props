@@ -1,13 +1,17 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
 
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
 
     <Configurations>Debug;Release;Publish</Configurations>
     <IsPackable>true</IsPackable>
+
+    <!-- Package validation. Baseline Version should be lower than current version. -->
+    <PackageValidationBaselineVersion>1.0.1</PackageValidationBaselineVersion>
+    <NoWarn Condition="'$(Configuration)' != 'Publish'">CP0003</NoWarn> <!-- Validate assembly attributes only for Publish builds -->
 
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>

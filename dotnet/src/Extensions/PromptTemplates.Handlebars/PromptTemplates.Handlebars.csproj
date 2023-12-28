@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.PromptTemplates.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.PromptTemplates.Handlebars</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
