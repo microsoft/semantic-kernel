@@ -39,6 +39,7 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
+    public static GeminiConfig Gemini => LoadSection<GeminiConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -52,8 +53,9 @@ public sealed class TestConfiguration
         {
             throw new ArgumentNullException(nameof(caller));
         }
+
         return s_instance._configRoot.GetSection(caller).Get<T>() ??
-            throw new ConfigurationNotFoundException(section: caller);
+               throw new ConfigurationNotFoundException(section: caller);
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
@@ -173,6 +175,12 @@ public sealed class TestConfiguration
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
+    }
+
+    public class GeminiConfig
+    {
+        public string ApiKey { get; set; }
+        public string ModelId { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
