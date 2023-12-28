@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// Class with data related to prompt before rendering.
 /// </summary>
 [Experimental("SKEXP0005")]
-public class PromptRenderingContext : PromptFilterContext
+public sealed class PromptRenderingContext : PromptFilterContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderingContext"/> class.

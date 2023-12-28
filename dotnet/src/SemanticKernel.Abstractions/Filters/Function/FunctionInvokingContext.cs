@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// Class with data related to function before invocation.
 /// </summary>
 [Experimental("SKEXP0005")]
-public class FunctionInvokingContext : FunctionFilterContext
+public sealed class FunctionInvokingContext : FunctionFilterContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingContext"/> class.
