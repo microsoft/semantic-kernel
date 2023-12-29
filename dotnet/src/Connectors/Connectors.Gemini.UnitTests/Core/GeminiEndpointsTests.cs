@@ -5,10 +5,10 @@
 #endregion
 
 using System;
-using Microsoft.SemanticKernel.Connectors.Gemini;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Gemini.UnitTests;
+namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
 public class GeminiEndpointsTests
 {

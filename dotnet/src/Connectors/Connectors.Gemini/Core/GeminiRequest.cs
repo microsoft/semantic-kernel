@@ -9,11 +9,11 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini;
+namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
 // TODO: Add required attributes to non-nullable properties after updating solution to C# 12.0
 
-public sealed class GeminiRequest
+internal sealed class GeminiRequest
 {
     [JsonPropertyName("contents")]
     public IList<GeminiRequestContent> Contents { get; set; }
@@ -84,7 +84,7 @@ public sealed class GeminiRequest
     }
 }
 
-public sealed class GeminiRequestConfiguration
+internal sealed class GeminiRequestConfiguration
 {
     [JsonPropertyName("temperature")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -111,7 +111,7 @@ public sealed class GeminiRequestConfiguration
     public int? CandidateCount { get; set; }
 }
 
-public sealed class GeminiRequestContent
+internal sealed class GeminiRequestContent
 {
     [JsonPropertyName("parts")]
     public IList<GeminiRequestPart> Parts { get; set; }
@@ -121,13 +121,13 @@ public sealed class GeminiRequestContent
     public string? Role { get; set; }
 }
 
-public sealed class GeminiRequestPart
+internal sealed class GeminiRequestPart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
-public sealed class GeminiRequestSafetySetting
+internal sealed class GeminiRequestSafetySetting
 {
     [JsonPropertyName("category")]
     public string Category { get; set; }

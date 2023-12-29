@@ -4,10 +4,10 @@
 
 #endregion
 
-using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini;
+namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
 public class GeminiResponse
 {

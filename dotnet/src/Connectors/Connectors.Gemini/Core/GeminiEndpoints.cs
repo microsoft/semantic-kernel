@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini;
+namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
 /// <summary>
 /// Provides a collection of endpoints for the Gemini API.

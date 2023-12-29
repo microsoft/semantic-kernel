@@ -11,12 +11,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Gemini.UnitTests.TextGeneration;
+namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
 public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
 {
@@ -37,10 +37,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     public async Task ShouldUseUserAgentAsync()
     {
         // Arrange
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
 
         // Act
-        await foreach (var dummy in tgs.GetStreamingTextContentsAsync("fake-text")) { }
+        _ = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -54,10 +54,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var tgs = new GeminiTextGenerationService(modelId, "fake-api-key", this._httpClient);
+        var client = new GeminiClient(modelId, "fake-api-key", this._httpClient);
 
         // Act
-        await foreach (var dummy in tgs.GetStreamingTextContentsAsync("fake-text")) { }
+        _ = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         Assert.Contains(modelId, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.Ordinal);
@@ -68,10 +68,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     {
         // Arrange
         string fakeAPIKey = "fake-api-key";
-        var tgs = new GeminiTextGenerationService("fake-model", fakeAPIKey, this._httpClient);
+        var client = new GeminiClient("fake-model", fakeAPIKey, this._httpClient);
 
         // Act
-        await foreach (var dummy in tgs.GetStreamingTextContentsAsync("fake-text")) { }
+        _ = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         Assert.Contains(fakeAPIKey, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.Ordinal);
@@ -82,10 +82,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     {
         // Arrange
         var baseEndPoint = GeminiEndpoints.BaseEndpoint.AbsoluteUri;
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
 
         // Act
-        await foreach (var dummy in tgs.GetStreamingTextContentsAsync("fake-text")) { }
+        _ = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         Assert.StartsWith(baseEndPoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.Ordinal);
@@ -96,10 +96,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     {
         // Arrange
         string prompt = "fake-prompt";
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
 
         // Act
-        await foreach (var dummy in tgs.GetStreamingTextContentsAsync(prompt)) { }
+        _ = await client.StreamTextAsync(prompt).ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -111,10 +111,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     public async Task ShouldReturnValidModelTextResponseAsync()
     {
         // Arrange
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
 
         // Act
-        var streamingTextContents = await tgs.GetStreamingTextContentsAsync("fake-text").ToListAsync();
+        var streamingTextContents = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         List<GeminiResponse> testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
@@ -134,10 +134,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     public async Task ShouldReturnValidMetadataAsync()
     {
         // Arrange
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
 
         // Act
-        var streamingTextContents = await tgs.GetStreamingTextContentsAsync("fake-text").ToListAsync();
+        var streamingTextContents = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         List<GeminiResponse> sampleDataResponses = JsonSerializer.Deserialize<List<GeminiResponse>>(
@@ -160,10 +160,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var tgs = new GeminiTextGenerationService(modelId, "fake-api-key", this._httpClient);
+        var client = new GeminiClient(modelId, "fake-api-key", this._httpClient);
 
         // Act
-        var streamingTextContents = await tgs.GetStreamingTextContentsAsync("fake-text").ToListAsync();
+        var streamingTextContents = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         var textContent = streamingTextContents.FirstOrDefault();
@@ -175,10 +175,10 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     public async Task ShouldReturnResponseWithValidInnerContentAsync()
     {
         // Arrange
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
 
         // Act
-        var streamingTextContents = await tgs.GetStreamingTextContentsAsync("fake-text").ToListAsync();
+        var streamingTextContents = await client.StreamTextAsync("fake-text").ToListAsync();
 
         // Assert
         string testDataResponseJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<List<GeminiResponse>>(
@@ -192,7 +192,7 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
-        var tgs = new GeminiTextGenerationService("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 102,
@@ -201,7 +201,7 @@ public sealed class GeminiTextGenerationServiceStreamContentsTests : IDisposable
         };
 
         // Act
-        _ = await tgs.GetStreamingTextContentsAsync("fake-text", executionSettings).ToListAsync();
+        _ = await client.StreamTextAsync("fake-text", executionSettings).ToListAsync();
 
         // Assert
         var geminiRequest = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
