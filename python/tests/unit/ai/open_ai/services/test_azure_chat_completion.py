@@ -16,11 +16,13 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.content_filter_ai_exception import (
-    ContentFilterAIException,
-)
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
+)
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
+    ContentFilterAIException,
+    ContentFilterCodes,
+    ContentFilterResultSeverity,
 )
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template_with_data_config import (
     OpenAIChatPromptTemplateWithDataConfig,
@@ -557,7 +559,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     )
 
     with pytest.raises(
-        ContentFilterAIException, match="service failed to complete the prompt"
+        ContentFilterAIException, match="service encountered a content error"
     ) as exc_info:
         await azure_chat_completion.complete_chat_async(
             messages, complete_request_settings
@@ -567,10 +569,10 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     assert content_filter_exc.param == "prompt"
     assert (
         content_filter_exc.content_filter_code
-        == ContentFilterAIException.ContentFilterCodes.ResponsibleAIPolicyViolation
+        == ContentFilterCodes.ResponsibleAIPolicyViolation
     )
     assert content_filter_exc.content_filter_result["hate"].filtered
     assert (
         content_filter_exc.content_filter_result["hate"].severity
-        == ContentFilterAIException.ContentFilterResult.Severity.High
+        == ContentFilterResultSeverity.High
     )
