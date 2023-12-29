@@ -3,22 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -26,171 +22,178 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
-    // TODO: Revise these Create method XML comments
-
     /// <summary>
-    /// Creates a string-to-string semantic function, with no direct support for input context.
-    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
-    /// can only pass in a string in input and receive a string in output.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="promptTemplate">Prompt template for the function, defined using the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.</param>
+    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="description">The description to use for the function.</param>
+    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
         string? functionName = null,
         string? description = null,
+        string? templateFormat = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        functionName ??= RandomFunctionName();
+        Verify.NotNullOrWhiteSpace(promptTemplate);
 
-        var promptTemplateConfig = new PromptTemplateConfig
+        if (promptTemplateFactory is not null)
         {
-            Description = description ?? "Generic function, unknown purpose",
-        };
-
-        if (requestSettings is not null)
-        {
-            promptTemplateConfig.ModelSettings.Add(requestSettings);
+            if (string.IsNullOrWhiteSpace(templateFormat))
+            {
+                throw new ArgumentException($"Template format is required when providing a {nameof(promptTemplateFactory)}", nameof(templateFormat));
+            }
         }
 
+        var promptConfig = new PromptTemplateConfig
+        {
+            TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
+            Name = functionName,
+            Description = description ?? "Generic function, unknown purpose",
+            Template = promptTemplate
+        };
+
+        if (executionSettings is not null)
+        {
+            promptConfig.ExecutionSettings = executionSettings;
+        }
+
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
+
         return Create(
-            promptTemplate: promptTemplate,
-            promptTemplateConfig: promptTemplateConfig,
-            functionName: functionName,
+            promptTemplate: factory.Create(promptConfig),
+            promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
 
     /// <summary>
-    /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
-        string promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            factory.Create(promptTemplate, promptTemplateConfig),
-            promptTemplateConfig,
-            functionName,
-            loggerFactory);
-    }
-
-    /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
-    /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="loggerFactory">Logger factory</param>
-    /// <returns>A function ready to use</returns>
-    public static KernelFunction Create(
-        IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
-        ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNull(promptTemplate);
-        Verify.NotNull(promptTemplateConfig);
-
-        functionName ??= RandomFunctionName();
-        Verify.ValidFunctionName(functionName);
-
-        return new KernelFunctionFromPrompt(
-            template: promptTemplate,
-            promptTemplateConfig: promptTemplateConfig,
-            functionName: functionName,
+            promptTemplate: factory.Create(promptConfig),
+            promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
 
     /// <summary>
-    /// List of function parameters
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and a prompt template configuration.
     /// </summary>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._promptTemplate.Parameters;
-
-    /// <inheritdoc/>
-    protected override KernelFunctionMetadata GetMetadataCore() =>
-        this._metadata ??=
-        new KernelFunctionMetadata(this.Name)
-        {
-            Description = this._promptTemplateConfig.Description,
-            Parameters = this.Parameters
-        };
-
-    /// <inheritdoc/>
-    protected override async Task<FunctionResult> InvokeCoreAsync(
-        Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+    /// <param name="promptTemplate">Prompt template for the function, defined using the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
+    /// <param name="loggerFactory">Logger factory</param>
+    /// <returns>A function ready to use</returns>
+    public static KernelFunction Create(
+        IPromptTemplate promptTemplate,
+        PromptTemplateConfig promptConfig,
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddDefaultValues(variables);
+        Verify.NotNull(promptTemplate);
+        Verify.NotNull(promptConfig);
 
-        try
-        {
-            (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
-            if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
-            {
-                return new FunctionResult(this.Name, variables)
-                {
-                    IsCancellationRequested = true
-                };
-            }
-
-            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
-            string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
-
-            // Update the result with the completion
-            variables.Update(completion);
-
-            var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
-
-            var result = new FunctionResult(this.Name, variables, completion);
-
-            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
-            result.Metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-            return result;
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            this._logger?.LogError(ex, "Prompt function {Name} execution failed with error {Error}", this.Name, ex.Message);
-            throw;
-        }
+        return new KernelFunctionFromPrompt(
+            template: promptTemplate,
+            promptConfig: promptConfig,
+            loggerFactory: loggerFactory);
     }
 
-    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+    /// <inheritdoc/>j
+    protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
-        ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        KernelArguments arguments,
+        CancellationToken cancellationToken = default)
+    {
+        this.AddDefaultValues(arguments);
+
+        (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        if (renderedEventArgs?.Cancel is true)
+        {
+            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
+        }
+
+        if (aiService is IChatCompletionService chatCompletion)
+        {
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(renderedPrompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
+        }
+
+        if (aiService is ITextGenerationService textGeneration)
+        {
+            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
+            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
+        }
+
+        // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
+        throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+    }
+
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
+        Kernel kernel,
+        KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(variables);
+        this.AddDefaultValues(arguments);
 
-        (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
-        if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
+        (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
         }
 
-        await foreach (T genericChunk in textCompletion.GetStreamingContentAsync<T>(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken))
+        IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
+        if (aiService is IChatCompletionService chatCompletion)
+        {
+            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
+        }
+        else if (aiService is ITextGenerationService textGeneration)
+        {
+            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
+        }
+        else
+        {
+            // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
+            throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+        }
+
+        await foreach (var content in asyncReference)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return genericChunk;
+
+            yield return typeof(TResult) switch
+            {
+                _ when typeof(TResult) == typeof(string)
+                    => (TResult)(object)content.ToString(),
+
+                _ when content is TResult contentAsT
+                    => contentAsT,
+
+                _ when content.InnerContent is TResult innerContentAsT
+                    => innerContentAsT,
+
+                _ when typeof(TResult) == typeof(byte[])
+                    => (TResult)(object)content.ToByteArray(),
+
+                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
+            };
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
@@ -203,62 +206,170 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
-        PromptTemplateConfig promptTemplateConfig,
-        string functionName,
-        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, promptTemplateConfig.ModelSettings)
+        PromptTemplateConfig promptConfig,
+        ILoggerFactory? loggerFactory = null) : base(
+            promptConfig.Name ?? CreateRandomFunctionName(),
+            promptConfig.Description ?? string.Empty,
+            promptConfig.GetKernelParametersMetadata(),
+            promptConfig.GetKernelReturnParameterMetadata(),
+            promptConfig.ExecutionSettings)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
 
         this._promptTemplate = template;
-        this._promptTemplateConfig = promptTemplateConfig;
-        Verify.ParametersUniqueness(this.Parameters);
+        this._promptConfig = promptConfig;
     }
 
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
-    private KernelFunctionMetadata? _metadata;
+    private readonly PromptTemplateConfig _promptConfig;
     private readonly IPromptTemplate _promptTemplate;
-
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-    }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
 
-    /// <summary>Add default values to the context variables if the variable is not defined</summary>
-    private void AddDefaultValues(ContextVariables variables)
+    /// <summary>The measurement tag name for the model used.</summary>
+    private const string MeasurementModelTagName = "semantic_kernel.function.model_id";
+
+    /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
+    private static readonly Histogram<int> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<int>(
+        name: "semantic_kernel.function.invocation.token_usage.prompt",
+        unit: "{token}",
+        description: "Measures the prompt token usage");
+
+    /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
+    private static readonly Histogram<int> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<int>(
+        name: "semantic_kernel.function.invocation.token_usage.completion",
+        unit: "{token}",
+        description: "Measures the completion token usage");
+
+    /// <summary>Add default values to the arguments if an argument is not defined</summary>
+    private void AddDefaultValues(KernelArguments arguments)
     {
-        foreach (var parameter in this.Parameters)
+        foreach (var parameter in this._promptConfig.InputVariables)
         {
-            if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
             {
-                variables[parameter.Name] = parameter.DefaultValue;
+                arguments[parameter.Name] = parameter.Default;
             }
         }
     }
 
-    private async Task<(ITextCompletion, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken)
+    private async Task<(IAIService, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
-        (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, this);
-        Verify.NotNull(textCompletion);
+        IAIService? aiService;
 
-        kernel.OnPromptRendering(this, variables, requestSettings ?? defaultRequestSettings);
+        // Try to use IChatCompletionService.
+        if (serviceSelector.TrySelectAIService<IChatCompletionService>(
+            kernel, this, arguments,
+            out IChatCompletionService? chatService, out PromptExecutionSettings? executionSettings))
+        {
+            aiService = chatService;
+        }
+        else
+        {
+            // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
+            // throwing if it's not available.
+            (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+        }
 
-        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
+        Verify.NotNull(aiService);
 
-        var renderedEventArgs = kernel.OnPromptRendered(this, variables, renderedPrompt);
+        kernel.OnPromptRendering(this, arguments);
 
-        return (textCompletion, defaultRequestSettings, renderedPrompt, renderedEventArgs);
+        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+        }
+
+        var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
+
+        if (renderedEventArgs is not null &&
+            renderedEventArgs.Cancel is false &&
+            renderedEventArgs.RenderedPrompt != renderedPrompt)
+        {
+            renderedPrompt = renderedEventArgs.RenderedPrompt;
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+            }
+        }
+
+        return (aiService, executionSettings, renderedPrompt, renderedEventArgs);
     }
 
     /// <summary>Create a random, valid function name.</summary>
-    private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
+    private static string CreateRandomFunctionName() => $"func{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    private void CaptureUsageDetails(string? modelId, IReadOnlyDictionary<string, object?>? metadata, ILogger logger)
+    {
+        if (!logger.IsEnabled(LogLevel.Information) &&
+            !s_invocationTokenUsageCompletion.Enabled &&
+            !s_invocationTokenUsagePrompt.Enabled)
+        {
+            // Bail early to avoid unnecessary work.
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            logger.LogInformation("No model ID provided to capture usage details.");
+            return;
+        }
+
+        if (metadata is null)
+        {
+            logger.LogInformation("No metadata provided to capture usage details.");
+            return;
+        }
+
+        if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
+        {
+            logger.LogInformation("No usage details provided to capture usage details.");
+            return;
+        }
+
+        var jsonObject = default(JsonElement);
+        try
+        {
+            jsonObject = JsonSerializer.SerializeToElement(usageObject);
+        }
+        catch (Exception ex) when (ex is NotSupportedException)
+        {
+            logger.LogWarning(ex, "Error while parsing usage details from model result.");
+            return;
+        }
+
+        if (jsonObject.TryGetProperty("PromptTokens", out var promptTokensJson) &&
+            promptTokensJson.TryGetInt32(out int promptTokens) &&
+            jsonObject.TryGetProperty("CompletionTokens", out var completionTokensJson) &&
+            completionTokensJson.TryGetInt32(out int completionTokens))
+        {
+            logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+                promptTokens, completionTokens);
+
+            TagList tags = new() {
+                { MeasurementFunctionTagName, this.Name },
+                { MeasurementModelTagName, modelId }
+            };
+
+            s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
+            s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
+        }
+        else
+        {
+            logger.LogWarning("Unable to get token details from model result.");
+        }
+    }
 
     #endregion
 }

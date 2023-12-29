@@ -4,11 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -131,7 +128,7 @@ internal static class SequentialPlanParser
                             var functionOutputs = new List<string>();
                             var functionResults = new List<string>();
 
-                            var metadata = pluginFunction.GetMetadata();
+                            var metadata = pluginFunction.Metadata;
                             foreach (var p in metadata.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);

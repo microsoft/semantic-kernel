@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
@@ -13,15 +12,17 @@ public sealed class SendEmailPlugin
 
     [KernelFunction]
     [Description("Send email")]
-    [KernelName("SendEmail")]
     public string SendEmail(
-        [KernelName("email_address")] string emailAddress,
-        [KernelName("answer")] string answer,
-        ContextVariables variables)
+        // ReSharper disable once InconsistentNaming
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+        string email_address,
+#pragma warning restore CA1707 // Identifiers should not contain underscores
+        string answer,
+        KernelArguments variables)
     {
         var contract = new Email()
         {
-            Address = emailAddress,
+            Address = email_address,
             Content = answer,
         };
 

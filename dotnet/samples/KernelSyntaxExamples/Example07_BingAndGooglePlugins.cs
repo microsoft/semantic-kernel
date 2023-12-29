@@ -3,20 +3,16 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using RepoUtils;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
 public static class Example07_BingAndGooglePlugins
 {
     public static async Task RunAsync()
@@ -30,9 +26,8 @@ public static class Example07_BingAndGooglePlugins
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -78,7 +73,7 @@ public static class Example07_BingAndGooglePlugins
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
-        var result = await kernel.InvokeAsync(function, question);
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");
@@ -131,16 +126,17 @@ Answer:
 [END OF EXAMPLES]
 
 [TASK]
-Question: {{ $input }}.
+Question: {{ $question }}.
 Answer: ";
 
-        var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        Console.WriteLine(questions);
+        var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
+        Console.WriteLine(question);
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
+        var answer = await kernel.InvokeAsync(oracle, new KernelArguments()
         {
+            ["question"] = question,
             ["externalInformation"] = string.Empty
         });
 
@@ -150,17 +146,18 @@ Answer: ";
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
             var promptTemplateFactory = new KernelPromptTemplateFactory();
-            var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
+            var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel, new ContextVariables());
+            var information = await promptTemplate.RenderAsync(kernel);
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
-            // Run the semantic function again, now including information from Bing
-            answer = await kernel.InvokeAsync(oracle, new ContextVariables(questions)
+            // Run the prompt function again, now including information from Bing
+            answer = await kernel.InvokeAsync(oracle, new KernelArguments()
             {
+                ["question"] = question,
                 // The rendered prompt contains the information retrieved from search engines
                 ["externalInformation"] = information
             });

@@ -1,28 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Event arguments available to the Kernel.PromptRendering event.
+/// Provides a <see cref="KernelEventArgs"/> used in events raised just before a prompt is rendered.
 /// </summary>
-public class PromptRenderingEventArgs : KernelEventArgs
+[Experimental("SKEXP0004")]
+public sealed class PromptRenderingEventArgs : KernelEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderingEventArgs"/> class.
     /// </summary>
-    /// <param name="function">Kernel function</param>
-    /// <param name="variables">Context variables related to the event</param>
-    /// <param name="requestSettings">request settings used by the AI service</param>
-    public PromptRenderingEventArgs(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings) : base(function, variables)
+    /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
+    /// <param name="arguments">The arguments associated with the operation.</param>
+    public PromptRenderingEventArgs(KernelFunction function, KernelArguments arguments) :
+        base(function, arguments, metadata: null)
     {
-        this.RequestSettings = requestSettings; // TODO clone these settings
     }
-
-    /// <summary>
-    /// Request settings for the AI service.
-    /// </summary>
-    public PromptExecutionSettings? RequestSettings { get; }
 }

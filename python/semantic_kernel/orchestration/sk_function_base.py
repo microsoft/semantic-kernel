@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import abstractmethod
-from logging import Logger
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -12,7 +11,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
@@ -22,11 +21,7 @@ if TYPE_CHECKING:
     )
 
 
-class SKFunctionBase(PydanticField):
-    FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
-    FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]*$"
-    SKILL_NAME_REGEX = r"^[0-9A-Za-z_]*$"
-
+class SKFunctionBase(SKBaseModel):
     @property
     @abstractmethod
     def name(self) -> str:
@@ -107,7 +102,6 @@ class SKFunctionBase(PydanticField):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
     ) -> "SKContext":
         """
         Invokes the function with an explicit string input
@@ -117,7 +111,6 @@ class SKFunctionBase(PydanticField):
             context {SKContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {CompleteRequestSettings} -- LLM completion settings
-            log {Logger} -- Application logger
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -132,7 +125,6 @@ class SKFunctionBase(PydanticField):
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None,
         **kwargs: Dict[str, Any],
     ) -> "SKContext":
         """
@@ -143,7 +135,6 @@ class SKFunctionBase(PydanticField):
             context {SKContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {CompleteRequestSettings} -- LLM completion settings
-            log {Logger} -- Application logger
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.

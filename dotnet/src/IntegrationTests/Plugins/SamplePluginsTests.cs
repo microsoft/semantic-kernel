@@ -5,13 +5,14 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class SamplePluginsTests
 {
     [Fact]
-    public void CanLoadSamplePluginsRequestSettings()
+    public void CanLoadSamplePluginsExecutionSettings()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         TestHelpers.ImportAllSamplePlugins(kernel);
@@ -32,7 +33,7 @@ public class SamplePluginsTests
     public void CanLoadSampleSkillsCompletions()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         TestHelpers.ImportAllSampleSkills(kernel);

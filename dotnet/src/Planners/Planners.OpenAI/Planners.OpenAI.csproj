@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Planners.OpenAI</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -18,7 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Stepwise\InitialPlanPrompt.txt">
+    <None Remove="Stepwise\GeneratePlan.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Stepwise\GeneratePlan.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Stepwise\StepPrompt.txt">
@@ -27,9 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 </Project>

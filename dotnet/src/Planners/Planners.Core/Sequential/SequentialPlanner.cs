@@ -4,13 +4,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -23,7 +20,7 @@ public sealed class SequentialPlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
         Kernel kernel,
@@ -42,7 +39,7 @@ public sealed class SequentialPlanner
             promptTemplate: promptTemplate,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new PromptExecutionSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {
@@ -53,7 +50,7 @@ public sealed class SequentialPlanner
             });
 
         this._kernel = kernel;
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>

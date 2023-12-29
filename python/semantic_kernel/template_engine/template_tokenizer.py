@@ -1,16 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List
+import logging
+from typing import Any, List, Optional
 
-from semantic_kernel.sk_pydantic import PydanticField
+from pydantic import PrivateAttr
+
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 # BNF parsed by TemplateTokenizer:
@@ -21,10 +24,16 @@ from semantic_kernel.utils.null_logger import NullLogger
 #                      | "{{" [function-call] "}}"
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
-class TemplateTokenizer(PydanticField):
-    def __init__(self, log: Logger = None):
-        self.log = log or NullLogger()
-        self.code_tokenizer = CodeTokenizer(self.log)
+class TemplateTokenizer(SKBaseModel):
+    _code_tokenizer: CodeTokenizer = PrivateAttr()
+
+    def __init__(self, log: Optional[Any] = None):
+        super().__init__()
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
+        self._code_tokenizer = CodeTokenizer()
 
     def tokenize(self, text: str) -> List[Block]:
         # An empty block consists of 4 chars: "{{}}"
@@ -37,11 +46,11 @@ class TemplateTokenizer(PydanticField):
 
         # Render None/empty to ""
         if not text or text == "":
-            return [TextBlock.from_text("", log=self.log)]
+            return [TextBlock.from_text("")]
 
         # If the template is "empty" return it as a text block
         if len(text) < MIN_CODE_BLOCK_LENGTH:
-            return [TextBlock.from_text(text, log=self.log)]
+            return [TextBlock.from_text(text)]
 
         blocks = []
         end_of_last_block = 0
@@ -104,12 +113,13 @@ class TemplateTokenizer(PydanticField):
                                     text,
                                     end_of_last_block,
                                     block_start_pos,
-                                    log=self.log,
                                 )
                             )
 
                         # Extract raw block
-                        content_with_delimiters = text[block_start_pos : cursor + 1]
+                        content_with_delimiters = text[
+                            block_start_pos : cursor + 1
+                        ]  # noqa: E203
                         # Remove "{{" and "}}" delimiters and trim whitespace
                         content_without_delimiters = content_with_delimiters[
                             2:-2
@@ -118,13 +128,9 @@ class TemplateTokenizer(PydanticField):
                         if len(content_without_delimiters) == 0:
                             # If what is left is empty, consider the raw block
                             # a TextBlock
-                            blocks.append(
-                                TextBlock.from_text(
-                                    content_with_delimiters, log=self.log
-                                )
-                            )
+                            blocks.append(TextBlock.from_text(content_with_delimiters))
                         else:
-                            code_blocks = self.code_tokenizer.tokenize(
+                            code_blocks = self._code_tokenizer.tokenize(
                                 content_without_delimiters
                             )
 
@@ -157,7 +163,6 @@ class TemplateTokenizer(PydanticField):
                                     CodeBlock(
                                         content_without_delimiters,
                                         code_blocks,
-                                        self.log,
                                     )
                                 )
                             else:
@@ -171,9 +176,7 @@ class TemplateTokenizer(PydanticField):
 
         # If there is something left after the last block, capture it as a TextBlock
         if end_of_last_block < len(text):
-            blocks.append(
-                TextBlock.from_text(text, end_of_last_block, len(text), log=self.log)
-            )
+            blocks.append(TextBlock.from_text(text, end_of_last_block, len(text)))
 
         return blocks
 

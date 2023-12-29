@@ -12,15 +12,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
@@ -33,7 +29,7 @@ public class StepwisePlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="StepwisePlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">Optional configuration object</param>
     public StepwisePlanner(
         Kernel kernel,
@@ -51,20 +47,22 @@ public class StepwisePlanner
         this._manualTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderFunctionManual.skprompt.txt");
         this._questionTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderQuestion.skprompt.txt");
 
-        // Load or use default PromptFunctionModel
+        // Load or use default PromptModel
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
+        ILoggerFactory loggerFactory = this._kernel.LoggerFactory;
+
         // Initialize prompt renderer
-        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportPluginFromObject(this, RestrictedPluginName);
 
         // Create context and logger
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = loggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
@@ -108,7 +106,7 @@ public class StepwisePlanner
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result</returns>
     /// <exception cref="KernelException">No AIService available for getting completions.</exception>
-    [KernelFunction, KernelName("ExecutePlan"), Description("Execute a plan")]
+    [KernelFunction, Description("Execute a plan")]
     public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
@@ -349,8 +347,7 @@ public class StepwisePlanner
         }
         else
         {
-            var textCompletion = this._kernel.GetService<ITextCompletion>();
-            aiService = textCompletion;
+            aiService = this._kernel.GetService<ITextGeneration>();
             chatHistory = new ChatHistory();
         }
 
@@ -415,7 +412,7 @@ public class StepwisePlanner
             var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
             return llmResponse;
         }
-        else if (aiService is ITextCompletion textCompletion)
+        else if (aiService is ITextGeneration textGeneration)
         {
             var thoughtProcess = string.Join("\n", chatHistory.Select(m => m.Content));
 
@@ -427,7 +424,7 @@ public class StepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textGeneration.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {

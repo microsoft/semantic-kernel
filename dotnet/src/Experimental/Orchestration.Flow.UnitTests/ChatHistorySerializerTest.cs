@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Xunit;
-
-#pragma warning disable SKEXP0001
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
