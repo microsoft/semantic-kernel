@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
@@ -32,11 +33,23 @@ internal sealed class GeminiRequest
     /// <param name="prompt">The prompt to be assigned to the GeminiRequest.</param>
     /// <param name="executionSettings">The execution settings to be applied to the GeminiRequest.</param>
     /// <returns>A new instance of <see cref="GeminiRequest"/>.</returns>
-    public static GeminiRequest FromPromptExecutionSettings(string prompt, GeminiPromptExecutionSettings executionSettings)
+    public static GeminiRequest FromPromptAndExecutionSettings(
+        string prompt,
+        GeminiPromptExecutionSettings executionSettings)
     {
         GeminiRequest obj = CreateGeminiRequest(prompt);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
+        return obj;
+    }
+
+    public static GeminiRequest FromChatHistoryAndExecutionSettings(
+        ChatHistory chatHistory,
+        GeminiPromptExecutionSettings promptExecutionSettings)
+    {
+        GeminiRequest obj = CreateGeminiRequest(chatHistory);
+        AddSafetySettings(promptExecutionSettings, obj);
+        AddConfiguration(promptExecutionSettings, obj);
         return obj;
     }
 
@@ -57,6 +70,25 @@ internal sealed class GeminiRequest
                     }
                 }
             }
+        };
+        return obj;
+    }
+
+    private static GeminiRequest CreateGeminiRequest(ChatHistory chatHistory)
+    {
+        GeminiRequest obj = new()
+        {
+            Contents = chatHistory.Select(c => new GeminiRequestContent
+            {
+                Parts = new List<GeminiRequestPart>
+                {
+                    new()
+                    {
+                        Text = c.Content ?? ""
+                    }
+                },
+                Role = GeminiChatRole.FromAuthorRole(c.Role)
+            }).ToList()
         };
         return obj;
     }

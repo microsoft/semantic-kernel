@@ -4,20 +4,20 @@
 
 #endregion
 
-using Microsoft.SemanticKernel.Connectors.Gemini;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.TextGeneration;
 
-public sealed class GeminiTextGenerationServiceTests
+public sealed class GeminiChatCompletionServiceTests
 {
     [Fact]
     public void AttributesShouldContainModelId()
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new GeminiTextGenerationService(model, "key");
+        var service = new GeminiChatCompletionService(model, "key");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);

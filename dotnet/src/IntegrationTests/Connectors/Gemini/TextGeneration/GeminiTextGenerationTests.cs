@@ -39,7 +39,7 @@ public sealed class GeminiTextGenerationTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
-    public async Task GeminiStreamTextGenerationAsync()
+    public async Task GeminiTextStreamingAsync()
     {
         // Arrange
         const string Input = "Write a story about a magic backpack.";

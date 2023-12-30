@@ -19,13 +19,13 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
-public sealed class GeminiTextGenerationServiceTextGenerationTests : IDisposable
+public sealed class GeminiClientChatTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private const string TestDataFilePath = "./TestData/completion_one_response.json";
 
-    public GeminiTextGenerationServiceTextGenerationTests()
+    public GeminiClientChatTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(

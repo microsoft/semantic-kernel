@@ -11,25 +11,24 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
-/// Represents a service for generating text using the Gemini API.
+/// Represents a chat completion service using Gemini API.
 /// </summary>
-public sealed class GeminiTextGenerationService : ITextGenerationService
+public sealed class GeminiChatCompletionService : IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly GeminiClient _client;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GeminiTextGenerationService"/> class.
+    /// Initializes a new instance of the GeminiChatCompletionService class.
     /// </summary>
-    /// <param name="model">The model identifier.</param>
-    /// <param name="apiKey">The API key.</param>
-    /// <param name="httpClient">The optional HTTP client.</param>
-    public GeminiTextGenerationService(string model, string apiKey, HttpClient? httpClient = null)
+    /// <param name="model">The Gemini model for the chat completion service.</param>
+    /// <param name="apiKey">The API key for authentication with the Gemini client.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
+    public GeminiChatCompletionService(string model, string apiKey, HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -42,22 +41,22 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
-        string prompt,
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this._client.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
-        string prompt,
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this._client.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
     }
 }

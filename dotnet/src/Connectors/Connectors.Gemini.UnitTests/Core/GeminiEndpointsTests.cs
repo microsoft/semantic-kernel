@@ -22,14 +22,14 @@ public class GeminiEndpointsTests
     }
 
     [Fact]
-    public void GetGenerateContentEndpointContainsModelsBaseAndModelAndApiKey()
+    public void GetTextGenerationEndpointContainsModelsBaseAndModelAndApiKey()
     {
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
 
         // Act
-        Uri uri = GeminiEndpoints.GetGenerateContentEndpoint(modelId, apiKey);
+        Uri uri = GeminiEndpoints.GetTextGenerationEndpoint(modelId, apiKey);
 
         // Assert
         Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
@@ -38,14 +38,46 @@ public class GeminiEndpointsTests
     }
 
     [Fact]
-    public void GetStreamGenerateContentEndpointContainsModelsBaseAndModelAndApiKey()
+    public void GetStreamTextGenerationEndpointContainsModelsBaseAndModelAndApiKey()
     {
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
 
         // Act
-        Uri uri = GeminiEndpoints.GetStreamGenerateContentEndpoint(modelId, apiKey);
+        Uri uri = GeminiEndpoints.GetStreamTextGenerationEndpoint(modelId, apiKey);
+
+        // Assert
+        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetChatCompletionEndpointContainsModelsBaseAndModelAndApiKey()
+    {
+        // Arrange
+        string modelId = "fake-modelId";
+        string apiKey = "fake-apiKey";
+
+        // Act
+        Uri uri = GeminiEndpoints.GetChatCompletionEndpoint(modelId, apiKey);
+
+        // Assert
+        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetStreamChatCompletionEndpointContainsModelsBaseAndModelAndApiKey()
+    {
+        // Arrange
+        string modelId = "fake-modelId";
+        string apiKey = "fake-apiKey";
+
+        // Act
+        Uri uri = GeminiEndpoints.GetStreamChatCompletionEndpoint(modelId, apiKey);
 
         // Assert
         Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);

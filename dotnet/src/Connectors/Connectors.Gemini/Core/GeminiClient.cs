@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 using Microsoft.SemanticKernel.Http;
 
@@ -24,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// <summary>
 /// Represents a client for interacting with the Gemini API.
 /// </summary>
-internal class GeminiClient
+internal sealed class GeminiClient
 {
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
@@ -60,13 +61,14 @@ internal class GeminiClient
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetGenerateContentEndpoint(this._model, this._apiKey);
-        using var httpRequestMessage = GetHTTPRequestMessage(prompt, executionSettings, endpoint);
+        var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this._model, this._apiKey);
+        var geminiRequest = CreateGeminiRequestFromPrompt(prompt, executionSettings);
+        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
-        return this.DeserializeAndProcessResponseBody(body);
+        return this.DeserializeAndProcessTextResponse(body);
     }
 
     /// <summary>
@@ -76,28 +78,75 @@ internal class GeminiClient
     /// <param name="executionSettings">The prompt execution settings (optional).</param>
     /// <param name="cancellationToken">The cancellation token (optional).</param>
     /// <returns>An asynchronous enumerable of <see cref="StreamingTextContent"/> streaming text contents.</returns>
-    public async IAsyncEnumerable<StreamingTextContent> StreamTextAsync(
+    public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetStreamGenerateContentEndpoint(this._model, this._apiKey);
-        using var httpRequestMessage = GetHTTPRequestMessage(prompt, executionSettings, endpoint);
+        var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this._model, this._apiKey);
+        var geminiRequest = CreateGeminiRequestFromPrompt(prompt, executionSettings);
+        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
-        await foreach (var streamingTextContent in this.ProcessResponseStreamAsync(responseStream, cancellationToken))
+        await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, cancellationToken))
         {
             yield return streamingTextContent;
         }
     }
 
+    public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateChatHistory(chatHistory);
+        var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this._model, this._apiKey);
+        var geminiRequest = CreateGeminiRequestFromChatHistory(chatHistory, executionSettings);
+        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        return this.DeserializeAndProcessChatResponse(body);
+    }
+
+    public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ValidateChatHistory(chatHistory);
+        var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this._model, this._apiKey);
+        var geminiRequest = CreateGeminiRequestFromChatHistory(chatHistory, executionSettings);
+        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+
+        using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+            .ConfigureAwait(false);
+
+        await foreach (var streamingChatMessageContent in this.ProcessChatResponseStreamAsync(responseStream, cancellationToken))
+        {
+            yield return streamingChatMessageContent;
+        }
+    }
+
     #region PRIVATE METHODS
+
+    private static void ValidateChatHistory(ChatHistory chatHistory)
+    {
+        if (chatHistory.Any(message => message.Role == AuthorRole.System))
+        {
+            // TODO: Temporary solution, maybe we can support system messages with two messages in the chat history (one from the user and one from the assistant)
+            throw new NotSupportedException("Gemini API currently doesn't support system messages.");
+        }
+    }
 
     private async Task<string> SendRequestAndGetStringBodyAsync(
         HttpRequestMessage httpRequestMessage,
@@ -110,7 +159,7 @@ internal class GeminiClient
         return body;
     }
 
-    private async IAsyncEnumerable<StreamingTextContent> ProcessResponseStreamAsync(
+    private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -120,21 +169,51 @@ internal class GeminiClient
         {
             if (line is "," or "]")
             {
-                foreach (var textContent in this.DeserializeAndProcessResponseBody(jsonStringBuilder.ToString()))
+                foreach (var textContent in this.DeserializeAndProcessTextResponse(jsonStringBuilder.ToString()))
                 {
                     yield return GetStreamingTextContentFromTextContent(textContent);
                 }
 
-                jsonStringBuilder = new StringBuilder();
-                continue;
+                jsonStringBuilder.Clear();
             }
-
-            if (line[0] == '[')
+            else
             {
-                line = line.Length > 1 ? line.Substring(1) : "";
+                RemoveLeftBracketAndAppendJsonLine(line, jsonStringBuilder);
             }
+        }
+    }
 
-            jsonStringBuilder.Append(line);
+    private static void RemoveLeftBracketAndAppendJsonLine(string line, StringBuilder jsonStringBuilder)
+    {
+        if (line[0] == '[')
+        {
+            line = line.Length > 1 ? line.Substring(1) : "";
+        }
+
+        jsonStringBuilder.Append(line);
+    }
+
+    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(
+        Stream responseStream,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+        var jsonStringBuilder = new StringBuilder();
+        while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
+        {
+            if (line is "," or "]")
+            {
+                foreach (var chatMessageContent in this.DeserializeAndProcessChatResponse(jsonStringBuilder.ToString()))
+                {
+                    yield return GetStreamingChatContentFromChatContent(chatMessageContent);
+                }
+
+                jsonStringBuilder.Clear();
+            }
+            else
+            {
+                RemoveLeftBracketAndAppendJsonLine(line, jsonStringBuilder);
+            }
         }
     }
 
@@ -148,7 +227,19 @@ internal class GeminiClient
         return response;
     }
 
-    private List<TextContent> DeserializeAndProcessResponseBody(string body)
+    private List<TextContent> DeserializeAndProcessTextResponse(string body)
+    {
+        var geminiResponse = DeserializeGeminiResponse(body);
+        return this.ProcessTextResponse(geminiResponse);
+    }
+
+    private List<ChatMessageContent> DeserializeAndProcessChatResponse(string body)
+    {
+        var geminiResponse = DeserializeGeminiResponse(body);
+        return this.ProcessChatResponse(geminiResponse);
+    }
+
+    private static GeminiResponse DeserializeGeminiResponse(string body)
     {
         var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(body);
         if (geminiResponse is null)
@@ -159,8 +250,26 @@ internal class GeminiClient
             };
         }
 
-        return geminiResponse.Candidates.Select(c => new TextContent(c.Content.Parts[0].Text,
-            this._model, innerContent: c, metadata: GetResponseMetadata(geminiResponse, c))).ToList();
+        return geminiResponse;
+    }
+
+    private List<TextContent> ProcessTextResponse(GeminiResponse geminiResponse)
+    {
+        return geminiResponse.Candidates.Select(candidate => new TextContent(
+            text: candidate.Content.Parts[0].Text,
+            modelId: this._model,
+            innerContent: candidate,
+            metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
+    }
+
+    private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
+    {
+        return geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
+            role: GeminiChatRole.ToAuthorRole(candidate.Content.Role),
+            content: candidate.Content.Parts[0].Text,
+            modelId: this._model,
+            innerContent: candidate,
+            metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
     }
 
     private static ReadOnlyDictionary<string, object?> GetResponseMetadata(
@@ -187,27 +296,49 @@ internal class GeminiClient
             })),
     });
 
-    private static HttpRequestMessage GetHTTPRequestMessage(
-        string prompt,
-        PromptExecutionSettings? promptExecutionSettings,
+    private static HttpRequestMessage CreateHTTPRequestMessage(
+        GeminiRequest geminiRequest,
         Uri endpoint)
     {
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        var geminiRequest = GeminiRequest.FromPromptExecutionSettings(prompt, geminiExecutionSettings);
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, geminiRequest);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         return httpRequestMessage;
     }
 
-    private static StreamingTextContent GetStreamingTextContentFromTextContent(TextContent textContent)
+    private static GeminiRequest CreateGeminiRequestFromPrompt(
+        string prompt,
+        PromptExecutionSettings? promptExecutionSettings)
     {
-        return new StreamingTextContent(
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        var geminiRequest = GeminiRequest.FromPromptAndExecutionSettings(prompt, geminiExecutionSettings);
+        return geminiRequest;
+    }
+
+    private static GeminiRequest CreateGeminiRequestFromChatHistory(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? promptExecutionSettings)
+    {
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        var geminiRequest = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, geminiExecutionSettings);
+        return geminiRequest;
+    }
+
+    private static StreamingTextContent GetStreamingTextContentFromTextContent(TextContent textContent)
+        => new(
             text: textContent.Text,
             modelId: textContent.ModelId,
             innerContent: textContent.InnerContent,
             metadata: textContent.Metadata,
             choiceIndex: Convert.ToInt32(textContent.Metadata!["Index"], new NumberFormatInfo()));
-    }
+
+    private static StreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
+        => new(
+            role: chatMessageContent.Role,
+            content: chatMessageContent.Content,
+            modelId: chatMessageContent.ModelId,
+            innerContent: chatMessageContent.InnerContent,
+            metadata: chatMessageContent.Metadata,
+            choiceIndex: Convert.ToInt32(chatMessageContent.Metadata!["Index"], new NumberFormatInfo()));
 
     #endregion
 }

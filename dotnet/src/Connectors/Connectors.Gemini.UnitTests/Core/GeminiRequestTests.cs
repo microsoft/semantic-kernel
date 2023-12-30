@@ -26,7 +26,7 @@ public class GeminiRequestTests
         };
 
         // Act
-        var request = GeminiRequest.FromPromptExecutionSettings(prompt, executionSettings);
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
         Assert.NotNull(request.Configuration);
@@ -49,7 +49,7 @@ public class GeminiRequestTests
         };
 
         // Act
-        var request = GeminiRequest.FromPromptExecutionSettings(prompt, executionSettings);
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
         Assert.NotNull(request.SafetySettings);
@@ -65,7 +65,7 @@ public class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings();
 
         // Act
-        var request = GeminiRequest.FromPromptExecutionSettings(prompt, executionSettings);
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
         Assert.Equal(prompt, request.Contents[0].Parts[0].Text);
