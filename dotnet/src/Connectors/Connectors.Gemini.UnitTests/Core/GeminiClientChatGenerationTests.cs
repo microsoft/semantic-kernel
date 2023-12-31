@@ -155,6 +155,48 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
 
+    [Fact]
+    public async Task ShouldThrowNotSupportedIfChatHistoryContainSystemMessageAsync()
+    {
+        // Arrange
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var chatHistory = new ChatHistory("System message");
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+            () => client.GenerateChatMessageAsync(chatHistory));
+    }
+
+    [Fact]
+    public async Task ShouldThrowNotSupportedIfChatHistoryHaveIncorrectOrderAsync()
+    {
+        // Arrange
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+        chatHistory.AddAssistantMessage("Hi");
+        chatHistory.AddAssistantMessage("Hi me again");
+        chatHistory.AddUserMessage("How are you?");
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+            () => client.GenerateChatMessageAsync(chatHistory));
+    }
+
+    [Fact]
+    public async Task ShouldThrowNotSupportedIfChatHistoryNotEndWithUserMessageAsync()
+    {
+        // Arrange
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+        chatHistory.AddAssistantMessage("Hi");
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+            () => client.GenerateChatMessageAsync(chatHistory));
+    }
+
     private static ChatHistory CreateChatHistory()
     {
         var chatHistory = new ChatHistory();
