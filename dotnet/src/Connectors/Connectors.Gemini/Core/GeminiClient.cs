@@ -28,8 +28,8 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 internal sealed class GeminiClient
 {
     private readonly string _apiKey;
-    private readonly HttpClient _httpClient;
     private readonly string _model;
+    private readonly HttpClient _httpClient;
 
     /// <summary>
     /// Initializes a new instance of the GeminiClient class.
@@ -163,17 +163,39 @@ internal sealed class GeminiClient
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        await foreach (var geminiResponse in ProcessResponseStreamAsync(responseStream, cancellationToken))
+        {
+            foreach (var textContent in this.ProcessTextResponse(geminiResponse))
+            {
+                yield return GetStreamingTextContentFromTextContent(textContent);
+            }
+        }
+    }
+
+    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(
+        Stream responseStream,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var geminiResponse in ProcessResponseStreamAsync(responseStream, cancellationToken))
+        {
+            foreach (var chatMessageContent in this.ProcessChatResponse(geminiResponse))
+            {
+                yield return GetStreamingChatContentFromChatContent(chatMessageContent);
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<GeminiResponse> ProcessResponseStreamAsync(
+        Stream responseStream,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
         using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
         var jsonStringBuilder = new StringBuilder();
         while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
         {
             if (line is "," or "]")
             {
-                foreach (var textContent in this.DeserializeAndProcessTextResponse(jsonStringBuilder.ToString()))
-                {
-                    yield return GetStreamingTextContentFromTextContent(textContent);
-                }
-
+                yield return DeserializeGeminiResponse(jsonStringBuilder.ToString());
                 jsonStringBuilder.Clear();
             }
             else
@@ -191,30 +213,6 @@ internal sealed class GeminiClient
         }
 
         jsonStringBuilder.Append(line);
-    }
-
-    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(
-        Stream responseStream,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
-        var jsonStringBuilder = new StringBuilder();
-        while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
-        {
-            if (line is "," or "]")
-            {
-                foreach (var chatMessageContent in this.DeserializeAndProcessChatResponse(jsonStringBuilder.ToString()))
-                {
-                    yield return GetStreamingChatContentFromChatContent(chatMessageContent);
-                }
-
-                jsonStringBuilder.Clear();
-            }
-            else
-            {
-                RemoveLeftBracketAndAppendJsonLine(line, jsonStringBuilder);
-            }
-        }
     }
 
     private async Task<HttpResponseMessage> SendRequestAndGetResponseStreamAsync(
