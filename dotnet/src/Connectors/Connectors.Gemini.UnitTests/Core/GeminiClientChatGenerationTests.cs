@@ -40,7 +40,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         // Arrange
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
             await File.ReadAllTextAsync(ChatTestDataFilePath));
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -59,7 +59,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldReturnValidChatResponseAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -75,7 +75,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldReturnValidMetadataAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -101,7 +101,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var client = new GeminiClient(modelId, "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: modelId);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -117,7 +117,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldReturnResponseWithValidInnerContentAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -135,7 +135,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings()
         {
@@ -159,7 +159,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldThrowNotSupportedIfChatHistoryContainSystemMessageAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = new ChatHistory("System message");
 
         // Act & Assert
@@ -171,7 +171,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldThrowNotSupportedIfChatHistoryHaveIncorrectOrderAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
@@ -187,7 +187,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldThrowNotSupportedIfChatHistoryNotEndWithUserMessageAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
@@ -201,7 +201,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = new ChatHistory();
 
         // Act & Assert

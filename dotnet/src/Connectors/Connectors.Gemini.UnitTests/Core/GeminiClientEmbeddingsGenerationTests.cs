@@ -36,7 +36,7 @@ public sealed class GeminiClientEmbeddingsGenerationTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var client = new GeminiClient(modelId, "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", embeddingModel: modelId);
         var dataToEmbed = new List<string>()
         {
             "Write a story about a magic backpack.",
@@ -50,15 +50,15 @@ public sealed class GeminiClientEmbeddingsGenerationTests : IDisposable
         var request = JsonSerializer.Deserialize<GeminiEmbeddingRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Collection(request.Requests,
-            item => Assert.Contains(modelId, item.Model),
-            item => Assert.Contains(modelId, item.Model));
+            item => Assert.Contains(modelId, item.Model, StringComparison.Ordinal),
+            item => Assert.Contains(modelId, item.Model, StringComparison.Ordinal));
     }
 
     [Fact]
     public async Task ShouldReturnValidEmbeddingsResponseAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", embeddingModel: "fake-model");
         var dataToEmbed = new List<string>()
         {
             "Write a story about a magic backpack.",

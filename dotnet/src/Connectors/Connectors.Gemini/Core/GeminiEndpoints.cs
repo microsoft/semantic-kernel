@@ -67,4 +67,13 @@ public static class GeminiEndpoints
     /// <returns>The URI endpoint for fetching embeddings.</returns>
     public static Uri GetEmbeddingsEndpoint(string modelId, string apiKey)
         => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:batchEmbedContents?key={apiKey}");
+
+    /// <summary>
+    /// Constructs the count tokens endpoint URI for a given model ID and API key.
+    /// </summary>
+    /// <param name="modelId">The ID of the model.</param>
+    /// <param name="apiKey">The API key for authentication.</param>
+    /// <returns>The count tokens endpoint URI.</returns>
+    public static Uri GetCountTokensEndpoint(string modelId, string apiKey)
+        => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:countTokens?key={apiKey}");
 }

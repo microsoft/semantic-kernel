@@ -100,4 +100,20 @@ public class GeminiEndpointsTests
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void GetCountTokensEndpointContainsModelsBaseAndModelAndApiKey()
+    {
+        // Arrange
+        string modelId = "fake-modelId";
+        string apiKey = "fake-apiKey";
+
+        // Act
+        Uri uri = GeminiEndpoints.GetCountTokensEndpoint(modelId, apiKey);
+
+        // Assert
+        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
+    }
 }

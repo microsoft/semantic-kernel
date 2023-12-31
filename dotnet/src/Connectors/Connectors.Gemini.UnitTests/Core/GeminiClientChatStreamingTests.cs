@@ -38,7 +38,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldContainRolesInRequestAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -57,7 +57,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnValidChatResponseAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
@@ -87,7 +87,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnValidMetadataAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -114,7 +114,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var client = new GeminiClient(modelId, "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: modelId);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -131,7 +131,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnResponseWithValidInnerContentAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -150,7 +150,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
-        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var chatHistory = CreateChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings()
         {

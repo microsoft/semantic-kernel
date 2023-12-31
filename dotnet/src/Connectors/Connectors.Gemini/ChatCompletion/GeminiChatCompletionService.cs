@@ -35,7 +35,7 @@ public sealed class GeminiChatCompletionService : IChatCompletionService, ITextG
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._client = new GeminiClient(model, apiKey, HttpClientProvider.GetHttpClient(httpClient));
+        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), apiKey, modelId: model);
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
     }
 

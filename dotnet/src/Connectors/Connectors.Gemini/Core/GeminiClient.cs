@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -27,21 +28,23 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 internal sealed class GeminiClient
 {
     private readonly string _apiKey;
-    private readonly string _model;
+    private readonly string? _model;
+    private readonly string? _embeddingModel;
     private readonly HttpClient _httpClient;
 
     /// <summary>
     /// Initializes a new instance of the GeminiClient class.
     /// </summary>
-    /// <param name="modelId">The ID of the model.</param>
-    /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="httpClient">The HttpClient instance to use for making HTTP requests.</param>
-    public GeminiClient(string modelId, string apiKey, HttpClient httpClient)
+    /// <param name="apiKey">The API key for authentication.</param>
+    /// <param name="modelId">The ID of the model (optional)</param>
+    /// <param name="embeddingModel">The embedding model (optional)</param>
+    public GeminiClient(HttpClient httpClient, string apiKey, string? modelId = null, string? embeddingModel = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         this._model = modelId;
+        this._embeddingModel = embeddingModel;
         this._apiKey = apiKey;
         this._httpClient = httpClient;
     }
@@ -60,6 +63,7 @@ internal sealed class GeminiClient
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(this._model);
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this._model, this._apiKey);
@@ -84,6 +88,7 @@ internal sealed class GeminiClient
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(this._model);
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this._model, this._apiKey);
@@ -117,7 +122,9 @@ internal sealed class GeminiClient
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(this._model);
         ValidateChatHistory(chatHistory);
+
         var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this._model, this._apiKey);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
@@ -140,7 +147,9 @@ internal sealed class GeminiClient
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(this._model);
         ValidateChatHistory(chatHistory);
+
         var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this._model, this._apiKey);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
@@ -164,10 +173,11 @@ internal sealed class GeminiClient
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(this._embeddingModel);
         Verify.NotNullOrEmpty(data);
 
-        var endpoint = GeminiEndpoints.GetEmbeddingsEndpoint(this._model, this._apiKey);
-        var geminiRequest = GeminiEmbeddingRequest.FromData(data, this._model);
+        var endpoint = GeminiEndpoints.GetEmbeddingsEndpoint(this._embeddingModel, this._apiKey);
+        var geminiRequest = GeminiEmbeddingRequest.FromData(data, this._embeddingModel);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -178,7 +188,35 @@ internal sealed class GeminiClient
 
     #endregion
 
+    #region COUNT TOKENS
+
+    public async Task<int> CountTokensAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(this._model);
+        Verify.NotNullOrWhiteSpace(prompt);
+
+        var endpoint = GeminiEndpoints.GetCountTokensEndpoint(this._model, this._apiKey);
+        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
+        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        return DeserializeAndProcessCountTokensResponse(body);
+    }
+
+    #endregion
+
     #region PRIVATE METHODS
+
+    private static int DeserializeAndProcessCountTokensResponse(string body)
+    {
+        var node = DeserializeResponse<JsonNode>(body);
+        return node["totalTokens"]?.GetValue<int>() ?? throw new KernelException("Invalid response from model");
+    }
 
     private static void ValidateChatHistory(ChatHistory chatHistory)
     {

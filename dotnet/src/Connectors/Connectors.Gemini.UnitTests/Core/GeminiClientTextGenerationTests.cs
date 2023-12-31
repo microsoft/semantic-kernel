@@ -38,7 +38,7 @@ public sealed class GeminiClientChatTests : IDisposable
     public async Task ShouldUseUserAgentAsync()
     {
         // Arrange
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
 
         // Act
         await tgs.GenerateTextAsync("fake-text");
@@ -55,7 +55,7 @@ public sealed class GeminiClientChatTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var tgs = new GeminiClient(modelId, "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: modelId);
 
         // Act
         await tgs.GenerateTextAsync("fake-text");
@@ -69,7 +69,7 @@ public sealed class GeminiClientChatTests : IDisposable
     {
         // Arrange
         string fakeAPIKey = "fake-api-key";
-        var tgs = new GeminiClient("fake-model", fakeAPIKey, this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, fakeAPIKey, modelId: "fake-model");
 
         // Act
         await tgs.GenerateTextAsync("fake-text");
@@ -83,7 +83,7 @@ public sealed class GeminiClientChatTests : IDisposable
     {
         // Arrange
         var baseEndPoint = GeminiEndpoints.BaseEndpoint.AbsoluteUri;
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
 
         // Act
         await tgs.GenerateTextAsync("fake-text");
@@ -97,7 +97,7 @@ public sealed class GeminiClientChatTests : IDisposable
     {
         // Arrange
         string prompt = "fake-prompt";
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
 
         // Act
         await tgs.GenerateTextAsync(prompt);
@@ -112,7 +112,7 @@ public sealed class GeminiClientChatTests : IDisposable
     public async Task ShouldReturnValidModelTextResponseAsync()
     {
         // Arrange
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
 
         // Act
         IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
@@ -129,7 +129,7 @@ public sealed class GeminiClientChatTests : IDisposable
     public async Task ShouldReturnValidMetadataAsync()
     {
         // Arrange
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
 
         // Act
         IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
@@ -154,7 +154,7 @@ public sealed class GeminiClientChatTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var tgs = new GeminiClient(modelId, "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: modelId);
 
         // Act
         IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
@@ -169,7 +169,7 @@ public sealed class GeminiClientChatTests : IDisposable
     public async Task ShouldReturnResponseWithValidInnerContentAsync()
     {
         // Arrange
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
 
         // Act
         IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
@@ -186,7 +186,7 @@ public sealed class GeminiClientChatTests : IDisposable
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
-        var tgs = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 102,
