@@ -11,13 +11,14 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Represents a chat completion service using Gemini API.
 /// </summary>
-public sealed class GeminiChatCompletionService : IChatCompletionService
+public sealed class GeminiChatCompletionService : IChatCompletionService, ITextGenerationService
 {
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly GeminiClient _client;
@@ -58,5 +59,25 @@ public sealed class GeminiChatCompletionService : IChatCompletionService
         CancellationToken cancellationToken = default)
     {
         return this._client.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this._client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this._client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
     }
 }

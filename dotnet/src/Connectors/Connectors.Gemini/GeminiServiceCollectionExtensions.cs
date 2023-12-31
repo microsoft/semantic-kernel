@@ -87,6 +87,8 @@ public static class GeminiServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+            new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
         return builder;
     }
 
@@ -108,7 +110,10 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(modelId);
         Verify.NotNull(apiKey);
 
-        return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
+        services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+            new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
+        return services;
     }
 }

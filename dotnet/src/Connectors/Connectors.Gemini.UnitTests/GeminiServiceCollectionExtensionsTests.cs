@@ -48,7 +48,7 @@ public class GeminiServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void GeminiChatCompletionServiceShouldBeRegisteredInKernelServices()
+    public void GeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
@@ -58,13 +58,13 @@ public class GeminiServiceCollectionExtensionsTests
         var kernel = kernelBuilder.Build();
 
         // Assert
-        var textGenerationService = kernel.GetRequiredService<IChatCompletionService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<GeminiChatCompletionService>(textGenerationService);
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        Assert.NotNull(chatCompletionService);
+        Assert.IsType<GeminiChatCompletionService>(chatCompletionService);
     }
 
     [Fact]
-    public void GeminiChatCompletionServiceShouldBeRegisteredInServiceCollection()
+    public void GeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -74,7 +74,39 @@ public class GeminiServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        var textGenerationService = serviceProvider.GetRequiredService<IChatCompletionService>();
+        var chatCompletionService = serviceProvider.GetRequiredService<IChatCompletionService>();
+        Assert.NotNull(chatCompletionService);
+        Assert.IsType<GeminiChatCompletionService>(chatCompletionService);
+    }
+
+    [Fact]
+    public void GeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddGeminiChatCompletion("modelId", "apiKey");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
+        Assert.NotNull(textGenerationService);
+        Assert.IsType<GeminiChatCompletionService>(textGenerationService);
+    }
+
+    [Fact]
+    public void GeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddGeminiChatCompletion("modelId", "apiKey");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
         Assert.IsType<GeminiChatCompletionService>(textGenerationService);
     }
