@@ -84,7 +84,9 @@ internal sealed class GeminiRequest
                 {
                     new()
                     {
-                        Text = c.Content ?? ""
+                        Text = (c.Content ?? (c.Items?.SingleOrDefault(content => content is TextContent)
+                            as TextContent)?.Text) ?? string.Empty,
+                        InlineData = null // TODO: Add support for inline data (image)
                     }
                 },
                 Role = GeminiChatRole.FromAuthorRole(c.Role)
@@ -157,6 +159,19 @@ internal sealed class GeminiRequestPart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
+
+    [JsonPropertyName("inlineData")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiRequestInlineData? InlineData { get; set; }
+}
+
+internal sealed class GeminiRequestInlineData
+{
+    [JsonPropertyName("mimeType")]
+    public string MimeType { get; set; }
+
+    [JsonPropertyName("data")]
+    public string Data { get; set; }
 }
 
 internal sealed class GeminiRequestSafetySetting

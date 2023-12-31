@@ -47,6 +47,8 @@ internal sealed class GeminiClient
         this._httpClient = httpClient;
     }
 
+    #region TEXT GENERATION
+
     /// <summary>
     /// Generates text based on the given prompt asynchronously.
     /// </summary>
@@ -62,7 +64,7 @@ internal sealed class GeminiClient
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this._model, this._apiKey);
-        var geminiRequest = CreateGeminiRequestFromPrompt(prompt, executionSettings);
+        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -86,7 +88,7 @@ internal sealed class GeminiClient
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this._model, this._apiKey);
-        var geminiRequest = CreateGeminiRequestFromPrompt(prompt, executionSettings);
+        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
@@ -99,6 +101,10 @@ internal sealed class GeminiClient
             yield return streamingTextContent;
         }
     }
+
+    #endregion
+
+    #region CHAT COMPLETION
 
     /// <summary>
     /// Generates a chat message asynchronously.
@@ -114,7 +120,7 @@ internal sealed class GeminiClient
     {
         ValidateChatHistory(chatHistory);
         var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this._model, this._apiKey);
-        var geminiRequest = CreateGeminiRequestFromChatHistory(chatHistory, executionSettings);
+        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -137,7 +143,7 @@ internal sealed class GeminiClient
     {
         ValidateChatHistory(chatHistory);
         var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this._model, this._apiKey);
-        var geminiRequest = CreateGeminiRequestFromChatHistory(chatHistory, executionSettings);
+        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
@@ -151,6 +157,8 @@ internal sealed class GeminiClient
         }
     }
 
+    #endregion
+
     #region PRIVATE METHODS
 
     private static void ValidateChatHistory(ChatHistory chatHistory)
@@ -159,6 +167,23 @@ internal sealed class GeminiClient
         {
             // TODO: Temporary solution, maybe we can support system messages with two messages in the chat history (one from the user and one from the assistant)
             throw new NotSupportedException("Gemini API currently doesn't support system messages.");
+        }
+
+        bool incorrectOrder = false;
+        for (int i = 0; i < chatHistory.Count; i++)
+        {
+            if (chatHistory[i].Role != (i % 2 == 0 ? AuthorRole.User : AuthorRole.Assistant) ||
+                (i == chatHistory.Count - 1 && chatHistory[i].Role != AuthorRole.User))
+            {
+                incorrectOrder = true;
+                break;
+            }
+        }
+
+        if (incorrectOrder)
+        {
+            throw new NotSupportedException(
+                "Gemini API support only chat history with order: User, Assistant, User, Assistant etc.");
         }
     }
 
@@ -317,7 +342,7 @@ internal sealed class GeminiClient
         return httpRequestMessage;
     }
 
-    private static GeminiRequest CreateGeminiRequestFromPrompt(
+    private static GeminiRequest CreateGeminiRequest(
         string prompt,
         PromptExecutionSettings? promptExecutionSettings)
     {
@@ -326,7 +351,7 @@ internal sealed class GeminiClient
         return geminiRequest;
     }
 
-    private static GeminiRequest CreateGeminiRequestFromChatHistory(
+    private static GeminiRequest CreateGeminiRequest(
         ChatHistory chatHistory,
         PromptExecutionSettings? promptExecutionSettings)
     {
