@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings;
+namespace Microsoft.SemanticKernel.Connectors.Gemini;
 
 /// <summary>
 /// Represents the settings for executing a prompt with the Gemini model.

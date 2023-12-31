@@ -5,8 +5,8 @@
 #endregion
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;

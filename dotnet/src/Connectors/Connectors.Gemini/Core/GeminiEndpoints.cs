@@ -58,4 +58,13 @@ public static class GeminiEndpoints
     /// <returns>The URI endpoint for streaming chat completion.</returns>
     public static Uri GetStreamChatCompletionEndpoint(string modelId, string apiKey)
         => GetStreamTextGenerationEndpoint(modelId, apiKey);
+
+    /// <summary>
+    /// Constructs the endpoint URL for fetching embeddings for a specific model.
+    /// </summary>
+    /// <param name="modelId">The ID of the model to be used for fetching embeddings.</param>
+    /// <param name="apiKey">The API key to access the embeddings generation service.</param>
+    /// <returns>The URI endpoint for fetching embeddings.</returns>
+    public static Uri GetEmbeddingsEndpoint(string modelId, string apiKey)
+        => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:batchEmbedContents?key={apiKey}");
 }

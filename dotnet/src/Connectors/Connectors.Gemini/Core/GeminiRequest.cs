@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 

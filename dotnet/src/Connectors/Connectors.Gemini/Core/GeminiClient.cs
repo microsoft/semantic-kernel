@@ -17,7 +17,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
@@ -159,10 +158,32 @@ internal sealed class GeminiClient
 
     #endregion
 
+    #region EMBEDDINGS
+
+    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrEmpty(data);
+
+        var endpoint = GeminiEndpoints.GetEmbeddingsEndpoint(this._model, this._apiKey);
+        var geminiRequest = GeminiEmbeddingRequest.FromData(data, this._model);
+        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        return this.DeserializeAndProcessEmbeddingsResponse(body);
+    }
+
+    #endregion
+
     #region PRIVATE METHODS
 
     private static void ValidateChatHistory(ChatHistory chatHistory)
     {
+        Verify.NotNullOrEmpty(chatHistory);
+
         if (chatHistory.Any(message => message.Role == AuthorRole.System))
         {
             // TODO: Temporary solution, maybe we can support system messages with two messages in the chat history (one from the user and one from the assistant)
@@ -234,7 +255,7 @@ internal sealed class GeminiClient
         {
             if (line is "," or "]")
             {
-                yield return DeserializeGeminiResponse(jsonStringBuilder.ToString());
+                yield return DeserializeResponse<GeminiResponse>(jsonStringBuilder.ToString());
                 jsonStringBuilder.Clear();
             }
             else
@@ -266,19 +287,25 @@ internal sealed class GeminiClient
 
     private List<TextContent> DeserializeAndProcessTextResponse(string body)
     {
-        var geminiResponse = DeserializeGeminiResponse(body);
+        var geminiResponse = DeserializeResponse<GeminiResponse>(body);
         return this.ProcessTextResponse(geminiResponse);
     }
 
     private List<ChatMessageContent> DeserializeAndProcessChatResponse(string body)
     {
-        var geminiResponse = DeserializeGeminiResponse(body);
+        var geminiResponse = DeserializeResponse<GeminiResponse>(body);
         return this.ProcessChatResponse(geminiResponse);
     }
 
-    private static GeminiResponse DeserializeGeminiResponse(string body)
+    private List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
     {
-        var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(body);
+        var embeddingsResponse = DeserializeResponse<GeminiEmbeddingResponse>(body);
+        return ProcessEmbeddingsResponse(embeddingsResponse);
+    }
+
+    private static T DeserializeResponse<T>(string body)
+    {
+        T? geminiResponse = JsonSerializer.Deserialize<T>(body);
         if (geminiResponse is null)
         {
             throw new KernelException("Unexpected response from model")
@@ -309,6 +336,9 @@ internal sealed class GeminiClient
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
     }
 
+    private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GeminiEmbeddingResponse embeddingsResponse)
+        => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();
+
     private static ReadOnlyDictionary<string, object?> GetResponseMetadata(
         GeminiResponse geminiResponse,
         GeminiResponseCandidate candidate) => new(new Dictionary<string, object?>
@@ -334,10 +364,10 @@ internal sealed class GeminiClient
     });
 
     private static HttpRequestMessage CreateHTTPRequestMessage(
-        GeminiRequest geminiRequest,
+        object requestData,
         Uri endpoint)
     {
-        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, geminiRequest);
+        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         return httpRequestMessage;
     }

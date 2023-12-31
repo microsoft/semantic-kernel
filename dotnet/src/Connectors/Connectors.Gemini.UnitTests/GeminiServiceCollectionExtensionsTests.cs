@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
@@ -109,5 +110,37 @@ public class GeminiServiceCollectionExtensionsTests
         var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
         Assert.IsType<GeminiChatCompletionService>(textGenerationService);
+    }
+
+    [Fact]
+    public void GeminiEmbeddingsGenerationServiceShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddGeminiEmbeddingsGeneration("modelId", "apiKey");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var embeddingsGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<GeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+    }
+
+    [Fact]
+    public void GeminiEmbeddingsGenerationServiceShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddGeminiEmbeddingsGeneration("modelId", "apiKey");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var embeddingsGenerationService = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<GeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 }

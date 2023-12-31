@@ -12,8 +12,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 using SemanticKernel.UnitTests;
 using Xunit;
 
@@ -163,7 +163,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var chatHistory = new ChatHistory("System message");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+        await Assert.ThrowsAsync<NotSupportedException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 
@@ -179,7 +179,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         chatHistory.AddUserMessage("How are you?");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+        await Assert.ThrowsAsync<NotSupportedException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 
@@ -193,7 +193,19 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         chatHistory.AddAssistantMessage("Hi");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => client.GenerateChatMessageAsync(chatHistory));
+    }
+
+    [Fact]
+    public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
+    {
+        // Arrange
+        var client = new GeminiClient("fake-model", "fake-api-key", this._httpClient);
+        var chatHistory = new ChatHistory();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 

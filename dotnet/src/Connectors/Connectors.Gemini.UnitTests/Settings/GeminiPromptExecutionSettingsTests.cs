@@ -7,7 +7,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
+using Microsoft.SemanticKernel.Connectors.Gemini;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Settings;
