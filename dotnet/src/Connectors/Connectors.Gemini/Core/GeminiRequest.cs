@@ -88,7 +88,7 @@ internal sealed class GeminiRequest
                         InlineData = null // TODO: Add support for inline data (image)
                     }
                 },
-                Role = GeminiChatRole.FromAuthorRole(c.Role)
+                Role = c.Role
             }).ToList()
         };
         return obj;
@@ -147,8 +147,9 @@ internal sealed class GeminiRequestContent
     public IList<GeminiRequestPart> Parts { get; set; }
 
     [JsonPropertyName("role")]
+    [JsonConverter(typeof(AuthorRoleConverter))]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Role { get; set; }
+    public AuthorRole? Role { get; set; }
 }
 
 internal sealed class GeminiRequestPart

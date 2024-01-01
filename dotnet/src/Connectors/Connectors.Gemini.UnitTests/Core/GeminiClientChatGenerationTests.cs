@@ -50,9 +50,9 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Collection(request.Contents,
-            item => Assert.Equal(GeminiChatRole.FromAuthorRole(chatHistory[0].Role), item.Role),
-            item => Assert.Equal(GeminiChatRole.FromAuthorRole(chatHistory[1].Role), item.Role),
-            item => Assert.Equal(GeminiChatRole.FromAuthorRole(chatHistory[2].Role), item.Role));
+            item => Assert.Equal(chatHistory[0].Role, item.Role),
+            item => Assert.Equal(chatHistory[1].Role, item.Role),
+            item => Assert.Equal(chatHistory[2].Role, item.Role));
     }
 
     [Fact]

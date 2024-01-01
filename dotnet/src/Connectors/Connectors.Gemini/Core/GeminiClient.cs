@@ -273,23 +273,19 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     }
 
     private List<TextContent> ProcessTextResponse(GeminiResponse geminiResponse)
-    {
-        return geminiResponse.Candidates.Select(candidate => new TextContent(
+        => geminiResponse.Candidates.Select(candidate => new TextContent(
             text: candidate.Content.Parts[0].Text,
             modelId: this.ModelId,
             innerContent: candidate,
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
-    }
 
     private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
-    {
-        return geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
-            role: GeminiChatRole.ToAuthorRole(candidate.Content.Role),
+        => geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
+            role: candidate.Content.Role ?? AuthorRole.Assistant,
             content: candidate.Content.Parts[0].Text,
             modelId: this.ModelId,
             innerContent: candidate,
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
-    }
 
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GeminiEmbeddingResponse embeddingsResponse)
         => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();

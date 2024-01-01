@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
@@ -42,7 +43,8 @@ public class GeminiResponseContent
     public IList<GeminiResponsePart> Parts { get; set; }
 
     [JsonPropertyName("role")]
-    public string Role { get; set; }
+    [JsonConverter(typeof(AuthorRoleConverter))]
+    public AuthorRole? Role { get; set; }
 }
 
 public class GeminiResponsePart
