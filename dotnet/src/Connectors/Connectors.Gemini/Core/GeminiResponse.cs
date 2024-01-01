@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
-public class GeminiResponse
+public sealed class GeminiResponse
 {
     [JsonPropertyName("candidates")]
     public IList<GeminiResponseCandidate> Candidates { get; set; }
@@ -19,7 +19,7 @@ public class GeminiResponse
     public GeminiResponsePromptFeedback? PromptFeedback { get; set; }
 }
 
-public class GeminiResponseCandidate
+public sealed class GeminiResponseCandidate
 {
     [JsonPropertyName("content")]
     public GeminiResponseContent Content { get; set; }
@@ -37,7 +37,7 @@ public class GeminiResponseCandidate
     public int TokenCount { get; set; }
 }
 
-public class GeminiResponseContent
+public sealed class GeminiResponseContent
 {
     [JsonPropertyName("parts")]
     public IList<GeminiResponsePart> Parts { get; set; }
@@ -47,13 +47,13 @@ public class GeminiResponseContent
     public AuthorRole? Role { get; set; }
 }
 
-public class GeminiResponsePart
+public sealed class GeminiResponsePart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
 
-public class GeminiResponseSafetyRating
+public sealed class GeminiResponseSafetyRating
 {
     [JsonPropertyName("category")]
     public string Category { get; set; }
@@ -65,7 +65,7 @@ public class GeminiResponseSafetyRating
     public bool Block { get; set; }
 }
 
-public class GeminiResponsePromptFeedback
+public sealed class GeminiResponsePromptFeedback
 {
     [JsonPropertyName("blockReason")]
     public string? BlockReason { get; set; }

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.TextEmbedding;
 
-public class GeminiTextEmbeddingGenerationServiceTests
+public sealed class GeminiTextEmbeddingGenerationServiceTests
 {
     [Fact]
     public void AttributesShouldContainModelId()

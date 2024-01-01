@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
-public class AuthorRoleConverterTests
+public sealed class AuthorRoleConverterTests
 {
     [Fact]
     public void ReadWhenRoleIsUserReturnsUser()

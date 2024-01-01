@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
-public class GeminiRequestTests
+public sealed class GeminiRequestTests
 {
     [Fact]
     public void FromPromptExecutionSettingsReturnsGeminiRequestWithConfiguration()

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
-public class GeminiEndpointsTests
+public sealed class GeminiEndpointsTests
 {
     [Fact]
     public void ModelsEndpointStartsWithBaseEndpoint()

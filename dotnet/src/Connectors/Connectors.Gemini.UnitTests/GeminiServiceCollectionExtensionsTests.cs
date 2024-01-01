@@ -14,7 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests;
 
-public class GeminiServiceCollectionExtensionsTests
+public sealed class GeminiServiceCollectionExtensionsTests
 {
     [Fact]
     public void GeminiTextGenerationServiceShouldBeRegisteredInKernelServices()

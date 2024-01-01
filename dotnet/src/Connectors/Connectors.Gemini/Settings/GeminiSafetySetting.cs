@@ -226,7 +226,7 @@ public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
     public override string ToString() => this.Label ?? string.Empty;
 }
 
-internal class GeminiSafetyCategoryConverter : JsonConverter<GeminiSafetyCategory>
+internal sealed class GeminiSafetyCategoryConverter : JsonConverter<GeminiSafetyCategory>
 {
     public override GeminiSafetyCategory Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         => new(reader.GetString()!);
@@ -235,7 +235,7 @@ internal class GeminiSafetyCategoryConverter : JsonConverter<GeminiSafetyCategor
         => writer.WriteStringValue(value.Label);
 }
 
-internal class GeminiSafetyThresholdConverter : JsonConverter<GeminiSafetyThreshold>
+internal sealed class GeminiSafetyThresholdConverter : JsonConverter<GeminiSafetyThreshold>
 {
     public override GeminiSafetyThreshold Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         => new(reader.GetString()!);
