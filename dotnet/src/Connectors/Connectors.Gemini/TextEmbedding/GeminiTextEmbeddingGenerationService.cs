@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
@@ -22,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 public sealed class GeminiTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly Dictionary<string, object?> _attributes = new();
-    private readonly GeminiClient _client;
+    private readonly IGeminiClient _client;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiTextEmbeddingGenerationService"/> class.
@@ -37,6 +38,12 @@ public sealed class GeminiTextEmbeddingGenerationService : ITextEmbeddingGenerat
 
         this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), apiKey, embeddingModel: model);
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
+    }
+
+    internal GeminiTextEmbeddingGenerationService(IGeminiClient client)
+    {
+        this._client = client;
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, client.EmbeddingModelId);
     }
 
     /// <inheritdoc />

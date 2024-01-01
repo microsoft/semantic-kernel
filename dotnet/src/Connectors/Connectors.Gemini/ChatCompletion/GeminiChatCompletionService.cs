@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -22,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 public sealed class GeminiChatCompletionService : IChatCompletionService, ITextGenerationService
 {
     private readonly Dictionary<string, object?> _attributes = new();
-    private readonly GeminiClient _client;
+    private readonly IGeminiClient _client;
 
     /// <summary>
     /// Initializes a new instance of the GeminiChatCompletionService class.
@@ -37,6 +38,12 @@ public sealed class GeminiChatCompletionService : IChatCompletionService, ITextG
 
         this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), apiKey, modelId: model);
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
+    }
+
+    internal GeminiChatCompletionService(IGeminiClient client)
+    {
+        this._client = client;
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, client.ModelId);
     }
 
     /// <inheritdoc />
