@@ -46,7 +46,7 @@ public class GeminiPromptExecutionSettingsTests
             MaxTokens = 128,
             SafetySettings = new List<GeminiSafetySetting>()
             {
-                new(GeminiSafetyCategory.HarmCategoryHarassment, GeminiSafetyThreshold.BlockOnlyHigh)
+                new(GeminiSafetyCategory.Harassment, GeminiSafetyThreshold.BlockOnlyHigh)
             }
         };
 
@@ -84,7 +84,7 @@ public class GeminiPromptExecutionSettingsTests
     public void ItCreatesGeminiExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
-        var category = GeminiSafetyCategory.HarmCategoryHarassment;
+        var category = GeminiSafetyCategory.Harassment;
         var threshold = GeminiSafetyThreshold.BlockOnlyHigh;
         string json = $$"""
                         {

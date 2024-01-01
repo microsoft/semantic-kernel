@@ -48,52 +48,52 @@ public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
     /// <summary>
     /// Category is unspecified.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryUnspecified { get; } = new("HARM_CATEGORY_UNSPECIFIED");
+    public static GeminiSafetyCategory Unspecified { get; } = new("HARM_CATEGORY_UNSPECIFIED");
 
     /// <summary>
     /// Contains negative or harmful comments targeting identity and/or protected attributes.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryDerogatory { get; } = new("HARM_CATEGORY_DEROGATORY");
+    public static GeminiSafetyCategory Derogatory { get; } = new("HARM_CATEGORY_DEROGATORY");
 
     /// <summary>
     /// Includes content that is rude, disrespectful, or profane.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryToxicity { get; } = new("HARM_CATEGORY_TOXICITY");
+    public static GeminiSafetyCategory Toxicity { get; } = new("HARM_CATEGORY_TOXICITY");
 
     /// <summary>
     /// Describes scenarios depicting violence against an individual or group, or general descriptions of gore.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryViolence { get; } = new("HARM_CATEGORY_VIOLENCE");
+    public static GeminiSafetyCategory Violence { get; } = new("HARM_CATEGORY_VIOLENCE");
 
     /// <summary>
     /// Contains references to sexual acts or other lewd content.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategorySexual { get; } = new("HARM_CATEGORY_SEXUAL");
+    public static GeminiSafetyCategory Sexual { get; } = new("HARM_CATEGORY_SEXUAL");
 
     /// <summary>
     /// Contains unchecked medical advice.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryMedical { get; } = new("HARM_CATEGORY_MEDICAL");
+    public static GeminiSafetyCategory Medical { get; } = new("HARM_CATEGORY_MEDICAL");
 
     /// <summary>
     /// Includes content that promotes, facilitates, or encourages harmful acts.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryDangerous { get; } = new("HARM_CATEGORY_DANGEROUS");
+    public static GeminiSafetyCategory Dangerous { get; } = new("HARM_CATEGORY_DANGEROUS");
 
     /// <summary>
     /// Consists of harassment content.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryHarassment { get; } = new("HARM_CATEGORY_HARASSMENT");
+    public static GeminiSafetyCategory Harassment { get; } = new("HARM_CATEGORY_HARASSMENT");
 
     /// <summary>
     /// Contains sexually explicit content.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategorySexuallyExplicit { get; } = new("HARM_CATEGORY_SEXUALLY_EXPLICIT");
+    public static GeminiSafetyCategory SexuallyExplicit { get; } = new("HARM_CATEGORY_SEXUALLY_EXPLICIT");
 
     /// <summary>
     /// Contains dangerous content.
     /// </summary>
-    public static GeminiSafetyCategory HarmCategoryDangerousContent { get; } = new("HARM_CATEGORY_DANGEROUS_CONTENT");
+    public static GeminiSafetyCategory DangerousContent { get; } = new("HARM_CATEGORY_DANGEROUS_CONTENT");
 
     /// <summary>
     /// Gets the label of the property.
@@ -174,7 +174,7 @@ public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
     /// <summary>
     /// Threshold is unspecified, block using default threshold.
     /// </summary>
-    public static GeminiSafetyThreshold HarmBlockThresholdUnspecified { get; } = new("HARM_BLOCK_THRESHOLD_UNSPECIFIED");
+    public static GeminiSafetyThreshold Unspecified { get; } = new("HARM_BLOCK_THRESHOLD_UNSPECIFIED");
 
     /// <summary>
     /// Gets the label.
