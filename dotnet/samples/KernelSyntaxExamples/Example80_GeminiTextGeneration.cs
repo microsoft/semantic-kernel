@@ -8,7 +8,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Gemini;
-using Microsoft.SemanticKernel.Connectors.Gemini.Settings;
 
 public static class Example80_GeminiTextGeneration
 {

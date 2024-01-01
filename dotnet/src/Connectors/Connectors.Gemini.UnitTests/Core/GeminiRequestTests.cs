@@ -44,7 +44,7 @@ public class GeminiRequestTests
         {
             SafetySettings = new List<GeminiSafetySetting>
             {
-                new("test-cat", "test-th")
+                new(GeminiSafetyCategory.HarmCategoryDerogatory, GeminiSafetyThreshold.HarmBlockThresholdUnspecified)
             }
         };
 

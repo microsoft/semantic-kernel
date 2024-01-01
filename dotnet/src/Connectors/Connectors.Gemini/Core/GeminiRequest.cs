@@ -20,7 +20,7 @@ internal sealed class GeminiRequest
 
     [JsonPropertyName("safetySettings")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<GeminiRequestSafetySetting>? SafetySettings { get; set; }
+    public IList<GeminiSafetySetting>? SafetySettings { get; set; }
 
     [JsonPropertyName("generationConfig")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -109,11 +109,8 @@ internal sealed class GeminiRequest
 
     private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
     {
-        obj.SafetySettings = executionSettings.SafetySettings?.Select(s => new GeminiRequestSafetySetting
-        {
-            Category = s.Category,
-            Threshold = s.Threshold
-        }).ToList();
+        obj.SafetySettings = executionSettings.SafetySettings?.Select(s
+            => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
     }
 }
 
@@ -171,13 +168,4 @@ internal sealed class GeminiRequestInlineData
 
     [JsonPropertyName("data")]
     public string Data { get; set; }
-}
-
-internal sealed class GeminiRequestSafetySetting
-{
-    [JsonPropertyName("category")]
-    public string Category { get; set; }
-
-    [JsonPropertyName("threshold")]
-    public string Threshold { get; set; }
 }

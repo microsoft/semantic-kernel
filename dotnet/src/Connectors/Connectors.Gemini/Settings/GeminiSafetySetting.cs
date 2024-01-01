@@ -4,122 +4,242 @@
 
 #endregion
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.Connectors.Gemini;
+
+/// <summary>
+/// Represents a safety setting for the Gemini prompt.
+/// </summary>
+public sealed class GeminiSafetySetting
 {
     /// <summary>
-    /// Represents a safety setting for the Gemini prompt.
+    /// Initializes a new instance of the Gemini <see cref="GeminiSafetySetting"/> class.
     /// </summary>
-    public sealed class GeminiSafetySetting
+    /// <param name="category">Category of safety</param>
+    /// <param name="threshold">Value</param>
+    public GeminiSafetySetting(GeminiSafetyCategory category, GeminiSafetyThreshold threshold)
     {
-        /// <summary>
-        /// Initializes a new instance of the Gemini <see cref="GeminiSafetySetting"/> class.
-        /// </summary>
-        /// <param name="category">Category of safety</param>
-        /// <param name="threshold">Value</param>
-        public GeminiSafetySetting(string category, string threshold)
-        {
-            this.Category = category;
-            this.Threshold = threshold;
-        }
-
-        /// <summary>
-        /// Gets or sets the safety category.
-        /// </summary>
-        public string Category { get; set; }
-
-        /// <summary>
-        /// Gets or sets the safety threshold.
-        /// </summary>
-        public string Threshold { get; set; }
+        this.Category = category;
+        this.Threshold = threshold;
     }
+
+    /// <summary>
+    /// Gets or sets the safety category.
+    /// </summary>
+    [JsonPropertyName("category")]
+    public GeminiSafetyCategory Category { get; set; }
+
+    /// <summary>
+    /// Gets or sets the safety threshold.
+    /// </summary>
+    [JsonPropertyName("threshold")]
+    public GeminiSafetyThreshold Threshold { get; set; }
 }
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini.Settings
+/// <summary>
+/// Represents a safety category in the Gemini system.
+/// </summary>
+[JsonConverter(typeof(GeminiSafetyCategoryConverter))]
+public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
 {
     /// <summary>
-    /// Represents safety categories for content filtering.
+    /// Category is unspecified.
     /// </summary>
-    public static class GeminiSafetyCategory
+    public static GeminiSafetyCategory HarmCategoryUnspecified { get; } = new("HARM_CATEGORY_UNSPECIFIED");
+
+    /// <summary>
+    /// Contains negative or harmful comments targeting identity and/or protected attributes.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryDerogatory { get; } = new("HARM_CATEGORY_DEROGATORY");
+
+    /// <summary>
+    /// Includes content that is rude, disrespectful, or profane.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryToxicity { get; } = new("HARM_CATEGORY_TOXICITY");
+
+    /// <summary>
+    /// Describes scenarios depicting violence against an individual or group, or general descriptions of gore.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryViolence { get; } = new("HARM_CATEGORY_VIOLENCE");
+
+    /// <summary>
+    /// Contains references to sexual acts or other lewd content.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategorySexual { get; } = new("HARM_CATEGORY_SEXUAL");
+
+    /// <summary>
+    /// Contains unchecked medical advice.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryMedical { get; } = new("HARM_CATEGORY_MEDICAL");
+
+    /// <summary>
+    /// Includes content that promotes, facilitates, or encourages harmful acts.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryDangerous { get; } = new("HARM_CATEGORY_DANGEROUS");
+
+    /// <summary>
+    /// Consists of harassment content.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryHarassment { get; } = new("HARM_CATEGORY_HARASSMENT");
+
+    /// <summary>
+    /// Contains sexually explicit content.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategorySexuallyExplicit { get; } = new("HARM_CATEGORY_SEXUALLY_EXPLICIT");
+
+    /// <summary>
+    /// Contains dangerous content.
+    /// </summary>
+    public static GeminiSafetyCategory HarmCategoryDangerousContent { get; } = new("HARM_CATEGORY_DANGEROUS_CONTENT");
+
+    /// <summary>
+    /// Gets the label of the property.
+    /// Label will be serialized.
+    /// </summary>
+    public string Label { get; }
+
+    /// <summary>
+    /// Represents a Gemini Safety Category.
+    /// </summary>
+    [JsonConstructor]
+    public GeminiSafetyCategory(string label)
     {
-        /// <summary>
-        /// Category is unspecified.
-        /// </summary>
-        public const string HarmCategoryUnspecified = "HARM_CATEGORY_UNSPECIFIED";
-
-        /// <summary>
-        /// Contains negative or harmful comments targeting identity and/or protected attributes.
-        /// </summary>
-        public const string HarmCategoryDerogatory = "HARM_CATEGORY_DEROGATORY";
-
-        /// <summary>
-        /// Includes content that is rude, disrespectful, or profane.
-        /// </summary>
-        public const string HarmCategoryToxicity = "HARM_CATEGORY_TOXICITY";
-
-        /// <summary>
-        /// Describes scenarios depicting violence against an individual or group, or general descriptions of gore.
-        /// </summary>
-        public const string HarmCategoryViolence = "HARM_CATEGORY_VIOLENCE";
-
-        /// <summary>
-        /// Contains references to sexual acts or other lewd content.
-        /// </summary>
-        public const string HarmCategorySexual = "HARM_CATEGORY_SEXUAL";
-
-        /// <summary>
-        /// Contains unchecked medical advice.
-        /// </summary>
-        public const string HarmCategoryMedical = "HARM_CATEGORY_MEDICAL";
-
-        /// <summary>
-        /// Includes content that promotes, facilitates, or encourages harmful acts.
-        /// </summary>
-        public const string HarmCategoryDangerous = "HARM_CATEGORY_DANGEROUS";
-
-        /// <summary>
-        /// Consists of harassment content.
-        /// </summary>
-        public const string HarmCategoryHarassment = "HARM_CATEGORY_HARASSMENT";
-
-        /// <summary>
-        /// Contains sexually explicit content.
-        /// </summary>
-        public const string HarmCategorySexuallyExplicit = "HARM_CATEGORY_SEXUALLY_EXPLICIT";
-
-        /// <summary>
-        /// Contains dangerous content.
-        /// </summary>
-        public const string HarmCategoryDangerousContent = "HARM_CATEGORY_DANGEROUS_CONTENT";
+        Verify.NotNullOrWhiteSpace(label, nameof(label));
+        this.Label = label;
     }
 
     /// <summary>
-    /// Provides constant values for defining different safety thresholds for blocking unsafe content.
+    /// Overrides the equality operator to compare two GeminiSafetyCategory objects for equality.
     /// </summary>
-    public static class GeminiSafetyThreshold
+    /// <param name="left">The first GeminiSafetyCategory object to compare.</param>
+    /// <param name="right">The second GeminiSafetyCategory object to compare.</param>
+    /// <returns>True if the two GeminiSafetyCategory objects are equal, otherwise false.</returns>
+    public static bool operator ==(GeminiSafetyCategory left, GeminiSafetyCategory right)
+        => left.Equals(right);
+
+    /// <summary>
+    /// Represents the inequality operator for comparing two instances of <see cref="GeminiSafetyCategory"/>.
+    /// </summary>
+    /// <param name="left">The left <see cref="GeminiSafetyCategory"/> instance to compare.</param>
+    /// <param name="right">The right <see cref="GeminiSafetyCategory"/> instance to compare.</param>
+    /// <returns><c>true</c> if the two instances are not equal; otherwise, <c>false</c>.</returns>
+    public static bool operator !=(GeminiSafetyCategory left, GeminiSafetyCategory right)
+        => !(left == right);
+
+    /// <inheritdoc />
+    public bool Equals(GeminiSafetyCategory other)
+        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is GeminiSafetyCategory other && this == other;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label ?? string.Empty);
+
+    /// <inheritdoc />
+    public override string ToString() => this.Label ?? string.Empty;
+}
+
+/// <summary>
+/// Represents a safety threshold for Gemini.
+/// </summary>
+[JsonConverter(typeof(GeminiSafetyThresholdConverter))]
+public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
+{
+    /// <summary>
+    /// Always show regardless of probability of unsafe content.
+    /// </summary>
+    public static GeminiSafetyThreshold BlockNone { get; } = new("BLOCK_NONE");
+
+    /// <summary>
+    /// Block when high probability of unsafe content.
+    /// </summary>
+    public static GeminiSafetyThreshold BlockOnlyHigh { get; } = new("BLOCK_ONLY_HIGH");
+
+    /// <summary>
+    /// Block when medium or high probability of unsafe content.
+    /// </summary>
+    public static GeminiSafetyThreshold BlockMediumAndAbove { get; } = new("BLOCK_MEDIUM_AND_ABOVE");
+
+    /// <summary>
+    /// Block when low, medium or high probability of unsafe content.
+    /// </summary>
+    public static GeminiSafetyThreshold BlockLowAndAbove { get; } = new("BLOCK_LOW_AND_ABOVE");
+
+    /// <summary>
+    /// Threshold is unspecified, block using default threshold.
+    /// </summary>
+    public static GeminiSafetyThreshold HarmBlockThresholdUnspecified { get; } = new("HARM_BLOCK_THRESHOLD_UNSPECIFIED");
+
+    /// <summary>
+    /// Gets the label.
+    /// Label will be serialized.
+    /// </summary>
+    public string Label { get; }
+
+    /// <summary>
+    /// Creates a Gemini safety threshold instance.
+    /// </summary>
+    [JsonConstructor]
+    public GeminiSafetyThreshold(string label)
     {
-        /// <summary>
-        /// Always show regardless of probability of unsafe content.
-        /// </summary>
-        public const string BlockNone = "BLOCK_NONE";
-
-        /// <summary>
-        /// Block when high probability of unsafe content.
-        /// </summary>
-        public const string BlockOnlyHigh = "BLOCK_ONLY_HIGH";
-
-        /// <summary>
-        /// Block when medium or high probability of unsafe content.
-        /// </summary>
-        public const string BlockMediumAndAbove = "BLOCK_MEDIUM_AND_ABOVE";
-
-        /// <summary>
-        /// Block when low, medium or high probability of unsafe content.
-        /// </summary>
-        public const string BlockLowAndAbove = "BLOCK_LOW_AND_ABOVE";
-
-        /// <summary>
-        /// Threshold is unspecified, block using default threshold.
-        /// </summary>
-        public const string HarmBlockThresholdUnspecified = "HARM_BLOCK_THRESHOLD_UNSPECIFIED";
+        Verify.NotNullOrWhiteSpace(label, nameof(label));
+        this.Label = label;
     }
+
+    /// <summary>
+    /// Determines whether two GeminiSafetyThreshold objects are equal.
+    /// </summary>
+    /// <param name="left">The first GeminiSafetyThreshold object to compare.</param>
+    /// <param name="right">The second GeminiSafetyThreshold object to compare.</param>
+    /// <returns>True if the objects are equal, false otherwise.</returns>
+    public static bool operator ==(GeminiSafetyThreshold left, GeminiSafetyThreshold right)
+        => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two instances of GeminiSafetyThreshold are not equal.
+    /// </summary>
+    /// <param name="left">The first GeminiSafetyThreshold to compare.</param>
+    /// <param name="right">The second GeminiSafetyThreshold to compare.</param>
+    /// <returns>true if the two instances are not equal; otherwise, false.</returns>
+    public static bool operator !=(GeminiSafetyThreshold left, GeminiSafetyThreshold right)
+        => !(left == right);
+
+    /// <inheritdoc />
+    public bool Equals(GeminiSafetyThreshold other)
+        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is GeminiSafetyThreshold other && this == other;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label ?? string.Empty);
+
+    /// <inheritdoc />
+    public override string ToString() => this.Label ?? string.Empty;
+}
+
+internal class GeminiSafetyCategoryConverter : JsonConverter<GeminiSafetyCategory>
+{
+    public override GeminiSafetyCategory Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => new(reader.GetString()!);
+
+    public override void Write(Utf8JsonWriter writer, GeminiSafetyCategory value, JsonSerializerOptions options)
+        => writer.WriteStringValue(value.Label);
+}
+
+internal class GeminiSafetyThresholdConverter : JsonConverter<GeminiSafetyThreshold>
+{
+    public override GeminiSafetyThreshold Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => new(reader.GetString()!);
+
+    public override void Write(Utf8JsonWriter writer, GeminiSafetyThreshold value, JsonSerializerOptions options)
+        => writer.WriteStringValue(value.Label);
 }

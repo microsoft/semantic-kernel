@@ -44,7 +44,10 @@ public class GeminiPromptExecutionSettingsTests
             CandidateCount = 3,
             StopSequences = new[] { "foo", "bar" },
             MaxTokens = 128,
-            SafetySettings = new List<GeminiSafetySetting>() { new(category: "foo", threshold: "bar") }
+            SafetySettings = new List<GeminiSafetySetting>()
+            {
+                new(GeminiSafetyCategory.HarmCategoryHarassment, GeminiSafetyThreshold.BlockOnlyHigh)
+            }
         };
 
         // Act
@@ -81,22 +84,24 @@ public class GeminiPromptExecutionSettingsTests
     public void ItCreatesGeminiExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
-        string json = """
-                      {
-                        "temperature": 0.7,
-                        "top_p": 0.7,
-                        "top_k": 25,
-                        "candidate_count": 2,
-                        "stop_sequences": [ "foo", "bar" ],
-                        "max_tokens": 128,
-                        "safety_settings": [
-                          {
-                            "category": "foo",
-                            "threshold": "bar"
-                          }
-                        ]
-                      }
-                      """;
+        var category = GeminiSafetyCategory.HarmCategoryHarassment;
+        var threshold = GeminiSafetyThreshold.BlockOnlyHigh;
+        string json = $$"""
+                        {
+                          "temperature": 0.7,
+                          "top_p": 0.7,
+                          "top_k": 25,
+                          "candidate_count": 2,
+                          "stop_sequences": [ "foo", "bar" ],
+                          "max_tokens": 128,
+                          "safety_settings": [
+                            {
+                              "category": "{{category.Label}}",
+                              "threshold": "{{threshold.Label}}"
+                            }
+                          ]
+                        }
+                        """;
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
@@ -111,7 +116,7 @@ public class GeminiPromptExecutionSettingsTests
         Assert.Equal(new[] { "foo", "bar" }, executionSettings.StopSequences);
         Assert.Equal(128, executionSettings.MaxTokens);
         Assert.Single(executionSettings.SafetySettings!, settings =>
-            settings.Category.Equals("foo", System.StringComparison.Ordinal) &&
-            settings.Threshold.Equals("bar", System.StringComparison.Ordinal));
+            settings.Category.Equals(category) &&
+            settings.Threshold.Equals(threshold));
     }
 }
