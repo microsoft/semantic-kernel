@@ -24,7 +24,7 @@ Copy and paste the following code into your project, with your Azure OpenAI key 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-var builder = new KernelBuilder();
+var builder = Kernel.CreateBuilder();
 
 builder.AddAzureOpenAIChatCompletion(
          "gpt-35-turbo",                      // Azure OpenAI Deployment Name
@@ -54,9 +54,9 @@ string text2 = @"
 2. The acceleration of an object depends on the mass of the object and the amount of force applied.
 3. Whenever one object exerts a force on another object, the second object exerts an equal and opposite on the first.";
 
-Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments(text1)));
+Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments() { ["input"] = text1 }));
 
-Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments(text2)));
+Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments() { ["input"] = text2 }));
 
 // Output:
 //   Energy conserved, entropy increases, zero entropy at 0K.
