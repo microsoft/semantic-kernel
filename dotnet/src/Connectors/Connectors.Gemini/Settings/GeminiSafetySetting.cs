@@ -112,11 +112,11 @@ public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
     }
 
     /// <summary>
-    /// Overrides the equality operator to compare two GeminiSafetyCategory objects for equality.
+    /// Represents the equality operator for comparing two instances of <see cref="GeminiSafetyCategory"/>.
     /// </summary>
-    /// <param name="left">The first GeminiSafetyCategory object to compare.</param>
-    /// <param name="right">The second GeminiSafetyCategory object to compare.</param>
-    /// <returns>True if the two GeminiSafetyCategory objects are equal, otherwise false.</returns>
+    /// <param name="left">The left <see cref="GeminiSafetyCategory"/> instance to compare.</param>
+    /// <param name="right">The right <see cref="GeminiSafetyCategory"/> instance to compare.</param>
+    /// <returns><c>true</c> if the two instances are equal; otherwise, <c>false</c>.</returns>
     public static bool operator ==(GeminiSafetyCategory left, GeminiSafetyCategory right)
         => left.Equals(right);
 

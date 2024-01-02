@@ -108,18 +108,18 @@ internal abstract class ClientBase
         TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
         PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
         PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr =>
-            new GeminiMetadataSafetySettings()
+            new GeminiMetadataSafetyRating()
             {
                 Block = sr.Block,
-                Category = sr.Category,
-                Probability = sr.Probability,
+                Category = new GeminiSafetyCategory(sr.Category),
+                Probability = new GeminiSafetyProbability(sr.Probability),
             }).ToList(),
         ResponseSafetyRatings = candidate.SafetyRatings?.Select(sr =>
-            new GeminiMetadataSafetySettings()
+            new GeminiMetadataSafetyRating()
             {
                 Block = sr.Block,
-                Category = sr.Category,
-                Probability = sr.Probability,
+                Category = new GeminiSafetyCategory(sr.Category),
+                Probability = new GeminiSafetyProbability(sr.Probability),
             }).ToList(),
     };
 

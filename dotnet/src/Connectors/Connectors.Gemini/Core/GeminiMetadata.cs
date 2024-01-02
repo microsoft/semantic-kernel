@@ -22,8 +22,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     private readonly int _candidatesTokenCount;
     private readonly int _totalTokenCount;
     private readonly string? _promptFeedbackBlockReason;
-    private readonly IReadOnlyList<GeminiMetadataSafetySettings>? _promptFeedbackSafetyRatings;
-    private readonly IReadOnlyList<GeminiMetadataSafetySettings>? _responseSafetyRatings;
+    private readonly IReadOnlyList<GeminiMetadataSafetyRating>? _promptFeedbackSafetyRatings;
+    private readonly IReadOnlyList<GeminiMetadataSafetyRating>? _responseSafetyRatings;
 
     internal GeminiMetadata() : base(new Dictionary<string, object?>()) { }
 
@@ -121,7 +121,7 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// <summary>
     /// List of safety ratings for the prompt feedback.
     /// </summary>
-    public IReadOnlyList<GeminiMetadataSafetySettings>? PromptFeedbackSafetyRatings
+    public IReadOnlyList<GeminiMetadataSafetyRating>? PromptFeedbackSafetyRatings
     {
         get => this._promptFeedbackSafetyRatings;
         init
@@ -134,7 +134,7 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// <summary>
     /// List of safety ratings for the response.
     /// </summary>
-    public IReadOnlyList<GeminiMetadataSafetySettings>? ResponseSafetyRatings
+    public IReadOnlyList<GeminiMetadataSafetyRating>? ResponseSafetyRatings
     {
         get => this._responseSafetyRatings;
         init
@@ -153,9 +153,9 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
 /// <summary>
 /// Represents the Gemini metadata safety settings.
 /// </summary>
-public sealed class GeminiMetadataSafetySettings
+public sealed class GeminiMetadataSafetyRating
 {
-    internal GeminiMetadataSafetySettings() { }
+    internal GeminiMetadataSafetyRating() { }
 
     /// <summary>
     /// Indicates whether the response is blocked.
@@ -165,10 +165,10 @@ public sealed class GeminiMetadataSafetySettings
     /// <summary>
     /// The category associated with the safety settings.
     /// </summary>
-    public string? Category { get; init; }
+    public GeminiSafetyCategory? Category { get; init; }
 
     /// <summary>
     /// Probability score associated with the safety settings.
     /// </summary>
-    public string? Probability { get; init; }
+    public GeminiSafetyProbability? Probability { get; init; }
 }
