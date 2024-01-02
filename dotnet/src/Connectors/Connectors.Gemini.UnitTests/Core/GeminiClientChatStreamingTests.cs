@@ -135,9 +135,9 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, metadata[nameof(GeminiMetadata.PromptFeedbackBlockReason)]);
         Assert.Equal(testDataResponse.Candidates[0].FinishReason, metadata[nameof(GeminiMetadata.FinishReason)]);
         Assert.Equal(testDataResponse.Candidates[0].Index, metadata[nameof(GeminiMetadata.Index)]);
-        Assert.True(((IList<GeminiMetadataSafetyRating>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!).Count
+        Assert.True(((IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!).Count
                     == testDataResponse.Candidates[0].SafetyRatings.Count);
-        Assert.True(((IList<GeminiMetadataSafetyRating>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!).Count
+        Assert.True(((IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!).Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata[nameof(GeminiMetadata.PromptTokenCount)]);
         Assert.Equal(testDataResponse.Candidates[0].TokenCount, metadata[nameof(GeminiMetadata.CurrentCandidateTokenCount)]);

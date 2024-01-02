@@ -5,13 +5,39 @@
 #endregion
 
 using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
 /// <summary>
+/// Represents a safety rating for a Gemini.
+/// </summary>
+public sealed class GeminiSafetyRating
+{
+    /// <summary>
+    /// Was this content blocked because of this rating?
+    /// </summary>
+    [JsonPropertyName("block")]
+    public bool Block { get; init; }
+
+    /// <summary>
+    /// The category for this rating.
+    /// </summary>
+    [JsonPropertyName("category")]
+    public GeminiSafetyCategory Category { get; init; }
+
+    /// <summary>
+    /// The probability of harm for this content.
+    /// </summary>
+    [JsonPropertyName("probability")]
+    public GeminiSafetyProbability Probability { get; init; }
+}
+
+/// <summary>
 /// Represents a Gemini Safety Probability.
 /// </summary>
+[JsonConverter(typeof(GeminiSafetyProbabilityConverter))]
 public readonly struct GeminiSafetyProbability : IEquatable<GeminiSafetyProbability>
 {
     /// <summary>
@@ -41,6 +67,7 @@ public readonly struct GeminiSafetyProbability : IEquatable<GeminiSafetyProbabil
 
     /// <summary>
     /// Gets the label of the property.
+    /// Label is used for serialization.
     /// </summary>
     public string Label { get; }
 
@@ -86,4 +113,13 @@ public readonly struct GeminiSafetyProbability : IEquatable<GeminiSafetyProbabil
 
     /// <inheritdoc />
     public override string ToString() => this.Label ?? string.Empty;
+}
+
+internal sealed class GeminiSafetyProbabilityConverter : JsonConverter<GeminiSafetyProbability>
+{
+    public override GeminiSafetyProbability Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => new(reader.GetString()!);
+
+    public override void Write(Utf8JsonWriter writer, GeminiSafetyProbability value, JsonSerializerOptions options)
+        => writer.WriteStringValue(value.Label);
 }

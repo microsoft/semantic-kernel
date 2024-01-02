@@ -34,7 +34,7 @@ public sealed class GeminiResponseCandidate
     public int Index { get; set; }
 
     [JsonPropertyName("safetyRatings")]
-    public IList<GeminiResponseSafetyRating> SafetyRatings { get; set; }
+    public IList<GeminiSafetyRating> SafetyRatings { get; set; }
 
     [JsonPropertyName("tokenCount")]
     public int TokenCount { get; set; }
@@ -56,25 +56,13 @@ public sealed class GeminiResponsePart
     public string Text { get; set; }
 }
 
-public sealed class GeminiResponseSafetyRating
-{
-    [JsonPropertyName("category")]
-    public string Category { get; set; }
-
-    [JsonPropertyName("probability")]
-    public string Probability { get; set; }
-
-    [JsonPropertyName("block")]
-    public bool Block { get; set; }
-}
-
 public sealed class GeminiResponsePromptFeedback
 {
     [JsonPropertyName("blockReason")]
     public string? BlockReason { get; set; }
 
     [JsonPropertyName("safetyRatings")]
-    public IList<GeminiResponseSafetyRating> SafetyRatings { get; set; }
+    public IList<GeminiSafetyRating> SafetyRatings { get; set; }
 }
 
 public sealed class GeminiResponseUsageMetadata

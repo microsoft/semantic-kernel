@@ -107,20 +107,8 @@ internal abstract class ClientBase
         CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
         TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
         PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
-        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr =>
-            new GeminiMetadataSafetyRating()
-            {
-                Block = sr.Block,
-                Category = new GeminiSafetyCategory(sr.Category),
-                Probability = new GeminiSafetyProbability(sr.Probability),
-            }).ToList(),
-        ResponseSafetyRatings = candidate.SafetyRatings?.Select(sr =>
-            new GeminiMetadataSafetyRating()
-            {
-                Block = sr.Block,
-                Category = new GeminiSafetyCategory(sr.Category),
-                Probability = new GeminiSafetyProbability(sr.Probability),
-            }).ToList(),
+        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings?.ToList(),
+        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
     };
 
     protected static HttpRequestMessage CreateHTTPRequestMessage(
