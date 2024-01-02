@@ -1,3 +1,7 @@
+Param(
+    [string]$ProjectName = ""
+)
+
 # Generate a timestamp for the current date and time
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
@@ -15,6 +19,11 @@ dotnet build
 
 # Find and run tests for projects ending with 'UnitTests.csproj'
 $testProjects = Get-ChildItem $scriptPath -Filter "*UnitTests.csproj" -Recurse
+
+if ($ProjectName -ne "") {
+    $testProjects = $testProjects | Where-Object { $_.Name -like "*$ProjectName*" }
+}
+
 foreach ($project in $testProjects) {
     $testProjectPath = $project.FullName
     Write-Host "Running tests for project: $($testProjectPath)"
@@ -34,7 +43,3 @@ foreach ($project in $testProjects) {
 & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html
 
 Write-Host "Code coverage report generated at: $reportOutputPath"
-
-# Open generated report
-$reportIndexHtml = Join-Path $reportOutputPath "index.html"
-Start-Process $reportIndexHtml
