@@ -18,6 +18,7 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     private readonly string? _finishReason;
     private readonly int _index;
     private readonly int _promptTokenCount;
+    private readonly int _currentCandidateTokenCount;
     private readonly int _candidatesTokenCount;
     private readonly int _totalTokenCount;
     private readonly string? _promptFeedbackBlockReason;
@@ -66,7 +67,20 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
-    /// The total count of tokens in the candidate responses.
+    /// The count of token in the current candidate.
+    /// </summary>
+    public int CurrentCandidateTokenCount
+    {
+        get => this._currentCandidateTokenCount;
+        init
+        {
+            this._currentCandidateTokenCount = value;
+            this.SetValueInDictionary(value);
+        }
+    }
+
+    /// <summary>
+    /// The total count of tokens of the all candidate responses.
     /// </summary>
     public int CandidatesTokenCount
     {

@@ -155,6 +155,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
         Assert.True(metadata.PromptFeedbackSafetyRatings!.Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata.PromptTokenCount);
+        Assert.Equal(testDataResponse.Candidates[0].TokenCount, metadata.CurrentCandidateTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata.CandidatesTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata.TotalTokenCount);
     }
@@ -184,6 +185,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
         Assert.True(((IList<GeminiMetadataSafetySettings>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!).Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata[nameof(GeminiMetadata.PromptTokenCount)]);
+        Assert.Equal(testDataResponse.Candidates[0].TokenCount, metadata[nameof(GeminiMetadata.CurrentCandidateTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata[nameof(GeminiMetadata.CandidatesTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata[nameof(GeminiMetadata.TotalTokenCount)]);
     }

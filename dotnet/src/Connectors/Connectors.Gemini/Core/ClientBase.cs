@@ -103,6 +103,7 @@ internal abstract class ClientBase
         FinishReason = candidate.FinishReason,
         Index = candidate.Index,
         PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+        CurrentCandidateTokenCount = candidate.TokenCount,
         CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
         TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
         PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
