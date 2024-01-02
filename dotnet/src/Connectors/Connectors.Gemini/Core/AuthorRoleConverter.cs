@@ -31,6 +31,11 @@ internal sealed class AuthorRoleConverter : JsonConverter<AuthorRole?>
             return AuthorRole.Assistant;
         }
 
+        if (role.Equals("function", StringComparison.OrdinalIgnoreCase))
+        {
+            return AuthorRole.Tool;
+        }
+
         throw new JsonException($"Unexpected author role: {role}");
     }
 
@@ -42,11 +47,21 @@ internal sealed class AuthorRoleConverter : JsonConverter<AuthorRole?>
             return;
         }
 
-        if (value != AuthorRole.User && value != AuthorRole.Assistant)
+        if (value == AuthorRole.Tool)
+        {
+            writer.WriteStringValue("function");
+        }
+        else if (value == AuthorRole.Assistant)
+        {
+            writer.WriteStringValue("model");
+        }
+        else if (value == AuthorRole.User)
+        {
+            writer.WriteStringValue("user");
+        }
+        else
         {
             throw new JsonException($"Gemini API doesn't support author role: {value}");
         }
-
-        writer.WriteStringValue(value == AuthorRole.User ? "user" : "model");
     }
 }

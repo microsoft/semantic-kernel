@@ -46,6 +46,21 @@ public sealed class AuthorRoleConverterTests
     }
 
     [Fact]
+    public void ReadWhenRoleIsFunctionReturnsTool()
+    {
+        // Arrange
+        var converter = new AuthorRoleConverter();
+        var reader = new Utf8JsonReader("\"function\""u8);
+
+        // Act
+        reader.Read();
+        var result = converter.Read(ref reader, typeof(AuthorRole?), JsonSerializerOptions.Default);
+
+        // Assert
+        Assert.Equal(AuthorRole.Tool, result);
+    }
+
+    [Fact]
     public void ReadWhenRoleIsNullReturnsNull()
     {
         // Arrange
@@ -109,6 +124,21 @@ public sealed class AuthorRoleConverterTests
     }
 
     [Fact]
+    public void WriteWhenRoleIsToolReturnsFunction()
+    {
+        // Arrange
+        var converter = new AuthorRoleConverter();
+        var bufferWriter = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(bufferWriter);
+
+        // Act
+        converter.Write(writer, AuthorRole.Tool, JsonSerializerOptions.Default);
+
+        // Assert
+        Assert.Equal("\"function\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
+    }
+
+    [Fact]
     public void WriteWhenRoleIsNullReturnsNull()
     {
         // Arrange
@@ -124,7 +154,7 @@ public sealed class AuthorRoleConverterTests
     }
 
     [Fact]
-    public void WriteWhenRoleIsOtherThanUserAndAssistantThrows()
+    public void WriteWhenRoleIsNotUserOrAssistantOrToolThrows()
     {
         // Arrange
         var converter = new AuthorRoleConverter();
