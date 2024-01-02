@@ -22,17 +22,13 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
-    // TODO: Revise these Create method XML comments
-
     /// <summary>
-    /// Creates a string-to-string prompt function, with no direct support for input context.
-    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
-    /// can only pass in a string in input and receive a string in output.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
-    /// <param name="executionSettings">Optional LLM execution settings</param>
+    /// <param name="promptTemplate">Prompt template for the function, defined using the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.</param>
+    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="description">The description to use for the function.</param>
     /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
@@ -59,7 +55,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var promptConfig = new PromptTemplateConfig
         {
             TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
-            Name = functionName ?? RandomFunctionName(),
+            Name = functionName,
             Description = description ?? "Generic function, unknown purpose",
             Template = promptTemplate
         };
@@ -78,9 +74,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <summary>
-    /// Creates a string-to-string prompt function, with no direct support for input context.
-    /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
-    /// can only pass in a string in input and receive a string in output.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
@@ -100,9 +94,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <summary>
-    /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and a prompt template configuration.
     /// </summary>
-    /// <param name="promptTemplate">Plain language definition of the prompt function, using SK template language</param>
+    /// <param name="promptTemplate">Prompt template for the function, defined using the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.</param>
     /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
@@ -113,12 +107,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         Verify.NotNull(promptTemplate);
         Verify.NotNull(promptConfig);
-
-        if (string.IsNullOrEmpty(promptConfig.Name))
-        {
-            promptConfig.Name = RandomFunctionName();
-        }
-        Verify.ValidFunctionName(promptConfig.Name);
 
         return new KernelFunctionFromPrompt(
             template: promptTemplate,
@@ -134,9 +122,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
@@ -167,9 +153,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
@@ -224,13 +208,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
         ILoggerFactory? loggerFactory = null) : base(
-            promptConfig.Name,
-            promptConfig.Description,
+            promptConfig.Name ?? CreateRandomFunctionName(),
+            promptConfig.Description ?? string.Empty,
             promptConfig.GetKernelParametersMetadata(),
             promptConfig.GetKernelReturnParameterMetadata(),
             promptConfig.ExecutionSettings)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptConfig = promptConfig;
@@ -272,17 +256,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     private async Task<(IAIService, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
-        PromptExecutionSettings? executionSettings = null;
 
         // Try to use IChatCompletionService.
         if (serviceSelector.TrySelectAIService<IChatCompletionService>(
             kernel, this, arguments,
-            out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
+            out IChatCompletionService? chatService, out PromptExecutionSettings? executionSettings))
         {
             aiService = chatService;
         }
@@ -320,10 +302,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         return (aiService, executionSettings, renderedPrompt, renderedEventArgs);
     }
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>Create a random, valid function name.</summary>
-    private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
+    private static string CreateRandomFunctionName() => $"func{Guid.NewGuid():N}";
 
     /// <summary>
     /// Captures usage details, including token information.

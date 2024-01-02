@@ -45,7 +45,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         this._config = config;
 
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
         this._attributes.Add(AIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
 

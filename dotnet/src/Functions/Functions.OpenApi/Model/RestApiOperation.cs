@@ -14,14 +14,14 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 public sealed class RestApiOperation
 {
     /// <summary>
-    /// An artificial parameter to be used for operation having "text/plain" payload media type.
+    /// Gets the name of an artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
-    public const string PayloadArgumentName = "payload";
+    public static string PayloadArgumentName => "payload";
 
     /// <summary>
-    /// An artificial parameter to be used for indicate payload media-type if it's missing in payload metadata.
+    /// Gets the name of an artificial parameter to be used for indicate payload media-type if it's missing in payload metadata.
     /// </summary>
-    public const string ContentTypeArgumentName = "content-type";
+    public static string ContentTypeArgumentName => "content-type";
 
     /// <summary>
     /// The operation identifier.

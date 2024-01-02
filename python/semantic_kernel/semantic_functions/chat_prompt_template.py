@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from logging import Logger
+import logging
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
 
 from semantic_kernel.models.chat.chat_message import ChatMessage
@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
     _messages: List[ChatMessageT]
@@ -27,9 +29,13 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
-        super().__init__(template, template_engine, prompt_config, log)
+        super().__init__(template, template_engine, prompt_config)
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         self._messages = []
         if self._prompt_config.completion.chat_system_prompt:
             self.add_system_message(self._prompt_config.completion.chat_system_prompt)
@@ -95,7 +101,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.
 
@@ -103,7 +109,11 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         that takes precedence over the first message in the list of messages,
         if that is a system message.
         """
-        chat_template = cls(template, template_engine, prompt_config, log)
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
+        chat_template = cls(template, template_engine, prompt_config)
         if (
             prompt_config.completion.chat_system_prompt
             and messages[0]["role"] == "system"
@@ -113,7 +123,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
                 existing_system_message["message"]
                 != prompt_config.completion.chat_system_prompt
             ):
-                chat_template._log.info(
+                logger.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],
                     prompt_config.completion.chat_system_prompt,
