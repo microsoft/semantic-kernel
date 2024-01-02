@@ -2,12 +2,14 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +58,19 @@ public class DefaultKernel implements Kernel {
     @Override
     public ServiceProvider getServiceSelector() {
         return serviceProvider;
+    }
+
+    @Override
+    public KernelPlugin importPluginFromType(@Nullable String pluginName) {
+        throw new Todo();
+    }
+
+    @Override
+    public KernelFunction createFunctionFromPrompt(String promptTemplate,
+        @Nullable PromptExecutionSettings executionSettings, @Nullable String functionName,
+        @Nullable String description, @Nullable String templateFormat,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
+        throw new Todo();
     }
 
     static class DefaultServiceProvider implements ServiceProvider {

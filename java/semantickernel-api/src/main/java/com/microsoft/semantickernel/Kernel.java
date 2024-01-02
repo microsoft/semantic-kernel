@@ -51,6 +51,16 @@ public interface Kernel extends Buildable {
 
     ServiceProvider getServiceSelector();
 
+    KernelPlugin importPluginFromType(@Nullable String pluginName);
+
+    KernelFunction createFunctionFromPrompt(
+        String promptTemplate,
+        @Nullable PromptExecutionSettings executionSettings,
+        @Nullable String functionName,
+        @Nullable String description,
+        @Nullable String templateFormat,
+        @Nullable PromptTemplateFactory promptTemplateFactory);
+
     interface Builder extends SemanticKernelBuilder<Kernel> {
 
         <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService);
