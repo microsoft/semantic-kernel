@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
+
 /// <summary>
 /// Represents the metadata associated with a Gemini response.
 /// </summary>
