@@ -77,6 +77,13 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public long? Seed { get; set; }
 
     /// <summary>
+    /// Gets or sets the response format to use for the completion.
+    /// </summary>
+    [Experimental("SKEXP0013")]
+    [JsonPropertyName("response_format")]
+    public object? ResponseFormat { get; set; }
+
+    /// <summary>
     /// The system prompt to use when generating text using a chat model.
     /// Defaults to "Assistant is a large language model."
     /// </summary>
