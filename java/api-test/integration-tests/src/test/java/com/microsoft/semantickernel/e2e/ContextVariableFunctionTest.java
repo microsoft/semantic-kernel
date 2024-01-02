@@ -6,8 +6,8 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.ContextVariable;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -47,12 +47,12 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                 User: {{$user_input}}
                 ChatBot:\s""";
 
-        CompletionSKFunction chat =
+        CompletionKernelFunction chat =
             kernel.getSemanticFunctionBuilder()
                 .withPromptTemplate(prompt)
                 .withFunctionName("ChatBot")
                 .withCompletionConfig(
-                    new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000))
+                    new PromptConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000))
                 .build();
 
         SKContext readOnlySkContext = SKBuilders.context().withKernel(kernel).build();
@@ -74,7 +74,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
             .block();
     }
 
-    private Function<SKContext, Mono<SKContext>> chat(String input, CompletionSKFunction chat) {
+    private Function<SKContext, Mono<SKContext>> chat(String input, CompletionKernelFunction chat) {
         return (context) -> {
             try {
                 return chat(input, chat, context);
@@ -84,7 +84,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
         };
     }
 
-    private Mono<SKContext> chat(String input, CompletionSKFunction chat, SKContext context)
+    private Mono<SKContext> chat(String input, CompletionKernelFunction chat, SKContext context)
         throws ExecutionException, InterruptedException, TimeoutException {
         context = context.setVariable("user_input", input);
 

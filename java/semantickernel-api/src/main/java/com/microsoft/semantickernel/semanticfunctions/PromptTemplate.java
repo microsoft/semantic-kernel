@@ -1,35 +1,30 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.skilldefinition.ParameterView;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import java.util.List;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+
 import reactor.core.publisher.Mono;
 
-/** Interface for prompt template */
+/**
+ * Interface for prompt template
+ */
 public interface PromptTemplate extends Buildable {
-    /**
-     * Get the list of parameters required by the template, using configuration and template info
-     *
-     * @return List of parameters
-     */
-    List<ParameterView> getParameters();
 
-    /**
-     * Render the template using the information in the context
-     *
-     * @param executionContext Kernel execution context helpers
-     * @return Prompt rendered to string
-     */
-    @Deprecated
-    Mono<String> renderAsync(SKContext executionContext);
-
-    Mono<String> renderAsync(ContextVariables variables);
+    /// <summary>
+    /// Render the template using the information in the context
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The arguments.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Prompt rendered to string</returns>
+    Mono<String> renderAsync(Kernel kernel,
+        @Nullable KernelArguments arguments);
 
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Builder.class);
@@ -41,6 +36,5 @@ public interface PromptTemplate extends Buildable {
 
         Builder withPromptTemplateConfig(PromptTemplateConfig config);
 
-        Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine);
     }
 }

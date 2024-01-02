@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.exceptions;
 
-import com.microsoft.semantickernel.SKCheckedException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Kernel logic exception */
+/**
+ * Kernel logic exception
+ */
 public class ConfigurationException extends SKCheckedException {
 
-    @Nonnull private final ErrorCodes errorCode;
+    @Nonnull
+    private final ErrorCodes errorCode;
 
     public ConfigurationException(@Nonnull ErrorCodes error) {
         this(error, null, null);
@@ -19,9 +21,9 @@ public class ConfigurationException extends SKCheckedException {
     }
 
     public ConfigurationException(
-            @Nonnull ErrorCodes errorCode,
-            @Nullable String message,
-            @Nullable Throwable innerException) {
+        @Nonnull ErrorCodes errorCode,
+        @Nullable String message,
+        @Nullable Throwable innerException) {
         super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }

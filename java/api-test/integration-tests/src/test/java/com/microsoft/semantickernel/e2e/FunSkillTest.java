@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class FunSkillTest extends AbstractKernelTest {
         Mono<SKContext> result =
                 buildTextCompletionKernel()
                         .importSkillFromDirectory("FunSkill", "../../../samples/skills")
-                        .getFunction("joke", CompletionSKFunction.class)
+                        .getFunction("joke", CompletionKernelFunction.class)
                         .invokeAsync("time travel to dinosaur age");
 
         if (result != null) {

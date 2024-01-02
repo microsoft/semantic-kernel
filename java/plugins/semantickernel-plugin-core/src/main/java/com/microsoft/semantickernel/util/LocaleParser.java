@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.util;
 
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import java.util.Locale;
+
+import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+
 
 /**
  * Locale parser to support Java 8 and Java 9+ due to JEP 252.
@@ -29,7 +31,7 @@ public final class LocaleParser {
 
         if (locale == null
                 || "".equals(locale.trim())
-                || SKFunctionParameters.NO_DEFAULT_VALUE.equals(locale)) {
+                || KernelFunctionParameter.NO_DEFAULT_VALUE.equals(locale)) {
             return Locale.getDefault();
         } else if (locale.indexOf("-") > -1) {
             parsedLocale = Locale.forLanguageTag(locale);

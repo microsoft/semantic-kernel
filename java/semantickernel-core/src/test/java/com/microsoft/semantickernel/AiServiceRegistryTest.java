@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import com.microsoft.semantickernel.textcompletion.CompletionType;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import org.junit.jupiter.api.Assertions;
@@ -36,9 +36,9 @@ public class AiServiceRegistryTest {
 
         Assertions.assertSame(kernel.getService("a-service", TextCompletion.class), service);
 
-        CompletionSKFunction function =
+        CompletionKernelFunction function =
                 kernel.importSkillFromDirectory("FunSkill", "../../samples/skills")
-                        .getFunction("joke", CompletionSKFunction.class);
+                        .getFunction("joke", CompletionKernelFunction.class);
 
         function.invokeAsync("time travel to dinosaur age").block();
 
@@ -57,9 +57,9 @@ public class AiServiceRegistryTest {
         Assertions.assertThrows(
                 KernelException.class,
                 () -> {
-                    CompletionSKFunction function =
+                    CompletionKernelFunction function =
                             kernel.importSkillFromDirectory("FunSkill", "../../samples/skills")
-                                    .getFunction("joke", CompletionSKFunction.class);
+                                    .getFunction("joke", CompletionKernelFunction.class);
 
                     function.invokeAsync("time travel to dinosaur age").block();
                 });

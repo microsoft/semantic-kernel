@@ -4,8 +4,8 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -98,18 +98,18 @@ public class InlineFunctionWithPreBuiltSkillExample {
                         .buildAsyncClient();
 
         TextCompletion textCompletion =
-                SKBuilders.textCompletion().withOpenAIClient(client).withModelId(MODEL).build();
+                SKBuilders.textCompletion().withOpenAIAsyncClient(client).withModelId(MODEL).build();
         String prompt = "{{$input}}\nSummarize the content above.";
 
         Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
-        CompletionSKFunction summarize =
+        CompletionKernelFunction summarize =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
                         .withPromptTemplate(prompt)
                         .withFunctionName("summarize")
                         .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                                new PromptConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
                         .build();
 
         if (summarize == null) {

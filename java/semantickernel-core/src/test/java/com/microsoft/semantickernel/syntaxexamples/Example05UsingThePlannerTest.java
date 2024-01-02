@@ -36,7 +36,7 @@ public class Example05UsingThePlannerTest {
                         .withDefaultAIService(
                                 SKBuilders.textCompletion()
                                         .withModelId("text-davinci-003")
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .build())
                         .build();
 

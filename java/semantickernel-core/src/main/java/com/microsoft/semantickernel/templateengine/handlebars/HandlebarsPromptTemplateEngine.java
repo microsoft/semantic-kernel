@@ -1,29 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Helper;
-import com.github.jknack.handlebars.Options;
-import com.github.jknack.handlebars.ValueResolver;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory.Message;
-import com.microsoft.semantickernel.orchestration.ContextVariable;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.templateengine.blocks.Block;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import reactor.core.publisher.Mono;
-
+/*
 public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
+
+    public HandlebarsPromptTemplateEngine(PromptTemplateConfig promptConfig) {
+    }
 
     @Override
     public Mono<String> renderAsync(String s, SKContext skContext) {
@@ -191,3 +173,4 @@ public class HandlebarsPromptTemplateEngine implements PromptTemplateEngine {
         }
     }
 }
+*/

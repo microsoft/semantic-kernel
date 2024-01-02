@@ -13,7 +13,7 @@
     <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.5</azure-ai-openai.version>
+        <azure-ai-openai.version>1.0.0-beta.6</azure-ai-openai.version>
         <checkstyle.version>10.12.2</checkstyle.version>
         <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
@@ -72,16 +72,14 @@
 <!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
 
         <module>aiservices/azureopenai</module>
-        <module>aiservices/huggingface</module>
-        <module>aiservices/ollama</module>
+<!--        <module>aiservices/huggingface</module>-->
+<!--        <module>aiservices/ollama</module>-->
         <module>aiservices/openai</module>
 
-        <module>misc/semantickernel-gpt3-tokenizer</module>
-        <module>misc/semantickernel-settings-loader</module>
+<!--        <module>misc/semantickernel-gpt3-tokenizer</module>-->
+<!--        <module>misc/semantickernel-settings-loader</module>-->
 
-        <!--
-        <module>plugins/semantickernel-planners</module>
-        -->
+<!--        <module>plugins/semantickernel-planners</module>-->
         <module>plugins/semantickernel-plugin-core</module>
 
         <module>semantickernel-bom</module>
@@ -727,7 +725,7 @@
         <profile>
             <id>with-samples</id>
             <modules>
-                <module>samples/sk-v1</module>
+                <module>samples</module>
 <!--                <module>api-test</module>-->
             </modules>
         </profile>

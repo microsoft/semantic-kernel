@@ -8,9 +8,9 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -28,7 +28,7 @@ public class Example06TemplateLanguageTest {
                         .withDefaultAIService(
                                 SKBuilders.textCompletion()
                                         .withModelId("text-davinci-003")
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .build())
                         .build();
 
@@ -52,7 +52,7 @@ public class Example06TemplateLanguageTest {
 
         PromptTemplate promptRenderer =
                 SKBuilders.promptTemplate()
-                        .withPromptTemplateConfig(new PromptTemplateConfig())
+                        .withPromptTemplateConfig(new PromptConfig())
                         .withPromptTemplate(functionDefinition)
                         .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
                         .build();
@@ -67,12 +67,12 @@ public class Example06TemplateLanguageTest {
         Assertions.assertTrue(!renderedText.contains("time.Date"));
 
         // Run the prompt / semantic function
-        CompletionSKFunction kindOfDay =
+        CompletionKernelFunction kindOfDay =
                 kernel.getSemanticFunctionBuilder()
                         .withKernel(kernel)
                         .withPromptTemplate(functionDefinition)
                         .withCompletionConfig(
-                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256))
+                                new PromptConfig.CompletionConfig(0, 0, 0, 0, 256))
                         .build();
 
         Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult());

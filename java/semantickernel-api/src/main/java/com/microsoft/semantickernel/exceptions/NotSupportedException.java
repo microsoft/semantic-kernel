@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.exceptions;
 
-import com.microsoft.semantickernel.SKException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

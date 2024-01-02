@@ -13,7 +13,7 @@
     <url>https://www.github.com/microsoft/semantic-kernel</url>
 
     <properties>
-        <com.fasterxml.jackson.core.version>2.15.2</com.fasterxml.jackson.core.version>
+        <com.fasterxml.jackson.core.version>2.16.0</com.fasterxml.jackson.core.version>
     </properties>
 
     <build>
@@ -126,7 +126,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
-                <version>1.0.0-beta.5</version>
+                <version>1.0.0-beta.6</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
@@ -164,6 +164,17 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.jknack</groupId>
+                <artifactId>handlebars</artifactId>
+                <version>4.3.1</version>
+            </dependency>
+            <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
                 <version>3.5.8</version>
@@ -197,6 +208,7 @@
                 <version>42.6.0</version>
             </dependency>
 -->
+
         </dependencies>
     </dependencyManagement>
 

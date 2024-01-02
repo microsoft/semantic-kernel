@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -84,7 +84,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                         User: {{$userInput}}
                         ChatBot:\s""";
 
-        CompletionSKFunction chat =
+        CompletionKernelFunction chat =
                 kernel.getSemanticFunctionBuilder()
                         .withPromptTemplate(skPrompt)
                         .withFunctionName("recall")

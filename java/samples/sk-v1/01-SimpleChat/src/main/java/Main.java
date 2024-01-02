@@ -1,29 +1,30 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Map;
+import java.nio.file.Path;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelResult;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
+import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.semanticfunctions.SemanticFunction;
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplateEngine;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 
 public class Main {
-    
+
     final static String GPT_35_DEPLOYMENT_NAME = System.getenv("GPT_35_DEPLOYMENT_NAME");
     final static String GPT_4_DEPLOYMENT_NAME = System.getenv("GPT_4_DEPLOYMENT_NAME");
     final static String AZURE_OPENAI_ENDPOINT = System.getenv("AZURE_OPENAI_ENDPOINT");
     final static String AZURE_OPENAI_API_KEY = System.getenv("AZURE_OPENAI_API_KEY");
     final static String CURRENT_DIRECTORY = System.getProperty("user.dir");
-    
-    
+
     public static void main(String[] args) throws IOException {
 
         OpenAIAsyncClient client = new OpenAIClientBuilder()
@@ -31,26 +32,28 @@ public class Main {
             .endpoint(AZURE_OPENAI_ENDPOINT)
             .buildAsyncClient();
 
-        ChatCompletion<ChatHistory> gpt35Turbo = ChatCompletion.builder()
-                .withOpenAIClient(client)
-                .withModelId(GPT_35_DEPLOYMENT_NAME)
-                .build();
+        ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
+            .withOpenAIAsyncClient(client)
+            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-35-turbo")
+            .build();
 
+        /*
         ChatCompletion<ChatHistory> gpt4 = ChatCompletion.builder()
-                .withOpenAIClient(client)
-                .withModelId(GPT_4_DEPLOYMENT_NAME)
-                .build();
+            .withOpenAIClient(client)
+            .withModelId(GPT_4_DEPLOYMENT_NAME != null ? GPT_4_DEPLOYMENT_NAME : "gpt-4")
+            .build();
+         */
 
         Kernel kernel = SKBuilders.kernel()
-                .withDefaultAIService(gpt35Turbo)
-                .withDefaultAIService(gpt4)
-                .withPromptTemplateEngine(new HandlebarsPromptTemplateEngine())
-                .build();
+            .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
+            .withPromptTemplateEngine(new HandlebarsPromptTemplate())
+            .build();
 
         // Initialize the required functions and services for the kernel
-        SemanticFunction chatFunction = SemanticFunction.fromYaml("Plugins/ChatPlugin/SimpleChat.prompt.yaml");
+        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+            Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
-        ChatHistory chatHistory = gpt35Turbo.createNewChat();
+        ChatHistory chatHistory = new ChatHistory();
 
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
@@ -58,23 +61,20 @@ public class Main {
             String input = bf.readLine();
             chatHistory.addUserMessage(input);
 
-            KernelResult result = kernel.runAsync(
-                    true,
-                    ContextVariables.builder().withVariable("messages", chatHistory).build(),
-                    chatFunction
-            ).block();
+            ContextVariable<String> message = kernel
+                .invokeAsync(
+                    chatFunction,
+                    KernelArguments
+                        .builder()
+                        .withVariable("messages", chatHistory)
+                        .build(),
+                    String.class
+                )
+                .block();
 
             System.out.print("Assistant > ");
-            result.functionResults().forEach(
-                    functionResult -> {
-                        functionResult.<String>getStreamingValueAsync().subscribe(
-                                message -> System.out.print(message)
-                        );
-
-                        String message = functionResult.<String>getValue();
-                        chatHistory.addAssistantMessage(message);
-                    }
-            );
+            System.out.println(message.getValue());
+            chatHistory.addAssistantMessage(message.getValue());
         }
     }
 }
