@@ -72,6 +72,28 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task DoesNotThrowWhenPluginFunctionThrowsAsync()
+    {
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var planner = new FunctionCallingStepwisePlanner(
+            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+
+        // Act
+        var planResult = await planner.ExecuteAsync(kernel, "Email a poem about cats to test@example.com");
+
+        // Assert - should contain the expected answer & function calls within the maximum iterations
+        Assert.NotNull(planResult);
+        Assert.True(planResult.Iterations > 0);
+        Assert.True(planResult.Iterations <= 5);
+
+        string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
+        Assert.Contains("Email_WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Email_SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+    }
+
     private Kernel InitializeKernel()
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();

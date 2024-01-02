@@ -136,13 +136,10 @@ public sealed class FunctionCallingStepwisePlanner
                         var result = (await clonedKernel.InvokeAsync(pluginFunction, arguments, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                         chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                     }
-                    catch (KernelException)
-                    {
-                        chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
-                    }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
-                        chatHistoryForSteps.AddUserMessage($"Execution of function {functionResponse.FullyQualifiedName} failed with error: \"{ex.Message}\" Try something else!");
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ex.Message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
+                        chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
                     }
                 }
                 else
