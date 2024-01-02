@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,21 +9,35 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+=======
+>>>>>>> da2ac37b4bcacd0ab068a8ef74d2b0a828b4795c
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+<<<<<<< HEAD
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
+=======
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+>>>>>>> da2ac37b4bcacd0ab068a8ef74d2b0a828b4795c
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DefaultKernel implements Kernel {
 
     private final ServiceProvider serviceProvider;
+<<<<<<< HEAD
     private final List<KernelFunction> functions;
 
     public DefaultKernel(ServiceProvider serviceProvider, List<KernelFunction> plugins) {
@@ -34,6 +49,11 @@ public class DefaultKernel implements Kernel {
         } else {
             this.functions = Collections.<KernelFunction>emptyList();
         }
+=======
+
+    public DefaultKernel(ServiceProvider serviceProvider) {
+        this.serviceProvider = serviceProvider;
+>>>>>>> da2ac37b4bcacd0ab068a8ef74d2b0a828b4795c
     }
 
     @Override
@@ -99,7 +119,11 @@ public class DefaultKernel implements Kernel {
 
         private AIService defaultAIService;
         private final Map<Class, AIService> services = new HashMap<>();
+<<<<<<< HEAD
         private final List<KernelFunction> functions = new ArrayList<>();
+=======
+        private final List<KernelPlugin> plugins = new ArrayList<>();
+>>>>>>> da2ac37b4bcacd0ab068a8ef74d2b0a828b4795c
 
         @Override
         public <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService) {
@@ -114,14 +138,23 @@ public class DefaultKernel implements Kernel {
         }
 
         @Override
+<<<<<<< HEAD
         public Kernel.Builder withFunction(KernelFunction function) {
             functions.add(function);
+=======
+        public Kernel.Builder withPlugins(KernelPlugin plugin) {
+            plugins.add(plugin);
+>>>>>>> da2ac37b4bcacd0ab068a8ef74d2b0a828b4795c
             return this;
         }
 
         @Override
         public Kernel build() {
+<<<<<<< HEAD
             return new DefaultKernel(new DefaultServiceProvider(services), functions);
+=======
+            return new DefaultKernel(new DefaultServiceProvider(services));
+>>>>>>> da2ac37b4bcacd0ab068a8ef74d2b0a828b4795c
         }
     }
 }
