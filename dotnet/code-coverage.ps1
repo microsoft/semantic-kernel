@@ -1,5 +1,6 @@
 Param(
-    [string]$ProjectName = ""
+    [string]$ProjectName = "",
+    [switch]$ProdPackagesOnly = $false
 )
 
 # Generate a timestamp for the current date and time
@@ -40,6 +41,21 @@ foreach ($project in $testProjects) {
 & dotnet tool install -g dotnet-reportgenerator-globaltool
 
 # Generate HTML report
-& reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html
+if ($ProdPackagesOnly) {
+    $assemblies = @(
+        "+Microsoft.SemanticKernel.Abstractions",
+        "+Microsoft.SemanticKernel.Core",
+        "+Microsoft.SemanticKernel.PromptTemplates.Handlebars",
+        "+Microsoft.SemanticKernel.Connectors.OpenAI",
+        "+Microsoft.SemanticKernel.Yaml"
+    )
+
+    $assemblyFilters = $assemblies -join ";"
+
+    # Generate report for production assemblies only
+    & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html -assemblyfilters:$assemblyFilters
+} else {
+    & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html
+}
 
 Write-Host "Code coverage report generated at: $reportOutputPath"
