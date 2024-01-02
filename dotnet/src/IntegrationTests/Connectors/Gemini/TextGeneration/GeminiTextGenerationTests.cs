@@ -22,7 +22,8 @@ public sealed class GeminiTextGenerationTests
         .AddEnvironmentVariables()
         .Build();
 
-    [Fact(Skip = "This test is for manual verification.")]
+    // [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
     public async Task GeminiTextGenerationAsync()
     {
         // Arrange

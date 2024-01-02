@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// <summary>
 /// Provides a collection of endpoints for the Gemini API.
 /// </summary>
-public static class GeminiEndpoints
+internal static class GeminiEndpoints
 {
     /// <summary>
     /// Gets the base endpoint for the Gemini API.

@@ -19,13 +19,13 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
 
-public sealed class GeminiClientChatTests : IDisposable
+public sealed class GeminiClientTextGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private const string TestDataFilePath = "./TestData/completion_one_response.json";
 
-    public GeminiClientChatTests()
+    public GeminiClientTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
@@ -142,11 +142,13 @@ public sealed class GeminiClientChatTests : IDisposable
         Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, textContent.Metadata!["PromptFeedbackBlockReason"]);
         Assert.Equal(testDataResponse.Candidates[0].FinishReason, textContent.Metadata!["FinishReason"]);
         Assert.Equal(testDataResponse.Candidates[0].Index, textContent.Metadata!["Index"]);
-        Assert.Equal(testDataResponse.Candidates[0].TokenCount, textContent.Metadata!["TokenCount"]);
         Assert.True((textContent.Metadata!["SafetyRatings"] as IEnumerable<object>)!.Count()
                     == testDataResponse.Candidates[0].SafetyRatings.Count);
         Assert.True((textContent.Metadata!["PromptFeedbackSafetyRatings"] as IEnumerable<object>)!.Count()
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
+        Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, textContent.Metadata["PromptUsedTokens"]);
+        Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, textContent.Metadata["CandidatesUsedTokens"]);
+        Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, textContent.Metadata["TotalUsedTokens"]);
     }
 
     [Fact]

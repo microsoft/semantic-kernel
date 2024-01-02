@@ -102,7 +102,9 @@ internal abstract class ClientBase
     {
         ["FinishReason"] = candidate.FinishReason,
         ["Index"] = candidate.Index,
-        ["TokenCount"] = candidate.TokenCount,
+        ["PromptUsedTokens"] = geminiResponse.UsageMetadata?.PromptTokenCount,
+        ["CandidatesUsedTokens"] = geminiResponse.UsageMetadata?.CandidatesTokenCount,
+        ["TotalUsedTokens"] = geminiResponse.UsageMetadata?.TotalTokenCount,
         ["SafetyRatings"] = candidate.SafetyRatings?.Select(sr =>
             new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
             {

@@ -50,5 +50,10 @@
         "probability": "NEGLIGIBLE"
       }
     ]
+  },
+  "usageMetadata": {
+    "promptTokenCount": 9,
+    "candidatesTokenCount": 27,
+    "totalTokenCount": 36
   }
 }

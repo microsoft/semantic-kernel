@@ -17,6 +17,9 @@ public sealed class GeminiResponse
 
     [JsonPropertyName("promptFeedback")]
     public GeminiResponsePromptFeedback? PromptFeedback { get; set; }
+
+    [JsonPropertyName("usageMetadata")]
+    public GeminiResponseUsageMetadata? UsageMetadata { get; set; }
 }
 
 public sealed class GeminiResponseCandidate
@@ -72,4 +75,16 @@ public sealed class GeminiResponsePromptFeedback
 
     [JsonPropertyName("safetyRatings")]
     public IList<GeminiResponseSafetyRating> SafetyRatings { get; set; }
+}
+
+public sealed class GeminiResponseUsageMetadata
+{
+    [JsonPropertyName("promptTokenCount")]
+    public int PromptTokenCount { get; set; }
+
+    [JsonPropertyName("candidatesTokenCount")]
+    public int CandidatesTokenCount { get; set; }
+
+    [JsonPropertyName("totalTokenCount")]
+    public int TotalTokenCount { get; set; }
 }
