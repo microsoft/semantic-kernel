@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
@@ -17,17 +16,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class CloudDrivePlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Document file path.
-        /// </summary>
-        public const string DestinationPath = "destinationPath";
-    }
-
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
 
@@ -41,7 +29,7 @@ public sealed class CloudDrivePlugin
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDrivePlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(CloudDrivePlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -50,7 +38,7 @@ public sealed class CloudDrivePlugin
     /// <param name="filePath">The path to the file.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the file content.</returns>
-    [SKFunction, Description("Get the contents of a file in a cloud drive.")]
+    [KernelFunction, Description("Get the contents of a file in a cloud drive.")]
     public async Task<string> GetFileContentAsync(
         [Description("Path to file")] string filePath,
         CancellationToken cancellationToken = default)
@@ -70,7 +58,7 @@ public sealed class CloudDrivePlugin
     /// <param name="filePath">The path to the file.</param>
     /// <param name="destinationPath">The remote path to store the file.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-    [SKFunction, Description("Upload a small file to OneDrive (less than 4MB).")]
+    [KernelFunction, Description("Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(
         [Description("Path to file")] string filePath,
         [Description("Remote path to store the file")] string destinationPath,
@@ -93,7 +81,7 @@ public sealed class CloudDrivePlugin
     /// <param name="filePath">The path to the file.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the sharable link.</returns>
-    [SKFunction, Description("Create a sharable link to a file stored in a cloud drive.")]
+    [KernelFunction, Description("Create a sharable link to a file stored in a cloud drive.")]
     public async Task<string> CreateLinkAsync(
         [Description("Path to file")] string filePath,
         CancellationToken cancellationToken = default)

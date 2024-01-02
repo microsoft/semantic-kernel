@@ -18,11 +18,8 @@ public class TextPluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(new TextPlugin(), "text");
+        Assert.NotNull(KernelPluginFactory.CreateFromType<TextPlugin>("text"));
     }
 
     [Fact]
@@ -98,13 +95,13 @@ public class TextPluginTests
     [InlineData("", 0)]
     [InlineData(" ", 1)]
     [InlineData(null, 0)]
-    public void ItCanLength(string textToLength, int expectedLength)
+    public void ItCanLength(string? textToLength, int expectedLength)
     {
         // Arrange
         var target = new TextPlugin();
 
         // Act
-        var result = target.Length(textToLength);
+        var result = target.Length(textToLength ?? string.Empty);
 
         // Assert
         Assert.Equal(expectedLength, result);
@@ -118,14 +115,14 @@ public class TextPluginTests
     [InlineData("", "")]
     [InlineData(" ", " ")]
     [InlineData(null, "")]
-    public void ItCanConcat(string textToConcat, string text2ToConcat)
+    public void ItCanConcat(string? textToConcat, string text2ToConcat)
     {
         // Arrange
         var target = new TextPlugin();
         var expected = string.Concat(textToConcat, text2ToConcat);
 
         // Act
-        string result = target.Concat(textToConcat, text2ToConcat);
+        string result = target.Concat(textToConcat ?? string.Empty, text2ToConcat);
 
         // Assert
         Assert.Equal(expected, result);

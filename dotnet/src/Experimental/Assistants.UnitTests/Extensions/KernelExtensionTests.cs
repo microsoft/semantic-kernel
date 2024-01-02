@@ -1,56 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using Moq;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
 public sealed class KernelExtensionTests
 {
-    private const string SinglePartToolName = "Bogus";
     private const string TwoPartToolName = "Fake-Bogus";
-
-    [Fact]
-    public static void InvokeSinglePartTool()
-    {
-        var mockFunctionCollection = new Mock<IReadOnlyFunctionCollection>();
-        var kernel = new Mock<IKernel>();
-        kernel.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
-
-        kernel.Object.GetAssistantTool(SinglePartToolName);
-
-        kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Once());
-        kernel.Verify(x => x.Functions.GetFunction(It.IsAny<string>(), SinglePartToolName), Times.Never());
-    }
 
     [Fact]
     public static void InvokeTwoPartTool()
     {
-        var mockFunctionCollection = new Mock<IReadOnlyFunctionCollection>();
-        var kernel = new Mock<IKernel>();
-        kernel.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
+        //Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
-        kernel.Object.GetAssistantTool(TwoPartToolName);
+        var kernel = new Kernel();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("Fake", "Fake functions", new[] { function }));
 
-        kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Never());
-        kernel.Verify(x => x.Functions.GetFunction("Fake", SinglePartToolName), Times.Once());
+        //Act
+        var tool = kernel.GetAssistantTool(TwoPartToolName);
+
+        //Assert
+        Assert.NotNull(tool);
+        Assert.Equal("Bogus", tool.Name);
     }
 
-    [Fact]
-    public static void InvokeInvalidThreePartTool()
+    [Theory]
+    [InlineData("Bogus")]
+    [InlineData("i-am-not-valid")]
+    public static void InvokeInvalidSinglePartTool(string toolName)
     {
-        var mockFunctionCollection = new Mock<IReadOnlyFunctionCollection>();
-        var kernel = new Mock<IKernel>();
-        kernel.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
+        //Arrange
+        var kernel = new Kernel();
 
-        Assert.Throws<SKException>(() => kernel.Object.GetAssistantTool("i-am-not-valid"));
-
-        kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Never());
-        kernel.Verify(x => x.Functions.GetFunction("Fake", SinglePartToolName), Times.Never());
+        //Act & Assert
+        Assert.Throws<AssistantException>(() => kernel.GetAssistantTool(toolName));
     }
 }

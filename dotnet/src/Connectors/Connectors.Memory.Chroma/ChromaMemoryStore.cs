@@ -11,12 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Chroma.
@@ -52,7 +50,7 @@ public class ChromaMemoryStore : IMemoryStore
     public ChromaMemoryStore(IChromaClient client, ILoggerFactory? loggerFactory = null)
     {
         this._chromaClient = client;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(ChromaMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc />
@@ -75,7 +73,7 @@ public class ChromaMemoryStore : IMemoryStore
         catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
-            throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
+            throw new KernelException($"Cannot delete non-existent collection {collectionName}", e);
         }
     }
 
@@ -232,16 +230,11 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
-    {
-        Converters = { new ReadOnlyMemoryConverter() }
-    };
-
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
         return
             await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Collection {collectionName} does not exist");
+            throw new KernelException($"Collection {collectionName} does not exist");
     }
 
     private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
@@ -307,11 +300,11 @@ public class ChromaMemoryStore : IMemoryStore
 
     private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
-        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], s_jsonSerializerOptions) : string.Empty;
+        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], JsonOptionsCache.Default) : string.Empty;
 
         return
-            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, ChromaMemoryStore.s_jsonSerializerOptions) ??
-            throw new SKException("Unable to deserialize memory record metadata.");
+            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, JsonOptionsCache.Default) ??
+            throw new KernelException("Unable to deserialize memory record metadata.");
     }
 
     private ReadOnlyMemory<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)

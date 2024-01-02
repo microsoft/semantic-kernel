@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Google.Protobuf.Reflection;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+namespace Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
 /// <summary>
 /// Parser for .proto definition documents.
@@ -36,7 +35,7 @@ internal sealed class ProtoDocumentParser
         var errors = descriptor.GetErrors();
         if (errors != null && errors.Length != 0)
         {
-            throw new SKException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
+            throw new KernelException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
 
         return this.GetGrpcOperations(descriptor.Files.Single());
@@ -91,7 +90,7 @@ internal sealed class ProtoDocumentParser
         var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
         if (messageType == null)
         {
-            throw new SKException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
+            throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
         }
 
         var fields = this.GetDataContractFields(messageType.Fields);
@@ -136,6 +135,6 @@ internal sealed class ProtoDocumentParser
             }
         }
 
-        throw new SKException($"Impossible to find protobuf type name corresponding to '{type}' type.");
+        throw new KernelException($"Impossible to find protobuf type name corresponding to '{type}' type.");
     }
 }

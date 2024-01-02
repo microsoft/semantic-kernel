@@ -11,11 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 
-#pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
-
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// This sample provides a custom implementation of <see cref="IMemoryStore"/> that is read only.
 ///     In this sample, the data is stored in a JSON string and deserialized into an

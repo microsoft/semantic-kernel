@@ -6,13 +6,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
+/// Unit tests for <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
 /// </summary>
 public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
 {
@@ -31,7 +31,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task SpecifiedModelShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -44,7 +44,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -62,7 +62,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -77,7 +77,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Arrange
         this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
 
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient);
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -90,7 +90,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient, endpoint: "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, endpoint: "https://fake-random-test-host/fake-path");
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -103,7 +103,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ShouldSendDataToServiceAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
         var data = new List<string>() { "test_string_1", "test_string_2", "test_string_3" };
 
         //Act
@@ -120,7 +120,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
 
         //Act
         var embeddings = await sut.GenerateEmbeddingsAsync(new List<string>());

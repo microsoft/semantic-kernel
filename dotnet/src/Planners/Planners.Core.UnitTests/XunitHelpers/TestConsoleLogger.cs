@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
+namespace Microsoft.SemanticKernel.Planning.UnitTests.XunitHelpers;
 
 /// <summary>
 /// Basic logger printing to console

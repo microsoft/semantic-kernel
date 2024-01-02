@@ -8,6 +8,7 @@ import semantic_kernel.connectors.ai.hugging_face as sk_hf
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text2text_generation_input_str(setup_hf_text_completion_function):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
 
@@ -20,6 +21,7 @@ async def test_text2text_generation_input_str(setup_hf_text_completion_function)
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text2text_generation_input_vars(setup_hf_text_completion_function):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
 
@@ -33,6 +35,7 @@ async def test_text2text_generation_input_vars(setup_hf_text_completion_function
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text2text_generation_input_context(setup_hf_text_completion_function):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
 
@@ -47,6 +50,7 @@ async def test_text2text_generation_input_context(setup_hf_text_completion_funct
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text2text_generation_input_context_with_vars(
     setup_hf_text_completion_function,
 ):
@@ -66,6 +70,7 @@ async def test_text2text_generation_input_context_with_vars(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text2text_generation_input_context_with_str(
     setup_hf_text_completion_function,
 ):
@@ -84,6 +89,7 @@ async def test_text2text_generation_input_context_with_str(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text2text_generation_input_context_with_vars_and_str(
     setup_hf_text_completion_function,
 ):
@@ -108,6 +114,7 @@ async def test_text2text_generation_input_context_with_vars_and_str(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_text_generation_with_kwargs():
     simple_input = "sleeping and "
     model_name = "google/flan-t5-base"

@@ -3,9 +3,7 @@
 using System.IO;
 using System.Reflection;
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Planners;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Planning;
 
 internal static class EmbeddedResource
 {
