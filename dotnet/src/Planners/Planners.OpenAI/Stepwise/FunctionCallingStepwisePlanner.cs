@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -138,6 +139,10 @@ public sealed class FunctionCallingStepwisePlanner
                     catch (KernelException)
                     {
                         chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
+                    }
+                    catch (Exception ex) when (!ex.IsCriticalException())
+                    {
+                        chatHistoryForSteps.AddUserMessage($"Execution of function {functionResponse.FullyQualifiedName} failed with error: \"{ex.Message}\" Try something else!");
                     }
                 }
                 else
