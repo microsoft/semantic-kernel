@@ -72,7 +72,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldReturnValidMetadataAsync()
+    public async Task ShouldReturnValidGeminiMetadataAsync()
     {
         // Arrange
         var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
@@ -86,16 +86,47 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
             await File.ReadAllTextAsync(ChatTestDataFilePath))!;
         var textContent = chatMessageContents.SingleOrDefault();
         Assert.NotNull(textContent);
-        Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, textContent.Metadata!["PromptFeedbackBlockReason"]);
-        Assert.Equal(testDataResponse.Candidates[0].FinishReason, textContent.Metadata!["FinishReason"]);
-        Assert.Equal(testDataResponse.Candidates[0].Index, textContent.Metadata!["Index"]);
-        Assert.True((textContent.Metadata!["SafetyRatings"] as IEnumerable<object>)!.Count()
+        var metadata = textContent.Metadata as GeminiMetadata;
+        Assert.NotNull(metadata);
+        Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, metadata.PromptFeedbackBlockReason);
+        Assert.Equal(testDataResponse.Candidates[0].FinishReason, metadata.FinishReason);
+        Assert.Equal(testDataResponse.Candidates[0].Index, metadata.Index);
+        Assert.True(metadata.ResponseSafetyRatings!.Count
                     == testDataResponse.Candidates[0].SafetyRatings.Count);
-        Assert.True((textContent.Metadata!["PromptFeedbackSafetyRatings"] as IEnumerable<object>)!.Count()
+        Assert.True(metadata.PromptFeedbackSafetyRatings!.Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
-        Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, textContent.Metadata["PromptUsedTokens"]);
-        Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, textContent.Metadata["CandidatesUsedTokens"]);
-        Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, textContent.Metadata["TotalUsedTokens"]);
+        Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata.PromptTokenCount);
+        Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata.CandidatesTokenCount);
+        Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task ShouldReturnValidDictionaryMetadataAsync()
+    {
+        // Arrange
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var chatHistory = CreateChatHistory();
+
+        // Act
+        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
+            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
+        var textContent = chatMessageContents.SingleOrDefault();
+        Assert.NotNull(textContent);
+        var metadata = textContent.Metadata;
+        Assert.NotNull(metadata);
+        Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, metadata[nameof(GeminiMetadata.PromptFeedbackBlockReason)]);
+        Assert.Equal(testDataResponse.Candidates[0].FinishReason, metadata[nameof(GeminiMetadata.FinishReason)]);
+        Assert.Equal(testDataResponse.Candidates[0].Index, metadata[nameof(GeminiMetadata.Index)]);
+        Assert.True(((IList<GeminiMetadataSafetySettings>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!).Count
+                    == testDataResponse.Candidates[0].SafetyRatings.Count);
+        Assert.True(((IList<GeminiMetadataSafetySettings>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!).Count
+                    == testDataResponse.PromptFeedback.SafetyRatings.Count);
+        Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata[nameof(GeminiMetadata.PromptTokenCount)]);
+        Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata[nameof(GeminiMetadata.CandidatesTokenCount)]);
+        Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata[nameof(GeminiMetadata.TotalTokenCount)]);
     }
 
     [Fact]

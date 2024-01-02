@@ -98,29 +98,29 @@ internal abstract class ClientBase
 
     protected static ReadOnlyDictionary<string, object?> GetResponseMetadata(
         GeminiResponse geminiResponse,
-        GeminiResponseCandidate candidate) => new(new Dictionary<string, object?>
+        GeminiResponseCandidate candidate) => new GeminiMetadata()
     {
-        ["FinishReason"] = candidate.FinishReason,
-        ["Index"] = candidate.Index,
-        ["PromptUsedTokens"] = geminiResponse.UsageMetadata?.PromptTokenCount,
-        ["CandidatesUsedTokens"] = geminiResponse.UsageMetadata?.CandidatesTokenCount,
-        ["TotalUsedTokens"] = geminiResponse.UsageMetadata?.TotalTokenCount,
-        ["SafetyRatings"] = candidate.SafetyRatings?.Select(sr =>
-            new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+        FinishReason = candidate.FinishReason,
+        Index = candidate.Index,
+        PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+        CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
+        TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
+        PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
+        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr =>
+            new GeminiMetadataSafetySettings()
             {
-                ["Block"] = sr.Block,
-                ["Category"] = sr.Category,
-                ["Probability"] = sr.Probability,
-            })),
-        ["PromptFeedbackBlockReason"] = geminiResponse.PromptFeedback?.BlockReason,
-        ["PromptFeedbackSafetyRatings"] = geminiResponse.PromptFeedback?.SafetyRatings?.Select(sr =>
-            new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+                Block = sr.Block,
+                Category = sr.Category,
+                Probability = sr.Probability,
+            }).ToList(),
+        ResponseSafetyRatings = candidate.SafetyRatings?.Select(sr =>
+            new GeminiMetadataSafetySettings()
             {
-                ["Block"] = sr.Block,
-                ["Category"] = sr.Category,
-                ["Probability"] = sr.Probability,
-            })),
-    });
+                Block = sr.Block,
+                Category = sr.Category,
+                Probability = sr.Probability,
+            }).ToList(),
+    };
 
     protected static HttpRequestMessage CreateHTTPRequestMessage(
         object requestData,
