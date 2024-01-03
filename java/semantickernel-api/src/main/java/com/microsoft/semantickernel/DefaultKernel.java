@@ -137,4 +137,6 @@ public class DefaultKernel implements Kernel {
         @Override
         public Kernel build() {
             return new DefaultKernel(new DefaultServiceProvider(services), functions);
+        }
     }
+}
