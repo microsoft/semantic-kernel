@@ -71,7 +71,14 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        settings.prompt = prompt
+        if "prompt" in settings.model_fields:
+            settings.prompt = prompt
+        if "messages" in settings.model_fields:
+            if not settings.messages:
+                settings.messages = [{"role": "user", "content": prompt}]
+            else:
+                settings.messages.append({"role": "user", "content": prompt})
+        settings.ai_model_id = self.ai_model_id
         settings.stream = True
         response = await self._send_request(request_settings=settings)
 
@@ -82,9 +89,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
             if settings.number_of_responses > 1:
                 completions = [""] * settings.number_of_responses
                 for choice in partial.choices:
-                    if hasattr(choice, "delta") and hasattr(
-                        choice.delta, "content"
-                    ):  # Chat completion
+                    if hasattr(choice, "delta") and hasattr(choice.delta, "content"):  # Chat completion
                         completions[choice.index] = choice.delta.content
                     elif hasattr(choice, "text"):  # Text completion
                         completions[choice.index] = choice.text
