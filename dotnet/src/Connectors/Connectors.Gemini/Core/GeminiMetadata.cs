@@ -99,12 +99,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     }
 
     private void SetValueInDictionary(object? value, [CallerMemberName] string propertyName = "")
-    {
-        this.Dictionary[propertyName] = value;
-    }
+        => this.Dictionary[propertyName] = value;
 
     private object? GetValueFromDictionary([CallerMemberName] string propertyName = "")
-    {
-        return this.Dictionary[propertyName];
-    }
+        => this.Dictionary.TryGetValue(propertyName, out var value) ? value : null;
 }
