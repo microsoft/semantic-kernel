@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
@@ -23,13 +22,13 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
     public AzureOpenAIChatCompletionServiceTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
-        this._loggerFactory = new Mock<ILoggerFactory>().Object;
+        this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
     [Theory]
@@ -39,7 +38,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange & Act
         var service = includeLoggerFactory ?
-            new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", loggerFactory: this._loggerFactory) :
+            new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id");
 
         // Assert
@@ -55,7 +54,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         // Arrange & Act
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
         var service = includeLoggerFactory ?
-            new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._loggerFactory) :
+            new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id");
 
         // Assert
@@ -71,7 +70,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         // Arrange & Act
         var client = new OpenAIClient("key");
         var service = includeLoggerFactory ?
-            new AzureOpenAIChatCompletionService("deployment", client, "model-id", loggerFactory: this._loggerFactory) :
+            new AzureOpenAIChatCompletionService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIChatCompletionService("deployment", client, "model-id");
 
         // Assert
@@ -108,7 +107,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetChatMessageContentsAsync(new ChatHistory());
+        var result = await service.GetChatMessageContentsAsync([]);
 
         // Assert
         Assert.True(result.Count > 0);
@@ -120,7 +119,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_streaming_completion_test_response.txt")));
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -139,7 +138,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_streaming_completion_test_response.txt")));
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -147,7 +146,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         };
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync(new ChatHistory()))
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([]))
         {
             Assert.Equal("Test chat streaming response", chunk.Content);
         }
