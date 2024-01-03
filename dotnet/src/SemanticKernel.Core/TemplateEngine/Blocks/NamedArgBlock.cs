@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
@@ -35,8 +36,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
-        var argParts = this.Content.Split(Symbols.NamedArgBlockSeparator);
-        if (argParts.Length != 2)
+        if (!TryGetNameAndValue(this.Content, out string[] argParts))
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
             throw new KernelException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
@@ -45,11 +45,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         this.Name = argParts[0];
         this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argParts[0]}");
         var argValue = argParts[1];
-        if (argValue.Length == 0)
-        {
-            this.Logger.LogError("Invalid named argument `{Text}`", text);
-            throw new KernelException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
-        }
 
         if (argValue[0] == Symbols.VarPrefix)
         {
@@ -59,6 +54,22 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         {
             this._valBlock = new ValBlock(argValue);
         }
+    }
+
+    /// <summary>
+    /// Attempts to extract the name and value of a named argument block from a string
+    /// </summary>
+    /// <param name="text">String from which to extract a name and value</param>
+    /// <param name="argParts">This array has its first and second elements set to the extracted name and value when successful.
+    /// An empty array is returned otherwise.</param>
+    /// <returns>true when a name and value are successfully extracted from the given text</returns>
+    internal static bool TryGetNameAndValue(string? text, out string[] argParts)
+    {
+        text ??= string.Empty;
+
+        argParts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, StringSplitOptions.RemoveEmptyEntries);
+
+        return argParts.Length == 2;
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
@@ -115,11 +116,11 @@ public class NamedArgBlockTests
     public void ArgNameShouldBeNonEmpty()
     {
         // Arrange
-        var target = new NamedArgBlock("='b'");
+        static NamedArgBlock funcToTest() => new("='b'");
 
         // Act + Assert
-        Assert.False(target.IsValid(out var error));
-        Assert.Equal("A named argument must have a name", error);
+        KernelException exception = Assert.Throws<KernelException>(funcToTest);
+        Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
     }
 
     [Fact]
