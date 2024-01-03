@@ -81,7 +81,7 @@ public class Example06_TemplateLanguage {
                     .build(),
                 null,
                 null,
-                null,
+                "semantic-kernel",
                 null);
 
         // Show the result

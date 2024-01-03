@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -87,11 +88,22 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public KernelFunction createFunctionFromPrompt(String promptTemplate,
-        @Nullable PromptExecutionSettings executionSettings, @Nullable String functionName,
-        @Nullable String description, @Nullable String templateFormat,
+    public KernelFunction createFunctionFromPrompt(
+        String promptTemplate,
+        @Nullable PromptExecutionSettings executionSettings,
+        @Nullable String functionName,
+        @Nullable String description,
+        @Nullable String templateFormat,
         @Nullable PromptTemplateFactory promptTemplateFactory) {
-        throw new Todo();
+
+        return KernelFunctionFactory
+            .createFromPrompt(
+                promptTemplate,
+                executionSettings,
+                functionName,
+                description,
+                templateFormat,
+                promptTemplateFactory);
     }
 
     @Override

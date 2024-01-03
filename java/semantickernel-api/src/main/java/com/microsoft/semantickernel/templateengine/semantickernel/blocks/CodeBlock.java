@@ -79,7 +79,9 @@ public final class CodeBlock extends Block implements CodeRendering {
                         kernel,
                         arguments,
                         ContextVariableTypes.getDefaultVariableTypeForClass(String.class))
-                    .map(it -> it.getValue());
+                    .map(it -> {
+                        return it.getValue();
+                    });
 
             case Undefined:
             case Text:

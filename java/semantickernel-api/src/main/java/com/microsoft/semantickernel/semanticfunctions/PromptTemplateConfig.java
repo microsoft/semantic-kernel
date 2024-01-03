@@ -53,6 +53,9 @@ public class PromptTemplateConfig {
         this.templateFormat = templateFormat;
         this.description = description;
         this.inputVariables = inputVariables;
+        if (inputVariables == null) {
+            this.inputVariables = Collections.emptyList();
+        }
         this.outputVariable = outputVariable;
         this.executionSettings = executionSettings;
     }

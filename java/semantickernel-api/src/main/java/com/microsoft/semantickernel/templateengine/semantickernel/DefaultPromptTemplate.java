@@ -108,7 +108,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
         return Flux
             .fromIterable(blocks)
-            .flatMap(block -> {
+            .concatMap(block -> {
                 if (block instanceof TextRendering) {
                     return Mono.just(
                         ((TextRendering) block).render(arguments)
@@ -119,6 +119,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
                     return Mono.error(new TemplateException(ErrorCodes.UNEXPECTED_BLOCK_TYPE));
                 }
             })
-            .reduce("", (a, b) -> a + b);
+            .reduce("", (a, b) -> {
+                return a + b;
+            });
     }
 }
