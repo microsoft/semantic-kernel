@@ -51,7 +51,7 @@ public sealed class DocumentPlugin
     {
         this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
         this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DocumentPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(DocumentPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>

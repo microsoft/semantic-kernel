@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple
 
 from numpy import array, expand_dims, ndarray
@@ -8,7 +8,8 @@ from pymilvus.milvus_client import milvus_client
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict:
@@ -65,7 +66,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         self,
         uri: str = "http://localhost:19530",
         token: Optional[str] = None,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """MilvusMemoryStore allows for searching for records using Milvus/Zilliz Cloud.
 
@@ -79,11 +80,13 @@ class MilvusMemoryStore(MemoryStoreBase):
                 "http://localhost:19530".
             token (Optional[str], optional): The token to connect to the cluster if
                 authentication is required. Defaults to None.
-            logger (Optional[Logger], optional): Logger to use. Defaults to None.
         """
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         self._uri = uri
         self._token = (token,)
-        self._logger = logger or NullLogger()
         self._client = milvus_client.MilvusClient(
             uri=uri,
             token=token,
@@ -215,9 +218,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         # Check if the collection exists.
         if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot insert."
-            )
+            logger.debug(f"Collection {collection_name} does not exist, cannot insert.")
             raise Exception(
                 f"Collection {collection_name} does not exist, cannot insert."
             )
@@ -232,7 +233,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                 collection_name=collection_name, data=insert_list, batch_size=batch_size
             )
         except Exception as e:
-            self._logger.debug(f"Upsert failed due to: {e}")
+            logger.debug(f"Upsert failed due to: {e}")
             raise e
 
     async def get_async(
@@ -272,9 +273,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         # Check if the collection exists
         if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot get."
-            )
+            logger.debug(f"Collection {collection_name} does not exist, cannot get.")
             raise Exception("Collection {collection_name} does not exist, cannot get.")
         try:
             gets = self._client.get(
@@ -284,7 +283,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             )
             return [milvus_dict_to_memoryrecord(get) for get in gets]
         except Exception as e:
-            self._logger.debug(f"Get failed due to: {e}")
+            logger.debug(f"Get failed due to: {e}")
             raise e
 
     async def remove_async(self, collection_name: str, key: str) -> None:
@@ -308,9 +307,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             e: Failure to remove key.
         """
         if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot remove."
-            )
+            logger.debug(f"Collection {collection_name} does not exist, cannot remove.")
             raise Exception(
                 f"Collection {collection_name} does not exist, cannot remove."
             )
@@ -320,7 +317,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                 pks=keys,
             )
         except Exception as e:
-            self._logger.debug(f"Remove failed due to: {e}")
+            logger.debug(f"Remove failed due to: {e}")
             raise e
 
     def _search(self, collection_name, data, limit, distance_metric):
@@ -342,7 +339,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             )[0]
             return results, distance_metric
         except Exception as e:
-            self._logger.debug(f"Search failed with IP, testing L2: {e}")
+            logger.debug(f"Search failed with IP, testing L2: {e}")
             try:
                 distance_metric = distance_pairs[distance_metric.lower()]
                 results = self._client.search(
@@ -354,7 +351,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                 )[0]
                 return results, distance_metric
             except Exception as e:
-                self._logger.debug(f"Search failed with L2: {e}")
+                logger.debug(f"Search failed with L2: {e}")
                 raise e
 
     async def get_nearest_matches_async(
@@ -383,9 +380,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         # Check if collection exists
         if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot search."
-            )
+            logger.debug(f"Collection {collection_name} does not exist, cannot search.")
             raise Exception(
                 f"Collection {collection_name} does not exist, cannot search."
             )
@@ -425,7 +420,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                     output_fields=[EMBEDDING_FIELD],
                 )
             except Exception as e:
-                self._logger.debug(f"Get embeddings in search failed due to: {e}.")
+                logger.debug(f"Get embeddings in search failed due to: {e}.")
                 raise e
 
             vectors = {res[ID_FIELD]: res[EMBEDDING_FIELD] for res in vectors}

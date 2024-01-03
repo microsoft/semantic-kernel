@@ -90,7 +90,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return this._tokens[0].Type switch
         {
             BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this._tokens[0]).Render(arguments)),
-            BlockTypes.FunctionId => this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, arguments),
+            BlockTypes.FunctionId => this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, arguments, cancellationToken),
             _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
     }
@@ -100,7 +100,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool _validated;
     private readonly List<Block> _tokens;
 
-    private async ValueTask<object?> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments)
+    private async ValueTask<object?> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
@@ -111,7 +111,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         try
         {
-            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments, cancellationToken).ConfigureAwait(false);
 
             return result.Value;
         }

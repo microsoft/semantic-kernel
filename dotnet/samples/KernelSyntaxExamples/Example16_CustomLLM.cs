@@ -28,14 +28,14 @@ public static class Example16_CustomLLM
 {
     public static async Task RunAsync()
     {
-        await CustomTextGenerationWithSKFunctionAsync();
+        await CustomTextGenerationWithKernelFunctionAsync();
         await CustomTextGenerationAsync();
         await CustomTextGenerationStreamAsync();
     }
 
-    private static async Task CustomTextGenerationWithSKFunctionAsync()
+    private static async Task CustomTextGenerationWithKernelFunctionAsync()
     {
-        Console.WriteLine("\n======== Custom LLM - Text Completion - SKFunction ========");
+        Console.WriteLine("\n======== Custom LLM - Text Completion - KernelFunction ========");
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         // Add your text generation service as a singleton instance

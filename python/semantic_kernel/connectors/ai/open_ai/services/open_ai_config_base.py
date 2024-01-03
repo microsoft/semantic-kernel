@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from logging import Logger
+import logging
 from typing import Any, Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
@@ -18,6 +18,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 from semantic_kernel.connectors.telemetry import APP_INFO
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIConfigBase(OpenAIHandler):
@@ -52,7 +54,10 @@ class OpenAIConfigBase(OpenAIHandler):
             log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
             is_assistant {bool} -- Whether this is an assistant. Defaults to false.
         """
-
+        if log:
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -73,7 +78,6 @@ class OpenAIConfigBase(OpenAIHandler):
         super().__init__(
             ai_model_id=ai_model_id,
             client=async_client,
-            log=log,
             ai_model_type=ai_model_type,
             is_assistant=is_assistant,
         )

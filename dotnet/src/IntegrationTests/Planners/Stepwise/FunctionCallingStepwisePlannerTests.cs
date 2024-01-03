@@ -74,14 +74,13 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     private Kernel InitializeKernel()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("Planners:AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+            .AddOpenAIChatCompletion(
+                modelId: openAIConfiguration.ModelId,
+                apiKey: openAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
 

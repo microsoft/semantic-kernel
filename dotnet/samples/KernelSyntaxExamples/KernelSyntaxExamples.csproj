@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
@@ -16,7 +16,6 @@
     <Compile Remove="Example28_ActionPlanner.cs" />
     <Compile Remove="Example31_CustomPlanner.cs" />
     <Compile Remove="Example51_StepwisePlanner.cs" />
-    <Compile Remove="Example63_FlowOrchestrator.cs" />
     <Compile Remove="RepoUtils\PlanExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -36,7 +35,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />
     <PackageReference Include="SharpToken" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
@@ -57,7 +55,8 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
-    <ProjectReference Include="..\..\src\Experimental\Assistants\Experimental.Assistants.csproj" />
+    <ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" />
+    <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
@@ -83,8 +82,8 @@
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
-    <EmbeddedResource Include="Resources\Assistants\ParrotAssistant.yaml" />
-    <EmbeddedResource Include="Resources\Assistants\ToolAssistant.yaml" />
+    <EmbeddedResource Include="Resources\Agents\ParrotAgent.yaml" />
+    <EmbeddedResource Include="Resources\Agents\ToolAgent.yaml" />
     <EmbeddedResource Include="Resources\EnglishRoberta\dict.txt" />
     <EmbeddedResource Include="Resources\EnglishRoberta\encoder.json" />
     <EmbeddedResource Include="Resources\EnglishRoberta\vocab.bpe" />

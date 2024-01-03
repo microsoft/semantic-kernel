@@ -16,9 +16,12 @@ public static class KernelFunctionMarkdown
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
-    /// <param name="text">Markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
+    /// <param name="text">Markdown representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function.</param>
     /// <param name="functionName">The name of the function.</param>
-    /// <param name="promptTemplateFactory">>Prompt template factory.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the prompt template configuration into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     public static KernelFunction FromPromptMarkdown(

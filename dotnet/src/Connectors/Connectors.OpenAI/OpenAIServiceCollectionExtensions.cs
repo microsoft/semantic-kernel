@@ -1062,21 +1062,23 @@ public static class OpenAIServiceCollectionExtensions
     /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
+    /// <param name="apiVersion">Azure OpenAI API version</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0012")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
+        string deploymentName,
         string endpoint,
         string apiKey,
-        string? serviceId = null,
         string? modelId = null,
-        int maxRetryCount = 5,
+        string? serviceId = null,
+        string? apiVersion = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -1085,12 +1087,13 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextToImageService(
+                deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
-                maxRetryCount));
+                apiVersion));
 
         return builder;
     }
@@ -1099,15 +1102,17 @@ public static class OpenAIServiceCollectionExtensions
     /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Model identifier</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
+        string deploymentName,
         string endpoint,
         string apiKey,
         string? serviceId = null,
@@ -1120,12 +1125,12 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextToImageService(
+                deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                maxRetryCount));
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>

@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Json.More;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -44,11 +44,11 @@ public sealed class FunctionCallingStepwisePlanner
         string question,
         CancellationToken cancellationToken = default)
     {
-        var logger = kernel.LoggerFactory.CreateLogger(this.GetType());
+        var logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
 
         return PlannerInstrumentation.InvokePlanAsync(
-            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string question, CancellationToken cancellationToken)
-                => plan.ExecuteCoreAsync(kernel, question, cancellationToken),
+            static (FunctionCallingStepwisePlanner plan, Kernel kernel, string? question, CancellationToken cancellationToken)
+                => plan.ExecuteCoreAsync(kernel, question!, cancellationToken),
             this, kernel, question, logger, cancellationToken);
     }
 
@@ -63,7 +63,7 @@ public sealed class FunctionCallingStepwisePlanner
         Verify.NotNull(kernel);
         IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
-        ILogger logger = loggerFactory.CreateLogger(this.GetType());
+        ILogger logger = loggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
         var stepExecutionSettings = this.Config.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 

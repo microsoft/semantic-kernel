@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
@@ -11,6 +11,8 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
     OpenAIChatPromptTemplate,
 )
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _describe_function(function: SKFunctionBase) -> Dict[str, str]:
@@ -101,26 +103,28 @@ def get_function_calling_object(
 
 
 async def execute_function_call(
-    kernel: Kernel, function_call: FunctionCall, log: Optional[Logger] = None
+    kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None
 ) -> str:
+    if log:
+        logger.warning(
+            "The `log` parameter is deprecated. Please use the `logging` module instead."
+        )
     result = await kernel.run_async(
         kernel.func(**function_call.split_name_dict()),
         input_vars=function_call.to_context_variables(),
     )
-    if log:
-        log.info(f"Function call result: {result}")
+    logger.info(f"Function call result: {result}")
     return str(result)
 
 
 async def chat_completion_with_function_call(
     kernel: Kernel,
     context: SKContext,
-    functions: List[Dict[str, str]] = [],
     chat_skill_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[SKFunctionBase] = None,
     *,
-    log: Optional[Logger] = None,
+    log: Optional[Any] = None,
     **kwargs: Dict[str, Any],
 ) -> SKContext:
     """Perform a chat completion with auto-executing function calling.
@@ -144,13 +148,16 @@ async def chat_completion_with_function_call(
             chat_function: the chat function, if not provided, it will be retrieved from the kernel.
                 make sure to provide either the chat_function or the chat_skill_name and chat_function_name.
 
-            log: the logger to use.
             max_function_calls: the maximum number of function calls to execute, defaults to 5.
             current_call_count: the current number of function calls executed.
 
     returns:
         the context with the result of the chat completion, just like a regular invoke_async/run_async.
     """
+    if log:
+        logger.warning(
+            "The `log` parameter is deprecated. Please use the `logging` module instead."
+        )
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
@@ -162,10 +169,13 @@ async def chat_completion_with_function_call(
     assert isinstance(
         chat_function._chat_prompt_template, OpenAIChatPromptTemplate
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
+    settings = chat_function._chat_prompt_template.prompt_config.completion
+    if current_call_count >= max_function_calls:
+        settings.functions = []
     context = await chat_function.invoke_async(
         context=context,
         # when the maximum number of function calls is reached, execute the chat function without Functions.
-        functions=[] if current_call_count >= max_function_calls else functions,
+        settings=settings,
     )
     function_call = context.objects.pop("function_call", None)
     # if there is no function_call or if the content is not a FunctionCall object, return the context
@@ -186,9 +196,7 @@ async def chat_completion_with_function_call(
     return await chat_completion_with_function_call(
         kernel,
         chat_function=chat_function,
-        functions=functions,
         context=context,
-        log=log,
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )
@@ -219,11 +227,8 @@ def _is_valid_function_call(
 
 
 def _parse_message(
-    message: ChatCompletion, logger: Optional[Logger] = None, with_data: bool = False
-) -> Union[
-    Tuple[Optional[str], Optional[FunctionCall]],
-    Tuple[Optional[str], Optional[str], Optional[FunctionCall]],
-]:
+    message: ChatCompletion, with_data: bool = False
+) -> Tuple[Optional[str], Optional[str], Optional[FunctionCall]]:
     """
     Parses the message.
 
@@ -242,7 +247,7 @@ def _parse_message(
         )
 
     if not with_data:
-        return (content, function_call)
+        return (content, None, function_call)
     else:
         tool_content = None
         if message.model_extra and "context" in message.model_extra:
@@ -251,3 +256,11 @@ def _parse_message(
                     tool_content = m.get("content", None)
                     break
         return (content, tool_content, function_call)
+
+
+def _parse_choices(choice) -> Tuple[str, int]:
+    message = ""
+    if choice.delta.content:
+        message += choice.delta.content
+
+    return message, choice.index

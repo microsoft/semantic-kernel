@@ -19,15 +19,16 @@ docker-compose up -d
 ```
 
 3. Use Semantic Kernel with Milvus, connecting to `localhost` with the default (gRPC) port of 1536:
+   > See [Example 14](../../../samples/KernelSyntaxExamples/Example14_SemanticMemory.cs) and [Example 15](../../../samples/KernelSyntaxExamples/Example15_TextMemoryPlugin.cs) for more memory usage examples with the kernel.
 
 ```csharp
 using MilvusMemoryStore memoryStore = new("localhost");
 
-Kernel kernel = new KernelBuilder()
-    .WithLogger(logger)
-    .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
-    .WithMemoryStorage(memoryStore)
-    .Build();
+var embeddingGenerator = new OpenAITextEmbeddingGenerationService("text-embedding-ada-002", apiKey);
+
+SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
+
+var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 ```
 
 More information on setting up Milvus can be found [here](https://milvus.io/docs/v2.2.x/install_standalone-docker.md). The `MilvusMemoryStore` constructor provides additional configuration options, such as the vector size, the similarity metric type, etc.

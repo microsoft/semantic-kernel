@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
@@ -24,14 +23,17 @@ public static class Example65_HandlebarsPlanner
     {
         s_sampleIndex = 1;
 
-        // Using Complex Types as inputs and outputs
+        // Plugin with Complex Types as inputs and outputs
         await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt: true);
 
-        // Using primitive types as inputs and outputs
+        // Plugin with primitive types as inputs and outputs
         await PlanNotPossibleSampleAsync();
         await RunDictionaryWithBasicTypesSampleAsync();
         await RunPoetrySampleAsync();
         await RunBookSampleAsync();
+
+        // OpenAPI plugin
+        await RunCourseraSampleAsync(true);
     }
 
     private static void WriteSampleHeadingToConsole(string name)
@@ -110,7 +112,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel);
         Console.WriteLine($"\nResult:\n{result}\n");
     }
 
@@ -138,6 +140,12 @@ public static class Example65_HandlebarsPlanner
             */
             Console.WriteLine($"\n{ex.Message}\n");
         }
+    }
+
+    private static async Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
+    {
+        WriteSampleHeadingToConsole("Coursera");
+        await RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
     }
 
     private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)

@@ -17,17 +17,17 @@ internal sealed class HandlebarsPromptTemplateExtensions
         KernelArguments executionContext
     )
     {
-        registerHelper("getSchemaTypeName", (Context context, Arguments arguments) =>
+        registerHelper("getSchemaTypeName", static (Context context, Arguments arguments) =>
         {
             KernelParameterMetadata parameter = (KernelParameterMetadata)arguments[0];
             return parameter.GetSchemaTypeName();
         });
 
-        registerHelper("getSchemaReturnTypeName", (Context context, Arguments arguments) =>
+        registerHelper("getSchemaReturnTypeName", static (Context context, Arguments arguments) =>
         {
             KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
             var functionName = arguments[1].ToString();
-            return parameter.ToSKParameterMetadata(functionName).GetSchemaTypeName();
+            return parameter.ToKernelParameterMetadata(functionName).GetSchemaTypeName();
         });
     }
 }

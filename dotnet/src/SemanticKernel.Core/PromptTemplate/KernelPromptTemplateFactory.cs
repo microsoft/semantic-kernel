@@ -7,8 +7,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Default implementation of <see cref="IPromptTemplateFactory"/> for the semantic-kernel prompt template format.
+/// Provides an implementation of <see cref="IPromptTemplateFactory"/> for the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.
 /// </summary>
+/// <remarks>
+/// This is used as the default <see cref="IPromptTemplateFactory"/> when no other factory is provided.
+/// </remarks>
 public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly ILoggerFactory _loggerFactory;

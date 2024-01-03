@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from logging import Logger
+import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 from motor import MotorCommandCursor, core, motor_asyncio
@@ -19,17 +19,17 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import mongodb_atlas_settings_from_dot_env
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections"""
 
-    __slots__ = ("_mongo_client", "_logger", "__database_name")
+    __slots__ = ("_mongo_client", "__database_name")
 
     _mongo_client: motor_asyncio.AsyncIOMotorClient
-    _logger: Logger
     __database_name: str
     __index_name: str
 
@@ -38,14 +38,17 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         index_name: Optional[str] = None,
         connection_string: Optional[str] = None,
         database_name: Optional[str] = None,
-        logger: Optional[Logger] = None,
         read_preference: Optional[ReadPreference] = ReadPreference.PRIMARY,
+        **kwargs,
     ):
+        if kwargs.get("logger"):
+            logger.warning(
+                "The `logger` parameter is deprecated. Please use the `logging` module instead."
+            )
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string or mongodb_atlas_settings_from_dot_env(),
             read_preference=read_preference,
         )
-        self._logger = logger or NullLogger()
         self.__database_name = database_name or DEFAULT_DB_NAME
         self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
 
@@ -161,7 +164,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         ].bulk_write(upserts, ordered=False)
 
         # Assert the number matched and the number upserted equal the total batch updated
-        self._logger.debug(
+        logger.debug(
             "matched_count=%s, upserted_count=%s",
             bulk_update_result.matched_count,
             bulk_update_result.upserted_count,
@@ -241,7 +244,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         bulk_write_result = await self.database[collection_name].bulk_write(
             deletes, ordered=False
         )
-        self._logger.debug("%s entries deleted", bulk_write_result.deleted_count)
+        logger.debug("%s entries deleted", bulk_write_result.deleted_count)
 
     async def get_nearest_matches_async(
         self,

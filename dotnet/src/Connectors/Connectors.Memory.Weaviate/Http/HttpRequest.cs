@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal static class HttpRequest
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -45,7 +45,7 @@ internal static class HttpRequest
             return null;
         }
 
-        string strPayload = payload as string ?? JsonSerializer.Serialize(payload, s_jsonSerializerOptions);
+        string strPayload = payload as string ?? JsonSerializer.Serialize(payload, s_jsonOptionsCache);
         return new(strPayload, Encoding.UTF8, "application/json");
     }
 }

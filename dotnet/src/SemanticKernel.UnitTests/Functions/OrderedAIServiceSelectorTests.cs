@@ -15,7 +15,7 @@ namespace SemanticKernel.UnitTests.Functions;
 public class OrderedAIServiceSelectorTests
 {
     [Fact]
-    public void ItThrowsAnSKExceptionForNoServices()
+    public void ItThrowsAKernelExceptionForNoServices()
     {
         // Arrange
         var kernel = new Kernel();
@@ -89,7 +89,7 @@ public class OrderedAIServiceSelectorTests
     }
 
     [Fact]
-    public void ItThrowsAnSKExceptionForNotFoundService()
+    public void ItThrowsAKernelExceptionForNotFoundService()
     {
         // Arrange
         IKernelBuilder builder = Kernel.CreateBuilder();
