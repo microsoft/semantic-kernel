@@ -20,5 +20,9 @@ public class KernelParameterMetadata {
         this.defaultValue = defaultValue;
         this.isRequired = isRequired;
     }
+
+    public String getName() {
+        return name;
+    }
     //private KernelJsonSchema schema;
 }

@@ -61,6 +61,8 @@ public interface KernelFunction extends Buildable {
      */
     String toManualString(boolean includeOutputs);
 
+    KernelFunctionMetadata getMetadata();
+
     @Deprecated
     default Class<?> getType() {
         throw new UnsupportedOperationException("Deprecated");

@@ -28,6 +28,18 @@ public class PromptTemplateConfig {
 
     private Map<String, PromptExecutionSettings> executionSettings;
 
+    public PromptTemplateConfig(String template) {
+        this(
+            "default",
+            template,
+            "semantic-kernel",
+            "",
+            Collections.emptyList(),
+            new OutputVariable("out", "string"),
+            Collections.emptyMap()
+        );
+    }
+
     public PromptTemplateConfig(
         String name,
         String template,

@@ -23,6 +23,11 @@ public class InputVariable {
     }
 
     public InputVariable(
+        String name) {
+        this.name = name;
+    }
+
+    public InputVariable(
         String name,
         String type,
         String description,
