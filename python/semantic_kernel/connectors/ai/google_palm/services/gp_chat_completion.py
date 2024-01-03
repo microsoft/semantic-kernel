@@ -4,17 +4,18 @@ import logging
 from typing import Any, List, Optional, Tuple, Union
 
 import google.generativeai as palm
-from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
+from google.generativeai.types import ChatResponse
 from pydantic import PrivateAttr, constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.google_palm.gp_request_settings import (
+    GooglePalmChatRequestSettings,
+    GooglePalmRequestSettings,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -60,16 +61,14 @@ class GooglePalmChatCompletion(
     async def complete_chat_async(
         self,
         messages: List[Tuple[str, str]],
-        request_settings: ChatRequestSettings,
-        context: Optional[str] = None,
-        examples: Optional[ExampleOptions] = None,
-        prompt: Optional[MessagePromptOptions] = None,
+        settings: GooglePalmRequestSettings,
     ) -> Union[str, List[str]]:
-        response = await self._send_chat_request(
-            messages, request_settings, context, examples, prompt
-        )
+        settings.messages = messages
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
+        response = await self._send_chat_request(settings)
 
-        if request_settings.number_of_responses > 1:
+        if settings.candidate_count > 1:
             return [
                 candidate["output"]
                 if candidate["output"] is not None
@@ -83,8 +82,7 @@ class GooglePalmChatCompletion(
     async def complete_chat_stream_async(
         self,
         messages: List[Tuple[str, str]],
-        request_settings: ChatRequestSettings,
-        context: Optional[str] = None,
+        settings: GooglePalmRequestSettings,
     ):
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"
@@ -93,26 +91,19 @@ class GooglePalmChatCompletion(
     async def complete_async(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        settings: GooglePalmRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
             logger.warning(
                 "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
-        response = await self._send_chat_request(prompt_to_message, chat_settings)
+        settings.messages = [("user", prompt)]
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
+        response = await self._send_chat_request(settings)
 
-        if chat_settings.number_of_responses > 1:
+        if settings.candidate_count > 1:
             return [
                 candidate["output"]
                 if candidate["output"] is not None
@@ -126,7 +117,7 @@ class GooglePalmChatCompletion(
     async def complete_stream_async(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        settings: GooglePalmRequestSettings,
         **kwargs,
     ):
         if kwargs.get("logger"):
@@ -139,11 +130,7 @@ class GooglePalmChatCompletion(
 
     async def _send_chat_request(
         self,
-        messages: List[Tuple[str, str]],
-        request_settings: ChatRequestSettings,
-        context: Optional[str] = None,
-        examples: Optional[ExampleOptions] = None,
-        prompt: Optional[MessagePromptOptions] = None,
+        settings: GooglePalmRequestSettings,
     ):
         """
         Completes the given user message. If len(messages) > 1, and a
@@ -155,7 +142,7 @@ class GooglePalmChatCompletion(
 
         Arguments:
             messages {str} -- The message (from a user) to respond to.
-            request_settings {ChatRequestSettings} -- The request settings.
+            settings {GooglePalmRequestSettings} -- The request settings.
             context {str} -- Text that should be provided to the model first,
             to ground the response. If a system message is provided, it will be
             used as context.
@@ -175,23 +162,10 @@ class GooglePalmChatCompletion(
         Returns:
             str -- The completed text.
         """
-        if request_settings is None:
+        if settings is None:
             raise ValueError("The request settings cannot be `None`")
 
-        if request_settings.max_tokens < 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The max tokens must be greater than 0, "
-                f"but was {request_settings.max_tokens}",
-            )
-
-        if len(messages) <= 0:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "To complete a chat you need at least one message",
-            )
-
-        if messages[-1][0] != "user":
+        if settings.messages[-1][0] != "user":
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
                 "The last message must be from the user",
@@ -204,12 +178,12 @@ class GooglePalmChatCompletion(
                 ex,
             )
         if (
-            self._message_history is None and context is None
+            self._message_history is None and settings.context is None
         ):  # If the conversation hasn't started yet and no context is provided
             context = ""
-            if len(messages) > 1:  # Check if we need context from messages
-                for index, (role, message) in enumerate(messages):
-                    if index < len(messages) - 1:
+            if len(settings.messages) > 1:  # Check if we need context from messages
+                for index, (role, message) in enumerate(settings.messages):
+                    if index < len(settings.messages) - 1:
                         if role == "system":
                             context += message + "\n"
                         else:
@@ -217,18 +191,11 @@ class GooglePalmChatCompletion(
         try:
             if self._message_history is None:
                 response = palm.chat(  # Start a new conversation
-                    model=self.ai_model_id,
-                    context=context,
-                    examples=examples,
-                    temperature=request_settings.temperature,
-                    candidate_count=request_settings.number_of_responses,
-                    top_p=request_settings.top_p,
-                    prompt=prompt,
-                    messages=messages[-1][1],
+                    **settings.prepare_settings_dict()
                 )
             else:
                 response = self._message_history.reply(  # Continue the conversation
-                    messages[-1][1],
+                    settings.messages[-1][1],
                 )
             self._message_history = response  # Store response object for future use
         except Exception as ex:
@@ -238,3 +205,7 @@ class GooglePalmChatCompletion(
                 ex,
             )
         return response
+
+    def get_request_settings_class(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return GooglePalmChatRequestSettings
