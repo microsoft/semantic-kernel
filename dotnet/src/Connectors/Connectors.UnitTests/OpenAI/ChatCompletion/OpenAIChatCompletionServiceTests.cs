@@ -18,14 +18,14 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletion;
 /// <summary>
 /// Unit tests for <see cref="OpenAIChatCompletionService"/>
 /// </summary>
-public sealed class OpenAIChatCompletionTests : IDisposable
+public sealed class OpenAIChatCompletionServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly OpenAIFunction _timepluginDate, _timepluginNow;
     private readonly OpenAIPromptExecutionSettings _executionSettings;
 
-    public OpenAIChatCompletionTests()
+    public OpenAIChatCompletionServiceTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);

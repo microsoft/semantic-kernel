@@ -59,3 +59,7 @@ if ($ProdPackagesOnly) {
 }
 
 Write-Host "Code coverage report generated at: $reportOutputPath"
+
+# Open report
+$reportIndexHtml = Join-Path $reportOutputPath "index.html"
+Invoke-Item -Path $reportIndexHtml

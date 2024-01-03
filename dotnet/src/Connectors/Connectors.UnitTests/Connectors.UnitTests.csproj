@@ -37,8 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs"
-             Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,10 +64,10 @@
     <None Update="HuggingFace\TestData\embeddings_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenAI\TestData\image_result_test_response.json">
+    <None Update="OpenAI\TestData\chat_completion_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenAI\TestData\image_generation_test_response.json">
+    <None Update="OpenAI\TestData\chat_streaming_completion_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
