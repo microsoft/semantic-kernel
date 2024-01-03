@@ -2,12 +2,11 @@ import asyncio
 import logging
 
 import semantic_kernel as sk
+from samples.utils import Colors
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     OpenAIChatCompletion,
 )
-
-from ..utils import Colors
 
 
 def get_grounding_text():

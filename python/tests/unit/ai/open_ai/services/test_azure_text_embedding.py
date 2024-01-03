@@ -145,8 +145,8 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create) -> None:
     await azure_text_embedding.generate_embeddings_async(texts)
 
     mock_create.assert_awaited_once_with(
-        model=deployment_name,
         input=texts,
+        model=deployment_name,
     )
 
 

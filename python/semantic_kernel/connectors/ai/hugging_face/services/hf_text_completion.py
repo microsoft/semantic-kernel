@@ -9,8 +9,8 @@ import transformers
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.hugging_face.hf_request_settings import (
+    HuggingFaceRequestSettings,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -22,7 +22,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
-    generator: transformers.Pipeline
+    generator: Any
 
     def __init__(
         self,
@@ -79,7 +79,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_async(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        request_settings: HuggingFaceRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
@@ -87,33 +87,13 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
         try:
-            generation_config = transformers.GenerationConfig(
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                max_new_tokens=request_settings.max_tokens,
-                pad_token_id=50256,  # EOS token
+            results = self.generator(**request_settings.prepare_settings_dict(prompt))
+            result_field_name = (
+                "summary_text" if self.task == "summarization" else "generated_text"
             )
-
-            results = self.generator(
-                prompt,
-                do_sample=True,
-                num_return_sequences=request_settings.number_of_responses,
-                generation_config=generation_config,
-            )
-
-            completions = list()
-            if self.task == "summarization":
-                for response in results:
-                    completions.append(response["summary_text"])
-                if len(completions) == 1:
-                    return completions[0]
-                return completions
-
-            for response in results:
-                completions.append(response["generated_text"])
-            if len(completions) == 1:
-                return completions[0]
-            return completions
+            if len(results) == 1:
+                return results[0][result_field_name]
+            return [resp[result_field_name] for resp in results]
 
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
@@ -121,7 +101,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_stream_async(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        request_settings: HuggingFaceRequestSettings,
         **kwargs,
     ):
         """
@@ -130,7 +110,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {CompleteRequestSettings} -- Request settings.
+            request_settings {HuggingFaceRequestSettings} -- Request settings.
 
         Yields:
             str -- Completion result.
@@ -139,28 +119,21 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             logger.warning(
                 "The `logger` parameter is deprecated. Please use the `logging` module instead."
             )
-        if request_settings.number_of_responses > 1:
+        if request_settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
                     If you need multiple responses, please use the complete_async method.",
             )
         try:
-            generation_config = transformers.GenerationConfig(
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                max_new_tokens=request_settings.max_tokens,
-                pad_token_id=50256,  # EOS token
-            )
-
             tokenizer = transformers.AutoTokenizer.from_pretrained(self.ai_model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {prompt}
             kwargs = {
-                "num_return_sequences": request_settings.number_of_responses,
-                "generation_config": generation_config,
+                "num_return_sequences": request_settings.num_return_sequences,
+                "generation_config": request_settings.get_generation_config(),
                 "streamer": streamer,
-                "do_sample": True,
+                "do_sample": request_settings.do_sample,
             }
 
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159

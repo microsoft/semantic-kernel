@@ -9,10 +9,17 @@ import pytest
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+    AzureAISearchDataSources,
+    AzureChatRequestSettings,
+    AzureDataSources,
+    ExtraBody,
+)
 from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
     AzureCognitiveSearchMemoryStore,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 
 try:
     azure_cognitive_search_installed = True
@@ -79,18 +86,17 @@ async def create_with_data_chat_function(
         search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_ENDPOINT")
         search_api_key = os.getenv("AZURE_COGNITIVE_SEARCH_ADMIN_KEY")
 
-        azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
-            parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-                indexName=collection,
-                endpoint=search_endpoint,
-                key=search_api_key,
-            )
-        )
-
-        azure_chat_with_data_settings = (
-            sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-                dataSources=[azure_aisearch_datasource]
-            )
+        extra = ExtraBody(
+            data_sources=[
+                AzureDataSources(
+                    type="AzureCognitiveSearch",
+                    parameters=AzureAISearchDataSources(
+                        indexName=collection,
+                        endpoint=search_endpoint,
+                        key=search_api_key,
+                    ),
+                )
+            ]
         )
 
         chat_service = sk_oai.AzureChatCompletion(
@@ -102,12 +108,12 @@ async def create_with_data_chat_function(
         )
         kernel.add_chat_service("chat-gpt", chat_service)
 
-        prompt_config = (
-            sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+        prompt_config = ChatPromptTemplate(
+            completion=AzureChatRequestSettings(
                 max_tokens=2000,
                 temperature=0.7,
                 top_p=0.8,
-                data_source_settings=azure_chat_with_data_settings,
+                extra_body=extra,
             )
         )
 

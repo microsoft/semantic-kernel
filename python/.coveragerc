@@ -1,7 +1,12 @@
 [run]
 source = semantic_kernel
 omit = 
-    semantic_kernel/connectors/*
+    semantic_kernel/connectors/memory/*
+    semantic_kernel/connectors/openapi/*
+    semantic_kernel/connectors/search_engine/*
+    semantic_kernel/connectors/ai/google_palm/*
+    semantic_kernel/connectors/ai/hugging_face/*
+
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -19,3 +24,4 @@ exclude_lines =
     # TYPE_CHECKING and @overload blocks are never executed during pytest run
     if TYPE_CHECKING:
     @overload
+    @abstractmethod

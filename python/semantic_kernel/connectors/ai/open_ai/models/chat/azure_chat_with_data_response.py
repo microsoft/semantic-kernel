@@ -5,7 +5,9 @@ from typing import Tuple
 from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
 
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+    AzureChatRequestSettings,
+)
 
 
 class AzureChatWithDataStreamResponse:
@@ -13,12 +15,12 @@ class AzureChatWithDataStreamResponse:
 
     _tool_message: str
     _assistant_message: AsyncStream[ChatCompletionChunk]
-    _settings: "ChatRequestSettings"
+    _settings: "AzureChatRequestSettings"
 
     def __init__(
         self,
         assistant_message: AsyncStream[ChatCompletionChunk],
-        settings: "ChatRequestSettings",
+        settings: "AzureChatRequestSettings",
     ):
         self._assistant_message = assistant_message
         self._tool_message = ""
@@ -29,16 +31,14 @@ class AzureChatWithDataStreamResponse:
         while True:
             try:
                 message = await self._assistant_message.__anext__()
-
                 if message.choices and len(message.choices) > 0:
                     delta = message.choices[0].delta
-                    if delta:
-                        if delta.model_extra and "context" in delta.model_extra:
-                            for m in delta.model_extra["context"].get("messages", []):
-                                if m["role"] == "tool":
-                                    self._tool_message = m.get("content", "")
-                                    break
-                            break
+                    if delta and delta.model_extra and "context" in delta.model_extra:
+                        for m in delta.model_extra["context"].get("messages", []):
+                            if m["role"] == "tool":
+                                self._tool_message = m.get("content", "")
+                                break
+                        break
             except StopIteration:
                 break
 

@@ -4,10 +4,6 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
-)
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -18,9 +14,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 
 
 def _config_ban_tokens(settings_type, keys):
-    settings = (
-        ChatRequestSettings() if settings_type == "chat" else CompleteRequestSettings()
-    )
+    settings = sk_oai.OpenAIRequestSettings()
 
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:

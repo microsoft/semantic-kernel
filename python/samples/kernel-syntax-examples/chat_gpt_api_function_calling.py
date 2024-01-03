@@ -54,16 +54,21 @@ kernel.import_skill(MathSkill(), skill_name="math")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_call="auto",
-    chat_system_prompt=system_message,
+prompt_config = sk.PromptTemplateConfig(
+    completion=sk_oai.AzureChatRequestSettings(
+        service_id="chat-gpt",
+        ai_model_id=deployment_name,
+        max_tokens=2000,
+        temperature=0.7,
+        top_p=0.8,
+        function_call="auto",
+        functions=get_function_calling_object(kernel, {"exclude_skill": ["ChatBot"]}),
+    )
 )
 prompt_template = OpenAIChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
+prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message(
     "I am Mosscap, a chat bot. I'm trying to figure out what people need."
@@ -71,12 +76,6 @@ prompt_template.add_assistant_message(
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-
-# calling the chat, you could add a overloaded version of the settings here,
-# to enable or disable function calling or set the function calling to a specific skill.
-# see the openai_function_calling example for how to use this with a unrelated function definition
-filter = {"exclude_skill": ["ChatBot"]}
-functions = get_function_calling_object(kernel, filter)
 
 
 async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
@@ -99,7 +98,6 @@ async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
         chat_skill_name="ChatBot",
         chat_function_name="Chat",
         context=context,
-        functions=functions,
     )
     print(f"Mosscap:> {context.result}")
     return True, context

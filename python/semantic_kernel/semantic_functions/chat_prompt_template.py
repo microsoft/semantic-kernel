@@ -4,6 +4,8 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
 
+from pydantic import Field
+
 from semantic_kernel.models.chat.chat_message import ChatMessage
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -22,7 +24,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
-    _messages: List[ChatMessageT]
+    messages: List[ChatMessageT] = Field(default_factory=list)
 
     def __init__(
         self,
@@ -37,8 +39,16 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
                 "The `log` parameter is deprecated. Please use the `logging` module instead."
             )
         self._messages = []
-        if self._prompt_config.completion.chat_system_prompt:
-            self.add_system_message(self._prompt_config.completion.chat_system_prompt)
+        if self.prompt_config.completion.extension_data.get("chat_system_prompt"):
+            self.add_system_message(
+                self.prompt_config.completion.extension_data["chat_system_prompt"]
+            )
+        if (
+            hasattr(self.prompt_config.completion, "messages")
+            and self.prompt_config.completion.messages
+        ):
+            for message in self.prompt_config.completion.messages:
+                self.add_message(message["role"], message["content"])
 
     async def render_async(self, context: "SKContext") -> str:
         raise NotImplementedError(
@@ -68,31 +78,37 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             message: The message to add, can include templating components.
             kwargs: can be used by inherited classes.
         """
-        self._messages.append(
-            ChatMessage(
+        concrete_message = self.model_fields["messages"].annotation.__args__[0]
+        # When the type is not explicitly set, it is still the typevar, replace with generic ChatMessage
+        if isinstance(concrete_message, TypeVar):
+            concrete_message = ChatMessage
+        self.messages.append(
+            concrete_message(
                 role=role,
                 content_template=PromptTemplate(
-                    message, self._template_engine, self._prompt_config
-                ),
+                    message, self.template_engine, self.prompt_config
+                )
+                if message
+                else None,
+                **kwargs,
             )
         )
 
     async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
         """Render the content of the message in the chat template, based on the context."""
-        if len(self._messages) == 0 or self._messages[-1].role in [
+        if len(self.messages) == 0 or self.messages[-1].role in [
             "assistant",
             "system",
         ]:
-            self.add_user_message(message=self._template)
+            self.add_user_message(message=self.template)
         await asyncio.gather(
-            *[message.render_message_async(context) for message in self._messages]
+            *[message.render_message_async(context) for message in self.messages]
         )
-        return [message.as_dict() for message in self._messages]
+        return [message.as_dict() for message in self.messages]
 
-    @property
-    def messages(self) -> List[Dict[str, str]]:
-        """Return the messages as a list of dicts with role, content, name."""
-        return [message.as_dict() for message in self._messages]
+    def dump_messages(self) -> List[Dict[str, str]]:
+        """Return the messages as a list of dicts with role, content, name and function_call."""
+        return [message.as_dict() for message in self.messages]
 
     @classmethod
     def restore(

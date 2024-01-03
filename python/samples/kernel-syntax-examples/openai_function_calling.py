@@ -5,6 +5,9 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
+    OpenAIChatMessage,
+)
 from semantic_kernel.core_skills import MathSkill
 
 system_message = """
@@ -46,24 +49,6 @@ kernel.import_skill(MathSkill(), skill_name="math")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_call="auto",
-    chat_system_prompt=system_message,
-)
-prompt_template = sk.ChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message(
-    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
-)
-
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-# define the functions available
 functions = [
     {
         "name": "search_hotels",
@@ -88,6 +73,25 @@ functions = [
         },
     }
 ]
+prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    function_call="auto",
+    functions=functions,
+)
+prompt_template = sk.ChatPromptTemplate[OpenAIChatMessage](
+    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
+)
+prompt_template.add_system_message(system_message)
+prompt_template.add_user_message("Hi there, who are you?")
+prompt_template.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
+)
+
+function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
+# define the functions available
 
 
 async def main() -> None:
@@ -96,7 +100,7 @@ async def main() -> None:
         "user_input"
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
 
-    context = await chat_function.invoke_async(context=context, functions=functions)
+    context = await chat_function.invoke_async(context=context)
     if function_call := context.objects.pop("function_call"):
         print(f"Function to be called: {function_call.name}")
         print(f"Function parameters: \n{function_call.arguments}")

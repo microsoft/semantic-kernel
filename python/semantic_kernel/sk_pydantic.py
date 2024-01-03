@@ -14,7 +14,9 @@ HttpsUrl = Annotated[Url, UrlConstraints(max_length=2083, allowed_schemes=["http
 class SKBaseModel(BaseModel):
     """Base class for all pydantic models in the SK."""
 
-    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+    model_config = ConfigDict(
+        populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True
+    )
 
 
 # TODO: remove these aliases in SK v1

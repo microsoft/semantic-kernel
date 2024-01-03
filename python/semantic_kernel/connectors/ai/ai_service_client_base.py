@@ -4,6 +4,7 @@ from abc import ABC
 
 from pydantic import constr
 
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.sk_pydantic import SKBaseModel
 
 
@@ -17,3 +18,7 @@ class AIServiceClientBase(SKBaseModel, ABC):
     """
 
     ai_model_id: constr(strip_whitespace=True, min_length=1)
+
+    def get_request_settings_class(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return AIRequestSettings  # pragma: no cover
