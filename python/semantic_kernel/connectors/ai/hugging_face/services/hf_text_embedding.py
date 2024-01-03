@@ -18,7 +18,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
     device: str
-    generator: sentence_transformers.SentenceTransformer
+    generator: Any
 
     def __init__(
         self,

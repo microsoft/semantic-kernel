@@ -3,9 +3,7 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
-)
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -79,7 +77,7 @@ class SKFunctionBase(SKBaseModel):
 
     @property
     @abstractmethod
-    def request_settings(self) -> CompleteRequestSettings:
+    def request_settings(self) -> AIRequestSettings:
         """AI service settings"""
         pass
 
@@ -101,7 +99,7 @@ class SKFunctionBase(SKBaseModel):
         variables: ContextVariables = None,
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
     ) -> "SKContext":
         """
         Invokes the function with an explicit string input
@@ -110,7 +108,7 @@ class SKFunctionBase(SKBaseModel):
             variables {ContextVariables} -- The custom input
             context {SKContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {CompleteRequestSettings} -- LLM completion settings
+            settings {AIRequestSettings} -- LLM completion settings
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -124,7 +122,7 @@ class SKFunctionBase(SKBaseModel):
         variables: ContextVariables = None,
         context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
         **kwargs: Dict[str, Any],
     ) -> "SKContext":
         """
@@ -134,7 +132,7 @@ class SKFunctionBase(SKBaseModel):
             variables {ContextVariables} -- The custom input
             context {SKContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {CompleteRequestSettings} -- LLM completion settings
+            settings {AIRequestSettings} -- LLM completion settings
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -177,14 +175,12 @@ class SKFunctionBase(SKBaseModel):
         pass
 
     @abstractmethod
-    def set_ai_configuration(
-        self, settings: CompleteRequestSettings
-    ) -> "SKFunctionBase":
+    def set_ai_configuration(self, settings: AIRequestSettings) -> "SKFunctionBase":
         """
         Sets the AI completion settings used with LLM requests
 
         Arguments:
-            settings {CompleteRequestSettings} -- LLM completion settings
+            settings {AIRequestSettings} -- LLM completion settings
 
         Returns:
             SKFunctionBase -- The function instance
