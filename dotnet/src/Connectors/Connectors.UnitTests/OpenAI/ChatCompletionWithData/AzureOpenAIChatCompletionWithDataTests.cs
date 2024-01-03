@@ -105,6 +105,13 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         // Assert
         Assert.True(result.Count > 0);
         Assert.Equal("Test chat with data response", result[0].Content);
+
+        var usage = result[0].Metadata?["Usage"] as ChatWithDataUsage;
+
+        Assert.NotNull(usage);
+        Assert.Equal(55, usage.PromptTokens);
+        Assert.Equal(100, usage.CompletionTokens);
+        Assert.Equal(155, usage.TotalTokens);
     }
 
     [Fact]
@@ -142,6 +149,13 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         // Assert
         Assert.True(result.Count > 0);
         Assert.Equal("Test chat with data response", result[0].Text);
+
+        var usage = result[0].Metadata?["Usage"] as ChatWithDataUsage;
+
+        Assert.NotNull(usage);
+        Assert.Equal(55, usage.PromptTokens);
+        Assert.Equal(100, usage.CompletionTokens);
+        Assert.Equal(155, usage.TotalTokens);
     }
 
     [Fact]

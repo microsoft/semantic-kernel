@@ -19,5 +19,10 @@
         }
       ]
     }
-  ]
+  ],
+  "usage": {
+    "prompt_tokens": 55,
+    "completion_tokens": 100,
+    "total_tokens": 155
+  }
 }
