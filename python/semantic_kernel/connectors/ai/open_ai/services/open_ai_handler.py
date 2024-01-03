@@ -13,12 +13,12 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
+    ContentFilterAIException,
+)
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
-    ContentFilterAIException,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
