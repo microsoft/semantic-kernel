@@ -73,7 +73,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     }
 
     [Fact]
-    public async Task DoesNotThrowWhenPluginFunctionThrowsAsync()
+    public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
     {
         Kernel kernel = this.InitializeKernel();
         kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
@@ -92,6 +92,20 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
         Assert.Contains("Email_WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Email_SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ThrowsWhenPluginFunctionThrowsCriticalExceptionAsync()
+    {
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var planner = new FunctionCallingStepwisePlanner(
+            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+
+        // Act & Assert
+        // Planner should call ThrowingEmailPluginFake.GetEmailAddressAsync, which throws InvalidProgramException
+        await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "What is Kelly's email address?"));
     }
 
     private Kernel InitializeKernel()

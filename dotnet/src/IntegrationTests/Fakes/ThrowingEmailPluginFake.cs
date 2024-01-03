@@ -17,6 +17,7 @@ internal sealed class ThrowingEmailPluginFake
         [Description("The body of the email message to send.")] string input = "",
         [Description("The email address to send email to.")] string? email_address = "default@email.com")
     {
+        // Throw a non-critical exception for testing
         throw new ArgumentException($"Failed to send email to {email_address}");
     }
 
@@ -25,7 +26,8 @@ internal sealed class ThrowingEmailPluginFake
         ILogger logger,
         [Description("The name of the person to email.")] string? input = null)
     {
-        throw new ArgumentException($"Email address for {input} not found!");
+        // Throw a critical exception for testing
+        throw new InvalidProgramException();
     }
 
     [KernelFunction, Description("Write a short poem for an e-mail")]
