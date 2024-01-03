@@ -1,14 +1,5 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
@@ -23,7 +14,12 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -66,13 +62,20 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
                 Flux<StreamingContent<T>> result;
 
+                PromptExecutionSettings executionSettings;
+                if (arguments != null) {
+                    executionSettings = arguments.getExecutionSettings();
+                } else {
+                    executionSettings = null;
+                }
+
                 if (client instanceof ChatCompletionService) {
 
                     prompt = "<messages>" + prompt + "</messages>";
                     result = ((ChatCompletionService) client)
                         .getStreamingChatMessageContentsAsync(
                             prompt,
-                            arguments.getExecutionSettings(),
+                            executionSettings,
                             kernel)
                         .flatMap(streamingChatMessageContent -> {
                             T value = variableType
@@ -81,13 +84,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                                     streamingChatMessageContent.getContent());
                             return Flux.just(new StreamingContent<>(value));
                         });
-                        return result;
+                    return result;
 
                 } else if (client instanceof TextGenerationService) {
                     result = ((TextGenerationService) client)
                         .getStreamingTextContentsAsync(
                             prompt,
-                            arguments.getExecutionSettings(),
+                            executionSettings,
                             kernel)
                         .flatMap(streamingTextContent -> {
                             T value = variableType.getConverter().fromPromptString(
