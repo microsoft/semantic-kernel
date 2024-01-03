@@ -1,17 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -49,6 +50,8 @@ public interface Kernel extends Buildable {
         @Nullable KernelArguments arguments,
         Class<T> resultType);
 
+    List<KernelFunction> getFunctions();
+
     ServiceProvider getServiceSelector();
 
     KernelPlugin importPluginFromType(@Nullable String pluginName);
@@ -67,6 +70,6 @@ public interface Kernel extends Buildable {
 
         Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
 
-        Builder withPlugins(KernelPlugin searchPlugin);
+        Builder withFunction(KernelFunction kernelFunction);
     }
 }
