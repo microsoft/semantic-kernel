@@ -15,16 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// </summary>
 public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
 {
-    private readonly string? _finishReason;
-    private readonly int _index;
-    private readonly int _promptTokenCount;
-    private readonly int _currentCandidateTokenCount;
-    private readonly int _candidatesTokenCount;
-    private readonly int _totalTokenCount;
-    private readonly string? _promptFeedbackBlockReason;
-    private readonly IReadOnlyList<GeminiSafetyRating>? _promptFeedbackSafetyRatings;
-    private readonly IReadOnlyList<GeminiSafetyRating>? _responseSafetyRatings;
-
     internal GeminiMetadata() : base(new Dictionary<string, object?>()) { }
 
     /// <summary>
@@ -32,12 +22,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public string? FinishReason
     {
-        get => this._finishReason;
-        init
-        {
-            this._finishReason = value;
-            this.SetValueInDictionary(value);
-        }
+        get => this.GetValueFromDictionary() as string;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -45,12 +31,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int Index
     {
-        get => this._index;
-        init
-        {
-            this._index = value;
-            this.SetValueInDictionary(value);
-        }
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -58,12 +40,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int PromptTokenCount
     {
-        get => this._promptTokenCount;
-        init
-        {
-            this._promptTokenCount = value;
-            this.SetValueInDictionary(value);
-        }
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -71,12 +49,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int CurrentCandidateTokenCount
     {
-        get => this._currentCandidateTokenCount;
-        init
-        {
-            this._currentCandidateTokenCount = value;
-            this.SetValueInDictionary(value);
-        }
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -84,12 +58,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int CandidatesTokenCount
     {
-        get => this._candidatesTokenCount;
-        init
-        {
-            this._candidatesTokenCount = value;
-            this.SetValueInDictionary(value);
-        }
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -97,12 +67,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int TotalTokenCount
     {
-        get => this._totalTokenCount;
-        init
-        {
-            this._totalTokenCount = value;
-            this.SetValueInDictionary(value);
-        }
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -110,12 +76,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public string? PromptFeedbackBlockReason
     {
-        get => this._promptFeedbackBlockReason;
-        init
-        {
-            this._promptFeedbackBlockReason = value;
-            this.SetValueInDictionary(value);
-        }
+        get => this.GetValueFromDictionary() as string;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -123,12 +85,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public IReadOnlyList<GeminiSafetyRating>? PromptFeedbackSafetyRatings
     {
-        get => this._promptFeedbackSafetyRatings;
-        init
-        {
-            this._promptFeedbackSafetyRatings = value;
-            this.SetValueInDictionary(value);
-        }
+        get => this.GetValueFromDictionary() as IReadOnlyList<GeminiSafetyRating>;
+        init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
@@ -136,16 +94,17 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public IReadOnlyList<GeminiSafetyRating>? ResponseSafetyRatings
     {
-        get => this._responseSafetyRatings;
-        init
-        {
-            this._responseSafetyRatings = value;
-            this.SetValueInDictionary(value);
-        }
+        get => this.GetValueFromDictionary() as IReadOnlyList<GeminiSafetyRating>;
+        init => this.SetValueInDictionary(value);
     }
 
     private void SetValueInDictionary(object? value, [CallerMemberName] string propertyName = "")
     {
         this.Dictionary[propertyName] = value;
+    }
+
+    private object? GetValueFromDictionary([CallerMemberName] string propertyName = "")
+    {
+        return this.Dictionary[propertyName];
     }
 }
