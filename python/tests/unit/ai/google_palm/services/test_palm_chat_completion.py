@@ -7,11 +7,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.chat_request_settings import (
-    ChatRequestSettings,
-)
-
 if sys.version_info >= (3, 9):
+    from semantic_kernel.connectors.ai.google_palm import (
+        GooglePalmChatRequestSettings,
+    )
     from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
         GooglePalmChatCompletion,
     )
@@ -65,17 +64,16 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
-        settings = ChatRequestSettings()
+        settings = GooglePalmChatRequestSettings()
         response = await gp_chat_completion.complete_chat_async(prompt, settings)
         assert isinstance(response.result(), str) and len(response.result()) > 0
-
+        print(mock_gp.chat)
         mock_gp.chat.assert_called_once_with(
             model=ai_model_id,
-            context="",
-            examples=None,
             temperature=settings.temperature,
-            candidate_count=settings.number_of_responses,
             top_p=settings.top_p,
-            prompt=None,
-            messages=prompt[-1][1],
+            top_k=settings.top_k,
+            candidate_count=settings.candidate_count,
+            messages=prompt,
+            token_selection_biases={},
         )

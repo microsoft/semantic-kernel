@@ -4,14 +4,16 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.google_palm.gp_request_settings import (
+    GooglePalmChatRequestSettings,
+)
 
 
 async def chat_request_example(api_key):
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(
         "models/chat-bison-001", api_key
     )
-    settings = ChatRequestSettings()
+    settings = GooglePalmChatRequestSettings()
     settings.temperature = 1
 
     chat_messages = list()
