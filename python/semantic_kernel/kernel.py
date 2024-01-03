@@ -9,12 +9,9 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -224,11 +221,9 @@ class Kernel:
             raise ValueError("No functions passed to run")
 
         try:
-            completion = ""
             async for stream_message in stream_function.invoke_stream_async(
                 input=None, context=context
             ):
-                completion += stream_message
                 yield stream_message
 
         except Exception as ex:
@@ -483,6 +478,18 @@ class Kernel:
 
         return skill
 
+    def get_request_settings_from_service(
+        self, type: Type[T], service_id: Optional[str] = None
+    ) -> AIRequestSettings:
+        """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
+        service = self.get_ai_service(type, service_id)
+        service_instance = service.__closure__[0].cell_contents
+        req_settings_type = service_instance.get_request_settings_class()
+        return req_settings_type(
+            service_id=service_id,
+            extension_data={"ai_model_id": service_instance.ai_model_id},
+        )
+
     def get_ai_service(
         self, type: Type[T], service_id: Optional[str] = None
     ) -> Callable[["Kernel"], T]:
@@ -561,8 +568,6 @@ class Kernel:
 
         if isinstance(service, TextCompletionClientBase):
             self.add_text_completion_service(service_id, service)
-            if self._default_text_completion_service is None:
-                self._default_text_completion_service = service_id
 
         return self
 
@@ -728,7 +733,7 @@ class Kernel:
         function = SKFunction.from_semantic_config(
             skill_name, function_name, function_config
         )
-        function.request_settings.update_from_completion_config(
+        function.request_settings.update_from_ai_request_settings(
             function_config.prompt_template_config.completion
         )
 
@@ -744,9 +749,12 @@ class Kernel:
                 if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
+            req_settings_type = service.__closure__[
+                0
+            ].cell_contents.get_request_settings_class()
 
             function.set_chat_configuration(
-                ChatRequestSettings.from_completion_config(
+                req_settings_type.from_ai_request_settings(
                     function_config.prompt_template_config.completion
                 )
             )
@@ -769,9 +777,12 @@ class Kernel:
                 if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
+            req_settings_type = service.__closure__[
+                0
+            ].cell_contents.get_request_settings_class()
 
             function.set_ai_configuration(
-                CompleteRequestSettings.from_completion_config(
+                req_settings_type.from_ai_request_settings(
                     function_config.prompt_template_config.completion
                 )
             )
@@ -853,10 +864,9 @@ class Kernel:
             if not os.path.exists(prompt_path):
                 continue
 
-            config = PromptTemplateConfig()
             config_path = os.path.join(directory, CONFIG_FILE)
             with open(config_path, "r") as config_file:
-                config = config.from_json(config_file.read())
+                config = PromptTemplateConfig.from_json(config_file.read())
 
             # Load Prompt Template
             with open(prompt_path, "r") as prompt_file:
@@ -879,13 +889,7 @@ class Kernel:
         function_name: Optional[str] = None,
         skill_name: Optional[str] = None,
         description: Optional[str] = None,
-        max_tokens: int = 256,
-        temperature: float = 0.0,
-        top_p: float = 1.0,
-        presence_penalty: float = 0.0,
-        frequency_penalty: float = 0.0,
-        number_of_responses: int = 1,
-        stop_sequences: Optional[List[str]] = None,
+        **kwargs: Any,
     ) -> "SKFunctionBase":
         function_name = (
             function_name
@@ -900,15 +904,7 @@ class Kernel:
                 else "Generic function, unknown purpose"
             ),
             type="completion",
-            completion=PromptTemplateConfig.CompletionConfig(
-                temperature,
-                top_p,
-                presence_penalty,
-                frequency_penalty,
-                max_tokens,
-                number_of_responses,
-                stop_sequences if stop_sequences is not None else [],
-            ),
+            completion=AIRequestSettings(extension_data=kwargs),
         )
 
         validate_function_name(function_name)
