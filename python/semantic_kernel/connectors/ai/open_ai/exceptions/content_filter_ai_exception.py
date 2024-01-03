@@ -10,16 +10,16 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 
 
 class ContentFilterResultSeverity(Enum):
-    High = "high"
-    Medium = "medium"
-    Safe = "safe"
+    HIGH = "high"
+    MEDIUM = "medium"
+    SAFE = "safe"
 
 
 @dataclass
 class ContentFilterResult:
     filtered: bool = False
     detected: bool = False
-    severity: ContentFilterResultSeverity = ContentFilterResultSeverity.Safe
+    severity: ContentFilterResultSeverity = ContentFilterResultSeverity.SAFE
 
     @classmethod
     def from_inner_error_result(
@@ -39,14 +39,14 @@ class ContentFilterResult:
             detected=inner_error_results.get("detected", False),
             severity=ContentFilterResultSeverity(
                 inner_error_results.get(
-                    "severity", ContentFilterResultSeverity.Safe.value
+                    "severity", ContentFilterResultSeverity.SAFE.value
                 )
             ),
         )
 
 
 class ContentFilterCodes(Enum):
-    ResponsibleAIPolicyViolation = "ResponsibleAIPolicyViolation"
+    RESPONSIBLE_AI_POLICY_VIOLATION = "ResponsibleAIPolicyViolation"
 
 
 class ContentFilterAIException(AIException):

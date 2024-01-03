@@ -569,10 +569,10 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     assert content_filter_exc.param == "prompt"
     assert (
         content_filter_exc.content_filter_code
-        == ContentFilterCodes.ResponsibleAIPolicyViolation
+        == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
     )
     assert content_filter_exc.content_filter_result["hate"].filtered
     assert (
         content_filter_exc.content_filter_result["hate"].severity
-        == ContentFilterResultSeverity.High
+        == ContentFilterResultSeverity.HIGH
     )
