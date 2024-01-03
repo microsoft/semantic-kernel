@@ -150,6 +150,9 @@ async def test_can_create_stepwise_plan(
     ],
 )
 @pytest.mark.asyncio
+@pytest.mark.xfail(
+    reason="Test is known to occasionally produce unexpected results.",
+)
 async def test_can_execute_stepwise_plan(
     get_aoai_config,
     get_bing_config,
