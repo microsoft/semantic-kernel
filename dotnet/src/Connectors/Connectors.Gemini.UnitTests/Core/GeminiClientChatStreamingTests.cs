@@ -97,19 +97,34 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
             await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
+        var testDataCandidate = testDataResponse.Candidates[0];
         var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata as GeminiMetadata;
         Assert.NotNull(metadata);
         Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, metadata.PromptFeedbackBlockReason);
-        Assert.Equal(testDataResponse.Candidates[0].FinishReason, metadata.FinishReason);
-        Assert.Equal(testDataResponse.Candidates[0].Index, metadata.Index);
+        Assert.Equal(testDataCandidate.FinishReason, metadata.FinishReason);
+        Assert.Equal(testDataCandidate.Index, metadata.Index);
         Assert.True(metadata.ResponseSafetyRatings!.Count
-                    == testDataResponse.Candidates[0].SafetyRatings.Count);
+                    == testDataCandidate.SafetyRatings.Count);
         Assert.True(metadata.PromptFeedbackSafetyRatings!.Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
+        for (var i = 0; i < metadata.ResponseSafetyRatings.Count; i++)
+        {
+            Assert.Equal(testDataCandidate.SafetyRatings[i].Block, metadata.ResponseSafetyRatings[i].Block);
+            Assert.Equal(testDataCandidate.SafetyRatings[i].Category, metadata.ResponseSafetyRatings[i].Category);
+            Assert.Equal(testDataCandidate.SafetyRatings[i].Probability, metadata.ResponseSafetyRatings[i].Probability);
+        }
+
+        for (var i = 0; i < metadata.PromptFeedbackSafetyRatings.Count; i++)
+        {
+            Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Block, metadata.PromptFeedbackSafetyRatings[i].Block);
+            Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Category, metadata.PromptFeedbackSafetyRatings[i].Category);
+            Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Probability, metadata.PromptFeedbackSafetyRatings[i].Probability);
+        }
+
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata.PromptTokenCount);
-        Assert.Equal(testDataResponse.Candidates[0].TokenCount, metadata.CurrentCandidateTokenCount);
+        Assert.Equal(testDataCandidate.TokenCount, metadata.CurrentCandidateTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata.CandidatesTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata.TotalTokenCount);
     }
@@ -128,19 +143,32 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
             await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
+        var testDataCandidate = testDataResponse.Candidates[0];
         var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata;
         Assert.NotNull(metadata);
         Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, metadata[nameof(GeminiMetadata.PromptFeedbackBlockReason)]);
-        Assert.Equal(testDataResponse.Candidates[0].FinishReason, metadata[nameof(GeminiMetadata.FinishReason)]);
-        Assert.Equal(testDataResponse.Candidates[0].Index, metadata[nameof(GeminiMetadata.Index)]);
-        Assert.True(((IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!).Count
-                    == testDataResponse.Candidates[0].SafetyRatings.Count);
-        Assert.True(((IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!).Count
-                    == testDataResponse.PromptFeedback.SafetyRatings.Count);
+        Assert.Equal(testDataCandidate.FinishReason, metadata[nameof(GeminiMetadata.FinishReason)]);
+        Assert.Equal(testDataCandidate.Index, metadata[nameof(GeminiMetadata.Index)]);
+        var responseSafetyRatings = (IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!;
+        for (var i = 0; i < responseSafetyRatings.Count; i++)
+        {
+            Assert.Equal(testDataCandidate.SafetyRatings[i].Block, responseSafetyRatings[i].Block);
+            Assert.Equal(testDataCandidate.SafetyRatings[i].Category, responseSafetyRatings[i].Category);
+            Assert.Equal(testDataCandidate.SafetyRatings[i].Probability, responseSafetyRatings[i].Probability);
+        }
+
+        var promptSafetyRatings = (IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!;
+        for (var i = 0; i < promptSafetyRatings.Count; i++)
+        {
+            Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Block, promptSafetyRatings[i].Block);
+            Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Category, promptSafetyRatings[i].Category);
+            Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Probability, promptSafetyRatings[i].Probability);
+        }
+
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata[nameof(GeminiMetadata.PromptTokenCount)]);
-        Assert.Equal(testDataResponse.Candidates[0].TokenCount, metadata[nameof(GeminiMetadata.CurrentCandidateTokenCount)]);
+        Assert.Equal(testDataCandidate.TokenCount, metadata[nameof(GeminiMetadata.CurrentCandidateTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata[nameof(GeminiMetadata.CandidatesTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata[nameof(GeminiMetadata.TotalTokenCount)]);
     }

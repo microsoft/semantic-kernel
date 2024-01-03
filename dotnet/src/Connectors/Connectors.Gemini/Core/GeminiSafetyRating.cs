@@ -19,19 +19,22 @@ public sealed class GeminiSafetyRating
     /// Was this content blocked because of this rating?
     /// </summary>
     [JsonPropertyName("block")]
-    public bool Block { get; init; }
+    [JsonInclude]
+    public bool Block { get; internal init; }
 
     /// <summary>
     /// The category for this rating.
     /// </summary>
     [JsonPropertyName("category")]
-    public GeminiSafetyCategory Category { get; init; }
+    [JsonInclude]
+    public GeminiSafetyCategory Category { get; internal init; }
 
     /// <summary>
     /// The probability of harm for this content.
     /// </summary>
     [JsonPropertyName("probability")]
-    public GeminiSafetyProbability Probability { get; init; }
+    [JsonInclude]
+    public GeminiSafetyProbability Probability { get; internal init; }
 }
 
 /// <summary>
