@@ -299,7 +299,7 @@ class AzureChatCompletion(
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            logger {Optional[Any]} -- The logger instance to use. (Optional)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
@@ -337,7 +337,7 @@ class AzureChatCompletion(
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
             settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+            logger {Optional[Logger]} -- The logger instance to use. (Deprecated)
 
         Returns:
             Union[str, List[str]] -- The completion result(s).

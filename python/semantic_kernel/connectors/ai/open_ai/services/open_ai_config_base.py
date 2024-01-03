@@ -32,7 +32,7 @@ class OpenAIConfigBase(OpenAIHandler):
         org_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
         is_assistant: Optional[bool] = False,
     ) -> None:
         """Initialize a client for OpenAI services.
@@ -51,7 +51,7 @@ class OpenAIConfigBase(OpenAIHandler):
                 unless the account belongs to multiple organizations.
             default_headers {Optional[Mapping[str, str]]} -- Default headers
                 for HTTP requests. (Optional)
-            log {Optional[Logger]} -- Logger instance for logging purposes. (Optional)
+            log {Optional[Any]} -- Logger instance for logging purposes. (Deprecated)
             is_assistant {bool} -- Whether this is an assistant. Defaults to false.
         """
         if log:
