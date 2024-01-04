@@ -36,12 +36,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-    ) -> Union[
-        ChatCompletion,
-        Completion,
-        AsyncStream[ChatCompletionChunk],
-        AsyncStream[Completion],
-    ]:
+    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion],]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -57,13 +52,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         """
         try:
             response = await (
-                self.client.chat.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                self.client.chat.completions.create(**request_settings.prepare_settings_dict())
                 if self.ai_model_type == OpenAIModelTypes.CHAT
-                else self.client.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                else self.client.completions.create(**request_settings.prepare_settings_dict())
             )
             self.store_usage(response)
             return response
@@ -74,13 +65,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(
-        self, settings: OpenAIEmbeddingRequestSettings
-    ) -> List[array]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingRequestSettings) -> List[array]:
         try:
-            response = await self.client.embeddings.create(
-                **settings.prepare_settings_dict()
-            )
+            response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
             # make numpy arrays from the response
             # TODO: the openai response is cast to a list[float], could be used instead of nparray

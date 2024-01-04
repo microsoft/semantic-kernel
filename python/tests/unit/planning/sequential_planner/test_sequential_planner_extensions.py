@@ -54,9 +54,7 @@ async def test_can_call_get_available_functions_with_no_functions_async():
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerSKContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerSKContextExtension.get_available_functions_async(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -94,9 +92,7 @@ async def test_can_call_get_available_functions_with_functions_async():
 
     memory_query_result = MemoryQueryResult(
         is_reference=False,
-        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(
-            function_view
-        ),
+        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function_view),
         text="text",
         description="description",
         external_source_name="sourceName",
@@ -110,16 +106,12 @@ async def test_can_call_get_available_functions_with_functions_async():
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext.model_construct(
-        variables=variables, memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=variables, memory=memory, skill_collection=skills)
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerSKContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerSKContextExtension.get_available_functions_async(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -130,9 +122,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     config.included_functions.append(["nativeFunctionName"])
 
     # Act
-    result = await SequentialPlannerSKContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerSKContextExtension.get_available_functions_async(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -171,9 +161,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     # Arrange Mock Memory and Result
     memory_query_result = MemoryQueryResult(
         is_reference=False,
-        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(
-            function_view
-        ),
+        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function_view),
         text="text",
         description="description",
         external_source_name="sourceName",
@@ -199,9 +187,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerSKContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerSKContextExtension.get_available_functions_async(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -213,9 +199,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     memory.search_async.return_value = _async_generator(memory_query_result)
 
     # Act
-    result = await SequentialPlannerSKContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerSKContextExtension.get_available_functions_async(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -246,16 +230,12 @@ async def test_can_call_get_available_functions_async_with_default_relevancy_asy
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext.model_construct(
-        variables=variables, memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=variables, memory=memory, skill_collection=skills)
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerSKContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerSKContextExtension.get_available_functions_async(context, config, semantic_query)
 
     # Assert
     assert result is not None

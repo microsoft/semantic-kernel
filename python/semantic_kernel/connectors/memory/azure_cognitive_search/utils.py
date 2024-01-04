@@ -89,14 +89,10 @@ def get_search_index_async_client(
     sk_headers = {USER_AGENT: "Semantic-Kernel"}
 
     if azure_credential:
-        return SearchIndexClient(
-            endpoint=service_endpoint, credential=azure_credential, headers=sk_headers
-        )
+        return SearchIndexClient(endpoint=service_endpoint, credential=azure_credential, headers=sk_headers)
 
     if token_credential:
-        return SearchIndexClient(
-            endpoint=service_endpoint, credential=token_credential, headers=sk_headers
-        )
+        return SearchIndexClient(endpoint=service_endpoint, credential=token_credential, headers=sk_headers)
 
     raise ValueError("Error: unable to create Azure Cognitive Search client.")
 

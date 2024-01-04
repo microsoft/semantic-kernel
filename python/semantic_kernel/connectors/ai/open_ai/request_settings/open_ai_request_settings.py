@@ -59,15 +59,11 @@ class OpenAIChatRequestSettings(OpenAIRequestSettings):
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
-    messages: Optional[List[Dict[str, Any]]] = [
-        {"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}
-    ]
+    messages: Optional[List[Dict[str, Any]]] = [{"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}]
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
-    def validate_function_call(
-        cls, v: Optional[Union[str, List[Dict[str, Any]]]] = None
-    ):
+    def validate_function_call(cls, v: Optional[Union[str, List[Dict[str, Any]]]] = None):
         if v is not None:
             logger.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501

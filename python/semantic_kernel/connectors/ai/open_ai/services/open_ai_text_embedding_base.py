@@ -18,10 +18,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
     async def generate_embeddings_async(
-        self,
-        texts: List[str],
-        batch_size: Optional[int] = None,
-        **kwargs: Dict[str, Any]
+        self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Dict[str, Any]
     ) -> ndarray:
         """Generates embeddings for the given texts.
 
