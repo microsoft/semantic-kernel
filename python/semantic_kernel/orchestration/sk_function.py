@@ -366,10 +366,7 @@ class SKFunction(SKFunctionBase):
         if input is not None:
             context.variables.update(input)
 
-        try:
-            loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
-        except RuntimeError:
-            loop = None
+        loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
 
         if loop and loop.is_running():
             coroutine_function = self._invoke_semantic_async if self.is_semantic else self._invoke_native_async
