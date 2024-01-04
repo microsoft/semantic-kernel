@@ -20,19 +20,13 @@ class BingConnector(ConnectorBase):
 
     def __init__(self, api_key: str, **kwargs) -> None:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._api_key = api_key
 
         if not self._api_key:
-            raise ValueError(
-                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
-            )
+            raise ValueError("Bing API key cannot be null. Please set environment variable BING_API_KEY.")
 
-    async def search_async(
-        self, query: str, num_results: str, offset: str
-    ) -> List[str]:
+    async def search_async(self, query: str, num_results: str, offset: str) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.
@@ -74,9 +68,7 @@ class BingConnector(ConnectorBase):
         headers = {"Ocp-Apim-Subscription-Key": self._api_key}
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                _request_url, headers=headers, raise_for_status=True
-            ) as response:
+            async with session.get(_request_url, headers=headers, raise_for_status=True) as response:
                 if response.status == 200:
                     data = await response.json()
                     pages = data["webPages"]["value"]

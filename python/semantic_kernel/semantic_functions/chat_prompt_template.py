@@ -35,25 +35,17 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
     ) -> None:
         super().__init__(template, template_engine, prompt_config)
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._messages = []
         if self.prompt_config.completion.extension_data.get("chat_system_prompt"):
-            self.add_system_message(
-                self.prompt_config.completion.extension_data["chat_system_prompt"]
-            )
-        if (
-            hasattr(self.prompt_config.completion, "messages")
-            and self.prompt_config.completion.messages
-        ):
+            self.add_system_message(self.prompt_config.completion.extension_data["chat_system_prompt"])
+        if hasattr(self.prompt_config.completion, "messages") and self.prompt_config.completion.messages:
             for message in self.prompt_config.completion.messages:
                 self.add_message(message["role"], message["content"])
 
     async def render_async(self, context: "SKContext") -> str:
         raise NotImplementedError(
-            "Can't call render_async on a ChatPromptTemplate.\n"
-            "Use render_messages_async instead."
+            "Can't call render_async on a ChatPromptTemplate.\n" "Use render_messages_async instead."
         )
 
     def add_system_message(self, message: str) -> None:
@@ -68,9 +60,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         """Add an assistant message to the chat template."""
         self.add_message("assistant", message)
 
-    def add_message(
-        self, role: str, message: Optional[str] = None, **kwargs: Any
-    ) -> None:
+    def add_message(self, role: str, message: Optional[str] = None, **kwargs: Any) -> None:
         """Add a message to the chat template.
 
         Arguments:
@@ -85,11 +75,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         self.messages.append(
             concrete_message(
                 role=role,
-                content_template=PromptTemplate(
-                    message, self.template_engine, self.prompt_config
-                )
-                if message
-                else None,
+                content_template=PromptTemplate(message, self.template_engine, self.prompt_config) if message else None,
                 **kwargs,
             )
         )
@@ -101,9 +87,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             "system",
         ]:
             self.add_user_message(message=self.template)
-        await asyncio.gather(
-            *[message.render_message_async(context) for message in self.messages]
-        )
+        await asyncio.gather(*[message.render_message_async(context) for message in self.messages])
         return [message.as_dict() for message in self.messages]
 
     def dump_messages(self) -> List[Dict[str, str]]:
@@ -126,19 +110,11 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         if that is a system message.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         chat_template = cls(template, template_engine, prompt_config)
-        if (
-            prompt_config.completion.chat_system_prompt
-            and messages[0]["role"] == "system"
-        ):
+        if prompt_config.completion.chat_system_prompt and messages[0]["role"] == "system":
             existing_system_message = messages.pop(0)
-            if (
-                existing_system_message["message"]
-                != prompt_config.completion.chat_system_prompt
-            ):
+            if existing_system_message["message"] != prompt_config.completion.chat_system_prompt:
                 logger.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],
