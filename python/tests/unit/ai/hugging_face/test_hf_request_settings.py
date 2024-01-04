@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
 
 from semantic_kernel.connectors.ai.hugging_face.hf_request_settings import (
     HuggingFaceRequestSettings,
 )
 
 
+@pytest.mark.xfail(reason="GitHub Actions ignores Hugging Face dependencies")
 def test_custom_hf_text_request_settings():
     settings = HuggingFaceRequestSettings(
         max_new_tokens=80,
