@@ -1,5 +1,4 @@
 Param(
-    [string]$ProjectName = "",
     [switch]$ProdPackagesOnly = $false
 )
 
@@ -15,25 +14,17 @@ $reportOutputPath = Join-Path $scriptPath "TestResults\Reports\$timestamp"
 New-Item -ItemType Directory -Force -Path $coverageOutputPath
 New-Item -ItemType Directory -Force -Path $reportOutputPath
 
-# Run build
-dotnet build
-
-# Find and run tests for projects ending with 'UnitTests.csproj'
+# Find tests for projects ending with 'UnitTests.csproj'
 $testProjects = Get-ChildItem $scriptPath -Filter "*UnitTests.csproj" -Recurse
-
-if ($ProjectName -ne "") {
-    $testProjects = $testProjects | Where-Object { $_.Name -like "*$ProjectName*" }
-}
 
 foreach ($project in $testProjects) {
     $testProjectPath = $project.FullName
     Write-Host "Running tests for project: $($testProjectPath)"
-    
+
+    # Run tests
     dotnet test $testProjectPath `
         --collect:"XPlat Code Coverage" `
         --results-directory:$coverageOutputPath `
-        --no-build `
-        --no-restore `
 }
 
 # Install required tools
