@@ -62,9 +62,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if vector_size <= 0:
             raise ValueError("Vector dimension must be a positive integer")
 
@@ -98,9 +96,7 @@ class RedisMemoryStore(MemoryStoreBase):
         if await self.does_collection_exist_async(collection_name):
             logger.info(f'Collection "{collection_name}" already exists.')
         else:
-            index_def = IndexDefinition(
-                prefix=f"{collection_name}:", index_type=IndexType.HASH
-            )
+            index_def = IndexDefinition(prefix=f"{collection_name}:", index_type=IndexType.HASH)
             schema = (
                 TextField(name="key"),
                 TextField(name="metadata"),
@@ -117,9 +113,7 @@ class RedisMemoryStore(MemoryStoreBase):
             )
 
             try:
-                self._ft(collection_name).create_index(
-                    definition=index_def, fields=schema
-                )
+                self._ft(collection_name).create_index(definition=index_def, fields=schema)
             except Exception as e:
                 logger.error(e)
                 raise e
@@ -134,9 +128,7 @@ class RedisMemoryStore(MemoryStoreBase):
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
 
-    async def delete_collection_async(
-        self, collection_name: str, delete_records: bool = True
-    ) -> None:
+    async def delete_collection_async(self, collection_name: str, delete_records: bool = True) -> None:
         """
         Deletes a collection from the data store.
         If the collection does not exist, the database is left unchanged.
@@ -201,9 +193,7 @@ class RedisMemoryStore(MemoryStoreBase):
             logger.error(e)
             raise e
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """
         Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
@@ -227,9 +217,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         return keys
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """
         Gets a memory record from the data store. Does not guarantee that the collection exists.
 
@@ -360,9 +348,7 @@ class RedisMemoryStore(MemoryStoreBase):
             if score < min_relevance_score:
                 break
 
-            record = deserialize_document_to_record(
-                self._database, match, self._vector_type, with_embeddings
-            )
+            record = deserialize_document_to_record(self._database, match, self._vector_type, with_embeddings)
             relevant_records.append((record, score))
 
         return relevant_records

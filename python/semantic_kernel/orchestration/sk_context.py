@@ -28,9 +28,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
     memory: SemanticTextMemoryT
     variables: ContextVariables
     # This field can be used to hold anything that is not a string
-    skill_collection: ReadOnlySkillCollection = Field(
-        default_factory=ReadOnlySkillCollection
-    )
+    skill_collection: ReadOnlySkillCollection = Field(default_factory=ReadOnlySkillCollection)
     _objects: Dict[str, Any] = PrivateAttr(default_factory=dict)
     _error_occurred: bool = PrivateAttr(False)
     _last_exception: Optional[Exception] = PrivateAttr(None)
@@ -53,16 +51,12 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
         """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
 
         if skill_collection is None:
             skill_collection = ReadOnlySkillCollection()
 
-        super().__init__(
-            variables=variables, memory=memory, skill_collection=skill_collection
-        )
+        super().__init__(variables=variables, memory=memory, skill_collection=skill_collection)
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
@@ -226,9 +220,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
         assert self.skill_collection is not None  # for type checker
 
         if self.skill_collection.has_native_function(skill_name, function_name):
-            the_func = self.skill_collection.get_native_function(
-                skill_name, function_name
-            )
+            the_func = self.skill_collection.get_native_function(skill_name, function_name)
             return True, the_func
 
         if self.skill_collection.has_native_function(None, function_name):
@@ -236,9 +228,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             return True, the_func
 
         if self.skill_collection.has_semantic_function(skill_name, function_name):
-            the_func = self.skill_collection.get_semantic_function(
-                skill_name, function_name
-            )
+            the_func = self.skill_collection.get_semantic_function(skill_name, function_name)
             return True, the_func
 
         return False, None

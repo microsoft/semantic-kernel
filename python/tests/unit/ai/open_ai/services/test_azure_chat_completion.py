@@ -169,9 +169,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
         api_key=api_key,
     )
-    await azure_chat_completion.complete_chat_async(
-        messages=messages, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         frequency_penalty=complete_request_settings.frequency_penalty,
@@ -210,9 +208,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_chat_async(
-        messages=messages, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -327,9 +323,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         ]
     }
 
-    complete_request_settings = AzureChatRequestSettings(
-        extra_body=expected_data_settings
-    )
+    complete_request_settings = AzureChatRequestSettings(extra_body=expected_data_settings)
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -338,9 +332,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         api_key=api_key,
     )
 
-    await azure_chat_completion.complete_chat_async(
-        messages=messages_in, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages_in, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -369,14 +361,8 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
 
-    ai_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
-    extra = ExtraBody(
-        data_sources=[
-            AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)
-        ]
-    )
+    ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
+    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -431,14 +417,8 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     stop = ["!"]
     complete_request_settings.stop = stop
 
-    ai_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
-    extra = ExtraBody(
-        data_sources=[
-            AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)
-        ]
-    )
+    ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
+    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
 
     complete_request_settings.extra_body = extra
 

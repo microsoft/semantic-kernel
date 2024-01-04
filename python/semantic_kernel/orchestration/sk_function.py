@@ -59,9 +59,7 @@ class SKFunction(SKFunctionBase):
     @staticmethod
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if method is None:
             raise ValueError("Method cannot be `None`")
 
@@ -119,9 +117,7 @@ class SKFunction(SKFunctionBase):
         log: Optional[Any] = None,
     ) -> "SKFunction":
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
@@ -158,9 +154,7 @@ class SKFunction(SKFunctionBase):
                 if tool_message:
                     context.objects["tool_message"] = tool_message
                     as_chat_prompt.add_message(role="tool", message=tool_message)
-                as_chat_prompt.add_message(
-                    "assistant", message=completion, function_call=function_call
-                )
+                as_chat_prompt.add_message("assistant", message=completion, function_call=function_call)
                 if completion is not None:
                     context.variables.update(completion)
                 if function_call is not None:
@@ -192,9 +186,7 @@ class SKFunction(SKFunctionBase):
                         else:
                             tool_message = await partial_content.get_tool_message()
                             if tool_message:
-                                chat_prompt.add_message(
-                                    role="tool", message=tool_message
-                                )
+                                chat_prompt.add_message(role="tool", message=tool_message)
                                 context.objects["tool_message"] = tool_message
                             # Get the completion
                             async for part in partial_content:
@@ -207,9 +199,7 @@ class SKFunction(SKFunctionBase):
                     prompt = await function_config.prompt_template.render_async(context)
 
                     completion = ""
-                    async for partial_content in client.complete_stream_async(
-                        prompt, request_settings
-                    ):
+                    async for partial_content in client.complete_stream_async(prompt, request_settings):
                         completion += partial_content
                         yield partial_content
                     context.variables.update(completion)
@@ -226,9 +216,7 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=function_name,
             is_semantic=True,
-            chat_prompt_template=function_config.prompt_template
-            if function_config.has_chat_prompt
-            else None,
+            chat_prompt_template=function_config.prompt_template if function_config.has_chat_prompt else None,
         )
 
     @property
@@ -274,9 +262,7 @@ class SKFunction(SKFunctionBase):
     ) -> None:
         super().__init__()
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._delegate_type = delegate_type
         self._function = delegate_function
         self._parameters = parameters
@@ -290,24 +276,18 @@ class SKFunction(SKFunctionBase):
         self._ai_request_settings = AIRequestSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_skill_collection(
-        self, skills: ReadOnlySkillCollectionBase
-    ) -> "SKFunction":
+    def set_default_skill_collection(self, skills: ReadOnlySkillCollectionBase) -> "SKFunction":
         self._skill_collection = skills
         return self
 
-    def set_ai_service(
-        self, ai_service: Callable[[], TextCompletionClientBase]
-    ) -> "SKFunction":
+    def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "SKFunction":
         if ai_service is None:
             raise ValueError("AI LLM service factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_service = ai_service()
         return self
 
-    def set_chat_service(
-        self, chat_service: Callable[[], ChatCompletionClientBase]
-    ) -> "SKFunction":
+    def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "SKFunction":
         if chat_service is None:
             raise ValueError("Chat LLM service factory cannot be `None`")
         self._verify_is_semantic()
@@ -347,9 +327,7 @@ class SKFunction(SKFunctionBase):
         log: Optional[Any] = None,
     ) -> "SKContext":
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         return self.invoke(
             input=input,
             variables=variables,
@@ -370,9 +348,7 @@ class SKFunction(SKFunctionBase):
         from semantic_kernel.orchestration.sk_context import SKContext
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         if context is None:
             context = SKContext(
@@ -383,30 +359,18 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context.variables = variables.merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
             if memory is not None:
                 context.memory = memory
 
         if input is not None:
             context.variables.update(input)
 
-        loop = (
-            asyncio.get_running_loop()
-            if asyncio.get_event_loop().is_running()
-            else None
-        )
+        loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
 
         if loop and loop.is_running():
-            coroutine_function = (
-                self._invoke_semantic_async
-                if self.is_semantic
-                else self._invoke_native_async
-            )
-            return self.run_async_in_executor(
-                lambda: coroutine_function(context, settings)
-            )
+            coroutine_function = self._invoke_semantic_async if self.is_semantic else self._invoke_native_async
+            return self.run_async_in_executor(lambda: coroutine_function(context, settings))
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
@@ -433,9 +397,7 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context.variables = variables.merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
             if memory is not None:
                 context.memory = memory
 
@@ -451,14 +413,10 @@ class SKFunction(SKFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(
-        self, context: "SKContext", settings: AIRequestSettings, **kwargs
-    ):
+    async def _invoke_semantic_async(self, context: "SKContext", settings: AIRequestSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_skills(context)
-        new_context = await self._function(
-            self._ai_service, settings or self._ai_request_settings, context
-        )
+        new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
@@ -514,9 +472,7 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context.variables = variables.merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
             if memory is not None:
                 context._memory = memory
 
@@ -525,9 +481,7 @@ class SKFunction(SKFunctionBase):
 
         try:
             if self.is_semantic:
-                async for stream_msg in self._invoke_semantic_stream_async(
-                    context, settings
-                ):
+                async for stream_msg in self._invoke_semantic_stream_async(context, settings):
                     yield stream_msg
             else:
                 async for stream_msg in self._invoke_native_stream_async(context):
@@ -542,9 +496,7 @@ class SKFunction(SKFunctionBase):
     async def _invoke_semantic_stream_async(self, context, settings):
         self._verify_is_semantic()
         self._ensure_context_has_skills(context)
-        async for stream_msg in self._stream_function(
-            self._ai_service, settings or self._ai_request_settings, context
-        ):
+        async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
             yield stream_msg
 
     async def _invoke_native_stream_async(self, context):
