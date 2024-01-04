@@ -22,7 +22,7 @@ class FunctionCall(SKBaseModel):
     def to_context_variables(self) -> ContextVariables:
         """Return the arguments as a ContextVariables instance."""
         args = self.parse_arguments()
-        return ContextVariables(variables={k.lower(): v for k, v in args.items()})
+        return ContextVariables(variables={k.lower(): str(v) for k, v in args.items()})
 
     def split_name(self) -> Tuple[str, str]:
         """Split the name into a skill and function name."""
