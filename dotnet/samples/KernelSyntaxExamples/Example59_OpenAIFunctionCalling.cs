@@ -20,7 +20,11 @@ public static class Example59_OpenAIFunctionCalling
     {
         // Create kernel.
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+
+        // We recommend the usage of OpenAI latest models for the best experience with tool calling.
+        // i.e. gpt-3.5-turbo-1106 or gpt-4-1106-preview
+        builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
+
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 
@@ -39,7 +43,7 @@ public static class Example59_OpenAIFunctionCalling
                     "Sydney" => "75 and sunny",
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
-                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
+                }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
         }));
 
         Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
@@ -106,9 +110,9 @@ public static class Example59_OpenAIFunctionCalling
 
             while (true)
             {
-                Console.Write("Question: ");
+                Console.Write("Question (Type \"quit\" to leave): ");
                 string question = Console.ReadLine() ?? string.Empty;
-                if (question == "done")
+                if (question == "quit")
                 {
                     break;
                 }

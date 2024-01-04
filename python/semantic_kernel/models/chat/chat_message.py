@@ -33,7 +33,8 @@ class ChatMessage(SKBaseModel):
         Subsequent calls will do nothing.
         """
         if self.fixed_content is None:
-            self.fixed_content = await self.content_template.render_async(context)
+            if self.content_template is not None:
+                self.fixed_content = await self.content_template.render_async(context)
 
     def as_dict(self) -> Dict[str, str]:
         """Return the message as a dict.
