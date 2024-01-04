@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +78,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             prompt,
                             executionSettings,
                             kernel)
-                        .flatMap(streamingChatMessageContent -> {
+                        .concatMap(streamingChatMessageContent -> {
                             T value = variableType
                                 .getConverter()
                                 .fromPromptString(
@@ -92,7 +93,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             prompt,
                             executionSettings,
                             kernel)
-                        .flatMap(streamingTextContent -> {
+                        .concatMap(streamingTextContent -> {
                             T value = variableType.getConverter().fromPromptString(
                                 streamingTextContent.innerContent.getValue());
                             return Flux.just(new StreamingContent<>(value));
@@ -286,7 +287,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             } else if (promptTemplateFactory != null) {
                 temp = promptTemplateFactory.tryCreate(config);
             } else {
-                temp = new HandlebarsPromptTemplate(config);
+                temp = new KernelPromptTemplateFactory().tryCreate(config);
             }
 
             return new KernelFunctionFromPrompt(temp, config);

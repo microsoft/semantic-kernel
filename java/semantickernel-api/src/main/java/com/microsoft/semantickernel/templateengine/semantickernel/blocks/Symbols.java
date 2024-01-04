@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.blocks;
+package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 public class Symbols {
     public static final char BlockStarter = '{';

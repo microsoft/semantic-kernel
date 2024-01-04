@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.blocks;
+package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.ContextVariable;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.templateengine.TemplateException;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public final class VarBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(ContextVariables variables) {
+    public String render(KernelArguments variables) {
         if (variables == null) {
             return "";
         }
@@ -34,7 +34,8 @@ public final class VarBlock extends Block implements TextRendering {
                     "Variable rendering failed, the variable name is empty");
         }
 
-        ContextVariable<?> value = variables.get(name);
+        ContextVariable<?> value = variables.get(
+            name);
 
         if (value == null) {
             LOGGER.warn("Variable `{}{}` not found", Symbols.VarPrefix, name);

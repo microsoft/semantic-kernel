@@ -46,7 +46,7 @@ public class Main {
 
         Kernel kernel = SKBuilders.kernel()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
-            .withPromptTemplateEngine(new HandlebarsPromptTemplate())
+            .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
 
         // Initialize the required functions and services for the kernel

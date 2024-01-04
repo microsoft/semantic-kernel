@@ -1,21 +1,55 @@
 package com.microsoft.semantickernel.plugin;
 
-import java.util.Iterator;
-
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KernelPluginCollection implements Iterable<KernelPlugin> {
 
-    public KernelFunction getFunction(String pluginName, String functionName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getFunction'");
-    }
-    
-    @Override
-    public Iterator<KernelPlugin> iterator() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'iterator'");
+    private static final Logger LOGGER = LoggerFactory.getLogger(KernelPluginCollection.class);
+
+    private final Map<String, KernelPlugin> plugins = new CaseInsensitiveMap<>();
+
+    public KernelPluginCollection() {
+        this(Collections.emptyList());
     }
 
+    public KernelPluginCollection(List<KernelPlugin> plugins) {
+        plugins.forEach(plugin -> this.plugins.put(plugin.getName(), plugin));
+    }
+
+    @Nullable
+    public KernelFunction getFunction(String pluginName, String functionName) {
+        KernelPlugin plugin = plugins.get(pluginName);
+        if (plugin == null) {
+            LOGGER.warn("Failed to find plugin '{}'", pluginName);
+            return null;
+        }
+        KernelFunction function = plugin.get(functionName);
+
+        if (function == null) {
+            throw new IllegalArgumentException(
+                "Function '" + functionName + "' not found in plugin '" + pluginName + "'");
+        }
+        return function;
+    }
+
+    @Override
+    public Iterator<KernelPlugin> iterator() {
+        return plugins.values().iterator();
+    }
+
+    public void add(KernelPlugin plugin) {
+        if (plugins.containsKey(plugin.getName())) {
+            LOGGER.warn("Plugin {} already exists, overwriting existing plugin", plugin.getName());
+        }
+
+        plugins.put(plugin.getName(), plugin);
+    }
 }

@@ -33,4 +33,8 @@ public class KernelFunctionMetadata {
     public String getName() {
         return name;
     }
+
+    public List<KernelParameterMetadata> getParameters() {
+        return parameters;
+    }
 }

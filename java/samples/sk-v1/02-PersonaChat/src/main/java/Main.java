@@ -44,7 +44,7 @@ public class Main {
 
         Kernel kernel = SKBuilders.kernel()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
-            .withPromptTemplateEngine(new HandlebarsPromptTemplate())
+            .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
 
         ChatHistory chatHistory = new ChatHistory();

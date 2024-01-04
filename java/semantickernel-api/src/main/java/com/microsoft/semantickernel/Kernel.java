@@ -1,18 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-
+import java.util.List;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -36,6 +35,12 @@ public interface Kernel extends Buildable {
         ContextVariableType<T> resultType);
 
     <T> Mono<ContextVariable<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType);
+
+    <T> Mono<ContextVariable<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType);
@@ -54,22 +59,14 @@ public interface Kernel extends Buildable {
 
     ServiceProvider getServiceSelector();
 
-    KernelPlugin importPluginFromType(@Nullable String pluginName);
-
-    KernelFunction createFunctionFromPrompt(
-        String promptTemplate,
-        @Nullable PromptExecutionSettings executionSettings,
-        @Nullable String functionName,
-        @Nullable String description,
-        @Nullable String templateFormat,
-        @Nullable PromptTemplateFactory promptTemplateFactory);
+    KernelPluginCollection getPlugins();
 
     interface Builder extends SemanticKernelBuilder<Kernel> {
 
         <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService);
 
-        Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
+        Builder withPromptTemplate(PromptTemplate promptTemplate);
 
-        Builder withFunction(KernelFunction kernelFunction);
+        Builder withPlugin(KernelPlugin searchPlugin);
     }
 }

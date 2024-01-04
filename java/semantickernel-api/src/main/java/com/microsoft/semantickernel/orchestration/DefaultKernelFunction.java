@@ -25,6 +25,11 @@ public abstract class DefaultKernelFunction implements KernelFunction {
         this.executionSettings = executionSettings;
     }
 
+    @Override
+    public KernelFunctionMetadata getMetadata() {
+        return metadata;
+    }
+
 
     @Override
     public String getSkillName() {

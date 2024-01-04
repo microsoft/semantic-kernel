@@ -1,47 +1,55 @@
 package com.microsoft.semantickernel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DefaultKernel implements Kernel {
 
     private final ServiceProvider serviceProvider;
-    private final List<KernelFunction> functions;
+    public KernelPluginCollection plugins;
 
-    public DefaultKernel(ServiceProvider serviceProvider, List<KernelFunction> plugins) {
+    public DefaultKernel(
+        ServiceProvider serviceProvider,
+        @Nullable KernelPluginCollection plugins) {
         this.serviceProvider = serviceProvider;
         if (plugins != null) {
-            List<KernelFunction> temp = new ArrayList<>();
-            temp.forEach(temp::add);
-            this.functions = Collections.unmodifiableList(temp);
+            this.plugins = plugins;
         } else {
-            this.functions = Collections.<KernelFunction>emptyList();
+            this.plugins = new KernelPluginCollection();
         }
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(KernelFunction function,
-        @Nullable KernelArguments arguments, ContextVariableType<T> resultType) {
+    public <T> Mono<ContextVariable<T>> invokeAsync(
+        KernelFunction function,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType) {
         return function.invokeAsync(this, arguments, resultType);
+    }
+
+    @Override
+    public <T> Mono<ContextVariable<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType) {
+        return plugins.getFunction(pluginName, functionName)
+            .invokeAsync(this, arguments, resultType);
     }
 
     @Override
@@ -68,7 +76,7 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public List<KernelFunction> getFunctions() {
-        return functions;
+        return null;
     }
 
     @Override
@@ -77,23 +85,15 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public KernelPlugin importPluginFromType(@Nullable String pluginName) {
-        throw new Todo();
-    }
-
-    @Override
-    public KernelFunction createFunctionFromPrompt(String promptTemplate,
-        @Nullable PromptExecutionSettings executionSettings, @Nullable String functionName,
-        @Nullable String description, @Nullable String templateFormat,
-        @Nullable PromptTemplateFactory promptTemplateFactory) {
-        throw new Todo();
+    public KernelPluginCollection getPlugins() {
+        return plugins;
     }
 
     static class DefaultServiceProvider implements ServiceProvider {
 
-        private final Map<Class, AIService> services;
+        private final Map<Class<?>, AIService> services;
 
-        public DefaultServiceProvider(Map<Class, AIService> services) {
+        public DefaultServiceProvider(Map<Class<?>, AIService> services) {
             this.services = services;
         }
 
@@ -113,8 +113,8 @@ public class DefaultKernel implements Kernel {
     public static class Builder implements Kernel.Builder {
 
         private AIService defaultAIService;
-        private final Map<Class, AIService> services = new HashMap<>();
-        private final List<KernelFunction> functions = new ArrayList<>();
+        private final Map<Class<?>, AIService> services = new HashMap<>();
+        private final List<KernelPlugin> plugins = new ArrayList<>();
 
         @Override
         public <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService) {
@@ -124,19 +124,21 @@ public class DefaultKernel implements Kernel {
         }
 
         @Override
-        public Builder withPromptTemplateEngine(PromptTemplate promptTemplate) {
+        public Builder withPromptTemplate(PromptTemplate promptTemplate) {
             return this;
         }
 
         @Override
-        public Kernel.Builder withFunction(KernelFunction function) {
-            functions.add(function);
+        public Kernel.Builder withPlugin(KernelPlugin plugin) {
+            plugins.add(plugin);
             return this;
         }
 
         @Override
         public Kernel build() {
-            return new DefaultKernel(new DefaultServiceProvider(services), functions);
+            return new DefaultKernel(
+                new DefaultServiceProvider(services),
+                new KernelPluginCollection(plugins));
         }
     }
 }
