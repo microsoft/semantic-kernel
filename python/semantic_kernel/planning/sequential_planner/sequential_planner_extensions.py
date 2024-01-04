@@ -21,23 +21,14 @@ class SequentialPlannerFunctionViewExtension:
     def to_manual_string(function: FunctionView):
         inputs = [
             f"  - {parameter.name}: {parameter.description}"
-            + (
-                f" (default value: {parameter.default_value})"
-                if parameter.default_value
-                else ""
-            )
+            + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
             for parameter in function.parameters
         ]
 
         inputs = "\n".join(inputs)
-        qualified_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(
-            function
-        )
+        qualified_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
 
-        return (
-            f"{qualified_name}:\n  description: {function.description}\n  inputs:\n "
-            f" {inputs}"
-        )
+        return f"{qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
 
     @staticmethod
     def to_fully_qualified_name(function: FunctionView):
@@ -45,16 +36,8 @@ class SequentialPlannerFunctionViewExtension:
 
     @staticmethod
     def to_embedding_string(function: FunctionView):
-        inputs = "\n".join(
-            [
-                f"    - {parameter.name}: {parameter.description}"
-                for parameter in function.parameters
-            ]
-        )
-        return (
-            f"{function.name}:\n  description: {function.description}\n "
-            f" inputs:\n{inputs}"
-        )
+        inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
+        return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
 
 
 class SequentialPlannerSKContextExtension:
@@ -70,22 +53,13 @@ class SequentialPlannerSKContextExtension:
         config = config or SequentialPlannerConfig()
 
         if config.get_available_functions_async is None:
-            functions = (
-                await SequentialPlannerSKContextExtension.get_available_functions_async(
-                    context, config, semantic_query
-                )
+            functions = await SequentialPlannerSKContextExtension.get_available_functions_async(
+                context, config, semantic_query
             )
         else:
-            functions = await config.get_available_functions_async(
-                config, semantic_query
-            )
+            functions = await config.get_available_functions_async(config, semantic_query)
 
-        return "\n\n".join(
-            [
-                SequentialPlannerFunctionViewExtension.to_manual_string(func)
-                for func in functions
-            ]
-        )
+        return "\n\n".join([SequentialPlannerFunctionViewExtension.to_manual_string(func) for func in functions])
 
     @staticmethod
     async def get_available_functions_async(
@@ -114,25 +88,16 @@ class SequentialPlannerSKContextExtension:
         available_functions = [
             func
             for func in available_functions
-            if (
-                func.skill_name not in excluded_skills
-                and func.name not in excluded_functions
-            )
+            if (func.skill_name not in excluded_skills and func.name not in excluded_functions)
         ]
 
-        if (
-            semantic_query is None
-            or isinstance(context.memory, NullMemory)
-            or config.relevancy_threshold is None
-        ):
+        if semantic_query is None or isinstance(context.memory, NullMemory) or config.relevancy_threshold is None:
             # If no semantic query is provided, return all available functions.
             # If a Memory provider has not been registered, return all available functions.
             return available_functions
 
         # Remember functions in memory so that they can be searched.
-        await SequentialPlannerSKContextExtension.remember_functions_async(
-            context, available_functions
-        )
+        await SequentialPlannerSKContextExtension.remember_functions_async(context, available_functions)
 
         # Search for functions that match the semantic query.
         memories = await context.memory.search_async(
@@ -143,22 +108,16 @@ class SequentialPlannerSKContextExtension:
         )
 
         # Add functions that were found in the search results.
-        relevant_functions = (
-            await SequentialPlannerSKContextExtension.get_relevant_functions_async(
-                context, available_functions, memories
-            )
+        relevant_functions = await SequentialPlannerSKContextExtension.get_relevant_functions_async(
+            context, available_functions, memories
         )
 
         # Add any missing functions that were included but not found in the search results.
         missing_functions = [
-            func
-            for func in included_functions
-            if func not in [func.name for func in relevant_functions]
+            func for func in included_functions if func not in [func.name for func in relevant_functions]
         ]
 
-        relevant_functions += [
-            func for func in available_functions if func.name in missing_functions
-        ]
+        relevant_functions += [func for func in available_functions if func.name in missing_functions]
 
         return sorted(relevant_functions, key=lambda x: (x.skill_name, x.name))
 
@@ -175,10 +134,7 @@ class SequentialPlannerSKContextExtension:
                 (
                     func
                     for func in available_functions
-                    if SequentialPlannerFunctionViewExtension.to_fully_qualified_name(
-                        func
-                    )
-                    == memory_entry.id
+                    if SequentialPlannerFunctionViewExtension.to_fully_qualified_name(func) == memory_entry.id
                 ),
                 None,
             )
@@ -186,9 +142,7 @@ class SequentialPlannerSKContextExtension:
                 logger.debug(
                     "Found relevant function. Relevance Score: {0}, Function: {1}".format(
                         memory_entry.relevance,
-                        SequentialPlannerFunctionViewExtension.to_fully_qualified_name(
-                            function
-                        ),
+                        SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function),
                     )
                 )
                 relevant_functions.append(function)
@@ -196,25 +150,16 @@ class SequentialPlannerSKContextExtension:
         return relevant_functions
 
     @staticmethod
-    async def remember_functions_async(
-        context: SKContext, available_functions: List[FunctionView]
-    ):
+    async def remember_functions_async(context: SKContext, available_functions: List[FunctionView]):
         # Check if the functions have already been saved to memory.
-        if (
-            SequentialPlannerSKContextExtension.PLAN_SK_FUNCTIONS_ARE_REMEMBERED
-            in context.variables
-        ):
+        if SequentialPlannerSKContextExtension.PLAN_SK_FUNCTIONS_ARE_REMEMBERED in context.variables:
             return
 
         for function in available_functions:
-            function_name = (
-                SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
-            )
+            function_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
             key = function_name
             description = function.description or function_name
-            text_to_embed = SequentialPlannerFunctionViewExtension.to_embedding_string(
-                function
-            )
+            text_to_embed = SequentialPlannerFunctionViewExtension.to_embedding_string(function)
 
             # It'd be nice if there were a saveIfNotExists method on the memory interface
             memory_entry = await context.memory.get_async(
@@ -235,6 +180,4 @@ class SequentialPlannerSKContextExtension:
                 )
 
         # Set a flag to indicate that the functions have been saved to memory.
-        context.variables.set(
-            SequentialPlannerSKContextExtension.PLAN_SK_FUNCTIONS_ARE_REMEMBERED, "true"
-        )
+        context.variables.set(SequentialPlannerSKContextExtension.PLAN_SK_FUNCTIONS_ARE_REMEMBERED, "true")

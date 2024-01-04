@@ -72,9 +72,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            mongodb_client, database = get_mongodb_resources(
-                cosmos_connstr, database_name
-            )
+            mongodb_client, database = get_mongodb_resources(cosmos_connstr, database_name)
             apiStore = MongoStoreApi(
                 collection_name,
                 index_name,
@@ -150,9 +148,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.upsert(str(), record)
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upsert a batch of records.
 
         Arguments:
@@ -164,9 +160,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.upsert_batch(str(), records)
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -179,9 +173,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.get(str(), key, with_embedding)
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -238,9 +230,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        return await self.cosmosStore.get_nearest_matches(
-            str(), embedding, limit, min_relevance_score, with_embeddings
-        )
+        return await self.cosmosStore.get_nearest_matches(str(), embedding, limit, min_relevance_score, with_embeddings)
 
     async def get_nearest_match_async(
         self,
@@ -260,6 +250,4 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        return await self.cosmosStore.get_nearest_match(
-            str(), embedding, min_relevance_score, with_embedding
-        )
+        return await self.cosmosStore.get_nearest_match(str(), embedding, min_relevance_score, with_embedding)

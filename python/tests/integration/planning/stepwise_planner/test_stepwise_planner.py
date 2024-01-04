@@ -35,9 +35,7 @@ class TempWebSearchEngineSkill:
     def __init__(self, connector) -> None:
         self._connector = connector
 
-    @sk_function(
-        description="Performs a web search for a given query", name="searchAsync"
-    )
+    @sk_function(description="Performs a web search for a given query", name="searchAsync")
     @sk_function_context_parameter(
         name="query",
         description="The search query",
@@ -66,9 +64,7 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     if use_chat_model:
         kernel.add_chat_service(
             "chat_completion",
-            sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo", endpoint=endpoint, api_key=api_key
-            ),
+            sk_oai.AzureChatCompletion(deployment_name="gpt-35-turbo", endpoint=endpoint, api_key=api_key),
         )
     else:
         kernel.add_text_completion_service(
@@ -126,18 +122,13 @@ async def test_can_create_stepwise_plan(
     kernel.import_skill(web_search_engine_skill, "WebSearch")
     kernel.import_skill(TimeSkill(), "time")
 
-    planner = StepwisePlanner(
-        kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000)
-    )
+    planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 
     # Act
     plan = planner.create_plan(prompt)
 
     # Assert
-    assert any(
-        step.name == expected_function and step.skill_name == expected_skill
-        for step in plan._steps
-    )
+    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)
 
 
 @pytest.mark.parametrize(
@@ -168,9 +159,7 @@ async def test_can_execute_stepwise_plan(
     kernel.import_skill(TimeSkill(), "time")
     kernel.import_skill(MathSkill(), "math")
 
-    planner = StepwisePlanner(
-        kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000)
-    )
+    planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 
     # Act
     plan = planner.create_plan(prompt)

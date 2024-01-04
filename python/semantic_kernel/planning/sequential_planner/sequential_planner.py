@@ -34,9 +34,7 @@ SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Skills/SequentialPlanning/config.json")
-PROMPT_TEMPLATE_FILE_PATH = os.path.join(
-    CUR_DIR, "Skills/SequentialPlanning/skprompt.txt"
-)
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Skills/SequentialPlanning/skprompt.txt")
 
 
 def read_file(file_path: str) -> str:
@@ -51,9 +49,7 @@ class SequentialPlanner:
     _context: "SKContext"
     _function_flow_function: "SKFunctionBase"
 
-    def __init__(
-        self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None
-    ):
+    def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
         assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
@@ -64,9 +60,7 @@ class SequentialPlanner:
         self._context = kernel.create_new_context()
 
     def _init_flow_function(self, prompt: str, kernel: Kernel):
-        prompt_config = PromptTemplateConfig.from_json(
-            read_file(PROMPT_CONFIG_FILE_PATH)
-        )
+        prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
         prompt_config.completion.extension_data["max_tokens"] = self.config.max_tokens
 
@@ -85,20 +79,14 @@ class SequentialPlanner:
 
     async def create_plan_async(self, goal: str) -> Plan:
         if len(goal) == 0:
-            raise PlanningException(
-                PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty"
-            )
+            raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
-        relevant_function_manual = await SKContextExtension.get_functions_manual_async(
-            self._context, goal, self.config
-        )
+        relevant_function_manual = await SKContextExtension.get_functions_manual_async(self._context, goal, self.config)
         self._context.variables.set("available_functions", relevant_function_manual)
 
         self._context.variables.update(goal)
 
-        plan_result = await self._function_flow_function.invoke_async(
-            context=self._context
-        )
+        plan_result = await self._function_flow_function.invoke_async(context=self._context)
 
         if plan_result.error_occurred:
             raise PlanningException(
@@ -110,9 +98,8 @@ class SequentialPlanner:
         plan_result_string = plan_result.result.strip()
 
         try:
-            get_skill_function = (
-                self.config.get_skill_function
-                or SequentialPlanParser.get_skill_function(self._context)
+            get_skill_function = self.config.get_skill_function or SequentialPlanParser.get_skill_function(
+                self._context
             )
             plan = SequentialPlanParser.to_plan_from_xml(
                 plan_result_string,

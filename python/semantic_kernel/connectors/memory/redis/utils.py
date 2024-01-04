@@ -39,9 +39,7 @@ def split_redis_key(redis_key: str) -> Tuple[str, str]:
     return collection, record_id
 
 
-def serialize_record_to_redis(
-    record: MemoryRecord, vector_type: np.dtype
-) -> Dict[str, Any]:
+def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> Dict[str, Any]:
     all_metadata = {
         "is_reference": record._is_reference,
         "external_source_name": record._external_source_name or "",
@@ -55,18 +53,12 @@ def serialize_record_to_redis(
         "key": record._key or "",
         "timestamp": record._timestamp.isoformat() if record._timestamp else "",
         "metadata": json.dumps(all_metadata),
-        "embedding": (
-            record._embedding.astype(vector_type).tobytes()
-            if record._embedding is not None
-            else ""
-        ),
+        "embedding": (record._embedding.astype(vector_type).tobytes() if record._embedding is not None else ""),
     }
     return redis_mapping
 
 
-def deserialize_redis_to_record(
-    fields: Dict[str, Any], vector_type: np.dtype, with_embedding: bool
-) -> MemoryRecord:
+def deserialize_redis_to_record(fields: Dict[str, Any], vector_type: np.dtype, with_embedding: bool) -> MemoryRecord:
     metadata = json.loads(fields[b"metadata"])
     record = MemoryRecord(
         id=metadata["id"],
@@ -83,9 +75,7 @@ def deserialize_redis_to_record(
 
     if with_embedding:
         # Extract using the vector type, then convert to regular Python float type
-        record._embedding = np.frombuffer(
-            fields[b"embedding"], dtype=vector_type
-        ).astype(float)
+        record._embedding = np.frombuffer(fields[b"embedding"], dtype=vector_type).astype(float)
 
     return record
 

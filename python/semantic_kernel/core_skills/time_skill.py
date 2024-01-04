@@ -191,9 +191,7 @@ class TimeSkill(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @sk_function(
-        description="Get the date of offset from today by a provided number of days"
-    )
+    @sk_function(description="Get the date of offset from today by a provided number of days")
     def days_ago(self, days: str) -> str:
         """
         Get the date a provided number of days in the past

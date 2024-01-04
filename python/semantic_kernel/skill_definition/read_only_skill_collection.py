@@ -32,9 +32,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
         super().__init__(data=data or {})
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
@@ -58,9 +56,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
             return False
         return self.data[s_name][f_name].is_native
 
-    def get_semantic_function(
-        self, skill_name: str, function_name: str
-    ) -> "SKFunctionBase":
+    def get_semantic_function(self, skill_name: str, function_name: str) -> "SKFunctionBase":
         s_name, f_name = self._normalize_names(skill_name, function_name)
         if self.has_semantic_function(s_name, f_name):
             return self.data[s_name][f_name]
@@ -71,9 +67,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
             f"Function not available: {s_name}.{f_name}",
         )
 
-    def get_native_function(
-        self, skill_name: str, function_name: str
-    ) -> "SKFunctionBase":
+    def get_native_function(self, skill_name: str, function_name: str) -> "SKFunctionBase":
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
         if self.has_native_function(s_name, f_name):
             return self.data[s_name][f_name]
@@ -84,9 +78,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
             f"Function not available: {s_name}.{f_name}",
         )
 
-    def get_functions_view(
-        self, include_semantic: bool = True, include_native: bool = True
-    ) -> FunctionsView:
+    def get_functions_view(self, include_semantic: bool = True, include_native: bool = True) -> FunctionsView:
         result = FunctionsView()
 
         for skill in self.data.values():
@@ -98,9 +90,7 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
 
         return result
 
-    def get_function(
-        self, skill_name: Optional[str], function_name: str
-    ) -> "SKFunctionBase":
+    def get_function(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
         if self.has_function(s_name, f_name):
             return self.data[s_name][f_name]

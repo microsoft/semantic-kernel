@@ -141,9 +141,7 @@ class Plan(SKFunctionBase):
         # TODO: cancellation_token: CancellationToken,
     ) -> SKContext:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
@@ -155,9 +153,7 @@ class Plan(SKFunctionBase):
             )
 
         if self._function is not None:
-            result = await self._function.invoke_async(
-                context=context, settings=settings
-            )
+            result = await self._function.invoke_async(context=context, settings=settings)
             if result.error_occurred:
                 logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
@@ -185,9 +181,7 @@ class Plan(SKFunctionBase):
         **kwargs,
     ) -> SKContext:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
@@ -235,9 +229,7 @@ class Plan(SKFunctionBase):
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
-    def set_ai_service(
-        self, service: Callable[[], TextCompletionClientBase]
-    ) -> SKFunctionBase:
+    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> SKFunctionBase:
         if self._function is not None:
             self._function.set_ai_service(service)
 
@@ -322,8 +314,7 @@ class Plan(SKFunctionBase):
             if result.error_occurred:
                 raise KernelException(
                     KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occurred while running plan step: "
-                    + result.last_error_description,
+                    "Error occurred while running plan step: " + result.last_error_description,
                     result.last_exception,
                 )
 
@@ -335,9 +326,7 @@ class Plan(SKFunctionBase):
                 current_plan_result = ""
                 if Plan.DEFAULT_RESULT_KEY in self._state.variables:
                     current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
-                self._state.set(
-                    Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value
-                )
+                self._state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
 
             # Update state with outputs (if any)
             for output in step._outputs:
@@ -351,9 +340,7 @@ class Plan(SKFunctionBase):
 
         return self
 
-    def add_variables_to_context(
-        self, variables: ContextVariables, context: SKContext
-    ) -> None:
+    def add_variables_to_context(self, variables: ContextVariables, context: SKContext) -> None:
         for key in variables.variables:
             if key not in context.variables:
                 context.variables.set(key, variables[key])
@@ -375,9 +362,7 @@ class Plan(SKFunctionBase):
 
         return context
 
-    def get_next_step_variables(
-        self, variables: ContextVariables, step: "Plan"
-    ) -> ContextVariables:
+    def get_next_step_variables(self, variables: ContextVariables, step: "Plan") -> ContextVariables:
         # Priority for Input
         # - Parameters (expand from variables if needed)
         # - SKContext.Variables
@@ -412,9 +397,7 @@ class Plan(SKFunctionBase):
 
             if param.name in variables:
                 step_variables.set(param.name, variables[param.name])
-            elif param.name in self._state and (
-                self._state[param.name] is not None and self._state[param.name] != ""
-            ):
+            elif param.name in self._state and (self._state[param.name] is not None and self._state[param.name] != ""):
                 step_variables.set(param.name, self._state[param.name])
 
         for param_var in step.parameters.variables:
@@ -437,15 +420,11 @@ class Plan(SKFunctionBase):
 
         return step_variables
 
-    def expand_from_variables(
-        self, variables: ContextVariables, input_string: str
-    ) -> str:
+    def expand_from_variables(self, variables: ContextVariables, input_string: str) -> str:
         result = input_string
         variables_regex = r"\$(?P<var>\w+)"
         matches = [m for m in re.finditer(variables_regex, input_string)]
-        ordered_matches = sorted(
-            matches, key=lambda m: len(m.group("var")), reverse=True
-        )
+        ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
 
         for match in ordered_matches:
             var_name = match.group("var")

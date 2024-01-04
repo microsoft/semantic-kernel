@@ -167,9 +167,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
-    pytest.param(
-        ConversationSummarySkill, marks=pytest.mark.xfail(reason="Contains data")
-    ),
+    pytest.param(ConversationSummarySkill, marks=pytest.mark.xfail(reason="Contains data")),
     FileIOSkill,
     HttpSkill,
     MathSkill,
@@ -233,12 +231,7 @@ PYDANTIC_MODELS = [
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
         "sk_type",
-        BASE_CLASSES
-        + PROTOCOLS
-        + ENUMS
-        + PYDANTIC_MODELS
-        + STATELESS_CLASSES
-        + UNSERIALIZED_CLASSES,
+        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES + UNSERIALIZED_CLASSES,
     )
     def test_usage_as_optional_field(
         self,

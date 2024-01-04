@@ -15,9 +15,7 @@ load_dotenv()
 async def main():
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_chat_service(
-        "chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    )
+    kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
     """
     Instantiate a Google Connector

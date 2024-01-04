@@ -89,9 +89,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
             if settings.number_of_responses > 1:
                 completions = [""] * settings.number_of_responses
                 for choice in partial.choices:
-                    if hasattr(choice, "delta") and hasattr(
-                        choice.delta, "content"
-                    ):  # Chat completion
+                    if hasattr(choice, "delta") and hasattr(choice.delta, "content"):  # Chat completion
                         completions[choice.index] = choice.delta.content
                     elif hasattr(choice, "text"):  # Text completion
                         completions[choice.index] = choice.text

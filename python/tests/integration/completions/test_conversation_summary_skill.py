@@ -13,9 +13,7 @@ from semantic_kernel.core_skills.conversation_summary_skill import (
 
 
 @pytest.mark.asyncio
-async def test_azure_summarize_conversation_using_skill(
-    setup_summarize_conversation_using_skill, get_aoai_config
-):
+async def test_azure_summarize_conversation_using_skill(setup_summarize_conversation_using_skill, get_aoai_config):
     kernel, chatTranscript = setup_summarize_conversation_using_skill
 
     if "Python_Integration_Tests" in os.environ:
@@ -29,19 +27,13 @@ async def test_azure_summarize_conversation_using_skill(
 
     kernel.add_text_completion_service(
         "text_completion",
-        sk_oai.AzureTextCompletion(
-            deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
-        ),
+        sk_oai.AzureTextCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
     )
 
-    conversationSummarySkill = kernel.import_skill(
-        ConversationSummarySkill(kernel), "conversationSummary"
-    )
+    conversationSummarySkill = kernel.import_skill(ConversationSummarySkill(kernel), "conversationSummary")
 
     summary = await retry(
-        lambda: kernel.run_async(
-            conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript
-        )
+        lambda: kernel.run_async(conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript)
     )
 
     output = str(summary).strip().lower()
@@ -68,14 +60,10 @@ async def test_oai_summarize_conversation_using_skill(
         sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id=org_id),
     )
 
-    conversationSummarySkill = kernel.import_skill(
-        ConversationSummarySkill(kernel), "conversationSummary"
-    )
+    conversationSummarySkill = kernel.import_skill(ConversationSummarySkill(kernel), "conversationSummary")
 
     summary = await retry(
-        lambda: kernel.run_async(
-            conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript
-        )
+        lambda: kernel.run_async(conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript)
     )
 
     output = str(summary).strip().lower()

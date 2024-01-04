@@ -65,14 +65,10 @@ prompt_config = sk.PromptTemplateConfig(
         functions=get_function_calling_object(kernel, {"exclude_skill": ["ChatBot"]}),
     )
 )
-prompt_template = OpenAIChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
+prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message(
-    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
-)
+prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)

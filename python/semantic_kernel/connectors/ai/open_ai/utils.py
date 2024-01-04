@@ -27,17 +27,14 @@ def _describe_function(function: SKFunctionBase) -> Dict[str, str]:
         "parameters": {
             "type": "object",
             "properties": {
-                param.name: {"description": param.description, "type": param.type_}
-                for param in func_view.parameters
+                param.name: {"description": param.description, "type": param.type_} for param in func_view.parameters
             },
             "required": [p.name for p in func_view.parameters if p.required],
         },
     }
 
 
-def get_function_calling_object(
-    kernel: Kernel, filter: Dict[str, List[str]]
-) -> List[Dict[str, str]]:
+def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
     """Create the object used for function_calling.
 
     args:
@@ -68,13 +65,9 @@ def get_function_calling_object(
     include_function = filter.get("include_function", None)
     exclude_function = filter.get("exclude_function", [])
     if include_skill and exclude_skill:
-        raise ValueError(
-            "Cannot use both include_skill and exclude_skill at the same time."
-        )
+        raise ValueError("Cannot use both include_skill and exclude_skill at the same time.")
     if include_function and exclude_function:
-        raise ValueError(
-            "Cannot use both include_function and exclude_function at the same time."
-        )
+        raise ValueError("Cannot use both include_function and exclude_function at the same time.")
     if include_skill:
         include_skill = [skill.lower() for skill in include_skill]
     if exclude_skill:
@@ -88,27 +81,19 @@ def get_function_calling_object(
         skill_name,
         skill,
     ) in kernel.skills.data.items():
-        if skill_name in exclude_skill or (
-            include_skill and skill_name not in include_skill
-        ):
+        if skill_name in exclude_skill or (include_skill and skill_name not in include_skill):
             continue
         for function_name, function in skill.items():
             current_name = f"{skill_name}-{function_name}"
-            if current_name in exclude_function or (
-                include_function and current_name not in include_function
-            ):
+            if current_name in exclude_function or (include_function and current_name not in include_function):
                 continue
             result.append(_describe_function(function))
     return result
 
 
-async def execute_function_call(
-    kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None
-) -> str:
+async def execute_function_call(kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None) -> str:
     if log:
-        logger.warning(
-            "The `log` parameter is deprecated. Please use the `logging` module instead."
-        )
+        logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
     result = await kernel.run_async(
         kernel.func(**function_call.split_name_dict()),
         input_vars=function_call.to_context_variables(),
@@ -155,17 +140,13 @@ async def chat_completion_with_function_call(
         the context with the result of the chat completion, just like a regular invoke_async/run_async.
     """
     if log:
-        logger.warning(
-            "The `log` parameter is deprecated. Please use the `logging` module instead."
-        )
+        logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
     # get the chat function
     if chat_function is None:
-        chat_function = kernel.func(
-            skill_name=chat_skill_name, function_name=chat_function_name
-        )
+        chat_function = kernel.func(skill_name=chat_skill_name, function_name=chat_function_name)
     assert isinstance(
         chat_function._chat_prompt_template, OpenAIChatPromptTemplate
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
@@ -183,9 +164,7 @@ async def chat_completion_with_function_call(
         return context
     result = await execute_function_call(kernel, function_call)
     # add the result to the chat prompt template
-    chat_function._chat_prompt_template.add_function_response_message(
-        name=function_call.name, content=str(result)
-    )
+    chat_function._chat_prompt_template.add_function_response_message(name=function_call.name, content=str(result))
     # request another completion
     return await chat_completion_with_function_call(
         kernel,

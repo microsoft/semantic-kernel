@@ -47,9 +47,7 @@ def _no_return(signature: Signature) -> bool:
     return signature.return_annotation is Signature.empty
 
 
-def _has_first_param_with_type(
-    signature: Signature, annotation, only: bool = True
-) -> bool:
+def _has_first_param_with_type(signature: Signature, annotation, only: bool = True) -> bool:
     if len(signature.parameters) < 1:
         return False
     if only and len(signature.parameters) != 1:
@@ -81,9 +79,7 @@ def _first_param_is_context(signature: Signature) -> bool:
 class DelegateInference(SKBaseModel):
     @staticmethod
     @_infers(DelegateTypes.Void)
-    def infer_void(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_void(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _has_no_params(signature)
         matches = matches and _return_is_none(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
@@ -91,9 +87,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.OutString)
-    def infer_out_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_out_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _has_no_params(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
@@ -101,9 +95,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.OutTaskString)
-    def infer_out_task_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_out_task_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _has_no_params(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and awaitable
@@ -111,9 +103,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InSKContext)
-    def infer_in_sk_context(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_sk_context(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_none(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
@@ -121,9 +111,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InSKContextOutString)
-    def infer_in_sk_context_out_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_sk_context_out_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
@@ -131,9 +119,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InSKContextOutTaskString)
-    def infer_in_sk_context_out_task_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_sk_context_out_task_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and awaitable
@@ -151,9 +137,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InString)
-    def infer_in_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature)
         matches = matches and _return_is_none(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
@@ -161,9 +145,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InStringOutString)
-    def infer_in_string_out_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_out_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
@@ -171,9 +153,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InStringOutTaskString)
-    def infer_in_string_out_task_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_out_task_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and awaitable
@@ -181,9 +161,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InStringAndContext)
-    def infer_in_string_and_context(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_and_context(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature, only=False)
         matches = matches and _has_two_params_second_is_context(signature)
         matches = matches and _return_is_none(signature)
@@ -192,9 +170,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InStringAndContextOutString)
-    def infer_in_string_and_context_out_string(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_and_context_out_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature, only=False)
         matches = matches and _has_two_params_second_is_context(signature)
         matches = matches and _return_is_str(signature)
@@ -225,9 +201,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InStringOutTask)
-    def infer_in_string_out_task(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_out_task(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature)
         matches = matches and _return_is_none(signature)
         matches = matches and awaitable
@@ -235,9 +209,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InContextOutTask)
-    def infer_in_context_out_task(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_context_out_task(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_none(signature)
         matches = matches and awaitable
@@ -245,9 +217,7 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.InStringAndContextOutTask)
-    def infer_in_string_and_context_out_task(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_and_context_out_task(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature, only=False)
         matches = matches and _has_two_params_second_is_context(signature)
         matches = matches and _return_is_none(signature)
@@ -256,36 +226,28 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.OutTask)
-    def infer_out_task(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_out_task(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _has_no_params(signature)
         matches = matches and awaitable
         return matches
 
     @staticmethod
     @_infers(DelegateTypes.OutAsyncGenerator)
-    def infer_out_async_generator(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_out_async_generator(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _has_no_params(signature)
         matches = matches and is_asyncgenfunc
         return matches
 
     @staticmethod
     @_infers(DelegateTypes.InStringOutAsyncGenerator)
-    def infer_in_string_out_async_generator(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_string_out_async_generator(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_str(signature)
         matches = matches and is_asyncgenfunc
         return matches
 
     @staticmethod
     @_infers(DelegateTypes.InContextOutAsyncGenerator)
-    def infer_in_context_out_async_generator(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> bool:
+    def infer_in_context_out_async_generator(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and is_asyncgenfunc
         return matches
@@ -302,13 +264,10 @@ class DelegateInference(SKBaseModel):
 
     @staticmethod
     @_infers(DelegateTypes.Unknown)
-    def infer_unknown(
-        signature: Signature, awaitable: bool, is_asyncgenfunc: bool
-    ) -> NoReturn:
+    def infer_unknown(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> NoReturn:
         raise KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
-            "Invalid function type detected, unable to infer DelegateType."
-            + f" Function: {signature}",
+            "Invalid function type detected, unable to infer DelegateType." + f" Function: {signature}",
         )
 
     @staticmethod

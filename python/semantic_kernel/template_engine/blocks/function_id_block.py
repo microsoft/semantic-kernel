@@ -21,16 +21,13 @@ class FunctionIdBlock(Block):
         super().__init__(content=content and content.strip())
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         function_name_parts = self.content.split(".")
         if len(function_name_parts) > 2:
             logger.error(f"Invalid function name `{self.content}`")
             raise ValueError(
-                "A function name can contain at most one dot separating "
-                "the skill name from the function name"
+                "A function name can contain at most one dot separating " "the skill name from the function name"
             )
 
         if len(function_name_parts) == 2:
@@ -77,8 +74,7 @@ class FunctionIdBlock(Block):
 
         if self._has_more_than_one_dot(self.content):
             error_msg = (
-                "The function identifier can contain max one '.' "
-                "char separating skill name from function name"
+                "The function identifier can contain max one '.' " "char separating skill name from function name"
             )
             return False, error_msg
 

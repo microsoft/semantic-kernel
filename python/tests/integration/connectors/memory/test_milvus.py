@@ -15,9 +15,7 @@ try:
 except ImportError:
     milvus_installed = False
 
-pytestmark = pytest.mark.skipif(
-    not milvus_installed, reason="local milvus is not installed"
-)
+pytestmark = pytest.mark.skipif(not milvus_installed, reason="local milvus is not installed")
 
 pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
@@ -164,9 +162,7 @@ async def test_upsert_and_get_batch_async(memory_record1, memory_record2, setup_
 
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
-    result = await memory.get_batch_async(
-        "test_collection", ["test_id1", "test_id2"], True
-    )
+    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
     assert len(result) == 2
     assert result[0]._id == "test_id1"
     assert result[0]._text == "sample text1"
@@ -203,9 +199,7 @@ async def test_remove_batch_async(memory_record1, memory_record2, setup_milvus):
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
     await memory.remove_batch_async("test_collection", ["test_id1", "test_id2"])
 
-    result = await memory.get_batch_async(
-        "test_collection", ["test_id1", "test_id2"], True
-    )
+    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
     assert result == []
 
 
@@ -216,9 +210,7 @@ async def test_get_nearest_matches_async(memory_record1, memory_record2, setup_m
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
-    results = await memory.get_nearest_matches_async(
-        "test_collection", np.array([0.5, 0.5]), limit=2
-    )
+    results = await memory.get_nearest_matches_async("test_collection", np.array([0.5, 0.5]), limit=2)
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
     assert results[0][1] == pytest.approx(0.5, abs=1e-5)
@@ -232,9 +224,7 @@ async def test_get_nearest_match_async(memory_record1, memory_record2, setup_mil
     await memory.create_collection_async("test_collection", 2)
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
-    result = await memory.get_nearest_match_async(
-        "test_collection", np.array([0.5, 0.5])
-    )
+    result = await memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5]))
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)
     assert result[1] == pytest.approx(0.5, abs=1e-5)

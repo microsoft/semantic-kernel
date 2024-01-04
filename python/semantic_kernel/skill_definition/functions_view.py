@@ -35,10 +35,7 @@ class FunctionsView(SKBaseModel):
         if as_sf and as_nf:
             raise KernelException(
                 KernelException.ErrorCodes.AmbiguousImplementation,
-                (
-                    f"There are 2 functions with the same name: {function_name}."
-                    "One is native and the other semantic."
-                ),
+                (f"There are 2 functions with the same name: {function_name}." "One is native and the other semantic."),
             )
 
         return as_sf
@@ -53,10 +50,7 @@ class FunctionsView(SKBaseModel):
         if as_sf and as_nf:
             raise KernelException(
                 KernelException.ErrorCodes.AmbiguousImplementation,
-                (
-                    f"There are 2 functions with the same name: {function_name}."
-                    "One is native and the other semantic."
-                ),
+                (f"There are 2 functions with the same name: {function_name}." "One is native and the other semantic."),
             )
 
         return as_nf

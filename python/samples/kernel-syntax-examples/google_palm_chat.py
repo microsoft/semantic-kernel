@@ -10,9 +10,7 @@ from semantic_kernel.connectors.ai.google_palm.gp_request_settings import (
 
 
 async def chat_request_example(api_key):
-    palm_chat_completion = sk_gp.GooglePalmChatCompletion(
-        "models/chat-bison-001", api_key
-    )
+    palm_chat_completion = sk_gp.GooglePalmChatCompletion("models/chat-bison-001", api_key)
     settings = GooglePalmChatRequestSettings()
     settings.temperature = 1
 

@@ -48,13 +48,9 @@ def azure_openai_settings_from_dot_env(
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
-        assert (
-            deployment is not None
-        ), "Azure OpenAI deployment name not found in .env file"
+        assert deployment is not None, "Azure OpenAI deployment name not found in .env file"
     if include_api_version:
-        assert (
-            api_version is not None
-        ), "Azure OpenAI API version not found in .env file"
+        assert api_version is not None, "Azure OpenAI API version not found in .env file"
 
     assert api_key, "Azure OpenAI API key not found in .env file"
     assert endpoint, "Azure OpenAI endpoint not found in .env file"
@@ -208,9 +204,7 @@ def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
     cosmos_api = config.get("AZCOSMOS_API")
     cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
 
-    assert (
-        cosmos_connstr is not None
-    ), "Azure Cosmos Connection String not found in .env file"
+    assert cosmos_connstr is not None, "Azure Cosmos Connection String not found in .env file"
 
     return cosmos_api, cosmos_connstr
 
@@ -224,9 +218,7 @@ def redis_settings_from_dot_env() -> str:
     config = dotenv_values(".env")
     connection_string = config.get("REDIS_CONNECTION_STRING", None)
 
-    assert (
-        connection_string is not None
-    ), "Redis connection string not found in .env file"
+    assert connection_string is not None, "Redis connection string not found in .env file"
 
     return connection_string
 
@@ -251,9 +243,7 @@ def azure_aisearch_settings_from_dot_env(
         return api_key, url
     else:
         index_name = config.get("AZURE_AISEARCH_INDEX_NAME", None)
-        assert (
-            index_name is not None
-        ), "Azure AI Search index name not found in .env file"
+        assert index_name is not None, "Azure AI Search index name not found in .env file"
         return api_key, url, index_name
 
 
@@ -264,7 +254,5 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     Returns:
         Dict[str, str]: the Azure AI search environment variables
     """
-    api_key, url, index_name = azure_aisearch_settings_from_dot_env(
-        include_index_name=True
-    )
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
     return {"key": api_key, "endpoint": url, "indexName": index_name}

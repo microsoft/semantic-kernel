@@ -25,9 +25,7 @@ def validate_skill_name(value: Optional[str]) -> None:
 
     if not re_match(SKILL_NAME_REGEX, value):
         raise ValueError(
-            f"Invalid skill name: {value}. Skill "
-            f"names may only contain ASCII letters, "
-            f"digits, and underscores."
+            f"Invalid skill name: {value}. Skill " f"names may only contain ASCII letters, " f"digits, and underscores."
         )
 
 

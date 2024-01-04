@@ -51,9 +51,7 @@ class AIRequestSettings(SKBaseModel):
         self.unpack_extension_data()
 
     @classmethod
-    def from_ai_request_settings(
-        cls, config: "AIRequestSettings"
-    ) -> "AIRequestSettings":
+    def from_ai_request_settings(cls, config: "AIRequestSettings") -> "AIRequestSettings":
         """Create a request settings from a completion config."""
         config.pack_extension_data()
         return cls(
@@ -75,8 +73,5 @@ class AIRequestSettings(SKBaseModel):
     def pack_extension_data(self) -> None:
         """Update the extension data from the request settings."""
         for key in self.model_fields_set:
-            if (
-                key not in ["service_id", "extension_data"]
-                and getattr(self, key) is not None
-            ):
+            if key not in ["service_id", "extension_data"] and getattr(self, key) is not None:
                 self.extension_data[key] = getattr(self, key)

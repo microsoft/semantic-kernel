@@ -30,9 +30,7 @@ class NullMemory(SemanticTextMemoryBase):
         """Nullifies behavior of SemanticTextMemoryBase.save_reference_async()"""
         return None
 
-    async def get_async(
-        self, collection: str, query: str
-    ) -> Optional[MemoryQueryResult]:
+    async def get_async(self, collection: str, query: str) -> Optional[MemoryQueryResult]:
         """Nullifies behavior of SemanticTextMemoryBase.get_async()"""
         return None
 

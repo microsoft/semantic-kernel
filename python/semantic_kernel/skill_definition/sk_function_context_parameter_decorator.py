@@ -2,12 +2,7 @@
 
 
 def sk_function_context_parameter(
-    *,
-    name: str,
-    description: str,
-    default_value: str = "",
-    type: str = "string",
-    required: bool = False
+    *, name: str, description: str, default_value: str = "", type: str = "string", required: bool = False
 ):
     """
     Decorator for SK function context parameters.

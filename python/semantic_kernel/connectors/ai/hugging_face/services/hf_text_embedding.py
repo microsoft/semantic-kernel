@@ -38,18 +38,12 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
-        resolved_device = (
-            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-        )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,
             device=resolved_device,
-            generator=sentence_transformers.SentenceTransformer(
-                model_name_or_path=ai_model_id, device=resolved_device
-            ),
+            generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
     async def generate_embeddings_async(self, texts: List[str]) -> ndarray:

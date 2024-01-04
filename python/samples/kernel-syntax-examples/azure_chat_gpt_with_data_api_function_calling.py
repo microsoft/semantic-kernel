@@ -27,10 +27,8 @@ azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureA
     )
 )
 
-azure_chat_with_data_settings = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        dataSources=[azure_aisearch_datasource]
-    )
+azure_chat_with_data_settings = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    dataSources=[azure_aisearch_datasource]
 )
 
 # For example, AI Search index may contain the following document:
@@ -63,22 +61,16 @@ kernel.import_skill(TimeSkill(), skill_name="time")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
-        max_tokens=2000,
-        temperature=0.7,
-        top_p=0.8,
-        function_call="auto",
-        data_source_settings=azure_chat_with_data_settings,
-    )
+prompt_config = sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    function_call="auto",
+    data_source_settings=azure_chat_with_data_settings,
 )
-prompt_template = OpenAIChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
+prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message(
-    "I am an AI assistant here to answer your questions."
-)
+prompt_template.add_assistant_message("I am an AI assistant here to answer your questions.")
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)

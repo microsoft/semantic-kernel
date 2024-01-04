@@ -22,15 +22,10 @@ def decorated_native_function(arg1: str) -> str:
 def test_register_valid_native_function():
     kernel = Kernel()
 
-    registered_func = kernel.register_native_function(
-        "TestSkill", decorated_native_function
-    )
+    registered_func = kernel.register_native_function("TestSkill", decorated_native_function)
 
     assert isinstance(registered_func, SKFunctionBase)
-    assert (
-        kernel.skills.get_native_function("TestSkill", "getLightStatus")
-        == registered_func
-    )
+    assert kernel.skills.get_native_function("TestSkill", "getLightStatus") == registered_func
     assert registered_func.invoke("testtest").result == "test"
 
 

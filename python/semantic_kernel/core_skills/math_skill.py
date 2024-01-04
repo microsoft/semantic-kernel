@@ -62,9 +62,7 @@ class MathSkill(SKBaseModel):
         return MathSkill.add_or_subtract(initial_value_text, context, add=False)
 
     @staticmethod
-    def add_or_subtract(
-        initial_value_text: str, context: "SKContext", add: bool
-    ) -> str:
+    def add_or_subtract(initial_value_text: str, context: "SKContext", add: bool) -> str:
         """
         Helper function to perform addition or subtraction based on the add flag.
 
@@ -76,19 +74,14 @@ class MathSkill(SKBaseModel):
         try:
             initial_value = int(initial_value_text)
         except ValueError:
-            raise ValueError(
-                f"Initial value provided is not in numeric format: {initial_value_text}"
-            )
+            raise ValueError(f"Initial value provided is not in numeric format: {initial_value_text}")
 
         context_amount = context["Amount"]
         if context_amount is not None:
             try:
                 amount = int(context_amount)
             except ValueError:
-                raise ValueError(
-                    "Context amount provided is not in numeric format:"
-                    f" {context_amount}"
-                )
+                raise ValueError("Context amount provided is not in numeric format:" f" {context_amount}")
 
             result = initial_value + amount if add else initial_value - amount
             return str(result)

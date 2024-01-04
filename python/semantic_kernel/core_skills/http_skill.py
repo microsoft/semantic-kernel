@@ -64,9 +64,7 @@ class HttpSkill(SKBaseModel):
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                url, headers=headers, data=data, raise_for_status=True
-            ) as response:
+            async with session.post(url, headers=headers, data=data, raise_for_status=True) as response:
                 return await response.text()
 
     @sk_function(description="Makes a PUT request to a uri", name="putAsync")
@@ -88,9 +86,7 @@ class HttpSkill(SKBaseModel):
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
         async with aiohttp.ClientSession() as session:
-            async with session.put(
-                url, headers=headers, data=data, raise_for_status=True
-            ) as response:
+            async with session.put(url, headers=headers, data=data, raise_for_status=True) as response:
                 return await response.text()
 
     @sk_function(description="Makes a DELETE request to a uri", name="deleteAsync")

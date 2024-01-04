@@ -21,9 +21,7 @@ class VarBlock(Block):
         super().__init__(content=content and content.strip())
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         if len(self.content) < 2:
             err = "The variable name is empty"
@@ -47,10 +45,7 @@ class VarBlock(Block):
 
     def is_valid(self) -> Tuple[bool, str]:
         if not self.content:
-            error_msg = (
-                f"A variable must start with the symbol {Symbols.VAR_PREFIX} "
-                "and have a name"
-            )
+            error_msg = f"A variable must start with the symbol {Symbols.VAR_PREFIX} " "and have a name"
             logger.error(error_msg)
             return False, error_msg
 

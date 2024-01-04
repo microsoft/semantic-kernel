@@ -90,19 +90,13 @@ def get_oai_config():
 def context_factory() -> t.Callable[[ContextVariables], SKContext]:
     """Return a factory for SKContext objects."""
 
-    def create_context(
-        context_variables: ContextVariables, *functions: SKFunction
-    ) -> SKContext:
+    def create_context(context_variables: ContextVariables, *functions: SKFunction) -> SKContext:
         """Return a SKContext object."""
         return SKContext(
             context_variables,
             NullMemory(),
             skill_collection=ReadOnlySkillCollection(
-                data={
-                    ReadOnlySkillCollection.GLOBAL_SKILL.lower(): {
-                        f.name: f for f in functions
-                    }
-                },
+                data={ReadOnlySkillCollection.GLOBAL_SKILL.lower(): {f.name: f for f in functions}},
             ),
         )
 

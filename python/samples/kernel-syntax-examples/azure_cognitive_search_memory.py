@@ -18,12 +18,8 @@ COLLECTION_NAME = "acs-index-sample"
 
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the ACS semantic memory
-    await kernel.memory.save_information_async(
-        COLLECTION_NAME, id="info1", text="My name is Andrea"
-    )
-    await kernel.memory.save_information_async(
-        COLLECTION_NAME, id="info2", text="I currently work as a tour guide"
-    )
+    await kernel.memory.save_information_async(COLLECTION_NAME, id="info1", text="My name is Andrea")
+    await kernel.memory.save_information_async(COLLECTION_NAME, id="info2", text="I currently work as a tour guide")
     await kernel.memory.save_information_async(
         COLLECTION_NAME, id="info3", text="I've been living in Seattle since 2005"
     )
@@ -32,9 +28,7 @@ async def populate_memory(kernel: sk.Kernel) -> None:
         id="info4",
         text="I visited France and Italy five times since 2015",
     )
-    await kernel.memory.save_information_async(
-        COLLECTION_NAME, id="info5", text="My family is from New York"
-    )
+    await kernel.memory.save_information_async(COLLECTION_NAME, id="info5", text="My family is from New York")
 
 
 async def search_acs_memory_questions(kernel: sk.Kernel) -> None:

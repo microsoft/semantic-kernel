@@ -38,9 +38,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_m
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAIChatCompletion(
-    OpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase
-):
+class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
     """OpenAI Chat completion class."""
 
     @overload
@@ -132,9 +130,7 @@ class OpenAIChatCompletion(
             log  -- The logger instance to use. (Optional) (Deprecated)
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
@@ -165,10 +161,7 @@ class OpenAIChatCompletion(
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
         **kwargs,
-    ) -> Union[
-        Tuple[Optional[str], Optional[FunctionCall]],
-        List[Tuple[Optional[str], Optional[FunctionCall]]],
-    ]:
+    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
         """Executes a chat completion request and returns the result.
 
         Arguments:

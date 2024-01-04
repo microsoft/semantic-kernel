@@ -110,9 +110,7 @@ def memory_store_with_collection(memory_store, event_loop, documents):
     keys = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]
     for document, key in zip(documents, keys):
         document._key = key
-        event_loop.run_until_complete(
-            memory_store.upsert_async(collection_name, document)
-        )
+        event_loop.run_until_complete(memory_store.upsert_async(collection_name, document))
 
     return collection_name, memory_store
 
@@ -174,9 +172,7 @@ async def test_upsert(memory_store_with_empty_collection, documents):
     for doc in documents[:2]:
         await memory_store.upsert_async(collection_name, doc)
 
-    total_docs = memory_store.client.data_object.get(class_name=collection_name)[
-        "totalResults"
-    ]
+    total_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
     assert total_docs == 2
 
 
@@ -186,9 +182,7 @@ async def test_upsert_batch(memory_store_with_empty_collection, documents):
 
     await memory_store.upsert_batch_async(collection_name, documents)
 
-    total_docs = memory_store.client.data_object.get(class_name=collection_name)[
-        "totalResults"
-    ]
+    total_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
     assert total_docs == len(documents)
 
 
@@ -199,21 +193,15 @@ async def test_get(memory_store_with_collection, documents):
     key = "Alpha"
 
     expected_result = [doc for doc in documents if doc._key == key][0]
-    actual_result = await memory_store.get_async(
-        collection_name, key, with_embedding=True
-    )
+    actual_result = await memory_store.get_async(collection_name, key, with_embedding=True)
     npt.assert_equal(expected_result.__dict__, actual_result.__dict__)
 
-    actual_result = await memory_store.get_async(
-        collection_name, key, with_embedding=False
-    )
+    actual_result = await memory_store.get_async(collection_name, key, with_embedding=False)
     expected_result.__dict__["_embedding"] = None
     npt.assert_equal(expected_result.__dict__, actual_result.__dict__)
 
     key = "NotInCollection"
-    actual_result = await memory_store.get_async(
-        collection_name, key, with_embedding=True
-    )
+    actual_result = await memory_store.get_async(collection_name, key, with_embedding=True)
 
     assert actual_result is None
 
@@ -226,16 +214,12 @@ async def test_get_batch(memory_store_with_collection, documents):
 
     expected_results = [doc for doc in documents if doc._key in keys]
 
-    actual_results = await memory_store.get_batch_async(
-        collection_name, keys, with_embedding=True
-    )
+    actual_results = await memory_store.get_batch_async(collection_name, keys, with_embedding=True)
 
     for expected, actual in zip(expected_results, actual_results):
         npt.assert_equal(expected.__dict__, actual.__dict__)
 
-    actual_results = await memory_store.get_batch_async(
-        collection_name, keys, with_embedding=False
-    )
+    actual_results = await memory_store.get_batch_async(collection_name, keys, with_embedding=False)
 
     for expected, actual in zip(expected_results, actual_results):
         expected.__dict__["_embedding"] = None
@@ -250,9 +234,7 @@ async def test_remove_batch(memory_store_with_collection, documents):
 
     await memory_store.remove_batch_async(collection_name, keys)
 
-    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)[
-        "totalResults"
-    ]
+    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
     assert remaining_docs == len(documents) - len(keys)
 
 
@@ -264,9 +246,7 @@ async def test_remove(memory_store_with_collection, documents):
 
     await memory_store.remove_async(collection_name, key)
 
-    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)[
-        "totalResults"
-    ]
+    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)["totalResults"]
     assert remaining_docs == len(documents) - 1
 
 

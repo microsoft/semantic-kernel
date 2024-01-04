@@ -204,9 +204,7 @@ async def test_invoke_multi_step_plan_async_with_variables():
     # setup context for step 2
     context2 = kernel.create_new_context()
     context2["amount"] = "5"
-    new_step2 = Plan(
-        name="test", function=test_function2, parameters=context2.variables
-    )
+    new_step2 = Plan(name="test", function=test_function2, parameters=context2.variables)
 
     plan.add_steps([new_step, new_step2])
     result = await plan.invoke_async(input="2")

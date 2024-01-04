@@ -117,9 +117,7 @@ def test_custom_prompt_template_config_from_json():
         }
     }
     """
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(
-        prompt_template_json
-    )
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(prompt_template_json)
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
@@ -144,9 +142,7 @@ def test_chat_prompt_template():
 
 
 def test_chat_prompt_template_with_system_prompt():
-    prompt_template_config = PromptTemplateConfig[
-        OpenAIChatRequestSettings
-    ].from_completion_parameters(
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_completion_parameters(
         messages=[{"role": "system", "content": "Custom system prompt."}],
     )
 
@@ -158,7 +154,4 @@ def test_chat_prompt_template_with_system_prompt():
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1
     assert chat_prompt_template.messages[0].role == "system"
-    assert (
-        chat_prompt_template.messages[0].content_template.template
-        == "Custom system prompt."
-    )
+    assert chat_prompt_template.messages[0].content_template.template == "Custom system prompt."

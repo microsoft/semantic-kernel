@@ -18,21 +18,11 @@ kernel.import_skill(sk.core_skills.TextMemorySkill())
 
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info1", text="My name is Andrea"
-    )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info2", text="I currently work as a tour guide"
-    )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info3", text="My favorite hobby is hiking"
-    )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info4", text="I visitied Iceland last year."
-    )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info5", text="My family is from New York"
-    )
+    await kernel.memory.save_information_async("aboutMe", id="info1", text="My name is Andrea")
+    await kernel.memory.save_information_async("aboutMe", id="info2", text="I currently work as a tour guide")
+    await kernel.memory.save_information_async("aboutMe", id="info3", text="My favorite hobby is hiking")
+    await kernel.memory.save_information_async("aboutMe", id="info4", text="I visitied Iceland last year.")
+    await kernel.memory.save_information_async("aboutMe", id="info5", text="My family is from New York")
 
 
 async def search_memory_examples(kernel: sk.Kernel) -> None:
@@ -77,17 +67,13 @@ async def setup_chat_with_memory(
 
     """.strip()
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-        max_tokens=2000, temperature=0.7, top_p=0.8
-    )
+    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(max_tokens=2000, temperature=0.7, top_p=0.8)
     prompt_template = sk.ChatPromptTemplate(  # Create the chat prompt template
         "{{$user_input}}", kernel.prompt_template_engine, prompt_config
     )
     prompt_template.add_system_message(sk_prompt)  # Add the memory as a system message
     function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    chat_func = kernel.register_semantic_function(
-        None, "ChatWithMemory", function_config
-    )
+    chat_func = kernel.register_semantic_function(None, "ChatWithMemory", function_config)
 
     context = kernel.create_new_context()
     context["fact1"] = "what is my name?"
@@ -104,9 +90,7 @@ async def setup_chat_with_memory(
     return chat_func, context
 
 
-async def chat(
-    kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext
-) -> bool:
+async def chat(kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input

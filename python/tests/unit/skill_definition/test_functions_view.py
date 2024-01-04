@@ -141,13 +141,9 @@ def test_ambiguous_implementation():
     with pytest.raises(KernelException) as exc_info:
         functions_view.is_semantic("skill1", "function1")
 
-    assert (
-        exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
-    )
+    assert exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
 
     with pytest.raises(KernelException) as exc_info:
         functions_view.is_native("skill1", "function1")
 
-    assert (
-        exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
-    )
+    assert exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation

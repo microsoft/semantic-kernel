@@ -22,9 +22,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PreparedRestApiRequest:
-    def __init__(
-        self, method: str, url: str, params=None, headers=None, request_body=None
-    ):
+    def __init__(self, method: str, url: str, params=None, headers=None, request_body=None):
         self.method = method
         self.url = url
         self.params = params
@@ -43,9 +41,7 @@ class PreparedRestApiRequest:
 
     def validate_request(self, spec: Spec, **kwargs):
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         request = requests.Request(
             self.method,
             self.url,
@@ -119,26 +115,18 @@ class RestApiOperation:
                     processed_headers[param_name] = param_default
             elif param["in"] == "path":
                 if not path_params or param_name not in path_params:
-                    raise ValueError(
-                        f"Required path parameter {param_name} not provided"
-                    )
+                    raise ValueError(f"Required path parameter {param_name} not provided")
 
         processed_payload = None
         if self.request_body:
-            if (
-                request_body is None
-                and "required" in self.request_body
-                and self.request_body["required"]
-            ):
+            if request_body is None and "required" in self.request_body and self.request_body["required"]:
                 raise ValueError("Payload is required but was not provided")
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
             processed_payload = request_body
 
-        processed_headers[USER_AGENT] = " ".join(
-            (HTTP_USER_AGENT, processed_headers.get(USER_AGENT, ""))
-        ).rstrip()
+        processed_headers[USER_AGENT] = " ".join((HTTP_USER_AGENT, processed_headers.get(USER_AGENT, ""))).rstrip()
 
         req = PreparedRestApiRequest(
             method=self.method,
@@ -166,9 +154,7 @@ class RestApiOperation:
 class OpenApiParser:
     def __init__(self, **kwargs):
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
 
     """
     Import an OpenAPI file.
@@ -186,9 +172,7 @@ class OpenApiParser:
     :return: A dictionary of RestApiOperation objects keyed by operationId
     """
 
-    def create_rest_api_operations(
-        self, parsed_document
-    ) -> Dict[str, RestApiOperation]:
+    def create_rest_api_operations(self, parsed_document) -> Dict[str, RestApiOperation]:
         paths = parsed_document.get("paths", {})
         request_objects = {}
         for path, methods in paths.items():
@@ -275,27 +259,15 @@ def register_openapi_skill(
 
     skill = {}
 
-    def create_run_operation_function(
-        runner: OpenApiRunner, operation: RestApiOperation
-    ):
+    def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
         @sk_function(
-            description=operation.summary
-            if operation.summary
-            else operation.description,
+            description=operation.summary if operation.summary else operation.description,
             name=operation_id,
         )
-        @sk_function_context_parameter(
-            name="path_params", description="A dictionary of path parameters"
-        )
-        @sk_function_context_parameter(
-            name="query_params", description="A dictionary of query parameters"
-        )
-        @sk_function_context_parameter(
-            name="headers", description="A dictionary of headers"
-        )
-        @sk_function_context_parameter(
-            name="request_body", description="A dictionary of the request body"
-        )
+        @sk_function_context_parameter(name="path_params", description="A dictionary of path parameters")
+        @sk_function_context_parameter(name="query_params", description="A dictionary of query parameters")
+        @sk_function_context_parameter(name="headers", description="A dictionary of headers")
+        @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
         async def run_openapi_operation(sk_context: SKContext) -> str:
             path_params = sk_context.variables.get("path_params")
             query_params = sk_context.variables.get("query_params")

@@ -16,13 +16,9 @@ async def main():
 
     api_key, org_id = sk.openai_settings_from_dot_env()
 
-    kernel.add_chat_service(
-        "chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    )
+    kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
-    skill = kernel.import_semantic_skill_from_directory(
-        "../../samples/skills", "FunSkill"
-    )
+    skill = kernel.import_semantic_skill_from_directory("../../samples/skills", "FunSkill")
 
     joke_function = skill["Joke"]
 

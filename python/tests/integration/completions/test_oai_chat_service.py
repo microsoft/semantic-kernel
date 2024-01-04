@@ -9,9 +9,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_skills(
-    setup_tldr_function_for_oai_models, get_oai_config
-):
+async def test_oai_chat_service_with_skills(setup_tldr_function_for_oai_models, get_oai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     api_key, org_id = get_oai_config
@@ -22,31 +20,21 @@ async def test_oai_chat_service_with_skills(
 
     kernel.add_chat_service(
         "chat-gpt",
-        sk_oai.OpenAIChatCompletion(
-            ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
-        ),
+        sk_oai.OpenAIChatCompletion(ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
-    )
+    tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
 
-    summary = await retry(
-        lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
-    )
+    summary = await retry(lambda: kernel.run_async(tldr_function, input_str=text_to_summarize))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
-    )
+    assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
     assert len(output) < 100
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_skills_with_provided_client(
-    setup_tldr_function_for_oai_models, get_oai_config
-):
+async def test_oai_chat_service_with_skills_with_provided_client(setup_tldr_function_for_oai_models, get_oai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     api_key, org_id = get_oai_config
@@ -69,25 +57,17 @@ async def test_oai_chat_service_with_skills_with_provided_client(
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
-    )
+    tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
 
-    summary = await retry(
-        lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
-    )
+    summary = await retry(lambda: kernel.run_async(tldr_function, input_str=text_to_summarize))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
-    )
+    assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
     assert len(output) < 100
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_stream_service_with_skills(
-    setup_tldr_function_for_oai_models, get_aoai_config
-):
+async def test_oai_chat_stream_service_with_skills(setup_tldr_function_for_oai_models, get_aoai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     _, api_key, endpoint = get_aoai_config
@@ -104,26 +84,18 @@ async def test_oai_chat_stream_service_with_skills(
     # Configure LLM service
     kernel.add_chat_service(
         "chat_completion",
-        sk_oai.AzureChatCompletion(
-            deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
-        ),
+        sk_oai.AzureChatCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
-    )
+    tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
 
     result = []
-    async for message in kernel.run_stream_async(
-        tldr_function, input_str=text_to_summarize
-    ):
+    async for message in kernel.run_stream_async(tldr_function, input_str=text_to_summarize):
         result.append(message)
     output = "".join(result).strip()
 
     print(f"TLDR using input string: '{output}'")
     assert len(result) > 1
-    assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
-    )
+    assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
     assert len(output) < 100

@@ -33,10 +33,8 @@ azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureA
         **azure_ai_search_settings
     )
 )
-azure_chat_with_data_settings = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        dataSources=[azure_aisearch_datasource]
-    )
+azure_chat_with_data_settings = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    dataSources=[azure_aisearch_datasource]
 )
 
 
@@ -50,23 +48,17 @@ chat_service = sk_oai.AzureChatCompletion(
 )
 kernel.add_chat_service("chat-gpt", chat_service)
 
-prompt_config = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
-        max_tokens=2000,
-        temperature=0.7,
-        top_p=0.8,
-        data_source_settings=azure_chat_with_data_settings,
-    )
+prompt_config = sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    data_source_settings=azure_chat_with_data_settings,
 )
 
-prompt_template = sk.ChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
+prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
 prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message(
-    "I am an AI assistant here to answer your questions."
-)
+prompt_template.add_assistant_message("I am an AI assistant here to answer your questions.")
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)

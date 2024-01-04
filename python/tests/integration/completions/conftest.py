@@ -23,18 +23,14 @@ def setup_hf_text_completion_function(create_kernel, request):
     # Configure LLM service
     kernel.add_text_completion_service(
         request.param[0],
-        sk_hf.HuggingFaceTextCompletion(
-            ai_model_id=request.param[0], task=request.param[1]
-        ),
+        sk_hf.HuggingFaceTextCompletion(ai_model_id=request.param[0], task=request.param[1]),
     )
 
     # Define semantic function using SK prompt template language
     sk_prompt = "Hello, I like {{$input}}{{$input2}}"
 
     # Create the semantic function
-    text2text_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5
-    )
+    text2text_function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5)
 
     # User input
     simple_input = "sleeping and "
@@ -71,15 +67,11 @@ def setup_summarize_function(create_kernel):
     # Configure LLM service
     kernel.add_text_completion_service(
         "facebook/bart-large-cnn",
-        sk_hf.HuggingFaceTextCompletion(
-            ai_model_id="facebook/bart-large-cnn", task="summarization"
-        ),
+        sk_hf.HuggingFaceTextCompletion(ai_model_id="facebook/bart-large-cnn", task="summarization"),
     )
 
     # Create the semantic function
-    summarize_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=80, temperature=0, top_p=0.5
-    )
+    summarize_function = kernel.create_semantic_function(sk_prompt, max_tokens=80, temperature=0, top_p=0.5)
     yield kernel, summarize_function, text_to_summarize, additional_text
 
 
@@ -163,18 +155,14 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
     kernel = create_kernel
     api_key = get_gp_config
     # Configure LLM service
-    palm_text_completion = sk_gp.GooglePalmTextCompletion(
-        ai_model_id="models/text-bison-001", api_key=api_key
-    )
+    palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001", api_key=api_key)
     kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
 
     # Define semantic function using SK prompt template language
     sk_prompt = "Hello, I like {{$input}}{{$input2}}"
 
     # Create the semantic function
-    text2text_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5
-    )
+    text2text_function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5)
 
     # User input
     simple_input = "sleeping and "

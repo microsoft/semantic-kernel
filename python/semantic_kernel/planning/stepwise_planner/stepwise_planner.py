@@ -46,20 +46,15 @@ def read_file(file_path: str) -> str:
 
 # TODO: Original C# uses "StepwisePlanner_Excluded" for RESTRICTED_SKILL_NAME
 RESTRICTED_SKILL_NAME = "StepwisePlanner"
-S_FINAL_ANSWER_REGEX = re.compile(
-    r"\[FINAL[_\s\-]ANSWER\](?P<final_answer>.+)", re.DOTALL
-)
-S_THOUGHT_REGEX = re.compile(
-    r"(\[THOUGHT\])?(?P<thought>.+?)(?=\[ACTION\]|$)", re.DOTALL
-)
+S_FINAL_ANSWER_REGEX = re.compile(r"\[FINAL[_\s\-]ANSWER\](?P<final_answer>.+)", re.DOTALL)
+S_THOUGHT_REGEX = re.compile(r"(\[THOUGHT\])?(?P<thought>.+?)(?=\[ACTION\]|$)", re.DOTALL)
 S_ACTION_REGEX = re.compile(r"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", re.DOTALL)
 
 ACTION = "[ACTION]"
 THOUGHT = "[THOUGHT]"
 OBSERVATION = "[OBSERVATION]"
 SCRATCH_PAD_PREFIX = (
-    "This was my previous work (but they haven't seen any of it!"
-    " They only see what I return as final answer):"
+    "This was my previous work (but they haven't seen any of it!" " They only see what I return as final answer):"
 )
 
 
@@ -89,9 +84,7 @@ class StepwisePlanner:
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
 
         if prompt_user_config is None:
-            prompt_config = PromptTemplateConfig.from_json(
-                read_file(PROMPT_CONFIG_FILE_PATH)
-            )
+            prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
 
         prompt_config.completion.extension_data["max_tokens"] = self.config.max_tokens
 
@@ -104,9 +97,7 @@ class StepwisePlanner:
 
     def create_plan(self, goal: str) -> Plan:
         if is_null_or_empty(goal):
-            raise PlanningException(
-                PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty"
-            )
+            raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
         function_descriptions = self.get_function_descriptions()
 
@@ -127,12 +118,8 @@ class StepwisePlanner:
 
     # TODO: sync C# with https://github.com/microsoft/semantic-kernel/pull/1195
     @sk_function(name="ExecutePlan", description="Execute a plan")
-    @sk_function_context_parameter(
-        name="question", description="The question to answer"
-    )
-    @sk_function_context_parameter(
-        name="function_descriptions", description="List of tool descriptions"
-    )
+    @sk_function_context_parameter(name="question", description="The question to answer")
+    @sk_function_context_parameter(name="function_descriptions", description="List of tool descriptions")
     async def execute_plan_async(self, context: SKContext) -> SKContext:
         question = context["question"]
 
@@ -143,9 +130,7 @@ class StepwisePlanner:
 
                 context.variables.set("agent_scratch_pad", scratch_pad)
 
-                llm_response = await self._system_step_function.invoke_async(
-                    context=context
-                )
+                llm_response = await self._system_step_function.invoke_async(context=context)
 
                 if llm_response.error_occurred:
                     raise PlanningException(
@@ -182,9 +167,7 @@ class StepwisePlanner:
 
                     try:
                         await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
-                        result = await self.invoke_action_async(
-                            next_step.action, next_step.action_variables
-                        )
+                        result = await self.invoke_action_async(next_step.action, next_step.action_variables)
 
                         if is_null_or_empty(result):
                             next_step.observation = "Got no result from action"
@@ -192,9 +175,7 @@ class StepwisePlanner:
                             next_step.observation = result
 
                     except Exception as e:
-                        next_step.observation = (
-                            f"Error invoking action {next_step.action}: {str(e)}"
-                        )
+                        next_step.observation = f"Error invoking action {next_step.action}: {str(e)}"
                         logger.warning(f"Error invoking action {next_step.action}")
 
                     logger.debug(f"Observation: {next_step.observation}")
@@ -205,9 +186,7 @@ class StepwisePlanner:
                 await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
 
             steps_taken_str = json.dumps([s.__dict__ for s in steps_taken], indent=4)
-            context.variables.update(
-                f"Result not found, review _steps_taken to see what happened.\n{steps_taken_str}"
-            )
+            context.variables.update(f"Result not found, review _steps_taken to see what happened.\n{steps_taken_str}")
         else:
             context.variables.update("Question not found.")
 
@@ -245,16 +224,12 @@ class StepwisePlanner:
                 system_step_results = json.loads(action_json)
 
                 if system_step_results is None or len(system_step_results) == 0:
-                    result.observation = (
-                        f"System step parsing error, empty JSON: {action_json}"
-                    )
+                    result.observation = f"System step parsing error, empty JSON: {action_json}"
                 else:
                     result.action = system_step_results["action"]
                     result.action_variables = system_step_results["action_variables"]
             except Exception:
-                result.observation = (
-                    f"System step parsing error, invalid JSON: {action_json}"
-                )
+                result.observation = f"System step parsing error, invalid JSON: {action_json}"
 
         if is_null_or_empty(result.thought) and is_null_or_empty(result.action):
             result.observation = (
@@ -264,13 +239,9 @@ class StepwisePlanner:
 
         return result
 
-    def add_execution_stats_to_context(
-        self, steps_taken: List[SystemStep], context: SKContext
-    ):
+    def add_execution_stats_to_context(self, steps_taken: List[SystemStep], context: SKContext):
         context.variables.set("step_count", str(len(steps_taken)))
-        context.variables.set(
-            "steps_taken", json.dumps([s.__dict__ for s in steps_taken], indent=4)
-        )
+        context.variables.set("steps_taken", json.dumps([s.__dict__ for s in steps_taken], indent=4))
 
         action_counts: Dict[str, int] = {}
         for step in steps_taken:
@@ -280,15 +251,11 @@ class StepwisePlanner:
             current_count = action_counts.get(step.action, 0)
             action_counts[step.action] = current_count + 1
 
-        skill_call_list_with_counts = [
-            f"{skill}({action_counts[skill]})" for skill in action_counts
-        ]
+        skill_call_list_with_counts = [f"{skill}({action_counts[skill]})" for skill in action_counts]
         skill_call_list_with_counts = ", ".join(skill_call_list_with_counts)
         skill_call_count_str = str(sum(action_counts.values()))
 
-        context.variables.set(
-            "skill_count", f"{skill_call_count_str} ({skill_call_list_with_counts})"
-        )
+        context.variables.set("skill_count", f"{skill_call_count_str} ({skill_call_list_with_counts})")
 
     def create_scratch_pad(self, question: str, steps_taken: List[SystemStep]) -> str:
         if len(steps_taken) == 0:
@@ -305,17 +272,13 @@ class StepwisePlanner:
 
         for i in reversed(range(len(steps_taken))):
             if len(scratch_pad_lines) / 4.0 > (self.config.max_tokens * 0.75):
-                logger.debug(
-                    f"Scratchpad is too long, truncating. Skipping {i + 1} steps."
-                )
+                logger.debug(f"Scratchpad is too long, truncating. Skipping {i + 1} steps.")
                 break
 
             s = steps_taken[i]
 
             if not is_null_or_empty(s.observation):
-                scratch_pad_lines.insert(
-                    insert_point, f"{OBSERVATION}\n{s.observation}"
-                )
+                scratch_pad_lines.insert(insert_point, f"{OBSERVATION}\n{s.observation}")
 
             if not is_null_or_empty(s.action):
                 scratch_pad_lines.insert(
@@ -333,16 +296,10 @@ class StepwisePlanner:
 
         return scratch_pad
 
-    async def invoke_action_async(
-        self, action_name: str, action_variables: Dict[str, str]
-    ) -> str:
+    async def invoke_action_async(self, action_name: str, action_variables: Dict[str, str]) -> str:
         available_functions = self.get_available_functions()
         target_function = next(
-            (
-                f
-                for f in available_functions
-                if self.to_fully_qualified_name(f) == action_name
-            ),
+            (f for f in available_functions if self.to_fully_qualified_name(f) == action_name),
             None,
         )
 
@@ -353,9 +310,7 @@ class StepwisePlanner:
             )
 
         try:
-            function = self._kernel.func(
-                target_function.skill_name, target_function.name
-            )
+            function = self._kernel.func(target_function.skill_name, target_function.name)
             action_context = self.create_action_context(action_variables)
 
             result = await function.invoke_async(context=action_context)
@@ -400,23 +355,16 @@ class StepwisePlanner:
         available_functions = [
             func
             for func in available_functions
-            if (
-                func.skill_name not in excluded_skills
-                and func.name not in excluded_functions
-            )
+            if (func.skill_name not in excluded_skills and func.name not in excluded_functions)
         ]
-        available_functions = sorted(
-            available_functions, key=lambda x: (x.skill_name, x.name)
-        )
+        available_functions = sorted(available_functions, key=lambda x: (x.skill_name, x.name))
 
         return available_functions
 
     def get_function_descriptions(self) -> str:
         available_functions = self.get_available_functions()
 
-        function_descriptions = "\n".join(
-            [self.to_manual_string(f) for f in available_functions]
-        )
+        function_descriptions = "\n".join([self.to_manual_string(f) for f in available_functions])
         return function_descriptions
 
     def import_semantic_function(
@@ -426,23 +374,15 @@ class StepwisePlanner:
         prompt_template: str,
         config: PromptTemplateConfig = None,
     ) -> "SKFunctionBase":
-        template = PromptTemplate(
-            prompt_template, kernel.prompt_template_engine, config
-        )
+        template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)
 
-        return kernel.register_semantic_function(
-            RESTRICTED_SKILL_NAME, function_name, function_config
-        )
+        return kernel.register_semantic_function(RESTRICTED_SKILL_NAME, function_name, function_config)
 
     def to_manual_string(self, function: FunctionView) -> str:
         inputs = [
             f"    - {parameter.name}: {parameter.description}"
-            + (
-                f" (default value={parameter.default_value})"
-                if parameter.default_value
-                else ""
-            )
+            + (f" (default value={parameter.default_value})" if parameter.default_value else "")
             for parameter in function.parameters
         ]
         inputs = "\n".join(inputs)

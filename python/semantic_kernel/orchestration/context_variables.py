@@ -25,9 +25,7 @@ class ContextVariables(SKBaseModel):
     variables: Dict[str, str] = pdt.Field(default_factory=dict)
     _main_key: str = pdt.PrivateAttr(default="input")
 
-    def __init__(
-        self, content: Optional[str] = None, variables: Optional[Dict[str, str]] = {}
-    ) -> None:
+    def __init__(self, content: Optional[str] = None, variables: Optional[Dict[str, str]] = {}) -> None:
         """
         Initialize the ContextVariables instance with an optional content string.
 
@@ -52,9 +50,7 @@ class ContextVariables(SKBaseModel):
         self.variables[self._main_key] = content
         return self
 
-    def merge_or_overwrite(
-        self, new_vars: "ContextVariables", overwrite: bool = False
-    ) -> "ContextVariables":
+    def merge_or_overwrite(self, new_vars: "ContextVariables", overwrite: bool = False) -> "ContextVariables":
         """Merge or overwrite the current variables with the new variables.
 
         Arguments:

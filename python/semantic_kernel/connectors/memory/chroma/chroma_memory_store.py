@@ -58,14 +58,11 @@ class ChromaMemoryStore(MemoryStoreBase):
 
         except ImportError:
             raise ValueError(
-                "Could not import chromadb python package. "
-                "Please install it with `pip install chromadb`."
+                "Could not import chromadb python package. " "Please install it with `pip install chromadb`."
             )
 
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if client_settings:
             self._client_settings = client_settings
         else:
@@ -99,9 +96,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             embedding_function=self._default_embedding_function,
         )
 
-    async def get_collection_async(
-        self, collection_name: str
-    ) -> Optional["Collection"]:
+    async def get_collection_async(self, collection_name: str) -> Optional["Collection"]:
         try:
             # Current version of ChromeDB rejects camel case collection names.
             return self._client.get_collection(
@@ -178,9 +173,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
         return record._key
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -193,9 +186,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         # upsert_async is checking collection existence
         return [await self.upsert_async(collection_name, record) for record in records]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -210,13 +201,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         try:
             return records[0]
         except IndexError:
-            raise Exception(
-                f"Record with key '{key}' does not exist in collection '{collection_name}'"
-            )
+            raise Exception(f"Record with key '{key}' does not exist in collection '{collection_name}'")
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -231,11 +218,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         if collection is None:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        query_includes = (
-            ["embeddings", "metadatas", "documents"]
-            if with_embeddings
-            else ["metadatas", "documents"]
-        )
+        query_includes = ["embeddings", "metadatas", "documents"] if with_embeddings else ["metadatas", "documents"]
 
         value = collection.get(ids=keys, include=query_includes)
         record = query_results_to_records(value, with_embeddings)
@@ -391,12 +374,8 @@ if __name__ == "__main__":
     asyncio.run(memory.create_collection_async("test_collection"))
     collection = asyncio.run(memory.get_collection_async("test_collection"))
 
-    asyncio.run(
-        memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
-    )
+    asyncio.run(memory.upsert_batch_async(collection.name, [memory_record1, memory_record2]))
 
     result = asyncio.run(memory.get_async(collection.name, "test_id1", True))
-    results = asyncio.run(
-        memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5]))
-    )
+    results = asyncio.run(memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5])))
     print(results)

@@ -53,9 +53,7 @@ class OpenAIConfigBase(OpenAIHandler):
 
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -85,9 +83,7 @@ class OpenAIConfigBase(OpenAIHandler):
         """
         client_settings = {
             "api_key": self.client.api_key,
-            "default_headers": {
-                k: v for k, v in self.client.default_headers.items() if k != USER_AGENT
-            },
+            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},
         }
         if self.client.organization:
             client_settings["org_id"] = self.client.organization

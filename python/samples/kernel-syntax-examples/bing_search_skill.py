@@ -12,9 +12,7 @@ load_dotenv()
 
 async def main():
     kernel = sk.Kernel()
-    deployment, key, endpoint, api_version = sk.azure_openai_settings_from_dot_env(
-        include_api_version=True
-    )
+    deployment, key, endpoint, api_version = sk.azure_openai_settings_from_dot_env(include_api_version=True)
     kernel.add_chat_service(
         "chat-gpt",
         AzureChatCompletion(

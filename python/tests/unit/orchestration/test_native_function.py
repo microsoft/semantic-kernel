@@ -84,12 +84,8 @@ def test_init_native_function_from_sk_function_decorator():
     assert decorated_function.__sk_function__ is True
     assert decorated_function.__sk_function_description__ == "Test description"
     assert decorated_function.__sk_function_name__ == "test_function"
-    assert (
-        decorated_function.__sk_function_input_description__ == "Test input description"
-    )
-    assert (
-        decorated_function.__sk_function_input_default_value__ == "test_default_value"
-    )
+    assert decorated_function.__sk_function_input_description__ == "Test input description"
+    assert decorated_function.__sk_function_input_default_value__ == "test_default_value"
 
     native_function = SKFunction.from_native_method(decorated_function, "MockSkill")
 

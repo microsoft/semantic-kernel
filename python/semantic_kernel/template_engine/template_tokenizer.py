@@ -30,9 +30,7 @@ class TemplateTokenizer(SKBaseModel):
     def __init__(self, log: Optional[Any] = None):
         super().__init__()
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._code_tokenizer = CodeTokenizer()
 
     def tokenize(self, text: str) -> List[Block]:
@@ -73,11 +71,7 @@ class TemplateTokenizer(SKBaseModel):
 
             # When "{{" is found outside a value
             # Note: "{{ {{x}}" => ["{{ ", "{{x}}"]
-            if (
-                not inside_text_value
-                and current_char == Symbols.BLOCK_STARTER
-                and next_char == Symbols.BLOCK_STARTER
-            ):
+            if not inside_text_value and current_char == Symbols.BLOCK_STARTER and next_char == Symbols.BLOCK_STARTER:
                 # A block starts at the first "{"
                 block_start_pos = current_char_pos
                 block_start_found = True
@@ -86,9 +80,7 @@ class TemplateTokenizer(SKBaseModel):
             if block_start_found:
                 # While inside a text value, when the end quote is found
                 if inside_text_value:
-                    if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(
-                        next_char
-                    ):
+                    if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(next_char):
                         skip_next_char = True
                         continue
 
@@ -100,10 +92,7 @@ class TemplateTokenizer(SKBaseModel):
                         inside_text_value = True
                         text_value_delimiter = current_char
                     # If the block ends here
-                    elif (
-                        current_char == Symbols.BLOCK_ENDER
-                        and next_char == Symbols.BLOCK_ENDER
-                    ):
+                    elif current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
                         # If there is plain text between the current
                         # var/val/code block and the previous one,
                         # add it as a text block
@@ -117,46 +106,37 @@ class TemplateTokenizer(SKBaseModel):
                             )
 
                         # Extract raw block
-                        content_with_delimiters = text[
-                            block_start_pos : cursor + 1
-                        ]  # noqa: E203
+                        content_with_delimiters = text[block_start_pos : cursor + 1]  # noqa: E203
                         # Remove "{{" and "}}" delimiters and trim whitespace
-                        content_without_delimiters = content_with_delimiters[
-                            2:-2
-                        ].strip()
+                        content_without_delimiters = content_with_delimiters[2:-2].strip()
 
                         if len(content_without_delimiters) == 0:
                             # If what is left is empty, consider the raw block
                             # a TextBlock
                             blocks.append(TextBlock.from_text(content_with_delimiters))
                         else:
-                            code_blocks = self._code_tokenizer.tokenize(
-                                content_without_delimiters
-                            )
+                            code_blocks = self._code_tokenizer.tokenize(content_without_delimiters)
 
                             first_block_type = code_blocks[0].type
 
                             if first_block_type == BlockTypes.VARIABLE:
                                 if len(code_blocks) > 1:
                                     raise ValueError(
-                                        "Invalid token detected after the "
-                                        f"variable: {content_without_delimiters}"
+                                        "Invalid token detected after the " f"variable: {content_without_delimiters}"
                                     )
 
                                 blocks.append(code_blocks[0])
                             elif first_block_type == BlockTypes.VALUE:
                                 if len(code_blocks) > 1:
                                     raise ValueError(
-                                        "Invalid token detected after the "
-                                        "value: {content_without_delimiters}"
+                                        "Invalid token detected after the " "value: {content_without_delimiters}"
                                     )
 
                                 blocks.append(code_blocks[0])
                             elif first_block_type == BlockTypes.FUNCTION_ID:
                                 if len(code_blocks) > 2:
                                     raise ValueError(
-                                        "Functions support only one "
-                                        f"parameter: {content_without_delimiters}"
+                                        "Functions support only one " f"parameter: {content_without_delimiters}"
                                     )
 
                                 blocks.append(
@@ -167,8 +147,7 @@ class TemplateTokenizer(SKBaseModel):
                                 )
                             else:
                                 raise ValueError(
-                                    "Code tokenizer returned an incorrect "
-                                    f"first token type {first_block_type}"
+                                    "Code tokenizer returned an incorrect " f"first token type {first_block_type}"
                                 )
 
                         end_of_last_block = cursor + 1

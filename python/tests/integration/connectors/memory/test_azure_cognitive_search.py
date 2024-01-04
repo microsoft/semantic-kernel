@@ -25,9 +25,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.mark.asyncio
 async def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
-    async with AzureCognitiveSearchMemoryStore(
-        vector_size=4, search_endpoint=test_endpoint
-    ) as memory_store:
+    async with AzureCognitiveSearchMemoryStore(vector_size=4, search_endpoint=test_endpoint) as memory_store:
         assert memory_store is not None
         assert memory_store._search_index_client is not None
 
@@ -142,9 +140,7 @@ async def test_search():
             )
             await memory_store.upsert_async(collection, rec)
             time.sleep(1)
-            result = await memory_store.get_nearest_match_async(
-                collection, np.array([0.1, 0.2, 0.3, 0.38])
-            )
+            result = await memory_store.get_nearest_match_async(collection, np.array([0.1, 0.2, 0.3, 0.38]))
             assert result[0]._id == rec._id
         except:
             await memory_store.delete_collection_async(collection)

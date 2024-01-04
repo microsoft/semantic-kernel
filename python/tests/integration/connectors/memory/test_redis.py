@@ -178,17 +178,13 @@ async def test_upsert_async_and_get_async(memory_store, memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_batch_async_and_get_batch_async(
-    memory_store, memory_record1, memory_record2
-):
+async def test_upsert_batch_async_and_get_batch_async(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
     await memory.create_collection_async(TEST_COLLECTION_NAME)
 
     ids = [memory_record1._id, memory_record2._id]
-    await memory.upsert_batch_async(
-        TEST_COLLECTION_NAME, [memory_record1, memory_record2]
-    )
+    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
 
     fetched = await memory.get_batch_async(TEST_COLLECTION_NAME, ids, True)
 
@@ -217,9 +213,7 @@ async def test_remove_batch_async(memory_store, memory_record1, memory_record2):
     await memory.create_collection_async(TEST_COLLECTION_NAME)
 
     ids = [memory_record1._id, memory_record2._id]
-    await memory.upsert_batch_async(
-        TEST_COLLECTION_NAME, [memory_record1, memory_record2]
-    )
+    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
     await memory.remove_batch_async(TEST_COLLECTION_NAME, ids)
     get_records = await memory.get_batch_async(TEST_COLLECTION_NAME, ids, False)
 
@@ -232,9 +226,7 @@ async def test_get_nearest_match_async(memory_store, memory_record1, memory_reco
 
     await memory.create_collection_async(TEST_COLLECTION_NAME)
 
-    await memory.upsert_batch_async(
-        TEST_COLLECTION_NAME, [memory_record1, memory_record2]
-    )
+    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.01
 
@@ -258,16 +250,12 @@ async def test_get_nearest_match_async(memory_store, memory_record1, memory_reco
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(
-    memory_store, memory_record1, memory_record2, memory_record3
-):
+async def test_get_nearest_matches_async(memory_store, memory_record1, memory_record2, memory_record3):
     memory = memory_store
 
     await memory.create_collection_async(TEST_COLLECTION_NAME)
 
-    await memory.upsert_batch_async(
-        TEST_COLLECTION_NAME, [memory_record1, memory_record2, memory_record3]
-    )
+    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2, memory_record3])
     test_embedding = memory_record2.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.025
 

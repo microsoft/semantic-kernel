@@ -16,37 +16,25 @@ class ReadOnlySkillCollectionBase(SKBaseModel, ABC):
         pass
 
     @abstractmethod
-    def has_semantic_function(
-        self, skill_name: Optional[str], function_name: str
-    ) -> bool:
+    def has_semantic_function(self, skill_name: Optional[str], function_name: str) -> bool:
         pass
 
     @abstractmethod
-    def has_native_function(
-        self, skill_name: Optional[str], function_name: str
-    ) -> bool:
+    def has_native_function(self, skill_name: Optional[str], function_name: str) -> bool:
         pass
 
     @abstractmethod
-    def get_semantic_function(
-        self, skill_name: Optional[str], function_name: str
-    ) -> "SKFunctionBase":
+    def get_semantic_function(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
         pass
 
     @abstractmethod
-    def get_native_function(
-        self, skill_name: Optional[str], function_name: str
-    ) -> "SKFunctionBase":
+    def get_native_function(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
         pass
 
     @abstractmethod
-    def get_functions_view(
-        self, include_semantic: bool = True, include_native: bool = True
-    ) -> "FunctionsView":
+    def get_functions_view(self, include_semantic: bool = True, include_native: bool = True) -> "FunctionsView":
         pass
 
     @abstractmethod
-    def get_function(
-        self, skill_name: Optional[str], function_name: str
-    ) -> "SKFunctionBase":
+    def get_function(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
         pass

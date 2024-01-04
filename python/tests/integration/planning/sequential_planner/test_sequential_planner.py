@@ -96,10 +96,7 @@ async def test_create_plan_function_flow_async(
     plan = await planner.create_plan_async(prompt)
 
     # Assert
-    assert any(
-        step.name == expected_function and step.skill_name == expected_skill
-        for step in plan._steps
-    )
+    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)
 
 
 @pytest.mark.parametrize(
@@ -155,9 +152,7 @@ async def test_create_plan_with_defaults_async(
     raises=semantic_kernel.planning.planning_exception.PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_goal_relevant_async(
-    get_aoai_config, prompt, expected_function, expected_skill
-):
+async def test_create_plan_goal_relevant_async(get_aoai_config, prompt, expected_function, expected_skill):
     # Arrange
     kernel = initialize_kernel(get_aoai_config, use_embeddings=True)
     kernel.import_skill(EmailSkillFake())
@@ -173,7 +168,4 @@ async def test_create_plan_goal_relevant_async(
     plan = await retry(lambda: planner.create_plan_async(prompt))
 
     # Assert
-    assert any(
-        step.name == expected_function and step.skill_name == expected_skill
-        for step in plan._steps
-    )
+    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)

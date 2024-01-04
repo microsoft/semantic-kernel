@@ -39,6 +39,4 @@ class GooglePalmChatRequestSettings(GooglePalmRequestSettings):
     def validate_input(self):
         if self.prompt is not None:
             if self.messages or self.context or self.examples:
-                raise ValueError(
-                    "Prompt cannot be used with messages, context or examples"
-                )
+                raise ValueError("Prompt cannot be used with messages, context or examples")

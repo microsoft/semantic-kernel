@@ -8,9 +8,7 @@ import pytest
 import semantic_kernel as sk
 
 pytestmark = [
-    pytest.mark.skipif(
-        sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
-    ),
+    pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"),
     pytest.mark.skipif(
         "Python_Integration_Tests" in os.environ,
         reason="Google Palm integration tests are only set up to run locally",
@@ -67,9 +65,7 @@ async def test_text2text_generation_input_context_with_vars(
     context = kernel.create_new_context()
     context["input"] = simple_input
     context_vars = sk.ContextVariables("running and")
-    summary = await kernel.run_async(
-        text2text_function, input_context=context, input_vars=context_vars
-    )
+    summary = await kernel.run_async(text2text_function, input_context=context, input_vars=context_vars)
 
     output = str(summary).strip()
     print(f"Completion using context and additional variables: '{output}'")
@@ -85,9 +81,7 @@ async def test_text2text_generation_input_context_with_str(
     # Complete input context with additional input string and print
     context = kernel.create_new_context()
     context["input"] = simple_input
-    summary = await kernel.run_async(
-        text2text_function, input_context=context, input_str="running and"
-    )
+    summary = await kernel.run_async(text2text_function, input_context=context, input_str="running and")
 
     output = str(summary).strip()
     print(f"Completion using context and additional string: '{output}'")
@@ -112,7 +106,5 @@ async def test_text2text_generation_input_context_with_vars_and_str(
     )
 
     output = str(summary).strip()
-    print(
-        f"Completion using context, additional variables, and additional string: '{output}'"
-    )
+    print(f"Completion using context, additional variables, and additional string: '{output}'")
     assert len(output) > 0
