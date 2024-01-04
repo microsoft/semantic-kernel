@@ -12,8 +12,6 @@ import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
-import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.HashMap;
 import java.util.List;
@@ -152,6 +150,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             });
     }
 
+
+    public static KernelFunction create(
+        String promptTemplate) {
+        return create(promptTemplate, null, null, null, null, null);
+    }
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.

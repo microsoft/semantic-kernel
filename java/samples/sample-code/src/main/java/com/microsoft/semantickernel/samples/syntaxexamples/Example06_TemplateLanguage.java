@@ -19,6 +19,12 @@ import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
 public class Example06_TemplateLanguage {
 
+    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
+        System.getenv("USE_AZURE_CLIENT"));
+    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+
+    // Only required if USE_AZURE_CLIENT is true
+    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
 
     public static class Time {
 
@@ -39,14 +45,10 @@ public class Example06_TemplateLanguage {
 
         TextGenerationService textGenerationService;
 
-        String clientKey = System.getenv("CLIENT_KEY");
-
-        if (Boolean.parseBoolean(System.getenv("USE_AZURE_CLIENT"))) {
-            String clientEndpoint = System.getenv("CLIENT_ENDPOINT");
-
+        if (USE_AZURE_CLIENT) {
             OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(clientKey))
-                .endpoint(clientEndpoint)
+                .credential(new AzureKeyCredential(CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
 
             textGenerationService = AzureOpenAITextGenerationService.builder()
@@ -55,7 +57,7 @@ public class Example06_TemplateLanguage {
                 .build();
         } else {
             OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .credential(new KeyCredential(clientKey))
+                .credential(new KeyCredential(CLIENT_KEY))
                 .buildAsyncClient();
 
             // TODO: Add support for OpenAI API
