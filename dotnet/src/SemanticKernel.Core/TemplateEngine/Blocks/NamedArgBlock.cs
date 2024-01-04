@@ -36,15 +36,14 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
-        if (!TryGetNameAndValue(this.Content, out string[] argParts))
+        if (!TryGetNameAndValue(this.Content, out string argName, out string argValue))
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
             throw new KernelException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
-        this.Name = argParts[0];
-        this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argParts[0]}");
-        var argValue = argParts[1];
+        this.Name = argName;
+        this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argName}");
 
         if (argValue[0] == Symbols.VarPrefix)
         {
@@ -60,16 +59,28 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// Attempts to extract the name and value of a named argument block from a string
     /// </summary>
     /// <param name="text">String from which to extract a name and value</param>
-    /// <param name="argParts">This array has its first and second elements set to the extracted name and value when successful.
-    /// An empty array is returned otherwise.</param>
-    /// <returns>true when a name and value are successfully extracted from the given text</returns>
-    internal static bool TryGetNameAndValue(string? text, out string[] argParts)
+    /// <param name="name">Name extracted from argument block, when successful. Empty string otherwise.</param>
+    /// <param name="value">Value extracted from argument block, when successful. Empty string otherwise.</param>
+    /// <returns>true when a name and value are successfully extracted from the given text, false otherwise</returns>
+    internal static bool TryGetNameAndValue(string? text, out string name, out string value)
     {
-        text ??= string.Empty;
+        name = string.Empty;
+        value = string.Empty;
 
-        argParts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, StringSplitOptions.RemoveEmptyEntries);
+        if (!string.IsNullOrEmpty(text))
+        {
+            string[] argBlockParts = text!.Split(new char[] { Symbols.NamedArgBlockSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
-        return argParts.Length == 2;
+            if (argBlockParts.Length == 2)
+            {
+                name = argBlockParts[0];
+                value = argBlockParts[1];
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

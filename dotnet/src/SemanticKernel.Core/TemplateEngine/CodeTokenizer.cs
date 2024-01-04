@@ -322,7 +322,7 @@ internal sealed class CodeTokenizer
     Justification = "Does not throw an exception by design.")]
     private static bool IsValidNamedArg(string tokenContent)
     {
-        if (NamedArgBlock.TryGetNameAndValue(tokenContent, out string[] _))
+        if (NamedArgBlock.TryGetNameAndValue(tokenContent, out string _, out string _))
         {
             var tokenContentAsNamedArg = new NamedArgBlock(tokenContent);
 
