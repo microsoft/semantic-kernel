@@ -15,9 +15,7 @@ try:
 except ImportError:
     chromadb_installed = False
 
-pytestmark = pytest.mark.skipif(
-    not chromadb_installed, reason="chromadb is not installed"
-)
+pytestmark = pytest.mark.skipif(not chromadb_installed, reason="chromadb is not installed")
 
 
 @pytest.fixture
@@ -156,9 +154,7 @@ async def test_upsert_and_get_batch_async(setup_chroma, memory_record1, memory_r
 
     await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
 
-    result = await memory.get_batch_async(
-        "test_collection", ["test_id1", "test_id2"], True
-    )
+    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
     assert len(result) == 2
     assert result[0]._id == "test_id1"
     assert result[0]._text == "sample text1"
@@ -193,9 +189,7 @@ async def test_remove_batch_async(setup_chroma, memory_record1, memory_record2):
     await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
     await memory.remove_batch_async(collection.name, ["test_id1", "test_id2"])
 
-    result = await memory.get_batch_async(
-        "test_collection", ["test_id1", "test_id2"], True
-    )
+    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
     assert result == []
 
 
@@ -207,9 +201,7 @@ async def test_get_nearest_matches_async(setup_chroma, memory_record1, memory_re
 
     await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
 
-    results = await memory.get_nearest_matches_async(
-        "test_collection", np.array([0.5, 0.5]), limit=2
-    )
+    results = await memory.get_nearest_matches_async("test_collection", np.array([0.5, 0.5]), limit=2)
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
@@ -224,9 +216,7 @@ async def test_get_nearest_match_async(setup_chroma, memory_record1, memory_reco
 
     await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
 
-    result = await memory.get_nearest_match_async(
-        "test_collection", np.array([0.5, 0.5])
-    )
+    result = await memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5]))
 
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)

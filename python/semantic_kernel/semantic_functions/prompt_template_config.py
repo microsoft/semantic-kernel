@@ -21,11 +21,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
 
     @classmethod
     def from_dict(cls, data: dict) -> "PromptTemplateConfig":
-        config = {
-            key: value
-            for key, value in data.items()
-            if key in ["schema", "type", "description"]
-        }
+        config = {key: value for key, value in data.items() if key in ["schema", "type", "description"]}
         config["parameters"] = []
 
         completion_dict = data["completion"]
@@ -33,9 +29,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         concrete_type = cls.model_fields["completion"].annotation
         if isinstance(concrete_type, TypeVar):
             concrete_type = AIRequestSettings
-        config["completion"] = concrete_type(
-            service_id=service_id, extension_data=completion_dict
-        )
+        config["completion"] = concrete_type(service_id=service_id, extension_data=completion_dict)
 
         # Some skills may not have input parameters defined
         if data.get("parameters") is not None:
@@ -43,9 +37,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
                 if "name" in parameter:
                     name = parameter["name"]
                 else:
-                    raise Exception(
-                        f"The input parameter doesn't have a name (function: {config['description']})"
-                    )
+                    raise Exception(f"The input parameter doesn't have a name (function: {config['description']})")
 
                 if "description" in parameter:
                     description = parameter["description"]
