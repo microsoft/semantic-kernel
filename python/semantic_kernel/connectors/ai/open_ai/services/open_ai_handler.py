@@ -5,7 +5,7 @@ from abc import ABC
 from typing import List, Union
 
 from numpy import array
-from openai import AsyncOpenAI, AsyncStream
+from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import Field
@@ -13,6 +13,9 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
+    ContentFilterAIException,
+)
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
@@ -58,6 +61,18 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             )
             self.store_usage(response)
             return response
+        except BadRequestError as ex:
+            if ex.code == "content_filter":
+                raise ContentFilterAIException(
+                    AIException.ErrorCodes.BadContentError,
+                    f"{type(self)} service encountered a content error",
+                    ex,
+                )
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
