@@ -1,32 +1,32 @@
 {
   "schema": 1,
+  "name": "CheckStartStep",
   "description": "Given the chat history, determine if user would like to begin executing the current task. If not concluded, generate the next message for follow up.",
-  "type": "completion",
-  "completion": {
-    "max_tokens": 400,
-    "temperature": 0,
-    "top_p": 1,
-    "presence_penalty": 0,
-    "frequency_penalty": 0,
-    "stop_sequences": ["[RESPONSE]"]
+  "execution_settings": {
+    "default": {
+      "max_tokens": 400,
+      "temperature": 0,
+      "top_p": 1,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "stop_sequences": ["[RESPONSE]"]
+    }
   },
-  "input": {
-    "parameters": [
-      {
-        "name": "goal",
-        "description": "The goal of proposed step",
-        "defaultValue": ""
-      },
-      {
-        "name": "message",
-        "description": "The message to display to the user",
-        "defaultValue": ""
-      },
-      {
-        "name": "agentScratchPad",
-        "description": "The agent's scratch pad",
-        "defaultValue": ""
-      }
-    ]
-  }
+  "input_variables": [
+    {
+      "name": "goal",
+      "description": "The goal of proposed step",
+      "default": ""
+    },
+    {
+      "name": "message",
+      "description": "The message to display to the user",
+      "default": ""
+    },
+    {
+      "name": "agentScratchPad",
+      "description": "The agent's scratch pad",
+      "default": ""
+    }
+  ]
 }
