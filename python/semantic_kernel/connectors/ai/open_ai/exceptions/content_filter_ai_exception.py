@@ -22,9 +22,7 @@ class ContentFilterResult:
     severity: ContentFilterResultSeverity = ContentFilterResultSeverity.SAFE
 
     @classmethod
-    def from_inner_error_result(
-        cls, inner_error_results: Dict[str, Any]
-    ) -> "ContentFilterResult":
+    def from_inner_error_result(cls, inner_error_results: Dict[str, Any]) -> "ContentFilterResult":
         """Creates a ContentFilterResult from the inner error results.
 
         Arguments:
@@ -38,9 +36,7 @@ class ContentFilterResult:
             filtered=inner_error_results.get("filtered", False),
             detected=inner_error_results.get("detected", False),
             severity=ContentFilterResultSeverity(
-                inner_error_results.get(
-                    "severity", ContentFilterResultSeverity.SAFE.value
-                )
+                inner_error_results.get("severity", ContentFilterResultSeverity.SAFE.value)
             ),
         )
 

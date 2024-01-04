@@ -503,21 +503,11 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
         api_version=api_version,
     )
 
-    with pytest.raises(
-        ContentFilterAIException, match="service encountered a content error"
-    ) as exc_info:
-        await azure_chat_completion.complete_chat_async(
-            messages, complete_request_settings
-        )
+    with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
+        await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
 
     content_filter_exc = exc_info.value
     assert content_filter_exc.param == "prompt"
-    assert (
-        content_filter_exc.content_filter_code
-        == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
-    )
+    assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
     assert content_filter_exc.content_filter_result["hate"].filtered
-    assert (
-        content_filter_exc.content_filter_result["hate"].severity
-        == ContentFilterResultSeverity.HIGH
-    )
+    assert content_filter_exc.content_filter_result["hate"].severity == ContentFilterResultSeverity.HIGH
