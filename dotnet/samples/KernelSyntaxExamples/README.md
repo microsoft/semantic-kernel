@@ -66,6 +66,8 @@ dotnet user-secrets set "AzureOpenAI:ChatModelId" "..."
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 
+dotnet user-secrets set "StableDiffusion:ApiKey" "..."
+
 dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "..."
 dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
@@ -134,6 +136,9 @@ AzureOpenAIEmbeddings__ApiKey
 # Azure AI Search
 AzureAISearch__Endpoint
 AzureAISearch__ApiKey
+
+# Stable Diffusion
+StableDiffusion__ApiKey
 
 # Qdrant
 Qdrant__Endpoint

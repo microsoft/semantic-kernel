@@ -25,6 +25,7 @@ public sealed class TestConfiguration
     public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
     public static AzureAISearchConfig AzureAISearch => LoadSection<AzureAISearchConfig>();
+    public static StableDiffusionConfig StableDiffusion => LoadSection<StableDiffusionConfig>();
     public static QdrantConfig Qdrant => LoadSection<QdrantConfig>();
     public static WeaviateConfig Weaviate => LoadSection<WeaviateConfig>();
     public static KeyVaultConfig KeyVault => LoadSection<KeyVaultConfig>();
@@ -92,6 +93,11 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
         public string IndexName { get; set; }
+    }
+
+    public class StableDiffusionConfig
+    {
+        public string ApiKey { get; set; }
     }
 
     public class QdrantConfig
