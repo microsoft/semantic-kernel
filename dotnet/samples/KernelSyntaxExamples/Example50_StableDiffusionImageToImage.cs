@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.StableDiffusion;
 using Microsoft.SemanticKernel.AI.ImageToImage;
-using System.IO;
 
 // ReSharper disable once InconsistentNaming
 public static class Example50_StableDiffusionImageToImage

@@ -18,7 +18,7 @@ public static class ImageToImageExtensions
     /// </summary>
     /// <param name="service">Image to image service</param>
     /// <param name="uri">URI of input PNG image</param>
-    /// <param name="prompt">Prompt describing how to modify the ouput image</param>
+    /// <param name="prompt">Prompt describing how to modify the output image</param>
     /// <param name="width">Output image width in pixels</param>
     /// <param name="height">Output image height in pixels</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -38,7 +38,7 @@ public static class ImageToImageExtensions
     /// </summary>
     /// <param name="service">Image to image service</param>
     /// <param name="inputFilePath">Location of input image</param>
-    /// <param name="prompt">Prompt describing how to modify the ouput image</param>
+    /// <param name="prompt">Prompt describing how to modify the output image</param>
     /// <param name="width">Output image width in pixels</param>
     /// <param name="height">Output image height in pixels</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
