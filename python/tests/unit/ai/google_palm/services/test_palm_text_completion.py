@@ -6,11 +6,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
-)
-
 if sys.version_info >= (3, 9):
+    from semantic_kernel.connectors.ai.google_palm import (
+        GooglePalmTextRequestSettings,
+    )
     from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
         GooglePalmTextCompletion,
     )
@@ -65,7 +64,7 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
-        settings = CompleteRequestSettings()
+        settings = GooglePalmTextRequestSettings()
         response = await gp_text_completion.complete_async(prompt, settings)
         assert isinstance(response.result(), str) and len(response.result()) > 0
 
@@ -73,8 +72,8 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
             model=ai_model_id,
             prompt=prompt,
             temperature=settings.temperature,
-            max_output_tokens=settings.max_tokens,
-            stop_sequences=None,
-            candidate_count=settings.number_of_responses,
+            max_output_tokens=settings.max_output_tokens,
+            candidate_count=settings.candidate_count,
             top_p=settings.top_p,
+            top_k=settings.top_k,
         )
