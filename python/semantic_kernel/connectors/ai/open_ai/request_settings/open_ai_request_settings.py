@@ -54,7 +54,7 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
 class OpenAIChatRequestSettings(OpenAIRequestSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: Optional[Literal["text", "json_object"]] = "text"
+    response_format: Optional[Dict[Literal["type"], Literal["text", "json_object"]]] = None
     tools: Optional[List[Dict[str, Any]]] = None
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
