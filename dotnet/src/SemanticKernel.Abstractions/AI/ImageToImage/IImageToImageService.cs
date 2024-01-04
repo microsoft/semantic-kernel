@@ -14,7 +14,7 @@ public interface IImageToImageService
     /// Modify an input PNG image using a given prompt.
     /// </summary>
     /// <param name="inputFile">Input PNG image's bytes</param>
-    /// <param name="prompt">Prompt describing how to modify the ouput image</param>
+    /// <param name="prompt">Prompt describing how to modify the output image</param>
     /// <param name="width">Output image width in pixels</param>
     /// <param name="height">Output image height in pixels</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
