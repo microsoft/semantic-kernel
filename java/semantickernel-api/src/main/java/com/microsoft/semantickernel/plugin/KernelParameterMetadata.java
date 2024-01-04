@@ -8,7 +8,7 @@ public class KernelParameterMetadata {
     private final String description;
     private final String defaultValue;
     private final boolean isRequired;
-    private Class parameterType;
+    private final Class<?> parameterType;
 
     public KernelParameterMetadata(
         String name,
@@ -19,6 +19,28 @@ public class KernelParameterMetadata {
         this.description = description;
         this.defaultValue = defaultValue;
         this.isRequired = isRequired;
+        this.parameterType = String.class; // TODO
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public boolean isRequired() {
+        return isRequired;
+    }
+
+    public Class<?> getType() {
+        return parameterType;
+    }
+
     //private KernelJsonSchema schema;
 }

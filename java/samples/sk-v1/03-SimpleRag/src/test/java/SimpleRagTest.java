@@ -68,8 +68,8 @@ public class SimpleRagTest {
 
         Kernel kernel = SKBuilders.kernel()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
-            .withPromptTemplateEngine(new HandlebarsPromptTemplate())
-            .withPlugins(searchPlugin)
+            .withPromptTemplate(new HandlebarsPromptTemplate())
+            .withPlugin(searchPlugin)
             .build();
 
         ChatHistory chatHistory = new ChatHistory();

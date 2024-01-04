@@ -44,4 +44,5 @@ public class ContextVariable<T> {
             (Class<T>) value.getClass());
         return new ContextVariable<T>(type, value);
     }
+
 }

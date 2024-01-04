@@ -18,7 +18,7 @@ public class SKException extends RuntimeException {
      *
      * @param message A string that describes the error.
      */
-    protected SKException(@Nullable String message) {
+    public SKException(@Nullable String message) {
         super(message);
     }
 
@@ -29,7 +29,7 @@ public class SKException extends RuntimeException {
      * @param message A string that describes the error.
      * @param cause The exception that is the cause of the current exception.
      */
-    protected SKException(@Nullable String message, @Nullable Throwable cause) {
+    public SKException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.blocks;
+package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 /** Base class for blocks parsed from a prompt template */
 public abstract class Block {
@@ -45,4 +45,5 @@ public abstract class Block {
     public BlockTypes getType() {
         return type;
     }
+
 }

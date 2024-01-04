@@ -40,6 +40,7 @@ public interface OpenAIChatCompletion extends ChatCompletionService {
          * @return this builder
          */
         Builder withTokenCredential(TokenCredential   tokenCredential);
+        
 
     }    
 }

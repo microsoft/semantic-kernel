@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine;
+package com.microsoft.semantickernel.templateengine.semantickernel;
 
-import com.microsoft.semantickernel.SKException;
+import com.microsoft.semantickernel.exceptions.SKException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

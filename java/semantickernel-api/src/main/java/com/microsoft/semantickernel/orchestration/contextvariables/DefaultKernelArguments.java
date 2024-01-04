@@ -30,11 +30,11 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
         this.variables.put(MAIN_KEY, content);
     }
 
-    DefaultKernelArguments(Map<String, ContextVariable<?>> variables) {
+    public DefaultKernelArguments(Map<String, ContextVariable<?>> variables) {
         this.variables = new CaseInsensitiveMap<>(variables);
     }
 
-    DefaultKernelArguments() {
+    public DefaultKernelArguments() {
         this.variables = new CaseInsensitiveMap<>();
     }
 

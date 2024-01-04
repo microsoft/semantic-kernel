@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.blocks;
+package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
 
 public final class FunctionIdBlock extends Block implements TextRendering {
@@ -31,7 +31,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(ContextVariables variables) {
+    public String render(KernelArguments variables) {
         return this.getContent();
     }
 
@@ -60,7 +60,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
         return value.matches("^.*\\..*\\..*$");
     }
 
-    public String getSkillName() {
+    public String getPluginName() {
         return skillName;
     }
 

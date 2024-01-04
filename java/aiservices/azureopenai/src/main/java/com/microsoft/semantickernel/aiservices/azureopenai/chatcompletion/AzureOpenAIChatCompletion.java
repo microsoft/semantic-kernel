@@ -31,16 +31,21 @@ import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
 import com.azure.ai.openai.models.ChatRole;
+import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.util.BinaryData;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -68,7 +73,8 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             @Nullable PromptExecutionSettings promptExecutionSettings, @Nullable Kernel kernel) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        return internalChatMessageContentsAsync(chatRequestMessages, promptExecutionSettings);
+        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
 
     }
 
@@ -77,7 +83,8 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             PromptExecutionSettings promptExecutionSettings, Kernel kernel)
     {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        return internalStreamingChatMessageContentsAsync(chatRequestMessages, promptExecutionSettings);
+        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        return internalStreamingChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
 
     }
 
@@ -85,21 +92,24 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
             PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
-        return internalChatMessageContentsAsync(chatRequestMessages, promptExecutionSettings);
+        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
     }
 
     @Override
     public Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(String prompt,
             PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
-        return internalStreamingChatMessageContentsAsync(chatRequestMessages, promptExecutionSettings);
+        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        return internalStreamingChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
     }
 
     private Flux<StreamingChatMessageContent> internalStreamingChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
+        List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings)
     {
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, promptExecutionSettings);
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,  promptExecutionSettings);
         return client
             .getChatCompletionsStream(getModelId(), options)
             .filter(chatCompletion -> chatCompletion != null)
@@ -120,9 +130,10 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
+        List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings)
     {
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, promptExecutionSettings);
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions, promptExecutionSettings);
         return client
             .getChatCompletions(getModelId(), options)
             .flatMap(chatCompletions -> Mono.just(toChatMessageContents(chatCompletions)));
@@ -131,10 +142,15 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
     private static ChatCompletionsOptions getCompletionsOptions(
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
+        List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings)
     {
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
+        
+        if (functions != null && !functions.isEmpty()) {
+            options.setFunctions(functions);
+        }
 
         if (promptExecutionSettings == null) {
             return options;
@@ -192,6 +208,69 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             LOGGER.error("Error parsing prompt", e);
         }
         return messages;
+    }
+
+    private static List<FunctionDefinition> getFunctionDefinitions(Kernel kernel)
+    {
+        List<FunctionDefinition> functionDefinitions = new ArrayList<>();
+        kernel.getPlugins().iterator().forEachRemaining(plugin -> {
+            plugin.getFunctions().forEach((name, kernelFunction) -> {
+                functionDefinitions.add(toFunctionDefinition(kernelFunction));
+            });
+        });
+        return functionDefinitions;
+    }
+
+    private static FunctionDefinition toFunctionDefinition(KernelFunction kernelFunction)
+    {
+        String name = kernelFunction.getSkillName();
+        BinaryData parameters = toJSON(kernelFunction.getMetadata());
+        return new FunctionDefinition(name)
+            .setDescription(kernelFunction.getDescription())
+            .setParameters(parameters);
+    }
+
+    private static BinaryData toJSON(KernelFunctionMetadata metadata)
+    {
+        // TODO: KernelParameterMetadata should handle this, and in a better way
+
+        // Example:
+        // "parameters": {
+        //     "type": "object",
+        //     "properties": {
+        //         "location": {
+        //             "type": "string",
+        //             "description": "The city and state, e.g. San Francisco, CA",
+        //         },
+        //         "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+        //     },
+        //     "required": ["location"]
+        // }        
+        StringBuilder sb = new StringBuilder("{ \"parameters\": { \"type\": \"object\", \"properties\": { ");
+        List<String> required = new ArrayList<>();
+        metadata.getParameters().forEach(parameter -> {
+            sb.append("\"").append(parameter.getName()).append("\": { ");
+            sb.append("\"type\": \"").append(parameter.getType().getSimpleName()).append("\", ");
+            sb.append("\"description\": \"").append(parameter.getDescription()).append("\" ");
+            sb.append("}, ");
+            if (parameter.isRequired()) {
+                required.add(parameter.getName());
+            }
+        });
+        // strip off trailing comma and close the object
+        sb.replace(sb.length() - 2, sb.length(), " }");
+
+        if (!required.isEmpty()) {
+            sb.append(", \"required\": [ ");
+            required.forEach(name -> {
+                sb.append("\"").append(name).append("\", ");
+            });
+            sb.replace(sb.length() - 2, sb.length(), " ] ");
+        } 
+        // strip off trailing comma and close the object
+        sb.append(" } }");
+    System.err.println(sb.toString());
+        return BinaryData.fromString(sb.toString());
     }
 
     private static ChatRequestMessage getChatRequestMessage(

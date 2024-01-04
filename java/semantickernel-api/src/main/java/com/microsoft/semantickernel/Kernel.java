@@ -11,6 +11,8 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 
 import reactor.core.publisher.Flux;
@@ -36,6 +38,12 @@ public interface Kernel extends Buildable {
         ContextVariableType<T> resultType);
 
     <T> Mono<ContextVariable<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType);
+
+    <T> Mono<ContextVariable<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType);
@@ -54,12 +62,14 @@ public interface Kernel extends Buildable {
 
     ServiceProvider getServiceSelector();
 
+    KernelPluginCollection getPlugins();
+
     interface Builder extends SemanticKernelBuilder<Kernel> {
 
         <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService);
 
-        Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
+        Builder withPromptTemplate(PromptTemplate promptTemplate);
 
-        Builder withFunction(KernelFunction kernelFunction);
+        Builder withPlugin(KernelPlugin searchPlugin);
     }
 }

@@ -1,21 +1,40 @@
 package com.microsoft.semantickernel.plugin;
 
-import com.microsoft.semantickernel.orchestration.KernelFunction;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-public abstract class KernelPlugin implements Iterable<KernelFunction> {
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
+
+public class KernelPlugin implements Iterable<KernelFunction> {
 
     private final String name;
     private final String description;
 
-    protected KernelPlugin(String name, String description) {
+    private final CaseInsensitiveMap<KernelFunction> functions;
+
+    public KernelPlugin(String name, String description,
+        List<KernelFunction> functions) {
         this.name = name;
         this.description = description;
+        this.functions = new CaseInsensitiveMap<>();
+        if (functions != null) {
+            functions.forEach(x -> this.functions.put(x.getName(), x));
+        }
     }
+
+    public Map<String, KernelFunction> getFunctions() {
+        return functions;
+    }
+
+    public KernelFunction get(String functionName) {
+        return functions.get(functionName);
+    }     
 
     @Override
     public Iterator<KernelFunction> iterator() {
-        return null;
+        return functions.values().iterator();
     }
 
     public String getName() {
@@ -25,6 +44,4 @@ public abstract class KernelPlugin implements Iterable<KernelFunction> {
     public String getDescription() {
         return description;
     }
-
-    public abstract KernelFunction get(String functionName);
 }

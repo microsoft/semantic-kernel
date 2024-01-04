@@ -1,16 +1,17 @@
 package com.microsoft.semantickernel.plugin;
 
-import com.microsoft.semantickernel.ServiceProvider;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.Todo;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 public class KernelPluginFactory {
 
@@ -65,17 +66,17 @@ public class KernelPluginFactory {
         @Nullable List<KernelFunction> functions) {
 
         if (functions == null) {
-            return new DefaultKernelPlugin(
+            return new KernelPlugin(
                 pluginName,
                 null,
-                new HashMap<>()
+                Collections.<KernelFunction>emptyList()
             );
         }
 
-        return new DefaultKernelPlugin(
+        return new KernelPlugin(
             pluginName,
             null,
-            functions.stream().collect(Collectors.toMap(KernelFunction::getName, f -> f))
+            functions
         );
     }
 
