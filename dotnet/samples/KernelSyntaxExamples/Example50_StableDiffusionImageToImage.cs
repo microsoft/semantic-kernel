@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.StableDiffusion;
 using Microsoft.SemanticKernel.AI.ImageToImage;
+using Microsoft.SemanticKernel.Connectors.StableDiffusion;
 
 // ReSharper disable once InconsistentNaming
 public static class Example50_StableDiffusionImageToImage

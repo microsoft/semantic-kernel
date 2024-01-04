@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.ImageToImage;
 using Microsoft.SemanticKernel.Connectors.StableDiffusion.ImageToImage;
-using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.StableDiffusion;
 
