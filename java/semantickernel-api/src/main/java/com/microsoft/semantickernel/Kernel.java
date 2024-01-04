@@ -79,7 +79,7 @@ public interface Kernel extends Buildable {
 
         <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService);
 
-        Builder withPromptTemplateEngine(PromptTemplate promptTemplate);
+        Builder withPromptTemplate(PromptTemplate promptTemplate);
 
         Builder withPlugins(KernelPlugin searchPlugin);
     }

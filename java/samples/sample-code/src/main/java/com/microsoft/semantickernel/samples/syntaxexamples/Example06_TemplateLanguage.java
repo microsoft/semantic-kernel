@@ -1,6 +1,9 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
@@ -9,7 +12,6 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.samples.SamplesConfig;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
@@ -33,12 +35,33 @@ public class Example06_TemplateLanguage {
 
         System.out.println("======== TemplateLanguage ========");
 
-        OpenAIAsyncClient client = SamplesConfig.getClient();
+        TextGenerationService textGenerationService;
 
-        AzureOpenAITextGenerationService textGenerationService = AzureOpenAITextGenerationService.builder()
-            .withOpenAIAsyncClient(client)
-            .withModelId("text-davinci-003")
-            .build();
+        if (System.getenv("CLIENT_OPENAI_TYPE").equalsIgnoreCase("azure")) {
+            String clientKey = System.getenv("CLIENT_AZUREOPENAI_KEY");
+            String clientEndpoint = System.getenv("CLIENT_AZUREOPENAI_ENDPOINT");
+
+            OpenAIAsyncClient client = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(clientKey))
+                .endpoint(clientEndpoint)
+                .buildAsyncClient();
+
+            textGenerationService = AzureOpenAITextGenerationService.builder()
+                .withOpenAIAsyncClient(client)
+                .withModelId("text-davinci-003")
+                .build();
+        } else {
+            String clientKey = System.getenv("CLIENT_OPENAI_KEY");
+            String clientEndpoint = System.getenv("CLIENT_OPENAI_ENDPOINT");
+
+            OpenAIAsyncClient client = new OpenAIClientBuilder()
+                .credential(new KeyCredential(clientKey))
+                .endpoint(clientEndpoint)
+                .buildAsyncClient();
+
+            // TODO: Add support for OpenAI API
+            textGenerationService = null;
+        }
 
         Kernel kernel = new DefaultKernel.Builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
@@ -88,6 +111,5 @@ public class Example06_TemplateLanguage {
         System.out.println("--- Prompt Function result");
         var result = kernel.invokeAsync(kindOfDay, null, String.class).block();
         System.out.println(result.getValue());
-
     }
 }

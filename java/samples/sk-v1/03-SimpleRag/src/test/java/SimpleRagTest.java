@@ -68,7 +68,7 @@ public class SimpleRagTest {
 
         Kernel kernel = SKBuilders.kernel()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
-            .withPromptTemplateEngine(new HandlebarsPromptTemplate())
+            .withPromptTemplate(new HandlebarsPromptTemplate())
             .withPlugins(searchPlugin)
             .build();
 

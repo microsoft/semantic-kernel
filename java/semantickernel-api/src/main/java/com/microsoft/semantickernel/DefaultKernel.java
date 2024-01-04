@@ -157,7 +157,7 @@ public class DefaultKernel implements Kernel {
         }
 
         @Override
-        public Builder withPromptTemplateEngine(PromptTemplate promptTemplate) {
+        public Builder withPromptTemplate(PromptTemplate promptTemplate) {
             return this;
         }
 
