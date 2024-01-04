@@ -176,13 +176,8 @@ async def chat_completion_with_function_call(
 
 
 def _parse_message(
-<<<<<<< HEAD
     message: ChatCompletion, with_data: bool = False
 ) -> Tuple[Optional[str], Optional[str], Optional[FunctionCall]]:
-=======
-    message: ChatCompletion, with_data: bool = False, **kwargs
-) -> Union[Tuple[Optional[str], Optional[FunctionCall]], Tuple[Optional[str], Optional[str], Optional[FunctionCall]],]:
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     """
     Parses the message.
 
@@ -192,11 +187,6 @@ def _parse_message(
     Returns:
         Tuple[Optional[str], Optional[Dict]] -- The parsed message.
     """
-<<<<<<< HEAD
-=======
-    if kwargs.get("logger"):
-        logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
     content = message.content if hasattr(message, "content") else None
     function_call = message.function_call if hasattr(message, "function_call") else None
     if function_call:

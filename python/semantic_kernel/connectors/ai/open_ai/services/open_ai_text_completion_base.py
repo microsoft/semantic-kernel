@@ -38,7 +38,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-<<<<<<< HEAD
         if isinstance(settings, OpenAITextRequestSettings):
             settings.prompt = prompt
         else:
@@ -46,11 +45,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-=======
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        response = await self._send_request(prompt=prompt, request_settings=settings, stream=False)
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         if isinstance(response, Completion):
             if len(response.choices) == 1:
@@ -77,7 +71,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-<<<<<<< HEAD
         if "prompt" in settings.model_fields:
             settings.prompt = prompt
         if "messages" in settings.model_fields:
@@ -88,11 +81,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         settings.ai_model_id = self.ai_model_id
         settings.stream = True
         response = await self._send_request(request_settings=settings)
-=======
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        response = await self._send_request(prompt=prompt, request_settings=settings, stream=True)
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         async for partial in response:
             if len(partial.choices) == 0:

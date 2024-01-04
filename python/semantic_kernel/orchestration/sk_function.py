@@ -140,7 +140,6 @@ class SKFunction(SKFunctionBase):
             # Similar to non-chat, render prompt (which renders to a
             # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages_async(context)
-<<<<<<< HEAD
             try:
                 result = await client.complete_chat_async(messages, request_settings)
                 if isinstance(result, list):
@@ -155,60 +154,8 @@ class SKFunction(SKFunctionBase):
                 if tool_message:
                     context.objects["tool_message"] = tool_message
                     as_chat_prompt.add_message(role="tool", message=tool_message)
-                as_chat_prompt.add_message(
-                    "assistant", message=completion, function_call=function_call
-                )
+                as_chat_prompt.add_message("assistant", message=completion, function_call=function_call)
                 if completion is not None:
-=======
-
-            functions = kwargs.get("functions") if request_settings.function_call is not None else None
-            if request_settings.function_call is not None and functions is None:
-                logger.warning("Function call is not None, but functions is None")
-            try:
-                if functions and hasattr(client, "complete_chat_with_functions_async"):
-                    if (
-                        hasattr(client, "complete_chat_with_data_async")
-                        and hasattr(request_settings, "data_source_settings")
-                        and request_settings.data_source_settings is not None
-                    ):
-                        (
-                            completion,
-                            tool_message,
-                            function_call,
-                        ) = await client.complete_chat_with_data_async(messages, request_settings, functions=functions)
-                        if tool_message:
-                            context.objects["tool_message"] = tool_message
-                            as_chat_prompt.add_message(role="tool", message=tool_message)
-                    else:
-                        (
-                            completion,
-                            function_call,
-                        ) = await client.complete_chat_with_functions_async(messages, functions, request_settings)
-
-                    as_chat_prompt.add_message("assistant", message=completion, function_call=function_call)
-                    if completion is not None:
-                        context.variables.update(completion)
-                    if function_call is not None:
-                        context.objects["function_call"] = function_call
-                else:
-                    if (
-                        hasattr(client, "complete_chat_with_data_async")
-                        and hasattr(request_settings, "data_source_settings")
-                        and request_settings.data_source_settings is not None
-                    ):
-                        # third item is function_call, None in this case
-                        (
-                            completion,
-                            tool_message,
-                            _,
-                        ) = await client.complete_chat_with_data_async(messages, request_settings)
-                        context.objects["tool_message"] = tool_message
-                        as_chat_prompt.add_message(role="tool", message=tool_message)
-                    else:
-                        completion = await client.complete_chat_async(messages, request_settings)
-
-                    as_chat_prompt.add_assistant_message(completion)
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
                     context.variables.update(completion)
                 if function_call is not None:
                     context.objects["function_call"] = function_call
@@ -233,31 +180,13 @@ class SKFunction(SKFunctionBase):
                     async for partial_content in client.complete_chat_stream_async(
                         messages=messages, settings=request_settings
                     ):
-<<<<<<< HEAD
                         if isinstance(partial_content, str):
-=======
-                        response = await client.complete_chat_stream_with_data_async(messages, request_settings)
-                        # Get the tool message
-                        tool_message = await response.get_tool_message()
-                        if tool_message:
-                            chat_prompt.add_message(role="tool", message=tool_message)
-                            context.objects["tool_message"] = tool_message
-                        # Get the completion
-                        async for partial_content in response:
-                            completion += partial_content
-                            yield partial_content
-
-                    else:
-                        async for partial_content in client.complete_chat_stream_async(messages, request_settings):
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
                             completion += partial_content
                             yield partial_content
                         else:
                             tool_message = await partial_content.get_tool_message()
                             if tool_message:
-                                chat_prompt.add_message(
-                                    role="tool", message=tool_message
-                                )
+                                chat_prompt.add_message(role="tool", message=tool_message)
                                 context.objects["tool_message"] = tool_message
                             # Get the completion
                             async for part in partial_content:
@@ -459,12 +388,6 @@ class SKFunction(SKFunctionBase):
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
 
-<<<<<<< HEAD
-=======
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -490,31 +413,10 @@ class SKFunction(SKFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(
-        self, context: "SKContext", settings: AIRequestSettings, **kwargs
-    ):
+    async def _invoke_semantic_async(self, context: "SKContext", settings: AIRequestSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_skills(context)
-<<<<<<< HEAD
-        new_context = await self._function(
-            self._ai_service, settings or self._ai_request_settings, context
-        )
-=======
-
-        if settings is None:
-            if self._ai_service is not None:
-                settings = self._ai_request_settings
-            elif self._chat_service is not None:
-                settings = self._chat_request_settings
-            else:
-                raise KernelException(
-                    KernelException.ErrorCodes.UnknownError,
-                    "Semantic functions must have either an AI service or Chat service",
-                )
-
-        service = self._ai_service if self._ai_service is not None else self._chat_service
-        new_context = await self._function(service, settings, context, functions=kwargs.get("functions", None))
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
+        new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
@@ -594,27 +496,7 @@ class SKFunction(SKFunctionBase):
     async def _invoke_semantic_stream_async(self, context, settings):
         self._verify_is_semantic()
         self._ensure_context_has_skills(context)
-<<<<<<< HEAD
-        async for stream_msg in self._stream_function(
-            self._ai_service, settings or self._ai_request_settings, context
-        ):
-=======
-
-        if settings is None:
-            if self._ai_service is not None:
-                settings = self._ai_request_settings
-            elif self._chat_service is not None:
-                settings = self._chat_request_settings
-            else:
-                raise KernelException(
-                    KernelException.ErrorCodes.UnknownError,
-                    "Semantic functions must have either an AI service or Chat service",
-                )
-
-        service = self._ai_service if self._ai_service is not None else self._chat_service
-
-        async for stream_msg in self._stream_function(service, settings, context):
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
+        async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
             yield stream_msg
 
     async def _invoke_native_stream_async(self, context):

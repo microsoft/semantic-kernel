@@ -17,16 +17,9 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 
 
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
-<<<<<<< HEAD
     async def generate_embeddings_async(
-        self,
-        texts: List[str],
-        batch_size: Optional[int] = None,
-        **kwargs: Dict[str, Any]
+        self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Dict[str, Any]
     ) -> ndarray:
-=======
-    async def generate_embeddings_async(self, texts: List[str], batch_size: Optional[int] = None) -> ndarray:
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
         """Generates embeddings for the given texts.
 
         Arguments:

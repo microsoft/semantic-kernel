@@ -38,13 +38,8 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._messages = []
         if self.prompt_config.completion.extension_data.get("chat_system_prompt"):
-            self.add_system_message(
-                self.prompt_config.completion.extension_data["chat_system_prompt"]
-            )
-        if (
-            hasattr(self.prompt_config.completion, "messages")
-            and self.prompt_config.completion.messages
-        ):
+            self.add_system_message(self.prompt_config.completion.extension_data["chat_system_prompt"])
+        if hasattr(self.prompt_config.completion, "messages") and self.prompt_config.completion.messages:
             for message in self.prompt_config.completion.messages:
                 self.add_message(message["role"], message["content"])
 
@@ -80,16 +75,8 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         self.messages.append(
             concrete_message(
                 role=role,
-<<<<<<< HEAD
-                content_template=PromptTemplate(
-                    message, self.template_engine, self.prompt_config
-                )
-                if message
-                else None,
+                content_template=PromptTemplate(message, self.template_engine, self.prompt_config) if message else None,
                 **kwargs,
-=======
-                content_template=PromptTemplate(message, self._template_engine, self._prompt_config),
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
             )
         )
 
@@ -99,17 +86,9 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             "assistant",
             "system",
         ]:
-<<<<<<< HEAD
             self.add_user_message(message=self.template)
-        await asyncio.gather(
-            *[message.render_message_async(context) for message in self.messages]
-        )
+        await asyncio.gather(*[message.render_message_async(context) for message in self.messages])
         return [message.as_dict() for message in self.messages]
-=======
-            self.add_user_message(message=self._template)
-        await asyncio.gather(*[message.render_message_async(context) for message in self._messages])
-        return [message.as_dict() for message in self._messages]
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
     def dump_messages(self) -> List[Dict[str, str]]:
         """Return the messages as a list of dicts with role, content, name and function_call."""

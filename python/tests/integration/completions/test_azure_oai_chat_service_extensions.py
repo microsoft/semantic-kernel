@@ -84,7 +84,6 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_ENDPOINT")
         search_api_key = os.getenv("AZURE_COGNITIVE_SEARCH_ADMIN_KEY")
 
-<<<<<<< HEAD
         extra = ExtraBody(
             data_sources=[
                 AzureDataSources(
@@ -96,18 +95,6 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
                     ),
                 )
             ]
-=======
-        azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
-            parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-                indexName=collection,
-                endpoint=search_endpoint,
-                key=search_api_key,
-            )
-        )
-
-        azure_chat_with_data_settings = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-            dataSources=[azure_aisearch_datasource]
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
         )
 
         chat_service = sk_oai.AzureChatCompletion(
@@ -119,7 +106,6 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         )
         kernel.add_chat_service("chat-gpt", chat_service)
 
-<<<<<<< HEAD
         prompt_config = ChatPromptTemplate(
             completion=AzureChatRequestSettings(
                 max_tokens=2000,
@@ -127,13 +113,6 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
                 top_p=0.8,
                 extra_body=extra,
             )
-=======
-        prompt_config = sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
-            max_tokens=2000,
-            temperature=0.7,
-            top_p=0.8,
-            data_source_settings=azure_chat_with_data_settings,
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
         )
 
         prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)

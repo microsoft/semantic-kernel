@@ -33,21 +33,12 @@ class PromptTemplate(PromptTemplateBase):
         log: Optional[Any] = None,
     ) -> None:
         if log:
-<<<<<<< HEAD
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         super().__init__(
             template=template,
             template_engine=template_engine,
             prompt_config=prompt_config,
         )
-=======
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        self._template = template
-        self._template_engine = template_engine
-        self._prompt_config = prompt_config
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
     def get_parameters(self) -> List[ParameterView]:
         seen = set()

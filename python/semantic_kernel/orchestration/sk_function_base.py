@@ -173,11 +173,7 @@ class SKFunctionBase(SKBaseModel):
         pass
 
     @abstractmethod
-<<<<<<< HEAD
     def set_ai_configuration(self, settings: AIRequestSettings) -> "SKFunctionBase":
-=======
-    def set_ai_configuration(self, settings: CompleteRequestSettings) -> "SKFunctionBase":
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
         """
         Sets the AI completion settings used with LLM requests
 

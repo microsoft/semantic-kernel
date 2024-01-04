@@ -38,13 +38,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_m
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-<<<<<<< HEAD
-class OpenAIChatCompletion(
-    OpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase
-):
-=======
-class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
+class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
     """OpenAI Chat completion class."""
 
     @overload

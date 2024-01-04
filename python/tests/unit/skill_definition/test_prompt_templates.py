@@ -65,14 +65,8 @@ def test_custom_prompt_template_config():
     assert prompt_template_config.completion.frequency_penalty == 0.5
     assert prompt_template_config.completion.max_tokens == 128
     assert prompt_template_config.completion.number_of_responses == 2
-<<<<<<< HEAD
     assert prompt_template_config.completion.stop == ["\n"]
     assert prompt_template_config.completion.logit_bias == {"1": 1.0}
-=======
-    assert prompt_template_config.completion.stop_sequences == ["\n"]
-    assert prompt_template_config.completion.token_selection_biases == {1: 1}
-    assert prompt_template_config.completion.chat_system_prompt == "Custom system prompt."
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
 
 def test_custom_prompt_template_config_from_dict():
@@ -95,7 +89,6 @@ def test_custom_prompt_template_config_from_dict():
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
-<<<<<<< HEAD
     assert prompt_template_config.completion.extension_data["temperature"] == 0.5
     assert prompt_template_config.completion.extension_data["top_p"] == 0.5
     assert prompt_template_config.completion.extension_data["presence_penalty"] == 0.5
@@ -104,17 +97,6 @@ def test_custom_prompt_template_config_from_dict():
     assert prompt_template_config.completion.extension_data["number_of_responses"] == 2
     assert prompt_template_config.completion.extension_data["stop"] == ["\n"]
     assert prompt_template_config.completion.extension_data["logit_bias"] == {"1": 1}
-=======
-    assert prompt_template_config.completion.temperature == 0.5
-    assert prompt_template_config.completion.top_p == 0.5
-    assert prompt_template_config.completion.presence_penalty == 0.5
-    assert prompt_template_config.completion.frequency_penalty == 0.5
-    assert prompt_template_config.completion.max_tokens == 128
-    assert prompt_template_config.completion.number_of_responses == 2
-    assert prompt_template_config.completion.stop_sequences == ["\n"]
-    assert prompt_template_config.completion.token_selection_biases == {1: 1}
-    assert prompt_template_config.completion.chat_system_prompt == "Custom system prompt."
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
 
 def test_custom_prompt_template_config_from_json():
@@ -135,9 +117,7 @@ def test_custom_prompt_template_config_from_json():
         }
     }
     """
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(
-        prompt_template_json
-    )
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(prompt_template_json)
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
@@ -147,14 +127,8 @@ def test_custom_prompt_template_config_from_json():
     assert prompt_template_config.completion.frequency_penalty == 0.5
     assert prompt_template_config.completion.max_tokens == 128
     assert prompt_template_config.completion.number_of_responses == 2
-<<<<<<< HEAD
     assert prompt_template_config.completion.stop == ["s"]
     assert prompt_template_config.completion.logit_bias == {"1": 1}
-=======
-    assert prompt_template_config.completion.stop_sequences == ["s"]
-    assert prompt_template_config.completion.token_selection_biases == {1: 1}
-    assert prompt_template_config.completion.chat_system_prompt == "Custom system prompt."
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
 
 def test_chat_prompt_template():
@@ -168,9 +142,7 @@ def test_chat_prompt_template():
 
 
 def test_chat_prompt_template_with_system_prompt():
-    prompt_template_config = PromptTemplateConfig[
-        OpenAIChatRequestSettings
-    ].from_completion_parameters(
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_completion_parameters(
         messages=[{"role": "system", "content": "Custom system prompt."}],
     )
 
@@ -181,13 +153,5 @@ def test_chat_prompt_template_with_system_prompt():
     )
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1
-<<<<<<< HEAD
     assert chat_prompt_template.messages[0].role == "system"
-    assert (
-        chat_prompt_template.messages[0].content_template.template
-        == "Custom system prompt."
-    )
-=======
-    assert chat_prompt_template._messages[0].role == "system"
-    assert chat_prompt_template._messages[0].content_template._template == "Custom system prompt."
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
+    assert chat_prompt_template.messages[0].content_template.template == "Custom system prompt."

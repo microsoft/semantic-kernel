@@ -82,9 +82,13 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
             results = self.generator(**request_settings.prepare_settings_dict(prompt))
+<<<<<<< HEAD
             result_field_name = (
                 "summary_text" if self.task == "summarization" else "generated_text"
             )
+=======
+            result_field_name = "summary_text" if self.task == "summarization" else "generated_text"
+>>>>>>> 0182735c (resynced with main)
             if len(results) == 1:
                 return results[0][result_field_name]
             return [resp[result_field_name] for resp in results]
@@ -117,8 +121,12 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         if request_settings.num_return_sequences > 1:
 =======
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+<<<<<<< HEAD
         if request_settings.number_of_responses > 1:
 >>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
+=======
+        if request_settings.num_return_sequences > 1:
+>>>>>>> 0182735c (resynced with main)
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \

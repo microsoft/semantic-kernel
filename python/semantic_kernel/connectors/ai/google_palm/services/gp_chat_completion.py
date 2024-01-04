@@ -59,14 +59,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         messages: List[Tuple[str, str]],
         settings: GooglePalmRequestSettings,
     ) -> Union[str, List[str]]:
-<<<<<<< HEAD
         settings.messages = messages
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
-=======
-        response = await self._send_chat_request(messages, request_settings, context, examples, prompt)
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         if settings.candidate_count > 1:
             return [
@@ -91,28 +87,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
-<<<<<<< HEAD
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         settings.messages = [("user", prompt)]
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
-=======
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
-        response = await self._send_chat_request(prompt_to_message, chat_settings)
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
 
         if settings.candidate_count > 1:
             return [
@@ -170,23 +149,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         if settings is None:
             raise ValueError("The request settings cannot be `None`")
 
-<<<<<<< HEAD
         if settings.messages[-1][0] != "user":
-=======
-        if request_settings.max_tokens < 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The max tokens must be greater than 0, " f"but was {request_settings.max_tokens}",
-            )
-
-        if len(messages) <= 0:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "To complete a chat you need at least one message",
-            )
-
-        if messages[-1][0] != "user":
->>>>>>> 9c8afa87 (set line-length for black in sync with Ruff, run black.)
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
                 "The last message must be from the user",
