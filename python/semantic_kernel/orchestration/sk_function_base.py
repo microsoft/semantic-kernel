@@ -158,7 +158,9 @@ class SKFunctionBase(SKBaseModel):
         pass
 
     @abstractmethod
-    def set_ai_service(self, service_factory: Callable[[], TextCompletionClientBase]) -> "SKFunctionBase":
+    def set_ai_service(
+        self, service_factory: Callable[[], TextCompletionClientBase]
+    ) -> "SKFunctionBase":
         """
         Sets the AI service used by the semantic function, passing in a factory
         method. The factory allows us to lazily instantiate the client and to

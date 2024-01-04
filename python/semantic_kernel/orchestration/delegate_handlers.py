@@ -52,7 +52,9 @@ class DelegateHandlers(SKBaseModel):
 
     @staticmethod
     @_handles(DelegateTypes.ContextSwitchInSKContextOutTaskSKContext)
-    async def handle_context_switch_in_sk_context_out_task_sk_context(function, context):
+    async def handle_context_switch_in_sk_context_out_task_sk_context(
+        function, context
+    ):
         # Note: Context Switching: allows the function to replace with a
         # new context, e.g. to branch execution path
         context = await function(context)
@@ -96,7 +98,9 @@ class DelegateHandlers(SKBaseModel):
 
     @staticmethod
     @_handles(DelegateTypes.ContextSwitchInStringAndContextOutTaskContext)
-    async def handle_context_switch_in_string_and_context_out_task_context(function, context):
+    async def handle_context_switch_in_string_and_context_out_task_context(
+        function, context
+    ):
         # Note: Context Switching: allows the function to replace with a
         # new context, e.g. to branch execution path
         context = await function(context.variables.input, context)

@@ -32,7 +32,9 @@ def test_can_be_imported():
         ("-192", "-13", "-205"),
     ],
 )
-def test_add_when_valid_parameters_should_succeed(initial_Value, amount, expectedResult):
+def test_add_when_valid_parameters_should_succeed(
+    initial_Value, amount, expectedResult
+):
     # Arrange
     context = ContextVariables()
     context["Amount"] = amount
@@ -58,7 +60,9 @@ def test_add_when_valid_parameters_should_succeed(initial_Value, amount, expecte
         ("-192", "13", "-205"),
     ],
 )
-def test_subtract_when_valid_parameters_should_succeed(initial_Value, amount, expectedResult):
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_Value, amount, expectedResult
+):
     # Arrange
     context = ContextVariables()
     context["Amount"] = amount
@@ -98,7 +102,10 @@ def test_add_when_invalid_initial_value_should_throw(initial_Value):
         skill.add(initial_Value, context)
 
     # Assert
-    assert str(exception.value) == f"Initial value provided is not in numeric format: {initial_Value}"
+    assert (
+        str(exception.value)
+        == f"Initial value provided is not in numeric format: {initial_Value}"
+    )
     assert exception.type == ValueError
 
 
@@ -128,7 +135,10 @@ def test_add_when_invalid_amount_should_throw(amount):
     with pytest.raises(ValueError) as exception:
         skill.add("1", context)
 
-    assert str(exception.value) == f"Context amount provided is not in numeric format: {amount}"
+    assert (
+        str(exception.value)
+        == f"Context amount provided is not in numeric format: {amount}"
+    )
     assert exception.type == ValueError
 
 
@@ -159,7 +169,10 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
         skill.subtract(initial_value, context)
 
     # Assert
-    assert str(exception.value) == f"Initial value provided is not in numeric format: {initial_value}"
+    assert (
+        str(exception.value)
+        == f"Initial value provided is not in numeric format: {initial_value}"
+    )
     assert exception.type == ValueError
 
 
@@ -190,5 +203,8 @@ def test_subtract_when_invalid_amount_should_throw(amount):
         skill.subtract("1", context)
 
     # Assert
-    assert str(exception.value) == f"Context amount provided is not in numeric format: {amount}"
+    assert (
+        str(exception.value)
+        == f"Context amount provided is not in numeric format: {amount}"
+    )
     assert exception.type == ValueError

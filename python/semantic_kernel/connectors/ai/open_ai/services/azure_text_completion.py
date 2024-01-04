@@ -156,7 +156,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use.
         """
         if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         if kwargs.get("logger"):
             logger.warning("The 'logger' argument is deprecated.")
         super().__init__(

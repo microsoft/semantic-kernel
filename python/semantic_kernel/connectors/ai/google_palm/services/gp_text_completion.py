@@ -35,7 +35,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
         if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
     async def complete_async(
         self,
@@ -71,7 +73,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         request_settings: GooglePalmTextRequestSettings,
         logger: Optional[Any] = None,
     ):
-        raise NotImplementedError("Google Palm API does not currently support streaming")
+        raise NotImplementedError(
+            "Google Palm API does not currently support streaming"
+        )
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""

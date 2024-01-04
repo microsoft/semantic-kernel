@@ -89,7 +89,9 @@ def memory_record3():
     )
 
 
-def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[MemoryRecord]:
+def gen_memory_records(
+    count: int, ndim: int, start_index: int = 0
+) -> List[MemoryRecord]:
     return [
         MemoryRecord(
             is_reference=False,
@@ -105,10 +107,14 @@ def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[Memo
     ]
 
 
-def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_embedding: bool):
+def compare_memory_records(
+    record1: MemoryRecord, record2: MemoryRecord, with_embedding: bool
+):
     """Compare two MemoryRecord instances and assert they are the same."""
 
-    assert record1._key == record2._key, f"_key mismatch: {record1._key} != {record2._key}"
+    assert (
+        record1._key == record2._key
+    ), f"_key mismatch: {record1._key} != {record2._key}"
     assert (
         record1._timestamp == record2._timestamp
     ), f"_timestamp mismatch: {record1._timestamp} != {record2._timestamp}"
@@ -122,12 +128,16 @@ def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_em
     assert (
         record1._description == record2._description
     ), f"_description mismatch: {record1._description} != {record2._description}"
-    assert record1._text == record2._text, f"_text mismatch: {record1._text} != {record2._text}"
+    assert (
+        record1._text == record2._text
+    ), f"_text mismatch: {record1._text} != {record2._text}"
     assert (
         record1._additional_metadata == record2._additional_metadata
     ), f"_additional_metadata mismatch: {record1._additional_metadata} != {record2._additional_metadata}"
     if with_embedding is True:
-        assert np.array_equal(record1._embedding, record2._embedding), "_embedding arrays are not equal"
+        assert np.array_equal(
+            record1._embedding, record2._embedding
+        ), "_embedding arrays are not equal"
 
 
 @pytest.mark.asyncio
@@ -190,13 +200,19 @@ async def test_upsert_and_get_async_with_embedding(memory_record1: MemoryRecord)
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_batch_async(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
+async def test_upsert_and_get_batch_async(
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     memory = USearchMemoryStore()
-    await memory.create_collection_async("test_collection", ndim=memory_record1.embedding.shape[0])
+    await memory.create_collection_async(
+        "test_collection", ndim=memory_record1.embedding.shape[0]
+    )
 
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch_async(
+        "test_collection", ["test_id1", "test_id2"], True
+    )
     assert len(result) == 2
 
     compare_memory_records(result[0], memory_record1, True)
@@ -206,7 +222,9 @@ async def test_upsert_and_get_batch_async(memory_record1: MemoryRecord, memory_r
 @pytest.mark.asyncio
 async def test_remove_async(memory_record1):
     memory = USearchMemoryStore()
-    await memory.create_collection_async("test_collection", ndim=memory_record1.embedding.shape[0])
+    await memory.create_collection_async(
+        "test_collection", ndim=memory_record1.embedding.shape[0]
+    )
 
     await memory.upsert_async("test_collection", memory_record1)
     await memory.remove_async("test_collection", "test_id1")
@@ -217,27 +235,39 @@ async def test_remove_async(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
+async def test_remove_batch_async(
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     memory = USearchMemoryStore()
-    await memory.create_collection_async("test_collection", ndim=memory_record1.embedding.shape[0])
+    await memory.create_collection_async(
+        "test_collection", ndim=memory_record1.embedding.shape[0]
+    )
 
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
     await memory.remove_batch_async("test_collection", ["test_id1", "test_id2"])
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch_async(
+        "test_collection", ["test_id1", "test_id2"], True
+    )
     assert len(result) == 0
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_match_async(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
+async def test_get_nearest_match_async(
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     memory = USearchMemoryStore()
 
     collection_name = "test_collection"
-    await memory.create_collection_async(collection_name, ndim=memory_record1.embedding.shape[0], metric="cos")
+    await memory.create_collection_async(
+        collection_name, ndim=memory_record1.embedding.shape[0], metric="cos"
+    )
 
     await memory.upsert_batch_async(collection_name, [memory_record1, memory_record2])
 
-    result = await memory.get_nearest_match_async(collection_name, np.array([0.5, 0.5]), exact=True)
+    result = await memory.get_nearest_match_async(
+        collection_name, np.array([0.5, 0.5]), exact=True
+    )
 
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)
@@ -245,15 +275,21 @@ async def test_get_nearest_match_async(memory_record1: MemoryRecord, memory_reco
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
+async def test_get_nearest_matches_async(
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     memory = USearchMemoryStore()
 
     collection_name = "test_collection"
-    await memory.create_collection_async(collection_name, ndim=memory_record1.embedding.shape[0], metric="cos")
+    await memory.create_collection_async(
+        collection_name, ndim=memory_record1.embedding.shape[0], metric="cos"
+    )
 
     await memory.upsert_batch_async(collection_name, [memory_record1, memory_record2])
 
-    results = await memory.get_nearest_matches_async(collection_name, np.array([0.5, 0.5]), limit=2, exact=True)
+    results = await memory.get_nearest_matches_async(
+        collection_name, np.array([0.5, 0.5]), limit=2, exact=True
+    )
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
@@ -262,15 +298,23 @@ async def test_get_nearest_matches_async(memory_record1: MemoryRecord, memory_re
 
 
 @pytest.mark.asyncio
-async def test_create_and_save_collection_async(tmpdir, memory_record1, memory_record2, memory_record3):
+async def test_create_and_save_collection_async(
+    tmpdir, memory_record1, memory_record2, memory_record3
+):
     memory = USearchMemoryStore(tmpdir)
 
     await memory.create_collection_async("test_collection1", ndim=2)
     await memory.create_collection_async("test_collection2", ndim=2)
     await memory.create_collection_async("test_collection3", ndim=2)
-    await memory.upsert_batch_async("test_collection1", [memory_record1, memory_record2])
-    await memory.upsert_batch_async("test_collection2", [memory_record2, memory_record3])
-    await memory.upsert_batch_async("test_collection3", [memory_record1, memory_record3])
+    await memory.upsert_batch_async(
+        "test_collection1", [memory_record1, memory_record2]
+    )
+    await memory.upsert_batch_async(
+        "test_collection2", [memory_record2, memory_record3]
+    )
+    await memory.upsert_batch_async(
+        "test_collection3", [memory_record1, memory_record3]
+    )
     await memory.close_async()
 
     assert (tmpdir / "test_collection1.parquet").exists()
@@ -327,13 +371,19 @@ async def test_upsert_and_get_async_with_embedding_with_persist(
 
 
 @pytest.mark.asyncio
-async def test_remove_get_async(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
+async def test_remove_get_async(
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     memory = USearchMemoryStore()
-    await memory.create_collection_async("test_collection", ndim=memory_record1.embedding.shape[0])
+    await memory.create_collection_async(
+        "test_collection", ndim=memory_record1.embedding.shape[0]
+    )
 
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
     await memory.remove_async("test_collection", "test_id1")
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch_async(
+        "test_collection", ["test_id1", "test_id2"], True
+    )
     assert len(result) == 1
     compare_memory_records(result[0], memory_record2, True)

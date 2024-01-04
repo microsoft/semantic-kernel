@@ -30,7 +30,9 @@ class CodeBlock(Block):
         super().__init__(content=content and content.strip())
 
         if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
 
         self._tokens = tokens or CodeTokenizer().tokenize(content)
         self._validated = False
@@ -54,7 +56,10 @@ class CodeBlock(Block):
                 logger.error(error_msg)
                 return False, error_msg
 
-            if self._tokens[1].type != BlockTypes.VALUE and self._tokens[1].type != BlockTypes.VARIABLE:
+            if (
+                self._tokens[1].type != BlockTypes.VALUE
+                and self._tokens[1].type != BlockTypes.VARIABLE
+            ):
                 error_msg = "Functions support only one parameter"
                 logger.error(error_msg)
                 return False, error_msg
@@ -102,7 +107,9 @@ class CodeBlock(Block):
             input_value = self._tokens[1].render(variables_clone)
             variables_clone.update(input_value)
 
-        result = await function.invoke_async(variables=variables_clone, memory=context.memory)
+        result = await function.invoke_async(
+            variables=variables_clone, memory=context.memory
+        )
 
         if result.error_occurred:
             error_msg = (
@@ -121,7 +128,9 @@ class CodeBlock(Block):
         if not f_block.skill_name and skills.has_function(None, f_block.function_name):
             return skills.get_function(None, f_block.function_name)
 
-        if f_block.skill_name and skills.has_function(f_block.skill_name, f_block.function_name):
+        if f_block.skill_name and skills.has_function(
+            f_block.skill_name, f_block.function_name
+        ):
             return skills.get_function(f_block.skill_name, f_block.function_name)
 
         return None

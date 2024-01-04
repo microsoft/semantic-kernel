@@ -67,13 +67,7 @@ async def test_oai_chat_service_with_skills_with_provided_client(setup_tldr_func
 
 
 @pytest.mark.asyncio
-<<<<<<< HEAD
-async def test_oai_chat_stream_service_with_skills(
-    setup_tldr_function_for_oai_models, get_aoai_config
-):
-=======
 async def test_oai_chat_stream_service_with_skills(setup_tldr_function_for_oai_models, get_aoai_config):
->>>>>>> 0182735c (resynced with main)
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     _, api_key, endpoint = get_aoai_config
@@ -90,22 +84,6 @@ async def test_oai_chat_stream_service_with_skills(setup_tldr_function_for_oai_m
     # Configure LLM service
     kernel.add_chat_service(
         "chat_completion",
-<<<<<<< HEAD
-        sk_oai.AzureChatCompletion(
-            deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
-        ),
-    )
-
-    # Create the semantic function
-    tldr_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
-    )
-
-    result = []
-    async for message in kernel.run_stream_async(
-        tldr_function, input_str=text_to_summarize
-    ):
-=======
         sk_oai.AzureChatCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
     )
 
@@ -114,17 +92,10 @@ async def test_oai_chat_stream_service_with_skills(setup_tldr_function_for_oai_m
 
     result = []
     async for message in kernel.run_stream_async(tldr_function, input_str=text_to_summarize):
->>>>>>> 0182735c (resynced with main)
         result.append(message)
     output = "".join(result).strip()
 
     print(f"TLDR using input string: '{output}'")
     assert len(result) > 1
-<<<<<<< HEAD
-    assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
-    )
-=======
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
->>>>>>> 0182735c (resynced with main)
     assert len(output) < 100

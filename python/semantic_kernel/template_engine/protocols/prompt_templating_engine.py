@@ -15,7 +15,9 @@ class PromptTemplatingEngine(Protocol):
     Prompt templating engine protocol.
     """
 
-    def extract_blocks(self, template_text: Optional[str] = None, validate: bool = True) -> List[Block]:
+    def extract_blocks(
+        self, template_text: Optional[str] = None, validate: bool = True
+    ) -> List[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
@@ -40,7 +42,9 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_blocks_async(self, blocks: List[Block], context: "SKContext") -> str:
+    async def render_blocks_async(
+        self, blocks: List[Block], context: "SKContext"
+    ) -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -50,7 +54,9 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    def render_variables(self, blocks: List[Block], variables: Optional[ContextVariables] = None) -> List[Block]:
+    def render_variables(
+        self, blocks: List[Block], variables: Optional[ContextVariables] = None
+    ) -> List[Block]:
         """
         Given a list of blocks, render the Variable Blocks, replacing
         placeholders with the actual value in memory.
@@ -62,7 +68,9 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_code_async(self, blocks: List[Block], execution_context: "SKContext") -> List[Block]:
+    async def render_code_async(
+        self, blocks: List[Block], execution_context: "SKContext"
+    ) -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.

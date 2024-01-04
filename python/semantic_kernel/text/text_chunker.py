@@ -48,7 +48,9 @@ def _token_counter(text: str) -> int:
     return len(text) // 4
 
 
-def split_plaintext_lines(text: str, max_token_per_line: int, token_counter: Callable = _token_counter) -> List[str]:
+def split_plaintext_lines(
+    text: str, max_token_per_line: int, token_counter: Callable = _token_counter
+) -> List[str]:
     """
     Split plain text into lines.
     it will split on new lines first, and then on punctuation.
@@ -61,7 +63,9 @@ def split_plaintext_lines(text: str, max_token_per_line: int, token_counter: Cal
     )
 
 
-def split_markdown_lines(text: str, max_token_per_line: int, token_counter: Callable = _token_counter) -> List[str]:
+def split_markdown_lines(
+    text: str, max_token_per_line: int, token_counter: Callable = _token_counter
+) -> List[str]:
     """
     Split markdown into lines.
     It will split on punctuation first, and then on space and new lines.
@@ -74,7 +78,9 @@ def split_markdown_lines(text: str, max_token_per_line: int, token_counter: Call
     )
 
 
-def split_plaintext_paragraph(text: List[str], max_tokens: int, token_counter: Callable = _token_counter) -> List[str]:
+def split_plaintext_paragraph(
+    text: List[str], max_tokens: int, token_counter: Callable = _token_counter
+) -> List[str]:
     """
     Split plain text into paragraphs.
     """
@@ -90,10 +96,14 @@ def split_plaintext_paragraph(text: List[str], max_tokens: int, token_counter: C
             )
         )
 
-    return _split_text_paragraph(text=split_lines, max_tokens=max_tokens, token_counter=token_counter)
+    return _split_text_paragraph(
+        text=split_lines, max_tokens=max_tokens, token_counter=token_counter
+    )
 
 
-def split_markdown_paragraph(text: List[str], max_tokens: int, token_counter: Callable = _token_counter) -> List[str]:
+def split_markdown_paragraph(
+    text: List[str], max_tokens: int, token_counter: Callable = _token_counter
+) -> List[str]:
     """
     Split markdown into paragraphs.
     """
@@ -108,10 +118,14 @@ def split_markdown_paragraph(text: List[str], max_tokens: int, token_counter: Ca
             )
         )
 
-    return _split_text_paragraph(text=split_lines, max_tokens=max_tokens, token_counter=token_counter)
+    return _split_text_paragraph(
+        text=split_lines, max_tokens=max_tokens, token_counter=token_counter
+    )
 
 
-def _split_text_paragraph(text: List[str], max_tokens: int, token_counter: Callable = _token_counter) -> List[str]:
+def _split_text_paragraph(
+    text: List[str], max_tokens: int, token_counter: Callable = _token_counter
+) -> List[str]:
     """
     Split text into paragraphs.
     """
@@ -125,7 +139,10 @@ def _split_text_paragraph(text: List[str], max_tokens: int, token_counter: Calla
         num_tokens_line = token_counter(line)
         num_tokens_paragraph = token_counter("".join(current_paragraph))
 
-        if num_tokens_paragraph + num_tokens_line + 1 >= max_tokens and len(current_paragraph) > 0:
+        if (
+            num_tokens_paragraph + num_tokens_line + 1 >= max_tokens
+            and len(current_paragraph) > 0
+        ):
             paragraphs.append("".join(current_paragraph).strip())
             current_paragraph = []
 

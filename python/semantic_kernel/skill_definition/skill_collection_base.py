@@ -21,9 +21,13 @@ class SkillCollectionBase(ReadOnlySkillCollectionBase, ABC):
         pass
 
     @abstractmethod
-    def add_semantic_function(self, semantic_function: "SKFunctionBase") -> "SkillCollectionBase":
+    def add_semantic_function(
+        self, semantic_function: "SKFunctionBase"
+    ) -> "SkillCollectionBase":
         pass
 
     @abstractmethod
-    def add_native_function(self, native_function: "SKFunctionBase") -> "SkillCollectionBase":
+    def add_native_function(
+        self, native_function: "SKFunctionBase"
+    ) -> "SkillCollectionBase":
         pass

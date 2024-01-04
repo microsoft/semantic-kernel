@@ -33,7 +33,9 @@ class PromptTemplate(PromptTemplateBase):
         log: Optional[Any] = None,
     ) -> None:
         if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+            logger.warning(
+                "The `log` parameter is deprecated. Please use the `logging` module instead."
+            )
         super().__init__(
             template=template,
             template_engine=template_engine,
@@ -69,7 +71,9 @@ class PromptTemplate(PromptTemplateBase):
             if var_block.name in seen:
                 continue
 
-            result.append(ParameterView(name=var_block.name, description="", default_value=""))
+            result.append(
+                ParameterView(name=var_block.name, description="", default_value="")
+            )
 
             seen.add(var_block.name)
 

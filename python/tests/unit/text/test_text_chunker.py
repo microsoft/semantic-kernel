@@ -146,7 +146,8 @@ def test_split_text_paragraph_evenly():
     text = [
         "This is a test of the emergency broadcast system. This is only a test.",
         "We repeat, this is only a test. A unit test.",
-        "A small note. And another. And once again. Seriously, this is the end. " + "We're finished. All set. Bye.",
+        "A small note. And another. And once again. Seriously, this is the end. "
+        + "We're finished. All set. Bye.",
         "Done.",
     ]
 
@@ -167,7 +168,8 @@ def test_split_text_paragraph_evenly_2():
     """Test split_paragraph() with evenly split input"""
 
     text = [
-        "The gentle breeze rustled the autumn leaves on the tree branches. " + "She smiled and walked away.",
+        "The gentle breeze rustled the autumn leaves on the tree branches. "
+        + "She smiled and walked away.",
         "The sun set over the horizon peacefully, the beautiful star. Cats love boxes.",
         "That is something. Incredible news that is. "
         + "What a beautiful day to be alive. Seriously, this is the end. "
@@ -185,7 +187,8 @@ def test_split_text_paragraph_evenly_2():
         "The sun set over the horizon peacefully, the beautiful star.",
         f"Cats love boxes.{NEWLINE}That is something. Incredible news that is.",
         f"What a beautiful day to be alive.{NEWLINE}Seriously, this is the end.",
-        f"We're finished once of for all. All set. Ok.{NEWLINE}Done.{NEWLINE}" + f"Or is it?{NEWLINE}Surprise!",
+        f"We're finished once of for all. All set. Ok.{NEWLINE}Done.{NEWLINE}"
+        + f"Or is it?{NEWLINE}Surprise!",
     ]
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
@@ -198,7 +201,8 @@ def test_split_paragraph_newline():
     text = [
         "This is a test of the emergency broadcast system\r\nThis is only a test",
         "We repeat this is only a test\nA unit test",
-        "A small note\nAnd another\r\nAnd once again\rSeriously this is the end\n" + "We're finished\nAll set\nBye\n",
+        "A small note\nAnd another\r\nAnd once again\rSeriously this is the end\n"
+        + "We're finished\nAll set\nBye\n",
         "Done",
     ]
     expected = [
@@ -220,7 +224,8 @@ def test_split_paragraph_punctuation():
     text = [
         "This is a test of the emergency broadcast system. This is only a test",
         "We repeat, this is only a test? A unit test",
-        "A small note! And another? And once again! Seriously, this is the end. " + "We're finished. All set. Bye.",
+        "A small note! And another? And once again! Seriously, this is the end. "
+        + "We're finished. All set. Bye.",
         "Done.",
     ]
     expected = [
@@ -243,7 +248,8 @@ def test_split_paragraph_semicolon():
     text = [
         "This is a test of the emergency broadcast system; This is only a test",
         "We repeat; this is only a test; A unit test",
-        "A small note; And another; And once again; Seriously, this is the end;" + " We're finished; All set; Bye.",
+        "A small note; And another; And once again; Seriously, this is the end;"
+        + " We're finished; All set; Bye.",
         "Done.",
     ]
     expected = [
@@ -265,7 +271,8 @@ def test_split_paragraph_colon():
     text = [
         "This is a test of the emergency broadcast system: This is only a test",
         "We repeat: this is only a test: A unit test",
-        "A small note: And another: And once again: Seriously, this is the end: " + "We're finished: All set: Bye.",
+        "A small note: And another: And once again: Seriously, this is the end: "
+        + "We're finished: All set: Bye.",
         "Done.",
     ]
     expected = [
@@ -287,7 +294,8 @@ def test_split_paragraph_commas():
     text = [
         "This is a test of the emergency broadcast system, This is only a test",
         "We repeat, this is only a test, A unit test",
-        "A small note, And another, And once again, Seriously this is the end, " + "We're finished, All set, Bye.",
+        "A small note, And another, And once again, Seriously this is the end, "
+        + "We're finished, All set, Bye.",
         "Done.",
     ]
     expected = [
@@ -309,7 +317,8 @@ def test_split_paragraph_closing_brackets():
     text = [
         "This is a test of the emergency broadcast system) This is only a test",
         "We repeat) this is only a test) A unit test",
-        "A small note] And another) And once again] Seriously this is the end} " + "We're finished} All set} Bye.",
+        "A small note] And another) And once again] Seriously this is the end} "
+        + "We're finished} All set} Bye.",
         "Done.",
     ]
     expected = [
@@ -317,7 +326,8 @@ def test_split_paragraph_closing_brackets():
         "This is only a test",
         "We repeat) this is only a test) A unit test",
         "A small note] And another) And once again]",
-        "Seriously this is the end\u007d We're finished\u007d All set\u007d " + f"Bye.{NEWLINE}Done.",
+        "Seriously this is the end\u007d We're finished\u007d All set\u007d "
+        + f"Bye.{NEWLINE}Done.",
     ]
     max_token_per_line = 15
     split = split_plaintext_paragraph(text, max_token_per_line)
@@ -331,7 +341,8 @@ def test_split_paragraph_spaces():
     text = [
         "This is a test of the emergency broadcast system This is only a test",
         "We repeat this is only a test A unit test",
-        "A small note And another And once again Seriously this is the end We're " + "finished All set Bye.",
+        "A small note And another And once again Seriously this is the end We're "
+        + "finished All set Bye.",
         "Done.",
     ]
     expected = [
@@ -353,7 +364,8 @@ def test_split_paragraph_hyphens():
     text = [
         "This is a test of the emergency broadcast system-This is only a test",
         "We repeat-this is only a test-A unit test",
-        "A small note-And another-And once again-Seriously, this is the end-We're" + " finished-All set-Bye.",
+        "A small note-And another-And once again-Seriously, this is the end-We're"
+        + " finished-All set-Bye.",
         "Done.",
     ]
     expected = [
@@ -377,7 +389,8 @@ def test_split_paragraph_nodelimiters():
         "Thisisonlyatest",
         "WerepeatthisisonlyatestAunittest",
         "AsmallnoteAndanotherAndonceagain",
-        "SeriouslythisistheendWe'refinishedAllsetByeDoneThisOneWillBeSplitToMeet" + "TheLimit",
+        "SeriouslythisistheendWe'refinishedAllsetByeDoneThisOneWillBeSplitToMeet"
+        + "TheLimit",
     ]
     expected = [
         f"Thisisatestoftheemergencybroadcastsystem{NEWLINE}Thisisonlyatest",
@@ -398,7 +411,8 @@ def test_split_md_on_dot():
     text = [
         "This is a test of the emergency broadcast\n system.This\n is only a test",
         "We repeat. this is only a test. A unit test",
-        "A small note. And another. And once again. Seriously, this is the end. " + "We're finished. All set. Bye.",
+        "A small note. And another. And once again. Seriously, this is the end. "
+        + "We're finished. All set. Bye.",
         "Done.",
     ]
     expected = [
@@ -420,7 +434,8 @@ def test_split_md_on_colon():
     text = [
         "This is a test of the emergency broadcast system: This is only a test",
         "We repeat: this is only a test: A unit test",
-        "A small note: And another: And once again: Seriously, this is the end: " + "We're finished: All set: Bye.",
+        "A small note: And another: And once again: Seriously, this is the end: "
+        + "We're finished: All set: Bye.",
         "Done.",
     ]
     expected = [
@@ -442,7 +457,8 @@ def test_split_md_on_punctuation():
     text = [
         "This is a test of the emergency broadcast\n system?This\n is only a test",
         "We repeat? this is only a test! A unit test",
-        "A small note? And another! And once again? Seriously, this is the end! " + "We're finished! All set! Bye.",
+        "A small note? And another! And once again? Seriously, this is the end! "
+        + "We're finished! All set! Bye.",
         "Done.",
     ]
     expected = [
@@ -464,7 +480,8 @@ def test_split_md_on_semicolon():
     text = [
         "This is a test of the emergency broadcast system; This is only a test",
         "We repeat; this is only a test; A unit test",
-        "A small note; And another; And once again; Seriously, this is the end; " + "We're finished; All set; Bye.",
+        "A small note; And another; And once again; Seriously, this is the end; "
+        + "We're finished; All set; Bye.",
         "Done.",
     ]
     expected = [
@@ -486,7 +503,8 @@ def test_split_md_on_commas():
     test = [
         "This is a test of the emergency broadcast system, This is only a test",
         "We repeat, this is only a test, A unit test",
-        "A small note, And another, And once again, Seriously, this is the end, " + "We're finished, All set, Bye.",
+        "A small note, And another, And once again, Seriously, this is the end, "
+        + "We're finished, All set, Bye.",
         "Done.",
     ]
     expected = [
@@ -508,7 +526,8 @@ def test_split_md_on_brackets():
     test = [
         "This is a test of the emergency broadcast system) This is only a test.",
         "We repeat [this is only a test] A unit test",
-        "A small note (And another) And once (again) Seriously, this is the end " + "We're finished (All set) Bye.",
+        "A small note (And another) And once (again) Seriously, this is the end "
+        + "We're finished (All set) Bye.",
         "Done.",
     ]
     expected = [
@@ -530,7 +549,8 @@ def test_split_md_on_spaces():
     test = [
         "This is a test of the emergency broadcast system This is only a test",
         "We repeat this is only a test A unit test",
-        "A small note And another And once again Seriously this is the end We're " + "finished All set Bye.",
+        "A small note And another And once again Seriously this is the end We're "
+        + "finished All set Bye.",
         "Done.",
     ]
     expected = [
@@ -549,7 +569,8 @@ def test_split_md_on_newlines():
     test = [
         "This_is_a_test_of_the_emergency_broadcast_system\r\nThis_is_only_a_test",
         "We_repeat_this_is_only_a_test\nA_unit_test",
-        "A_small_note\nAnd_another\r\nAnd_once_again\rSeriously_this_is_the_end\n" + "We're_finished\nAll_set\nBye\n",
+        "A_small_note\nAnd_another\r\nAnd_once_again\rSeriously_this_is_the_end\n"
+        + "We're_finished\nAll_set\nBye\n",
         "Done",
     ]
     expected = [
