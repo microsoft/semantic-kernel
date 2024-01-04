@@ -72,17 +72,13 @@ def setup(use_azure: bool = False):
         api_key, org_id = sk.openai_settings_from_dot_env()
         kernel.add_chat_service(
             "chat-gpt",
-            OpenAIChatCompletion(
-                ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
-            ),
+            OpenAIChatCompletion(ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
         )
 
     # note: using skills from the samples folder
     skills_directory = "../samples/skills/"
 
-    grounding_semantic_functions = kernel.import_semantic_skill_from_directory(
-        skills_directory, "GroundingSkill"
-    )
+    grounding_semantic_functions = kernel.import_semantic_skill_from_directory(skills_directory, "GroundingSkill")
 
     # entity_extraction = grounding_semantic_functions["ExtractEntities"]
     # reference_check = grounding_semantic_functions["ReferenceCheckEntities"]
@@ -102,9 +98,7 @@ async def run_entity_extraction(kernel, semantic_functions, summary_text):
     context["topic"] = "people and places"
     context["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
 
-    extraction_result = semantic_functions["ExtractEntities"](
-        summary_text, context=context
-    )
+    extraction_result = semantic_functions["ExtractEntities"](summary_text, context=context)
 
     return extraction_result, context
 
@@ -112,17 +106,13 @@ async def run_entity_extraction(kernel, semantic_functions, summary_text):
 async def run_reference_check(semantic_functions, extraction_result, context):
     context["reference_context"] = get_grounding_text()
 
-    grounding_result = semantic_functions["ReferenceCheckEntities"](
-        extraction_result.result, context=context
-    )
+    grounding_result = semantic_functions["ReferenceCheckEntities"](extraction_result.result, context=context)
     context["ungrounded_entities"] = grounding_result.result
     return grounding_result, context
 
 
 async def run_entity_excision(semantic_functions, summary_text, context):
-    excision_result = semantic_functions["ExciseEntities"](
-        summary_text, context=context
-    )
+    excision_result = semantic_functions["ExciseEntities"](summary_text, context=context)
     return excision_result, context
 
 
@@ -169,28 +159,20 @@ Now, let us start calling individual semantic functions.{Colors.CEND}"""
     print(
         f"{Colors.CGREEN}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND}"  # noqa: E501
     )
-    extraction_result, context = await run_entity_extraction(
-        kernel, semantic_functions, summary_text
-    )
+    extraction_result, context = await run_entity_extraction(kernel, semantic_functions, summary_text)
     print(f"Extraction result: \n{Colors.CBLUE}{extraction_result.result}{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
     print(
         f"{Colors.CGREEN}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND}"  # noqa: E501
     )
-    grounding_result, context = await run_reference_check(
-        semantic_functions, extraction_result, context
-    )
+    grounding_result, context = await run_reference_check(semantic_functions, extraction_result, context)
     print(f"Grounding result: \n{Colors.CBLUE}{grounding_result.result}{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
     print(
         f"{Colors.CGREEN}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND}"  # noqa: E501
     )
-    excision_result, context = await run_entity_excision(
-        semantic_functions, summary_text, context
-    )
-    print(
-        f"The final summary text: \n{Colors.CBLUE}{excision_result.result}{Colors.CEND}"
-    )
+    excision_result, context = await run_entity_excision(semantic_functions, summary_text, context)
+    print(f"The final summary text: \n{Colors.CBLUE}{excision_result.result}{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
     print(f"{Colors.CBOLD}Finished!{Colors.CEND}")
 

@@ -27,9 +27,7 @@ class CodeTokenizer(SKBaseModel):
         super().__init__()
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     def tokenize(self, text: str) -> List[Block]:
         # Remove spaces, which are ignored anyway
@@ -90,9 +88,7 @@ class CodeTokenizer(SKBaseModel):
                 #  - skip the current char (escape char)
                 #  - add the next char (special char)
                 #  - jump to the one after (to handle "\\" properly)
-                if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(
-                    next_char
-                ):
+                if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(next_char):
                     current_token_content.append(next_char)
                     skip_next_char = True
                     continue

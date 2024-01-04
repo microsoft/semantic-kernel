@@ -60,9 +60,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         super().__init__(
             ai_model_id=ai_model_id,
             task=task,
-            device=(
-                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-            ),
+            device=(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"),
             generator=transformers.pipeline(
                 task=task,
                 model=ai_model_id,
@@ -72,9 +70,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             ),
         )
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     async def complete_async(
         self,
@@ -83,14 +79,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
             results = self.generator(**request_settings.prepare_settings_dict(prompt))
-            result_field_name = (
-                "summary_text" if self.task == "summarization" else "generated_text"
-            )
+            result_field_name = "summary_text" if self.task == "summarization" else "generated_text"
             if len(results) == 1:
                 return results[0][result_field_name]
             return [resp[result_field_name] for resp in results]
@@ -116,9 +108,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             str -- Completion result.
         """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if request_settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
