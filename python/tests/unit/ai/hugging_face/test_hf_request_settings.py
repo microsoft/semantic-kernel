@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.hugging_face.hf_request_settings import (
     HuggingFaceRequestSettings,
 )
+
 
 def test_custom_hf_text_request_settings():
     settings = HuggingFaceRequestSettings(
@@ -21,10 +20,9 @@ def test_custom_hf_text_request_settings():
 
     # Testing prepare_settings_dict
     options = settings.prepare_settings_dict()
-    gen_config = options.get('generation_config')
+    gen_config = options.get("generation_config")
 
     # Accessing attributes of GenerationConfig object directly
     assert gen_config.max_new_tokens == 80
     assert gen_config.temperature == 0.7
     assert gen_config.top_p == 1
-

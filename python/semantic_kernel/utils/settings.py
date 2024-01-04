@@ -204,7 +204,7 @@ def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
     cosmos_api = config.get("AZCOSMOS_API")
     cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
 
-    #assert cosmos_connstr is not None, "Azure Cosmos Connection String not found in .env file"
+    # assert cosmos_connstr is not None, "Azure Cosmos Connection String not found in .env file"
 
     return cosmos_api, cosmos_connstr
 

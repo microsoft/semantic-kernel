@@ -1,17 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-
 from typing import Any, Dict
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -21,7 +21,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 """
 
 
-def _config_ban_tokens(settings: AIRequestSettings, keys: Dict[Any, Any]):   
+def _config_ban_tokens(settings: AIRequestSettings, keys: Dict[Any, Any]):
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list
