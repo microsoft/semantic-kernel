@@ -4,18 +4,16 @@ package com.microsoft.semantickernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
+import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.util.List;
 
 /**
  * Interface for the semantic kernel.
@@ -61,19 +59,7 @@ public interface Kernel extends Buildable {
 
     ServiceProvider getServiceSelector();
 
-    KernelFunction createFunctionFromPrompt(
-        String promptTemplate,
-        @Nullable PromptExecutionSettings executionSettings,
-        @Nullable String functionName,
-        @Nullable String description,
-        @Nullable String templateFormat,
-        @Nullable PromptTemplateFactory promptTemplateFactory);
-
-    Kernel addPlugin(KernelPlugin time);
-
-    KernelPlugin getPlugin(String name);
     KernelPluginCollection getPlugins();
-
 
     interface Builder extends SemanticKernelBuilder<Kernel> {
 
@@ -81,6 +67,6 @@ public interface Kernel extends Buildable {
 
         Builder withPromptTemplate(PromptTemplate promptTemplate);
 
-        Builder withPlugins(KernelPlugin searchPlugin);
+        Builder withPlugin(KernelPlugin searchPlugin);
     }
 }

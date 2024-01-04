@@ -1,15 +1,20 @@
 package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KernelPluginCollection implements Iterable<KernelPlugin> {
 
-    private final Map<String, KernelPlugin> plugins = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(KernelPluginCollection.class);
+
+    private final Map<String, KernelPlugin> plugins = new CaseInsensitiveMap<>();
 
     public KernelPluginCollection() {
         this(Collections.emptyList());
@@ -19,10 +24,12 @@ public class KernelPluginCollection implements Iterable<KernelPlugin> {
         plugins.forEach(plugin -> this.plugins.put(plugin.getName(), plugin));
     }
 
+    @Nullable
     public KernelFunction getFunction(String pluginName, String functionName) {
         KernelPlugin plugin = plugins.get(pluginName);
         if (plugin == null) {
-            throw new IllegalArgumentException("Plugin '" + pluginName + "' not found");
+            LOGGER.warn("Failed to find plugin '{}'", pluginName);
+            return null;
         }
         KernelFunction function = plugin.get(functionName);
 
@@ -40,7 +47,7 @@ public class KernelPluginCollection implements Iterable<KernelPlugin> {
 
     public void add(KernelPlugin plugin) {
         if (plugins.containsKey(plugin.getName())) {
-            throw new IllegalArgumentException("Plugin " + plugin.getName() + " already exists");
+            LOGGER.warn("Plugin {} already exists, overwriting existing plugin", plugin.getName());
         }
 
         plugins.put(plugin.getName(), plugin);

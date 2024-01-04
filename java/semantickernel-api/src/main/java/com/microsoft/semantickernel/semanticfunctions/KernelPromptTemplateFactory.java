@@ -6,7 +6,6 @@ import java.util.Locale;
 
 public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 
-    @Override
     public PromptTemplate tryCreate(PromptTemplateConfig templateConfig) {
         switch (templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT)) {
             case "semantic-kernel":
@@ -14,8 +13,14 @@ public class KernelPromptTemplateFactory implements PromptTemplateFactory {
             case "handlebars":
                 return new HandlebarsPromptTemplate(templateConfig);
             default:
-                throw new IllegalArgumentException(
-                    "Unknown template format: " + templateConfig.getTemplateFormat());
+                throw new UnknownTemplateFormatException(templateConfig.getTemplateFormat());
+        }
+    }
+
+    public static class UnknownTemplateFormatException extends IllegalArgumentException {
+
+        public UnknownTemplateFormatException(String templateFormat) {
+            super("Unknown template format: " + templateFormat);
         }
     }
 }

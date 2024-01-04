@@ -53,7 +53,7 @@ public class Main {
         Kernel kernel = SKBuilders.kernel()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
-            .withPlugins(searchPlugin)
+            .withPlugin(searchPlugin)
             .build();
 
         ChatHistory chatHistory = new ChatHistory();

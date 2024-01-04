@@ -2,16 +2,13 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,38 +85,8 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public KernelFunction createFunctionFromPrompt(
-        String promptTemplate,
-        @Nullable PromptExecutionSettings executionSettings,
-        @Nullable String functionName,
-        @Nullable String description,
-        @Nullable String templateFormat,
-        @Nullable PromptTemplateFactory promptTemplateFactory) {
-
-        return KernelFunctionFactory
-            .createFromPrompt(
-                promptTemplate,
-                executionSettings,
-                functionName,
-                description,
-                templateFormat,
-                promptTemplateFactory);
-    }
-
-    @Override
-    public Kernel addPlugin(KernelPlugin time) {
-        plugins.add(time);
-        return this;
-    }
-
-    @Override
-    public KernelPlugin getPlugin(String name) {
-        throw new Todo();
-    }
-
-    @Override
     public KernelPluginCollection getPlugins() {
-        throw new Todo();
+        return plugins;
     }
 
     static class DefaultServiceProvider implements ServiceProvider {
@@ -162,7 +129,7 @@ public class DefaultKernel implements Kernel {
         }
 
         @Override
-        public Kernel.Builder withPlugins(KernelPlugin plugin) {
+        public Kernel.Builder withPlugin(KernelPlugin plugin) {
             plugins.add(plugin);
             return this;
         }

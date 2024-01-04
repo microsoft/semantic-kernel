@@ -8,7 +8,8 @@ import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings.Builder;
+import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
@@ -17,6 +18,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
 public class Example06_TemplateLanguage {
+
 
     public static class Time {
 
@@ -37,9 +39,10 @@ public class Example06_TemplateLanguage {
 
         TextGenerationService textGenerationService;
 
-        if (System.getenv("CLIENT_OPENAI_TYPE").equalsIgnoreCase("azure")) {
-            String clientKey = System.getenv("CLIENT_AZUREOPENAI_KEY");
-            String clientEndpoint = System.getenv("CLIENT_AZUREOPENAI_ENDPOINT");
+        String clientKey = System.getenv("CLIENT_KEY");
+
+        if (Boolean.parseBoolean(System.getenv("USE_AZURE_CLIENT"))) {
+            String clientEndpoint = System.getenv("CLIENT_ENDPOINT");
 
             OpenAIAsyncClient client = new OpenAIClientBuilder()
                 .credential(new AzureKeyCredential(clientKey))
@@ -51,12 +54,8 @@ public class Example06_TemplateLanguage {
                 .withModelId("text-davinci-003")
                 .build();
         } else {
-            String clientKey = System.getenv("CLIENT_OPENAI_KEY");
-            String clientEndpoint = System.getenv("CLIENT_OPENAI_ENDPOINT");
-
             OpenAIAsyncClient client = new OpenAIClientBuilder()
                 .credential(new KeyCredential(clientKey))
-                .endpoint(clientEndpoint)
                 .buildAsyncClient();
 
             // TODO: Add support for OpenAI API
@@ -72,7 +71,7 @@ public class Example06_TemplateLanguage {
         KernelPlugin time = KernelPluginFactory.createFromObject(
             new Time(), "time");
 
-        kernel.addPlugin(time);
+        kernel.getPlugins().add(time);
 
         // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """
@@ -95,11 +94,10 @@ public class Example06_TemplateLanguage {
         var renderedPrompt = promptTemplate.renderAsync(kernel, null).block();
         System.out.println(renderedPrompt);
 
-        // Run the prompt / prompt function
-        var kindOfDay = kernel
-            .createFunctionFromPrompt(
+        var kindOfDay = KernelFunctionFactory
+            .createFromPrompt(
                 functionDefinition,
-                new PromptExecutionSettings.Builder()
+                new Builder()
                     .withMaxTokens(100)
                     .build(),
                 null,

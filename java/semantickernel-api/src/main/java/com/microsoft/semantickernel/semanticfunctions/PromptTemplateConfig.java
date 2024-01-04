@@ -6,9 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -247,4 +250,5 @@ public class PromptTemplateConfig {
     public void setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
         this.executionSettings = executionSettings;
     }
+
 }

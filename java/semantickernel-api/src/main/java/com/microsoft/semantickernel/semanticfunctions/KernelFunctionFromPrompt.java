@@ -287,17 +287,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             } else if (promptTemplateFactory != null) {
                 temp = promptTemplateFactory.tryCreate(config);
             } else {
-                switch (config.getTemplateFormat()) {
-                    case "handlebars":
-                        temp = new HandlebarsPromptTemplate(config);
-                        break;
-                    case "semantic-kernel":
-                        temp = new DefaultPromptTemplate(config);
-                        break;
-                    default:
-                        throw new IllegalStateException(
-                            "Unknown template format: " + config.getTemplateFormat());
-                }
+                temp = new KernelPromptTemplateFactory().tryCreate(config);
             }
 
             return new KernelFunctionFromPrompt(temp, config);
