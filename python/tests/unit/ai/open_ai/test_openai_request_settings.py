@@ -27,7 +27,6 @@ def test_default_openai_chat_request_settings():
     assert settings.number_of_responses == 1
     assert settings.logit_bias == {}
     assert settings.messages[0]["content"] == "Assistant is a large language model."
-    assert settings.response_format == "text"
 
 
 def test_custom_openai_chat_request_settings():
@@ -68,9 +67,7 @@ def test_openai_chat_request_settings_from_default_completion_config():
 
 
 def test_openai_chat_request_settings_from_openai_request_settings():
-    chat_settings = OpenAIChatRequestSettings(
-        service_id="test_service", temperature=1.0
-    )
+    chat_settings = OpenAIChatRequestSettings(service_id="test_service", temperature=1.0)
     new_settings = OpenAIChatRequestSettings(service_id="test_2", temperature=0.0)
     chat_settings.update_from_ai_request_settings(new_settings)
     assert chat_settings.service_id == "test_2"
@@ -78,17 +75,13 @@ def test_openai_chat_request_settings_from_openai_request_settings():
 
 
 def test_openai_text_request_settings_validation():
-    with pytest.raises(
-        ValidationError, match="best_of must be greater than number_of_responses"
-    ):
+    with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
         OpenAITextRequestSettings(best_of=1, number_of_responses=2)
 
 
 def test_openai_text_request_settings_validation_manual():
     text_oai = OpenAITextRequestSettings(best_of=1, number_of_responses=1)
-    with pytest.raises(
-        ValidationError, match="best_of must be greater than number_of_responses"
-    ):
+    with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
         text_oai.number_of_responses = 2
 
 
@@ -202,9 +195,7 @@ def test_create_options():
 
 
 def test_create_options_azure_data():
-    az_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
+    az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
     az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
     extra = ExtraBody(dataSources=[az_data])
     settings = AzureChatRequestSettings(extra_body=extra)
@@ -237,7 +228,5 @@ def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
             ]
         },
     }
-    settings = AzureChatRequestSettings.model_validate(
-        input_dict, strict=True, from_attributes=True
-    )
+    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"

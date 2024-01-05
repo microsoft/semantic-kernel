@@ -46,9 +46,7 @@ from semantic_kernel.sk_pydantic import HttpsUrl
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureChatCompletion(
-    AzureOpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase
-):
+class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
     """Azure Chat completion class."""
 
     @overload
@@ -237,20 +235,14 @@ class AzureChatCompletion(
                 The default value is False.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if kwargs.get("logger"):
-            logger.warning(
-                "The 'logger' argument is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The 'logger' argument is deprecated. Please use the `logging` module instead.")
 
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
         if use_extensions and endpoint and deployment_name:
-            base_url = HttpsUrl(
-                f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions"
-            )
+            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions")
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
@@ -290,10 +282,7 @@ class AzureChatCompletion(
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> Union[
-        Tuple[Optional[str], Optional[FunctionCall]],
-        List[Tuple[Optional[str], Optional[FunctionCall]]],
-    ]:
+    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -329,9 +318,7 @@ class AzureChatCompletion(
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> Union[
-        AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse
-    ]:
+    ) -> Union[AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse]:
         """Executes a chat completion request and returns the result.
 
         Arguments:

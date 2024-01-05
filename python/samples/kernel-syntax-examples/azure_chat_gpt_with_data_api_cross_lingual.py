@@ -19,10 +19,8 @@ azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureA
 # Set index language
 azure_aisearch_datasource.parameters.indexLanguage = "en"
 
-azure_chat_with_data_settings = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        dataSources=[azure_aisearch_datasource]
-    )
+azure_chat_with_data_settings = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
+    dataSources=[azure_aisearch_datasource]
 )
 
 # For example, AI Search index may contain the following document:
@@ -44,20 +42,16 @@ kernel.add_chat_service(
     chat_service,
 )
 
-prompt_config = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
-        max_tokens=2000,
-        temperature=0.7,
-        top_p=0.8,
-        inputLanguage="fr",
-        outputLanguage="de",
-        data_source_settings=azure_chat_with_data_settings,
-    )
+prompt_config = sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    inputLanguage="fr",
+    outputLanguage="de",
+    data_source_settings=azure_chat_with_data_settings,
 )
 
-prompt_template = sk.ChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
+prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
 prompt_template.add_user_message("Bonjour!")
 prompt_template.add_assistant_message(
