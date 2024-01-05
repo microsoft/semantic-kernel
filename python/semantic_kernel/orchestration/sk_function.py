@@ -372,8 +372,11 @@ class SKFunction(SKFunctionBase):
             loop = None
 
         if loop and loop.is_running():
-            coroutine_function = self._invoke_semantic_async if self.is_semantic else self._invoke_native_async
-            return self.run_async_in_executor(lambda: coroutine_function(context, settings))
+            if self.is_semantic:
+                coroutine_function = lambda: self._invoke_semantic_async(context, settings)
+            else:
+                coroutine_function = lambda: self._invoke_native_async(context)
+            return self.run_async_in_executor(coroutine_function)
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
