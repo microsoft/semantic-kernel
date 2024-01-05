@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.converters.Ch
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.NumberVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.StringVariableContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.converters.VoidVariableContextVariableTypeConverter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ContextVariableTypes {
             new BooleanVariableContextVariableTypeConverter(),
             new ChatHistoryVariableContextVariableTypeConverter(),
             new StringVariableContextVariableTypeConverter(),
+            new VoidVariableContextVariableTypeConverter(),
 
             new NumberVariableContextVariableTypeConverter<>(Byte.class, Byte::parseByte),
             new NumberVariableContextVariableTypeConverter<>(byte.class, Byte::parseByte),

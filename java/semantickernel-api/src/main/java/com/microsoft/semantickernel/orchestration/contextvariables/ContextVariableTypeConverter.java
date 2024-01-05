@@ -21,6 +21,23 @@ public class ContextVariableTypeConverter<T> {
         Class<U> getTargetType();
     }
 
+    public static class NoopConverter<T> extends ContextVariableTypeConverter<T> {
+
+        public NoopConverter(Class<T> clazz) {
+            super(
+                clazz,
+                x -> {
+                    throw new RuntimeException("Noop converter should not be called");
+                },
+                x -> {
+                    throw new RuntimeException("Noop converter should not be called");
+                },
+                x -> {
+                    throw new RuntimeException("Noop converter should not be called");
+                });
+        }
+    }
+
     public static abstract class DefaultConverter<T, U> implements Converter<T, U> {
 
         private final Class<U> targetType;

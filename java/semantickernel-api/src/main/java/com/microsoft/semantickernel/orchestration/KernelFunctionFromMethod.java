@@ -85,6 +85,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         <T> Mono<T> invoke(
             Kernel kernel,
             KernelFunction function,
+            @Nullable
             KernelArguments arguments);
     }
 
@@ -149,6 +150,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         return new ImplementationFunc() {
             @Override
             public <T> Mono<T> invoke(Kernel kernel, KernelFunction function,
+                @Nullable
                 KernelArguments arguments) {
 
                 //Set<Parameter> inputArgs = determineInputArgs(method);
@@ -228,7 +230,9 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     }
 
     private static Function<Parameter, Object> getParameters(
-        Method method, KernelArguments context) {
+        Method method,
+        @Nullable
+        KernelArguments context) {
         return parameter -> {
             if (KernelArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
@@ -239,7 +243,12 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     }
 
     private static Object getArgumentValue(
-        Method method, KernelArguments context, Parameter parameter) {
+        Method method,
+        @Nullable KernelArguments context,
+        Parameter parameter) {
+        if (context == null) {
+            return context;
+        }
         String variableName = getGetVariableName(parameter);
 
         ContextVariable<?> arg = context.get(variableName);
@@ -318,6 +327,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             return arg.getValue();
         }
 
+        if (isPrimative(arg.getValue().getClass(), parameter.getType())) {
+            return arg.getValue();
+        }
+
         ContextVariableTypeConverter<?> c = arg.getType().getConverter();
 
         Object converted = c.toObject(arg.getValue(), parameter.getType());
@@ -345,6 +358,24 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         return value;
     }
 
+    private static boolean isPrimative(Class<?> argType, Class<?> param) {
+        return (argType == Byte.class || argType == byte.class) && (param == Byte.class
+            || param == byte.class) ||
+            (argType == Integer.class || argType == int.class) && (param == Integer.class
+                || param == int.class) ||
+            (argType == Long.class || argType == long.class) && (param == Long.class
+                || param == long.class) ||
+            (argType == Double.class || argType == double.class) && (param == Double.class
+                || param == double.class) ||
+            (argType == Float.class || argType == float.class) && (param == Float.class
+                || param == float.class) ||
+            (argType == Short.class || argType == short.class) && (param == Short.class
+                || param == short.class) ||
+            (argType == Boolean.class || argType == boolean.class) && (param == Boolean.class
+                || param == boolean.class) ||
+            (argType == Character.class || argType == char.class) && (param == Character.class
+                || param == char.class);
+    }
 
     private static String getGetVariableName(Parameter parameter) {
         KernelFunctionParameter annotation = parameter.getAnnotation(KernelFunctionParameter.class);

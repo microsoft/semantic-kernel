@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -102,7 +103,7 @@ public class Example09_FunctionTypes {
             .withPlugin(plugin)
             .withPlugin(summarize)
             .build();
-
+/*
         // Different ways to invoke a function (not limited to these examples)
         kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null, String.class).block();
         kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null, String.class).block();
@@ -112,23 +113,70 @@ public class Example09_FunctionTypes {
                 plugin.get("InputDateTimeWithStringResult"),
                 KernelArguments
                     .builder()
-                    .withVariable(
-                        "currentDate",
-                        ZonedDateTime.now(),
+                    .withVariable("currentDate", ZonedDateTime.now(),
                         new DateTimeContextVariableTypeConverter())
                     .build(), String.class).block();
 
+        kernel.invokeAsync(plugin.get("NoInputTaskWithStringResult"), null, String.class).block();
+
+
+ */
+        kernel.invokeAsync(plugin.get("MultipleInputsWithVoidResult"),
+                KernelArguments
+                    .builder()
+                    .withVariable("x", "x string")
+                    .withVariable("y", 100)
+                    .withVariable("z", 1.5)
+                    .build(),
+                String.class)
+            .block();
+
+        kernel
+            .invokeAsync(plugin.get("ComplexInputWithStringResult"),
+                KernelArguments
+                    .builder()
+                    .withVariable("complexObject", new Object() {
+                            @Override
+                            public String toString() {
+                                return "A complex object";
+                            }
+                        },
+                        new NoopConverter<>(Object.class)
+                    )
+                    .build(),
+                String.class)
+            .block();
+
+        kernel
+            .invokeAsync(plugin.get("InputStringTaskWithStringResult"),
+                KernelArguments
+                    .builder()
+                    .withVariable("echoInput", "return this")
+                    .build(),
+                String.class)
+            .block();
+
+        kernel
+            .invokeAsync(plugin.get("InputStringTaskWithVoidResult"),
+                KernelArguments
+                    .builder()
+                    .withVariable("x", "x input")
+                    .build(),
+                Void.class)
+            .block();
 
         /*
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputDateTimeWithStringResult)], new() { ["currentDate"] = DateTime.Now });
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithStringResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.MultipleInputsWithVoidResult)], new() { ["x"] = "x string", ["y"] = 100, ["z"] = 1.5 });
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.ComplexInputWithStringResult)], new() { ["complexObject"] = new LocalExamplePlugin() });
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputStringTaskWithStringResult)], new() { ["echoInput"] = "return this" });
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputStringTaskWithVoidResult)], new() { ["x"] = "x input" });
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithFunctionResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithFunctionResult)]);
+        TODO: support FunctionResult
+        kernel
+            .invokeAsync(plugin.get("NoInputWithFunctionResult"),
+                null,
+                Void.class)
+            .block();
 
+         */
+
+        /*
+        TODO: support injection
         // Injecting Parameters Examples
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelFunctionWithStringResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerWithNoResult)]);
@@ -144,10 +192,16 @@ public class Example09_FunctionTypes {
             emphasizing type safety, modularity, and modern programming paradigms."
         });
 
-        // You can also use the kernel.Plugins collection to invoke a function
-        await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
-
          */
+
+        // You can also use the kernel.Plugins collection to invoke a function
+        kernel
+            .invokeAsync(
+                kernel.getPlugins()
+                    .getFunction("Examples", "NoInputWithVoidResult"),
+                null,
+                Void.class)
+            .block();
     }
 
 
@@ -187,63 +241,105 @@ public class Example09_FunctionTypes {
                     + currentDate + "}] -> result: {" + result + "}");
             return result;
         }
-        /*
 
         /// <summary>
         /// Example of using a Task function with no input and a string result
         /// </summary>
-    [KernelFunction]
-        public Task<string> NoInputTaskWithStringResult()
-        {
-            var result = "string result";
-            Console.WriteLine($"Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {result}");
-            return Task.FromResult(result);
+        @DefineKernelFunction(name = "NoInputTaskWithStringResult")
+        public Mono<String> NoInputTaskWithStringResult() {
+            return Mono.fromCallable(() -> {
+                var result = "string result";
+                System.out.println(
+                    "Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {"
+                        + result + "}");
+                return result;
+            });
         }
 
         /// <summary>
         /// Example passing multiple parameters with multiple types
         /// </summary>
-    [KernelFunction]
-        public void MultipleInputsWithVoidResult(string x, int y, double z)
-        {
-            Console.WriteLine($"Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {x}, y = {y}, z = {z}]");
+        @DefineKernelFunction(name = "MultipleInputsWithVoidResult")
+        public void MultipleInputsWithVoidResult(
+            @KernelFunctionParameter(
+                name = "x"
+            )
+            String x,
+
+            @KernelFunctionParameter(
+                name = "y",
+                type = int.class
+            )
+            int y,
+
+            @KernelFunctionParameter(
+                name = "z",
+                type = double.class
+            )
+            double z) {
+            System.out.println(
+                "Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {" + x
+                    + "}, y = {" + y + "}, z = {" + z + "}]");
         }
 
         /// <summary>
         /// Example passing a complex object and returning a string result
         /// </summary>
-    [KernelFunction]
-        public string ComplexInputWithStringResult(object complexObject)
-        {
-            var result = complexObject.GetType().Name;
-            Console.WriteLine($"Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {result}");
+        @DefineKernelFunction(name = "ComplexInputWithStringResult")
+        public String ComplexInputWithStringResult(
+            @KernelFunctionParameter(
+                name = "complexObject",
+                type = Object.class
+            )
+            Object complexObject
+        ) {
+            String result = complexObject.toString();
+            System.out.println(
+                "Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {"
+                    + result + "}");
             return result;
         }
+
 
         /// <summary>
         /// Example using an async task function echoing the input
         /// </summary>
-    [KernelFunction]
-        public Task<string> InputStringTaskWithStringResult(string echoInput)
-        {
-            Console.WriteLine($"Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {echoInput}");
-            return Task.FromResult(echoInput);
+        @DefineKernelFunction(name = "InputStringTaskWithStringResult")
+        public Mono<String> InputStringTaskWithStringResult(
+
+            @KernelFunctionParameter(
+                name = "echoInput"
+            )
+            String echoInput) {
+            return Mono.fromCallable(() -> {
+                System.out.println(
+                    "Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {"
+                        + echoInput + "}");
+                return echoInput;
+            });
         }
 
         /// <summary>
         /// Example using an async void task with string input
         /// </summary>
-    [KernelFunction]
-        public Task InputStringTaskWithVoidResult(string x)
-        {
-            Console.WriteLine($"Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {x}]");
-            return Task.CompletedTask;
+        @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
+        public Mono<Void> InputStringTaskWithVoidResult(
+            @KernelFunctionParameter(
+                name = "x"
+            )
+            String x) {
+            return Mono.fromRunnable(() -> {
+                System.out.println(
+                    "Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {" + x
+                        + "}]");
+            });
         }
 
+        /*
         /// <summary>
         /// Example using a function to return the result of another inner function
         /// </summary>
-    [KernelFunction]
+        @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
         public FunctionResult NoInputWithFunctionResult()
         {
             var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
@@ -251,6 +347,9 @@ public class Example09_FunctionTypes {
             Console.WriteLine($"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}");
             return result;
         }
+         */
+
+        /*
 
         /// <summary>
         /// Example using a task function to return the result of another kernel function

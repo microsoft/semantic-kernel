@@ -53,8 +53,10 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(KernelFunction function,
-        @Nullable KernelArguments arguments, Class<T> resultType) {
+    public <T> Mono<ContextVariable<T>> invokeAsync(
+        KernelFunction function,
+        @Nullable KernelArguments arguments,
+        Class<T> resultType) {
         return function.invokeAsync(this, arguments,
             ContextVariableTypes.getDefaultVariableTypeForClass(resultType));
     }
