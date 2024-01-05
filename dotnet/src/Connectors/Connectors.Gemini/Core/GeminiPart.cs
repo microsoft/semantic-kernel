@@ -5,6 +5,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
@@ -49,7 +50,7 @@ public sealed class GeminiPartFunctionCall
     public string FunctionName { get; set; }
 
     [JsonPropertyName("args")]
-    public IList<object> Arguments { get; set; }
+    public IList<JsonNode>? Arguments { get; set; }
 }
 
 public sealed class GeminiPartFunctionResponse
@@ -58,5 +59,5 @@ public sealed class GeminiPartFunctionResponse
     public string FunctionName { get; set; }
 
     [JsonPropertyName("response")]
-    public IList<object> Response { get; set; }
+    public IList<JsonNode> Response { get; set; }
 }
