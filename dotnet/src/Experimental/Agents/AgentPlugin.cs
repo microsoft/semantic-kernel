@@ -41,7 +41,7 @@ public abstract class AgentPlugin : KernelPlugin
     /// <returns>The agent response</returns>
     public async Task<string> InvokeAsync(string input, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        arguments ??= [];
+        arguments ??= new KernelArguments();
 
         arguments["input"] = input;
 
