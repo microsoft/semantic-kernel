@@ -11,8 +11,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
-// TODO: Add required attributes to non-nullable properties after updating solution to C# 12.0
-
 internal sealed class GeminiRequest
 {
     [JsonPropertyName("contents")]
@@ -85,7 +83,6 @@ internal sealed class GeminiRequest
                     {
                         Text = (c.Content ?? (c.Items?.SingleOrDefault(content => content is TextContent)
                             as TextContent)?.Text) ?? string.Empty,
-                        InlineData = null // TODO: Add support for inline data (image)
                     }
                 },
                 Role = c.Role
@@ -156,10 +153,6 @@ internal sealed class GeminiRequestPart
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
-
-    [JsonPropertyName("inlineData")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiRequestInlineData? InlineData { get; set; }
 }
 
 internal sealed class GeminiRequestInlineData
