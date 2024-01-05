@@ -266,6 +266,24 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-15)]
+    [InlineData(null)]
+    public async Task ShouldThrowArgumentExceptionIfExecutionSettingMaxTokensIsLessThanOneAsync(int? maxTokens)
+    {
+        // Arrange
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        GeminiPromptExecutionSettings executionSettings = new()
+        {
+            MaxTokens = maxTokens
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => client.GenerateTextAsync("fake-text", executionSettings));
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

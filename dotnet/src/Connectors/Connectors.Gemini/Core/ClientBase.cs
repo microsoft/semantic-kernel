@@ -32,6 +32,14 @@ internal abstract class ClientBase
         this.APIKey = apiKey;
     }
 
+    protected void ValidateMaxTokens(int? maxTokens)
+    {
+        if (maxTokens is null or < 1)
+        {
+            throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+        }
+    }
+
     protected async Task<string> SendRequestAndGetStringBodyAsync(
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)

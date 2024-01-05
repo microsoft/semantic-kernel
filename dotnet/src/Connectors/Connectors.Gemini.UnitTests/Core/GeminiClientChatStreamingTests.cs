@@ -234,6 +234,24 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-15)]
+    [InlineData(null)]
+    public async Task ShouldThrowArgumentExceptionIfExecutionSettingMaxTokensIsLessThanOneAsync(int? maxTokens)
+    {
+        // Arrange
+        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        GeminiPromptExecutionSettings executionSettings = new()
+        {
+            MaxTokens = maxTokens
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await client.StreamGenerateChatMessageAsync(CreateChatHistory(), executionSettings).ToListAsync());
+    }
+
     private static ChatHistory CreateChatHistory()
     {
         var chatHistory = new ChatHistory();
