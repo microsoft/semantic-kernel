@@ -1,4 +1,3 @@
-package azure.openai;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClient;
