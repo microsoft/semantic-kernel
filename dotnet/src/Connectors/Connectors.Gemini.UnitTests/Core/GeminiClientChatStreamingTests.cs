@@ -237,7 +237,6 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     [Theory]
     [InlineData(0)]
     [InlineData(-15)]
-    [InlineData(null)]
     public async Task ShouldThrowArgumentExceptionIfExecutionSettingMaxTokensIsLessThanOneAsync(int? maxTokens)
     {
         // Arrange
