@@ -14,7 +14,7 @@ class OpenAIRequestSettings(AIRequestSettings):
 
     ai_model_id: Optional[str] = Field(None, serialization_alias="model")
     frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0)
-    logit_bias: Dict[str, float] = Field(default_factory=dict)
+    logit_bias: Dict[Union[str, int], float] = Field(default_factory=dict)
     max_tokens: int = Field(256, gt=0)
     number_of_responses: int = Field(1, ge=1, le=128, serialization_alias="n")
     presence_penalty: float = Field(0.0, ge=-2.0, le=2.0)

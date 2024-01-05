@@ -81,7 +81,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
-            results = self.generator(**request_settings.prepare_settings_dict(prompt))
+            results = self.generator(**request_settings.prepare_settings_dict(prompt=prompt))
             result_field_name = "summary_text" if self.task == "summarization" else "generated_text"
             if len(results) == 1:
                 return results[0][result_field_name]
