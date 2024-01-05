@@ -34,7 +34,7 @@ internal abstract class ClientBase
 
     protected void ValidateMaxTokens(int? maxTokens)
     {
-        if (maxTokens is null or < 1)
+        if (maxTokens is < 1)
         {
             throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }

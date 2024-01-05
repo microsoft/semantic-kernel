@@ -50,6 +50,7 @@ public sealed class GeminiPartFunctionCall
     public string FunctionName { get; set; }
 
     [JsonPropertyName("args")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<JsonNode>? Arguments { get; set; }
 }
 

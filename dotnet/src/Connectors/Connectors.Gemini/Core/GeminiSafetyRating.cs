@@ -5,6 +5,9 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -80,6 +83,16 @@ public readonly struct GeminiSafetyProbability : IEquatable<GeminiSafetyProbabil
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         this.Label = label;
     }
+
+    /// <summary>
+    /// An enumerable collection of GeminiSafetyProbability.
+    /// </summary>
+    public static IEnumerable<GeminiSafetyProbability> GetAll() =>
+        typeof(GeminiSafetyProbability).GetFields(BindingFlags.Public |
+                                                  BindingFlags.Static |
+                                                  BindingFlags.DeclaredOnly)
+            .Select(f => f.GetValue(null))
+            .Cast<GeminiSafetyProbability>();
 
     /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiSafetyProbability"/>.
