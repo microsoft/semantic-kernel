@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -14,7 +16,10 @@ import javax.annotation.Nullable;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import javax.xml.namespace.QName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +28,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
+import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatRequestAssistantMessage;
 import com.azure.ai.openai.models.ChatRequestMessage;
@@ -50,6 +56,9 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AzureOpenAIChatCompletion.class);
@@ -73,7 +82,7 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             @Nullable PromptExecutionSettings promptExecutionSettings, @Nullable Kernel kernel) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        List<FunctionDefinition> functions = Collections.emptyList();
         return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
 
     }
@@ -83,7 +92,7 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             PromptExecutionSettings promptExecutionSettings, Kernel kernel)
     {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        List<FunctionDefinition> functions = Collections.emptyList();
         return internalStreamingChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
 
     }
@@ -92,7 +101,7 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
             PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
-        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        List<FunctionDefinition> functions = getFunctionDefinitions(prompt);
         return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
     }
 
@@ -100,7 +109,7 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
     public Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(String prompt,
             PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
-        List<FunctionDefinition> functions = getFunctionDefinitions(kernel);
+        List<FunctionDefinition> functions = getFunctionDefinitions(prompt);
         return internalStreamingChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
     }
 
@@ -149,7 +158,12 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             .setModel(chatCompletionService.getModelId());
         
         if (functions != null && !functions.isEmpty()) {
-            options.setFunctions(functions);
+            // options.setFunctions(functions);
+            options.setTools(
+                functions.stream()
+                    .map(ChatCompletionsFunctionToolDefinition::new)
+                    .collect(Collectors.toList())
+            );
         }
 
         if (promptExecutionSettings == null) {
@@ -189,6 +203,9 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
 
     private static List<ChatRequestMessage> getChatRequestMessages(String prompt)
     {
+        // TODO: XML parsing should be done as a chain of XMLEvent handlers.
+        // If one handler does not recognize the element, it should pass it to the next handler.
+        // In this way, we can avoid parsing the whole prompt twice and easily extend the parsing logic.
         List<ChatRequestMessage> messages = new ArrayList<>();
         try (InputStream is = new ByteArrayInputStream(prompt.getBytes())) {
             XMLInputFactory factory = XMLInputFactory.newFactory();
@@ -196,9 +213,9 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
             while(reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
                 if (event.isStartElement()) {
-                    String name = event.asStartElement().getName().getLocalPart();
+                    String name = getElementName(event);
                     if (name.equals("message")) {
-                        String role = event.asStartElement().getAttributeByName(javax.xml.namespace.QName.valueOf("role")).getValue();
+                        String role = getAttributeValue(event, "role");
                         String content = reader.getElementText();
                         messages.add(getChatRequestMessage(AuthorRole.valueOf(role.toUpperCase()), content));
                     }
@@ -210,87 +227,155 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
         return messages;
     }
 
-    private static List<FunctionDefinition> getFunctionDefinitions(Kernel kernel)
+    private static List<FunctionDefinition> getFunctionDefinitions(String prompt)
     {
+        // TODO: XML parsing should be done as a chain of XMLEvent handlers. See previous remark.
+        // <function pluginName=\"%s\" name=\"%s\"  description=\"%s\">
+        //      <parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>...
+        // </function>
         List<FunctionDefinition> functionDefinitions = new ArrayList<>();
-        kernel.getPlugins().iterator().forEachRemaining(plugin -> {
-            plugin.getFunctions().forEach((name, kernelFunction) -> {
-                functionDefinitions.add(toFunctionDefinition(kernelFunction));
-            });
-        });
+        try (InputStream is = new ByteArrayInputStream(prompt.getBytes())) {
+            XMLInputFactory factory = XMLInputFactory.newFactory();
+            XMLEventReader reader = factory.createXMLEventReader(is);
+            FunctionDefinition functionDefinition = null;
+            Map<String, String> parameters = new HashMap<>();
+            List<String> requiredParmeters = new ArrayList<>();
+            while(reader.hasNext()) {
+                XMLEvent event = reader.nextEvent();
+                if (event.isStartElement()) {
+                    String elementName = getElementName(event);
+                    if (elementName.equals("function")) {
+                        assert functionDefinition == null;
+                        assert parameters.isEmpty();
+                        assert requiredParmeters.isEmpty();
+                        String pluginName = getAttributeValue(event, "pluginName");
+                        String name = getAttributeValue(event, "name");
+                        String description = getAttributeValue(event, "description");
+                        functionDefinition = new FunctionDefinition(name)
+                            .setDescription(description);
+                    } else if (elementName.equals("parameter")) {
+                        String name = getAttributeValue(event, "name");
+                        String type = getAttributeValue(event, "type").toLowerCase(Locale.ROOT);
+                        String description = getAttributeValue(event, "description");
+                        parameters.put(name, String.format("{\"type\": \"%s\", \"description\": \"%s\"}", "string", description));
+
+                        String isRequired = getAttributeValue(event, "isRequired");
+                        if (Boolean.parseBoolean(isRequired)) {
+                            requiredParmeters.add(name);
+                        }
+                    }
+                } else if (event.isEndElement()) {
+                    String elementName = getElementName(event);
+                    if (elementName.equals("function")) {
+                        // Example JSON Schema:
+                        // {
+                        //    "type": "function",
+                        //    "function": {
+                        //        "name": "get_current_weather",
+                        //        "description": "Get the current weather in a given location",
+                        //        "parameters": {
+                        //            "type": "object",
+                        //            "properties": {
+                        //                "location": {
+                        //                    "type": "string",
+                        //                    "description": "The city and state, e.g. San Francisco, CA",
+                        //                },
+                        //               "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+                        //            },
+                        //            "required": ["location"],
+                        //        },
+                        //    },
+                        //}
+                        assert functionDefinition != null;
+                        if (!parameters.isEmpty()) {
+                            StringBuilder sb = new StringBuilder("{\"type\": \"object\", \"properties\": {");
+                            parameters.forEach((name, value) -> {
+                                // make "param": {"type": "string", "description": "desc"},
+                                sb.append(String.format("\"%s\": %s,", name, value));
+                            });
+                            // strip off trailing comma and close the properties object
+                            sb.replace(sb.length() - 1, sb.length(), "}");
+                            if (!requiredParmeters.isEmpty()) {
+                                sb.append(", \"required\": [");
+                                requiredParmeters.forEach(name -> {
+                                    sb.append(String.format("\"%s\",", name));
+                                });
+                                // strip off trailing comma and close the required array
+                                sb.replace(sb.length() - 1, sb.length(), "]");
+                            }
+                            // close the object
+                            sb.append("}");
+                            //System.out.println(sb.toString());
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            JsonNode jsonNode = objectMapper.readTree(sb.toString());
+                            BinaryData binaryData = BinaryData.fromObject(jsonNode);
+                            functionDefinition.setParameters(binaryData);
+                        }
+                        functionDefinitions.add(functionDefinition);
+                        functionDefinition = null;
+                        parameters.clear();
+                        requiredParmeters.clear();
+                    }
+                }
+            }
+        } catch (IOException | XMLStreamException | IllegalArgumentException e) {
+            LOGGER.error("Error parsing prompt", e);
+        }
         return functionDefinitions;
     }
 
-    private static FunctionDefinition toFunctionDefinition(KernelFunction kernelFunction)
-    {
-        String name = kernelFunction.getSkillName();
-        BinaryData parameters = toJSON(kernelFunction.getMetadata());
-        return new FunctionDefinition(name)
-            .setDescription(kernelFunction.getDescription())
-            .setParameters(parameters);
+    private static String getElementName(XMLEvent xmlEvent) {
+        if (xmlEvent.isStartElement()) {
+            return xmlEvent.asStartElement().getName().getLocalPart();
+        } else if (xmlEvent.isEndElement()) {
+            return xmlEvent.asEndElement().getName().getLocalPart();
+        }
+        // TODO: programmer's error - log at debug
+        return "";
     }
 
-    private static BinaryData toJSON(KernelFunctionMetadata metadata)
+    private static String getAttributeValue(XMLEvent xmlEvent, String attributeName)
     {
-        // TODO: KernelParameterMetadata should handle this, and in a better way
-
-        // Example:
-        // "parameters": {
-        //     "type": "object",
-        //     "properties": {
-        //         "location": {
-        //             "type": "string",
-        //             "description": "The city and state, e.g. San Francisco, CA",
-        //         },
-        //         "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
-        //     },
-        //     "required": ["location"]
-        // }        
-        StringBuilder sb = new StringBuilder("{ \"parameters\": { \"type\": \"object\", \"properties\": { ");
-        List<String> required = new ArrayList<>();
-        metadata.getParameters().forEach(parameter -> {
-            sb.append("\"").append(parameter.getName()).append("\": { ");
-            sb.append("\"type\": \"").append(parameter.getType().getSimpleName()).append("\", ");
-            sb.append("\"description\": \"").append(parameter.getDescription()).append("\" ");
-            sb.append("}, ");
-            if (parameter.isRequired()) {
-                required.add(parameter.getName());
-            }
-        });
-        // strip off trailing comma and close the object
-        sb.replace(sb.length() - 2, sb.length(), " }");
-
-        if (!required.isEmpty()) {
-            sb.append(", \"required\": [ ");
-            required.forEach(name -> {
-                sb.append("\"").append(name).append("\", ");
-            });
-            sb.replace(sb.length() - 2, sb.length(), " ] ");
-        } 
-        // strip off trailing comma and close the object
-        sb.append(" } }");
-    System.err.println(sb.toString());
-        return BinaryData.fromString(sb.toString());
+        if (xmlEvent.isStartElement()) {
+            StartElement element = xmlEvent.asStartElement();
+            Attribute attribute = element.getAttributeByName(QName.valueOf(attributeName));
+            return attribute != null ? attribute.getValue() : "";
+        }
+        // TODO: programmer's error - log at debug
+        return "";
+    }
+   
+    private static ChatRequestMessage getChatRequestMessage(
+        String role,
+        String content)
+    {
+        try {
+            AuthorRole authorRole = AuthorRole.valueOf(role.toUpperCase());
+            return getChatRequestMessage(authorRole, content);
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown author role: " + role);
+            return null;
+        }
     }
 
     private static ChatRequestMessage getChatRequestMessage(
         AuthorRole authorRole,
-        String content)
-    {
+        String content) {
 
-        if (authorRole != null) {
-            switch(authorRole) {
-                case ASSISTANT:
-                    return new ChatRequestAssistantMessage(content);
-                case SYSTEM:
-                    return new ChatRequestSystemMessage(content);
-                case USER:
-                    return new ChatRequestUserMessage(content);
-                case TOOL:
-                    return new ChatRequestToolMessage(content, null);
-            }
+        switch(authorRole) {
+            case ASSISTANT:
+                return new ChatRequestAssistantMessage(content);
+            case SYSTEM:
+                return new ChatRequestSystemMessage(content);
+            case USER:
+                return new ChatRequestUserMessage(content);
+            case TOOL:
+                return new ChatRequestToolMessage(content, null);
+            default:
+                LOGGER.debug("Unexpected author role: " + authorRole);
+                return null;
         }
-        throw new IllegalArgumentException("Unknown author role: " + authorRole);
+    
     }
 
     private static List<ChatMessageContent> toChatMessageContents(ChatCompletions chatCompletions) {
@@ -321,7 +406,7 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
         }
         if(chatRole == ChatRole.ASSISTANT) {
             return AuthorRole.USER;
-}
+        }
         if(chatRole == ChatRole.ASSISTANT) {
             return AuthorRole.TOOL;
         }

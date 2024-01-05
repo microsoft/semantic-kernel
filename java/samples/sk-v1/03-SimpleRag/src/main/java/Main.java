@@ -1,6 +1,9 @@
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.azure.core.http.policy.HttpLogDetailLevel;
+import com.azure.core.http.policy.HttpLogOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
@@ -16,6 +19,9 @@ import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTe
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+
+import com.azure.ai.openai.OpenAIServiceVersion;
+
 import plugins.searchplugin.Search;
 
 public class Main {
@@ -31,8 +37,10 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         OpenAIAsyncClient client = new OpenAIClientBuilder()
-            .credential(new KeyCredential(AZURE_OPENAI_API_KEY))
+            .credential(new AzureKeyCredential(AZURE_OPENAI_API_KEY))
             .endpoint(AZURE_OPENAI_ENDPOINT)
+            .serviceVersion(OpenAIServiceVersion.V2023_12_01_PREVIEW)
+            .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
             .buildAsyncClient();
 
         // Initialize the required functions and services for the kernel
@@ -41,7 +49,7 @@ public class Main {
 
         ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-35-turbo")
+            .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-3.5-turbo")
             .build();
 
         // Create the search plugin

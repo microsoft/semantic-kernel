@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -245,11 +247,19 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         KernelFunction function = (KernelFunction) context;
                         String pluginName = function.getSkillName();
                         String functionName = function.getName();
-                        return new Handlebars.SafeString(
+                        String description = function.getDescription();
+                        StringBuilder sb = new StringBuilder(
                             String.format(
-                            "<function pluginName=\"%s\" name=\"%s\" />",
-                            pluginName, functionName)
-                        );
+                                "<function pluginName=\"%s\" name=\"%s\" description=\"%s\">",
+                                pluginName, functionName, description));
+                        List<KernelParameterMetadata> parameters = function.getMetadata().getParameters();
+                        parameters.forEach(p -> {
+                            sb.append(String.format(
+                                "<parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>",
+                                p.getName(), p.getDescription(), p.getDefaultValue(), p.isRequired(), p.getType()));
+                        });
+                        sb.append("</function>");
+                        return new Handlebars.SafeString(sb.toString());
                     }
                 );
                 // TODO: 1.0 Add more helpers
