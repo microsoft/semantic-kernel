@@ -141,23 +141,24 @@ class KernelFunction(KernelFunctionBase):
             # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages(context)
             try:
-                result = await client.complete_chat(messages, request_settings)
-                if isinstance(result, list):
-                    # TODO: handle multiple completions
-                    result = result[0]
-                if isinstance(result, tuple):
-                    completion, tool_message, function_call = result
-                else:
-                    completion = result
-                    tool_message = None
-                    function_call = None
-                if tool_message:
-                    context.objects["tool_message"] = tool_message
-                    as_chat_prompt.add_message(role="tool", message=tool_message)
-                as_chat_prompt.add_message("assistant", message=completion, function_call=function_call)
-                if completion is not None:
-                    context.variables.update(completion)
-                if function_call is not None:
+                result = await client.complete_chat_async(messages, request_settings)
+                context.objects["response_object"] = result
+                # if isinstance(result, list):
+                #     # TODO: handle multiple completions
+                #     result = result[0]
+                # if isinstance(result, tuple):
+                #     completion, tool_message, function_call = result
+                # else:
+                # completion = result
+                # tool_message = None
+                # function_call = None
+                if "tool_message_content" in result.model_fields and result.tool_message_content:
+                    context.objects["tool_message"] = result.tool_message_content
+                    as_chat_prompt.add_message(role="tool", message=tool_message_content)
+                as_chat_prompt.add_message("assistant", message=result.content, function_call=result.function_call)
+                if result.content is not None:
+                    context.variables.update(result.content)
+                if result.function_call is not None:
                     context.objects["function_call"] = function_call
             except Exception as exc:
                 # TODO: "critical exceptions"

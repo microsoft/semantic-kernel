@@ -2,7 +2,9 @@
 
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
+
+from semantic_kernel.connectors.ai.ai_response import AIResponse
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -17,7 +19,7 @@ class TextCompletionClientBase(ABC):
         prompt: str,
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> Union[str, List[str]]:
+    ) -> AIResponse:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -36,7 +38,7 @@ class TextCompletionClientBase(ABC):
         prompt: str,
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> AsyncGenerator[Union[str, List[str]], None]:
+    ) -> AIResponse:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 

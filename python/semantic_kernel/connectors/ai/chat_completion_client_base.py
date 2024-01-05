@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional
+
+from semantic_kernel.connectors.ai.ai_response import AIResponse
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -15,7 +17,7 @@ class ChatCompletionClientBase(ABC):
         messages: List["ChatMessage"],
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> Union[str, List[str]]:
+    ) -> AIResponse:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
@@ -36,7 +38,7 @@ class ChatCompletionClientBase(ABC):
         messages: List["ChatMessage"],
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> AsyncGenerator[Union[str, List[str]], None]:
+    ) -> AIResponse:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 

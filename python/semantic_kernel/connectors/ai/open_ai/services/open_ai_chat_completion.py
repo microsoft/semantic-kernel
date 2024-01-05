@@ -20,6 +20,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.open_ai_response import OpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
     OpenAIRequestSettings,
@@ -33,7 +34,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
+from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -161,7 +162,10 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
         **kwargs,
-    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
+    ) -> Union[
+        Tuple[Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[FunctionCall]]],
+    ]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -178,10 +182,11 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
 
-        if len(response.choices) == 1:
-            return _parse_message(response.choices[0].message)
-        else:
-            return [_parse_message(choice.message) for choice in response.choices]
+        return OpenAIChatResponse(raw_response=response, request_settings=settings)
+        # if len(response.choices) == 1:
+        #     return _parse_message(response.choices[0].message)
+        # else:
+        #     return [_parse_message(choice.message) for choice in response.choices]
 
     async def complete_chat_stream(
         self,

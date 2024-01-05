@@ -2,12 +2,10 @@
 
 import logging
 from abc import ABC
-from typing import List, Union
+from typing import TYPE_CHECKING, List
 
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
-from openai.types import Completion
-from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -16,6 +14,7 @@ from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClient
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
 )
+from semantic_kernel.connectors.ai.open_ai.open_ai_response import OpenAIChatResponse, OpenAITextResponse
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
@@ -24,6 +23,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.ai_response import AIResponse
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -39,7 +40,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion],]:
+    ) -> "AIResponse":
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -54,13 +55,13 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
         """
         try:
-            response = await (
-                self.client.chat.completions.create(**request_settings.prepare_settings_dict())
-                if self.ai_model_type == OpenAIModelTypes.CHAT
-                else self.client.completions.create(**request_settings.prepare_settings_dict())
-            )
+            if self.ai_model_type == OpenAIModelTypes.CHAT:
+                response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
+                self.store_usage(response)
+                return OpenAIChatResponse(raw_response=response, request_settings=request_settings)
+            response = await self.client.completions.create(**request_settings.prepare_settings_dict())
             self.store_usage(response)
-            return response
+            return OpenAITextResponse(raw_response=response, request_settings=request_settings)
         except BadRequestError as ex:
             if ex.code == "content_filter":
                 raise ContentFilterAIException(

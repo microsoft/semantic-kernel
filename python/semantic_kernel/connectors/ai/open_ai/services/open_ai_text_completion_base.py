@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, AsyncGenerator, List, Union
-
-from openai.types.completion import Completion
+from typing import TYPE_CHECKING
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -15,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.ai_response import AIResponse
     from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
         OpenAIRequestSettings,
     )
@@ -28,7 +27,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> "AIResponse":
         """Executes a completion request and returns the result.
 
         Arguments:
@@ -45,21 +44,21 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-
-        if isinstance(response, Completion):
-            if len(response.choices) == 1:
-                return response.choices[0].text
-            return [choice.text for choice in response.choices]
-        if len(response.choices) == 1:
-            return response.choices[0].message.content
-        return [choice.message.content for choice in response.choices]
+        return response
+        # if isinstance(response, Completion):
+        #     if len(response.choices) == 1:
+        #         return response.choices[0].text
+        #     return [choice.text for choice in response.choices]
+        # if len(response.choices) == 1:
+        #     return response.choices[0].message.content
+        # return [choice.message.content for choice in response.choices]
 
     async def complete_stream(
         self,
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> AsyncGenerator[Union[str, List[str]], None]:
+    ) -> "AIResponse":
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.
@@ -81,31 +80,31 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         settings.ai_model_id = self.ai_model_id
         settings.stream = True
         response = await self._send_request(request_settings=settings)
+        return response
+        # async for partial in response:
+        #     if len(partial.choices) == 0:
+        #         continue
 
-        async for partial in response:
-            if len(partial.choices) == 0:
-                continue
-
-            if settings.number_of_responses > 1:
-                completions = [""] * settings.number_of_responses
-                for choice in partial.choices:
-                    if hasattr(choice, "delta") and hasattr(choice.delta, "content"):  # Chat completion
-                        completions[choice.index] = choice.delta.content
-                    elif hasattr(choice, "text"):  # Text completion
-                        completions[choice.index] = choice.text
-                if any(completions):
-                    yield completions
-            else:
-                if hasattr(partial.choices[0], "delta") and hasattr(
-                    partial.choices[0].delta, "content"
-                ):  # Chat completion
-                    content = partial.choices[0].delta.content
-                    if content:
-                        yield content
-                elif hasattr(partial.choices[0], "text"):  # Text completion
-                    text = partial.choices[0].text
-                    if text.strip():  # Exclude empty or whitespace-only text
-                        yield text
+        #     if settings.number_of_responses > 1:
+        #         completions = [""] * settings.number_of_responses
+        #         for choice in partial.choices:
+        #             if hasattr(choice, "delta") and hasattr(choice.delta, "content"):  # Chat completion
+        #                 completions[choice.index] = choice.delta.content
+        #             elif hasattr(choice, "text"):  # Text completion
+        #                 completions[choice.index] = choice.text
+        #         if any(completions):
+        #             yield completions
+        #     else:
+        #         if hasattr(partial.choices[0], "delta") and hasattr(
+        #             partial.choices[0].delta, "content"
+        #         ):  # Chat completion
+        #             content = partial.choices[0].delta.content
+        #             if content:
+        #                 yield content
+        #         elif hasattr(partial.choices[0], "text"):  # Text completion
+        #             text = partial.choices[0].text
+        #             if text.strip():  # Exclude empty or whitespace-only text
+        #                 yield text
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""

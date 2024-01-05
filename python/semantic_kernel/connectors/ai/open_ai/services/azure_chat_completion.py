@@ -4,12 +4,10 @@
 import logging
 from typing import (
     Any,
-    AsyncGenerator,
     Dict,
     List,
     Mapping,
     Optional,
-    Tuple,
     Union,
     overload,
 )
@@ -18,14 +16,12 @@ from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.ai_response import AIResponse
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
-    AzureChatWithDataStreamResponse,
-)
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.open_ai_response import AzureOpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureChatRequestSettings,
 )
@@ -38,7 +34,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -280,7 +275,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
+    ) -> AIResponse:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -296,27 +291,27 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-
-        if len(response.choices) == 1:
-            return _parse_message(
-                response.choices[0].message,
-                with_data=settings.extra_body is not None,
-            )
-        else:
-            return [
-                _parse_message(
-                    choice.message,
-                    with_data=settings.extra_body is not None,
-                )
-                for choice in response.choices
-            ]
+        return AzureOpenAIChatResponse(raw_response=response.raw_response, request_settings=response.request_settings)
+        # if len(response.choices) == 1:
+        #     return _parse_message(
+        #         response.choices[0].message,
+        #         with_data=settings.extra_body is not None,
+        #     )
+        # else:
+        #     return [
+        #         _parse_message(
+        #             choice.message,
+        #             with_data=settings.extra_body is not None,
+        #         )
+        #         for choice in response.choices
+        #     ]
 
     async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> Union[AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse]:
+    ) -> AIResponse:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -332,24 +327,26 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        if settings.extra_body is not None:
-            yield AzureChatWithDataStreamResponse(response, settings)
-        else:
-            # parse the completion text(s) and yield them
-            async for chunk in response:
-                if len(chunk.choices) == 0:
-                    continue
-                # if multiple responses are requested, keep track of them
-                if settings.number_of_responses > 1:
-                    completions = [""] * settings.number_of_responses
-                    for choice in chunk.choices:
-                        text, index = _parse_choices(choice)
-                        completions[index] = text
-                    yield completions
-                # if only one response is requested, yield it
-                else:
-                    text, index = _parse_choices(chunk.choices[0])
-                    yield text
+        return AzureOpenAIChatResponse(raw_response=response.raw_response, request_settings=response.request_settings)
+
+        # if settings.extra_body is not None:
+        #     yield AzureChatWithDataStreamResponse(response, settings)
+        # else:
+        #     # parse the completion text(s) and yield them
+        #     async for chunk in response:
+        #         if len(chunk.choices) == 0:
+        #             continue
+        #         # if multiple responses are requested, keep track of them
+        #         if settings.number_of_responses > 1:
+        #             completions = [""] * settings.number_of_responses
+        #             for choice in chunk.choices:
+        #                 text, index = _parse_choices(choice)
+        #                 completions[index] = text
+        #             yield completions
+        #         # if only one response is requested, yield it
+        #         else:
+        #             text, index = _parse_choices(chunk.choices[0])
+        #             yield text
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""

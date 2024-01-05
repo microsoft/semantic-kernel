@@ -75,7 +75,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = True
+    stream = False
     if stream:
         answer = kernel.run_stream(chat_function, input_vars=context_vars)
         print("Mosscap:> ", end="")
