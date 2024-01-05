@@ -2,11 +2,12 @@ package com.microsoft.semantickernel.orchestration;
 
 import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
-import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
@@ -303,7 +304,27 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         Class<?> type = annotation.type();
 
+        if (!parameter.getType().isAssignableFrom(type)) {
+            throw new AIException(
+                AIException.ErrorCodes.INVALID_CONFIGURATION,
+                "Annotation on method: " + method.getName() + " requested conversion to type: "
+                    + type.getName() + ", however this cannot be assigned to parameter of type: "
+                    + parameter.getType());
+        }
+
         Object value = arg;
+
+        if (parameter.getType().isAssignableFrom(arg.getValue().getClass())) {
+            return arg.getValue();
+        }
+
+        ContextVariableTypeConverter<?> c = arg.getType().getConverter();
+
+        Object converted = c.toObject(arg.getValue(), parameter.getType());
+        if (converted != null) {
+            return converted;
+        }
+
         // Well-known types only
         ContextVariableType<?> converter = ContextVariableTypes.getDefaultVariableTypeForClass(
             type);

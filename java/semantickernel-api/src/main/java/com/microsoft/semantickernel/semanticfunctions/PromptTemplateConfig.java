@@ -6,12 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
-import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -33,6 +31,7 @@ public class PromptTemplateConfig {
 
     public PromptTemplateConfig(String template) {
         this(
+            1,
             "default",
             template,
             "semantic-kernel",
@@ -43,28 +42,10 @@ public class PromptTemplateConfig {
         );
     }
 
-    public PromptTemplateConfig(
-        String name,
-        String template,
-        String templateFormat,
-        String description,
-        List<InputVariable> inputVariables,
-        OutputVariable outputVariable,
-        Map<String, PromptExecutionSettings> executionSettings) {
-        this.name = name;
-        this.template = template;
-        this.templateFormat = templateFormat;
-        this.description = description;
-        this.inputVariables = inputVariables;
-        if (inputVariables == null) {
-            this.inputVariables = Collections.emptyList();
-        }
-        this.outputVariable = outputVariable;
-        this.executionSettings = executionSettings;
-    }
-
     @JsonCreator
     public PromptTemplateConfig(
+        @JsonProperty("schema")
+        int schema,
         @JsonProperty("name")
         String name,
         @JsonProperty("template")
@@ -78,16 +59,18 @@ public class PromptTemplateConfig {
         @JsonProperty("output_variable")
         OutputVariable outputVariable,
         @JsonProperty("execution_settings")
-        List<PromptExecutionSettings> executionSettings) {
+        Map<String, PromptExecutionSettings> executionSettings) {
         this.name = name;
         this.template = template;
         this.templateFormat = templateFormat;
         this.description = description;
-        this.inputVariables = inputVariables;
+        if (inputVariables == null) {
+            this.inputVariables = Collections.emptyList();
+        } else {
+            this.inputVariables = new ArrayList<>(inputVariables);
+        }
         this.outputVariable = outputVariable;
-        this.executionSettings = executionSettings
-            .stream()
-            .collect(Collectors.toMap(PromptExecutionSettings::getModelId, e -> e));
+        this.executionSettings = executionSettings;
     }
 
     public List<KernelParameterMetadata> getKernelParametersMetadata() {

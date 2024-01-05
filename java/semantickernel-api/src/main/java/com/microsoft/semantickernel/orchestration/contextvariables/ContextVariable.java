@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-
 public class ContextVariable<T> {
 
     private final ContextVariableType<T> type;
@@ -45,4 +41,9 @@ public class ContextVariable<T> {
         return new ContextVariable<T>(type, value);
     }
 
+
+    public static <T> ContextVariable<T> of(T value, ContextVariableTypeConverter<T> converter) {
+        ContextVariableType<T> type = new ContextVariableType<>(converter, converter.getType());
+        return new ContextVariable<>(type, value);
+    }
 }

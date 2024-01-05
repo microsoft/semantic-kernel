@@ -239,6 +239,13 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
         }
 
         @Override
+        public <T> KernelArguments.Builder withVariable(String key, T value,
+            ContextVariableTypeConverter<T> contextVariableTypeConverter) {
+            variables.put(key, ContextVariable.of(value, contextVariableTypeConverter));
+            return this;
+        }
+
+        @Override
         public <T> Builder withInput(ContextVariable<T> content) {
             variables.put(MAIN_KEY, content);
             return this;
