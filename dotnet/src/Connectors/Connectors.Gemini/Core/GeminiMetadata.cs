@@ -20,9 +20,9 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// <summary>
     /// Reason why the processing was finished.
     /// </summary>
-    public string? FinishReason
+    public GeminiFinishReason? FinishReason
     {
-        get => this.GetValueFromDictionary() as string;
+        get => this.GetValueFromDictionary() as GeminiFinishReason?;
         internal init => this.SetValueInDictionary(value);
     }
 
