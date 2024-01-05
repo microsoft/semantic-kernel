@@ -22,7 +22,7 @@ internal sealed class GeminiEmbeddingRequest
             Model = $"models/{modelId}",
             Content = new()
             {
-                Parts = new List<GeminiRequestPart>
+                Parts = new List<GeminiPart>
                 {
                     new()
                     {

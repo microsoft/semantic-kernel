@@ -58,7 +58,7 @@ internal sealed class GeminiRequest
             {
                 new()
                 {
-                    Parts = new List<GeminiRequestPart>
+                    Parts = new List<GeminiPart>
                     {
                         new()
                         {
@@ -77,7 +77,7 @@ internal sealed class GeminiRequest
         {
             Contents = chatHistory.Select(c => new GeminiRequestContent
             {
-                Parts = new List<GeminiRequestPart>
+                Parts = new List<GeminiPart>
                 {
                     new()
                     {
@@ -141,18 +141,12 @@ internal sealed class GeminiRequestConfiguration
 internal sealed class GeminiRequestContent
 {
     [JsonPropertyName("parts")]
-    public IList<GeminiRequestPart> Parts { get; set; }
+    public IList<GeminiPart> Parts { get; set; }
 
     [JsonPropertyName("role")]
     [JsonConverter(typeof(AuthorRoleConverter))]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AuthorRole? Role { get; set; }
-}
-
-internal sealed class GeminiRequestPart
-{
-    [JsonPropertyName("text")]
-    public string Text { get; set; }
 }
 
 internal sealed class GeminiRequestInlineData

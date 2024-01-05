@@ -43,17 +43,11 @@ public sealed class GeminiResponseCandidate
 public sealed class GeminiResponseContent
 {
     [JsonPropertyName("parts")]
-    public IList<GeminiResponsePart> Parts { get; set; }
+    public IList<GeminiPart> Parts { get; set; }
 
     [JsonPropertyName("role")]
     [JsonConverter(typeof(AuthorRoleConverter))]
     public AuthorRole? Role { get; set; }
-}
-
-public sealed class GeminiResponsePart
-{
-    [JsonPropertyName("text")]
-    public string Text { get; set; }
 }
 
 public sealed class GeminiResponsePromptFeedback
