@@ -36,11 +36,11 @@ public static class Example70_Agent
         //// "Hello agent"
         await RunSimpleChatAsync();
 
-        //// Run agent with "method" tool/function
-        //await RunWithMethodFunctionsAsync();
+        // Run agent with "method" tool/function
+        await RunWithMethodFunctionsAsync();
 
-        //// Run agent with "prompt" tool/function
-        //await RunWithPromptFunctionsAsync();
+        // Run agent with "prompt" tool/function
+        await RunWithPromptFunctionsAsync();
 
         // Run agent as function
         await RunAsFunctionAsync();
