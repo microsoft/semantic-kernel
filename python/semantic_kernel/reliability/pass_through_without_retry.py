@@ -26,9 +26,7 @@ class PassThroughWithoutRetry(RetryMechanismBase, SKBaseModel):
             Awaitable[T] -- An awaitable that will return the result of the action.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         try:
             await action()
         except Exception as e:

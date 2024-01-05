@@ -2,7 +2,9 @@
 
 from unittest.mock import AsyncMock, patch
 
+import openai
 import pytest
+from httpx import Request, Response
 from openai import AsyncAzureOpenAI
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
 from pydantic import ValidationError
@@ -16,6 +18,11 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
+)
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
+    ContentFilterAIException,
+    ContentFilterCodes,
+    ContentFilterResultSeverity,
 )
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureAISearchDataSources,
@@ -162,9 +169,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
         api_key=api_key,
     )
-    await azure_chat_completion.complete_chat_async(
-        messages=messages, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         frequency_penalty=complete_request_settings.frequency_penalty,
@@ -203,9 +208,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_chat_async(
-        messages=messages, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -320,9 +323,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         ]
     }
 
-    complete_request_settings = AzureChatRequestSettings(
-        extra_body=expected_data_settings
-    )
+    complete_request_settings = AzureChatRequestSettings(extra_body=expected_data_settings)
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -331,9 +332,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         api_key=api_key,
     )
 
-    await azure_chat_completion.complete_chat_async(
-        messages=messages_in, settings=complete_request_settings
-    )
+    await azure_chat_completion.complete_chat_async(messages=messages_in, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -362,14 +361,8 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
 
-    ai_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
-    extra = ExtraBody(
-        data_sources=[
-            AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)
-        ]
-    )
+    ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
+    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -424,14 +417,8 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     stop = ["!"]
     complete_request_settings.stop = stop
 
-    ai_source = AzureAISearchDataSources(
-        indexName="test-index", endpoint="test-endpoint", key="test-key"
-    )
-    extra = ExtraBody(
-        data_sources=[
-            AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)
-        ]
-    )
+    ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
+    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
 
     complete_request_settings.extra_body = extra
 
@@ -460,3 +447,67 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         logit_bias={},
         extra_body=expected_data_settings,
     )
+
+
+CONTENT_FILTERED_ERROR_MESSAGE = (
+    "The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please "
+    "modify your prompt and retry. To learn more about our content filtering policies please read our "
+    "documentation: https://go.microsoft.com/fwlink/?linkid=2198766"
+)
+CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
+    "Error code: 400 - {'error': {'message': \"%s\", 'type': null, 'param': 'prompt', 'code': 'content_filter', "
+    "'status': 400, 'innererror': {'code': 'ResponsibleAIPolicyViolation', 'content_filter_result': {'hate': "
+    "{'filtered': True, 'severity': 'high'}, 'self_harm': {'filtered': False, 'severity': 'safe'}, 'sexual': "
+    "{'filtered': False, 'severity': 'safe'}, 'violence': {'filtered': False, 'severity': 'safe'}}}}}"
+) % CONTENT_FILTERED_ERROR_MESSAGE
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create")
+async def test_azure_chat_completion_content_filtering_raises_correct_exception(
+    mock_create,
+) -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    prompt = "some prompt that would trigger the content filtering"
+    messages = [{"role": "user", "content": prompt}]
+    complete_request_settings = AzureChatRequestSettings()
+
+    mock_create.side_effect = openai.BadRequestError(
+        CONTENT_FILTERED_ERROR_FULL_MESSAGE,
+        response=Response(400, request=Request("POST", endpoint)),
+        body={
+            "message": CONTENT_FILTERED_ERROR_MESSAGE,
+            "type": None,
+            "param": "prompt",
+            "code": "content_filter",
+            "status": 400,
+            "innererror": {
+                "code": "ResponsibleAIPolicyViolation",
+                "content_filter_result": {
+                    "hate": {"filtered": True, "severity": "high"},
+                    "self_harm": {"filtered": False, "severity": "safe"},
+                    "sexual": {"filtered": False, "severity": "safe"},
+                    "violence": {"filtered": False, "severity": "safe"},
+                },
+            },
+        },
+    )
+
+    azure_chat_completion = AzureChatCompletion(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version,
+    )
+
+    with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
+        await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
+
+    content_filter_exc = exc_info.value
+    assert content_filter_exc.param == "prompt"
+    assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
+    assert content_filter_exc.content_filter_result["hate"].filtered
+    assert content_filter_exc.content_filter_result["hate"].severity == ContentFilterResultSeverity.HIGH

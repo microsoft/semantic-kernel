@@ -42,9 +42,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         **kwargs,
     ):
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string or mongodb_atlas_settings_from_dot_env(),
             read_preference=read_preference,
@@ -133,16 +131,14 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
         document: Mapping[str, Any] = memory_record_to_mongo_document(record)
 
-        update_result: results.UpdateResult = await self.database[
-            collection_name
-        ].update_one(document, {"$set": document}, upsert=True)
+        update_result: results.UpdateResult = await self.database[collection_name].update_one(
+            document, {"$set": document}, upsert=True
+        )
 
         assert update_result.acknowledged
         return record._id
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -159,9 +155,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         for record in records:
             document = memory_record_to_mongo_document(record)
             upserts.append(UpdateOne(document, {"$set": document}, upsert=True))
-        bulk_update_result: results.BulkWriteResult = await self.database[
-            collection_name
-        ].bulk_write(upserts, ordered=False)
+        bulk_update_result: results.BulkWriteResult = await self.database[collection_name].bulk_write(
+            upserts, ordered=False
+        )
 
         # Assert the number matched and the number upserted equal the total batch updated
         logger.debug(
@@ -169,15 +165,10 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             bulk_update_result.matched_count,
             bulk_update_result.upserted_count,
         )
-        assert (
-            bulk_update_result.matched_count + bulk_update_result.upserted_count
-            == len(records)
-        )
+        assert bulk_update_result.matched_count + bulk_update_result.upserted_count == len(records)
         return [record._id for record in records]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -188,15 +179,11 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The memory record if found
         """
-        document = await self.database[collection_name].find_one(
-            {MONGODB_FIELD_ID: key}
-        )
+        document = await self.database[collection_name].find_one({MONGODB_FIELD_ID: key})
 
         return document_to_memory_record(document, with_embedding) if document else None
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -210,8 +197,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         results = self.database[collection_name].find({MONGODB_FIELD_ID: {"$in": keys}})
 
         return [
-            document_to_memory_record(result, with_embeddings)
-            for result in await results.to_list(length=len(keys))
+            document_to_memory_record(result, with_embeddings) for result in await results.to_list(length=len(keys))
         ]
 
     async def remove_async(self, collection_name: str, key: str) -> None:
@@ -241,9 +227,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         if not await self.does_collection_exist_async(collection_name):
             raise Exception(f"collection {collection_name} not found")
         deletes: List[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
-        bulk_write_result = await self.database[collection_name].bulk_write(
-            deletes, ordered=False
-        )
+        bulk_write_result = await self.database[collection_name].bulk_write(deletes, ordered=False)
         logger.debug("%s entries deleted", bulk_write_result.deleted_count)
 
     async def get_nearest_matches_async(
@@ -312,9 +296,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
-        matches: List[
-            Tuple[MemoryRecord, float]
-        ] = await self.get_nearest_matches_async(
+        matches: List[Tuple[MemoryRecord, float]] = await self.get_nearest_matches_async(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,

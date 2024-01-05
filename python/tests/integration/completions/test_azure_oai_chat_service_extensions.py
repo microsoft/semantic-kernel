@@ -64,9 +64,7 @@ async def create_memory_store():
 
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def create_with_data_chat_function(
-    get_aoai_config, create_kernel, create_memory_store
-):
+async def create_with_data_chat_function(get_aoai_config, create_kernel, create_memory_store):
     collection, memory_store = await create_memory_store
     try:
         deployment_name, api_key, endpoint = get_aoai_config
@@ -117,14 +115,10 @@ async def create_with_data_chat_function(
             )
         )
 
-        prompt_template = sk.ChatPromptTemplate(
-            "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-        )
+        prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
         function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-        chat_function = kernel.register_semantic_function(
-            "ChatBot", "Chat", function_config
-        )
+        chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
         return chat_function, kernel, collection, memory_store
     except:
         await memory_store.delete_collection_async(collection)
@@ -146,9 +140,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
 
     try:
         result = []
-        async for message in kernel.run_stream_async(
-            chat_function, input_str="who are Emily and David?"
-        ):
+        async for message in kernel.run_stream_async(chat_function, input_str="who are Emily and David?"):
             result.append(message)
             print(message, end="")
         output = "".join(result).strip()
