@@ -33,6 +33,7 @@ kernel.add_chat_service(
         api_key=api_key,
     ),
 )
+kernel.add_chat_service("chat-gpt", chat_service)
 
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
@@ -98,12 +99,14 @@ async def main() -> None:
     context.variables["user_input"] = "I want to find a hotel in Seattle with free wifi and a pool."
 
     context = await chat_function.invoke_async(context=context)
-    if function_call := context.objects.get("function_call"):
-        print(f"Function to be called: {function_call.name}")
-        print(f"Function parameters: \n{function_call.arguments}")
-    else:
-        print("No function was called")
-        print(f"Output was: {str(context)}")
+    if tool_call_choices := context.objects.pop("tool_calls"):
+        for tool_call in tool_call_choices:
+            for tool in tool_call.values():
+                print(f"Function to be called: {tool['function'].name}")
+                print(f"Function parameters: \n{tool['function'].arguments}")
+        return
+    print("No function was called")
+    print(f"Output was: {str(context)}")
 
 
 if __name__ == "__main__":

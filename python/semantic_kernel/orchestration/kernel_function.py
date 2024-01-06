@@ -152,14 +152,17 @@ class KernelFunction(KernelFunctionBase):
                 # completion = result
                 # tool_message = None
                 # function_call = None
-                if "tool_message_content" in result.model_fields and result.tool_message_content:
-                    context.objects["tool_message"] = result.tool_message_content
-                    as_chat_prompt.add_message(role="tool", message=tool_message_content)
+                if "tool_message" in result.model_fields and result.tool_message:
+                    context.objects["tool_message"] = result.tool_message
+                    as_chat_prompt.add_message(role="tool", message=result.tool_message)
+                # TODO: update for tool_calls
                 as_chat_prompt.add_message("assistant", message=result.content, function_call=result.function_call)
                 if result.content is not None:
                     context.variables.update(result.content)
                 if result.function_call is not None:
-                    context.objects["function_call"] = function_call
+                    context.objects["function_calls"] = result.all_function_calls
+                if result.tool_call is not None:
+                    context.objects["tool_calls"] = result.all_tool_calls
             except Exception as exc:
                 # TODO: "critical exceptions"
                 context.fail(str(exc), exc)
@@ -176,26 +179,16 @@ class KernelFunction(KernelFunctionBase):
 
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
-                    completion = ""
-                    messages = await chat_prompt.render_messages(context)
-                    async for partial_content in client.complete_chat_stream(
-                        messages=messages, settings=request_settings
-                    ):
-                        if isinstance(partial_content, str):
-                            completion += partial_content
-                            yield partial_content
-                        else:
-                            tool_message = await partial_content.get_tool_message()
-                            if tool_message:
-                                chat_prompt.add_message(role="tool", message=tool_message)
-                                context.objects["tool_message"] = tool_message
-                            # Get the completion
-                            async for part in partial_content:
-                                completion += part
-                                yield part
-                    # Use the full completion to update the chat_prompt_template and context
-                    chat_prompt.add_assistant_message(completion)
-                    context.variables.update(completion)
+                    messages = await chat_prompt.render_messages_async(context)
+                    response = await client.complete_chat_stream_async(messages=messages, settings=request_settings)
+                    context.objects["response_object"] = response
+                    async for partial_content in response.parse_stream():
+                        yield partial_content
+                    chat_prompt.add_assistant_message(response.content)
+                    context.variables.update(response.content)
+                    if response.tool_message:
+                        chat_prompt.add_message(role="tool", message=response.tool_message)
+                        context.objects["tool_message"] = response.tool_message
                 else:
                     prompt = await function_config.prompt_template.render(context)
 
