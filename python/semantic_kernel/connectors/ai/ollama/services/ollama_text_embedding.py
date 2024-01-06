@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClient
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
+from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -29,13 +30,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         Returns:
             ndarray -- Embeddings for the texts.
         """
-        if self.session:
-            async with self.session.post(
-                self.url, json={"model": self.ai_model_id, "texts": texts, "options": kwargs}
-            ) as response:
-                response.raise_for_status()
-                return array(await response.json())
-        async with aiohttp.ClientSession() as session:
+        async with AsyncSession(self.session) as session:
             async with session.post(
                 self.url, json={"model": self.ai_model_id, "texts": texts, "options": kwargs}
             ) as response:

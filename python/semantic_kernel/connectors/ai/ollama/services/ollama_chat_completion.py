@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.ollama.ollama_request_settings import OllamaChatRequestSettings
+from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -27,6 +28,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     Arguments:
         ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
         url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/chat
+        session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
     """
 
     url: HttpUrl = "http://localhost:11434/api/chat"
@@ -40,12 +42,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     ) -> Union[str, List[str]]:
         request_settings.messages = messages
         request_settings.stream = False
-        if self.session:
-            async with self.session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                response_object = await response.json()
-                return response_object.get("message", {"content": None}).get("content", None)
-        async with aiohttp.ClientSession() as session:
+        async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 response_object = await response.json()
@@ -70,8 +67,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         """
         settings.messages = messages
         settings.stream = True
-        if self.session:
-            async with self.session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
+        async with AsyncSession(self.session) as session:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
@@ -79,16 +76,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
                     yield response_part
                     if body.get("done"):
                         break
-        if not self.session:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
-                    response.raise_for_status()
-                    async for line in response.content:
-                        body = json.loads(line)
-                        response_part = body.get("message", {"content": None}).get("content", None)
-                        yield response_part
-                        if body.get("done"):
-                            break
 
     async def complete_async(
         self,

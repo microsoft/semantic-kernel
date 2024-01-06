@@ -10,6 +10,7 @@ from pydantic import HttpUrl
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.ollama.ollama_request_settings import OllamaTextRequestSettings
+from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -39,11 +40,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     ) -> Union[str, List[str]]:
         request_settings.prompt = prompt
         request_settings.stream = False
-        if self.session:
-            async with self.session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                return await response.text()
-        async with aiohttp.ClientSession() as session:
+        async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 return await response.text()
@@ -67,8 +64,8 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = True
-        if self.session:
-            async with self.session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
+        async with AsyncSession(self.session) as session:
+            async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
@@ -76,16 +73,6 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                     yield response_part
                     if body.get("done"):
                         break
-        if not self.session:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
-                    response.raise_for_status()
-                    async for line in response.content:
-                        body = json.loads(line)
-                        response_part = body.get("response")
-                        yield response_part
-                        if body.get("done"):
-                            break
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         return OllamaTextRequestSettings
