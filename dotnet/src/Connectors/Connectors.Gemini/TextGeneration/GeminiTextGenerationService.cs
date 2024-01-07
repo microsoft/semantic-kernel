@@ -35,7 +35,8 @@ public sealed class GeminiTextGenerationService : ITextGenerationService
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), apiKey, modelId: model);
+        var geminiConfiguration = new GeminiConfiguration(apiKey) { ModelId = model };
+        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), geminiConfiguration);
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
     }
 

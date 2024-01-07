@@ -36,7 +36,8 @@ public sealed class GeminiTextEmbeddingGenerationService : ITextEmbeddingGenerat
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), apiKey, embeddingModel: model);
+        var geminiConfiguration = new GeminiConfiguration(apiKey) { EmbeddingModelId = model };
+        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), geminiConfiguration);
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
     }
 

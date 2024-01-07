@@ -38,10 +38,11 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldUseUserAgentAsync()
     {
         // Arrange
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        await tgs.GenerateTextAsync("fake-text");
+        await client.GenerateTextAsync("fake-text");
 
         // Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -55,10 +56,11 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: modelId);
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        await tgs.GenerateTextAsync("fake-text");
+        await client.GenerateTextAsync("fake-text");
 
         // Assert
         Assert.Contains(modelId, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.Ordinal);
@@ -69,10 +71,11 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     {
         // Arrange
         string fakeAPIKey = "fake-api-key";
-        var tgs = new GeminiClient(this._httpClient, fakeAPIKey, modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        await tgs.GenerateTextAsync("fake-text");
+        await client.GenerateTextAsync("fake-text");
 
         // Assert
         Assert.Contains(fakeAPIKey, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.Ordinal);
@@ -83,10 +86,11 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     {
         // Arrange
         var baseEndPoint = GeminiEndpoints.BaseEndpoint.AbsoluteUri;
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        await tgs.GenerateTextAsync("fake-text");
+        await client.GenerateTextAsync("fake-text");
 
         // Assert
         Assert.StartsWith(baseEndPoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.Ordinal);
@@ -97,10 +101,11 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     {
         // Arrange
         string prompt = "fake-prompt";
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        await tgs.GenerateTextAsync(prompt);
+        await client.GenerateTextAsync(prompt);
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -112,10 +117,11 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldReturnValidModelTextResponseAsync()
     {
         // Arrange
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
+        IReadOnlyList<TextContent> textContents = await client.GenerateTextAsync("fake-text");
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
@@ -129,7 +135,8 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldReturnValidGeminiMetadataAsync()
     {
         // Arrange
-        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
         IReadOnlyList<TextContent> textContents = await client.GenerateTextAsync("fake-text");
@@ -173,7 +180,8 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldReturnValidDictionaryMetadataAsync()
     {
         // Arrange
-        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
         IReadOnlyList<TextContent> textContents = await client.GenerateTextAsync("fake-text");
@@ -214,26 +222,27 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldReturnResponseWithModelIdAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: modelId);
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
+        IReadOnlyList<TextContent> textContents = await client.GenerateTextAsync("fake-text");
 
         // Assert
         var textContent = textContents.SingleOrDefault();
         Assert.NotNull(textContent);
-        Assert.Equal(modelId, textContent.ModelId);
+        Assert.Equal(geminiConfiguration.ModelId, textContent.ModelId);
     }
 
     [Fact]
     public async Task ShouldReturnResponseWithValidInnerContentAsync()
     {
         // Arrange
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
-        IReadOnlyList<TextContent> textContents = await tgs.GenerateTextAsync("fake-text");
+        IReadOnlyList<TextContent> textContents = await client.GenerateTextAsync("fake-text");
 
         // Assert
         string testDataResponseJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<GeminiResponse>(
@@ -247,7 +256,8 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
-        var tgs = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 102,
@@ -256,7 +266,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
         };
 
         // Act
-        await tgs.GenerateTextAsync("fake-text", executionSettings);
+        await client.GenerateTextAsync("fake-text", executionSettings);
 
         // Assert
         var geminiRequest = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -272,7 +282,8 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     public async Task ShouldThrowArgumentExceptionIfExecutionSettingMaxTokensIsLessThanOneAsync(int? maxTokens)
     {
         // Arrange
-        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
         GeminiPromptExecutionSettings executionSettings = new()
         {
             MaxTokens = maxTokens

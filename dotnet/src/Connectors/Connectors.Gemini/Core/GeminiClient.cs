@@ -26,28 +26,32 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// </summary>
 internal sealed class GeminiClient : ClientBase, IGeminiClient
 {
-    /// <summary>
-    /// Initializes a new instance of the GeminiClient class.
-    /// </summary>
-    /// <param name="httpClient">The HttpClient instance to use for making HTTP requests.</param>
-    /// <param name="apiKey">The API key for authentication.</param>
-    /// <param name="modelId">The ID of the model (optional)</param>
-    /// <param name="embeddingModel">The embedding model (optional)</param>
-    public GeminiClient(HttpClient httpClient,
-        string apiKey,
-        string? modelId = null,
-        string? embeddingModel = null)
-        : this(new GeminiStreamJsonParser(), httpClient, apiKey, modelId: modelId, embeddingModel: embeddingModel) { }
+    private readonly string _apiKey;
 
-    internal GeminiClient(IStreamJsonParser streamJsonParser,
+    /// <summary>
+    /// The GeminiClient class provides a client interface for interacting with the Gemini API.
+    /// </summary>
+    /// <param name="httpClient">The HttpClient used for making API requests.</param>
+    /// <param name="configuration">The GeminiConfiguration used for configuring the client.</param>
+    public GeminiClient(
         HttpClient httpClient,
-        string apiKey,
-        string? modelId = null,
-        string? embeddingModel = null)
-        : base(streamJsonParser, httpClient, apiKey)
+        GeminiConfiguration configuration)
+        : this(new GeminiStreamJsonParser(), httpClient, configuration) { }
+
+    /// <summary>
+    /// Represents a client for interacting with the Gemini API.
+    /// </summary>
+    /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream</param>
+    /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
+    /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
+    public GeminiClient(IStreamJsonParser streamJsonParser,
+        HttpClient httpClient,
+        GeminiConfiguration configuration)
+        : base(streamJsonParser, httpClient)
     {
-        this.ModelId = modelId;
-        this.EmbeddingModelId = embeddingModel;
+        this.ModelId = configuration.ModelId;
+        this.EmbeddingModelId = configuration.EmbeddingModelId;
+        this._apiKey = configuration.ApiKey;
     }
 
     /// <inheritdoc/>
@@ -67,7 +71,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this.ModelId, this.APIKey);
+        var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this.ModelId, this._apiKey);
         var geminiRequest = this.CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
@@ -86,7 +90,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this.ModelId, this.APIKey);
+        var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this.ModelId, this._apiKey);
         var geminiRequest = this.CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
@@ -110,7 +114,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         ValidateChatHistory(chatHistory);
 
-        var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this.ModelId, this.APIKey);
+        var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this.ModelId, this._apiKey);
         var geminiRequest = this.CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
@@ -129,7 +133,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         ValidateChatHistory(chatHistory);
 
-        var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this.ModelId, this.APIKey);
+        var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this.ModelId, this._apiKey);
         var geminiRequest = this.CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
@@ -151,7 +155,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyEmbeddingModelId();
         Verify.NotNullOrEmpty(data);
 
-        var endpoint = GeminiEndpoints.GetEmbeddingsEndpoint(this.EmbeddingModelId, this.APIKey);
+        var endpoint = GeminiEndpoints.GetEmbeddingsEndpoint(this.EmbeddingModelId, this._apiKey);
         var geminiRequest = GeminiEmbeddingRequest.FromData(data, this.EmbeddingModelId);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
@@ -169,7 +173,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetCountTokensEndpoint(this.ModelId, this.APIKey);
+        var endpoint = GeminiEndpoints.GetCountTokensEndpoint(this.ModelId, this._apiKey);
         var geminiRequest = this.CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 

@@ -33,7 +33,8 @@ public sealed class GeminiClientCountingTokensTests : IDisposable
     public async Task ShouldReturnGreaterThanZeroTokenCountAsync()
     {
         // Arrange
-        var client = new GeminiClient(this._httpClient, "fake-api-key", modelId: "fake-model");
+        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
+        var client = new GeminiClient(this._httpClient, geminiConfiguration);
 
         // Act
         var tokenCount = await client.CountTokensAsync("fake-text");

@@ -23,14 +23,10 @@ internal abstract class ClientBase
 {
     private readonly IStreamJsonParser _streamJsonParser;
     protected HttpClient HTTPClient { get; }
-    protected string APIKey { get; }
 
-    protected ClientBase(IStreamJsonParser streamJsonParser, HttpClient httpClient, string apiKey)
+    protected ClientBase(IStreamJsonParser streamJsonParser, HttpClient httpClient)
     {
-        Verify.NotNullOrWhiteSpace(apiKey);
-
         this.HTTPClient = httpClient;
-        this.APIKey = apiKey;
         this._streamJsonParser = streamJsonParser;
     }
 
