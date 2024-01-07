@@ -33,8 +33,18 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="modelId">The ID of the model (optional)</param>
     /// <param name="embeddingModel">The embedding model (optional)</param>
-    public GeminiClient(HttpClient httpClient, string apiKey, string? modelId = null, string? embeddingModel = null)
-        : base(httpClient, apiKey)
+    public GeminiClient(HttpClient httpClient,
+        string apiKey,
+        string? modelId = null,
+        string? embeddingModel = null)
+        : this(new GeminiStreamJsonParser(), httpClient, apiKey, modelId: modelId, embeddingModel: embeddingModel) { }
+
+    internal GeminiClient(IStreamJsonParser streamJsonParser,
+        HttpClient httpClient,
+        string apiKey,
+        string? modelId = null,
+        string? embeddingModel = null)
+        : base(streamJsonParser, httpClient, apiKey)
     {
         this.ModelId = modelId;
         this.EmbeddingModelId = embeddingModel;
@@ -232,7 +242,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var geminiResponse in ProcessResponseStreamAsync(responseStream, cancellationToken))
+        await foreach (var geminiResponse in this.ProcessResponseStreamAsync(responseStream, cancellationToken))
         {
             foreach (var textContent in this.ProcessTextResponse(geminiResponse))
             {
@@ -245,7 +255,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var geminiResponse in ProcessResponseStreamAsync(responseStream, cancellationToken))
+        await foreach (var geminiResponse in this.ProcessResponseStreamAsync(responseStream, cancellationToken))
         {
             foreach (var chatMessageContent in this.ProcessChatResponse(geminiResponse))
             {

@@ -11,25 +11,27 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
 internal abstract class ClientBase
 {
+    private readonly IStreamJsonParser _streamJsonParser;
     protected HttpClient HTTPClient { get; }
     protected string APIKey { get; }
 
-    protected ClientBase(HttpClient httpClient, string apiKey)
+    protected ClientBase(IStreamJsonParser streamJsonParser, HttpClient httpClient, string apiKey)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
         this.HTTPClient = httpClient;
         this.APIKey = apiKey;
+        this._streamJsonParser = streamJsonParser;
     }
 
     protected void ValidateMaxTokens(int? maxTokens)
@@ -51,34 +53,16 @@ internal abstract class ClientBase
         return body;
     }
 
-    protected static async IAsyncEnumerable<GeminiResponse> ProcessResponseStreamAsync(
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+    protected async IAsyncEnumerable<GeminiResponse> ProcessResponseStreamAsync(
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
-        var jsonStringBuilder = new StringBuilder();
-        while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
+        foreach (string json in this._streamJsonParser.Parse(responseStream))
         {
-            if (line is "," or "]")
-            {
-                yield return DeserializeResponse<GeminiResponse>(jsonStringBuilder.ToString());
-                jsonStringBuilder.Clear();
-            }
-            else
-            {
-                RemoveLeftBracketAndAppendJsonLine(line, jsonStringBuilder);
-            }
+            yield return DeserializeResponse<GeminiResponse>(json);
         }
-    }
-
-    private static void RemoveLeftBracketAndAppendJsonLine(string line, StringBuilder jsonStringBuilder)
-    {
-        if (line[0] == '[')
-        {
-            line = line.Length > 1 ? line.Substring(1) : "";
-        }
-
-        jsonStringBuilder.Append(line);
     }
 
     protected async Task<HttpResponseMessage> SendRequestAndGetResponseStreamAsync(
