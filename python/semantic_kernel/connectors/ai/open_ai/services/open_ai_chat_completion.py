@@ -20,11 +20,11 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.open_ai_response import OpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
     OpenAIRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_response import OpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
     OpenAIConfigBase,
 )

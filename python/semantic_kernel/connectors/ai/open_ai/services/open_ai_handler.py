@@ -14,11 +14,12 @@ from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClient
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
 )
-from semantic_kernel.connectors.ai.open_ai.open_ai_response import OpenAIChatResponse, OpenAITextResponse
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_response import OpenAIChatResponse
+from semantic_kernel.connectors.ai.open_ai.responses.open_ai_text_response import OpenAITextResponse
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )

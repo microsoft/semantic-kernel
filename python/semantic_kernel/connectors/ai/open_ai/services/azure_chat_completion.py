@@ -21,10 +21,10 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.open_ai_response import AzureOpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureChatRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.responses.azure_open_ai_chat_response import AzureOpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )

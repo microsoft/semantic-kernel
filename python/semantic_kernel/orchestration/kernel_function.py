@@ -42,6 +42,25 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+def store_results(context, result, chat_prompt):
+    chat_prompt.add_message(
+        "assistant",
+        message=result.content,
+        function_call=result.function_call,
+        tool_calls=result.tool_calls,
+    )
+    if "tool_message" in result.model_fields and result.tool_message:
+        context.objects["tool_message"] = result.tool_message
+        chat_prompt.add_message(role="tool", message=result.tool_message)
+    if result.content is not None:
+        context.variables.update(result.content)
+    if result.function_call is not None:
+        context.objects["function_calls"] = result.all_function_calls
+    if result.tool_calls is not None:
+        context.objects["tool_calls"] = result.all_tool_calls
+    return context, chat_prompt
+
+
 class KernelFunction(KernelFunctionBase):
     """
     Semantic Kernel function.
@@ -125,34 +144,27 @@ class KernelFunction(KernelFunctionBase):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if not function_config.has_chat_prompt:
-                    prompt = await function_config.prompt_template.render(context)
-                    completion = await client.complete(prompt, request_settings)
-                    context.variables.update(completion)
+            if not function_config.has_chat_prompt:
+                try:
+                    prompt = await function_config.prompt_template.render_async(context)
+                    result = await client.complete_async(prompt, request_settings)
+                    context.objects["response_object"] = result
+                    context.variables.update(result.content)
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
+                finally:
                     return context
-            except Exception as e:
-                # TODO: "critical exceptions"
-                context.fail(str(e), e)
-                return context
 
-            as_chat_prompt = function_config.prompt_template
-            # Similar to non-chat, render prompt (which renders to a
-            # dict of <role, content, name> messages)
-            messages = await as_chat_prompt.render_messages(context)
             try:
+                chat_prompt = function_config.prompt_template
+                # Similar to non-chat, render prompt (which renders to a
+                # dict of <role, content, name> messages)
+                messages = await chat_prompt.render_messages_async(context)
                 result = await client.complete_chat_async(messages, request_settings)
                 context.objects["response_object"] = result
-                if "tool_message" in result.model_fields and result.tool_message:
-                    context.objects["tool_message"] = result.tool_message
-                    as_chat_prompt.add_message(role="tool", message=result.tool_message)
-                as_chat_prompt.add_message("assistant", message=result.content, function_call=result.function_call)
-                if result.content is not None:
-                    context.variables.update(result.content)
-                if result.function_call is not None:
-                    context.objects["function_calls"] = result.all_function_calls
-                if result.tool_call is not None:
-                    context.objects["tool_calls"] = result.all_tool_calls
+                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
+                context, chat_prompt = store_results(context, result, chat_prompt)
             except Exception as exc:
                 # TODO: "critical exceptions"
                 context.fail(str(exc), exc)
@@ -163,40 +175,29 @@ class KernelFunction(KernelFunctionBase):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if function_config.has_chat_prompt:
-                    chat_prompt = function_config.prompt_template
-
-                    # Similar to non-chat, render prompt (which renders to a
-                    # list of <role, content> messages)
-                    messages = await chat_prompt.render_messages_async(context)
-                    result = await client.complete_chat_stream_async(messages=messages, settings=request_settings)
+            if not function_config.has_chat_prompt:
+                try:
+                    prompt = await function_config.prompt_template.render_async(context)
+                    result = await client.complete_stream_async(prompt, request_settings)
                     context.objects["response_object"] = result
                     async for partial_content in result.parse_stream():
                         yield partial_content
-                    chat_prompt.add_message(
-                        "assistant",
-                        message=result.content,
-                        function_call=result.function_call,
-                        tool_calls=result.tool_calls,
-                    )
-                    if "tool_message" in result.model_fields and result.tool_message:
-                        context.objects["tool_message"] = result.tool_message
-                        chat_prompt.add_message(role="tool", message=result.tool_message)
-                    if result.content is not None:
-                        context.variables.update(result.content)
-                    if result.function_call is not None:
-                        context.objects["function_calls"] = result.all_function_calls
-                    if result.tool_calls is not None:
-                        context.objects["tool_calls"] = result.all_tool_calls
-                else:
-                    prompt = await function_config.prompt_template.render(context)
+                    context.variables.update(result.content)
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
 
-                    completion = ""
-                    async for partial_content in client.complete_stream(prompt, request_settings):
-                        completion += partial_content
-                        yield partial_content
-                    context.variables.update(completion)
+            try:
+                chat_prompt = function_config.prompt_template
+                # Similar to non-chat, render prompt (which renders to a
+                # list of <role, content> messages)
+                messages = await chat_prompt.render_messages_async(context)
+                result = await client.complete_chat_stream_async(messages=messages, settings=request_settings)
+                context.objects["response_object"] = result
+                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
+                async for partial_content in result.parse_stream():
+                    yield partial_content
+                context, chat_prompt = store_results(context, result, chat_prompt)
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
