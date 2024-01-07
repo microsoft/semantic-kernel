@@ -16,8 +16,7 @@ class OpenAITextResponse(AIResponse):
     "A text completion response from OpenAI."
 
     raw_response: Union[Completion, AsyncStream[Completion]]
-    stream_content: Optional[str] = None
-    stream_all_content: Optional[List[str]] = None
+    _parsed_content: Optional[Dict[str]] = PrivateAttr(default_factory=dict)
 
     @property
     def content(self) -> Optional[str]:
@@ -36,41 +35,30 @@ class OpenAITextResponse(AIResponse):
         Some or all content might be None, check if there are tool calls instead.
         """
         if not isinstance(self.raw_response, Completion):
+            if self._parsed_content is not {}:
+                return list(self._parsed_content.values())
             raise ValueError("all_content is not available for streaming responses, use stream_content instead.")
         return [choice.text for choice in self.raw_response.choices]
 
-    async def streaming_content(self) -> AsyncGenerator[str, None]:
+    async def parse_stream(self) -> AsyncGenerator[str, None]:
         """Get the streaming content of the response."""
         if isinstance(self.raw_response, Completion):
             raise ValueError("streaming_content is not available for regular responses, use content instead.")
-        if self.stream_content is None:
-            self.stream_content = ""
         async for chunk in self.raw_response:
             if len(chunk.choices) == 0:
                 continue
-            if chunk.choices[0].text:
-                text = chunk.choices[0].text
-                if text.strip():
-                    self.stream_content += text
-                    yield text
-
-    async def streaming_all_content(self) -> AsyncGenerator[List[str], None]:
-        """Get the streaming content of the response."""
-        if isinstance(self.raw_response, Completion):
-            raise ValueError("streaming_all_content is not available for regular responses, use all_content instead.")
-        if self.stream_all_content is None:
-            self.stream_all_content = [""] * self.request_settings.number_of_responses
-        async for chunk in self.raw_response:
-            if len(chunk.choices) == 0:
-                continue
-            current_chunks: List[str] = []
             for choice in chunk.choices:
-                if choice.text:
-                    text = choice.text
-                    if text.strip():
-                        self.stream_all_content[choice.index] += text
-                        current_chunks.append(text)
-            yield current_chunks
+                self.parse_choice(choice)
+            if chunk.choices[0].delta.text:
+                yield chunk.choices[0].delta.text
+
+    def parse_choice(self, choice: Choice) -> None:
+        """Parse a choice and store the text."""
+        if choice.delta.content is not None:
+            if choice.index in self._parsed_content:
+                self._parsed_content[choice.index] += choice.delta.text
+            else:
+                self._parsed_content[choice.index] = choice.delta.text
 
 
 class OpenAIChatResponse(AIResponse):
@@ -79,14 +67,14 @@ class OpenAIChatResponse(AIResponse):
     raw_response: Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]
     _parsed_content: Dict[int, str] = PrivateAttr(default_factory=dict)
     _function_calls: Dict[int, Optional[FunctionCall]] = PrivateAttr(default_factory=dict)
-    _tool_calls: Dict[int, Dict[str, Union[str, FunctionCall]]] = PrivateAttr(default_factory=dict)
+    _tool_calls: Dict[int, Dict[int, Dict[str, Union[str, FunctionCall]]]] = PrivateAttr(default_factory=dict)
 
     @property
     def content(self) -> Optional[str]:
         """Get the content of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
             if self._parsed_content is not None:
-                return self._parsed_content[0]
+                return self._parsed_content.get(0, None)
             raise ValueError("content is not available for streaming responses, use stream_content instead.")
         return self.raw_response.choices[0].message.content
 
@@ -104,7 +92,7 @@ class OpenAIChatResponse(AIResponse):
         """Get the function call of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
             if self._function_calls is not None:
-                return self.function_calls[0]
+                return self._function_calls.get(0, None)
             raise ValueError(
                 "function_call is not available for streaming responses, use stream_function_call instead."
             )
@@ -136,12 +124,14 @@ class OpenAIChatResponse(AIResponse):
         ]
 
     @property
-    def tool_call(self) -> Optional[Dict[str, Dict[str, Union[str, FunctionCall]]]]:
+    def tool_calls(self) -> Optional[Dict[str, Dict[str, Union[str, FunctionCall]]]]:
         """Get the function call of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
             if self._tool_calls is not None:
-                return self._tool_calls[0]
-            raise ValueError("tool_call is not available for streaming responses, use stream_tool_call instead.")
+                return self._tool_calls.get(0, None)
+            raise ValueError(
+                "To get the tool call of a streaming response, parse the stream first, with parse_stream()."
+            )
         if (
             hasattr(self.raw_response.choices[0].message, "tool_calls")
             and self.raw_response.choices[0].message.tool_calls is not None
@@ -196,25 +186,44 @@ class OpenAIChatResponse(AIResponse):
                 continue
             for choice in chunk.choices:
                 self.parse_choice(choice)
-                if chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
 
     def parse_choice(self, choice: Choice) -> None:
+        """Parse a choice and store the content, function call and tool call."""
         if choice.delta.tool_calls is not None:
-            for tool in choice.delta.tool_calls:
-                self._tool_calls[choice.index][tool.id] = {
-                    "id": tool.id,
-                    "type": tool.type,
-                    "function": FunctionCall(
-                        name=tool.function.name,
-                        arguments=tool.function.arguments,
-                    ),
-                }
+            if choice.index not in self._tool_calls:
+                self._tool_calls[choice.index] = {}
+                for tool in choice.delta.tool_calls:
+                    self._tool_calls[choice.index][tool.index] = {
+                        "id": tool.id,
+                        "type": tool.type,
+                        "function": FunctionCall(
+                            name=tool.function.name,
+                            arguments=tool.function.arguments if tool.function.arguments else "",
+                        ),
+                    }
+            else:
+                for tool in choice.delta.tool_calls:
+                    if tool.index not in self._tool_calls[choice.index]:
+                        self._tool_calls[choice.index][tool.index] = {
+                            "id": tool.id,
+                            "type": tool.type,
+                            "function": FunctionCall(
+                                name=tool.function.name,
+                                arguments=tool.function.arguments if tool.function.arguments else "",
+                            ),
+                        }
+                    else:
+                        self._tool_calls[choice.index][tool.index]["function"].arguments += tool.function.arguments
         if choice.delta.function_call is not None:
-            self._function_calls[choice.index] = FunctionCall(
-                name=choice.delta.function_call.name,
-                arguments=choice.delta.function_call.arguments,
-            )
+            if choice.index in self._function_calls:
+                self._function_calls[choice.index].arguments += choice.delta.function_call.arguments
+            else:
+                self._function_calls[choice.index] = FunctionCall(
+                    name=choice.delta.function_call.name,
+                    arguments=choice.delta.function_call.arguments or "",
+                )
         if choice.delta.content is not None:
             if choice.index in self._parsed_content:
                 self._parsed_content[choice.index] += choice.delta.content
@@ -225,14 +234,19 @@ class OpenAIChatResponse(AIResponse):
 class AzureOpenAIChatResponse(OpenAIChatResponse):
     """A response from Azure OpenAI."""
 
-    _tool_message_content: Dict[int, str] = PrivateAttr(default_factory=None)
+    _tool_message_content: Dict[int, str] = PrivateAttr(default_factory=dict)
 
     def parse_choice(self, choice: Choice) -> None:
         super().parse_choice(choice)
         if choice.delta.model_extra and "context" in choice.delta.model_extra:
-            for extra_context in choice.delta.model_extra["context"].get("messages", []):
-                if extra_context["role"] == "tool":
-                    self._tool_message_content[choice.index] = extra_context.get("content", "")
+            if choice.index in self._tool_message_content:
+                for extra_context in choice.delta.model_extra.get("context", {}).get("messages", {}):
+                    if extra_context["role"] == "tool":
+                        self._tool_message_content[choice.index] += extra_context.get("content", "")
+            else:
+                for extra_context in choice.delta.model_extra.get("context", {}).get("messages", {}):
+                    if extra_context["role"] == "tool":
+                        self._tool_message_content[choice.index] = extra_context.get("content", "")
 
     @property
     def tool_message(self) -> Optional[str]:

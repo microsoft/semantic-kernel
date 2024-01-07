@@ -13,7 +13,6 @@ class AIResponse(SKBaseModel):
         """Get the content of the response."""
         return self.raw_response
 
-    @property
-    async def streaming_content(self) -> AsyncGenerator[Any, None]:
+    async def parse_stream(self) -> AsyncGenerator[Any, None]:
         """Get the streaming content of the response."""
         yield self.raw_response

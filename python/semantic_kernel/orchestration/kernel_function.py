@@ -143,19 +143,9 @@ class KernelFunction(KernelFunctionBase):
             try:
                 result = await client.complete_chat_async(messages, request_settings)
                 context.objects["response_object"] = result
-                # if isinstance(result, list):
-                #     # TODO: handle multiple completions
-                #     result = result[0]
-                # if isinstance(result, tuple):
-                #     completion, tool_message, function_call = result
-                # else:
-                # completion = result
-                # tool_message = None
-                # function_call = None
                 if "tool_message" in result.model_fields and result.tool_message:
                     context.objects["tool_message"] = result.tool_message
                     as_chat_prompt.add_message(role="tool", message=result.tool_message)
-                # TODO: update for tool_calls
                 as_chat_prompt.add_message("assistant", message=result.content, function_call=result.function_call)
                 if result.content is not None:
                     context.variables.update(result.content)
@@ -180,15 +170,25 @@ class KernelFunction(KernelFunctionBase):
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
                     messages = await chat_prompt.render_messages_async(context)
-                    response = await client.complete_chat_stream_async(messages=messages, settings=request_settings)
-                    context.objects["response_object"] = response
-                    async for partial_content in response.parse_stream():
+                    result = await client.complete_chat_stream_async(messages=messages, settings=request_settings)
+                    context.objects["response_object"] = result
+                    async for partial_content in result.parse_stream():
                         yield partial_content
-                    chat_prompt.add_assistant_message(response.content)
-                    context.variables.update(response.content)
-                    if response.tool_message:
-                        chat_prompt.add_message(role="tool", message=response.tool_message)
-                        context.objects["tool_message"] = response.tool_message
+                    chat_prompt.add_message(
+                        "assistant",
+                        message=result.content,
+                        function_call=result.function_call,
+                        tool_calls=result.tool_calls,
+                    )
+                    if "tool_message" in result.model_fields and result.tool_message:
+                        context.objects["tool_message"] = result.tool_message
+                        chat_prompt.add_message(role="tool", message=result.tool_message)
+                    if result.content is not None:
+                        context.variables.update(result.content)
+                    if result.function_call is not None:
+                        context.objects["function_calls"] = result.all_function_calls
+                    if result.tool_calls is not None:
+                        context.objects["tool_calls"] = result.all_tool_calls
                 else:
                     prompt = await function_config.prompt_template.render(context)
 
