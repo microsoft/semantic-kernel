@@ -4,6 +4,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -21,78 +22,124 @@ internal sealed class GeminiStreamJsonParser : IStreamJsonParser
     public IEnumerable<string> Parse(Stream stream, bool validateJson = false)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (ReadNextJsonObject(reader, validateJson) is { } json)
+        while (ExtractNextJsonObject(reader, validateJson) is { } json)
         {
             yield return json;
         }
     }
 
-    private static string? ReadNextJsonObject(TextReader reader, bool validateJson)
+    private static string? ExtractNextJsonObject(TextReader reader, bool validateJson)
     {
-        var sb = new StringBuilder();
-        int character;
-        int bracketsCount = 0;
-        bool insideQuotes = false;
-        bool isEscaping = false;
-        while ((character = reader.Read()) != -1)
+        JsonParserState state = new();
+        while ((state.CharacterInt = reader.Read()) != -1)
         {
-            char c = (char)character;
-
-            switch (c)
+            if (IsEscapedCharacterInsideQuotes(state))
             {
-                // Check whether character is escaped inside quotes
-                case '\\' when !isEscaping && insideQuotes:
-                    isEscaping = true;
-                    AppendToJsonObject(c);
-                    continue;
-                // Check whether character is start or end of quotes
-                case '\"' when !isEscaping:
-                    insideQuotes = !insideQuotes;
-                    break;
+                continue;
             }
 
-            // When not inside quote and not escaping, handle brackets
-            if (!insideQuotes && !isEscaping)
+            DetermineIfQuoteStartOrEnd(state);
+            HandleCurrentCharacterOutsideQuotes(state);
+
+            if (state.IsCompleteJson)
             {
-                switch (c)
-                {
-                    case '{':
-                        bracketsCount++;
-                        break;
-                    case '}':
-                        bracketsCount--;
-                        if (bracketsCount == 0)
-                        {
-                            string json = sb.Append(c).ToString();
-                            if (validateJson)
-                            {
-                                _ = JsonNode.Parse(json);
-                            }
-
-                            return json;
-                        }
-
-                        break;
-                }
+                return state.GetJsonString(validateJson);
             }
 
-            // Reset escaping flag
-            if (isEscaping)
-            {
-                isEscaping = false;
-            }
-
-            AppendToJsonObject(c);
+            state.ResetEscapeFlag();
+            state.AppendToJsonObject();
         }
 
         return null;
+    }
 
-        void AppendToJsonObject(char c)
+    private static void HandleCurrentCharacterOutsideQuotes(JsonParserState state)
+    {
+        if (state is { InsideQuotes: true })
         {
-            if (bracketsCount > 0)
+            return;
+        }
+
+        switch (state.CurrentCharacter)
+        {
+            case '{':
+                state.BracketsCount++;
+                break;
+            case '}':
+                state.BracketsCount--;
+                if (state.BracketsCount == 0)
+                {
+                    state.MarkJsonAsComplete(appendCurrentCharacter: true);
+                }
+
+                break;
+        }
+    }
+
+    private static void DetermineIfQuoteStartOrEnd(JsonParserState state)
+    {
+        if (state is { CurrentCharacter: '\"', IsEscaping: false })
+        {
+            state.InsideQuotes = !state.InsideQuotes;
+        }
+    }
+
+    private static bool IsEscapedCharacterInsideQuotes(JsonParserState state)
+    {
+        if (state is { CurrentCharacter: '\\', IsEscaping: false, InsideQuotes: true })
+        {
+            state.IsEscaping = true;
+            state.AppendToJsonObject();
+            return true;
+        }
+
+        return false;
+    }
+
+    private sealed class JsonParserState
+    {
+        private readonly StringBuilder _jsonBuilder = new();
+
+        public int BracketsCount { get; set; }
+        public bool InsideQuotes { get; set; }
+        public bool IsEscaping { get; set; }
+        public bool IsCompleteJson { get; private set; }
+        public int CharacterInt { get; set; }
+        public char CurrentCharacter => (char)this.CharacterInt;
+
+        public void AppendToJsonObject()
+        {
+            if (this.BracketsCount > 0 && !this.IsCompleteJson)
             {
-                sb.Append(c);
+                this._jsonBuilder.Append(this.CurrentCharacter);
             }
         }
+
+        public string GetJsonString(bool validateJson)
+        {
+            if (!this.IsCompleteJson)
+            {
+                throw new InvalidOperationException("Cannot get JSON string when JSON is not complete.");
+            }
+
+            var json = this._jsonBuilder.ToString();
+            if (validateJson)
+            {
+                _ = JsonNode.Parse(json);
+            }
+
+            return json;
+        }
+
+        public void MarkJsonAsComplete(bool appendCurrentCharacter)
+        {
+            this.IsCompleteJson = true;
+            if (appendCurrentCharacter)
+            {
+                this._jsonBuilder.Append(this.CurrentCharacter);
+            }
+        }
+
+        public void ResetEscapeFlag() => this.IsEscaping = false;
     }
 }
