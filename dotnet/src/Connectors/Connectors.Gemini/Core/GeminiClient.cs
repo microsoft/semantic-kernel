@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -66,7 +65,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this.ModelId, this._apiKey);
-        var geminiRequest = this.CreateGeminiRequest(prompt, executionSettings);
+        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -85,7 +84,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this.ModelId, this._apiKey);
-        var geminiRequest = this.CreateGeminiRequest(prompt, executionSettings);
+        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
@@ -109,7 +108,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         ValidateChatHistory(chatHistory);
 
         var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this.ModelId, this._apiKey);
-        var geminiRequest = this.CreateGeminiRequest(chatHistory, executionSettings);
+        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -128,7 +127,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         ValidateChatHistory(chatHistory);
 
         var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this.ModelId, this._apiKey);
-        var geminiRequest = this.CreateGeminiRequest(chatHistory, executionSettings);
+        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
@@ -168,7 +167,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         Verify.NotNullOrWhiteSpace(prompt);
 
         var endpoint = GeminiEndpoints.GetCountTokensEndpoint(this.ModelId, this._apiKey);
-        var geminiRequest = this.CreateGeminiRequest(prompt, executionSettings);
+        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
         using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -306,22 +305,22 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GeminiEmbeddingResponse embeddingsResponse)
         => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();
 
-    private GeminiRequest CreateGeminiRequest(
+    private static GeminiRequest CreateGeminiRequest(
         string prompt,
         PromptExecutionSettings? promptExecutionSettings)
     {
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        this.ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
         var geminiRequest = GeminiRequest.FromPromptAndExecutionSettings(prompt, geminiExecutionSettings);
         return geminiRequest;
     }
 
-    private GeminiRequest CreateGeminiRequest(
+    private static GeminiRequest CreateGeminiRequest(
         ChatHistory chatHistory,
         PromptExecutionSettings? promptExecutionSettings)
     {
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        this.ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
         var geminiRequest = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, geminiExecutionSettings);
         return geminiRequest;
     }
@@ -332,7 +331,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
             modelId: textContent.ModelId,
             innerContent: textContent.InnerContent,
             metadata: textContent.Metadata,
-            choiceIndex: Convert.ToInt32(textContent.Metadata!["Index"], new NumberFormatInfo()));
+            choiceIndex: ((GeminiMetadata)textContent.Metadata!).Index);
 
     private static StreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
         => new(
@@ -341,7 +340,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
             modelId: chatMessageContent.ModelId,
             innerContent: chatMessageContent.InnerContent,
             metadata: chatMessageContent.Metadata,
-            choiceIndex: Convert.ToInt32(chatMessageContent.Metadata!["Index"], new NumberFormatInfo()));
+            choiceIndex: ((GeminiMetadata)chatMessageContent.Metadata!).Index);
 
     #endregion
 }

@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -37,7 +36,7 @@ internal abstract class ClientBase
         this.Logger = logger ?? NullLogger.Instance;
     }
 
-    protected void ValidateMaxTokens(int? maxTokens)
+    protected static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens is < 1)
         {
@@ -91,9 +90,9 @@ internal abstract class ClientBase
         return geminiResponse;
     }
 
-    protected static ReadOnlyDictionary<string, object?> GetResponseMetadata(
+    protected static GeminiMetadata GetResponseMetadata(
         GeminiResponse geminiResponse,
-        GeminiResponseCandidate candidate) => new GeminiMetadata()
+        GeminiResponseCandidate candidate) => new()
     {
         FinishReason = candidate.FinishReason,
         Index = candidate.Index,
