@@ -29,25 +29,16 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     private readonly string _apiKey;
 
     /// <summary>
-    /// The GeminiClient class provides a client interface for interacting with the Gemini API.
-    /// </summary>
-    /// <param name="httpClient">The HttpClient used for making API requests.</param>
-    /// <param name="configuration">The GeminiConfiguration used for configuring the client.</param>
-    public GeminiClient(
-        HttpClient httpClient,
-        GeminiConfiguration configuration)
-        : this(new GeminiStreamJsonParser(), httpClient, configuration) { }
-
-    /// <summary>
     /// Represents a client for interacting with the Gemini API.
     /// </summary>
-    /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream</param>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
-    public GeminiClient(IStreamJsonParser streamJsonParser,
+    /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream (optional)</param>
+    public GeminiClient(
         HttpClient httpClient,
-        GeminiConfiguration configuration)
-        : base(streamJsonParser, httpClient)
+        GeminiConfiguration configuration,
+        IStreamJsonParser? streamJsonParser = null)
+        : base(streamJsonParser ?? new GeminiStreamJsonParser(), httpClient)
     {
         this.ModelId = configuration.ModelId;
         this.EmbeddingModelId = configuration.EmbeddingModelId;
