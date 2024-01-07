@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Http;
@@ -34,11 +35,13 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
     /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream (optional)</param>
+    /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiClient(
         HttpClient httpClient,
         GeminiConfiguration configuration,
-        IStreamJsonParser? streamJsonParser = null)
-        : base(streamJsonParser ?? new GeminiStreamJsonParser(), httpClient)
+        IStreamJsonParser? streamJsonParser = null,
+        ILogger? logger = null)
+        : base(streamJsonParser ?? new GeminiStreamJsonParser(), httpClient, logger)
     {
         this.ModelId = configuration.ModelId;
         this.EmbeddingModelId = configuration.EmbeddingModelId;
@@ -278,19 +281,27 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     }
 
     private List<TextContent> ProcessTextResponse(GeminiResponse geminiResponse)
-        => geminiResponse.Candidates.Select(candidate => new TextContent(
+    {
+        var textContents = geminiResponse.Candidates.Select(candidate => new TextContent(
             text: candidate.Content.Parts[0].Text,
             modelId: this.ModelId,
             innerContent: candidate,
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
+        this.LogUsageMetadata((GeminiMetadata)textContents[0].Metadata!);
+        return textContents;
+    }
 
     private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
-        => geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
+    {
+        var chatMessageContents = geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
             role: candidate.Content.Role ?? AuthorRole.Assistant,
             content: candidate.Content.Parts[0].Text,
             modelId: this.ModelId,
             innerContent: candidate,
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
+        this.LogUsageMetadata((GeminiMetadata)chatMessageContents[0].Metadata!);
+        return chatMessageContents;
+    }
 
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GeminiEmbeddingResponse embeddingsResponse)
         => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();

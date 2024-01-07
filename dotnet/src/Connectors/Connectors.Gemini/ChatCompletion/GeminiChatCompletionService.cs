@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
@@ -31,13 +32,21 @@ public sealed class GeminiChatCompletionService : IChatCompletionService, ITextG
     /// <param name="model">The Gemini model for the chat completion service.</param>
     /// <param name="apiKey">The API key for authentication with the Gemini client.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
-    public GeminiChatCompletionService(string model, string apiKey, HttpClient? httpClient = null)
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public GeminiChatCompletionService(
+        string model,
+        string apiKey,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { ModelId = model };
-        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), geminiConfiguration);
+        this._client = new GeminiClient(
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            configuration: geminiConfiguration,
+            logger: loggerFactory?.CreateLogger(typeof(GeminiChatCompletionService)));
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
     }
 

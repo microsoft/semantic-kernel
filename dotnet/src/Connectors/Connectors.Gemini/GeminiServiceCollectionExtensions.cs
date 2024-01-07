@@ -6,6 +6,7 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Embeddings;
@@ -40,7 +41,11 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new GeminiTextGenerationService(modelId, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new GeminiTextGenerationService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
     }
 
@@ -63,7 +68,11 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new GeminiTextGenerationService(modelId, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
+            new GeminiTextGenerationService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -87,9 +96,17 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new GeminiChatCompletionService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new GeminiChatCompletionService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
     }
 
@@ -112,9 +129,17 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
+            new GeminiChatCompletionService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new GeminiChatCompletionService(modelId, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
+            new GeminiChatCompletionService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return services;
     }
 
@@ -139,7 +164,11 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new GeminiTextEmbeddingGenerationService(modelId, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new GeminiTextEmbeddingGenerationService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
     }
 
@@ -162,6 +191,10 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new GeminiTextEmbeddingGenerationService(modelId, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
+            new GeminiTextEmbeddingGenerationService(
+                model: modelId,
+                apiKey: apiKey,
+                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 }

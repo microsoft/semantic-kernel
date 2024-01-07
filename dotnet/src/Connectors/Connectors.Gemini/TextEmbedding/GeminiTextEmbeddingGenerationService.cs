@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
 using Microsoft.SemanticKernel.Embeddings;
@@ -31,13 +32,21 @@ public sealed class GeminiTextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="model">The model identifier.</param>
     /// <param name="apiKey">The API key.</param>
     /// <param name="httpClient">The optional HTTP client.</param>
-    public GeminiTextEmbeddingGenerationService(string model, string apiKey, HttpClient? httpClient = null)
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public GeminiTextEmbeddingGenerationService(
+        string model,
+        string apiKey,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { EmbeddingModelId = model };
-        this._client = new GeminiClient(HttpClientProvider.GetHttpClient(httpClient), geminiConfiguration);
+        this._client = new GeminiClient(
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            configuration: geminiConfiguration,
+            logger: loggerFactory?.CreateLogger(typeof(GeminiTextEmbeddingGenerationService)));
         this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
     }
 

@@ -14,6 +14,8 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
 using Microsoft.SemanticKernel.Http;
 
@@ -23,11 +25,16 @@ internal abstract class ClientBase
 {
     private readonly IStreamJsonParser _streamJsonParser;
     protected HttpClient HTTPClient { get; }
+    protected ILogger Logger { get; }
 
-    protected ClientBase(IStreamJsonParser streamJsonParser, HttpClient httpClient)
+    protected ClientBase(
+        IStreamJsonParser streamJsonParser,
+        HttpClient httpClient,
+        ILogger? logger)
     {
         this.HTTPClient = httpClient;
         this._streamJsonParser = streamJsonParser;
+        this.Logger = logger ?? NullLogger.Instance;
     }
 
     protected void ValidateMaxTokens(int? maxTokens)
@@ -106,5 +113,14 @@ internal abstract class ClientBase
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         return httpRequestMessage;
+    }
+
+    protected void LogUsageMetadata(GeminiMetadata metadata)
+    {
+        this.Logger.LogDebug(
+            "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
+            metadata.CandidatesTokenCount,
+            metadata.PromptTokenCount,
+            metadata.TotalTokenCount);
     }
 }
