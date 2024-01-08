@@ -13,7 +13,7 @@ public class InputVariable {
     @JsonProperty("description")
     private String description;
 
-    @JsonProperty("default_value")
+    @JsonProperty("default")
     private String defaultValue;
 
     @JsonProperty("is_required")

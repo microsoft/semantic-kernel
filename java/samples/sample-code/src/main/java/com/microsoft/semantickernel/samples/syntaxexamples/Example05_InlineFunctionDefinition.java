@@ -3,6 +3,9 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
@@ -11,7 +14,6 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
-import com.microsoft.semantickernel.samples.SamplesConfig;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.time.Instant;
@@ -20,14 +22,35 @@ import java.time.format.DateTimeFormatter;
 
 public class Example05_InlineFunctionDefinition {
 
+    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
+        System.getenv("USE_AZURE_CLIENT"));
+    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+
+    // Only required if USE_AZURE_CLIENT is true
+    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+
     public static void main(String[] args) throws ConfigurationException {
 
-        OpenAIAsyncClient client = SamplesConfig.getClient();
+        TextGenerationService textGenerationService;
 
-        AzureOpenAITextGenerationService textGenerationService = AzureOpenAITextGenerationService.builder()
-            .withOpenAIAsyncClient(client)
-            .withModelId("text-davinci-003")
-            .build();
+        if (USE_AZURE_CLIENT) {
+            OpenAIAsyncClient client = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
+
+            textGenerationService = AzureOpenAITextGenerationService.builder()
+                .withOpenAIAsyncClient(client)
+                .withModelId("text-davinci-003")
+                .build();
+        } else {
+            OpenAIAsyncClient client = new OpenAIClientBuilder()
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
+
+            // TODO: Add support for OpenAI API
+            textGenerationService = null;
+        }
 
         Kernel kernel = new DefaultKernel.Builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)

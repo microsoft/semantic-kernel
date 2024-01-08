@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
@@ -24,15 +23,4 @@ public interface PromptTemplate extends Buildable {
     Mono<String> renderAsync(Kernel kernel,
         @Nullable KernelArguments arguments);
 
-    static Builder builder() {
-        return BuildersSingleton.INST.getInstance(Builder.class);
-    }
-
-    interface Builder extends SemanticKernelBuilder<PromptTemplate> {
-
-        Builder withPromptTemplate(String promptTemplate);
-
-        Builder withPromptTemplateConfig(PromptTemplateConfig config);
-
-    }
 }
