@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,9 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction
 {
+    /// <summary>The execution settings for the function.</summary>
+    private Dictionary<string, PromptExecutionSettings>? _executionSettings = null;
+
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -73,7 +77,31 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+    /// <remarks>
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings
+    {
+        get
+        {
+            if (this._executionSettings == null)
+            {
+                return null;
+            }
+
+            var dictionary = new Dictionary<string, PromptExecutionSettings>();
+            foreach (var keyValue in this._executionSettings)
+            {
+                var json = JsonSerializer.Serialize(keyValue.Value);
+                var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
+                if (executionSettings is not null)
+                {
+                    dictionary.Add(keyValue.Key, executionSettings);
+                }
+            }
+
+            return dictionary;
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -97,7 +125,7 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
         };
-        this.ExecutionSettings = executionSettings;
+        this._executionSettings = executionSettings;
     }
 
     /// <summary>

@@ -17,6 +17,8 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public class PromptExecutionSettings
 {
+    private Dictionary<string, object>? _extensionData;
+
     /// <summary>
     /// Gets the default service identifier.
     /// </summary>
@@ -39,5 +41,16 @@ public class PromptExecutionSettings
     /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="PromptExecutionSettings"/>.
     /// </remarks>
     [JsonExtensionData]
-    public Dictionary<string, object>? ExtensionData { get; set; }
+    public Dictionary<string, object>? ExtensionData
+    {
+        get
+        {
+            return this._extensionData ??= new Dictionary<string, object>();
+        }
+
+        set
+        {
+            this._extensionData = value;
+        }
+    }
 }

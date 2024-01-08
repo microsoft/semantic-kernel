@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,7 +87,7 @@ public class KernelFunctionFromPromptTests
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextGeneration.Verify(a => a.GetTextContentsAsync("template", It.Is<OpenAIPromptExecutionSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextGeneration.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => ((JsonElement)settings.ExtensionData!["chat_system_prompt"]).GetString() == expectedSystemChatPrompt), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -398,7 +399,7 @@ public class KernelFunctionFromPromptTests
 
         // Assert
         Assert.Equal("Result", result.GetValue<string>());
-        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Anything", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Anything", It.Is<PromptExecutionSettings>(settings => ((JsonElement)settings.ExtensionData!["max_tokens"]).GetInt32() == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -468,9 +469,9 @@ public class KernelFunctionFromPromptTests
 
         // Assert
         Assert.Equal("Result1", result1.GetValue<string>());
-        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<PromptExecutionSettings>(settings => ((JsonElement)settings.ExtensionData!["max_tokens"]).GetInt32() == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
         Assert.Equal("Result2", result2.GetValue<string>());
-        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<PromptExecutionSettings>(settings => ((JsonElement)settings.ExtensionData!["max_tokens"]).GetInt32() == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -580,8 +581,8 @@ public class KernelFunctionFromPromptTests
 
         // Assert
         Assert.Equal("Result2", result.GetValue<string>());
-        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2 Result1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<PromptExecutionSettings>(settings => ((JsonElement)settings.ExtensionData!["max_tokens"]).GetInt32() == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2 Result1", It.Is<PromptExecutionSettings>(settings => ((JsonElement)settings.ExtensionData!["max_tokens"]).GetInt32() == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -610,6 +611,22 @@ public class KernelFunctionFromPromptTests
         // Assert
         mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
+
+    [Fact]
+    public void KernelFunctionExecutionSettingsAreReadOnly()
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings { MaxTokens = 1000 };
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Name = "Prompt", Template = "Prompt", ExecutionSettings = new() { ["service"] = executionSettings } });
+
+        // Act
+        PromptExecutionSettings settings = function.ExecutionSettings!["service"];
+        settings.ExtensionData!["max_tokens"] = 2000;
+
+        // Assert
+        Assert.Equal(1000, executionSettings.MaxTokens);
+    }
+
     private sealed class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
