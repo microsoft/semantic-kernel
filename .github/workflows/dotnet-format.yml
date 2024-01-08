@@ -26,8 +26,8 @@ jobs:
       matrix:
         include:
         #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
-        - { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
-        #- { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
+        #- { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
+        - { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
 
     runs-on: ${{ matrix.os }}
     env:
