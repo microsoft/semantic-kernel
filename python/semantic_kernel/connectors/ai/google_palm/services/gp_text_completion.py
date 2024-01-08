@@ -1,10 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, List, Optional, Union
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 import google.generativeai as palm
-from pydantic import constr
+from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -20,7 +25,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
-    api_key: constr(strip_whitespace=True, min_length=1)
+    api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
     def __init__(self, ai_model_id: str, api_key: str, log: Optional[Any] = None):
         """

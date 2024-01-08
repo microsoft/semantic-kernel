@@ -157,7 +157,7 @@ class StepwisePlanner:
 
                     return context
 
-                logger.debug("Thoughts: {next_step.thought}")
+                logger.debug(f"Thoughts: {next_step.thought}")
 
                 if not is_null_or_empty(next_step.action):
                     logger.info(f"Action: {next_step.action}. Iteration: {i+1}.")
