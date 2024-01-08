@@ -5,8 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContextVariableTypeConverter<T> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        ContextVariableTypeConverter.class);
 
     private final Class<T> clazz;
     private final Function<Object, T> fromObject;
@@ -92,6 +97,8 @@ public class ContextVariableTypeConverter<T> {
         if (converter.isPresent()) {
             return (U) converter.get().toObject((T) t);
         }
+
+        LOGGER.warn("No converter found for {} to {}", t.getClass(), clazz);
         return null;
     }
 

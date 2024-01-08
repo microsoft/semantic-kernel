@@ -275,7 +275,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         @Override
         public KernelFunction build() {
             PromptTemplateConfig config = new PromptTemplateConfig(
-                1,
                 name,
                 template,
                 templateFormat,

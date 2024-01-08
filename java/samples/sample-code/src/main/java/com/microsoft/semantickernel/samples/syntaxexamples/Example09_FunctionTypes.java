@@ -9,6 +9,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
@@ -98,12 +99,22 @@ public class Example09_FunctionTypes {
                 "SummarizePlugin",
                 null);
 
+        KernelPlugin examplePlugin = KernelPluginFactory
+            .importPluginFromResourcesDirectory(
+                "Plugins",
+                "ExamplePlugins",
+                "ExampleFunction",
+                null,
+                Example09_FunctionTypes.class
+            );
+
         Kernel kernel = new DefaultKernel.Builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .withPlugin(plugin)
             .withPlugin(summarize)
+            .withPlugin(examplePlugin)
             .build();
-/*
+
         // Different ways to invoke a function (not limited to these examples)
         kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null, String.class).block();
         kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null, String.class).block();
@@ -113,14 +124,18 @@ public class Example09_FunctionTypes {
                 plugin.get("InputDateTimeWithStringResult"),
                 KernelArguments
                     .builder()
-                    .withVariable("currentDate", ZonedDateTime.now(),
-                        new DateTimeContextVariableTypeConverter())
-                    .build(), String.class).block();
+                    .withVariable("currentDate",
+                        ContextVariable.of(
+                            ZonedDateTime.now(),
+                            new DateTimeContextVariableTypeConverter()
+                        )
+                    )
+                    .build(),
+                String.class
+            ).block();
 
         kernel.invokeAsync(plugin.get("NoInputTaskWithStringResult"), null, String.class).block();
 
-
- */
         kernel.invokeAsync(plugin.get("MultipleInputsWithVoidResult"),
                 KernelArguments
                     .builder()
@@ -135,13 +150,17 @@ public class Example09_FunctionTypes {
             .invokeAsync(plugin.get("ComplexInputWithStringResult"),
                 KernelArguments
                     .builder()
-                    .withVariable("complexObject", new Object() {
-                            @Override
-                            public String toString() {
-                                return "A complex object";
-                            }
-                        },
-                        new NoopConverter<>(Object.class)
+                    .withVariable(
+                        "complexObject",
+                        ContextVariable.of(
+                            new Object() {
+                                @Override
+                                public String toString() {
+                                    return "A complex object";
+                                }
+                            },
+                            new NoopConverter<>(Object.class)
+                        )
                     )
                     .build(),
                 String.class)

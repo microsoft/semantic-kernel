@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class PromptTemplateConfig {
 
+    public static final int CURRENT_SCHEMA = 1;
     private String name;
 
     private String template;
@@ -31,7 +32,7 @@ public class PromptTemplateConfig {
 
     public PromptTemplateConfig(String template) {
         this(
-            1,
+            CURRENT_SCHEMA,
             "default",
             template,
             "semantic-kernel",
@@ -71,6 +72,32 @@ public class PromptTemplateConfig {
         }
         this.outputVariable = outputVariable;
         this.executionSettings = executionSettings;
+    }
+
+    /**
+     * Constructor for a prompt template config
+     *
+     * @param name              Name of the template
+     * @param template          Template string
+     * @param templateFormat    Template format
+     * @param description       Description of the template
+     * @param inputVariables    Input variables
+     * @param outputVariable    Output variable
+     * @param executionSettings Execution settings
+     */
+    public PromptTemplateConfig(String name, String template, String templateFormat,
+        String description, List<InputVariable> inputVariables, OutputVariable outputVariable,
+        Map<String, PromptExecutionSettings> executionSettings) {
+        this(
+            CURRENT_SCHEMA,
+            name,
+            template,
+            templateFormat,
+            description,
+            inputVariables,
+            outputVariable,
+            executionSettings
+        );
     }
 
     public List<KernelParameterMetadata> getKernelParametersMetadata() {

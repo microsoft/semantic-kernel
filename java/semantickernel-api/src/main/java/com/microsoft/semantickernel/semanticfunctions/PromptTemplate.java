@@ -23,11 +23,4 @@ public interface PromptTemplate extends Buildable {
     Mono<String> renderAsync(Kernel kernel,
         @Nullable KernelArguments arguments);
 
-    interface Builder extends SemanticKernelBuilder<PromptTemplate> {
-
-        Builder withPromptTemplate(String promptTemplate);
-
-        Builder withPromptTemplateConfig(PromptTemplateConfig config);
-
-    }
 }

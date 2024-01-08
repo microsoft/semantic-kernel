@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.plugin;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Todo;
 import com.microsoft.semantickernel.exceptions.SKException;
@@ -7,12 +8,15 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt.Builder;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
+import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -135,23 +139,23 @@ public class KernelPluginFactory {
 
     public static KernelPlugin importPluginFromDirectory(
         Path parentDirectory,
-        String skillDirectoryName,
+        String pluginDirectoryName,
         PromptTemplateFactory promptTemplateFactory) {
 
-        // Verify.ValidSkillName(skillDirectoryName);
-        File skillDir = new File(parentDirectory.toFile(), skillDirectoryName);
-        // Verify.DirectoryExists(skillDir);
-        if (!skillDir.exists() || !skillDir.isDirectory()) {
+        // Verify.ValidSkillName(pluginDirectoryName);
+        File pluginDir = new File(parentDirectory.toFile(), pluginDirectoryName);
+        // Verify.DirectoryExists(pluginDir);
+        if (!pluginDir.exists() || !pluginDir.isDirectory()) {
             throw new SKException(
-                "Could not find directory " + skillDir.getAbsolutePath());
+                "Could not find directory " + pluginDir.getAbsolutePath());
         }
-        File[] files = skillDir.listFiles(File::isDirectory);
+        File[] files = pluginDir.listFiles(File::isDirectory);
         if (files == null) {
             throw new SKException(
-                "No Skills found in directory " + skillDir.getAbsolutePath());
+                "No Plugins found in directory " + pluginDir.getAbsolutePath());
         }
 
-        Map<String, KernelFunction> skills = new CaseInsensitiveMap<>();
+        Map<String, KernelFunction> plugins = new CaseInsensitiveMap<>();
 
         for (File dir : files) {
             try {
@@ -164,81 +168,96 @@ public class KernelPluginFactory {
                 File configPath = new File(dir, CONFIG_FILE);
                 if (!configPath.exists()) {
                     continue;
-
                     // Verify.NotNull(config, $"Invalid prompt template
                     // configuration, unable to parse {configPath}");
                 }
-                PromptTemplateConfig config = new ObjectMapper()
-                    .readValue(configPath, PromptTemplateConfig.class);
 
-                // kernel.Log.LogTrace("Config {0}: {1}", functionName,
-                // config.ToJson());
+                KernelFunction plugin = getKernelFunction(pluginDirectoryName,
+                    promptTemplateFactory, configPath, promptPath);
 
-                // Load prompt template
-                String template = new String(Files.readAllBytes(promptPath.toPath()),
-                    Charset.defaultCharset());
-
-                PromptTemplate promptTemplate;
-
-                if (promptTemplateFactory != null) {
-                    promptTemplate = promptTemplateFactory.tryCreate(config);
-                } else {
-                    promptTemplate = new KernelPromptTemplateFactory().tryCreate(config);
-                }
-
-                skills.put(dir.getName(), new KernelFunctionFromPrompt.Builder()
-                    .withName(config.getName())
-                    .withDescription(config.getDescription())
-                    .withExecutionSettings(config.getExecutionSettings())
-                    .withInputParameters(config.getInputVariables())
-                    .withPromptTemplate(promptTemplate)
-                    .withPluginName(skillDirectoryName)
-                    .withTemplate(template)
-                    .withTemplateFormat(config.getTemplateFormat())
-                    .withOutputVariable(config.getOutputVariable())
-                    .withPromptTemplateFactory(promptTemplateFactory)
-                    .build());
+                plugins.put(dir.getName(), plugin);
             } catch (IOException e) {
                 LOGGER.error("Failed to read file", e);
             }
         }
 
         return new DefaultKernelPlugin(
-            skillDirectoryName,
+            pluginDirectoryName,
             null,
-            skills
+            plugins
         );
     }
-/*
-    public static Map<String, SemanticFunctionConfig> importSemanticSkillFromResourcesDirectory(
-        String pluginDirectory,
-        String pluginName,
-        String functionName,
-        @Nullable Class clazz,
-        PromptTemplateEngine promptTemplateEngine)
-        throws KernelException {
 
-        PromptConfig config =
-            getPromptTemplateConfig(pluginDirectory, pluginName, functionName, clazz);
+    private static KernelFunction getKernelFunction(
+        String pluginDirectoryName,
+        PromptTemplateFactory promptTemplateFactory,
+        File configPath,
+        File promptPath)
+        throws IOException {
+        PromptTemplateConfig config = new ObjectMapper()
+            .readValue(configPath, PromptTemplateConfig.class);
 
-        if (config == null) {
-            config = new PromptConfig("", "", null);
+        // Load prompt template
+        String template = new String(Files.readAllBytes(promptPath.toPath()),
+            Charset.defaultCharset());
+
+        return getKernelFunction(pluginDirectoryName, promptTemplateFactory, config, template);
+    }
+
+    private static KernelFunction getKernelFunction(
+        String pluginDirectoryName,
+        PromptTemplateFactory promptTemplateFactory,
+        PromptTemplateConfig config,
+        String template) {
+        PromptTemplate promptTemplate;
+
+        if (promptTemplateFactory != null) {
+            promptTemplate = promptTemplateFactory.tryCreate(config);
+        } else {
+            promptTemplate = new KernelPromptTemplateFactory().tryCreate(config);
         }
 
-        String template = getTemplatePrompt(pluginDirectory, pluginName, functionName, clazz);
+        return new Builder()
+            .withName(config.getName())
+            .withDescription(config.getDescription())
+            .withExecutionSettings(config.getExecutionSettings())
+            .withInputParameters(config.getInputVariables())
+            .withPromptTemplate(promptTemplate)
+            .withPluginName(pluginDirectoryName)
+            .withTemplate(template)
+            .withTemplateFormat(config.getTemplateFormat())
+            .withOutputVariable(config.getOutputVariable())
+            .withPromptTemplateFactory(promptTemplateFactory)
+            .build();
+    }
 
-        HashMap<String, SemanticFunctionConfig> skills = new HashMap<>();
+    public static KernelPlugin importPluginFromResourcesDirectory(
+        String parentDirectory,
+        String pluginDirectoryName,
+        String functionName,
+        PromptTemplateFactory promptTemplateFactory,
+        @Nullable Class<?> clazz) {
 
-        PromptTemplate promptTemplate =
-            SKBuilders.promptTemplate()
-                .withPromptTemplate(template)
-                .withPromptTemplateConfig(config)
-                .withPromptTemplateEngine(promptTemplateEngine)
-                .build();
+        String template = getTemplatePrompt(parentDirectory, pluginDirectoryName, functionName,
+            clazz);
 
-        skills.put(functionName, new SemanticFunctionConfig(config, promptTemplate));
+        PromptTemplateConfig promptTemplateConfig = getPromptTemplateConfig(parentDirectory,
+            pluginDirectoryName,
+            functionName,
+            clazz);
 
-        return skills;
+        KernelFunction function = getKernelFunction(pluginDirectoryName, promptTemplateFactory,
+            promptTemplateConfig, template);
+
+        HashMap<String, KernelFunction> plugins = new HashMap<>();
+
+        plugins.put(functionName, function);
+
+        return new DefaultKernelPlugin(
+            pluginDirectoryName,
+            null,
+            plugins
+        );
     }
 
     private static String getTemplatePrompt(
@@ -253,24 +272,33 @@ public class KernelPluginFactory {
                 + PROMPT_FILE;
 
         try {
-            return EmbeddedResourceLoader.readFile(
+            return getFileContents(
                 promptFileName,
-                clazz,
-                ResourceLocation.CLASSPATH_ROOT,
-                ResourceLocation.CLASSPATH,
-                ResourceLocation.FILESYSTEM);
+                clazz);
         } catch (IOException e) {
             LOGGER.error("Failed to read file " + promptFileName, e);
 
-            throw new KernelException(
-                ErrorCodes.FUNCTION_NOT_AVAILABLE,
+            throw new SKException(
                 "No Skills found in directory " + promptFileName);
         }
     }
 
-    private static PromptConfig getPromptTemplateConfig(
-        String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz)
-        throws KernelException {
+    private static String getFileContents(
+        String file,
+        @Nullable Class clazz) throws FileNotFoundException {
+        return EmbeddedResourceLoader.readFile(
+            file,
+            clazz,
+            ResourceLocation.CLASSPATH_ROOT,
+            ResourceLocation.CLASSPATH,
+            ResourceLocation.FILESYSTEM);
+    }
+
+    private static PromptTemplateConfig getPromptTemplateConfig(
+        String pluginDirectory,
+        String pluginName,
+        String functionName,
+        @Nullable Class clazz) {
         String configFileName =
             pluginDirectory
                 + File.separator
@@ -281,21 +309,14 @@ public class KernelPluginFactory {
                 + CONFIG_FILE;
 
         try {
-            String config =
-                EmbeddedResourceLoader.readFile(
-                    configFileName,
-                    clazz,
-                    ResourceLocation.CLASSPATH_ROOT,
-                    ResourceLocation.CLASSPATH,
-                    ResourceLocation.FILESYSTEM);
+            String config = getFileContents(configFileName, clazz);
 
-            return new ObjectMapper().readValue(config, PromptConfig.class);
+            return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
         } catch (IOException e) {
             if (e instanceof JsonMappingException) {
                 LOGGER.error("Failed to parse config file " + configFileName, e);
 
-                throw new KernelException(
-                    ErrorCodes.FUNCTION_CONFIGURATION_ERROR,
+                throw new SKException(
                     "Failed to parse config file " + configFileName,
                     e);
             } else {
@@ -304,6 +325,4 @@ public class KernelPluginFactory {
             return null;
         }
     }
-
- */
 }
