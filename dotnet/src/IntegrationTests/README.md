@@ -54,6 +54,7 @@ dotnet user-secrets set "Planners:AzureOpenAI:ChatDeploymentName" "gpt-4-1106-pr
 dotnet user-secrets set "Planners:AzureOpenAI:ServiceId" "gpt-4-1106-preview"
 dotnet user-secrets set "Planners:AzureOpenAI:ApiKey" "..."
 
+
 dotnet user-secrets set "Planners:OpenAI:ModelId" "gpt-3.5-turbo-1106"
 dotnet user-secrets set "Planners:OpenAI:ApiKey" "..."
 ```
