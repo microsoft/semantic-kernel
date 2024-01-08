@@ -15,18 +15,30 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// </summary>
 public sealed class GeminiPart
 {
+    /// <summary>
+    /// Gets or sets the text data.
+    /// </summary>
     [JsonPropertyName("text")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Text { get; set; }
 
+    /// <summary>
+    /// Gets or sets the image or video data.
+    /// </summary>
     [JsonPropertyName("inlineData")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiPartInlineData? InlineData { get; set; }
 
+    /// <summary>
+    /// Function call data.
+    /// </summary>
     [JsonPropertyName("functionCall")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiPartFunctionCall? FunctionCall { get; set; }
 
+    /// <summary>
+    /// Object representing the function call response.
+    /// </summary>
     [JsonPropertyName("functionResponse")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiPartFunctionResponse? FunctionResponse { get; set; }
