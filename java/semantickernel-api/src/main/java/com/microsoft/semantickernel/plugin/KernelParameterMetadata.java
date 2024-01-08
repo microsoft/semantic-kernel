@@ -24,5 +24,13 @@ public class KernelParameterMetadata {
     public String getName() {
         return name;
     }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
     //private KernelJsonSchema schema;
 }

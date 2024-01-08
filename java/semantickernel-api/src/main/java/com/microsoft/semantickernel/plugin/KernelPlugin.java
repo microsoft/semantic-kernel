@@ -2,6 +2,8 @@ package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public abstract class KernelPlugin implements Iterable<KernelFunction> {
 
@@ -13,10 +15,9 @@ public abstract class KernelPlugin implements Iterable<KernelFunction> {
         this.description = description;
     }
 
-    @Override
-    public Iterator<KernelFunction> iterator() {
-        return null;
-    }
+    public abstract Iterator<KernelFunction> iterator();
+
+    public abstract Map<String, KernelFunction> getFunctions();
 
     public String getName() {
         return name;
@@ -27,4 +28,5 @@ public abstract class KernelPlugin implements Iterable<KernelFunction> {
     }
 
     public abstract KernelFunction get(String functionName);
+
 }
