@@ -38,9 +38,9 @@ public static class Example30_ChatWithPrompts
         Console.WriteLine("======== Chat with prompts ========");
 
         /* Load 3 files:
-         * - 28-system-prompt.txt: the system prompt, used to initialize the chat session.
-         * - 28-user-context.txt:  the user context, e.g. a piece of a document the user selected and is asking to process.
-         * - 28-user-prompt.txt:   the user prompt, just for demo purpose showing that one can leverage the same approach also to augment user messages.
+         * - 30-system-prompt.txt: the system prompt, used to initialize the chat session.
+         * - 30-user-context.txt:  the user context, e.g. a piece of a document the user selected and is asking to process.
+         * - 30-user-prompt.txt:   the user prompt, just for demo purpose showing that one can leverage the same approach also to augment user messages.
          */
 
         var systemPromptTemplate = EmbeddedResource.Read("30-system-prompt.txt");
@@ -58,13 +58,13 @@ public static class Example30_ChatWithPrompts
         // Adding required arguments referenced by the prompt templates.
         var arguments = new KernelArguments
         {
-            // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
+            // Put the selected document into the variable used by the system prompt (see 30-system-prompt.txt).
             ["selectedText"] = selectedText,
 
-            // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
+            // Demo another variable, e.g. when the chat started, used by the system prompt (see 30-system-prompt.txt).
             ["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture),
 
-            // This is the user message, store it in the variable used by 28-user-prompt.txt
+            // This is the user message, store it in the variable used by 30-user-prompt.txt
             ["userMessage"] = "extract locations as a bullet point list"
         };
 

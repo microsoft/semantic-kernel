@@ -8,7 +8,5 @@ def get_mongodb_resources(connection_string: str, database_name: str):
         client = MongoClient(connection_string)
         database = client[database_name]
     except Exception as ex:
-        raise Exception(
-            f"Error while connecting to Azure Cosmos MongoDb vCore: {ex}"
-        ) from ex
+        raise Exception(f"Error while connecting to Azure Cosmos MongoDb vCore: {ex}") from ex
     return client, database

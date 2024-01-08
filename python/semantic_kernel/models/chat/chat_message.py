@@ -14,12 +14,8 @@ class ChatMessage(SKBaseModel):
     """Class to hold chat messages."""
 
     role: Optional[str] = "assistant"
-    fixed_content: Optional[str] = Field(
-        default=None, init_var=False, serialization_alias="content"
-    )
-    content_template: Optional[PromptTemplate] = Field(
-        default=None, init_var=True, repr=False
-    )
+    fixed_content: Optional[str] = Field(default=None, init_var=False, serialization_alias="content")
+    content_template: Optional[PromptTemplate] = Field(default=None, init_var=True, repr=False)
 
     @property
     def content(self) -> Optional[str]:
@@ -33,12 +29,11 @@ class ChatMessage(SKBaseModel):
         Subsequent calls will do nothing.
         """
         if self.fixed_content is None:
-            self.fixed_content = await self.content_template.render_async(context)
+            if self.content_template is not None:
+                self.fixed_content = await self.content_template.render_async(context)
 
     def as_dict(self) -> Dict[str, str]:
         """Return the message as a dict.
         Make sure to call render_message_async first to embed the context in the content.
         """
-        return self.model_dump(
-            exclude_none=True, by_alias=True, exclude={"content_template"}
-        )
+        return self.model_dump(exclude_none=True, by_alias=True, exclude={"content_template"})
