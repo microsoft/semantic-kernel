@@ -73,7 +73,12 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+    /// <remarks>
+    /// The execution settings are used to configure the behavior of the function when calling a LLM.
+    /// The currently configured instance of <@see cref="IAIServiceSelector"/> from the <see cref="Kernel"/> is used
+    /// to determine the <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> to use for the function.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
