@@ -91,6 +91,7 @@ dotnet user-secrets set "HuggingFace:ModelId" "..."
 
 dotnet user-secrets set "Gemini:ApiKey" "..."
 dotnet user-secrets set "Gemini:ModelId" "..."
+dotnet user-secrets set "Gemini:EmbeddingModelId" "..."
 
 dotnet user-secrets set "Pinecone:ApiKey" "..."
 dotnet user-secrets set "Pinecone:Environment" "..."
@@ -160,6 +161,7 @@ HuggingFace__ModelId
 # Gemini
 Gemini__ApiKey
 Gemini__ModelId
+Gemini__EmbeddingModelId
 
 # Pinecone
 Pinecone__ApiKey
