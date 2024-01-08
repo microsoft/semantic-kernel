@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, List, Optional, Tuple, Union
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse
-from pydantic import PrivateAttr, constr
+from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -25,7 +31,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase):
-    api_key: constr(strip_whitespace=True, min_length=1)
+    api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     _message_history: Optional[ChatResponse] = PrivateAttr()
 
     def __init__(
