@@ -2,15 +2,21 @@
 
 using System;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace GettingStarted;
 
 // This example shows how to use rendering event hooks to ensure that prompts are rendered in a responsible manner.
-public static class Step6_Responsible_AI
+public class Step6_Responsible_AI : BaseTest
 {
     /// <summary>
     /// Show how to use rendering event hooks to ensure that prompts are rendered in a responsible manner.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
         Kernel kernel = Kernel.CreateBuilder()
@@ -33,7 +39,7 @@ public static class Step6_Responsible_AI
         {
             e.RenderedPrompt += " NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY";
 
-            Console.WriteLine(e.RenderedPrompt);
+            this._output.WriteLine(e.RenderedPrompt);
         }
 
         // Add the handlers to the kernel
@@ -41,6 +47,10 @@ public static class Step6_Responsible_AI
         kernel.PromptRendered += MyRenderedHandler;
 
         KernelArguments arguments = new() { { "card_number", "4444 3333 2222 1111" } };
-        Console.WriteLine(await kernel.InvokePromptAsync("Tell me some useful information about this credit card number {{$card_number}}?", arguments));
+        this._output.WriteLine(await kernel.InvokePromptAsync("Tell me some useful information about this credit card number {{$card_number}}?", arguments));
+    }
+
+    public Step6_Responsible_AI(ITestOutputHelper output) : base(output)
+    {
     }
 }

@@ -2,27 +2,31 @@
 
 using System;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
+using Xunit;
+using Xunit.Abstractions;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-public static class Example07_BingAndGooglePlugins
+public class Example07_BingAndGooglePlugins : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            this._output.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -36,7 +40,7 @@ public static class Example07_BingAndGooglePlugins
         string bingApiKey = TestConfiguration.Bing.ApiKey;
         if (bingApiKey == null)
         {
-            Console.WriteLine("Bing credentials not found. Skipping example.");
+            this._output.WriteLine("Bing credentials not found. Skipping example.");
         }
         else
         {
@@ -53,7 +57,7 @@ public static class Example07_BingAndGooglePlugins
 
         if (googleApiKey == null || googleSearchEngineId == null)
         {
-            Console.WriteLine("Google credentials not found. Skipping example.");
+            this._output.WriteLine("Google credentials not found. Skipping example.");
         }
         else
         {
@@ -62,22 +66,23 @@ public static class Example07_BingAndGooglePlugins
                 searchEngineId: googleSearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
             kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
+            // ReSharper disable once ArrangeThisQualifier
             await Example1Async(kernel, "google");
         }
     }
 
-    private static async Task Example1Async(Kernel kernel, string searchPluginName)
+    private async Task Example1Async(Kernel kernel, string searchPluginName)
     {
-        Console.WriteLine("======== Bing and Google Search Plugins ========");
+        this._output.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
-        Console.WriteLine(question);
-        Console.WriteLine($"----{searchPluginName}----");
-        Console.WriteLine(result.GetValue<string>());
+        this._output.WriteLine(question);
+        this._output.WriteLine($"----{searchPluginName}----");
+        this._output.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -92,9 +97,9 @@ public static class Example07_BingAndGooglePlugins
        */
     }
 
-    private static async Task Example2Async(Kernel kernel)
+    private async Task Example2Async(Kernel kernel)
     {
-        Console.WriteLine("======== Use Search Plugin to answer user questions ========");
+        this._output.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.
@@ -130,7 +135,7 @@ Question: {{ $question }}.
 Answer: ";
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        Console.WriteLine(question);
+        this._output.WriteLine(question);
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
@@ -148,11 +153,11 @@ Answer: ";
             var promptTemplateFactory = new KernelPromptTemplateFactory();
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
-            Console.WriteLine("---- Fetching information from Bing...");
+            this._output.WriteLine("---- Fetching information from Bing...");
             var information = await promptTemplate.RenderAsync(kernel);
 
-            Console.WriteLine("Information found:");
-            Console.WriteLine(information);
+            this._output.WriteLine("Information found:");
+            this._output.WriteLine(information);
 
             // Run the prompt function again, now including information from Bing
             answer = await kernel.InvokeAsync(oracle, new KernelArguments()
@@ -164,11 +169,11 @@ Answer: ";
         }
         else
         {
-            Console.WriteLine("AI had all the information, no need to query Bing.");
+            this._output.WriteLine("AI had all the information, no need to query Bing.");
         }
 
-        Console.WriteLine("---- ANSWER:");
-        Console.WriteLine(answer.GetValue<string>());
+        this._output.WriteLine("---- ANSWER:");
+        this._output.WriteLine(answer.GetValue<string>());
 
         /* OUTPUT:
 
@@ -187,5 +192,9 @@ Answer: ";
             * The most followed person on TikTok right now is Khaby Lame, with over 153 million followers.
             * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.
          */
+    }
+
+    public Example07_BingAndGooglePlugins(ITestOutputHelper output) : base(output)
+    {
     }
 }
