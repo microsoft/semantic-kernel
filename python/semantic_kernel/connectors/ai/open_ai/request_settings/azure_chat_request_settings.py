@@ -69,6 +69,9 @@ class ExtraBody(SKBaseModel):
     # input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
     # output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
 
 class AzureChatRequestSettings(OpenAIChatRequestSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""

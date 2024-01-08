@@ -1,7 +1,4 @@
 {
-    "python.analysis.extraPaths": [
-        "./semantic_kernel"
-    ],
     "explorer.compactFolders": false,
     "prettier.enable": true,
     "editor.formatOnType": true,
@@ -14,22 +11,6 @@
             "languageId": "py",
             "allowCompoundWords": true,
             "locale": "en-US"
-        }
-    ],
-    "cSpell.words": [
-        "aeiou",
-        "nopep",
-        "OPENAI",
-        "skfunction"
-    ],
-    "cSpell.patterns": [
-        {
-            "name": "import",
-            "pattern": "import [a-zA-Z0-9_]+"
-        },
-        {
-            "name": "from import",
-            "pattern": "from [a-zA-Z0-9_]+ import [a-zA-Z0-9_]+"
         }
     ],
     "python.testing.pytestArgs": [
