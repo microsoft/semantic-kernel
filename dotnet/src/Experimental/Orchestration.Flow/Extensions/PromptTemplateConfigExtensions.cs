@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI;
-
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
@@ -16,11 +14,13 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
-        PromptExecutionSettings executionSettings = config.GetDefaultRequestSettings() ?? new();
-        if (config.ModelSettings.Count == 0)
+        var executionSettings = config.ExecutionSettings;
+        foreach (var setting in executionSettings)
         {
-            config.ModelSettings.Add(executionSettings);
+            if (setting.Value.ExtensionData != null)
+            {
+                setting.Value.ExtensionData["max_tokens"] = maxTokens;
+            }
         }
-        executionSettings.ExtensionData["max_tokens"] = maxTokens;
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -136,8 +136,9 @@ public sealed class FunctionCallingStepwisePlanner
                         var result = (await clonedKernel.InvokeAsync(pluginFunction, arguments, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                         chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                     }
-                    catch (KernelException)
+                    catch (Exception ex) when (!ex.IsCriticalException())
                     {
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ex.Message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                         chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
                     }
                 }

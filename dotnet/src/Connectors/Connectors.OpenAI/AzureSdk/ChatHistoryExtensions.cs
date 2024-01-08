@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -25,40 +24,24 @@ public static class ChatHistoryExtensions
     public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
     {
         List<StreamingChatMessageContent> messageContents = new();
+
         // Stream the response.
-        StringBuilder contentBuilder = new();
-        List<ChatCompletionsFunctionToolCall>? functionCallResponses = null;
+        StringBuilder? contentBuilder = null;
+        Dictionary<int, string>? toolCallIdsByIndex = null;
+        Dictionary<int, string>? functionNamesByIndex = null;
+        Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
         Dictionary<string, object?>? metadata = null;
         AuthorRole? streamedRole = default;
         await foreach (var chatMessage in streamingMessageContents.ConfigureAwait(false))
         {
-            if (metadata is null && chatMessage.Metadata is not null)
-            {
-                metadata = (Dictionary<string, object?>)chatMessage.Metadata;
-            }
+            metadata ??= (Dictionary<string, object?>?)chatMessage.Metadata;
 
             if (chatMessage.Content is { Length: > 0 } contentUpdate)
             {
-                contentBuilder.Append(contentUpdate);
+                (contentBuilder ??= new()).Append(contentUpdate);
             }
 
-            if (chatMessage.ToolCallUpdate is ChatCompletionsFunctionToolCall functionToolCall)
-            {
-                if (functionToolCall.Id is not null &&
-                    (functionCallResponses is not { Count: > 0 } || functionCallResponses[functionCallResponses.Count - 1].Id != functionToolCall.Id))
-                {
-                    // If this update has a tool ID and that ID is not the same as the last one we saw,
-                    // add this as a new function call.
-                    (functionCallResponses ??= new()).Add(functionToolCall);
-                }
-                else if (functionCallResponses is { Count: > 0 })
-                {
-                    // Augment the last function call with the new additional information.
-                    ChatCompletionsFunctionToolCall last = functionCallResponses[functionCallResponses.Count - 1];
-                    last.Name ??= functionToolCall.Name;
-                    last.Arguments += functionToolCall.Arguments;
-                }
-            }
+            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;
@@ -71,9 +54,9 @@ public static class ChatHistoryExtensions
         {
             chatHistory.Add(new OpenAIChatMessageContent(
                 streamedRole ?? AuthorRole.Assistant,
-                contentBuilder.ToString(),
+                contentBuilder?.ToString() ?? string.Empty,
                 messageContents[0].ModelId!,
-                functionCallResponses ?? new List<ChatCompletionsFunctionToolCall>(),
+                OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                 metadata));
         }
     }

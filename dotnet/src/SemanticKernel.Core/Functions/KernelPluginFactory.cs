@@ -23,6 +23,7 @@ public static class KernelPluginFactory
     /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
     /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
     /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
@@ -39,6 +40,7 @@ public static class KernelPluginFactory
     /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
     /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
@@ -80,6 +82,7 @@ public static class KernelPluginFactory
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
@@ -91,6 +94,7 @@ public static class KernelPluginFactory
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
