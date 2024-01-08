@@ -33,7 +33,7 @@ public static class Example70_Agent
             return;
         }
 
-        //// "Hello agent"
+        // "Hello agent"
         await RunSimpleChatAsync();
 
         // Run agent with "method" tool/function
