@@ -114,7 +114,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
@@ -129,20 +129,10 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     /// </returns>
     private Uri GetRequestUri()
     {
-        string? baseUrl = null;
-
-        if (!string.IsNullOrEmpty(this._endpoint))
-        {
-            baseUrl = this._endpoint;
-        }
-        else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
-        {
-            baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
-        }
-        else
-        {
+        string? baseUrl =
+            !string.IsNullOrEmpty(this._endpoint) ? this._endpoint :
+            this._httpClient.BaseAddress?.AbsoluteUri != null ? this._httpClient.BaseAddress!.AbsoluteUri :
             throw new KernelException("No endpoint or HTTP client base address has been provided");
-        }
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }

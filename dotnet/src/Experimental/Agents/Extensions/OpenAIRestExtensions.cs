@@ -31,7 +31,11 @@ internal static partial class OpenAIRestExtensions
             throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string responseBody = await response.Content.ReadAsStringAsync(
+#if NET6_0_OR_GREATER
+            cancellationToken
+#endif
+            ).ConfigureAwait(false);
 
         // Common case is for failure exception to be raised by REST invocation.
         // Null result is a logical possibility, but unlikely edge case.
@@ -66,7 +70,11 @@ internal static partial class OpenAIRestExtensions
             throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string responseBody = await response.Content.ReadAsStringAsync(
+#if NET6_0_OR_GREATER
+            cancellationToken
+#endif
+            ).ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
             throw new AgentException($"Null result processing: {typeof(TResult).Name}");

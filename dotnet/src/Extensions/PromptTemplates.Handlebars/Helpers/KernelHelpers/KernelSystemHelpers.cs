@@ -61,7 +61,7 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("set", (writer, context, arguments) =>
         {
-            var name = string.Empty;
+            string name;
             object value = string.Empty;
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
@@ -72,7 +72,7 @@ internal static class KernelSystemHelpers
             }
             else
             {
-                name = arguments[0].ToString();
+                name = arguments[0].ToString() ?? string.Empty;
                 value = arguments[1];
             }
 
@@ -123,8 +123,8 @@ internal static class KernelSystemHelpers
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             // Create list with numbers from start to end (inclusive)
-            var start = int.Parse(arguments[0].ToString(), kernel.Culture);
-            var end = int.Parse(arguments[1].ToString(), kernel.Culture) + 1;
+            var start = int.Parse(arguments[0].ToString() ?? string.Empty, kernel.Culture);
+            var end = int.Parse(arguments[1].ToString() ?? string.Empty, kernel.Culture) + 1;
             var count = end - start;
 
             return Enumerable.Range(start, count);

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Google.Apis.CustomSearchAPI.v1;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 
@@ -18,7 +17,6 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// </summary>
 public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
-    private readonly ILogger _logger;
     private readonly CustomSearchAPIService _search;
     private readonly string? _searchEngineId;
 
@@ -52,7 +50,6 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         this._search = new CustomSearchAPIService(initializer);
         this._searchEngineId = searchEngineId;
-        this._logger = loggerFactory?.CreateLogger(typeof(GoogleConnector)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>

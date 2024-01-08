@@ -62,7 +62,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 var serviceId = keyValue.Key;
                 if (!string.IsNullOrEmpty(settings.ModelId))
                 {
-                    service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
+                    service = GetServiceByModelId<T>(kernel, settings.ModelId!);
                     if (service is not null)
                     {
                         serviceSettings = settings;
@@ -94,7 +94,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 kernel.Services.GetService<T>();
     }
 
-    private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
+    private static T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
     {
         foreach (var service in kernel.GetAllServices<T>())
         {

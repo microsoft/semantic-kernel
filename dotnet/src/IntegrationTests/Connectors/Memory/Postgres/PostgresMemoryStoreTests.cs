@@ -528,7 +528,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
 
         // Act
         await memoryStore.CreateCollectionAsync(collection);
@@ -548,7 +548,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         var keys = memoryStore.UpsertBatchAsync(collection, records);
 
         // Act
@@ -568,7 +568,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         await memoryStore.CreateCollectionAsync(collection);
 
         List<string> keys = new();
@@ -606,7 +606,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
 
         // Act
         await memoryStore.CreateCollectionAsync(collection);
@@ -668,7 +668,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         return new PostgresMemoryStore(this._dataSource!, vectorSize: 3, schema: "public");
     }
 
-    private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
+    private static IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
         Assert.True(numRecords % 2 == 0, "Number of records must be even");
         Assert.True(numRecords > 0, "Number of records must be greater than 0");

@@ -22,5 +22,5 @@ public class FunctionCallingStepwisePlannerResult
     /// <summary>
     /// Number of iterations performed by the planner.
     /// </summary>
-    public int Iterations { get; internal set; } = 0;
+    public int Iterations { get; internal set; }
 }

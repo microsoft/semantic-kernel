@@ -135,7 +135,7 @@ public class KustoMemoryStoreTests
     public async Task ItCanUpsertAsync()
     {
         // Arrange
-        var expectedMemoryRecord = this.GetRandomMemoryRecord();
+        var expectedMemoryRecord = GetRandomMemoryRecord();
         var kustoMemoryEntry = new KustoMemoryRecord(expectedMemoryRecord);
 
         using var store = new KustoMemoryStore(this._cslAdminProviderMock.Object, this._cslQueryProviderMock.Object, DatabaseName);
@@ -155,9 +155,9 @@ public class KustoMemoryStoreTests
     public async Task ItCanUpsertBatchAsyncAsync()
     {
         // Arrange
-        var memoryRecord1 = this.GetRandomMemoryRecord();
-        var memoryRecord2 = this.GetRandomMemoryRecord();
-        var memoryRecord3 = this.GetRandomMemoryRecord();
+        var memoryRecord1 = GetRandomMemoryRecord();
+        var memoryRecord2 = GetRandomMemoryRecord();
+        var memoryRecord3 = GetRandomMemoryRecord();
 
         var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
@@ -187,7 +187,7 @@ public class KustoMemoryStoreTests
     public async Task ItCanGetMemoryRecordFromCollectionAsync()
     {
         // Arrange
-        var expectedMemoryRecord = this.GetRandomMemoryRecord();
+        var expectedMemoryRecord = GetRandomMemoryRecord();
         var kustoMemoryEntry = new KustoMemoryRecord(expectedMemoryRecord);
 
         this._cslQueryProviderMock
@@ -211,7 +211,7 @@ public class KustoMemoryStoreTests
 
         // Assert
         Assert.NotNull(actualMemoryRecord);
-        this.AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
+        AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
     }
 
     [Fact]
@@ -233,9 +233,9 @@ public class KustoMemoryStoreTests
     public async Task ItCanGetMemoryRecordBatchFromCollectionAsync()
     {
         // Arrange
-        var memoryRecord1 = this.GetRandomMemoryRecord();
-        var memoryRecord2 = this.GetRandomMemoryRecord();
-        var memoryRecord3 = this.GetRandomMemoryRecord();
+        var memoryRecord1 = GetRandomMemoryRecord();
+        var memoryRecord2 = GetRandomMemoryRecord();
+        var memoryRecord3 = GetRandomMemoryRecord();
 
         var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
@@ -263,7 +263,7 @@ public class KustoMemoryStoreTests
         Assert.NotNull(actualMemoryRecords);
         for (var i = 0; i < actualMemoryRecords.Count; i++)
         {
-            this.AssertMemoryRecordEqual(batchUpsertMemoryRecords[i], actualMemoryRecords[i]);
+            AssertMemoryRecordEqual(batchUpsertMemoryRecords[i], actualMemoryRecords[i]);
         }
     }
 
@@ -334,7 +334,7 @@ public class KustoMemoryStoreTests
 
     #region private ================================================================================
 
-    private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
+    private static void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
         Assert.Equal(expectedRecord.Timestamp, actualRecord.Timestamp);
@@ -347,7 +347,7 @@ public class KustoMemoryStoreTests
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-    private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
+    private static MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
         var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };

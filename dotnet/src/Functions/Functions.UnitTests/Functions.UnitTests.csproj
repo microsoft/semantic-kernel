@@ -2,8 +2,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Functions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Functions.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>

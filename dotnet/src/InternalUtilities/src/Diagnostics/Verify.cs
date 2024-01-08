@@ -10,9 +10,21 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.SemanticKernel;
 
-internal static class Verify
+internal static partial class Verify
 {
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
+#if NET8_0_OR_GREATER
+    [GeneratedRegex("^[0-9A-Za-z_]*$")]
+    internal static partial Regex AsciiLettersDigitsUnderscoreRegex();
+
+    [GeneratedRegex("^[0-9A-Za-z_.]*$")]
+    internal static partial Regex AsciiLettersDigitsUnderscorePeriodRegex();
+#else
+    private static readonly Regex s_asciiLettersDigitsUnderscoreRegex = new("^[0-9A-Za-z_]*$");
+    internal static Regex AsciiLettersDigitsUnderscoreRegex() => s_asciiLettersDigitsUnderscoreRegex;
+
+    private static readonly Regex s_asciiLettersDigitsUnderscorePeriodRegex = new("^[0-9A-Za-z_.]*$");
+    internal static Regex AsciiLettersDigitsUnderscorePeriodRegex() => s_asciiLettersDigitsUnderscorePeriodRegex;
+#endif
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull
@@ -56,7 +68,7 @@ internal static class Verify
     internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression("pluginName")] string? paramName = null)
     {
         NotNullOrWhiteSpace(pluginName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
+        if (!AsciiLettersDigitsUnderscoreRegex().IsMatch(pluginName))
         {
             ThrowArgumentInvalidName("plugin name", pluginName, paramName);
         }
@@ -70,9 +82,25 @@ internal static class Verify
     internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression("functionName")] string? paramName = null)
     {
         NotNullOrWhiteSpace(functionName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
+        if (!AsciiLettersDigitsUnderscoreRegex().IsMatch(functionName))
         {
             ThrowArgumentInvalidName("function name", functionName, paramName);
+        }
+    }
+
+    internal static void ValidParameterName(string name, int index)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            string paramName = $"parameters[{index}].{name}";
+            if (name is null)
+            {
+                ThrowArgumentNullException(paramName);
+            }
+            else
+            {
+                ThrowArgumentWhiteSpaceException(paramName);
+            }
         }
     }
 
@@ -121,33 +149,54 @@ internal static class Verify
     /// <param name="parameters">List of parameters</param>
     internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
     {
+        // Functions with a small number of parameters are most common, and we can avoid
+        // the overhead of a hashset for those cases.
         int count = parameters.Count;
-        if (count > 0)
+        switch (count)
         {
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < count; i++)
-            {
-                KernelParameterMetadata p = parameters[i];
-                if (string.IsNullOrWhiteSpace(p.Name))
-                {
-                    string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
-                    if (p.Name is null)
-                    {
-                        ThrowArgumentNullException(paramName);
-                    }
-                    else
-                    {
-                        ThrowArgumentWhiteSpaceException(paramName);
-                    }
-                }
+            case 0:
+                // Nothing to validate.
+                break;
 
-                if (!seen.Add(p.Name))
+            case 1:
+                // A single parameter is always unique.
+                ValidParameterName(parameters[0].Name, 0);
+                break;
+
+            case 2:
+                // Two parameters are unique if they have different names.
+                string first = parameters[0].Name, second = parameters[1].Name;
+                ValidParameterName(first, 0);
+                ValidParameterName(second, 1);
+                if (first.Equals(second, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new ArgumentException($"The function has two or more parameters with the same name '{p.Name}'");
+                    ThrowArgumentNotUnique(parameters[0].Name);
                 }
-            }
+                break;
+
+            default:
+                // For anything more use a hashset to check for uniqueness.
+                var seen = new HashSet<string>(
+#if NET6_0_OR_GREATER
+                    count,
+#endif
+                    StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < count; i++)
+                {
+                    KernelParameterMetadata p = parameters[i];
+                    ValidParameterName(p.Name, i);
+                    if (!seen.Add(p.Name))
+                    {
+                        ThrowArgumentNotUnique(p.Name);
+                    }
+                }
+                break;
         }
     }
+
+    [DoesNotReturn]
+    private static void ThrowArgumentNotUnique(string name) =>
+        throw new ArgumentException($"The function has two or more parameters with the same name '{name}'");
 
     [DoesNotReturn]
     private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
@@ -160,8 +209,4 @@ internal static class Verify
     [DoesNotReturn]
     internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
         throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
-
-    [DoesNotReturn]
-    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
-        throw new ArgumentOutOfRangeException(paramName, actualValue, message);
 }

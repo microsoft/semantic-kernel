@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
@@ -21,7 +22,7 @@ internal sealed class HandlebarsParameterTypeMetadata
     public List<KernelParameterMetadata> Properties { get; set; } = new();
 
     // Override the Equals method to compare the property values
-    public override bool Equals(object obj)
+    public override bool Equals([NotNullWhen(true)] object? obj)
     {
         // Check to make sure the object is the expected type
         if (obj is not HandlebarsParameterTypeMetadata other)

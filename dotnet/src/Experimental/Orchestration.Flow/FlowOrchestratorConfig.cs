@@ -44,22 +44,22 @@ public sealed class FlowOrchestratorConfig
     /// <summary>
     /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
-    public int MinIterationTimeMs { get; set; } = 0;
+    public int MinIterationTimeMs { get; set; }
 
     /// <summary>
     /// Optional. The prompt template override for ReAct engine.
     /// </summary>
-    public string? ReActPromptTemplate { get; set; } = null;
+    public string? ReActPromptTemplate { get; set; }
 
     /// <summary>
     /// Optional. The prompt template configuration override for the ReAct engine.
     /// </summary>
-    public PromptTemplateConfig? ReActPromptTemplateConfig { get; set; } = null;
+    public PromptTemplateConfig? ReActPromptTemplateConfig { get; set; }
 
     /// <summary>
     /// When this is enabled, the flow will be terminated automatically if ReAct engine has exhausted available plugins.
     /// </summary>
-    public bool EnableAutoTermination { get; set; } = false;
+    public bool EnableAutoTermination { get; set; }
 
     /// <summary>
     /// Optional. The AI request settings for the ReAct engine.
@@ -68,5 +68,5 @@ public sealed class FlowOrchestratorConfig
     /// Prompt used for reasoning may be different for different models, the prompt selection would be based on the PromptExecutionSettings.
     /// if the built in prompt template does not work for your model, suggest to override it with <see cref="ReActPromptTemplate"/>.
     /// </remarks>
-    public PromptExecutionSettings? AIRequestSettings { get; set; } = null;
+    public PromptExecutionSettings? AIRequestSettings { get; set; }
 }

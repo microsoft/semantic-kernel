@@ -159,7 +159,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 
-        IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
+        IAsyncEnumerable<StreamingKernelContent>? asyncReference;
         if (aiService is IChatCompletionService chatCompletion)
         {
             asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
@@ -337,7 +337,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             return;
         }
 
-        var jsonObject = default(JsonElement);
+        JsonElement jsonObject;
         try
         {
             jsonObject = JsonSerializer.SerializeToElement(usageObject);

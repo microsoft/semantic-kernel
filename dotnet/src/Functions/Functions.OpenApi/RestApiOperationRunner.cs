@@ -35,10 +35,10 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     private static readonly Dictionary<string, HttpResponseContentSerializer> s_serializerByContentType = new()
     {
-        { "image", async (content) => await content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
-        { "text", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
-        { "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
+        { "image", async (content, cancellationToken) => await content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false) },
+        { "text", async (content, cancellationToken) => await content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) },
+        { "application/json", async (content, cancellationToken) => await content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)},
+        { "application/xml", async (content, cancellationToken) => await content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)}
     };
 
     /// <summary>
@@ -122,7 +122,7 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var url = BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
         var headers = operation.BuildHeaders(arguments);
 
@@ -174,7 +174,7 @@ internal sealed class RestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+        var response = await SerializeResponseContentAsync(responseMessage.Content, cancellationToken).ConfigureAwait(false);
 
         response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
@@ -185,8 +185,9 @@ internal sealed class RestApiOperationRunner
     /// Serializes the response content of an HTTP request.
     /// </summary>
     /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The serialized content.</returns>
-    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpContent content)
+    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpContent content, CancellationToken cancellationToken)
     {
         var contentType = content.Headers.ContentType;
 
@@ -212,7 +213,7 @@ internal sealed class RestApiOperationRunner
         }
 
         // Serialize response content and return it
-        var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
+        var serializedContent = await serializer(content, cancellationToken).ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString());
     }
@@ -382,7 +383,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    private static Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 

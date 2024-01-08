@@ -43,17 +43,22 @@ public static class RestApiOperationResponseExtensions
 
     private static bool ValidateJson(RestApiOperationResponse response)
     {
-        try
+        if (response.ExpectedSchema is not null)
         {
-            var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            using var contentDoc = JsonDocument.Parse(response.Content.ToString());
-            var result = jsonSchema.Evaluate(contentDoc);
-            return result.IsValid;
+            try
+            {
+                var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
+                if (response.Content.ToString() is string content)
+                {
+                    using var contentDoc = JsonDocument.Parse(content);
+                    var result = jsonSchema.Evaluate(contentDoc);
+                    return result.IsValid;
+                }
+            }
+            catch (JsonException) { }
         }
-        catch (JsonException)
-        {
-            return false;
-        }
+
+        return false;
     }
 
     private static bool ValidateXml(RestApiOperationResponse response)

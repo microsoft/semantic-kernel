@@ -6,20 +6,9 @@ namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class ListCollectionsRequest
 {
-    public static ListCollectionsRequest Create()
-    {
-        return new ListCollectionsRequest();
-    }
+    public static ListCollectionsRequest Create() => new();
 
-    public HttpRequestMessage Build()
-    {
-        return HttpRequest.CreateGetRequest("collections");
-    }
+    public static HttpRequestMessage Build() => HttpRequest.CreateGetRequest("collections");
 
-    #region private ================================================================================
-
-    private ListCollectionsRequest()
-    { }
-
-    #endregion
+    private ListCollectionsRequest() { }
 }

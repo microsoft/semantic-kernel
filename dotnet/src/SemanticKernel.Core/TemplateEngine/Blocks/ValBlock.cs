@@ -9,8 +9,8 @@ internal sealed class ValBlock : Block, ITextRendering
     internal override BlockTypes Type => BlockTypes.Value;
 
     // Cache the first and last char
-    private readonly char _first = '\0';
-    private readonly char _last = '\0';
+    private readonly char _first;
+    private readonly char _last;
 
     // Content, excluding start/end quote chars
     private readonly string _value = string.Empty;

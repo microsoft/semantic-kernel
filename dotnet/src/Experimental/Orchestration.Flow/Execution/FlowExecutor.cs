@@ -159,7 +159,7 @@ internal class FlowExecutor : IFlowExecutor
                 rootContext[kv.Key] = kv.Value;
             }
 
-            this.ValidateStep(step, rootContext);
+            ValidateStep(step, rootContext);
 
             // init step execution state
             string stepKey = $"{stepIndex}_{step.Goal}";
@@ -324,14 +324,14 @@ internal class FlowExecutor : IFlowExecutor
                         stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable, (string)variableValue!);
 
                         // propagate arguments to root context, needed if Flow itself is a step
-                        this.PropagateVariable(rootContext, stepResult, variable);
+                        PropagateVariable(rootContext, stepResult, variable);
                     }
                 }
 
                 // propagate arguments to root context, needed if Flow itself is a step
                 foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                 {
-                    this.PropagateVariable(rootContext, stepResult, variable);
+                    PropagateVariable(rootContext, stepResult, variable);
                 }
             }
 
@@ -417,7 +417,7 @@ internal class FlowExecutor : IFlowExecutor
         return new FunctionResult(this._executeFlowFunction, outputs, metadata: rootContext);
     }
 
-    private void PropagateVariable(KernelArguments rootContext, FunctionResult stepResult, string variableName)
+    private static void PropagateVariable(KernelArguments rootContext, FunctionResult stepResult, string variableName)
     {
         if (stepResult.Metadata!.ContainsKey(variableName))
         {
@@ -451,7 +451,7 @@ internal class FlowExecutor : IFlowExecutor
         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, state).ConfigureAwait(false);
     }
 
-    private void ValidateStep(FlowStep step, KernelArguments context)
+    private static void ValidateStep(FlowStep step, KernelArguments context)
     {
         if (step.Requires.Any(p => !context.ContainsName(p)))
         {
@@ -491,7 +491,7 @@ internal class FlowExecutor : IFlowExecutor
             chatHistory = new ChatHistory();
         }
 
-        var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
+        var scratchPad = CreateRepeatOrStartStepScratchPad(chatHistory);
         context["agentScratchPad"] = scratchPad;
 
         if (this._logger.IsEnabled(LogLevel.Information))
@@ -543,7 +543,7 @@ internal class FlowExecutor : IFlowExecutor
         return null;
     }
 
-    private string CreateRepeatOrStartStepScratchPad(ChatHistory chatHistory)
+    private static string CreateRepeatOrStartStepScratchPad(ChatHistory chatHistory)
     {
         var scratchPadLines = new List<string>();
         foreach (var message in chatHistory)
@@ -580,9 +580,18 @@ internal class FlowExecutor : IFlowExecutor
         var question = step.Goal;
         foreach (var variable in step.Requires)
         {
-            if (!variable.StartsWith("_", StringComparison.InvariantCulture) && ((string)arguments[variable]!).Length <= this._config.MaxVariableLength)
+            if (!variable.StartsWith(
+#if NET6_0_OR_GREATER
+                '_'
+#else
+                "_", StringComparison.Ordinal
+#endif
+                ))
             {
-                question += $"\n - {variable}: {JsonSerializer.Serialize(arguments[variable])}";
+                if (((string)arguments[variable]!).Length <= this._config.MaxVariableLength)
+                {
+                    question += $"\n - {variable}: {JsonSerializer.Serialize(arguments[variable])}";
+                }
             }
         }
 

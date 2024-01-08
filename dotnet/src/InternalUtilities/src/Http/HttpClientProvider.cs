@@ -2,9 +2,9 @@
 
 using System;
 using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
-
-#pragma warning disable CA2215 // Dispose methods should call base class dispose
 
 namespace Microsoft.SemanticKernel.Http;
 
@@ -40,14 +40,28 @@ internal static class HttpClientProvider
     /// <summary>
     /// Represents a singleton implementation of <see cref="HttpClientHandler"/> that is not disposable.
     /// </summary>
-    private sealed class NonDisposableHttpClientHandler : HttpClientHandler
+    private sealed class NonDisposableHttpClientHandler : DelegatingHandler
     {
         /// <summary>
         /// Private constructor to prevent direct instantiation of the class.
         /// </summary>
         private NonDisposableHttpClientHandler()
         {
-            this.CheckCertificateRevocationList = true;
+#if NET6_0_OR_GREATER
+            base.InnerHandler = new SocketsHttpHandler()
+            {
+                PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+                SslOptions = new SslClientAuthenticationOptions()
+                {
+                    CertificateRevocationCheckMode = X509RevocationMode.Online,
+                },
+            };
+#else
+            base.InnerHandler = new HttpClientHandler()
+            {
+                CheckCertificateRevocationList = true,
+            };
+#endif
         }
 
         /// <summary>
@@ -60,11 +74,13 @@ internal static class HttpClientProvider
         /// This implementation does nothing to prevent unintended disposal, as it may affect all references.
         /// </summary>
         /// <param name="disposing">True if called from <see cref="Dispose"/>, false if called from a finalizer.</param>
+#pragma warning disable CA2215 // Dispose methods should call base class dispose
         protected override void Dispose(bool disposing)
         {
             // Do nothing if called explicitly from Dispose, as it may unintentionally affect all references.
             // The base.Dispose(disposing) is not called to avoid invoking the disposal of HttpClientHandler resources.
             // This implementation assumes that the HttpClientHandler is being used as a singleton and should not be disposed directly.
         }
+#pragma warning restore CA2215
     }
 }

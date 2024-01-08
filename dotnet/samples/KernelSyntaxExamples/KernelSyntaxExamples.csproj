@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>

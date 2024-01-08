@@ -168,7 +168,8 @@ public class PostgresDbClient : IPostgresDbClient
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 double cosineSimilarity = dataReader.GetDouble(dataReader.GetOrdinal("cosine_similarity"));
-                yield return (await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false), cosineSimilarity);
+
+                yield return (await PostgresDbClient.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false), cosineSimilarity);
             }
         }
     }
@@ -194,7 +195,7 @@ public class PostgresDbClient : IPostgresDbClient
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+                return await PostgresDbClient.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
             }
 
             return null;
@@ -228,7 +229,7 @@ public class PostgresDbClient : IPostgresDbClient
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+                yield return await PostgresDbClient.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
             }
         }
     }
@@ -282,7 +283,7 @@ public class PostgresDbClient : IPostgresDbClient
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    private async Task<PostgresMemoryEntry> ReadEntryAsync(NpgsqlDataReader dataReader, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    private static async Task<PostgresMemoryEntry> ReadEntryAsync(NpgsqlDataReader dataReader, bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
         string key = dataReader.GetString(dataReader.GetOrdinal("key"));
         string metadata = dataReader.GetString(dataReader.GetOrdinal("metadata"));

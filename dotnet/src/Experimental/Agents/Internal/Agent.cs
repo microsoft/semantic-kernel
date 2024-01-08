@@ -87,8 +87,6 @@ internal sealed class Agent : IAgent
         this._model = assistantModel;
         this._restContext = restContext;
 
-        IKernelBuilder builder = Kernel.CreateBuilder();
-        ;
         this.Kernel =
             Kernel
                 .CreateBuilder()

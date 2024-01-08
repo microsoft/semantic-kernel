@@ -32,7 +32,7 @@ internal static class DocumentLoader
         logger.LogTrace("Importing document from {0}", uri);
 
         using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task<string> LoadDocumentFromFilePathAsync(
@@ -51,13 +51,21 @@ internal static class DocumentLoader
 
         using (var sr = File.OpenText(filePath))
         {
-            return await sr.ReadToEndAsync().ConfigureAwait(false); // must await here to avoid stream reader being disposed before the string is read
+            return await sr.ReadToEndAsync(
+#if NET6_0_OR_GREATER
+            cancellationToken
+#endif
+            ).ConfigureAwait(false);
         }
     }
 
-    internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream)
+    internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream, CancellationToken cancellationToken)
     {
         using StreamReader reader = new(stream);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+        return await reader.ReadToEndAsync(
+#if NET6_0_OR_GREATER
+            cancellationToken
+#endif
+            ).ConfigureAwait(false);
     }
 }

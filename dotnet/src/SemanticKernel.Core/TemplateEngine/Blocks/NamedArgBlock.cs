@@ -91,13 +91,13 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <returns></returns>
     internal object? GetValue(KernelArguments? arguments)
     {
-        var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
+        var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out _);
         if (valueIsValidValBlock)
         {
             return this._valBlock!.Render(arguments);
         }
 
-        var valueIsValidVarBlock = this.VarBlock != null && this.VarBlock.IsValid(out var errorMessage2);
+        var valueIsValidVarBlock = this.VarBlock != null && this.VarBlock.IsValid(out _);
         if (valueIsValidVarBlock)
         {
             return this.VarBlock!.Render(arguments);

@@ -352,7 +352,7 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async IAsyncEnumerable<string?> ListIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using HttpRequestMessage request = ListIndexesRequest.Create().Build();
+        using HttpRequestMessage request = ListIndexesRequest.Build();
 
         (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
@@ -373,8 +373,6 @@ public sealed class PineconeClient : IPineconeClient
     public async Task CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Creating index {0}", indexDefinition.ToString());
-
-        string indexName = indexDefinition.Name;
 
         using HttpRequestMessage request = indexDefinition.Build();
 
@@ -542,7 +540,7 @@ public sealed class PineconeClient : IPineconeClient
 
         using HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        string responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        string responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         return (response, responseContent);
     }

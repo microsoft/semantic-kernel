@@ -22,7 +22,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
 
     public AzureOpenAIChatCompletionWithDataTests()
     {
-        this._config = this.GetConfig();
+        this._config = GetConfig();
 
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
@@ -55,7 +55,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     public async Task DefaultApiVersionShouldBeUsedAsync()
     {
         // Arrange
-        var config = this.GetConfig();
+        var config = GetConfig();
         config.CompletionApiVersion = string.Empty;
 
         var chatCompletion = new AzureOpenAIChatCompletionWithDataService(config, this._httpClient);
@@ -75,7 +75,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-    private AzureOpenAIChatCompletionWithDataConfig GetConfig()
+    private static AzureOpenAIChatCompletionWithDataConfig GetConfig()
     {
         return new AzureOpenAIChatCompletionWithDataConfig
         {

@@ -105,7 +105,8 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var inClauseValue = string.Join(",", keys.Select(k => $"'{k}'"));
-        var query = $"{this.GetBaseQuery(collectionName)} " +
+
+        var query = $"{GetBaseQuery(collectionName)} " +
             $"| where Key in ({inClauseValue}) " +
             "| project " +
             $"{s_keyColumn.Name}, " +
@@ -179,7 +180,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     {
         this.InitializeVectorFunctions();
 
-        var similarityQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_embeddingColumn.Name}, 1, 1)";
+        var similarityQuery = $"{GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_embeddingColumn.Name}, 1, 1)";
 
         if (minRelevanceScore != 0)
         {
@@ -379,7 +380,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// An easy way to achieve this is by using the ingestion time of the record (insertion time).
     /// </remarks>
     /// <param name="collection">Collection name.</param>
-    private string GetBaseQuery(string collection)
+    private static string GetBaseQuery(string collection)
         => $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {s_keyColumn.Name} ";
 
     /// <summary>
@@ -397,7 +398,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             {
                 if (!this._searchInitialized)
                 {
-                    var resp = this._adminClient
+                    this._adminClient
                         .ExecuteControlCommand<FunctionShowCommandResult>(
                             this._database,
                             ".create-or-alter function with (docstring = 'Calculate the Cosine similarity of 2 numerical arrays',folder = 'Vector') series_cosine_similarity_fl(vec1:dynamic,vec2:dynamic,vec1_size:real=real(null),vec2_size:real=real(null)) {" +

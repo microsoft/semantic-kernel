@@ -4,8 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -28,8 +26,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <param name="options">Handlebars prompt template options</param>
     public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, HandlebarsPromptTemplateOptions? options = null)
     {
-        this._loggerFactory ??= NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
         this._options = options ?? new();
     }
@@ -53,8 +49,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
     #region private
 
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
 
     /// <summary>

@@ -9,7 +9,7 @@ namespace SemanticKernel.UnitTests.Memory;
 
 public class MemoryRecordTests
 {
-    private readonly bool _isReference = false;
+    private readonly bool _isReference;
     private readonly string _id = "Id";
     private readonly string _text = "text";
     private readonly string _description = "description";

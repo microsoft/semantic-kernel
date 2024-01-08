@@ -4,15 +4,7 @@ using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
-internal sealed class ListCollectionsRequest
+internal static class ListCollectionsRequest
 {
-    public static ListCollectionsRequest Create()
-    {
-        return new ListCollectionsRequest();
-    }
-
-    public HttpRequestMessage Build()
-    {
-        return HttpRequest.CreateGetRequest("collections");
-    }
+    public static HttpRequestMessage Build() => HttpRequest.CreateGetRequest("collections");
 }

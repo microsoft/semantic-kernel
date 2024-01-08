@@ -111,7 +111,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 
         using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         List<TextGenerationResponse>? completionResponse = JsonSerializer.Deserialize<List<TextGenerationResponse>>(body);
 

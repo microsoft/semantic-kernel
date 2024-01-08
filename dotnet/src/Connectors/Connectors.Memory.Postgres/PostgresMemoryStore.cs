@@ -120,7 +120,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         if (!entry.HasValue) { return null; }
 
-        return this.GetMemoryRecordFromEntry(entry.Value);
+        return PostgresMemoryStore.GetMemoryRecordFromEntry(entry.Value);
     }
 
     /// <inheritdoc/>
@@ -131,7 +131,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         await foreach (PostgresMemoryEntry entry in this._postgresDbClient.ReadBatchAsync(collectionName, keys, withEmbeddings, cancellationToken).ConfigureAwait(false))
         {
-            yield return this.GetMemoryRecordFromEntry(entry);
+            yield return PostgresMemoryStore.GetMemoryRecordFromEntry(entry);
         }
     }
 
@@ -177,7 +177,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         await foreach ((PostgresMemoryEntry entry, double cosineSimilarity) in results.ConfigureAwait(false))
         {
-            yield return (this.GetMemoryRecordFromEntry(entry), cosineSimilarity);
+            yield return (PostgresMemoryStore.GetMemoryRecordFromEntry(entry), cosineSimilarity);
         }
     }
 
@@ -234,7 +234,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         return record.Key;
     }
 
-    private MemoryRecord GetMemoryRecordFromEntry(PostgresMemoryEntry entry)
+    private static MemoryRecord GetMemoryRecordFromEntry(PostgresMemoryEntry entry)
     {
         return MemoryRecord.FromJsonMetadata(
             json: entry.MetadataString,

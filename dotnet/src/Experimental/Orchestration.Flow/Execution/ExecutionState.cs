@@ -12,7 +12,7 @@ public sealed class ExecutionState
     /// <summary>
     /// Index of current step
     /// </summary>
-    public int CurrentStepIndex { get; set; } = 0;
+    public int CurrentStepIndex { get; set; }
 
     /// <summary>
     /// Execution state described by variables.

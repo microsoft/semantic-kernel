@@ -41,7 +41,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         IList<string>? operationsToExclude = null,
         CancellationToken cancellationToken = default)
     {
-        var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
+        var jsonObject = await DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
         using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(jsonObject, JsonOptionsCache.WriteIndented));
 
@@ -91,7 +91,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="stream">The original OpenAPI document stream.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>OpenAPI document with downgraded document version.</returns>
-    private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
+    private static async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new KernelException("Parsing of OpenAPI document failed.");
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))

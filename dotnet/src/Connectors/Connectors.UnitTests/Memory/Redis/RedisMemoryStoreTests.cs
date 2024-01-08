@@ -612,7 +612,8 @@ public class RedisMemoryStoreTests
         using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         this.MockCreateIndex(collection, () =>
         {
             foreach (var testRecord in records)
@@ -639,7 +640,8 @@ public class RedisMemoryStoreTests
         using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         this.MockCreateIndex(collection, () =>
         {
             foreach (var testRecord in records)
@@ -666,7 +668,8 @@ public class RedisMemoryStoreTests
         using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
         this.MockCreateIndex(collection, () =>
         {
             foreach (var testRecord in records)
@@ -950,7 +953,7 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(RedisResult.Create(redisResults.ToArray()));
     }
 
-    private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
+    private static IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
         Assert.True(numRecords % 2 == 0, "Number of records must be even");
         Assert.True(numRecords > 0, "Number of records must be greater than 0");

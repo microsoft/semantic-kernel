@@ -21,7 +21,6 @@ internal static class HttpClientExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> for canceling the request.</param>
     /// <returns>The <see cref="HttpResponseMessage"/> representing the response.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "The `ReadAsStringAsync` method in the NetStandard 2.0 version does not have an overload that accepts the cancellation token.")]
     internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
     {
         HttpResponseMessage? response = null;
@@ -43,7 +42,11 @@ internal static class HttpClientExtensions
                 // that was changed years ago in .NET Core, but for .NET Framework it means in order
                 // to read the response content in the case of failure, that has to be
                 // done before calling EnsureSuccessStatusCode.
-                responseContent = await response!.Content.ReadAsStringAsync().ConfigureAwait(false);
+                responseContent = await response!.Content.ReadAsStringAsync(
+#if NET8_0_OR_GREATER
+                    cancellationToken
+#endif
+                    ).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode(); // will always throw
             }
             catch (Exception e)
@@ -63,8 +66,6 @@ internal static class HttpClientExtensions
     /// <param name="request">The <see cref="HttpRequestMessage"/> to send.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> for canceling the request.</param>
     /// <returns>The <see cref="HttpResponseMessage"/> representing the response.</returns>
-    internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        return await client.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
-    }
+    internal static Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken) =>
+        client.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
 }

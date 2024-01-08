@@ -98,6 +98,6 @@ public sealed class HttpPlugin
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
 }
