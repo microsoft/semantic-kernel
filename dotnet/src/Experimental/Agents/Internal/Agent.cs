@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
@@ -50,9 +51,16 @@ internal sealed class Agent : IAgent
     public string Instructions => this._model.Instructions;
 
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+    private static readonly Dictionary<string, IPromptTemplateFactory> s_templateFactories =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            { PromptTemplateConfig.SemanticKernelTemplateFormat, new KernelPromptTemplateFactory() },
+            { HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, new HandlebarsPromptTemplateFactory() },
+        };
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
+    private readonly IPromptTemplate _promptTemplate;
 
     private AgentPlugin? _agentPlugin;
     private bool _isDeleted;
@@ -62,18 +70,20 @@ internal sealed class Agent : IAgent
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="assistantModel">The assistant definition</param>
+    /// <param name="config">The template config</param>
     /// <param name="plugins">Plugins to initialize as agent tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Agent"> instance.</see></returns>
     public static async Task<IAgent> CreateAsync(
         OpenAIRestContext restContext,
         AssistantModel assistantModel,
+        PromptTemplateConfig? config,
         IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
 
-        return new Agent(resultModel, restContext, plugins);
+        return new Agent(resultModel, config, restContext, plugins);
     }
 
     /// <summary>
@@ -81,14 +91,24 @@ internal sealed class Agent : IAgent
     /// </summary>
     internal Agent(
         AssistantModel assistantModel,
+        PromptTemplateConfig? config,
         OpenAIRestContext restContext,
         IEnumerable<KernelPlugin>? plugins = null)
     {
+        config ??=
+            new PromptTemplateConfig
+            {
+                Name = assistantModel.Name,
+                Description = assistantModel.Description,
+                Template = assistantModel.Instructions,
+            };
+
         this._model = assistantModel;
         this._restContext = restContext;
+        this._promptTemplate = this.DefinePromptTemplate(config);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
-        ;
+
         this.Kernel =
             Kernel
                 .CreateBuilder()
@@ -102,6 +122,8 @@ internal sealed class Agent : IAgent
     }
 
     public AgentPlugin AsPlugin() => this._agentPlugin ??= this.DefinePlugin();
+
+    public IPromptTemplate AsPromptTemplate() => this._promptTemplate;
 
     /// <inheritdoc/>
     public Task<IAgentThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -146,19 +168,19 @@ internal sealed class Agent : IAgent
     /// Marshal thread run through <see cref="KernelFunction"/> interface.
     /// </summary>
     /// <param name="input">The user input</param>
+    /// <param name="arguments">Arguments for parameterized instructions</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An agent response (<see cref="AgentResponse"/></returns>
     private async Task<AgentResponse> AskAsync(
         [Description("The user message provided to the agent.")]
         string input,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-
-            var messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var response =
                 new AgentResponse
                 {
@@ -179,6 +201,16 @@ internal sealed class Agent : IAgent
         var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
 
         return new AgentPluginImpl(this, functionAsk);
+    }
+
+    private IPromptTemplate DefinePromptTemplate(PromptTemplateConfig config)
+    {
+        if (!s_templateFactories.TryGetValue(config.TemplateFormat, out var factory))
+        {
+            factory = new KernelPromptTemplateFactory();
+        }
+
+        return factory.Create(config);
     }
 
     private void ThrowIfDeleted()
