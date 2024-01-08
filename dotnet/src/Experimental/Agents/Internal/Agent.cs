@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
@@ -50,6 +51,12 @@ internal sealed class Agent : IAgent
     public string Instructions => this._model.Instructions;
 
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+    private static readonly Dictionary<string, IPromptTemplateFactory> s_templateFactories =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            { PromptTemplateConfig.SemanticKernelTemplateFormat, new KernelPromptTemplateFactory() },
+            { HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, new HandlebarsPromptTemplateFactory() },
+        };
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
@@ -198,7 +205,11 @@ internal sealed class Agent : IAgent
 
     private IPromptTemplate DefinePromptTemplate(PromptTemplateConfig config)
     {
-        var factory = new KernelPromptTemplateFactory(); // $$$ HANDLEBARS
+        if (!s_templateFactories.TryGetValue(config.TemplateFormat, out var factory))
+        {
+            factory = new KernelPromptTemplateFactory();
+        }
+
         return factory.Create(config);
     }
 
