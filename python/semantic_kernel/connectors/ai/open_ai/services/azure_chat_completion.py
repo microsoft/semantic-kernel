@@ -280,10 +280,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> Union[
-        Tuple[Optional[str], Optional[FunctionCall]],
-        List[Tuple[Optional[str], Optional[FunctionCall]]],
-    ]:
+    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
