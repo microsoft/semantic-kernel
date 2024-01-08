@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, List, Optional, Tuple, Union
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse
-from pydantic import PrivateAttr, constr
+from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -24,10 +30,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class GooglePalmChatCompletion(
-    ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
-):
-    api_key: constr(strip_whitespace=True, min_length=1)
+class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase):
+    api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     _message_history: Optional[ChatResponse] = PrivateAttr()
 
     def __init__(
@@ -53,9 +57,7 @@ class GooglePalmChatCompletion(
             api_key=api_key,
         )
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._message_history = message_history
 
     async def complete_chat_async(
@@ -70,9 +72,7 @@ class GooglePalmChatCompletion(
 
         if settings.candidate_count > 1:
             return [
-                candidate["output"]
-                if candidate["output"] is not None
-                else "I don't know."
+                candidate["output"] if candidate["output"] is not None else "I don't know."
                 for candidate in response.candidates
             ]
         if response.last is None:
@@ -84,9 +84,7 @@ class GooglePalmChatCompletion(
         messages: List[Tuple[str, str]],
         settings: GooglePalmRequestSettings,
     ):
-        raise NotImplementedError(
-            "Google Palm API does not currently support streaming"
-        )
+        raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def complete_async(
         self,
@@ -95,9 +93,7 @@ class GooglePalmChatCompletion(
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         settings.messages = [("user", prompt)]
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -105,9 +101,7 @@ class GooglePalmChatCompletion(
 
         if settings.candidate_count > 1:
             return [
-                candidate["output"]
-                if candidate["output"] is not None
-                else "I don't know."
+                candidate["output"] if candidate["output"] is not None else "I don't know."
                 for candidate in response.candidates
             ]
         if response.last is None:
@@ -121,12 +115,8 @@ class GooglePalmChatCompletion(
         **kwargs,
     ):
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        raise NotImplementedError(
-            "Google Palm API does not currently support streaming"
-        )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(
         self,
@@ -190,9 +180,7 @@ class GooglePalmChatCompletion(
                             context += role + ": " + message + "\n"
         try:
             if self._message_history is None:
-                response = palm.chat(  # Start a new conversation
-                    **settings.prepare_settings_dict()
-                )
+                response = palm.chat(**settings.prepare_settings_dict())  # Start a new conversation
             else:
                 response = self._message_history.reply(  # Continue the conversation
                     settings.messages[-1][1],

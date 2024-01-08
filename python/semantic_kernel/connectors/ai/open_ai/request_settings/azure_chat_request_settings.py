@@ -52,9 +52,7 @@ class AzureCosmosDBDataSource(AzureDataSourceParameters):
 class AzureAISearchDataSources(AzureDataSourceParameters):
     endpoint: Optional[str] = None
     key: Optional[str] = None
-    queryType: Literal[
-        "simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"
-    ] = "simple"
+    queryType: Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"] = "simple"
 
 
 @dataclass
@@ -70,6 +68,9 @@ class ExtraBody(SKBaseModel):
     data_sources: Optional[List[AzureDataSources]] = Field(None, alias="dataSources")
     # input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
     # output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
 
 class AzureChatRequestSettings(OpenAIChatRequestSettings):

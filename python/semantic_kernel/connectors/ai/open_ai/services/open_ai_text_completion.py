@@ -106,9 +106,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,

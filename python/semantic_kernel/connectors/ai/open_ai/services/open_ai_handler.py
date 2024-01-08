@@ -4,8 +4,8 @@ import logging
 from abc import ABC
 from typing import List, Union
 
-from numpy import array
-from openai import AsyncOpenAI, AsyncStream
+from numpy import array, ndarray
+from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.beta.threads.run import Run
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -14,6 +14,9 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
+    ContentFilterAIException,
+)
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
@@ -46,12 +49,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-    ) -> Union[
-        ChatCompletion,
-        Completion,
-        AsyncStream[ChatCompletionChunk],
-        AsyncStream[Completion],
-    ]:
+    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion],]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -67,16 +65,24 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         """
         try:
             response = await (
-                self.client.chat.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                self.client.chat.completions.create(**request_settings.prepare_settings_dict())
                 if self.ai_model_type == OpenAIModelTypes.CHAT
-                else self.client.completions.create(
-                    **request_settings.prepare_settings_dict()
-                )
+                else self.client.completions.create(**request_settings.prepare_settings_dict())
             )
             self.store_usage(response)
             return response
+        except BadRequestError as ex:
+            if ex.code == "content_filter":
+                raise ContentFilterAIException(
+                    AIException.ErrorCodes.BadContentError,
+                    f"{type(self)} service encountered a content error",
+                    ex,
+                )
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -84,16 +90,12 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(
-        self, settings: OpenAIEmbeddingRequestSettings
-    ) -> List[array]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingRequestSettings) -> List[ndarray]:
         try:
-            response = await self.client.embeddings.create(
-                **settings.prepare_settings_dict()
-            )
+            response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
             # make numpy arrays from the response
-            # TODO: the openai response is cast to a list[float], could be used instead of nparray
+            # TODO: the openai response is cast to a list[float], could be used instead of ndarray
             return [array(x.embedding) for x in response.data]
         except Exception as ex:
             raise AIException(

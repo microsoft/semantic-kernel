@@ -31,9 +31,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
             )
         )
 
-    def add_message(
-        self, role: str, message: Optional[str] = None, **kwargs: Any
-    ) -> None:
+    def add_message(self, role: str, message: Optional[str] = None, **kwargs: Any) -> None:
         """Add a message to the chat template.
 
         Arguments:
@@ -59,16 +57,12 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
                     )
                 )
                 return
-            self._log.warning(
-                "function_call is only used with role: assistant, ignoring"
-            )
+            self._log.warning("function_call is only used with role: assistant, ignoring")
             function_call = None
         self.messages.append(
             OpenAIChatMessage(
                 role=role,
-                content_template=PromptTemplate(
-                    message, self.template_engine, self.prompt_config
-                ),
+                content_template=PromptTemplate(message, self.template_engine, self.prompt_config),
                 name=name,
                 function_call=function_call,
             )
@@ -90,19 +84,11 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
         if that is a system message.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         chat_template = cls(template, template_engine, prompt_config)
-        if (
-            prompt_config.completion.chat_system_prompt
-            and messages[0]["role"] == "system"
-        ):
+        if prompt_config.completion.chat_system_prompt and messages[0]["role"] == "system":
             existing_system_message = messages.pop(0)
-            if (
-                existing_system_message["message"]
-                != prompt_config.completion.chat_system_prompt
-            ):
+            if existing_system_message["message"] != prompt_config.completion.chat_system_prompt:
                 logger.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],

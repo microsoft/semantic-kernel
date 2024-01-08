@@ -10,9 +10,7 @@ from semantic_kernel.skill_definition.function_view import FunctionView
 
 
 def create_mock_function(name) -> SKFunctionBase:
-    function_view = FunctionView(
-        name, "SummarizeSkill", "Summarize an input", [], True, True
-    )
+    function_view = FunctionView(name, "SummarizeSkill", "Summarize an input", [], True, True)
     mock_function = Mock(spec=SKFunctionBase)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
