@@ -30,6 +30,19 @@ public sealed class GeminiPart
     [JsonPropertyName("functionResponse")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiPartFunctionResponse? FunctionResponse { get; set; }
+
+    /// <summary>
+    /// Checks whether only one property of the GeminiPart instance is not null.
+    /// Returns true if only one property among Text, InlineData, FunctionCall, and FunctionResponse is not null,
+    /// Otherwise, it returns false.
+    /// </summary>
+    public bool IsValid()
+    {
+        return (this.Text != null ? 1 : 0) +
+            (this.InlineData != null ? 1 : 0) +
+            (this.FunctionCall != null ? 1 : 0) +
+            (this.FunctionResponse != null ? 1 : 0) == 1;
+    }
 }
 
 public sealed class GeminiPartInlineData
