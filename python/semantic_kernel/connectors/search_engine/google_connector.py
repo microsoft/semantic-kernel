@@ -21,9 +21,7 @@ class GoogleConnector(ConnectorBase):
 
     def __init__(self, api_key: str, search_engine_id: str, **kwargs) -> None:
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._api_key = api_key
         self._search_engine_id = search_engine_id
 
@@ -33,9 +31,7 @@ class GoogleConnector(ConnectorBase):
         if not self._search_engine_id:
             raise ValueError("Google search engine ID cannot be null.")
 
-    async def search_async(
-        self, query: str, num_results: str, offset: str
-    ) -> List[str]:
+    async def search_async(self, query: str, num_results: str, offset: str) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Google Custom search API.
         Returns `num_results` results and ignores the first `offset`.
@@ -88,7 +84,5 @@ class GoogleConnector(ConnectorBase):
                     result = [x["snippet"] for x in items]
                     return result
                 else:
-                    logger.error(
-                        f"Request to Google Search API failed with status code: {response.status}."
-                    )
+                    logger.error(f"Request to Google Search API failed with status code: {response.status}.")
                     return []

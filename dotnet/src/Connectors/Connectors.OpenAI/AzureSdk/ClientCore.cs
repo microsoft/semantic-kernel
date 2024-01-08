@@ -755,6 +755,28 @@ internal abstract class ClientCore
             Seed = executionSettings.Seed,
         };
 
+        switch (executionSettings.ResponseFormat)
+        {
+            case ChatCompletionsResponseFormat formatObject:
+                // If the response format is an Azure SDK ChatCompletionsResponseFormat, just pass it along.
+                options.ResponseFormat = formatObject;
+                break;
+
+            case string formatString:
+                // If the response format is a string, map the ones we know about, and ignore the rest.
+                switch (formatString)
+                {
+                    case "json_object":
+                        options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                        break;
+
+                    case "text":
+                        options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                        break;
+                }
+                break;
+        }
+
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
         if (executionSettings.TokenSelectionBiases is not null)
         {

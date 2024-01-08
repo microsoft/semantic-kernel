@@ -10,12 +10,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
@@ -24,13 +23,13 @@ using NCalcPlugins;
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example63_FlowOrchestrator
+public static class Example74_FlowOrchestrator
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
 steps:
-  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
+  - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
       - LanguageCalculatorPlugin
@@ -93,7 +92,7 @@ provides:
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
         Console.WriteLine("Please type the question you'd like to ask");
-        ContextVariables? result;
+        FunctionResult? result = null;
         string? goal = null;
         do
         {
@@ -108,21 +107,36 @@ provides:
 
             if (string.IsNullOrEmpty(goal))
             {
+                goal = input;
                 s_flow.Steps.First().Goal = input;
             }
 
-            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
-            Console.WriteLine("Assistant: " + result.ToString());
+            try
+            {
+                result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
+            }
+            catch (KernelException ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine("Please try again.");
+                continue;
+            }
+
+            var responses = result.GetValue<List<string>>()!;
+            foreach (var response in responses)
+            {
+                Console.WriteLine("Assistant: " + response);
+            }
 
             if (result.IsComplete(s_flow))
             {
-                Console.WriteLine("\tEmail Address: " + result["email_addresses"]);
-                Console.WriteLine("\tEmail Payload: " + result["email"]);
+                Console.WriteLine("\tEmail Address: " + result.Metadata!["email_addresses"]);
+                Console.WriteLine("\tEmail Payload: " + result.Metadata!["email"]);
 
                 Console.WriteLine("Flow completed, exiting");
                 break;
             }
-        } while (!string.IsNullOrEmpty(result.ToString()) && result.ToString() != "[]");
+        } while (result == null || result.GetValue<List<string>>()?.Count > 0);
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
@@ -159,8 +173,8 @@ provides:
         var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question).ConfigureAwait(false);
 
         Console.WriteLine("Question: " + question);
-        Console.WriteLine("Answer: " + result["answer"]);
-        Console.WriteLine("Assistant: " + result.ToString());
+        Console.WriteLine("Answer: " + result.Metadata!["answer"]);
+        Console.WriteLine("Assistant: " + result.GetValue<List<string>>()!.Single());
 
         string[] userInputs = new[]
         {
@@ -175,7 +189,11 @@ provides:
         {
             Console.WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
-            Console.WriteLine("Assistant: " + result.ToString());
+            var responses = result.GetValue<List<string>>()!;
+            foreach (var response in responses)
+            {
+                Console.WriteLine("Assistant: " + response);
+            }
 
             if (result.IsComplete(s_flow))
             {
@@ -183,8 +201,8 @@ provides:
             }
         }
 
-        Console.WriteLine("\tEmail Address: " + result["email_addresses"]);
-        Console.WriteLine("\tEmail Payload: " + result["email"]);
+        Console.WriteLine("\tEmail Address: " + result.Metadata!["email_addresses"]);
+        Console.WriteLine("\tEmail Payload: " + result.Metadata!["email"]);
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
@@ -200,16 +218,15 @@ provides:
         return config;
     }
 
-    private static KernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
+    private static IKernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
         var builder = Kernel.CreateBuilder();
 
         return builder
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .WithLoggerFactory(loggerFactory);
+                TestConfiguration.AzureOpenAI.ApiKey);
     }
 
     public sealed class ChatPlugin
@@ -223,10 +240,12 @@ provides:
 The email should conform the regex: {EmailRegex}
 
 If I cannot answer, say that I don't know.
-Do not expose the regex unless asked.
+
+# IMPORTANT
+Do not expose the regex in your response.
 ";
 
-        private readonly IChatCompletion _chat;
+        private readonly IChatCompletionService _chat;
 
         private int MaxTokens { get; set; } = 256;
 
@@ -234,7 +253,7 @@ Do not expose the regex unless asked.
 
         public ChatPlugin(Kernel kernel)
         {
-            this._chat = kernel.GetService<IChatCompletion>();
+            this._chat = kernel.GetRequiredService<IChatCompletionService>();
             this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
                 MaxTokens = this.MaxTokens,
@@ -247,29 +266,28 @@ Do not expose the regex unless asked.
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
         public async Task<string> CollectEmailAsync(
             [Description("The email address provided by the user, pass no matter what the value is")]
-            string email_address,
-            ContextVariables variables)
+            string email_addresses,
+            KernelArguments arguments)
         {
-            var chat = this._chat.CreateNewChat(SystemPrompt);
+            var chat = new ChatHistory(SystemPrompt);
             chat.AddUserMessage(Goal);
 
-            ChatHistory? chatHistory = variables.GetChatHistory();
-            if (chatHistory?.Any() ?? false)
+            ChatHistory? chatHistory = arguments.GetChatHistory();
+            if (chatHistory?.Count > 0)
             {
                 chat.AddRange(chatHistory);
             }
 
-            if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
+            if (!string.IsNullOrEmpty(email_addresses) && IsValidEmail(email_addresses))
             {
-                variables["email_addresses"] = email;
-
-                return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
+                return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_addresses;
             }
 
-            variables["email_addresses"] = string.Empty;
-            variables.PromptInput();
+            arguments["email_addresses"] = string.Empty;
+            arguments.PromptInput();
 
-            return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
+            var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
+            return response.Content ?? string.Empty;
         }
 
         private static bool IsValidEmail(string email)
@@ -282,24 +300,26 @@ Do not expose the regex unless asked.
 
     public sealed class EmailPluginV2
     {
+        private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
+
         [KernelFunction]
         [Description("Send email")]
         public string SendEmail(
             [Description("target email addresses")]
-            string email_addresses,
+            string emailAddresses,
             [Description("answer, which is going to be the email content")]
             string answer,
-            ContextVariables variables)
+            KernelArguments arguments)
         {
             var contract = new Email()
             {
-                Address = email_addresses,
+                Address = emailAddresses,
                 Content = answer,
             };
 
             // for demo purpose only
-            string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
-            variables["email"] = emailPayload;
+            string emailPayload = JsonSerializer.Serialize(contract, this._serializerOptions);
+            arguments["email"] = emailPayload;
 
             return "Here's the API contract I will post to mail server: " + emailPayload;
         }
@@ -312,28 +332,28 @@ Do not expose the regex unless asked.
         }
     }
 }
+
 //*****************************************************
 //Executing RunExampleAsync
 //Flow: FlowOrchestrator_Example_Flow
-//Question: What is the tallest mountain on Earth? How tall is it divided by 2?
-//Answer: The tallest mountain on Earth is Mount Everest, which is 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters).
-//Assistant: ["Please provide a valid email address."]
+//Question: What is the tallest mountain in Asia? How tall is it divided by 2?
+//Answer: The tallest mountain in Asia is Mount Everest and its height divided by 2 is 14516.
+//Assistant: Please provide a valid email address.
 //User: my email is bad*email&address
-//Assistant: ["I\u0027m sorry, but \u0022bad*email\u0026address\u0022 is not a valid email address. A valid email address should have the format \u0022example@example.com\u0022."]
+//Assistant: I'm sorry, but "bad*email&address" does not conform to the standard email format. Please provide a valid email address.
 //User: my email is sample@xyz.com
-//Assistant: ["Do you want to send it to another email address?"]
+//Assistant: Did the user indicate whether they want to repeat the previous step?
 //User: yes
-//Assistant: ["Please provide a valid email address."]
+//Assistant: Please enter a valid email address.
 //User: I also want to notify foo@bar.com
-//Assistant: ["Do you want to send it to another email address?"]
+//Assistant: Did the user indicate whether they want to repeat the previous step?
 //User: no I don't need notify any more address
-//Assistant: []
 //        Email Address: ["sample@xyz.com","foo@bar.com"]
 //        Email Payload: {
 //  "Address": "[\u0022sample@xyz.com\u0022,\u0022foo@bar.com\u0022]",
-//  "Content": "The tallest mountain on Earth is Mount Everest, which is 29,031.69 feet (8,848.86 meters) above sea level. Half of its height is 14,515.845 feet (4,424.43 meters)."
+//  "Content": "The tallest mountain in Asia is Mount Everest and its height divided by 2 is 14516."
 //}
-//Time Taken: 00:00:24.2450785
+//Time Taken: 00:00:21.9681103
 //*****************************************************
 
 //*****************************************************
@@ -341,19 +361,18 @@ Do not expose the regex unless asked.
 //Flow: FlowOrchestrator_Example_Flow
 //Please type the question you'd like to ask
 //User:
-//What is the length of the longest river in ireland?
-//Assistant: ["Please provide a valid email address."]
+//What is the tallest mountain in Asia? How tall is it divided by 2?
+//Assistant: Please enter a valid email address.
 //User:
-//foo@bar.com
-//Assistant: ["Do you want to send it to another email address?"]
+//foo@hotmail.com
+//Assistant: Do you want to send it to another email address?
 //User:
-//no
-//Assistant: []
-//        Email Address: ["foo@bar.com"]
+//no I don't
+//        Email Address: ["foo@hotmail.com"]
 //        Email Payload: {
-//  "Address": "[\u0022foo@bar.com\u0022]",
-//  "Content": "The longest river in Ireland is the River Shannon with a length of 360 km (223 miles)."
+//  "Address": "[\u0022foo@hotmail.com\u0022]",
+//  "Content": "The tallest mountain in Asia is Mount Everest and its height divided by 2 is 14515.845."
 //}
 //Flow completed, exiting
-//Time Taken: 00:00:44.0215449
+//Time Taken: 00:01:47.0752303
 //*****************************************************
