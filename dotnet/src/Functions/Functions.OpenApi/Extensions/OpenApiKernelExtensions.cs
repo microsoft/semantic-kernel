@@ -6,12 +6,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.OpenApi.ApiManifest;
+using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Services;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -61,6 +65,27 @@ public static class OpenApiKernelExtensions
         CancellationToken cancellationToken = default)
     {
         KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>
+    /// Imports a plugin from an API manifest asynchronously.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
+    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="executionParameters">Optional execution parameters for the plugin.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The imported plugin.</returns>
+    public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
+        this Kernel kernel,
+        string pluginName,
+        string filePath,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -198,6 +223,119 @@ public static class OpenApiKernelExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates a kernel plugin from an API manifest file asynchronously.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
+    /// <param name="apiManifestFilePath">The file path of the API manifest.</param>
+    /// <param name="executionParameters">Optional execution parameters for the API functions.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
+    public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
+        this Kernel kernel,
+        string pluginName,
+        string apiManifestFilePath,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.ValidPluginName(pluginName, kernel.Plugins);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
+#pragma warning restore CA2000
+
+        if (!File.Exists(apiManifestFilePath))
+        {
+            throw new FileNotFoundException($"ApiManifest file not found: {apiManifestFilePath}");
+        }
+
+        string apiManifestFileJsonContents = File.ReadAllText(apiManifestFilePath);
+        JsonDocument jsonDocument = JsonDocument.Parse(apiManifestFileJsonContents);
+
+        ApiManifestDocument document = ApiManifestDocument.Load(jsonDocument.RootElement);
+
+        using var openApiReadinghttpClient = new HttpClient();
+
+        var functions = new List<KernelFunction>();
+        foreach (var apiDependency in document.ApiDependencies)
+        {
+            var apiName = apiDependency.Key;
+            var apiDependencyDetails = apiDependency.Value;
+
+            var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
+
+            using var stream = await openApiReadinghttpClient.GetStreamAsync(new Uri(apiDescriptionUrl)).ConfigureAwait(false);
+
+            var parseResult = await new OpenApiStreamReader(new()
+            {
+                BaseUrl = new(apiDescriptionUrl)
+            }
+            ).ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var openApiDocument = parseResult.OpenApiDocument;
+
+            var requestUrls = new Dictionary<string, List<string>>();
+            var paths = apiDependencyDetails.Requests.Select(request => request.UriTemplate);
+            foreach (var path in paths)
+            {
+                // requestUrls.Add(path, new List<string> { "GET", "POST", "PATCH", "PUT", "DELETE", "HEAD", "CONNECT", "OPTIONS", "TRACE" }); TODO: support all operations
+                if (path is null)
+                {
+                    continue;
+                }
+
+                requestUrls.Add(path, new List<string> { "GET" });
+            }
+
+            var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
+            var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
+            ILoggerFactory loggerFactory = kernel.LoggerFactory;
+            var logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions));
+
+            var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
+
+            var runner = new RestApiOperationRunner(
+                httpClient,
+                executionParameters?.AuthCallback,
+                executionParameters?.UserAgent,
+                executionParameters?.EnableDynamicPayload ?? false,
+                executionParameters?.EnablePayloadNamespacing ?? false);
+
+            foreach (var path in filteredOpenApiDocument.Paths)
+            {
+                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value);
+                foreach (RestApiOperation operation in operations)
+                {
+                    try
+                    {
+                        logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+
+                        static string GenerateFunctionName(RestApiOperation operation)
+                        {
+                            return operation.Method + operation.Path.TrimStart('/')
+                                .Replace("/", "") // path separator
+                                .Replace("{", "") // id placeholder begin {driveitem-id}
+                                .Replace("}", "") // id placeholder end {driveitem-id}
+                                .Replace("-", "") // id placeholder delimiter {driveitem-id}
+                                .Replace(".", "");// function names with namespaces microsoft.graph.sendMail
+                        }
+
+                        functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory, GenerateFunctionName(operation)));
+                    }
+                    catch (Exception ex) when (!ex.IsCriticalException())
+                    {
+                        //Logging the exception and keep registering other Rest functions
+                        logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                            pluginName, operation.Id, ex.Message);
+                    }
+                }
+            }
+        }
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
+    }
+
     #region private
 
     private static async Task<KernelPlugin> CreateOpenApiPluginAsync(
@@ -257,6 +395,7 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="functionNameOverride">The function name override, if not provided normalized operationId is used</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     private static KernelFunction CreateRestApiFunction(
         string pluginName,
@@ -264,7 +403,8 @@ public static class OpenApiKernelExtensions
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        string? functionNameOverride = null)
     {
         IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
@@ -338,7 +478,7 @@ public static class OpenApiKernelExtensions
             parameters: parameters,
             returnParameter: returnParameter,
             description: operation.Description,
-            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
+            functionName: functionNameOverride ?? ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: loggerFactory);
     }
 
