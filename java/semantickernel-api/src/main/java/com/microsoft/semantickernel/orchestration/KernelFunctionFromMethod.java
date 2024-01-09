@@ -158,7 +158,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 try {
                     List<Object> args =
                         Arrays.stream(method.getParameters())
-                            .map(getParameters(method, arguments))
+                            .map(getParameters(method, arguments, kernel))
                             .collect(Collectors.toList());
 
                     Mono<?> mono;
@@ -232,12 +232,13 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     private static Function<Parameter, Object> getParameters(
         Method method,
         @Nullable
-        KernelArguments context) {
+        KernelArguments context,
+        Kernel kernel) {
         return parameter -> {
             if (KernelArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
             } else {
-                return getArgumentValue(method, context, parameter);
+                return getArgumentValue(method, context, parameter, kernel);
             }
         };
     }
@@ -245,7 +246,8 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     private static Object getArgumentValue(
         Method method,
         @Nullable KernelArguments context,
-        Parameter parameter) {
+        Parameter parameter,
+        Kernel kernel) {
         if (context == null) {
             return context;
         }
@@ -304,6 +306,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                     AIException.ErrorCodes.INVALID_CONFIGURATION,
                     "Unknown arg " + parameter.getName());
             }
+        }
+
+        if (Kernel.class.isAssignableFrom(parameter.getType())) {
+            return kernel;
         }
 
         KernelFunctionParameter annotation = parameter.getAnnotation(KernelFunctionParameter.class);
