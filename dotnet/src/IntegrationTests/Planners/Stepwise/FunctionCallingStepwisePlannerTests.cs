@@ -72,7 +72,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         }
     }
 
-    [Fact(Skip = "System.InvalidProgramException : Common Language Runtime detected an invalid program.")]
+    [Fact]
     public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
     {
         Kernel kernel = this.InitializeKernel();
@@ -105,7 +105,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
         // Act & Assert
         // Planner should call ThrowingEmailPluginFake.GetEmailAddressAsync, which throws InvalidProgramException
-        await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "What is Kelly's email address?"));
+        await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "Email a joke to test@example.com"));
     }
 
     private Kernel InitializeKernel()
