@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;

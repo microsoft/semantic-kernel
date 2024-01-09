@@ -64,6 +64,7 @@ public class Example14_SemanticMemory : BaseTest
         await RunExampleAsync(memoryWithCustomDb);
     }
 
+    [Theory]
     public async Task RunExampleAsync(ISemanticTextMemory memory)
     {
         await StoreMemoryAsync(memory);

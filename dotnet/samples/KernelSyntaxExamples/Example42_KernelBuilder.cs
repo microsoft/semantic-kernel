@@ -82,7 +82,7 @@ public class Example42_KernelBuilder : BaseTest
     }
 
     [Fact]
-    public void BuildKernelUsingServiceCollectionExtension() 
+    public void BuildKernelUsingServiceCollectionExtension()
     {
         // In fact, the AddKernel method exists to simplify this, registering a singleton KernelPluginCollection
         // that can be populated automatically with all IKernelPlugins registered in the collection, and a
