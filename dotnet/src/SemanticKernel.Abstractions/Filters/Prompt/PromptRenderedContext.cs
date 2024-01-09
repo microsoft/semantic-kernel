@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0005")]
 public sealed class PromptRenderedContext : PromptFilterContext
 {
+    private string _renderedPrompt;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedContext"/> class.
     /// </summary>
@@ -19,9 +21,7 @@ public sealed class PromptRenderedContext : PromptFilterContext
     public PromptRenderedContext(KernelFunction function, KernelArguments arguments, string renderedPrompt)
         : base(function, arguments, metadata: null)
     {
-        Verify.NotNullOrWhiteSpace(renderedPrompt);
-
-        this.RenderedPrompt = renderedPrompt;
+        this._renderedPrompt = renderedPrompt;
     }
 
     /// <summary>
@@ -45,5 +45,13 @@ public sealed class PromptRenderedContext : PromptFilterContext
     /// overwrite a value set by a previous filter. The final result is what will
     /// be the prompt used by the system.
     /// </remarks>
-    public string RenderedPrompt { get; set; }
+    public string RenderedPrompt
+    {
+        get => this._renderedPrompt;
+        set
+        {
+            Verify.NotNullOrWhiteSpace(value);
+            this._renderedPrompt = value;
+        }
+    }
 }
