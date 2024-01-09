@@ -12,13 +12,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Examples;
 
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
-public static class Example59_OpenAIFunctionCalling
+public class Example59_OpenAIFunctionCalling : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create kernel.
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -48,24 +51,24 @@ public static class Example59_OpenAIFunctionCalling
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
         }));
 
-        Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+        this._output.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-            Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
-            Console.WriteLine();
+            this._output.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+            this._output.WriteLine();
         }
 
-        Console.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+        this._output.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
-                Console.Write(update);
+                this._output.Write(update);
             }
-            Console.WriteLine();
+            this._output.WriteLine();
         }
 
-        Console.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        this._output.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
@@ -78,7 +81,7 @@ public static class Example59_OpenAIFunctionCalling
 
                 if (result.Content is not null)
                 {
-                    Console.Write(result.Content);
+                    this._output.Write(result.Content);
                 }
 
                 List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
@@ -101,9 +104,10 @@ public static class Example59_OpenAIFunctionCalling
                 }
             }
 
-            Console.WriteLine();
+            this._output.WriteLine();
         }
 
+        /* Uncomment this to try in a console chat loop.
         Console.WriteLine("======== Example 4: Use automated function calling with a streaming chat ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -132,6 +136,10 @@ public static class Example59_OpenAIFunctionCalling
                 chatHistory.AddAssistantMessage(sb.ToString());
                 Console.WriteLine();
             }
-        }
+        }*/
+    }
+
+    public Example59_OpenAIFunctionCalling(ITestOutputHelper output) : base(output)
+    {
     }
 }
