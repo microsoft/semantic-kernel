@@ -4,7 +4,7 @@ status: proposed
 contact: SergeyMenshykh
 date: 2024-01-04
 deciders: markwallace-microsoft
-consulted:
+consulted: rogerbarreto, dmytrostruk
 informed:
 ---
 
