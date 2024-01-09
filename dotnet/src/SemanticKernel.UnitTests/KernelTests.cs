@@ -583,8 +583,8 @@ public class KernelTests
             .AddSingleton(new HttpClient())
 #pragma warning restore CA2000
             .AddSingleton(loggerFactory.Object)
-            .AddSingleton<IFunctionFilter, MyFunctionFilter>()
-            .AddSingleton<IPromptFilter, MyPromptFilter>()
+            .AddSingleton<IFunctionFilter>(new MyFunctionFilter())
+            .AddSingleton<IPromptFilter>(new MyPromptFilter())
             .BuildServiceProvider();
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
@@ -681,7 +681,7 @@ public class KernelTests
         }
     }
 
-    private class MyPlugin
+    public class MyPlugin
     {
         [KernelFunction, Description("Return any value.")]
         public virtual string GetAnyValue()
@@ -703,7 +703,7 @@ public class KernelTests
         }
     }
 
-    private class MyFunctionFilter : IFunctionFilter
+    private sealed class MyFunctionFilter : IFunctionFilter
     {
         public void OnFunctionInvoked(FunctionInvokedContext context)
         { }
@@ -712,7 +712,7 @@ public class KernelTests
         { }
     }
 
-    private class MyPromptFilter : IPromptFilter
+    private sealed class MyPromptFilter : IPromptFilter
     {
         public void OnPromptRendered(PromptRenderedContext context)
         { }

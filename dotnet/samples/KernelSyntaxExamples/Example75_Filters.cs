@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 
 public static class Example75_Filters
 {
-    public class FirstFunctionFilter : IFunctionFilter
+    private sealed class FirstFunctionFilter : IFunctionFilter
     {
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
             Console.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.Name}");
@@ -16,7 +16,7 @@ public static class Example75_Filters
             Console.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.Name}");
     }
 
-    public class SecondFunctionFilter : IFunctionFilter
+    private sealed class SecondFunctionFilter : IFunctionFilter
     {
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
             Console.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.Name}");
@@ -25,7 +25,7 @@ public static class Example75_Filters
             Console.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.Name}");
     }
 
-    public class FirstPromptFilter : IPromptFilter
+    private sealed class FirstPromptFilter : IPromptFilter
     {
         public void OnPromptRendering(PromptRenderingContext context) =>
             Console.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendering)} - {context.Function.Name}");
