@@ -27,9 +27,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
     kernel = Kernel()
     functions_view = FunctionsView()
     for name, skill_name, description, is_semantic, result_string in functions:
-        function_view = FunctionView(
-            name, skill_name, description, [], is_semantic, True
-        )
+        function_view = FunctionView(name, skill_name, description, [], is_semantic, True)
         functions_view.add_function(function_view)
         mock_function = create_mock_function(function_view)
 
@@ -78,10 +76,7 @@ def test_can_call_to_plan_from_xml():
     )
 
     assert plan is not None
-    assert (
-        plan.description
-        == "Summarize an input, translate to french, and e-mail to John Doe"
-    )
+    assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
 
     assert len(plan._steps) == 4
     assert plan._steps[0].skill_name == "SummarizeSkill"
@@ -165,9 +160,7 @@ def test_can_create_plan_with_text_nodes():
         ),
     ],
 )
-def test_can_create_plan_with_invalid_function_nodes(
-    plan_text, allow_missing_functions
-):
+def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_functions):
     # Arrange
     functions = [
         ("Echo", "MockSkill", "Echo an input", True, "Mock Echo Result"),
