@@ -1,0 +1,46 @@
+{
+    "version": "0.2",
+    "languageSettings": [
+        {
+            "languageId": "py",
+            "allowCompoundWords": true,
+            "locale": "en-US"
+        }
+    ],
+    "language": "en-US",
+    "patterns": [
+        {
+            "name": "import",
+            "pattern": "import [a-zA-Z0-9_]+"
+        },
+        {
+            "name": "from import",
+            "pattern": "from [a-zA-Z0-9_]+ import [a-zA-Z0-9_]+"
+        }
+    ],
+    "ignorePaths": [
+        "samples/**",
+        "notebooks/**"
+    ],
+    "words": [
+        "aeiou",
+        "azuredocindex",
+        "azuredocs",
+        "contentvector",
+        "dotenv",
+        "logit",
+        "logprobs",
+        "mongocluster",
+        "ndarray",
+        "nopep",
+        "ollama",
+        "onyourdatatest",
+        "OPENAI",
+        "pydantic",
+        "retrywrites",
+        "skfunction",
+        "skprompt",
+        "templating",
+        "vectordb"
+    ]
+}
