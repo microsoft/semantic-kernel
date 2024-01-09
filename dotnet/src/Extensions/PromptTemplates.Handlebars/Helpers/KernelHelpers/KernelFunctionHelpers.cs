@@ -160,15 +160,14 @@ internal static class KernelFunctionHelpers
             var arguments = KernelHelpersUtils.ProcessArguments(handlebarsArguments, executionContext);
             foreach (var arg in arguments)
             {
-                var param = functionMetadata.Parameters[argIndex];
+                var param = functionMetadata.Parameters[argIndex++];
                 if (IsExpectedParameterType(param, arg))
                 {
-                    executionContext[param.Name] = arguments[argIndex];
-                    argIndex++;
+                    executionContext[param.Name] = arg;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arguments[argIndex].GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg.GetType()}.");
                 }
             }
         }
