@@ -13,7 +13,7 @@
     <PackageVersion Include="Markdig" Version="0.34.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
-    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.0.0" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.0" />
