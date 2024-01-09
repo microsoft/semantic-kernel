@@ -96,9 +96,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         @classmethod
         def sk_to_weaviate(cls, sk_dict):
             return {
-                cls.SK_TO_WEAVIATE_MAPPING.get(k, k): v
-                for k, v in sk_dict.items()
-                if k in cls.SK_TO_WEAVIATE_MAPPING
+                cls.SK_TO_WEAVIATE_MAPPING.get(k, k): v for k, v in sk_dict.items() if k in cls.SK_TO_WEAVIATE_MAPPING
             }
 
         @classmethod
@@ -118,9 +116,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
     def __init__(self, config: WeaviateConfig, **kwargs):
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self.config = config
         self.client = self._initialize_client()
 
@@ -131,9 +127,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             if self.config.api_key:
                 return weaviate.Client(
                     url=self.config.url,
-                    auth_client_secret=weaviate.auth.AuthApiKey(
-                        api_key=self.config.api_key
-                    ),
+                    auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.config.api_key),
                 )
             else:
                 return weaviate.Client(url=self.config.url)
@@ -143,20 +137,14 @@ class WeaviateMemoryStore(MemoryStoreBase):
     async def create_collection_async(self, collection_name: str) -> None:
         schema = SCHEMA.copy()
         schema["class"] = collection_name
-        await asyncio.get_running_loop().run_in_executor(
-            None, self.client.schema.create_class, schema
-        )
+        await asyncio.get_running_loop().run_in_executor(None, self.client.schema.create_class, schema)
 
     async def get_collections_async(self) -> List[str]:
-        schemas = await asyncio.get_running_loop().run_in_executor(
-            None, self.client.schema.get
-        )
+        schemas = await asyncio.get_running_loop().run_in_executor(None, self.client.schema.get)
         return [schema["class"] for schema in schemas["classes"]]
 
     async def delete_collection_async(self, collection_name: str) -> bool:
-        await asyncio.get_running_loop().run_in_executor(
-            None, self.client.schema.delete_class, collection_name
-        )
+        await asyncio.get_running_loop().run_in_executor(None, self.client.schema.delete_class, collection_name)
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         collections = await self.get_collections_async()
@@ -177,18 +165,14 @@ class WeaviateMemoryStore(MemoryStoreBase):
             vector,
         )
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         def _upsert_batch_inner():
             results = []
             with self.client.batch as batch:
                 for record in records:
                     weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
                     vector = weaviate_record.pop("vector", None)
-                    weaviate_id = weaviate.util.generate_uuid5(
-                        weaviate_record, collection_name
-                    )
+                    weaviate_id = weaviate.util.generate_uuid5(weaviate_record, collection_name)
                     batch.add_data_object(
                         data_object=weaviate_record,
                         uuid=weaviate_id,
@@ -199,39 +183,27 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
             return results
 
-        return await asyncio.get_running_loop().run_in_executor(
-            None, _upsert_batch_inner
-        )
+        return await asyncio.get_running_loop().run_in_executor(None, _upsert_batch_inner)
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         # Call the batched version with a single key
         results = await self.get_batch_async(collection_name, [key], with_embedding)
         return results[0] if results else None
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embedding: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch_async(self, collection_name: str, keys: List[str], with_embedding: bool) -> List[MemoryRecord]:
         queries = self._build_multi_get_query(collection_name, keys, with_embedding)
 
-        results = await asyncio.get_running_loop().run_in_executor(
-            None, self.client.query.multi_get(queries).do
-        )
+        results = await asyncio.get_running_loop().run_in_executor(None, self.client.query.multi_get(queries).do)
 
         get_dict = results.get("data", {}).get("Get", {})
 
         memory_records = [
-            self._convert_weaviate_doc_to_memory_record(doc)
-            for docs in get_dict.values()
-            for doc in docs
+            self._convert_weaviate_doc_to_memory_record(doc) for docs in get_dict.values() for doc in docs
         ]
 
         return memory_records
 
-    def _build_multi_get_query(
-        self, collection_name: str, keys: List[str], with_embedding: bool
-    ):
+    def _build_multi_get_query(self, collection_name: str, keys: List[str], with_embedding: bool):
         queries = []
         for i, key in enumerate(keys):
             query = self.client.query.get(collection_name, ALL_PROPERTIES).with_where(
@@ -250,9 +222,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         return queries
 
-    def _convert_weaviate_doc_to_memory_record(
-        self, weaviate_doc: dict
-    ) -> MemoryRecord:
+    def _convert_weaviate_doc_to_memory_record(self, weaviate_doc: dict) -> MemoryRecord:
         weaviate_doc_copy = weaviate_doc.copy()
         vector = weaviate_doc_copy.pop("_additional", {}).get("vector")
         weaviate_doc_copy["vector"] = np.array(vector) if vector else None

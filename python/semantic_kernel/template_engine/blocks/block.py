@@ -12,15 +12,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 class Block(SKBaseModel):
     content: Optional[str] = None
 
-    def __init__(
-        self, content: Optional[str] = None, log: Optional[Any] = None
-    ) -> None:
+    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None) -> None:
         super().__init__(content=content)
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     def is_valid(self) -> Tuple[bool, str]:
         raise NotImplementedError("Subclasses must implement this method.")

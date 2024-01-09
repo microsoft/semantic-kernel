@@ -180,10 +180,7 @@ def test_it_tokenizes_edge_cases_correctly_4(template):
 def test_it_tokenizes_a_typical_prompt():
     target = TemplateTokenizer()
 
-    template = (
-        "this is a {{ $prompt }} with {{$some}} variables "
-        "and {{function $calls}} {{ and 'values' }}"
-    )
+    template = "this is a {{ $prompt }} with {{$some}} variables " "and {{function $calls}} {{ and 'values' }}"
 
     blocks = target.tokenize(template)
 

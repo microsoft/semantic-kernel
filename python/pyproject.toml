@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.4.3.dev"
+version = "0.4.4.dev"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -83,6 +83,9 @@ profile = "ruff"
 
 [tool.ruff]
 select = ["E", "F", "I"]
+line-length = 120
+
+[tool.black]
 line-length = 120
 
 [build-system]

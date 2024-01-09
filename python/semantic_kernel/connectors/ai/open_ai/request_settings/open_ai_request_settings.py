@@ -14,7 +14,7 @@ class OpenAIRequestSettings(AIRequestSettings):
 
     ai_model_id: Optional[str] = Field(None, serialization_alias="model")
     frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0)
-    logit_bias: Dict[str, float] = Field(default_factory=dict)
+    logit_bias: Dict[Union[str, int], float] = Field(default_factory=dict)
     max_tokens: int = Field(256, gt=0)
     number_of_responses: int = Field(1, ge=1, le=128, serialization_alias="n")
     presence_penalty: float = Field(0.0, ge=-2.0, le=2.0)
@@ -42,9 +42,9 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
             raise ValueError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
-        if self.extension_data.get("best_of") is not None and self.extension_data.get(
-            "best_of"
-        ) < self.extension_data.get("number_of_responses"):
+        if self.extension_data.get("best_of") is not None and self.extension_data["best_of"] < self.extension_data.get(
+            "number_of_responses"
+        ):
             raise ValueError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
@@ -54,20 +54,16 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
 class OpenAIChatRequestSettings(OpenAIRequestSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: Optional[Literal["text", "json_object"]] = "text"
+    response_format: Optional[Dict[Literal["type"], Literal["text", "json_object"]]] = None
     tools: Optional[List[Dict[str, Any]]] = None
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
-    messages: Optional[List[Dict[str, Any]]] = [
-        {"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}
-    ]
+    messages: Optional[List[Dict[str, Any]]] = [{"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}]
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
-    def validate_function_call(
-        cls, v: Optional[Union[str, List[Dict[str, Any]]]] = None
-    ):
+    def validate_function_call(cls, v: Optional[Union[str, List[Dict[str, Any]]]] = None):
         if v is not None:
             logger.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501

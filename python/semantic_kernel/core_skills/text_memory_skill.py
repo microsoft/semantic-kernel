@@ -62,27 +62,19 @@ class TextMemorySkill(SKBaseModel):
         """
 
         if context.variables is None:
-            raise ValueError(
-                "The context doesn't have the variables required to know how to recall memory"
-            )
+            raise ValueError("The context doesn't have the variables required to know how to recall memory")
         if context.memory is None:
             raise ValueError("The context doesn't have a memory instance to search")
 
-        collection = context.variables.get(
-            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
-        )
+        collection = context.variables.get(TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION)
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
 
-        relevance = context.variables.get(
-            TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE
-        )
+        relevance = context.variables.get(TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE)
         if not relevance:
             raise ValueError("Relevance value not defined for TextMemorySkill")
 
-        limit = context.variables.get(
-            TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT
-        )
+        limit = context.variables.get(TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT)
         if limit is None or str(limit).strip() == "":
             raise ValueError("Limit value not defined for TextMemorySkill")
 
@@ -128,15 +120,11 @@ class TextMemorySkill(SKBaseModel):
         """
 
         if context.variables is None:
-            raise ValueError(
-                "The context doesn't have the variables required to know how to recall memory"
-            )
+            raise ValueError("The context doesn't have the variables required to know how to recall memory")
         if context.memory is None:
             raise ValueError("The context doesn't have a memory instance to search")
 
-        collection = context.variables.get(
-            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
-        )
+        collection = context.variables.get(TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION)
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
 
