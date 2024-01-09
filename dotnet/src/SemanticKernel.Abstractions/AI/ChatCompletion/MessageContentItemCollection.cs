@@ -9,14 +9,14 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 
 /// <summary>
-/// Contains collection of chat message content items of type <see cref="KernelContent"/>.
+/// Contains collection of message content items of type <see cref="KernelContent"/>.
 /// </summary>
-public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyList<KernelContent>
+public class MessageContentItemCollection : IList<KernelContent>, IReadOnlyList<KernelContent>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
+    /// Initializes a new instance of the <see cref="MessageContentItemCollection"/> class.
     /// </summary>
-    public ChatMessageContentItemCollection()
+    public MessageContentItemCollection()
     {
         this._items = new();
     }

@@ -20,7 +20,7 @@ public static class Example68_GPTVision
 
         var chatHistory = new ChatHistory("You are a friendly assistant.");
 
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection
+        chatHistory.AddUserMessage(new MessageContentItemCollection
         {
             new TextContent("What’s in this image?"),
             new ImageContent(new Uri(ImageUri))
