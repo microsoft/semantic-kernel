@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Yaml</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
