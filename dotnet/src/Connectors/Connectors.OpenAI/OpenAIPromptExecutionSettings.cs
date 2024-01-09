@@ -325,7 +325,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private int _results_per_prompt = 1;
     private long? _seed;
     private object? _response_format;
-    private IDictionary<int, int>? _token_selection_biases;
     private string _chatSystemPrompt = DefaultChatSystemPrompt;
 
     #endregion

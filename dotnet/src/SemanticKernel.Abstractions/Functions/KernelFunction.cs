@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 public abstract class KernelFunction
 {
     /// <summary>The execution settings for the function.</summary>
-    private Dictionary<string, PromptExecutionSettings>? _executionSettings = null;
+    private readonly Dictionary<string, PromptExecutionSettings>? _executionSettings = null;
 
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
