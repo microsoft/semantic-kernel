@@ -583,6 +583,8 @@ public class KernelTests
             .AddSingleton(new HttpClient())
 #pragma warning restore CA2000
             .AddSingleton(loggerFactory.Object)
+            .AddSingleton<IFunctionFilter, MyFunctionFilter>()
+            .AddSingleton<IPromptFilter, MyPromptFilter>()
             .BuildServiceProvider();
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
@@ -598,6 +600,7 @@ public class KernelTests
         Assert.Equal(kernel1.Data["key"], kernel2.Data["key"]);
         Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
         Assert.Equal(kernel1.Plugins, kernel2.Plugins);
+        this.AssertFilters(kernel1, kernel2);
 
         // Minimally configured kernel
         Kernel kernel3 = new();
@@ -609,6 +612,7 @@ public class KernelTests
         Assert.Empty(kernel4.Data);
         Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
         Assert.Empty(kernel4.Plugins);
+        this.AssertFilters(kernel3, kernel4);
     }
 
     [Fact]
@@ -654,7 +658,30 @@ public class KernelTests
         return mockTextCompletion;
     }
 
-    public class MyPlugin
+    private void AssertFilters(Kernel kernel1, Kernel kernel2)
+    {
+        var functionFilters1 = kernel1.GetAllServices<IFunctionFilter>().ToArray();
+        var promptFilters1 = kernel1.GetAllServices<IPromptFilter>().ToArray();
+
+        var functionFilters2 = kernel2.GetAllServices<IFunctionFilter>().ToArray();
+        var promptFilters2 = kernel2.GetAllServices<IPromptFilter>().ToArray();
+
+        Assert.Equal(functionFilters1.Length, functionFilters2.Length);
+
+        for (var i = 0; i < functionFilters1.Length; i++)
+        {
+            Assert.Same(functionFilters1[i], functionFilters2[i]);
+        }
+
+        Assert.Equal(promptFilters1.Length, promptFilters2.Length);
+
+        for (var i = 0; i < promptFilters1.Length; i++)
+        {
+            Assert.Same(promptFilters1[i], promptFilters2[i]);
+        }
+    }
+
+    private class MyPlugin
     {
         [KernelFunction, Description("Return any value.")]
         public virtual string GetAnyValue()
@@ -674,5 +701,23 @@ public class KernelTests
             await Task.Delay(0);
             Assert.NotNull(kernel.Plugins);
         }
+    }
+
+    private class MyFunctionFilter : IFunctionFilter
+    {
+        public void OnFunctionInvoked(FunctionInvokedContext context)
+        { }
+
+        public void OnFunctionInvoking(FunctionInvokingContext context)
+        { }
+    }
+
+    private class MyPromptFilter : IPromptFilter
+    {
+        public void OnPromptRendered(PromptRenderedContext context)
+        { }
+
+        public void OnPromptRendering(PromptRenderingContext context)
+        { }
     }
 }

@@ -33,9 +33,9 @@ public sealed class Kernel
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
     /// <summary>Contains collection of function filters.</summary>
-    private IList<IFunctionFilter>? _functionFilters;
+    private readonly IList<IFunctionFilter>? _functionFilters;
     /// <summary>Contains collection of prompt filters.</summary>
-    private IList<IPromptFilter>? _promptFilters;
+    private readonly IList<IPromptFilter>? _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -60,8 +60,8 @@ public sealed class Kernel
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
 
         // Store the provided function and prompt filters if they were registered.
-        this._functionFilters = this.Services.GetServices<IFunctionFilter>().ToList();
-        this._promptFilters = this.Services.GetServices<IPromptFilter>().ToList();
+        this._functionFilters = this.Services.GetServices<IFunctionFilter>().ToArray();
+        this._promptFilters = this.Services.GetServices<IPromptFilter>().ToArray();
 
         if (this._plugins is null)
         {
@@ -114,8 +114,6 @@ public sealed class Kernel
             PromptRendering = this.PromptRendering,
             PromptRendered = this.PromptRendered,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
-            _functionFilters = this._functionFilters is { Count: > 0 } ? new List<IFunctionFilter>(this._functionFilters) : null,
-            _promptFilters = this._promptFilters is { Count: > 0 } ? new List<IPromptFilter>(this._promptFilters) : null,
             _culture = this._culture,
         };
 
