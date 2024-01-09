@@ -52,8 +52,8 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelWithInputTextAndStringResult)],
             new()
             {
-                ["textToSummarize"] = @"C# is a modern, versatile language by Microsoft, blending the efficiency of C++ 
-                                            with Visual Basic's simplicity. It's ideal for a wide range of applications, 
+                ["textToSummarize"] = @"C# is a modern, versatile language by Microsoft, blending the efficiency of C++
+                                            with Visual Basic's simplicity. It's ideal for a wide range of applications,
                                             emphasizing type safety, modularity, and modern programming paradigms."
             });
 
@@ -238,6 +238,7 @@ public class LocalExamplePlugin
     /// <summary>
     /// Example how to inject CultureInfo or IFormatProvider in your function
     /// </summary>
+    [KernelFunction]
     public async Task<string> TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo, IFormatProvider formatProvider)
     {
         var result = $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}";
