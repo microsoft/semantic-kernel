@@ -358,7 +358,8 @@ public class AzureOpenAIChatCompletion implements com.microsoft.semantickernel.c
                         String pluginName = getAttributeValue(event, "pluginName");
                         String name = getAttributeValue(event, "name");
                         String description = getAttributeValue(event, "description");
-                        functionDefinition = new FunctionDefinition(name)
+                        // name has to match '^[a-zA-Z0-9_-]{1,64}$'
+                        functionDefinition = new FunctionDefinition(pluginName + "-" +name)
                             .setDescription(description);
                     } else if (elementName.equals("parameter")) {
                         String name = getAttributeValue(event, "name");

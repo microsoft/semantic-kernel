@@ -174,7 +174,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
      * Given a json string, invoke the tool specified in the json string.
      * At this time, the only tool we have is 'function'. 
      * The json string should be of the form:
-     * {"type":"function", "function": {"name":"search", "parameters": {"query":"Banksy"}}}
+     * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
+     * where 'name' is <plugin name '-' function name>.
      */
     private Mono<ContextVariable<String>> invokeTool(Kernel kernel, String json) {
         try {
@@ -191,13 +192,16 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     }
 
     /*
-     * The jsonNode should represent: {"name":"search", "parameters": {"query":"Banksy"}}}
+     * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
      */
     private Mono<ContextVariable<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
-        String fnName = jsonNode.get("name").asText();
+        String name = jsonNode.get("name").asText();
+        String[] parts = name.split("-");
+        String pluginName = parts.length > 0 ? parts[0] : "";
+        String fnName = parts.length > 1 ? parts[1] : "";
         JsonNode parameters = jsonNode.get("parameters");
         if (parameters != null) {
-            KernelFunction kernelFunction = kernel.getPlugins().getFunction(fnName, fnName);
+            KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
             if (kernelFunction == null) return Mono.empty();
             ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(String.class);
             Map<String, ContextVariable<?>> variables = new HashMap<>();

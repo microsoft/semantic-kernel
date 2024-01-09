@@ -40,7 +40,7 @@ public class Main {
         OpenAIAsyncClient client = new OpenAIClientBuilder()
             .credential(new AzureKeyCredential(AZURE_OPENAI_API_KEY))
             .endpoint(AZURE_OPENAI_ENDPOINT)
-            .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
+            // .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
             .buildAsyncClient();
 
         // Initialize the required functions and services for the kernel
