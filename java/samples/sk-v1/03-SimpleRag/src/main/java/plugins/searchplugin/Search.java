@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 
 public class Search {
 
-    private final BingConnector _bingConnector;
+    private final BingConnector bingConnector;
 
     public Search(String apiKey) {
         this(apiKey, HttpClient.createDefault());
@@ -18,14 +18,14 @@ public class Search {
 
     public Search(String apiKey, HttpClient httpClient)
     {
-        this._bingConnector = new BingConnector(apiKey, httpClient);
+        this.bingConnector = new BingConnector(apiKey, httpClient);
     }
 
     @DefineKernelFunction(name="search", description="Searches Bing for the given query")
     public Mono<String> searchAsync(
         @KernelFunctionParameter(description="The search query", name="query", type=String.class) String query
     ){
-        return Mono.empty();
+        return bingConnector.searchAsync(query, 1, 0).map(results -> results.get(0));
     }
 
 }

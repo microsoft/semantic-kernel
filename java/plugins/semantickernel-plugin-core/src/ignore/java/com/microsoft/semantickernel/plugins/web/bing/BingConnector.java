@@ -8,11 +8,7 @@ import reactor.core.publisher.Mono;
 
 public class BingConnector {    
 
-    private final String apiKey;
-    private final HttpClient httpClient;
     public BingConnector(String apiKey, HttpClient httpClient) {
-        this.apiKey = apiKey;
-        this.httpClient = httpClient;
     }
 
     public Mono<List<String>> searchAsync(String query, int count, int offset) {

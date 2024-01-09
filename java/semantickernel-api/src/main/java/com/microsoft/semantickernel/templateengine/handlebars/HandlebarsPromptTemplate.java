@@ -227,14 +227,6 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         StringBuilder sb = new StringBuilder("<functions>");
                         KernelPluginCollection plugins = kernel.getPlugins();
                         sb.append(options.fn(plugins));
-                        // while (plugins.hasNext()) {
-                        //     KernelPlugin plugin = plugins.next();
-                        //     Iterator<KernelFunction> functions = plugin.iterator();
-                        //     while (functions.hasNext()) {
-                        //         KernelFunction function = functions.next();
-                        //         sb.append(options.fn(function));
-                        //     }
-                        // }
                         sb.append("</functions>");
                         
                         return new Handlebars.SafeString(sb.toString());

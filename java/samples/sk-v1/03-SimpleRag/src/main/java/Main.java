@@ -17,6 +17,7 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -39,7 +40,6 @@ public class Main {
         OpenAIAsyncClient client = new OpenAIClientBuilder()
             .credential(new AzureKeyCredential(AZURE_OPENAI_API_KEY))
             .endpoint(AZURE_OPENAI_ENDPOINT)
-            .serviceVersion(OpenAIServiceVersion.V2023_12_01_PREVIEW)
             .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
             .buildAsyncClient();
 

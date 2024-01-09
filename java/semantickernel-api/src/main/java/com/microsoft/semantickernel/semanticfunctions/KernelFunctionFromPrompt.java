@@ -10,8 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.azure.core.exception.HttpResponseException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -20,6 +23,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
@@ -81,11 +85,23 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             executionSettings,
                             kernel)
                         .concatMap(streamingChatMessageContent -> {
-                            T value = variableType
-                                .getConverter()
-                                .fromPromptString(
-                                    streamingChatMessageContent.getContent());
-                            return Flux.just(new StreamingContent<>(value));
+                            if (streamingChatMessageContent.getRole() == AuthorRole.ASSISTANT) {
+                                T value = variableType
+                                    .getConverter()
+                                    .fromPromptString(
+                                        streamingChatMessageContent.getContent());
+                                return Flux.just(new StreamingContent<>(value));
+                            } else if (streamingChatMessageContent.getRole() == AuthorRole.TOOL) {
+                                Mono<ContextVariable<String>> toolResult = invokeTool(kernel, streamingChatMessageContent.getContent());
+                                return toolResult.flatMapMany(contextVariable -> {
+                                    T value = variableType
+                                        .getConverter()
+                                        .fromPromptString(
+                                            contextVariable.getValue());
+                                    return Flux.just(new StreamingContent<>(value));
+                                });
+                            }
+                            return Flux.empty();
                         });
                     return result;
 
@@ -154,6 +170,48 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             });
     }
 
+    /*
+     * Given a json string, invoke the tool specified in the json string.
+     * At this time, the only tool we have is 'function'. 
+     * The json string should be of the form:
+     * {"type":"function", "function": {"name":"search", "parameters": {"query":"Banksy"}}}
+     */
+    private Mono<ContextVariable<String>> invokeTool(Kernel kernel, String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(json);
+            jsonNode = jsonNode.get("function");
+            if (jsonNode != null) {
+                return invokeFunction(kernel, jsonNode);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse json", e);
+        }
+        return Mono.empty();
+    }
+
+    /*
+     * The jsonNode should represent: {"name":"search", "parameters": {"query":"Banksy"}}}
+     */
+    private Mono<ContextVariable<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
+        String fnName = jsonNode.get("name").asText();
+        JsonNode parameters = jsonNode.get("parameters");
+        if (parameters != null) {
+            KernelFunction kernelFunction = kernel.getPlugins().getFunction(fnName, fnName);
+            if (kernelFunction == null) return Mono.empty();
+            ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(String.class);
+            Map<String, ContextVariable<?>> variables = new HashMap<>();
+            parameters.fields().forEachRemaining(entry -> {
+                String paramName = entry.getKey();
+                String paramValue = entry.getValue().asText();
+                ContextVariable<String> contextVariable = new ContextVariable<>(variableType, paramValue);                
+                variables.put(paramName, contextVariable);
+            });
+            KernelArguments arguments = KernelArguments.builder().withVariables(variables).build();
+            return kernelFunction.invokeAsync(kernel, arguments, variableType);
+        }
+        return Mono.empty();
+    }
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
