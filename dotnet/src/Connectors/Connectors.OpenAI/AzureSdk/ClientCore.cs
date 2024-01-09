@@ -794,6 +794,11 @@ internal abstract class ClientCore
             }
         }
 
+        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt) && !chatHistory.Contains(AuthorRole.System))
+        {
+            options.Messages.Add(GetRequestMessage(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt)));
+        }
+
         foreach (var message in chatHistory)
         {
             options.Messages.Add(GetRequestMessage(message));

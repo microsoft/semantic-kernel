@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
@@ -200,6 +201,13 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         this._messages.RemoveRange(index, count);
     }
+
+    /// <summary>
+    /// Returns true if the chat history contains a message with the specified role.
+    /// </summary>
+    /// <param name="role">Role of the message.</param>
+    /// <returns>true if the chat history contains a message with the specified role and otherwise false.</returns>
+    public bool Contains(AuthorRole role) => this._messages.Any(m => m.Role == role);
 
     /// <inheritdoc/>
     bool ICollection<ChatMessageContent>.IsReadOnly => false;
