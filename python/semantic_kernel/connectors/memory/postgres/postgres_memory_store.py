@@ -50,16 +50,12 @@ class PostgresMemoryStore(MemoryStoreBase):
             Expected format '-7:00'. Uses the local timezone offset when not provided.\n
         """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
-        self._connection_pool = ConnectionPool(
-            self._connection_string, min_size=min_pool, max_size=max_pool
-        )
+        self._connection_pool = ConnectionPool(self._connection_string, min_size=min_pool, max_size=max_pool)
         self._schema = schema
         atexit.register(self._connection_pool.close)
 
@@ -183,9 +179,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise Exception("Upsert failed")
                 return result[0]
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -235,9 +229,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise Exception("Upsert failed")
                 return [result[0] for result in results if result is not None]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -313,9 +305,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return [
                     MemoryRecord.local_record(
                         id=result[0],
-                        embedding=np.fromstring(
-                            result[1].strip("[]"), dtype=float, sep=","
-                        )
+                        embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
                         if with_embeddings
                         else np.array([]),
                         text=result[2]["text"],
@@ -346,9 +336,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                         DELETE FROM {scm}.{tbl}
                         WHERE key = %s
                         """
-                    ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
-                    ),
+                    ).format(scm=Identifier(self._schema), tbl=Identifier(collection_name)),
                     (key,),
                 )
 
@@ -372,9 +360,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                         DELETE FROM {scm}.{tbl}
                         WHERE key = ANY(%s)
                         """
-                    ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
-                    ),
+                    ).format(scm=Identifier(self._schema), tbl=Identifier(collection_name)),
                     (list(keys),),
                 )
 
@@ -433,9 +419,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (
                         MemoryRecord.local_record(
                             id=result[0],
-                            embedding=np.fromstring(
-                                result[1].strip("[]"), dtype=float, sep=","
-                            )
+                            embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
                             if with_embeddings
                             else np.array([]),
                             text=result[2]["text"],
@@ -478,9 +462,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             raise Exception("No match found")
         return results[0]
 
-    async def __does_collection_exist_async(
-        self, cur: Cursor, collection_name: str
-    ) -> bool:
+    async def __does_collection_exist_async(self, cur: Cursor, collection_name: str) -> bool:
         results = await self.__get_collections_async(cur)
         return collection_name in results
 
@@ -498,8 +480,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     def _check_dimensionality(self, dimension_num):
         if dimension_num > MAX_DIMENSIONALITY:
             raise ValueError(
-                f"Dimensionality of {dimension_num} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         if dimension_num <= 0:
             raise ValueError("Dimensionality must be a positive integer. ")

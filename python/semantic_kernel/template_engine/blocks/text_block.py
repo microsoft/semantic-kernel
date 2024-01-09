@@ -20,17 +20,12 @@ class TextBlock(Block):
         log: Optional[Any] = None,
     ):
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
-                raise ValueError(
-                    f"start_index ({start_index}) must be less than "
-                    f"stop_index ({stop_index})"
-                )
+                raise ValueError(f"start_index ({start_index}) must be less than " f"stop_index ({stop_index})")
 
             if start_index < 0:
                 raise ValueError(f"start_index ({start_index}) must be greater than 0")

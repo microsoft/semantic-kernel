@@ -63,9 +63,7 @@ class TestPromptTemplateEngine:
         result = await self.target.render_async(template, context)
 
         # Assert
-        expected = template.replace("{{$input}}", input).replace(
-            "{{  $winner }}", winner
-        )
+        expected = template.replace("{{$input}}", input).replace("{{  $winner }}", winner)
         assert expected == result
 
     @mark.asyncio
@@ -141,12 +139,8 @@ class TestPromptTemplateEngine:
         assert '== a"b != 123 ==' == result
 
     @mark.asyncio
-    @mark.parametrize(
-        "template,expected_result", [(t, r) for t, r in _get_template_language_tests()]
-    )
-    async def test_it_handle_edge_cases_async(
-        self, template: str, expected_result: str
-    ):
+    @mark.parametrize("template,expected_result", [(t, r) for t, r in _get_template_language_tests()])
+    async def test_it_handle_edge_cases_async(self, template: str, expected_result: str):
         # Arrange
         kernel = Kernel()
         kernel.import_skill(MySkill())
