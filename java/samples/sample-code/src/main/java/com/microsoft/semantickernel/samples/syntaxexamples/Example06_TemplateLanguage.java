@@ -6,7 +6,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.OpenAITextGenerationService;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings.Builder;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;

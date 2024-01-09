@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.aiservices.openai;
+package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.Choice;
@@ -25,7 +25,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
     private final Map<String, ContextVariable<?>> attributes;
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance supporting AAD auth
+    /// Creates a new <see cref="OpenAITextGenerationService"/> client instance supporting AAD auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -114,10 +114,9 @@ public class OpenAITextGenerationService implements TextGenerationService {
     }
 
     /**
-     * Builder for a ChatCompletionService that uses Azure AI.
+     * Builder for a TextGenerationService
      */
     public static class Builder {
-
         private String modelId;
         private OpenAIAsyncClient client;
 
@@ -137,7 +136,5 @@ public class OpenAITextGenerationService implements TextGenerationService {
                 this.modelId
             );
         }
-
     }
-
 }
