@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.connectors.ai.hugging_face.hf_request_settings import (
+    HuggingFaceRequestSettings,
+)
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import (
     HuggingFaceTextCompletion,
 )
@@ -7,4 +10,8 @@ from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding impor
     HuggingFaceTextEmbedding,
 )
 
-__all__ = ["HuggingFaceTextCompletion", "HuggingFaceTextEmbedding"]
+__all__ = [
+    "HuggingFaceTextCompletion",
+    "HuggingFaceTextEmbedding",
+    "HuggingFaceRequestSettings",
+]

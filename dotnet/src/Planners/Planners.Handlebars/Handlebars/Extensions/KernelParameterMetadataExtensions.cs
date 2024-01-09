@@ -5,16 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal static class KernelParameterMetadataExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
-    {
-        WriteIndented = true,
-    };
-
     /// <summary>
     /// Checks if type is primitive or string
     /// </summary>
@@ -128,7 +124,7 @@ internal static class KernelParameterMetadataExtensions
 
     public static string ToJsonString(this JsonElement jsonProperties)
     {
-        return JsonSerializer.Serialize(jsonProperties, s_jsonOptionsCache);
+        return JsonSerializer.Serialize(jsonProperties, JsonOptionsCache.WriteIndented);
     }
 
     public static string GetSchemaTypeName(this KernelParameterMetadata parameter)

@@ -32,21 +32,15 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_batch(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         raise NotImplementedError
 
     @abstractmethod
-    async def get(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         raise NotImplementedError
 
     @abstractmethod
