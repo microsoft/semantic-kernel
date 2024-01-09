@@ -3,15 +3,20 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /// <summary>
 /// This example shows how to use GPT3.5 Chat model for prompts and prompt functions.
 /// </summary>
-public static class Example27_PromptFunctionsUsingChatGPT
+public class Example27_PromptFunctionsUsingChatGPT : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Using Chat GPT model for text generation ========");
+        this._output.WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -25,12 +30,16 @@ public static class Example27_PromptFunctionsUsingChatGPT
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
         var result = await func.InvokeAsync(kernel, new() { ["input"] = "Jupiter" });
-        Console.WriteLine(result.GetValue<string>());
+        this._output.WriteLine(result.GetValue<string>());
 
         /*
         Output:
            - Saturn
            - Uranus
         */
+    }
+
+    public Example27_PromptFunctionsUsingChatGPT(ITestOutputHelper output) : base(output)
+    {
     }
 }
