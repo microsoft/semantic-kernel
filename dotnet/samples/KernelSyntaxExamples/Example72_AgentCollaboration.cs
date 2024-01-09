@@ -27,7 +27,7 @@ public class Example72_AgentCollaboration : BaseTest
     /// <summary>
     /// Show how two agents are able to collaborate as agents on a single thread.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "This test take more than 5 minutes to execute")]
     public async Task RunCollaborationAsync()
     {
         this._output.WriteLine("======== Example72_AgentCollaboration ========");
@@ -80,7 +80,7 @@ public class Example72_AgentCollaboration : BaseTest
     /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
     /// it is not using shared thread state for agent interaction.
     /// </remarks>
-    [Fact]
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginsAsync()
     {
         this._output.WriteLine("======== Example72_AgentCollaboration ========");
