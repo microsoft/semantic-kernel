@@ -75,9 +75,7 @@ class SequentialPlanParser:
                     (
                         skill_name,
                         function_name,
-                    ) = SequentialPlanParser.get_skill_function_names(
-                        skill_function_name
-                    )
+                    ) = SequentialPlanParser.get_skill_function_names(skill_function_name)
 
                     if function_name:
                         skill_function = get_skill_function(skill_name, function_name)
@@ -100,9 +98,7 @@ class SequentialPlanParser:
                                     function_outputs.append(child_node.attrib[attr])
                                     function_results.append(child_node.attrib[attr])
                                 else:
-                                    function_variables.set(
-                                        attr, child_node.attrib[attr]
-                                    )
+                                    function_variables.set(attr, child_node.attrib[attr])
 
                             plan_step._outputs = function_outputs
                             plan_step._parameters = function_variables
@@ -124,12 +120,6 @@ class SequentialPlanParser:
     @staticmethod
     def get_skill_function_names(skill_function_name: str) -> Tuple[str, str]:
         skill_function_name_parts = skill_function_name.split(".")
-        skill_name = (
-            skill_function_name_parts[0] if len(skill_function_name_parts) > 0 else ""
-        )
-        function_name = (
-            skill_function_name_parts[1]
-            if len(skill_function_name_parts) > 1
-            else skill_function_name
-        )
+        skill_name = skill_function_name_parts[0] if len(skill_function_name_parts) > 0 else ""
+        function_name = skill_function_name_parts[1] if len(skill_function_name_parts) > 1 else skill_function_name
         return skill_name, function_name

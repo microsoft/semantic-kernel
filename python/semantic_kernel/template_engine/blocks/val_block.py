@@ -22,9 +22,7 @@ class ValBlock(Block):
         super().__init__(content=content and content.strip())
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         if len(self.content) < 2:
             err = "A value must have single quotes or double quotes on both sides"
@@ -49,17 +47,12 @@ class ValBlock(Block):
             return False, error_msg
 
         if self._first != Symbols.DBL_QUOTE and self._first != Symbols.SGL_QUOTE:
-            error_msg = (
-                "A value must be wrapped in either single quotes or double quotes"
-            )
+            error_msg = "A value must be wrapped in either single quotes or double quotes"
             logger.error(error_msg)
             return False, error_msg
 
         if self._first != self._last:
-            error_msg = (
-                "A value must be defined using either single quotes or "
-                "double quotes, not both"
-            )
+            error_msg = "A value must be defined using either single quotes or " "double quotes, not both"
             logger.error(error_msg)
             return False, error_msg
 
@@ -70,8 +63,4 @@ class ValBlock(Block):
 
     @staticmethod
     def has_val_prefix(text: Optional[str]) -> bool:
-        return (
-            text is not None
-            and len(text) > 0
-            and (text[0] == Symbols.DBL_QUOTE or text[0] == Symbols.SGL_QUOTE)
-        )
+        return text is not None and len(text) > 0 and (text[0] == Symbols.DBL_QUOTE or text[0] == Symbols.SGL_QUOTE)
