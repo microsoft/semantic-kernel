@@ -84,7 +84,9 @@
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
+        <!--
         <module>semantickernel-core</module>
+        -->
     </modules>
 
     <dependencyManagement>

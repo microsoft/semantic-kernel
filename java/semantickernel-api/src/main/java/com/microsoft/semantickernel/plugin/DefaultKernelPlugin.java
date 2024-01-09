@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class DefaultKernelPlugin extends KernelPlugin {
@@ -14,6 +15,11 @@ public class DefaultKernelPlugin extends KernelPlugin {
         super(name, description);
 
         this.functions = new CaseInsensitiveMap<>(functions);
+    }
+
+    @Override
+    public Iterator<KernelFunction> iterator() {
+        return functions.values().iterator();
     }
 
     public Map<String, KernelFunction> getFunctions() {

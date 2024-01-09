@@ -1,9 +1,8 @@
 package com.microsoft.semantickernel.orchestration;
 
-import java.util.List;
-
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import java.util.List;
 
 public class KernelFunctionMetadata {
 
@@ -36,5 +35,9 @@ public class KernelFunctionMetadata {
 
     public List<KernelParameterMetadata> getParameters() {
         return parameters;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

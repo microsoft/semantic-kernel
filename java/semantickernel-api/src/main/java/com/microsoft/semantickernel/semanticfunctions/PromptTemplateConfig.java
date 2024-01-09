@@ -66,7 +66,7 @@ public class PromptTemplateConfig {
         this.templateFormat = templateFormat;
         this.description = description;
         if (inputVariables == null) {
-            this.inputVariables = Collections.emptyList();
+            this.inputVariables = new ArrayList<>();
         } else {
             this.inputVariables = new ArrayList<>(inputVariables);
         }
@@ -123,6 +123,13 @@ public class PromptTemplateConfig {
         return new KernelReturnParameterMetadata(
             outputVariable.getDescription()
         );
+    }
+
+    public void addInputVariable(InputVariable inputVariable) {
+        if (inputVariables == null) {
+            inputVariables = new ArrayList<>();
+        }
+        inputVariables.add(inputVariable);
     }
 
 

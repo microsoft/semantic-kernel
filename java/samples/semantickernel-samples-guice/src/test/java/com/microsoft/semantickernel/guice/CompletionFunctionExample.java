@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
-
+/**
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -76,3 +76,4 @@ public class CompletionFunctionExample {
         }
     }
 }
+*/

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
 
+/**
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
@@ -28,3 +29,5 @@ public interface CompletionFunctionFactory {
         }
     }
 }
+
+ **/

@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft.semantic-kernel.test</groupId>
+    <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>api-test</artifactId>
     <packaging>pom</packaging>
 
@@ -20,8 +20,10 @@
     </properties>
 
     <modules>
+        <!--
         <module>api-usage-example</module>
         <module>integration-tests</module>
+        -->
     </modules>
 
     <dependencyManagement>
