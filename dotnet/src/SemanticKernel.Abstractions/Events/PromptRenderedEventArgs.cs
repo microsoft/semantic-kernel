@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0004")]
 public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
 {
-    private string _renderedPrompt;
+    private string? _renderedPrompt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.
@@ -21,7 +21,7 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     public PromptRenderedEventArgs(KernelFunction function, KernelArguments arguments, string renderedPrompt) :
         base(function, arguments, metadata: null)
     {
-        this._renderedPrompt = renderedPrompt;
+        this.RenderedPrompt = renderedPrompt;
     }
 
     /// <summary>Gets or sets the rendered prompt.</summary>
@@ -33,7 +33,7 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     /// </remarks>
     public string RenderedPrompt
     {
-        get => this._renderedPrompt;
+        get => this._renderedPrompt!;
         set
         {
             Verify.NotNullOrWhiteSpace(value);
