@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Examples;
 
@@ -14,7 +16,7 @@ namespace Examples;
 /// Showcase Open AI Agent integration with semantic kernel:
 /// https://platform.openai.com/docs/api-reference/agents
 /// </summary>
-public static class Example70_Agent
+public class Example70_Agent : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -23,41 +25,16 @@ public static class Example70_Agent
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     /// <summary>
-    /// Show how to define an use a single agent using multiple patterns.
-    /// </summary>
-    public static async Task RunAsync()
-    {
-        Console.WriteLine("======== Example70_Agent ========");
-
-        if (TestConfiguration.OpenAI.ApiKey == null)
-        {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
-            return;
-        }
-
-        // "Hello agent"
-        await RunSimpleChatAsync();
-
-        // Run agent with "method" tool/function
-        await RunWithMethodFunctionsAsync();
-
-        // Run agent with "prompt" tool/function
-        await RunWithPromptFunctionsAsync();
-
-        // Run agent as function
-        await RunAsFunctionAsync();
-    }
-
-    /// <summary>
     /// Chat using the "Parrot" agent.
     /// Tools/functions: None
     /// </summary>
-    private static async Task RunSimpleChatAsync()
+    [Fact]
+    public Task RunSimpleChatAsync()
     {
-        Console.WriteLine("======== Run:SimpleChat ========");
+        this._output.WriteLine("======== Run:SimpleChat ========");
 
         // Call the common chat-loop
-        await ChatAsync(
+        return ChatAsync(
             "Agents.ParrotAgent.yaml", // Defined under ./Resources/Agents
             plugin: null, // No plugin
             "Fortune favors the bold.",
@@ -69,14 +46,15 @@ public static class Example70_Agent
     /// Chat using the "Tool" agent and a method function.
     /// Tools/functions: MenuPlugin
     /// </summary>
-    private static async Task RunWithMethodFunctionsAsync()
+    [Fact]
+    public Task RunWithMethodFunctionsAsync()
     {
-        Console.WriteLine("======== Run:WithMethodFunctions ========");
+        this._output.WriteLine("======== Run:WithMethodFunctions ========");
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         // Call the common chat-loop
-        await ChatAsync(
+        return ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
             "Hello",
@@ -89,9 +67,10 @@ public static class Example70_Agent
     /// Chat using the "Tool" agent and a prompt function.
     /// Tools/functions: spellChecker prompt function
     /// </summary>
-    private static async Task RunWithPromptFunctionsAsync()
+    [Fact]
+    public Task RunWithPromptFunctionsAsync()
     {
-        Console.WriteLine("======== WithPromptFunctions ========");
+        this._output.WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
         var function = KernelFunctionFactory.CreateFromPrompt(
@@ -102,7 +81,7 @@ public static class Example70_Agent
         var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
 
         // Call the common chat-loop
-        await ChatAsync(
+        return ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
             "Hello",
@@ -114,9 +93,10 @@ public static class Example70_Agent
     /// <summary>
     /// Invoke agent just like any other <see cref="KernelFunction"/>.
     /// </summary>
-    private static async Task RunAsFunctionAsync()
+    [Fact]
+    public async Task RunAsFunctionAsync()
     {
-        Console.WriteLine("======== Run:AsFunction ========");
+        this._output.WriteLine("======== Run:AsFunction ========");
 
         // Create parrot agent, same as the other cases.
         var agent =
@@ -131,7 +111,7 @@ public static class Example70_Agent
             var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.");
 
             // Display result.
-            Console.WriteLine(response ?? $"No response from agent: {agent.Id}");
+            this._output.WriteLine(response ?? $"No response from agent: {agent.Id}");
         }
         finally
         {
@@ -148,7 +128,7 @@ public static class Example70_Agent
     /// 4. Create a chat-thread
     /// 5. Process the provided "messages" on the chat-thread
     /// </summary>
-    private static async Task ChatAsync(
+    private async Task ChatAsync(
         string resourcePath,
         KernelPlugin? plugin = null,
         params string[] messages)
@@ -188,5 +168,9 @@ public static class Example70_Agent
                 thread?.DeleteAsync() ?? Task.CompletedTask,
                 agent.DeleteAsync());
         }
+    }
+
+    public Example70_Agent(ITestOutputHelper output) : base(output)
+    {
     }
 }
