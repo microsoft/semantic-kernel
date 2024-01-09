@@ -104,7 +104,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
 
         // Act & Assert
-        // Planner should call ThrowingEmailPluginFake.GetEmailAddressAsync, which throws InvalidProgramException
+        // Planner should call ThrowingEmailPluginFake.WriteJokeAsync, which throws InvalidProgramException
         await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "Email a joke to test@example.com"));
     }
 
