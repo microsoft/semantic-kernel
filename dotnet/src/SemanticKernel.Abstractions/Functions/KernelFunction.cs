@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
 
@@ -75,7 +76,7 @@ public abstract class KernelFunction
     /// </summary>
     /// <remarks>
     /// The execution settings are used to configure the behavior of the function when calling a LLM.
-    /// The currently configured instance of <@see cref="IAIServiceSelector"/> from the <see cref="Kernel"/> is used
+    /// The currently configured instance of <see cref="IAIServiceSelector"/> from the <see cref="Kernel"/> is used
     /// to determine the <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> to use for the function.
     /// </remarks>
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
