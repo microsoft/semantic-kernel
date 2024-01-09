@@ -42,9 +42,9 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
             raise ValueError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
-        if self.extension_data.get("best_of") is not None and self.extension_data.get(
-            "best_of"
-        ) < self.extension_data.get("number_of_responses"):
+        if self.extension_data.get("best_of") is not None and self.extension_data["best_of"] < self.extension_data.get(
+            "number_of_responses"
+        ):
             raise ValueError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
