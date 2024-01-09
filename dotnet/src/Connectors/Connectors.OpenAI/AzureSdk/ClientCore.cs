@@ -274,9 +274,12 @@ internal abstract class ClientCore
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
+            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
+            // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
             OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
-            if (resultChoice.FinishReason != CompletionsFinishReason.ToolCalls)
+            if (result.ToolCalls.Count == 0)
             {
                 return new[] { result };
             }
@@ -383,7 +386,7 @@ internal abstract class ClientCore
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                chatOptions.Tools.Clear();
+                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -458,9 +461,11 @@ internal abstract class ClientCore
                 yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
-            // If we don't have a function call to invoke, we're done.
+            // If we don't have a function to invoke, we're done. 
+            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
+            // is specified.
             if (!autoInvoke ||
-                finishReason != CompletionsFinishReason.ToolCalls ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -572,7 +577,7 @@ internal abstract class ClientCore
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                chatOptions.Tools.Clear();
+                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {

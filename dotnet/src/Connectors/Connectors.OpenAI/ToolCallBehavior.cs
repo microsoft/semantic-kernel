@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
 
@@ -76,7 +75,6 @@ public abstract class ToolCallBehavior
     /// The <see cref="ToolCallBehavior"/> that may be set into <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/>
     /// to indicate that the specified function should be requested by the model.
     /// </returns>
-    [Experimental("SKEXP0013")]
     public static ToolCallBehavior RequireFunction(OpenAIFunction function, bool autoInvoke = false)
     {
         Verify.NotNull(function);
