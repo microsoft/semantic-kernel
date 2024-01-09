@@ -6,7 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
 
-// ReSharper disable once InconsistentNaming
+namespace Examples;
+
 /// <summary>
 /// Showcase complex Open AI Agent collaboration using semantic kernel.
 /// </summary>

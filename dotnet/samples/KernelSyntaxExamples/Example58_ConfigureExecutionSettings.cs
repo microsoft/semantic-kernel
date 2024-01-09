@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace Examples;
+
 public static class Example58_ConfigureExecutionSettings
 {
     /// <summary>

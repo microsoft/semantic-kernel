@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
 
+namespace Examples;
+
 /// <summary>
 /// Showcase complex Open AI Agent interactions using semantic kernel.
 /// </summary>

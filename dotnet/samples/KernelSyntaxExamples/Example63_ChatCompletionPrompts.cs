@@ -4,6 +4,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+namespace Examples;
+
 // This example shows how to use chat completion standardized prompts.
 public static class Example63_ChatCompletionPrompts
 {

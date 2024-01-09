@@ -7,6 +7,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+namespace Examples;
+
 // This example shows different ways how to define and execute method functions using custom and primitive types.
 public static class Example60_AdvancedMethodFunctions
 {

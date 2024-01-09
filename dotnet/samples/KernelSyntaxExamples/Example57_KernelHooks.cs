@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
 
+namespace Examples;
+
 public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;

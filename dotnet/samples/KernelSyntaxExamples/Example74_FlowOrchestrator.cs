@@ -19,10 +19,11 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 
+namespace Examples;
+
 /**
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
  */
-// ReSharper disable once InconsistentNaming
 public static class Example74_FlowOrchestrator
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"

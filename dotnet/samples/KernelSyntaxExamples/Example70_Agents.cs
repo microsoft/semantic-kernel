@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
 
+namespace Examples;
+
 /// <summary>
 /// Showcase Open AI Agent integration with semantic kernel:
 /// https://platform.openai.com/docs/api-reference/agents

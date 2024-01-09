@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+namespace Examples;
+
 // This example shows how to create a mutable <see cref="KernelPlugin"/>.
 public static class Example69_MutableKernelPlugin
 {

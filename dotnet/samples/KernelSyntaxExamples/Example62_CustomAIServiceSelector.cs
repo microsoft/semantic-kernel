@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 
+namespace Examples;
+
 public static class Example62_CustomAIServiceSelector
 {
     /// <summary>

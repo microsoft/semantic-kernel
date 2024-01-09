@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
+namespace Examples;
+
 public static class Example52_ApimAuth
 {
     public static async Task RunAsync()

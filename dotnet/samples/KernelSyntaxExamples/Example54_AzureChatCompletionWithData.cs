@@ -6,6 +6,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace Examples;
+
 /// <summary>
 /// This example demonstrates how to use Azure OpenAI Chat Completion with data.
 /// </summary>

@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace Examples;
+
 // This example shows how to use multiple prompt template formats.
 public static class Example67_KernelStreaming
 {

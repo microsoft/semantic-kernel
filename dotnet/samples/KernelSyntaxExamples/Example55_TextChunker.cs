@@ -12,6 +12,8 @@ using Resources;
 using SharpToken;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
+namespace Examples;
+
 public static class Example55_TextChunker
 {
     private const string Text = @"The city of Venice, located in the northeastern part of Italy,

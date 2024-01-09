@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+namespace Examples;
+
 public static class Example61_MultipleLLMs
 {
     /// <summary>

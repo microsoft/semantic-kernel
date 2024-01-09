@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 
+namespace Examples;
+
 public static class Example66_FunctionCallingStepwisePlanner
 {
     public static async Task RunAsync()
