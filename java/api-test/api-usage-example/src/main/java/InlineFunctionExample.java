@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
+/*
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -135,3 +136,4 @@ public class InlineFunctionExample {
         }
     }
 }
+*/

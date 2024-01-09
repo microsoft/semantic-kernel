@@ -59,21 +59,21 @@
                 <artifactId>semantickernel-connectors-ai-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
--->
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-planners</artifactId>
                 <version>${project.version}</version>
             </dependency>
+-->
 
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-plugin-core</artifactId>
+                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
+                <artifactId>semantickernel-plugin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 <!--

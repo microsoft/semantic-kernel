@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
-
+/**
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -128,3 +128,4 @@ public class SemanticKernelModule extends AbstractModule {
         return this;
     }
 }
+**/
