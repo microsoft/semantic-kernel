@@ -48,6 +48,14 @@ dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "Bing:ApiKey" "..."
 dotnet user-secrets set "Postgres:ConnectionString" "..."
+
+dotnet user-secrets set "Planners:AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "Planners:AzureOpenAI:ChatDeploymentName" "gpt-4-1106-preview"
+dotnet user-secrets set "Planners:AzureOpenAI:ServiceId" "gpt-4-1106-preview"
+dotnet user-secrets set "Planners:AzureOpenAI:ApiKey" "..."
+
+dotnet user-secrets set "Planners:OpenAI:ModelId" "gpt-3.5-turbo-1106"
+dotnet user-secrets set "Planners:OpenAI:ApiKey" "..."
 ```
 
 ### Option 2: Use Configuration File
