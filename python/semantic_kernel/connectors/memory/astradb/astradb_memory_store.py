@@ -106,7 +106,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         result = self._client.create_collection(collection_name, dimension_num, distance_type)
         if result == True:
-            self._logger.info(f"Collection {collection_name} created.")
+            self.logger.info(f"Collection {collection_name} created.")
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -119,9 +119,9 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         result = self._client.delete_collection(collection_name)
         if result == True:
-            self._logger.info(f"Collection {collection_name} deleted.")
+            self.logger.info(f"Collection {collection_name} deleted.")
         else:
-            self._logger.warning(f"Collection {collection_name} does not exist.")
+            self.logger.warning(f"Collection {collection_name} does not exist.")
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
