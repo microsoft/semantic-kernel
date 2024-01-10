@@ -18,7 +18,7 @@ public static class Program
     ///     DefaultFilter = "18"    => run only example 18 (also "180" if there is such test)
     ///     DefaultFilter = "chat"  => run all examples with a name that contains "chat"
     /// </summary>
-    public const string? DefaultFilter = "Example75_AgentTools"; // $$$
+    public const string? DefaultFilter = "";
 
     public static async Task Main(string[] args)
     {
