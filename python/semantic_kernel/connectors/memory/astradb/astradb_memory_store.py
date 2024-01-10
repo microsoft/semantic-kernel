@@ -45,7 +45,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             keyspace_name {str} -- The Astra keyspace
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
+            logger {Optional[logging.Logger]} -- The logger to use. (default: {None})
         """
         self._embedding_dim = embedding_dim
         self._similarity = similarity
