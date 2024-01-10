@@ -107,6 +107,13 @@ public interface KernelArguments extends Buildable, Map<String, ContextVariable<
          */
         <T> Builder withVariable(String key, ContextVariable<T> value);
 
+        /**
+         * Set variable
+         *
+         * @param key   variable name
+         * @param value variable value
+         * @return builder for fluent chaining
+         */
         Builder withVariable(String key, Object value);
     }
 }

@@ -4,13 +4,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 
 public class KernelPluginCollection implements Iterable<KernelPlugin> {
@@ -41,6 +42,13 @@ public class KernelPluginCollection implements Iterable<KernelPlugin> {
                 "Function '" + functionName + "' not found in plugin '" + pluginName + "'");
         }
         return function;
+    }
+
+    public List<KernelFunctionMetadata> getFunctionsMetadata() {
+        return plugins.values().stream()
+            .flatMap(plugin -> plugin.getFunctions().values().stream())
+            .map(KernelFunction::getMetadata)
+            .collect(Collectors.toList());
     }
 
     @Override

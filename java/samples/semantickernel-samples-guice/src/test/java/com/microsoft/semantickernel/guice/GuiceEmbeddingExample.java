@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
-
+/**
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
@@ -41,3 +41,4 @@ public class GuiceEmbeddingExample {
                         });
     }
 }
+*/

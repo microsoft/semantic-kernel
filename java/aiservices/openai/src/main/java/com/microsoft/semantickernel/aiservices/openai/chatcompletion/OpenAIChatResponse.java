@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public interface OpenAIChatResponse {
 
     interface Usage {
-
         @JsonProperty("prompt_tokens")
         int getPromptTokens();
 
@@ -19,7 +18,6 @@ public interface OpenAIChatResponse {
     }
 
     interface Choice {
-
         @JsonProperty("message")
         Message getMessage();
 
@@ -31,7 +29,6 @@ public interface OpenAIChatResponse {
     }
 
     interface Message {
-
         @JsonProperty("role")
         String getRole();
 
@@ -40,7 +37,6 @@ public interface OpenAIChatResponse {
     }
 
     interface FinishDetails {
-
         @JsonProperty("type")
         String getType();
     }

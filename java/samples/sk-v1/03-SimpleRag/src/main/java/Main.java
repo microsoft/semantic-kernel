@@ -1,12 +1,8 @@
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.azure.core.credential.KeyCredential;
-import com.azure.core.http.policy.HttpLogDetailLevel;
-import com.azure.core.http.policy.HttpLogOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -17,11 +13,8 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 
 import java.io.IOException;
-import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.List;
-
-import com.azure.ai.openai.OpenAIServiceVersion;
 
 import plugins.searchplugin.Search;
 
@@ -40,14 +33,13 @@ public class Main {
         OpenAIAsyncClient client = new OpenAIClientBuilder()
             .credential(new AzureKeyCredential(AZURE_OPENAI_API_KEY))
             .endpoint(AZURE_OPENAI_ENDPOINT)
-            // .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
             .buildAsyncClient();
 
         // Initialize the required functions and services for the kernel
         KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/GroundedChat.prompt.yaml"));
 
-        ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
+        ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-3.5-turbo")
             .build();

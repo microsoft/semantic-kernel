@@ -93,7 +93,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
             if (!Verify.isNullOrEmpty(name) && !seen.contains(name)) {
                 seen.add(name);
-                promptTemplate.getInputVariables().add(new InputVariable(name));
+                promptTemplate.addInputVariable(new InputVariable(name));
             }
         });
     }

@@ -71,7 +71,6 @@
 <!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
 <!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
 
-        <module>aiservices/azureopenai</module>
 <!--        <module>aiservices/huggingface</module>-->
 <!--        <module>aiservices/ollama</module>-->
         <module>aiservices/openai</module>
@@ -84,7 +83,9 @@
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
+        <!--
         <module>semantickernel-core</module>
+        -->
     </modules>
 
     <dependencyManagement>

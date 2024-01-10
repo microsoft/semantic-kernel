@@ -12,12 +12,26 @@
 
     <artifactId>aiservices-openai</artifactId>
     <name>OpenAI Services</name>
-    <description>HuggingFace services for Semantic Kernel</description>
+    <description>OpenAI services for Semantic Kernel</description>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-ai-openai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

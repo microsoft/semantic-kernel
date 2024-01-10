@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
-import com.microsoft.semantickernel.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 
@@ -24,10 +23,8 @@ public enum BuildersSingleton {
     // Fallback classes in case the META-INF/services directory is missing
     // Keep this list in alphabetical order by fallback variable name
 
-    private static final String FALLBACK_OPENAI_CHAT_COMPLETION_BUILDER_CLASS = 
+    private static final String FALLBACK_OPENAI_CHAT_COMPLETION_BUILDER_CLASS =
         "com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion$Builder";
-    private static final String FALLBACK_AZURE_OPENAI_CHAT_COMPLETION_BUILDER_CLASS = 
-        "com.microsoft.semantickernel.aiservices.azureopenai.chatcompletion.AzureOpenAIChatCompletion$Builder";
     private static final String FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS =
         "com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig$CompletionConfigBuilder";
     private static final String FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS =
@@ -69,8 +66,7 @@ public enum BuildersSingleton {
             registerBuilder(Kernel.Builder.class, FALLBACK_KERNEL_BUILDER_CLASS);
             registerBuilder(KernelArguments.Builder.class, FALLBACK_KERNEL_ARGUMENTS_BUILDER_CLASS);
             registerBuilder(KernelFunctionYaml.Builder.class, FALLBACK_KERNEL_FUNCTION_YAML_BUILDER_CLASS);
-            registerBuilder(OpenAIChatCompletion.Builder.class, FALLBACK_OPENAI_CHAT_COMPLETION_BUILDER_CLASS);
-            registerBuilder(AzureOpenAIChatCompletion.Builder.class, FALLBACK_AZURE_OPENAI_CHAT_COMPLETION_BUILDER_CLASS);
+            registerBuilder(ChatCompletionService.Builder.class, FALLBACK_OPENAI_CHAT_COMPLETION_BUILDER_CLASS);
             /*
 
             // Keep this list in alphabetical order by fallback variable name

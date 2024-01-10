@@ -217,6 +217,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         return Mono.empty();
     }
 
+    public static KernelFunction create(
+        String promptTemplate) {
+        return create(promptTemplate, null, null, null, null, null);
+    }
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>

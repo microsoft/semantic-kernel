@@ -30,14 +30,6 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-ai-openai</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-plugin-core</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.google.inject</groupId>

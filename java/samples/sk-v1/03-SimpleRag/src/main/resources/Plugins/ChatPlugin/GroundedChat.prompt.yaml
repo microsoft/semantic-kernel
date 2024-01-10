@@ -21,7 +21,7 @@ input_variables:
   - name: persona
     type: string
     description: The persona of the assistant.
-    default_value: You are a helpful assistant.
+    default: You are a helpful assistant.
     is_required: false
   - name: messages
     type: ChatHistory

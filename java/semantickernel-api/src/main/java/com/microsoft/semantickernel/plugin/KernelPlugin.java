@@ -15,12 +15,12 @@ public class KernelPlugin implements Iterable<KernelFunction> {
     private final CaseInsensitiveMap<KernelFunction> functions;
 
     public KernelPlugin(String name, String description,
-        List<KernelFunction> functions) {
+        Map<String, KernelFunction> plugins) {
         this.name = name;
         this.description = description;
         this.functions = new CaseInsensitiveMap<>();
-        if (functions != null) {
-            functions.forEach(x -> this.functions.put(x.getName(), x));
+        if (plugins != null) {
+            plugins.forEach((key,kerneFunction) -> this.functions.put(key, kerneFunction));
         }
     }
 
