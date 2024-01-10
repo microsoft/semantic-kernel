@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -100,7 +101,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         this._output.WriteLine($"\nResult:\n{result}\n");
     }
 
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
     {
@@ -128,7 +129,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         }
     }
 
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
 
     public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
@@ -137,7 +138,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         return RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
     }
 
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
@@ -159,7 +160,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
     public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
@@ -195,7 +196,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
@@ -224,7 +225,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {

@@ -43,7 +43,7 @@ public class Example20_HuggingFace : BaseTest
     /// Note: Your Hugging Face account email address MUST match the email you provide on the Meta website, or your request will not be approved.
     /// </remarks>
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Requires local model or Huggingface Pro subscription")]
     public async Task RunLlamaExampleAsync()
     {
         this._output.WriteLine("\n======== HuggingFace Llama 2 example ========\n");
@@ -57,7 +57,7 @@ public class Example20_HuggingFace : BaseTest
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
                 model: Model,
-                endpoint: Endpoint,
+                //endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 

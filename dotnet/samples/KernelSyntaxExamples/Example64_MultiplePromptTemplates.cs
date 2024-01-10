@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,7 +15,7 @@ public class Example64_MultiplePromptTemplates : BaseTest
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData("semantic-kernel", "Hello AI, my name is {{$name}}. What is the origin of my name?")]
     [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?")]
     public Task RunAsync(string templateFormat, string prompt)

@@ -2,7 +2,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -11,6 +10,8 @@ using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Xunit;
 using Xunit.Abstractions;
 
+namespace Examples;
+
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
@@ -18,7 +19,7 @@ using Xunit.Abstractions;
 /// </summary>
 public class Example07_BingAndGooglePlugins : BaseTest
 {
-    [Fact]
+    [Fact(Skip = "Setup Credentials")]
     public async Task RunAsync()
     {
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;

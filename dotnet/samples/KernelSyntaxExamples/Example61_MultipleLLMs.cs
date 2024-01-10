@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Xunit;
+using xRetry;
 using Xunit.Abstractions;
 
 namespace Examples;
@@ -13,7 +13,7 @@ public class Example61_MultipleLLMs : BaseTest
     /// <summary>
     /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task RunAsync()
     {
         Kernel kernel = Kernel.CreateBuilder()

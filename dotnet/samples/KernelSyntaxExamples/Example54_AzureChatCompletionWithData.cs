@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -30,7 +31,7 @@ namespace Examples;
 /// </value>
 public class Example54_AzureChatCompletionWithData : BaseTest
 {
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithChatCompletionAsync()
     {
         this._output.WriteLine("=== Example with Chat Completion ===");
@@ -79,7 +80,7 @@ public class Example54_AzureChatCompletionWithData : BaseTest
         this._output.WriteLine(Environment.NewLine);
     }
 
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithKernelAsync()
     {
         this._output.WriteLine("=== Example with Kernel ===");

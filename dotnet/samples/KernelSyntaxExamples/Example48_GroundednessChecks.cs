@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,7 +14,7 @@ namespace Examples;
 
 public class Example48_GroundednessChecks : BaseTest
 {
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task GroundednessCheckingAsync()
     {
         this._output.WriteLine("\n======== Groundedness Checks ========");
