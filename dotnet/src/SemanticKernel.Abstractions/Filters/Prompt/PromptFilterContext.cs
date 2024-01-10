@@ -17,7 +17,7 @@ public abstract class PromptFilterContext
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
-    internal PromptFilterContext(KernelFunction function, KernelArguments arguments, IDictionary<string, object?>? metadata)
+    internal PromptFilterContext(KernelFunction function, KernelArguments arguments, IReadOnlyDictionary<string, object?>? metadata)
     {
         Verify.NotNull(function);
         Verify.NotNull(arguments);
@@ -38,7 +38,7 @@ public abstract class PromptFilterContext
     public KernelArguments Arguments { get; }
 
     /// <summary>
-    /// Gets a dictionary of metadata related to the filter.
+    /// Gets a dictionary of metadata associated with the operation.
     /// </summary>
-    public IDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 }
