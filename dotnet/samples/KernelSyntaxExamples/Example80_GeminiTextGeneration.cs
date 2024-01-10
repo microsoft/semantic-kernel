@@ -57,7 +57,7 @@ public static class Example80_GeminiTextGeneration
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiEmbeddingsGeneration(
+            .AddVertexAIGeminiTextGeneration(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey,
                 location: geminiLocation,

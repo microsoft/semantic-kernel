@@ -60,7 +60,7 @@ public static class Example81_GeminiChatCompletion
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiEmbeddingsGeneration(
+            .AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey,
                 location: geminiLocation,

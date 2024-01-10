@@ -33,7 +33,7 @@ public static class Example82_GeminiEmbeddingsGeneration
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
+            .AddGoogleAIGeminiEmbeddingsGeneration(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey)
             .Build();
