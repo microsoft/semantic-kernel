@@ -12,13 +12,6 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 from semantic_kernel.connectors.memory.astradb.exceptions import ForbiddenException, ServiceException
 
-"""
-export ASTRADB_APP_TOKEN=AstraCS:ZUJZcHtgmQswaEDUGqvfDZKU:88c0442ab720e1bb574c8b838c2afa6fbcf7a53b7ef3cc6237d7d4b763c565bd
-export ASTRADB_ID=2ee186dc-3fa5-45b9-a585-5f978c3db9bd
-export ASTRADB_REGION=us-east1
-export ASTRADB_KEYSPACE=anant
-"""
-
 try:
     from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient  # noqa: ????
 

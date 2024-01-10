@@ -12,9 +12,7 @@ from semantic_kernel.connectors.memory.astradb.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
-# Limitations set by Pinecone at https://docs.pinecone.io/docs/limits
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
 MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE = 10000
@@ -24,9 +22,9 @@ MAX_DELETE_BATCH_SIZE = 1000
 
 
 class AstraDBMemoryStore(MemoryStoreBase):
-    """A memory store that uses Pinecone as the backend."""
+    """A memory store that uses Astra database as the backend."""
 
-    _logger: Logger
+    logger: logging.Logger = logging.getLogger(__name__)
 
     def __init__(
         self,
@@ -36,16 +34,17 @@ class AstraDBMemoryStore(MemoryStoreBase):
         keyspace_name: str,
         embedding_dim: int,
         similarity: str,
-        logger: Optional[Logger] = None,
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
         Arguments:
-            app_token {str} -- The Astra application token.
-            db_id {str} -- The Astra id of database.
-            regin {str} -- The Astra region
-            keyspace {str} -- The Astra keyspace
+            astra_application_token {str} -- The Astra application token.
+            astra_id {str} -- The Astra id of database.
+            astra_region {str} -- The Astra region
+            keyspace_name {str} -- The Astra keyspace
             embedding_dim {int} -- The dimensionality to use for new collections.
+            similarity {str} -- TODO
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
         self._embedding_dim = embedding_dim
@@ -65,8 +64,6 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim=embedding_dim,
             similarity_function=similarity,
         )
-
-        self._logger = logger or NullLogger()
 
     def get_collections(self) -> List[str]:
         """Gets the list of collections.

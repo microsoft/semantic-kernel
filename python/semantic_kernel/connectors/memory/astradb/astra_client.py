@@ -2,6 +2,10 @@ import requests
 import json
 from typing import Any, Dict, List, Optional, Union
 
+import aiohttp
+import asyncio
+import nest_asyncio
+nest_asyncio.apply()
 
 class AstraClient:
     def __init__(
@@ -26,29 +30,31 @@ class AstraClient:
             "Content-Type": "application/json",
         }
 
-    def _run_query(self, request_url: str, query: Dict):
-        response = requests.request(
-            "POST", request_url, headers=self.request_header, data=json.dumps(query))
-        if response.status_code == 200:
-            response_dict = json.loads(response.text)
-            if "errors" in response_dict:
-                raise Exception(
-                    f"Astra DB request error - {response_dict['errors']}")
-            else:
-                return response_dict
-        else:
-            raise Exception(
-                f"Astra DB not available. Status code: {response.status_code}, {response.text}")
+    async def _run_query(self, request_url: str, query: Dict):
+        async with aiohttp.ClientSession() as session:
+            async with session.post(request_url, data=json.dumps(query), headers = self.request_header ) as response:
+                if response.status == 200:
+                    response_dict = await response.json()
+                    if "errors" in response_dict:
+                        raise Exception(f"Astra DB request error - {response_dict['errors']}")
+                    else:
+                        return response_dict
+                else:
+                    raise Exception(f"Astra DB not available. Status : {response}")
 
     def find_collections(self, include_detail: bool = True):
         query = {"findCollections": {"options": {"explain": include_detail}}}
-        result = self._run_query(self.request_base_url, query)
-
+        result = asyncio.run(self._run_query(self.request_base_url, query))
         return result["status"]["collections"]
 
     def find_collection(self, collection_name: str):
         collections = self.find_collections(False)
-        return collection_name in collections
+        found = False
+        for collection in collections:
+            if collection == collection_name:
+                found = True
+                break
+        return found
 
     def create_collection(self, collection_name: str, embedding_dim: Optional[int] = None, similarity_function: Optional[str] = None):
         query = {"createCollection": {
@@ -60,14 +66,12 @@ class AstraClient:
                 }
             }
         }}
-        result = self._run_query(self.request_base_url, query)
-
+        result = asyncio.run(self._run_query(self.request_base_url, query))
         return True if result["status"]["ok"] == 1 else False
 
     def delete_collection(self, collection_name: str):
         query = {"deleteCollection": {"name": collection_name}}
-        result = self._run_query(self.request_base_url, query)
-
+        result = asyncio.run(self._run_query(self.request_base_url, query))
         return True if result["status"]["ok"] == 1 else False
 
     def _build_collection_query(self, collection_name: str):
@@ -110,22 +114,20 @@ class AstraClient:
                 }
 
         query = {"find": find_query}
-        result = self._run_query(
-            self._build_collection_query(collection_name), query)
+        result = asyncio.run(self._run_query(
+            self._build_collection_query(collection_name), query))
         return result["data"]["documents"]
 
     def insert_document(self, collection_name: str, document: Dict) -> str:
         query = {"insertOne": {"document": document}}
-        result = self._run_query(
-            self._build_collection_query(collection_name), query)
-
+        result = asyncio.run(self._run_query(
+            self._build_collection_query(collection_name), query))
         return result["status"]["insertedIds"][0]
 
     def insert_documents(self, collection_name: str, documents: List[Dict]) -> List[str]:
         query = {"insertMany": {"documents": documents}}
-        result = self._run_query(
-            self._build_collection_query(collection_name), query)
-
+        result = asyncio.run(self._run_query(
+            self._build_collection_query(collection_name), query))
         return result["status"]["insertedIds"]
 
     def update_document(self, collection_name: str, filter: Dict, update: Dict, upsert: bool = True) -> Dict:
@@ -137,9 +139,8 @@ class AstraClient:
                 "upsert": upsert
             }
         }}
-        result = self._run_query(
-            self._build_collection_query(collection_name), query)
-
+        result = asyncio.run(self._run_query(
+            self._build_collection_query(collection_name), query))
         return result["status"]
 
     def update_documents(self, collection_name: str, filter: Dict, update: Dict):
@@ -147,14 +148,12 @@ class AstraClient:
             "filter": filter,
             "update": update,
         }}
-        result = self._run_query(
-            self._build_collection_query(collection_name), query)
-
+        result = asyncio.run(self._run_query(
+            self._build_collection_query(collection_name), query))
         return result["status"]
 
     def delete_documents(self, collection_name: str, filter: Dict) -> int:
         query = {"deleteMany": {"filter": filter}}
-        result = self._run_query(
-            self._build_collection_query(collection_name), query)
-
+        result = asyncio.run(self._run_query(
+            self._build_collection_query(collection_name), query))
         return result["status"]["deletedCount"]
