@@ -36,7 +36,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.mark.asyncio
 async def create_memory_store():
     # Create an index and populate it with some data
-    collection = f"int-tests-{randint(1000, 9999)}"
+    collection = f"int-tests-chat-extensions-{randint(1000, 9999)}"
     memory_store = AzureCognitiveSearchMemoryStore(vector_size=4)
     await memory_store.create_collection_async(collection)
     time.sleep(1)
@@ -106,7 +106,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         )
         kernel.add_chat_service("chat-gpt", chat_service)
 
-        prompt_config = ChatPromptTemplate(
+        prompt_config = sk.PromptTemplateConfig(
             completion=AzureChatRequestSettings(
                 max_tokens=2000,
                 temperature=0.7,
@@ -126,7 +126,6 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_azure_e2e_chat_completion_with_extensions(
     create_with_data_chat_function,
 ):
