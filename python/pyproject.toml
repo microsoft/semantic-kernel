@@ -72,12 +72,6 @@ azure-identity = "^1.13.0"
 usearch = "1.1.1"
 pyarrow = ">=12.0.1,<15.0.0"
 
-[tool.pytest.ini_options]
-addopts = "--cov=semantic_kernel --cov-report term-missing"
-testpaths = [
-    "tests"
-]
-
 [tool.isort]
 profile = "ruff"
 
