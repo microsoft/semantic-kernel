@@ -117,11 +117,12 @@ public class PromptTemplateConfig {
 
     public KernelReturnParameterMetadata getKernelReturnParameterMetadata() {
         if (outputVariable == null) {
-            return new KernelReturnParameterMetadata("");
+            return new KernelReturnParameterMetadata("", String.class);
         }
 
         return new KernelReturnParameterMetadata(
-            outputVariable.getDescription()
+            outputVariable.getDescription(),
+            outputVariable.getType()
         );
     }
 

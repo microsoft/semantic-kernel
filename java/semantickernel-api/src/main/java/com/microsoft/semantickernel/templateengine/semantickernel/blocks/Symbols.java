@@ -2,10 +2,12 @@
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 public class Symbols {
+
     public static final char BlockStarter = '{';
     public static final char BlockEnder = '}';
 
     public static final char VarPrefix = '$';
+    public static final char NamedArgBlockSeparator = '=';
 
     public static final char DblQuote = '"';
     public static final char SglQuote = '\'';

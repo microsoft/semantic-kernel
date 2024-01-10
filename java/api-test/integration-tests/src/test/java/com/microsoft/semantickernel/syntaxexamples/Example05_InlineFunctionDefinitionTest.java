@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.samples.syntaxexamples;
+package com.microsoft.semantickernel.syntaxexamples;
 
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.core.credential.AzureKeyCredential;
-import com.azure.core.credential.KeyCredential;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
-import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
@@ -19,35 +18,22 @@ import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class Example05_InlineFunctionDefinition {
+@WireMockTest
+public class Example05_InlineFunctionDefinitionTest {
 
-    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
-        System.getenv("USE_AZURE_CLIENT"));
-    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-
-    // Only required if USE_AZURE_CLIENT is true
-    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-
-    public static void main(String[] args) throws ConfigurationException {
-
-        OpenAIAsyncClient client;
-
-        if (USE_AZURE_CLIENT) {
-            client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
-        } else {
-            client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
-        }
+    @Test
+    public void main(WireMockRuntimeInfo wmRuntimeInfo) {
+        final OpenAIAsyncClient client = new OpenAIClientBuilder()
+            .endpoint("http://localhost:" + wmRuntimeInfo.getHttpPort())
+            .buildAsyncClient();
 
         TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
-                .withOpenAIAsyncClient(client)
-                .withModelId("text-davinci-003")
-                .build();
+            .withOpenAIAsyncClient(client)
+            .withModelId("text-davinci-003")
+            .build();
 
         Kernel kernel = new DefaultKernel.Builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
@@ -80,13 +66,18 @@ public class Example05_InlineFunctionDefinition {
             )
             .build();
 
+        WireMockUtil.mockCompletionResponse("I missed the F1 final race", "a-response");
+
         var result = kernel.invokeAsync(excuseFunction,
                 KernelArguments.builder()
                     .withInput("I missed the F1 final race")
                     .build(),
                 String.class)
             .block();
-        System.out.println(result.getValue());
+
+        Assertions.assertEquals("a-response", result.getValue());
+
+        WireMockUtil.mockCompletionResponse("sorry I forgot your birthday", "a-response-2");
 
         result = kernel.invokeAsync(excuseFunction,
                 KernelArguments.builder()
@@ -94,7 +85,10 @@ public class Example05_InlineFunctionDefinition {
                     .build(),
                 String.class)
             .block();
-        System.out.println(result.getValue());
+
+        Assertions.assertEquals("a-response-2", result.getValue());
+
+        WireMockUtil.mockCompletionResponse("Translate this date ", "a-response-3");
 
         var fixedFunction = KernelFunctionFactory.createFromPrompt(
             "Translate this date " + DateTimeFormatter
@@ -113,7 +107,8 @@ public class Example05_InlineFunctionDefinition {
         ContextVariable<String> fixedFunctionResult = kernel
             .invokeAsync(fixedFunction, null, String.class)
             .block();
-        System.out.println(fixedFunctionResult.getValue());
+
+        Assertions.assertEquals("a-response-3", fixedFunctionResult.getValue());
 
     }
 }

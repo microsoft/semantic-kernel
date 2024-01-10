@@ -20,7 +20,9 @@ public class Example03_Arguments {
 
     public static class StaticTextSkill {
 
-        @DefineKernelFunction(description = "Change all string chars to uppercase.", name = "Uppercase")
+        @DefineKernelFunction(
+            description = "Change all string chars to uppercase.",
+            name = "Uppercase")
         public static Mono<String> uppercase(
             @KernelFunctionParameter(
                 description = "Text to uppercase",

@@ -27,7 +27,7 @@ public final class ValBlock extends Block implements TextRendering {
 
         this.first = this.getContent().charAt(0);
         this.last = this.getContent().charAt(getContent().length() - 1);
-        this.value = this.getContent().substring(1, this.getContent().length() - 2);
+        this.value = this.getContent().substring(1, this.getContent().length() - 1);
     }
 
     @Override

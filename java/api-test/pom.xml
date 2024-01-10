@@ -22,8 +22,8 @@
     <modules>
         <!--
         <module>api-usage-example</module>
-        <module>integration-tests</module>
         -->
+        <module>integration-tests</module>
     </modules>
 
     <dependencyManagement>
