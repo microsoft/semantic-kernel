@@ -37,6 +37,7 @@ public class Example70_Agent : BaseTest
         return ChatAsync(
             "Agents.ParrotAgent.yaml", // Defined under ./Resources/Agents
             plugin: null, // No plugin
+            arguments: new KernelArguments { { "count", 3 } },
             "Fortune favors the bold.",
             "I came, I saw, I conquered.",
             "Practice makes perfect.");
@@ -57,6 +58,7 @@ public class Example70_Agent : BaseTest
         return ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
+            arguments: null,
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
@@ -76,14 +78,15 @@ public class Example70_Agent : BaseTest
         var function = KernelFunctionFactory.CreateFromPrompt(
              "Correct any misspelling or gramatical errors provided in input: {{$input}}",
               functionName: "spellChecker",
-              description: "Correct the spelling for the user input."
-        );
+              description: "Correct the spelling for the user input.");
+
         var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
 
         // Call the common chat-loop
         return ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
+            arguments: null,
             "Hello",
             "Is this spelled correctly: exercize",
             "What is the special soup?",
@@ -108,7 +111,7 @@ public class Example70_Agent : BaseTest
         try
         {
             // Invoke agent plugin.
-            var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.");
+            var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.", new KernelArguments { { "count", 2 } });
 
             // Display result.
             this._output.WriteLine(response ?? $"No response from agent: {agent.Id}");
@@ -131,6 +134,7 @@ public class Example70_Agent : BaseTest
     private async Task ChatAsync(
         string resourcePath,
         KernelPlugin? plugin = null,
+        KernelArguments? arguments = null,
         params string[] messages)
     {
         // Read agent resource
@@ -152,7 +156,7 @@ public class Example70_Agent : BaseTest
             Console.WriteLine($"[{agent.Id}]");
 
             // Process each user message and agent response.
-            foreach (var response in messages.Select(m => thread.InvokeAsync(agent, m)))
+            foreach (var response in messages.Select(m => thread.InvokeAsync(agent, m, arguments)))
             {
                 await foreach (var message in response)
                 {
