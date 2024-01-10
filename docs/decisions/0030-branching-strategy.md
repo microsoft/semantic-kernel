@@ -41,7 +41,7 @@ Cons:
 - More complex than GitHub Flow, which may be overwhelming for smaller teams or projects that do not require as much structure.
 - Less suited for projects that prioritize continuous deployment, as it emphasizes a more controlled release process.
 - Not ideal for projects with continuous deployment due to the overhead of managing multiple branches.
-
+- Spaghetti history in Git - [GitFlow considered harmful](https://www.endoflineblog.com/gitflow-considered-harmful)
 
 # SK branching strategies
 Today, the SK SDK is available in three languages: .NET, Java and Python. All of them coexist in the same Git repository, organized under corresponding folders. However, the branching strategies for those differ.
