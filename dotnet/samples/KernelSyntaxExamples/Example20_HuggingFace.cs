@@ -52,7 +52,7 @@ public class Example20_HuggingFace : BaseTest
         const string Model = "meta-llama/Llama-2-7b-hf";
 
         // HuggingFace local HTTP server endpoint
-        const string Endpoint = "http://localhost:5000/completions";
+        // const string Endpoint = "http://localhost:5000/completions";
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(

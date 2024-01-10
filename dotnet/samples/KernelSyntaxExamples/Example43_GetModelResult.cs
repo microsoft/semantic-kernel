@@ -11,7 +11,7 @@ namespace Examples;
 public class Example43_GetModelResult : BaseTest
 {
     [Fact]
-    public async Task GetTokenUsageMetadata()
+    public async Task GetTokenUsageMetadataAsync()
     {
         this._output.WriteLine("======== Inline Function Definition + Invocation ========");
 

@@ -54,7 +54,7 @@ public class Example36_MultiCompletion : BaseTest
 
         foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings))
         {
-            this._output.Write(chatMessageChoice.Content);
+            this._output.Write(chatMessageChoice.Content ?? string.Empty);
             this._output.WriteLine("\n-------------\n");
         }
 
