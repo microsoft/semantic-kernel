@@ -19,7 +19,6 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_se
     AzureCognitiveSearchMemoryStore,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 
 try:
     azure_cognitive_search_installed = True
