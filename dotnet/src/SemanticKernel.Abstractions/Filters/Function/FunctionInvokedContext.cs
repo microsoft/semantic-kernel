@@ -14,11 +14,10 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedContext"/> class.
     /// </summary>
-    /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="result">The result of the function's invocation.</param>
-    public FunctionInvokedContext(KernelFunction function, KernelArguments arguments, FunctionResult result)
-        : base(function, arguments, (result ?? throw new ArgumentNullException(nameof(result))).Metadata)
+    public FunctionInvokedContext(KernelArguments arguments, FunctionResult result)
+        : base(result.Function, arguments, (result ?? throw new ArgumentNullException(nameof(result))).Metadata)
     {
         this.Result = result;
         this.ResultValue = result.Value;

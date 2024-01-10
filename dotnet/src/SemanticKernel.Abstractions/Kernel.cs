@@ -348,13 +348,13 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0005")]
-    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelFunction function, KernelArguments arguments, FunctionResult result)
+    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedContext? context = null;
 
         if (this._functionFilters is { Count: > 0 })
         {
-            context = new(function, arguments, result);
+            context = new(arguments, result);
 
             foreach (var filter in this._functionFilters)
             {

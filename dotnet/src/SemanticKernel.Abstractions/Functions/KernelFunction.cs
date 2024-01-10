@@ -155,7 +155,7 @@ public abstract class KernelFunction
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
 
             // Invoke the post-invocation filter. If it requests cancellation, throw.
-            var invokedContext = kernel.OnFunctionInvokedFilter(this, arguments, functionResult);
+            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
 
             if (invokedEventArgs is not null)
             {
