@@ -105,15 +105,6 @@ internal abstract class ClientBase
         ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
     };
 
-    protected static HttpRequestMessage CreateHTTPRequestMessage(
-        object requestData,
-        Uri endpoint)
-    {
-        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        return httpRequestMessage;
-    }
-
     protected void LogUsageMetadata(GeminiMetadata metadata)
     {
         this.Logger.LogDebug(

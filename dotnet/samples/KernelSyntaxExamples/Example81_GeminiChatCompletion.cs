@@ -28,7 +28,7 @@ public static class Example81_GeminiChatCompletion
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddGeminiChatCompletion(
+            .AddGoogleAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey)
             .Build();

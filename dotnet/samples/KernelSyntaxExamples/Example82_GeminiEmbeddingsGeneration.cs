@@ -25,7 +25,7 @@ public static class Example82_GeminiEmbeddingsGeneration
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddGeminiEmbeddingsGeneration(
+            .AddGoogleAIGeminiEmbeddingsGeneration(
                 modelId: geminiEmbeddingModelId,
                 apiKey: geminiApiKey)
             .Build();

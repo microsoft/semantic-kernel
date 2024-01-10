@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 using SemanticKernel.UnitTests;
 using Xunit;
 
@@ -34,13 +35,23 @@ public sealed class GeminiClientCountingTokensTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         var tokenCount = await client.CountTokensAsync("fake-text");
 
         // Assert
         Assert.True(tokenCount > 0);
+    }
+
+    private GeminiClient CreateGeminiClient(GeminiConfiguration geminiConfiguration)
+    {
+        var client = new GeminiClient(
+            httpClient: this._httpClient,
+            configuration: geminiConfiguration,
+            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
+            endpointProvider: new GoogleAIGeminiEndpointProvider(geminiConfiguration.ApiKey));
+        return client;
     }
 
     public void Dispose()

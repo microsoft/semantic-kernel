@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 using SemanticKernel.UnitTests;
 using Xunit;
 
@@ -38,7 +39,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         _ = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -55,7 +56,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         _ = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -69,7 +70,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         _ = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -82,9 +83,9 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     public async Task ShouldUseBaseEndpointAsync()
     {
         // Arrange
-        var baseEndPoint = GeminiEndpoints.BaseEndpoint.AbsoluteUri;
+        var baseEndPoint = GoogleAIGeminiEndpointProvider.BaseEndpoint.AbsoluteUri;
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         _ = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -99,7 +100,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
         // Arrange
         string prompt = "fake-prompt";
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         _ = await client.StreamGenerateTextAsync(prompt).ToListAsync();
@@ -115,7 +116,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         var streamingTextContents = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -139,7 +140,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         var streamingTextContents = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -185,7 +186,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         var streamingTextContents = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -229,7 +230,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         var streamingTextContents = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -245,7 +246,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
 
         // Act
         var streamingTextContents = await client.StreamGenerateTextAsync("fake-text").ToListAsync();
@@ -263,7 +264,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 102,
@@ -289,7 +290,7 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         GeminiPromptExecutionSettings executionSettings = new()
         {
             MaxTokens = maxTokens
@@ -298,6 +299,16 @@ public sealed class GeminiClientTextStreamingTests : IDisposable
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
             async () => await client.StreamGenerateTextAsync("fake-text", executionSettings).ToListAsync());
+    }
+
+    private GeminiClient CreateGeminiClient(GeminiConfiguration geminiConfiguration)
+    {
+        var client = new GeminiClient(
+            httpClient: this._httpClient,
+            configuration: geminiConfiguration,
+            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
+            endpointProvider: new GoogleAIGeminiEndpointProvider(geminiConfiguration.ApiKey));
+        return client;
     }
 
     public void Dispose()

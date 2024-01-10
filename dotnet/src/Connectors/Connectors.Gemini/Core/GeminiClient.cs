@@ -26,25 +26,31 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// </summary>
 internal sealed class GeminiClient : ClientBase, IGeminiClient
 {
-    private readonly string _apiKey;
+    private readonly IHttpRequestFactory _httpRequestFactory;
+    private readonly IEndpointProvider _endpointProvider;
 
     /// <summary>
     /// Represents a client for interacting with the Gemini API.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
+    /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
+    /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
     /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream (optional)</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiClient(
         HttpClient httpClient,
         GeminiConfiguration configuration,
+        IHttpRequestFactory httpRequestFactory,
+        IEndpointProvider endpointProvider,
         IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
         : base(streamJsonParser ?? new GeminiStreamJsonParser(), httpClient, logger)
     {
         this.ModelId = configuration.ModelId;
         this.EmbeddingModelId = configuration.EmbeddingModelId;
-        this._apiKey = configuration.ApiKey;
+        this._httpRequestFactory = httpRequestFactory;
+        this._endpointProvider = endpointProvider;
     }
 
     /// <inheritdoc/>
@@ -64,9 +70,9 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetTextGenerationEndpoint(this.ModelId, this._apiKey);
+        var endpoint = this._endpointProvider.GetTextGenerationEndpoint(this.ModelId);
         var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+        using var httpRequestMessage = this._httpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -83,9 +89,9 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetStreamTextGenerationEndpoint(this.ModelId, this._apiKey);
+        var endpoint = this._endpointProvider.GetStreamTextGenerationEndpoint(this.ModelId);
         var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+        using var httpRequestMessage = this._httpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -107,9 +113,9 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         ValidateChatHistory(chatHistory);
 
-        var endpoint = GeminiEndpoints.GetChatCompletionEndpoint(this.ModelId, this._apiKey);
+        var endpoint = this._endpointProvider.GetChatCompletionEndpoint(this.ModelId);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
-        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+        using var httpRequestMessage = this._httpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -126,9 +132,9 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         ValidateChatHistory(chatHistory);
 
-        var endpoint = GeminiEndpoints.GetStreamChatCompletionEndpoint(this.ModelId, this._apiKey);
+        var endpoint = this._endpointProvider.GetStreamChatCompletionEndpoint(this.ModelId);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
-        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+        using var httpRequestMessage = this._httpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -148,9 +154,9 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyEmbeddingModelId();
         Verify.NotNullOrEmpty(data);
 
-        var endpoint = GeminiEndpoints.GetEmbeddingsEndpoint(this.EmbeddingModelId, this._apiKey);
+        var endpoint = this._endpointProvider.GetEmbeddingsEndpoint(this.EmbeddingModelId);
         var geminiRequest = GeminiEmbeddingRequest.FromData(data, this.EmbeddingModelId);
-        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+        using var httpRequestMessage = this._httpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -166,9 +172,9 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         this.VerifyModelId();
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = GeminiEndpoints.GetCountTokensEndpoint(this.ModelId, this._apiKey);
+        var endpoint = this._endpointProvider.GetCountTokensEndpoint(this.ModelId);
         var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = CreateHTTPRequestMessage(geminiRequest, endpoint);
+        using var httpRequestMessage = this._httpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

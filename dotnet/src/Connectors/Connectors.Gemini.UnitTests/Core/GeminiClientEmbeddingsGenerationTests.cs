@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 using SemanticKernel.UnitTests;
 using Xunit;
 
@@ -36,7 +37,7 @@ public sealed class GeminiClientEmbeddingsGenerationTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { EmbeddingModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var dataToEmbed = new List<string>()
         {
             "Write a story about a magic backpack.",
@@ -59,7 +60,7 @@ public sealed class GeminiClientEmbeddingsGenerationTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { EmbeddingModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var dataToEmbed = new List<string>()
         {
             "Write a story about a magic backpack.",
@@ -76,6 +77,16 @@ public sealed class GeminiClientEmbeddingsGenerationTests : IDisposable
         Assert.Collection(embeddings,
             values => Assert.Equal(testDataResponse.Embeddings[0].Values, values),
             values => Assert.Equal(testDataResponse.Embeddings[1].Values, values));
+    }
+
+    private GeminiClient CreateGeminiClient(GeminiConfiguration geminiConfiguration)
+    {
+        var client = new GeminiClient(
+            httpClient: this._httpClient,
+            configuration: geminiConfiguration,
+            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
+            endpointProvider: new GoogleAIGeminiEndpointProvider(geminiConfiguration.ApiKey));
+        return client;
     }
 
     public void Dispose()

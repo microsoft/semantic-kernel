@@ -31,7 +31,7 @@ public class GeminiChatCompletionTests
         chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
         chatHistory.AddUserMessage("Call me by my name and expand this abbreviation: LLM");
 
-        var geminiService = new GeminiChatCompletionService(this.GetModel(), this.GetApiKey());
+        var geminiService = new GoogleAIGeminiChatCompletionService(this.GetModel(), this.GetApiKey());
 
         // Act
         var response = await geminiService.GetChatMessageContentAsync(chatHistory);
@@ -51,7 +51,7 @@ public class GeminiChatCompletionTests
         chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
         chatHistory.AddUserMessage("Call me by my name and write a long story about my name.");
 
-        var geminiService = new GeminiChatCompletionService(this.GetModel(), this.GetApiKey());
+        var geminiService = new GoogleAIGeminiChatCompletionService(this.GetModel(), this.GetApiKey());
 
         // Act
         var response =

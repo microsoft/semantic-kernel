@@ -25,7 +25,7 @@ public sealed class GeminiEmbeddingGenerationTests
     {
         // Arrange
         const string Input = "Expand this abbreviation: LLM";
-        var geminiService = new GeminiTextEmbeddingGenerationService(this.GetModel(), this.GetApiKey());
+        var geminiService = new GoogleAIGeminiTextEmbeddingGenerationService(this.GetModel(), this.GetApiKey());
 
         // Act
         var response = await geminiService.GenerateEmbeddingAsync(Input);

@@ -28,7 +28,7 @@ public sealed class GeminiTextGenerationTests
         // Arrange
         const string Input = "Expand this abbreviation: LLM";
 
-        var geminiService = new GeminiTextGenerationService(this.GetModel(), this.GetApiKey());
+        var geminiService = new GoogleAIGeminiTextGenerationService(this.GetModel(), this.GetApiKey());
 
         // Act
         var response = await geminiService.GetTextContentAsync(Input);
@@ -44,7 +44,7 @@ public sealed class GeminiTextGenerationTests
         // Arrange
         const string Input = "Write a story about a magic backpack.";
 
-        var geminiService = new GeminiTextGenerationService(this.GetModel(), this.GetApiKey());
+        var geminiService = new GoogleAIGeminiTextGenerationService(this.GetModel(), this.GetApiKey());
 
         // Act
         var response = await geminiService.GetStreamingTextContentsAsync(Input).ToListAsync();

@@ -5,19 +5,19 @@
 #endregion
 
 using System;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
+namespace SemanticKernel.Connectors.Gemini.UnitTests.Core.GoogleAI;
 
-public sealed class GeminiEndpointsTests
+public sealed class GoogleAIGeminiEndpointProviderTests
 {
     [Fact]
     public void ModelsEndpointStartsWithBaseEndpoint()
     {
         Assert.StartsWith(
-            GeminiEndpoints.BaseEndpoint.AbsoluteUri,
-            GeminiEndpoints.ModelsEndpoint.AbsoluteUri,
+            GoogleAIGeminiEndpointProvider.BaseEndpoint.AbsoluteUri,
+            GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri,
             StringComparison.Ordinal);
     }
 
@@ -27,12 +27,13 @@ public sealed class GeminiEndpointsTests
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
+        GoogleAIGeminiEndpointProvider sut = new(apiKey);
 
         // Act
-        Uri uri = GeminiEndpoints.GetTextGenerationEndpoint(modelId, apiKey);
+        Uri uri = sut.GetTextGenerationEndpoint(modelId);
 
         // Assert
-        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -43,12 +44,13 @@ public sealed class GeminiEndpointsTests
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
+        GoogleAIGeminiEndpointProvider sut = new(apiKey);
 
         // Act
-        Uri uri = GeminiEndpoints.GetStreamTextGenerationEndpoint(modelId, apiKey);
+        Uri uri = sut.GetStreamTextGenerationEndpoint(modelId);
 
         // Assert
-        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -59,12 +61,13 @@ public sealed class GeminiEndpointsTests
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
+        GoogleAIGeminiEndpointProvider sut = new(apiKey);
 
         // Act
-        Uri uri = GeminiEndpoints.GetChatCompletionEndpoint(modelId, apiKey);
+        Uri uri = sut.GetChatCompletionEndpoint(modelId);
 
         // Assert
-        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -75,12 +78,13 @@ public sealed class GeminiEndpointsTests
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
+        GoogleAIGeminiEndpointProvider sut = new(apiKey);
 
         // Act
-        Uri uri = GeminiEndpoints.GetStreamChatCompletionEndpoint(modelId, apiKey);
+        Uri uri = sut.GetStreamChatCompletionEndpoint(modelId);
 
         // Assert
-        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -91,12 +95,13 @@ public sealed class GeminiEndpointsTests
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
+        GoogleAIGeminiEndpointProvider sut = new(apiKey);
 
         // Act
-        Uri uri = GeminiEndpoints.GetEmbeddingsEndpoint(modelId, apiKey);
+        Uri uri = sut.GetEmbeddingsEndpoint(modelId);
 
         // Assert
-        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }
@@ -107,12 +112,13 @@ public sealed class GeminiEndpointsTests
         // Arrange
         string modelId = "fake-modelId";
         string apiKey = "fake-apiKey";
+        GoogleAIGeminiEndpointProvider sut = new(apiKey);
 
         // Act
-        Uri uri = GeminiEndpoints.GetCountTokensEndpoint(modelId, apiKey);
+        Uri uri = sut.GetCountTokensEndpoint(modelId);
 
         // Assert
-        Assert.Contains(GeminiEndpoints.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains(GoogleAIGeminiEndpointProvider.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(modelId, uri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains(apiKey, uri.AbsoluteUri, StringComparison.Ordinal);
     }

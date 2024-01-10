@@ -25,7 +25,7 @@ public static class Example80_GeminiTextGeneration
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddGeminiTextGeneration(
+            .AddGoogleAIGeminiTextGeneration(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey)
             .Build();

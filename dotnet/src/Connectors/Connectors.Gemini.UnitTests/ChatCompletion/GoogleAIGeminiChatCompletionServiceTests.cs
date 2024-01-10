@@ -8,16 +8,16 @@ using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Gemini.UnitTests.TextEmbedding;
+namespace SemanticKernel.Connectors.Gemini.UnitTests.TextGeneration;
 
-public sealed class GeminiTextEmbeddingGenerationServiceTests
+public sealed class GoogleAIGeminiChatCompletionServiceTests
 {
     [Fact]
     public void AttributesShouldContainModelId()
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new GeminiTextEmbeddingGenerationService(model, "key");
+        var service = new GoogleAIGeminiChatCompletionService(model, "key");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);

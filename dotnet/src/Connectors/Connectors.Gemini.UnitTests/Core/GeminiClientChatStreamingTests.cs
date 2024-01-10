@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini;
 using Microsoft.SemanticKernel.Connectors.Gemini.Core;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 using SemanticKernel.UnitTests;
 using Xunit;
 
@@ -39,7 +40,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -59,7 +60,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
@@ -90,7 +91,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -137,7 +138,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -182,7 +183,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -200,7 +201,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = CreateChatHistory();
 
         // Act
@@ -220,7 +221,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         var chatHistory = CreateChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings()
         {
@@ -247,7 +248,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = new GeminiClient(this._httpClient, geminiConfiguration);
+        GeminiClient client = this.CreateGeminiClient(geminiConfiguration);
         GeminiPromptExecutionSettings executionSettings = new()
         {
             MaxTokens = maxTokens
@@ -265,6 +266,16 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         chatHistory.AddAssistantMessage("Hi");
         chatHistory.AddUserMessage("How are you?");
         return chatHistory;
+    }
+
+    private GeminiClient CreateGeminiClient(GeminiConfiguration geminiConfiguration)
+    {
+        var client = new GeminiClient(
+            httpClient: this._httpClient,
+            configuration: geminiConfiguration,
+            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
+            endpointProvider: new GoogleAIGeminiEndpointProvider(geminiConfiguration.ApiKey));
+        return client;
     }
 
     public void Dispose()

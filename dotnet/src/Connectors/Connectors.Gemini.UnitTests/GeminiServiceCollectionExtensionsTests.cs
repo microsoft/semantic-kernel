@@ -17,130 +17,258 @@ namespace SemanticKernel.Connectors.Gemini.UnitTests;
 public sealed class GeminiServiceCollectionExtensionsTests
 {
     [Fact]
-    public void GeminiTextGenerationServiceShouldBeRegisteredInKernelServices()
+    public void GoogleAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddGeminiTextGeneration("modelId", "apiKey");
+        kernelBuilder.AddGoogleAIGeminiTextGeneration("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
         var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
-        Assert.IsType<GeminiTextGenerationService>(textGenerationService);
+        Assert.IsType<GoogleAIGeminiTextGenerationService>(textGenerationService);
     }
 
     [Fact]
-    public void GeminiTextGenerationServiceShouldBeRegisteredInServiceCollection()
+    public void GoogleAIGeminiTextGenerationServiceShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddGeminiTextGeneration("modelId", "apiKey");
+        services.AddGoogleAIGeminiTextGeneration("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
-        Assert.IsType<GeminiTextGenerationService>(textGenerationService);
+        Assert.IsType<GoogleAIGeminiTextGenerationService>(textGenerationService);
     }
 
     [Fact]
-    public void GeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInKernelServices()
+    public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddGeminiChatCompletion("modelId", "apiKey");
+        kernelBuilder.AddVertexAIGeminiTextGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
+        Assert.NotNull(textGenerationService);
+        Assert.IsType<VertexAIGeminiTextGenerationService>(textGenerationService);
+    }
+
+    [Fact]
+    public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddVertexAIGeminiTextGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
+        Assert.NotNull(textGenerationService);
+        Assert.IsType<VertexAIGeminiTextGenerationService>(textGenerationService);
+    }
+
+    [Fact]
+    public void GoogleAIGeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddGoogleAIGeminiChatCompletion("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
-        Assert.IsType<GeminiChatCompletionService>(chatCompletionService);
+        Assert.IsType<GoogleAIGeminiChatCompletionService>(chatCompletionService);
     }
 
     [Fact]
-    public void GeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInServiceCollection()
+    public void GoogleAIGeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddGeminiChatCompletion("modelId", "apiKey");
+        services.AddGoogleAIGeminiChatCompletion("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var chatCompletionService = serviceProvider.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
-        Assert.IsType<GeminiChatCompletionService>(chatCompletionService);
+        Assert.IsType<GoogleAIGeminiChatCompletionService>(chatCompletionService);
     }
 
     [Fact]
-    public void GeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInServiceCollection()
+    public void VertexAIGeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddVertexAIGeminiChatCompletion("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        Assert.NotNull(chatCompletionService);
+        Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
+    }
+
+    [Fact]
+    public void VertexAIGeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddGeminiChatCompletion("modelId", "apiKey");
+        services.AddVertexAIGeminiChatCompletion("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var chatCompletionService = serviceProvider.GetRequiredService<IChatCompletionService>();
+        Assert.NotNull(chatCompletionService);
+        Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
+    }
+
+    [Fact]
+    public void GoogleAIGeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddGoogleAIGeminiChatCompletion("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
-        Assert.IsType<GeminiChatCompletionService>(textGenerationService);
+        Assert.IsType<GoogleAIGeminiChatCompletionService>(textGenerationService);
     }
 
     [Fact]
-    public void GeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInKernelServices()
+    public void GoogleAIGeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddGeminiChatCompletion("modelId", "apiKey");
+        kernelBuilder.AddGoogleAIGeminiChatCompletion("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
         var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
-        Assert.IsType<GeminiChatCompletionService>(textGenerationService);
+        Assert.IsType<GoogleAIGeminiChatCompletionService>(textGenerationService);
     }
 
     [Fact]
-    public void GeminiEmbeddingsGenerationServiceShouldBeRegisteredInKernelServices()
-    {
-        // Arrange
-        var kernelBuilder = Kernel.CreateBuilder();
-
-        // Act
-        kernelBuilder.AddGeminiEmbeddingsGeneration("modelId", "apiKey");
-        var kernel = kernelBuilder.Build();
-
-        // Assert
-        var embeddingsGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-        Assert.NotNull(embeddingsGenerationService);
-        Assert.IsType<GeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
-    }
-
-    [Fact]
-    public void GeminiEmbeddingsGenerationServiceShouldBeRegisteredInServiceCollection()
+    public void VertexAIGeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddGeminiEmbeddingsGeneration("modelId", "apiKey");
+        services.AddVertexAIGeminiChatCompletion("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
+        Assert.NotNull(textGenerationService);
+        Assert.IsType<VertexAIGeminiChatCompletionService>(textGenerationService);
+    }
+
+    [Fact]
+    public void VertexAIGeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddVertexAIGeminiChatCompletion("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
+        Assert.NotNull(textGenerationService);
+        Assert.IsType<VertexAIGeminiChatCompletionService>(textGenerationService);
+    }
+
+    [Fact]
+    public void GoogleAIGeminiEmbeddingsGenerationServiceShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddGoogleAIGeminiEmbeddingsGeneration("modelId", "apiKey");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var embeddingsGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<GoogleAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+    }
+
+    [Fact]
+    public void GoogleAIGeminiEmbeddingsGenerationServiceShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddGoogleAIGeminiEmbeddingsGeneration("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var embeddingsGenerationService = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
         Assert.NotNull(embeddingsGenerationService);
-        Assert.IsType<GeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+        Assert.IsType<GoogleAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+    }
+
+    [Fact]
+    public void VertexAIGeminiEmbeddingsGenerationServiceShouldBeRegisteredInKernelServices()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddVertexAIGeminiEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var embeddingsGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<VertexAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+    }
+
+    [Fact]
+    public void VertexAIGeminiEmbeddingsGenerationServiceShouldBeRegisteredInServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddVertexAIGeminiEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var embeddingsGenerationService = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<VertexAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 }
