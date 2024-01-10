@@ -56,7 +56,7 @@ public interface IChatMessage
         string Label { get; }
 
         /// <summary>
-        /// The citiation.
+        /// The citation.
         /// </summary>
         string? Quote { get; }
 
