@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
-using static Google.Protobuf.Reflection.GeneratedCodeInfo;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
