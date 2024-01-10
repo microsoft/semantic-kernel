@@ -22,7 +22,7 @@ public static class Example75_AgentTools
     private static readonly List<IAgent> s_agents = new();
 
     /// <summary>
-    /// Show how to utilize code_intepreter and retrieval tools.
+    /// Show how to utilize code_interpreter and retrieval tools.
     /// </summary>
     public static async Task RunAsync()
     {
