@@ -22,7 +22,7 @@ public static class Example75_AgentTools
     private static readonly List<IAgent> s_agents = new();
 
     /// <summary>
-    /// Show how to combine coordinate multiple agents.
+    /// Show how to utilize code_intepreter and retrieval tools.
     /// </summary>
     public static async Task RunAsync()
     {
@@ -34,10 +34,10 @@ public static class Example75_AgentTools
             return;
         }
 
-        // Run agent with code-interpreter tool
+        // Run agent with 'code_interpreter' tool
         await RunCodeInterpreterToolAsync();
 
-        // Run agent with retrieval tool
+        // Run agent with 'retrieval' tool
         await RunRetrievalToolAsync();
     }
 
