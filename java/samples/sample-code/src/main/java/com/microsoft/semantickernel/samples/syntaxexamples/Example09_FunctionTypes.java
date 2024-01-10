@@ -8,7 +8,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
@@ -68,26 +68,23 @@ public class Example09_FunctionTypes {
 
         System.out.println("======== Method Function types ========");
 
-        TextGenerationService textGenerationService;
+        OpenAIAsyncClient client;
 
         if (USE_AZURE_CLIENT) {
-            OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(CLIENT_KEY))
-                .endpoint(CLIENT_ENDPOINT)
-                .buildAsyncClient();
+            client = new OpenAIClientBuilder()
+                    .credential(new AzureKeyCredential(CLIENT_KEY))
+                    .endpoint(CLIENT_ENDPOINT)
+                    .buildAsyncClient();
+        } else {
+            client = new OpenAIClientBuilder()
+                    .credential(new KeyCredential(CLIENT_KEY))
+                    .buildAsyncClient();
+        }
 
-            textGenerationService = AzureOpenAITextGenerationService.builder()
+        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
                 .withOpenAIAsyncClient(client)
                 .withModelId("text-davinci-003")
                 .build();
-        } else {
-            OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .credential(new KeyCredential(CLIENT_KEY))
-                .buildAsyncClient();
-
-            // TODO: Add support for OpenAI API
-            textGenerationService = null;
-        }
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         KernelPlugin plugin = KernelPluginFactory

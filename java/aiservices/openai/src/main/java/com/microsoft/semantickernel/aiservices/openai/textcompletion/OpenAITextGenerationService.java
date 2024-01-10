@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.aiservices.azureopenai;
+package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.Choice;
@@ -19,13 +19,13 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class AzureOpenAITextGenerationService implements TextGenerationService {
+public class OpenAITextGenerationService implements TextGenerationService {
 
     private final OpenAIAsyncClient client;
     private final Map<String, ContextVariable<?>> attributes;
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance supporting AAD auth
+    /// Creates a new <see cref="OpenAITextGenerationService"/> client instance supporting AAD auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -33,7 +33,7 @@ public class AzureOpenAITextGenerationService implements TextGenerationService {
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextGenerationService(
+    public OpenAITextGenerationService(
         OpenAIAsyncClient client,
         String modelId) {
         this.client = client;
@@ -114,10 +114,9 @@ public class AzureOpenAITextGenerationService implements TextGenerationService {
     }
 
     /**
-     * Builder for a ChatCompletionService that uses Azure AI.
+     * Builder for a TextGenerationService
      */
     public static class Builder {
-
         private String modelId;
         private OpenAIAsyncClient client;
 
@@ -131,13 +130,11 @@ public class AzureOpenAITextGenerationService implements TextGenerationService {
             return this;
         }
 
-        public AzureOpenAITextGenerationService build() {
-            return new AzureOpenAITextGenerationService(
+        public OpenAITextGenerationService build() {
+            return new OpenAITextGenerationService(
                 this.client,
                 this.modelId
             );
         }
-
     }
-
 }

@@ -7,7 +7,8 @@ import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
@@ -15,7 +16,7 @@ import java.time.Duration;
 
 public class Example08_RetryHandler {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ConfigurationException {
         // Create a Kernel with the HttpClient
         RetryOptions retryOptions = new RetryOptions(new ExponentialBackoffOptions()
             .setMaxDelay(Duration.ofSeconds(10))
@@ -28,7 +29,7 @@ public class Example08_RetryHandler {
             .credential(new AzureKeyCredential("BAD KEY"))
             .buildAsyncClient();
 
-        AzureOpenAITextGenerationService textGenerationService = AzureOpenAITextGenerationService.builder()
+        OpenAITextGenerationService textGenerationService = OpenAITextGenerationService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId("text-davinci-003")
             .build();
