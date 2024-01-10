@@ -175,49 +175,39 @@ internal sealed class Agent : IAgent
     }
 
     /// <inheritdoc/>
-    public Task AddFileAsync(string fileId, CancellationToken cancellationToken = default)
+    public async Task AddFileAsync(string fileId, CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (this._fileIds.Contains(fileId))
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        try
-        {
-            return this._restContext.AddAssistantFileAsync(this.Id, fileId, cancellationToken);
-        }
-        finally
-        {
-            this._fileIds.Add(fileId);
-        }
+        await this._restContext.AddAssistantFileAsync(this.Id, fileId, cancellationToken).ConfigureAwait(false);
+
+        this._fileIds.Add(fileId);
     }
 
     /// <inheritdoc/>
-    public Task RemoveFileAsync(string fileId, CancellationToken cancellationToken = default)
+    public async Task RemoveFileAsync(string fileId, CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (!this._fileIds.Contains(fileId))
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        try
-        {
-            return this._restContext.RemoveAssistantFileAsync(this.Id, fileId, cancellationToken);
-        }
-        finally
-        {
-            this._fileIds.Remove(fileId);
-        }
+        await this._restContext.RemoveAssistantFileAsync(this.Id, fileId, cancellationToken).ConfigureAwait(false);
+
+        this._fileIds.Remove(fileId);
     }
 
     /// <inheritdoc/>

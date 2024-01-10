@@ -95,13 +95,13 @@ internal sealed record AssistantModel
     public sealed class FileModel
     {
         /// <summary>
-        /// ID of the tool call.
+        /// ID of the assistant.
         /// </summary>
         [JsonPropertyName("assistant_id")]
         public string AssistantId { get; set; } = string.Empty;
 
         /// <summary>
-        /// ID of the tool call.
+        /// ID of the uploaded file.
         /// </summary>
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
@@ -113,7 +113,7 @@ internal sealed record AssistantModel
         public long CreatedAt { get; init; }
 
         /// <summary>
-        /// Always "assistant"
+        /// Always "assistant.file"
         /// </summary>
         [JsonPropertyName("object")]
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema

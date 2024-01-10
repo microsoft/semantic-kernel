@@ -130,7 +130,7 @@ internal sealed class ThreadMessageModel
         public string Type { get; set; } = string.Empty;
 
         /// <summary>
-        /// The text in the message content that needs to be replaced.
+        /// The text of the citation-label text in the message content that can be replaced/reformatted.
         /// </summary>
         [JsonPropertyName("text")]
         public string Text { get; set; } = string.Empty;
