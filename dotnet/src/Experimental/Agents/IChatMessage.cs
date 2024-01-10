@@ -46,7 +46,7 @@ public interface IChatMessage
     interface IAnnotation
     {
         /// <summary>
-        /// The file indentifier.
+        /// The file identifier.
         /// </summary>
         string FileId { get; }
 

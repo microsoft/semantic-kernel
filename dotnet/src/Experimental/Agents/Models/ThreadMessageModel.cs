@@ -163,7 +163,7 @@ internal sealed class ThreadMessageModel
     public sealed class TextFileCitationModel
     {
         /// <summary>
-        /// The file indentifier.
+        /// The file identifier.
         /// </summary>
         [JsonPropertyName("file_id")]
         public string FileId { get; set; } = string.Empty;
@@ -178,7 +178,7 @@ internal sealed class ThreadMessageModel
     public sealed class TextFilePathModel
     {
         /// <summary>
-        /// The file indentifier.
+        /// The file identifier.
         /// </summary>
         [JsonPropertyName("file_id")]
         public string FileId { get; set; } = string.Empty;

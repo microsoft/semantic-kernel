@@ -189,7 +189,7 @@ public partial class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder WithCodeInterpreter()
     {
-        this._tools.Add(Agent.ToolCodeIntepreter);
+        this._tools.Add(Agent.ToolCodeInterpreter);
 
         return this;
     }

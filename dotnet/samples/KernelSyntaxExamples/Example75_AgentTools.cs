@@ -36,15 +36,15 @@ public static class Example75_AgentTools
         }
 
         // Run agent with code-interpreter tool
-        await RunCodeIntepreterToolAsync();
+        await RunCodeInterpreterToolAsync();
 
         // Run agent with retrieval tool
         await RunRetrievalToolAsync();
     }
 
-    private static async Task RunCodeIntepreterToolAsync()
+    private static async Task RunCodeInterpreterToolAsync()
     {
-        Console.WriteLine("======== Run:CodeIntepreterTool ========");
+        Console.WriteLine("======== Run:CodeInterpreterTool ========");
 
         var builder =
             new AgentBuilder()
@@ -75,7 +75,7 @@ public static class Example75_AgentTools
 
     private static async Task RunRetrievalToolAsync()
     {
-        Console.WriteLine("======== Run:RunRetrievalToolAsync ========");
+        Console.WriteLine("======== Run:RunRetrievalTool ========");
 
         // REQUIRED:
         //
@@ -117,7 +117,7 @@ public static class Example75_AgentTools
     }
 
     /// <summary>
-    /// Common chat loop used for: RunCodeIntepreterToolAsync and RunRetrievalToolAsync.
+    /// Common chat loop used for: RunCodeInterpreterToolAsync and RunRetrievalToolAsync.
     /// Processes each question for both "default" and "enabled" agents.
     /// </summary>
     private static async Task ChatAsync(
