@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -18,8 +20,12 @@ import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
@@ -44,7 +50,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
     public Mono<String> renderAsync(Kernel kernel,
         @Nullable KernelArguments arguments) {
         HandleBarsPromptTemplateHandler handler =
-            new HandleBarsPromptTemplateHandler(promptTemplate.getTemplate());
+            new HandleBarsPromptTemplateHandler(kernel, promptTemplate.getTemplate());
 
         return handler.render(arguments);
     }
@@ -83,6 +89,38 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         }
     }
 
+    private static class KernelPluginResolver implements ValueResolver {
+
+        @Override
+        public Object resolve(Object context, String name) {
+            if (context instanceof KernelPluginCollection) {    
+                return context;
+            }
+            if (context instanceof KernelFunction) {
+                KernelFunction function = (KernelFunction) context;
+                if ("pluginname".equals(name.toLowerCase())) {
+                    return function.getSkillName();
+                } else if ("name".equals(name.toLowerCase())) {
+                    return function.getName();
+                }
+            }
+            return UNRESOLVED;
+        }
+
+        @Override
+        public Object resolve(Object context) {
+            if (context instanceof KernelPluginCollection) {    
+                return ((KernelPluginCollection) context).iterator();
+            }
+            return UNRESOLVED;
+        }
+
+        @Override
+        public Set<Entry<String, Object>> propertySet(Object context) {
+            return new HashSet<>();
+        }
+    }
+
     private static class ContextVariableResolver implements ValueResolver {
 
         @Override
@@ -93,7 +131,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             if (context instanceof ContextVariable) {
                 return ((ContextVariable<?>) context).getValue();
             }
-            return null;
+            return UNRESOLVED;
         }
 
         @Override
@@ -121,10 +159,12 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
     public static class HandleBarsPromptTemplateHandler {
 
+        private final Kernel kernel;
         private final String template;
         private final Handlebars handlebars;
 
-        public HandleBarsPromptTemplateHandler(String template) {
+        public HandleBarsPromptTemplateHandler(Kernel kernel, String template) {
+            this.kernel = kernel;
             this.template = template;
             this.handlebars = new Handlebars();
             this.handlebars.registerHelper(
@@ -134,12 +174,13 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         String content = (String) options.fn(context);
 
                         if (context instanceof Optional) {
-                            ChatMessageContent message = ((Optional<ChatMessageContent>) context).orElse(
-                                null);
-                            if (role == null || role.isEmpty()) {
-                                role = message.getAuthorRole().name();
+                            ChatMessageContent message = ((Optional<ChatMessageContent>) context).orElse(null);
+                            if (message != null) {
+                                if (role == null || role.isEmpty()) {
+                                    role = message.getAuthorRole().name();
+                                }
+                                content = message.getContent();
                             }
-                            content = message.getContent();
                         }
 
                         if (role != null && !role.isEmpty()) {
@@ -156,9 +197,23 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 "each",
                     (context, options) -> {
                         if (context instanceof ChatHistory) {
-                            StringBuilder sb = new StringBuilder();
+                            StringBuilder sb = new StringBuilder("<messages>");
                             for(ChatMessageContent message : (ChatHistory) context) {
                                 sb.append(options.fn(message));
+                            }
+                            sb.append("</messages>");
+                            return new Handlebars.SafeString(sb.toString());
+                        }
+                        if (context instanceof KernelPluginCollection) {
+                            StringBuilder sb = new StringBuilder();
+                            Iterator<KernelPlugin> plugins = ((KernelPluginCollection) context).iterator();
+                            while (plugins.hasNext()) {
+                                KernelPlugin plugin = plugins.next();
+                                Iterator<KernelFunction> functions = plugin.iterator();
+                                while (functions.hasNext()) {
+                                    KernelFunction function = functions.next();
+                                    sb.append(options.fn(function));
+                                }
                             }
                             return new Handlebars.SafeString(sb.toString());
                         }
@@ -169,23 +224,34 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 .registerHelper(
                 "functions",
                     (context, options) -> {
-                        StringBuilder functions = new StringBuilder("<functions>");
-                        // What to do here? 
-                        functions.append("</functions>");
+                        StringBuilder sb = new StringBuilder("<functions>");
+                        KernelPluginCollection plugins = kernel.getPlugins();
+                        sb.append(options.fn(plugins));
+                        sb.append("</functions>");
                         
-                        return functions.toString();
+                        return new Handlebars.SafeString(sb.toString());
                     }
                 )
 
                 .registerHelper(
                 "function",
                     (context, options) -> {
-                        String pluginName = options.hash("pluginName");
-                        String functionName = options.hash("name");
-                        // What to do here?
-                        return String.format(
-                            "<function pluginName=\"%s\" name=\"%s\" />",
-                            pluginName, functionName);
+                        KernelFunction function = (KernelFunction) context;
+                        String pluginName = function.getSkillName();
+                        String functionName = function.getName();
+                        String description = function.getDescription();
+                        StringBuilder sb = new StringBuilder(
+                            String.format(
+                                "<function pluginName=\"%s\" name=\"%s\" description=\"%s\">",
+                                pluginName, functionName, description));
+                        List<KernelParameterMetadata> parameters = function.getMetadata().getParameters();
+                        parameters.forEach(p -> {
+                            sb.append(String.format(
+                                "<parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>",
+                                p.getName(), p.getDescription(), p.getDefaultValue(), p.isRequired(), p.getType()));
+                        });
+                        sb.append("</function>");
+                        return new Handlebars.SafeString(sb.toString());
                     }
                 );
                 // TODO: 1.0 Add more helpers
@@ -196,6 +262,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             try {
                 ArrayList<ValueResolver> resolvers = new ArrayList<>();
                 resolvers.add(new MessageResolver());
+                resolvers.add(new KernelPluginResolver());
                 resolvers.add(new ContextVariableResolver());
 
                 // resolvers.addAll(ValueResolver.defaultValueResolvers());

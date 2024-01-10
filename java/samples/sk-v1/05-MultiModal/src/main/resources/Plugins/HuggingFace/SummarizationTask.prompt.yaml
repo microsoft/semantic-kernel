@@ -14,5 +14,7 @@ output_variable:
     type: string
     description: The summary.
 execution_settings:
-  - model_id_pattern: ^facebook/bart-large-cnn
-  - model_id_pattern: ^gpt-3\.?5-turbo
+  facebook:
+    model_id_pattern: ^facebook/bart-large-cnn
+  gpt-3.5-turbo:
+    model_id_pattern: ^gpt-3\.?5-turbo

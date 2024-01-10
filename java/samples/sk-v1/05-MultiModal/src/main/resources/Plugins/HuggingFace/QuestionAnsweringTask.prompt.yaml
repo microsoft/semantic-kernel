@@ -14,5 +14,7 @@ output_variable:
     type: string
     description: The answer.
 execution_settings:
-  - model_id_pattern: ^deepset/roberta-base-squad2
-  - model_id_pattern: ^gpt-3\.?5-turbo
+  deepset:
+    model_id_pattern: ^deepset/roberta-base-squad2
+  gpt-3.5-turbo:
+    model_id_pattern: ^gpt-3\.?5-turbo

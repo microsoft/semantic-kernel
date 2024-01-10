@@ -35,8 +35,8 @@ public enum BuildersSingleton {
         "com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration$Builder";
     private static final String FALLBACK_KERNEL_BUILDER_CLASS =
         "com.microsoft.semantickernel.DefaultKernel$Builder";
-    private static final String FALLBACK_KERNEL_CONFIG_BUILDER_CLASS =
-        "com.microsoft.semantickernel.KernelConfig$Builder";
+    // private static final String FALLBACK_KERNEL_CONFIG_BUILDER_CLASS =
+    //     "com.microsoft.semantickernel.KernelConfig$Builder";
     private static final String FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS =
         "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplate$Builder";
     private static final String FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS =

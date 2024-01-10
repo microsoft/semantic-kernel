@@ -7,4 +7,5 @@ template_format: handlebars
 description: A function that answers a math problem.
 input_variables:
 execution_settings:
-  - model_id_pattern: ^wizard-math
+  wizard-math:
+    model_id_pattern: ^wizard-math

@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,17 +89,21 @@ public class KernelPluginFactory {
         @Nullable List<KernelFunction> functions) {
 
         if (functions == null) {
-            return new DefaultKernelPlugin(
+            return new KernelPlugin(
                 pluginName,
                 null,
-                new HashMap<>()
+                Collections.emptyMap()
             );
         }
 
-        return new DefaultKernelPlugin(
+        Map<String, KernelFunction> functionsMap = new HashMap<>();
+        functions.forEach((kernelFunction) -> 
+            functionsMap.put(kernelFunction.getName(), kernelFunction));
+
+        return new KernelPlugin(
             pluginName,
             null,
-            functions.stream().collect(Collectors.toMap(KernelFunction::getName, f -> f))
+            functionsMap
         );
     }
 
@@ -181,7 +186,7 @@ public class KernelPluginFactory {
             }
         }
 
-        return new DefaultKernelPlugin(
+        return new KernelPlugin(
             pluginDirectoryName,
             null,
             plugins
@@ -253,9 +258,9 @@ public class KernelPluginFactory {
 
         plugins.put(functionName, function);
 
-        return new DefaultKernelPlugin(
+        return new KernelPlugin(
             pluginDirectoryName,
-            null,
+            promptTemplateConfig.getDescription(),
             plugins
         );
     }

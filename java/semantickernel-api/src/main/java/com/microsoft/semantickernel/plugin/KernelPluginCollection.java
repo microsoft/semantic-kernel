@@ -1,16 +1,18 @@
 package com.microsoft.semantickernel.plugin;
 
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
-import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
+import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 
 public class KernelPluginCollection implements Iterable<KernelPlugin> {
 

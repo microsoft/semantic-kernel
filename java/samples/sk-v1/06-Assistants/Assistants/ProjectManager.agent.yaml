@@ -5,5 +5,7 @@ template: |
 template_format: handlebars
 description: An assistant that helps manage projects.
 execution_settings:
-  - model_id_pattern: ^gpt-4
-  - model_id_pattern: ^gpt-3\.?5-turbo
+  gpt-4:
+    model_id_pattern: ^gpt-4
+  gpt-3.5-turbo:
+    model_id_pattern: ^gpt-3\.?5-turbo

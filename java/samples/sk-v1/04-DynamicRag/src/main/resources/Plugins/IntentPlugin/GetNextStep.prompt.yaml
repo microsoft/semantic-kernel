@@ -115,5 +115,7 @@ output_variable:
     type: string
     description: The action the assistant should take.
 execution_settings:
-  - model_id_pattern: ^gpt-3\.?5-turbo
+  gpt-3.5-turbo:
+    model_id_pattern: ^gpt-3\.?5-turbo
     temperature: 0.3
+

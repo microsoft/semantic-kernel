@@ -15,4 +15,5 @@ output_variable:
     type: string
     description: The text description of the image.
 execution_settings:
-  - model_id_pattern: ^gpt-4-vision-preview
+  gpt-4:
+    model_id_pattern: ^gpt-4-vision-preview

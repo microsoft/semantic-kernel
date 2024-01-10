@@ -15,4 +15,5 @@ input_variables:
   - name: colorPallet
     description: The color pallet of the image to generate
 execution_settings:
-  - model_id_pattern: ^gpt-4
+  gpt-4:
+    model_id_pattern: ^gpt-4
