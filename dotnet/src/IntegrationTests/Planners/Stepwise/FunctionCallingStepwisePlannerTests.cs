@@ -75,8 +75,17 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     [Fact]
     public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
     {
+        // Arrange
         Kernel kernel = this.InitializeKernel();
-        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var emailPluginFake = new ThrowingEmailPluginFake();
+        kernel.Plugins.Add(
+            KernelPluginFactory.CreateFromFunctions(
+            "Email",
+            new[] {
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.WritePoemAsync),
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
+            }));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
@@ -97,8 +106,17 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     [Fact]
     public async Task ThrowsWhenPluginFunctionThrowsCriticalExceptionAsync()
     {
+        // Arrange
         Kernel kernel = this.InitializeKernel();
-        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var emailPluginFake = new ThrowingEmailPluginFake();
+        kernel.Plugins.Add(
+            KernelPluginFactory.CreateFromFunctions(
+            "Email",
+            new[] {
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.WriteJokeAsync),
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
+            }));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
