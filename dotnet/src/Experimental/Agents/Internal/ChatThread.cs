@@ -65,13 +65,13 @@ internal sealed class ChatThread : IAgentThread
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, CancellationToken cancellationToken)
+    public IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(agent, string.Empty, cancellationToken);
+        return this.InvokeAsync(agent, string.Empty, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
@@ -80,9 +80,15 @@ internal sealed class ChatThread : IAgentThread
             yield return await this.AddUserMessageAsync(userMessage, cancellationToken).ConfigureAwait(false);
         }
 
+        // Define tools as part of the run definition, since there's no enforcement that an agent
+        // is initialized with the same tools every time.
         var tools = agent.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
-        var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, agent.Instructions, tools, cancellationToken).ConfigureAwait(false);
 
+        // Finalize prompt / agent instructions using provided parameters.
+        var instructions = await agent.AsPromptTemplate().RenderAsync(agent.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        // Create run using templated prompt
+        var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, instructions, tools, cancellationToken).ConfigureAwait(false);
         var run = new ChatRun(runModel, agent.Kernel, this._restContext);
         var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 

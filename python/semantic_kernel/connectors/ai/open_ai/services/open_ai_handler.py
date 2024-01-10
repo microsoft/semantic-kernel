@@ -4,7 +4,7 @@ import logging
 from abc import ABC
 from typing import List, Union
 
-from numpy import array
+from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -80,12 +80,12 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(self, settings: OpenAIEmbeddingRequestSettings) -> List[array]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingRequestSettings) -> List[ndarray]:
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
             # make numpy arrays from the response
-            # TODO: the openai response is cast to a list[float], could be used instead of nparray
+            # TODO: the openai response is cast to a list[float], could be used instead of ndarray
             return [array(x.embedding) for x in response.data]
         except Exception as ex:
             raise AIException(
