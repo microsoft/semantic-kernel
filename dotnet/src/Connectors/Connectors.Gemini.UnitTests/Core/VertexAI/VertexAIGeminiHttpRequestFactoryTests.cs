@@ -17,7 +17,24 @@ namespace SemanticKernel.Connectors.Gemini.UnitTests.Core.VertexAI;
 public sealed class VertexAIGeminiHttpRequestFactoryTestsTests
 {
     [Fact]
-    public async Task CreateWhenCalledReturnsValidHttpRequestMessageAsync()
+    public void CreatePostWhenCalledReturnsHttpRequestMessageWithAuthorizationHeader()
+    {
+        // Arrange
+        string apiKey = "fake-api-key";
+        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
+        var endpoint = new Uri("https://example.com");
+
+        // Act
+        var result = sut.CreatePost(requestData, endpoint);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Bearer {apiKey}", result.Headers.Authorization!.ToString());
+    }
+
+    [Fact]
+    public void CreatePostWhenCalledReturnsHttpRequestMessageWithValidMethod()
     {
         // Arrange
         string apiKey = "fake-api-key";
@@ -31,9 +48,56 @@ public sealed class VertexAIGeminiHttpRequestFactoryTestsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(HttpMethod.Post, result.Method);
+    }
+
+    [Fact]
+    public void CreatePostWhenCalledReturnsHttpRequestMessageWithValidEndpoint()
+    {
+        // Arrange
+        string apiKey = "fake-api-key";
+        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
+        var endpoint = new Uri("https://example.com");
+
+        // Act
+        var result = sut.CreatePost(requestData, endpoint);
+
+        // Assert
+        Assert.NotNull(result);
         Assert.Equal(endpoint, result.RequestUri);
+    }
+
+    [Fact]
+    public void CreatePostWhenCalledReturnsHttpRequestMessageWithValidUserAgent()
+    {
+        // Arrange
+        string apiKey = "fake-api-key";
+        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
+        var endpoint = new Uri("https://example.com");
+
+        // Act
+        var result = sut.CreatePost(requestData, endpoint);
+
+        // Assert
+        Assert.NotNull(result);
         Assert.Equal(HttpHeaderValues.UserAgent, result.Headers.UserAgent.ToString());
-        Assert.Equal($"Bearer {apiKey}", result.Headers.Authorization!.ToString());
+    }
+
+    [Fact]
+    public async Task CreatePostWhenCalledReturnsHttpRequestMessageWithValidContentAsync()
+    {
+        // Arrange
+        string apiKey = "fake-api-key";
+        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
+        var endpoint = new Uri("https://example.com");
+
+        // Act
+        var result = sut.CreatePost(requestData, endpoint);
+
+        // Assert
+        Assert.NotNull(result);
         string content = await result.Content!.ReadAsStringAsync();
         Assert.True(JsonNode.DeepEquals(requestData, JsonNode.Parse(content)));
     }
