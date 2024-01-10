@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -23,6 +25,11 @@ public interface IAgent
     string Object { get; }
 #pragma warning restore CA1716 // Identifiers should not match keywords
 #pragma warning restore CA1720 // Identifier contains type name
+
+    /// <summary>
+    /// Identifies additional agent capabilities.
+    /// </summary>
+    AgentCapability Capabilities { get; }
 
     /// <summary>
     /// Unix timestamp (in seconds) for when the agent was created
@@ -50,19 +57,29 @@ public interface IAgent
     string Instructions { get; }
 
     /// <summary>
+    /// Identifiers of files associated with agent.
+    /// </summary>
+    IEnumerable<string> FileIds { get; }
+
+    /// <summary>
+    /// Tools defined for run execution.
+    /// </summary>
+    KernelPluginCollection Plugins { get; }
+
+    /// <summary>
     /// A semantic-kernel <see cref="Kernel"/> instance associated with the agent.
     /// </summary>
     internal Kernel Kernel { get; }
 
     /// <summary>
-    /// Tools defined for run execution.
+    /// Internal tools model.
     /// </summary>
-    public KernelPluginCollection Plugins { get; }
+    internal IEnumerable<ToolModel> Tools { get; }
 
     /// <summary>
     /// Expose the agent as a plugin.
     /// </summary>
-    public AgentPlugin AsPlugin();
+    AgentPlugin AsPlugin();
 
     /// <summary>
     /// Expose the agent internally as a prompt-template
@@ -88,6 +105,20 @@ public interface IAgent
     /// <param name="id">The id of the existing chat thread.  Allows for null-fallthrough to simplify caller patterns.</param>
     /// <param name="cancellationToken">A cancellation token</param>
     Task DeleteThreadAsync(string? id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Associate uploaded file with the agent, by identifier.
+    /// </summary>
+    /// <param name="fileId">The identifier of the uploaded file.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task AddFileAsync(string fileId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Remove association of uploaded file with the agent, by identifier.
+    /// </summary>
+    /// <param name="fileId">The identifier of the uploaded file.</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    Task RemoveFileAsync(string fileId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete current agent.  Terminal state - Unable to perform any

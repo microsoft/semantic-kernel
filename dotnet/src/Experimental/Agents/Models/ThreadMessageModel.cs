@@ -118,6 +118,69 @@ internal sealed class ThreadMessageModel
         /// Any annotations on the text.
         /// </summary>
         [JsonPropertyName("annotations")]
-        public List<object> Annotations { get; set; } = new List<object>();
+        public List<TextAnnotationModel> Annotations { get; set; } = new List<TextAnnotationModel>();
+    }
+
+    public sealed class TextAnnotationModel
+    {
+        /// <summary>
+        /// Type of content.
+        /// </summary>
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The text of the citation-label text in the message content that can be replaced/reformatted.
+        /// </summary>
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Annotation when type == "file_citation"
+        /// </summary>
+        [JsonPropertyName("file_citation")]
+        public TextFileCitationModel? FileCitation { get; set; }
+
+        /// <summary>
+        /// Annotation when type == "file_path"
+        /// </summary>
+        [JsonPropertyName("file_path")]
+        public TextFilePathModel? FilePath { get; set; }
+
+        /// <summary>
+        /// Start index of the citation.
+        /// </summary>
+        [JsonPropertyName("start_index")]
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// End index of the citation.
+        /// </summary>
+        [JsonPropertyName("end_index")]
+        public int EndIndex { get; set; }
+    }
+
+    public sealed class TextFileCitationModel
+    {
+        /// <summary>
+        /// The file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The citation.
+        /// </summary>
+        [JsonPropertyName("quote")]
+        public string Quote { get; set; } = string.Empty;
+    }
+
+    public sealed class TextFilePathModel
+    {
+        /// <summary>
+        /// The file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
     }
 }

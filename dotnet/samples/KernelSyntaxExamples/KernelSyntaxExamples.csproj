@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Remove="Resources\GenerateStory.yaml" />
     <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+    <None Remove="Resources\travelinfo.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
@@ -93,5 +94,6 @@
     <EmbeddedResource Include="Resources\GenerateStoryHandlebars.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\travelinfo.txt" />
   </ItemGroup>
 </Project>
