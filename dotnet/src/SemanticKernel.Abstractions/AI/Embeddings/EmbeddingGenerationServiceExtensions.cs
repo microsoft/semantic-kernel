@@ -6,10 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings;
+namespace Microsoft.SemanticKernel.Embeddings;
 
 /// <summary>
-/// Provides a collection of static methods for operating on <see cref="IEmbeddingGeneration{TValue,TEmbedding}"/> objects.
+/// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
 [Experimental("SKEXP0001")]
 public static class EmbeddingGenerationExtensions
@@ -26,7 +26,7 @@ public static class EmbeddingGenerationExtensions
     /// <returns>A list of embedding structs representing the input <paramref name="value"/>.</returns>
     [Experimental("SKEXP0001")]
     public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>(
-        this IEmbeddingGeneration<TValue, TEmbedding> generator,
+        this IEmbeddingGenerationService<TValue, TEmbedding> generator,
         TValue value,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)

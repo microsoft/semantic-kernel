@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Default implementation of <see cref="IPromptTemplateFactory"/> for the semantic-kernel prompt template format.
+/// Provides an implementation of <see cref="IPromptTemplateFactory"/> for the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.
 /// </summary>
+/// <remarks>
+/// This is used as the default <see cref="IPromptTemplateFactory"/> when no other factory is provided.
+/// </remarks>
 public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly ILoggerFactory _loggerFactory;
@@ -22,13 +26,17 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
+    public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
-        if (promptConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
+        Verify.NotNull(templateConfig);
+
+        if (templateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
         {
-            return new KernelPromptTemplate(promptConfig, this._loggerFactory);
+            result = new KernelPromptTemplate(templateConfig, this._loggerFactory);
+            return true;
         }
 
-        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
+        result = null;
+        return false;
     }
 }

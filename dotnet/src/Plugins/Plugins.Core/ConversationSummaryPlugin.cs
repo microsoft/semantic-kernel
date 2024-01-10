@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -93,13 +92,11 @@ public class ConversationSummaryPlugin
 
         string[] results = new string[paragraphs.Count];
 
-        var arguments = new KernelArguments();
-
         for (int i = 0; i < results.Length; i++)
         {
-            arguments[KernelArguments.InputParameterName] = paragraphs[i];
-
-            results[i] = (await func.InvokeAsync(kernel, arguments).ConfigureAwait(false)).GetValue<string>() ?? "";
+            // The first parameter is the input text.
+            results[i] = (await func.InvokeAsync(kernel, new() { ["input"] = paragraphs[i] }).ConfigureAwait(false))
+                .GetValue<string>() ?? string.Empty;
         }
 
         return string.Join("\n", results);

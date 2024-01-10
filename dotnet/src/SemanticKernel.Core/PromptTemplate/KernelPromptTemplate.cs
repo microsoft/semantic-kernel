@@ -2,14 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel;
 
@@ -23,7 +22,7 @@ namespace Microsoft.SemanticKernel;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
-public sealed class KernelPromptTemplate : IPromptTemplate
+internal sealed class KernelPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Constructor for PromptTemplate.
@@ -35,45 +34,45 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(KernelPromptTemplate));
-        this._promptModel = promptConfig;
-        this._blocks = new(() => this.ExtractBlocks(promptConfig.Template));
-        this._tokenizer = new TemplateTokenizer(this._loggerFactory);
+        loggerFactory ??= NullLoggerFactory.Instance;
+        this._logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate)) ?? NullLogger.Instance;
+
+        this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
+        AddMissingInputVariables(this._blocks, promptConfig);
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        return await this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken).ConfigureAwait(false);
+        Verify.NotNull(kernel);
+
+        return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
     }
 
     #region private
-    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptModel;
-    private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IList<Block>> _blocks;
+    private readonly List<Block> _blocks;
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
     /// </summary>
-    /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
-    /// <param name="validate">Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code</param>
     /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
-    internal IList<Block> ExtractBlocks(string? templateText, bool validate = true)
+    private List<Block> ExtractBlocks(PromptTemplateConfig config, ILoggerFactory loggerFactory)
     {
-        this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
-        var blocks = this._tokenizer.Tokenize(templateText);
+        string templateText = config.Template;
 
-        if (validate)
+        if (this._logger.IsEnabled(LogLevel.Trace))
         {
-            foreach (var block in blocks)
+            this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
+        }
+
+        var blocks = new TemplateTokenizer(loggerFactory).Tokenize(templateText);
+
+        foreach (var block in blocks)
+        {
+            if (!block.IsValid(out var error))
             {
-                if (!block.IsValid(out var error))
-                {
-                    throw new KernelException(error);
-                }
+                throw new KernelException(error);
             }
         }
 
@@ -88,53 +87,81 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The prompt template ready to be used for an AI request.</returns>
-    internal async Task<string> RenderAsync(IList<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
+    private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
-        var tasks = new List<Task<string>>(blocks.Count);
+        var result = new StringBuilder();
         foreach (var block in blocks)
         {
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    tasks.Add(Task.FromResult(staticBlock.Render(arguments)));
+                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture));
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    tasks.Add(dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken));
+                    result.Append(InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture));
                     break;
 
                 default:
-                    const string Error = "Unexpected block type, the block doesn't have a rendering method";
-                    this._logger.LogError(Error);
-                    throw new KernelException(Error);
+                    Debug.Fail($"Unexpected block type {block?.GetType()}, the block doesn't have a rendering method");
+                    break;
             }
         }
-
-        var result = new StringBuilder();
-        foreach (Task<string> t in tasks)
-        {
-            result.Append(await t.ConfigureAwait(false));
-        }
-
-        // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Rendered prompt: {0}", result);
 
         return result.ToString();
     }
 
     /// <summary>
-    /// Given a list of blocks, render the Variable Blocks, replacing placeholders with the actual value in memory.
+    /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
+    /// not already contained there but that are referenced in the prompt template.
     /// </summary>
-    /// <param name="blocks">List of blocks, typically all the blocks found in a template.</param>
-    /// <param name="arguments">Arguments to use for rendering.</param>
-    /// <returns>An updated list of blocks where Variable Blocks have rendered to Text Blocks.</returns>
-    internal IList<Block> RenderVariables(IList<Block> blocks, KernelArguments? arguments)
+    private static void AddMissingInputVariables(List<Block> blocks, PromptTemplateConfig config)
     {
-        this._logger.LogTrace("Rendering variables");
-        return blocks.Select(block => block.Type != BlockTypes.Variable
-            ? block
-            : new TextBlock(((ITextRendering)block).Render(arguments), this._loggerFactory)).ToList();
+        // Add all of the existing input variables to our known set. We'll avoid adding any
+        // dynamically discovered input variables with the same name.
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (InputVariable iv in config.InputVariables)
+        {
+            seen.Add(iv.Name);
+        }
+
+        // Enumerate every block in the template, adding any variables that are referenced.
+        foreach (Block block in blocks)
+        {
+            switch (block.Type)
+            {
+                case BlockTypes.Variable:
+                    // Add all variables from variable blocks, e.g. "{{$a}}".
+                    AddIfMissing(((VarBlock)block).Name);
+                    break;
+
+                case BlockTypes.Code:
+                    foreach (Block codeBlock in ((CodeBlock)block).Blocks)
+                    {
+                        switch (codeBlock.Type)
+                        {
+                            case BlockTypes.Variable:
+                                // Add all variables from code blocks, e.g. "{{p.bar $b}}".
+                                AddIfMissing(((VarBlock)codeBlock).Name);
+                                break;
+
+                            case BlockTypes.NamedArg when ((NamedArgBlock)codeBlock).VarBlock is { } varBlock:
+                                // Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
+                                AddIfMissing(varBlock.Name);
+                                break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        void AddIfMissing(string variableName)
+        {
+            if (!string.IsNullOrEmpty(variableName) && seen.Add(variableName))
+            {
+                config.InputVariables.Add(new InputVariable { Name = variableName });
+            }
+        }
     }
     #endregion
 }

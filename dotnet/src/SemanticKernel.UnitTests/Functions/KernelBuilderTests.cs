@@ -5,13 +5,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -21,204 +18,110 @@ public class KernelBuilderTests
     [Fact]
     public void ItCreatesNewKernelsOnEachBuild()
     {
-        KernelBuilder builder = new();
-        Assert.NotSame(builder.Build(), builder.Build());
-
-        builder.WithCulture(CultureInfo.InvariantCulture);
+        IKernelBuilder builder = Kernel.CreateBuilder();
         Assert.NotSame(builder.Build(), builder.Build());
     }
 
     [Fact]
-    public void ItReturnsItselfFromWitherMethods()
+    public void ItHasIdempotentServicesAndPlugins()
     {
-        KernelBuilder builder = new();
-        Assert.Same(builder, builder.WithCulture(CultureInfo.InvariantCulture));
-        Assert.Same(builder, builder.WithLoggerFactory(NullLoggerFactory.Instance));
-        Assert.Same(builder, builder.WithAIServiceSelector(null));
-        Assert.Same(builder, builder.ConfigurePlugins(plugins => { }));
-        Assert.Same(builder, builder.ConfigurePlugins((serviceProvider, plugins) => { }));
-        Assert.Same(builder, builder.ConfigureServices(services => { }));
+        IKernelBuilder builder = Kernel.CreateBuilder();
+
+        Assert.NotNull(builder.Services);
+        Assert.NotNull(builder.Plugins);
+
+        IServiceCollection services = builder.Services;
+        IKernelBuilderPlugins plugins = builder.Plugins;
+
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.Same(services, builder.Services);
+            Assert.Same(plugins, builder.Plugins);
+            Assert.NotNull(builder.Build());
+        }
     }
 
     [Fact]
     public void ItDefaultsDataToAnEmptyDictionary()
     {
-        Kernel kernel = new KernelBuilder().Build();
+        Kernel kernel = Kernel.CreateBuilder().Build();
         Assert.Empty(kernel.Data);
     }
 
     [Fact]
-    public void ItSupportsResettingCulture()
+    public void ItDefaultsServiceSelectorToSingleton()
     {
-        CultureInfo last = new("fr-FR");
+        Kernel kernel = Kernel.CreateBuilder().Build();
+        Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
+        Assert.NotNull(kernel.ServiceSelector);
+        Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<IAIServiceSelector>());
 
-        KernelBuilder builder = new KernelBuilder().WithCulture(CultureInfo.CurrentCulture);
-        Assert.Same(CultureInfo.CurrentCulture, builder.Build().Culture);
+        kernel = new Kernel();
+        Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
+        Assert.NotNull(kernel.ServiceSelector);
+        Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<IAIServiceSelector>());
 
-        builder.WithCulture(null);
-        Assert.Same(CultureInfo.InvariantCulture, builder.Build().Culture);
+        NopServiceSelector selector = new();
 
-        builder.WithCulture(last);
-        Assert.Same(last, builder.Build().Culture);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<IAIServiceSelector>(selector);
+        kernel = builder.Build();
+        Assert.Same(selector, kernel.Services.GetService<IAIServiceSelector>());
+        Assert.Same(selector, kernel.ServiceSelector);
+        Assert.Same(selector, kernel.GetRequiredService<IAIServiceSelector>());
     }
 
-    [Fact]
-    public void ItSupportsOverwritingCulture()
+    private sealed class NopServiceSelector : IAIServiceSelector
     {
-        CultureInfo last = new("fr-FR");
-
-        Kernel kernel = new KernelBuilder()
-            .WithCulture(CultureInfo.InvariantCulture)
-            .WithCulture(null)
-            .WithCulture(CultureInfo.CurrentCulture)
-            .WithCulture(last)
-            .Build();
-
-        Assert.Same(last, kernel.Culture);
-    }
-
-    [Fact]
-    public void ItDefaultsCultureToInvariantCulture()
-    {
-        Kernel kernel = new KernelBuilder().Build();
-        Assert.Same(CultureInfo.InvariantCulture, kernel.Culture);
-    }
-
-    [Fact]
-    public void ItSupportsOverwritingLoggerFactory()
-    {
-        using ILoggerFactory loggerFactory1 = new LoggerFactory();
-        using ILoggerFactory loggerFactory2 = new LoggerFactory();
-
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(NullLoggerFactory.Instance)
-            .WithLoggerFactory(loggerFactory1)
-            .WithLoggerFactory(loggerFactory2)
-            .Build();
-
-        Assert.Same(loggerFactory2, kernel.GetService<ILoggerFactory>());
-        Assert.Same(loggerFactory2, kernel.LoggerFactory);
-    }
-
-    [Fact]
-    public void ItDefaultsLoggerFactoryToNullLoggerFactory()
-    {
-        Kernel kernel = new KernelBuilder().Build();
-        Assert.Same(NullLoggerFactory.Instance, kernel.GetService<ILoggerFactory>());
-        Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
+#pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
+        bool IAIServiceSelector.TrySelectAIService<T>(
+#pragma warning restore CS8769
+            Kernel kernel, KernelFunction function, KernelArguments arguments, out T? service, out PromptExecutionSettings? serviceSettings) where T : class =>
+            throw new NotImplementedException();
     }
 
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
     {
-        IKernelPlugin plugin1 = new KernelPlugin("plugin1");
-        IKernelPlugin plugin2 = new KernelPlugin("plugin2");
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
 
-        Kernel kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins =>
-            {
-                Assert.NotNull(plugins);
-                Assert.Empty(plugins);
-                plugins.Add(plugin1);
-                plugins.Add(plugin2);
-            })
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Plugins.Add(plugin1);
+        builder.Plugins.Add(plugin2);
+        Kernel kernel = builder.Build();
 
         Assert.Contains(plugin1, kernel.Plugins);
         Assert.Contains(plugin2, kernel.Plugins);
     }
 
     [Fact]
-    public void ItAugmentsPluginsWithMultipleCalls()
+    public void ItSuppliesServicesCollectionToPluginsBuilder()
     {
-        IKernelPlugin plugin1 = new KernelPlugin("plugin1");
-        IKernelPlugin plugin2 = new KernelPlugin("plugin2");
-
-        // Delegate taking just plugins
-        Kernel kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins =>
-            {
-                Assert.NotNull(plugins);
-                Assert.Empty(plugins);
-                plugins.Add(plugin1);
-            })
-            .ConfigurePlugins(plugins =>
-            {
-                Assert.Single(plugins);
-                plugins.Add(plugin2);
-            })
-            .Build();
-        Assert.Contains(plugin1, kernel.Plugins);
-        Assert.Contains(plugin2, kernel.Plugins);
-
-        // Delegate taking just serviceProvider and plugins
-        kernel = new KernelBuilder()
-            .ConfigurePlugins((_, plugins) =>
-            {
-                Assert.NotNull(plugins);
-                Assert.Empty(plugins);
-                plugins.Add(plugin1);
-            })
-            .ConfigurePlugins((_, plugins) =>
-            {
-                Assert.Single(plugins);
-                plugins.Add(plugin2);
-            })
-            .Build();
-        Assert.Contains(plugin1, kernel.Plugins);
-        Assert.Contains(plugin2, kernel.Plugins);
-
-        // Both combined
-        kernel = new KernelBuilder()
-            .ConfigurePlugins(plugins =>
-            {
-                Assert.NotNull(plugins);
-                Assert.Empty(plugins);
-                plugins.Add(plugin1);
-            })
-            .ConfigurePlugins((_, plugins) =>
-            {
-                Assert.Single(plugins);
-                plugins.Add(plugin2);
-            })
-            .Build();
-        Assert.Contains(plugin1, kernel.Plugins);
-        Assert.Contains(plugin2, kernel.Plugins);
-    }
-
-    [Fact]
-    public void ItSuppliesBuiltServiceProviderToConfigurePlugins()
-    {
-        using ILoggerFactory loggerFactory = new LoggerFactory();
-
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(loggerFactory)
-            .ConfigurePlugins((serviceProvider, plugins) =>
-            {
-                Assert.Same(loggerFactory, serviceProvider.GetService(typeof(ILoggerFactory)));
-            })
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        Assert.Same(builder.Services, builder.Plugins.Services);
     }
 
     [Fact]
     public void ItBuildsServicesIntoKernel()
     {
-        Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithAzureOpenAITextCompletion("hijk", "https://lmnop", "qrs", serviceId: "azureopenai")
-            .ConfigureServices(services =>
-            {
-                services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
-                services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
-                services.AddSingleton<IFormatProvider>(new CultureInfo("en-US"));
-            })
-            .Build();
+        var builder = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
 
-        Assert.IsType<OpenAIChatCompletion>(kernel.GetService<IChatCompletion>("openai"));
-        Assert.IsType<AzureOpenAITextCompletion>(kernel.GetService<ITextCompletion>("azureopenai"));
+        builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
+        builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
+        builder.Services.AddSingleton<IFormatProvider>(new CultureInfo("en-US"));
 
-        Assert.Equal(2, kernel.GetAllServices<ITextCompletion>().Count());
-        Assert.Single(kernel.GetAllServices<IChatCompletion>());
+        Kernel kernel = builder.Build();
+
+        Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
+        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
+
+        Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
+        Assert.Single(kernel.GetAllServices<IChatCompletionService>());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }
@@ -226,46 +129,30 @@ public class KernelBuilderTests
     [Fact]
     public void ItSupportsMultipleEqualNamedServices()
     {
-        Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithOpenAIChatCompletion("abcd", "efg", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
-            .WithAzureOpenAIChatCompletion("hijk", "https://lmnop", "qrs", serviceId: "openai")
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
             .Build();
 
-        Assert.Equal(8, kernel.GetAllServices<IChatCompletion>().Count());
-    }
-
-    [Fact]
-    public void ItThrowsExceptionsWhereExpected()
-    {
-        KernelBuilder builder = new();
-
-        Assert.Throws<ArgumentNullException>(() => builder.ConfigurePlugins((Action<ICollection<IKernelPlugin>>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.ConfigurePlugins((Action<IServiceProvider, ICollection<IKernelPlugin>>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.ConfigureServices(null!));
-
-        builder.WithLoggerFactory(null);
-        builder.WithCulture(null);
-        builder.WithAIServiceSelector(null);
-
-        builder.Build();
+        Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
     }
 
     [Fact]
     public void ItIsntNeededInDIContexts()
     {
-        KernelPluginCollection plugins = new() { new KernelPlugin("plugin1") };
+        KernelPluginCollection plugins = new() { KernelPluginFactory.CreateFromFunctions("plugin1") };
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop", serviceId: "azureopenai1");
-        serviceCollection.AddAzureOpenAIChatCompletion("abcd", "https://efg", "hijklmnop", serviceId: "azureopenai2");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai1");
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai2");
         serviceCollection.AddSingleton(plugins);
         serviceCollection.AddSingleton<Kernel>();
 
@@ -273,14 +160,86 @@ public class KernelBuilderTests
 
         Assert.NotNull(k);
         Assert.Same(plugins, k.Plugins);
-        Assert.IsAssignableFrom<IChatCompletion>(k.GetService<IChatCompletion>("azureopenai1"));
-        Assert.IsAssignableFrom<IChatCompletion>(k.GetService<IChatCompletion>("azureopenai2"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetRequiredService<IChatCompletionService>("azureopenai1"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetRequiredService<IChatCompletionService>("azureopenai2"));
 
         // This should be 4, not 2. However, there is currently a limitation with Microsoft.Extensions.DependencyInjection
         // that prevents GetAllServices from enumerating named services. KernelBuilder works around this,
         // but when just using DI directly, it will only find unnamed services. Once that issue is fixed and SK
         // brings in the new version, it can update the GetAllServices implementation to remove the workaround,
         // and then this test should be updated accordingly.
-        Assert.Equal(2, k.GetAllServices<IChatCompletion>().Count());
+        Assert.Equal(2, k.GetAllServices<IChatCompletionService>().Count());
+
+        // It's possible to explicitly use the same workaround outside of KernelBuilder to get all services,
+        // but it's not recommended.
+
+        //** WORKAROUND
+        Dictionary<Type, HashSet<object?>> mapping = new();
+        foreach (var descriptor in serviceCollection)
+        {
+            if (!mapping.TryGetValue(descriptor.ServiceType, out HashSet<object?>? keys))
+            {
+                mapping[descriptor.ServiceType] = keys = new HashSet<object?>();
+            }
+            keys.Add(descriptor.ServiceKey);
+        }
+        serviceCollection.AddKeyedSingleton<Dictionary<Type, HashSet<object?>>>("KernelServiceTypeToKeyMappings", mapping);
+        //**
+
+        k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
+        Assert.Equal(4, k.GetAllServices<IChatCompletionService>().Count()); // now this is 4 as expected
+    }
+
+    [Fact]
+    public void ItFindsAllPluginsToPopulatePluginsCollection()
+    {
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(plugin1);
+        builder.Services.AddSingleton(plugin2);
+        builder.Services.AddSingleton(plugin3);
+        Kernel kernel = builder.Build();
+
+        Assert.Equal(3, kernel.Plugins.Count);
+    }
+
+    [Fact]
+    public void ItFindsPluginCollectionToUse()
+    {
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));
+
+        Kernel kernel1 = builder.Build();
+        Assert.Equal(3, kernel1.Plugins.Count);
+
+        Kernel kernel2 = builder.Build();
+        Assert.Equal(3, kernel2.Plugins.Count);
+
+        Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
+    }
+
+    [Fact]
+    public void ItAddsTheRightTypesInAddKernel()
+    {
+        IServiceCollection sc = new ServiceCollection();
+
+        IKernelBuilder builder = sc.AddKernel();
+        Assert.NotNull(builder);
+        Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+        builder.Services.AddSingleton<Dictionary<string, string>>(new Dictionary<string, string>());
+
+        IServiceProvider provider = sc.BuildServiceProvider();
+
+        Assert.NotNull(provider.GetService<Dictionary<string, string>>());
+        Assert.NotNull(provider.GetService<KernelPluginCollection>());
+        Assert.NotNull(provider.GetService<Kernel>());
     }
 }

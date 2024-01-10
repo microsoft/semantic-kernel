@@ -22,8 +22,9 @@ public sealed class TestConfiguration
 
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
+    public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
-    public static ACSConfig ACS => LoadSection<ACSConfig>();
+    public static AzureAISearchConfig AzureAISearch => LoadSection<AzureAISearchConfig>();
     public static QdrantConfig Qdrant => LoadSection<QdrantConfig>();
     public static WeaviateConfig Weaviate => LoadSection<WeaviateConfig>();
     public static KeyVaultConfig KeyVault => LoadSection<KeyVaultConfig>();
@@ -71,8 +72,12 @@ public sealed class TestConfiguration
         public string ModelId { get; set; }
         public string ChatDeploymentName { get; set; }
         public string ChatModelId { get; set; }
+        public string ImageDeploymentName { get; set; }
+        public string ImageModelId { get; set; }
+        public string ImageEndpoint { get; set; }
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
+        public string ImageApiKey { get; set; }
     }
 
     public class AzureOpenAIEmbeddingsConfig
@@ -82,7 +87,7 @@ public sealed class TestConfiguration
         public string ApiKey { get; set; }
     }
 
-    public class ACSConfig
+    public class AzureAISearchConfig
     {
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }

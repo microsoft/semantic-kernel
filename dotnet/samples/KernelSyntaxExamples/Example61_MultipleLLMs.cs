@@ -4,10 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example61_MultipleLLMs
 {
     /// <summary>
@@ -22,9 +19,9 @@ public static class Example61_MultipleLLMs
         string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (azureApiKey == null || azureDeploymentName == null || azureEndpoint == null)
+        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -37,18 +34,17 @@ public static class Example61_MultipleLLMs
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: azureDeploymentName,
                 endpoint: azureEndpoint,
+                apiKey: azureApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId,
-                apiKey: azureApiKey)
-            .WithOpenAIChatCompletion(
+                modelId: azureModelId)
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
+                apiKey: openAIApiKey,
+                serviceId: "OpenAIChat")
             .Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
@@ -62,12 +58,12 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokePromptAsync(
-           prompt,
-           new(new PromptExecutionSettings()
-           {
-               ServiceId = serviceId
-           }));
+        KernelArguments arguments = new();
+        arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
+        {
+            { serviceId, new PromptExecutionSettings() }
+        };
+        var result = await kernel.InvokePromptAsync(prompt, arguments);
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -92,10 +88,10 @@ public static class Example61_MultipleLLMs
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new List<PromptExecutionSettings>();
+        var modelSettings = new Dictionary<string, PromptExecutionSettings>();
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new PromptExecutionSettings() { ModelId = modelId });
+            modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
         }
         var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 

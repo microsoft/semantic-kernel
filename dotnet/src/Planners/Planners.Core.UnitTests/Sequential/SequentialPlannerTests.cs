@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Moq;
 using Xunit;
 
@@ -92,17 +92,17 @@ public sealed class SequentialPlannerTests
             .Setup(tr => tr.GetCompletionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(testPlanString);
 
-        var textCompletionResult = new List<ITextResult> { textResult.Object };
+        var textGenerationResult = new List<ITextResult> { textResult.Object };
 
-        var textCompletion = new Mock<ITextCompletion>();
-        textCompletion
+        var textGeneration = new Mock<ITextGenerationService>();
+        textGeneration
             .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(textCompletionResult);
+            .ReturnsAsync(textGenerationResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
-            .Returns((textCompletion.Object, new PromptExecutionSettings()));
+            .Setup(ss => ss.SelectAIService<ITextGenerationService>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
+            .Returns((textGeneration.Object, new PromptExecutionSettings()));
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);

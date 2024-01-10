@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
@@ -46,8 +49,13 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
     public string Instructions => this._model.Instructions;
 
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
+
+    private AssistantPlugin? _assistantPlugin;
+    private bool _isDeleted;
 
     /// <summary>
     /// Create a new assistant.
@@ -60,12 +68,10 @@ internal sealed class Assistant : IAssistant
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
         AssistantModel assistantModel,
-        IEnumerable<IKernelPlugin>? plugins = null,
+        IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        var resultModel =
-            await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
-            throw new KernelException("Unexpected failure creating assistant: no result.");
+        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
 
         return new Assistant(resultModel, restContext, plugins);
     }
@@ -76,16 +82,18 @@ internal sealed class Assistant : IAssistant
     internal Assistant(
         AssistantModel model,
         OpenAIRestContext restContext,
-        IEnumerable<IKernelPlugin>? plugins = null)
+        IEnumerable<KernelPlugin>? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
 
-        var builder =
-            new KernelBuilder()
-                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey);
-
-        this.Kernel = builder.Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        ;
+        this.Kernel =
+            Kernel
+                .CreateBuilder()
+                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
+                .Build();
 
         if (plugins is not null)
         {
@@ -93,16 +101,45 @@ internal sealed class Assistant : IAssistant
         }
     }
 
+    public AssistantPlugin AsPlugin() => this._assistantPlugin ??= this.DefinePlugin();
+
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
     /// <inheritdoc/>
     public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
+        this.ThrowIfDeleted();
+
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteThreadAsync(string? id, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        if (this._isDeleted)
+        {
+            return;
+        }
+
+        await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        this._isDeleted = true;
     }
 
     /// <summary>
@@ -111,22 +148,80 @@ internal sealed class Assistant : IAssistant
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [KernelFunction, Description("Provide input to assistant a response")]
-    public async Task<AssistantResponse> AskAsync(
-        [Description("The input for the assistant.")]
+    private async Task<AssistantResponse> AskAsync(
+        [Description("The user message provided to the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
     {
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
-        await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-        var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
-        var response =
-            new AssistantResponse
-            {
-                ThreadId = thread.Id,
-                Response = string.Concat(message.Select(m => m.Content)),
-            };
+        try
+        {
+            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
 
-        return response;
+            var messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var response =
+                new AssistantResponse
+                {
+                    ThreadId = thread.Id,
+                    Message = string.Concat(messages.Select(m => m.Content)),
+                };
+
+            return response;
+        }
+        finally
+        {
+            await thread.DeleteAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private AssistantPluginImpl DefinePlugin()
+    {
+        var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
+
+        return new AssistantPluginImpl(this, functionAsk);
+    }
+
+    private void ThrowIfDeleted()
+    {
+        if (this._isDeleted)
+        {
+            throw new AssistantException($"{nameof(Assistant)}: {this.Id} has been deleted.");
+        }
+    }
+
+    private sealed class AssistantPluginImpl : AssistantPlugin
+    {
+        public KernelFunction FunctionAsk { get; }
+
+        internal override Assistant Assistant { get; }
+
+        public override int FunctionCount => 1;
+
+        private static readonly string s_functionName = nameof(Assistant.AskAsync).Substring(0, nameof(Assistant.AskAsync).Length - 5);
+
+        public AssistantPluginImpl(Assistant assistant, KernelFunction functionAsk)
+            : base(s_removeInvalidCharsRegex.Replace(assistant.Name ?? assistant.Id, string.Empty),
+                   assistant.Description ?? assistant.Instructions)
+        {
+            this.Assistant = assistant;
+            this.FunctionAsk = functionAsk;
+        }
+
+        public override IEnumerator<KernelFunction> GetEnumerator()
+        {
+            yield return this.FunctionAsk;
+        }
+
+        public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
+        {
+            function = null;
+
+            if (s_functionName.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                function = this.FunctionAsk;
+            }
+
+            return function != null;
+        }
     }
 }

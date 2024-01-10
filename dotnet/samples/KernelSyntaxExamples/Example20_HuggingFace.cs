@@ -3,12 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using RepoUtils;
 
-/**
- * The following example shows how to use Semantic Kernel with HuggingFace API.
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with HuggingFace API.
 public static class Example20_HuggingFace
 {
     public static async Task RunAsync()
@@ -25,16 +21,15 @@ public static class Example20_HuggingFace
     {
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddHuggingFaceTextGeneration(
                 model: TestConfiguration.HuggingFace.ModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.InvokeAsync(questionAnswerFunction, "What is New York?");
+        var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         Console.WriteLine(result.GetValue<string>());
     }
@@ -60,9 +55,8 @@ public static class Example20_HuggingFace
         // HuggingFace local HTTP server endpoint
         const string Endpoint = "http://localhost:5000/completions";
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddHuggingFaceTextGeneration(
                 model: Model,
                 endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
@@ -70,7 +64,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
-        var result = await kernel.InvokeAsync(questionAnswerFunction, "What is New York?");
+        var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         Console.WriteLine(result.GetValue<string>());
     }

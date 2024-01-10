@@ -1,15 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 import re
 import threading
-from logging import Logger
 from typing import Any, Callable, ClassVar, List, Optional, Union
 
 from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai import CompleteRequestSettings
+from semantic_kernel.connectors.ai import AIRequestSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -26,7 +26,8 @@ from semantic_kernel.skill_definition.read_only_skill_collection import (
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Plan(SKFunctionBase):
@@ -41,7 +42,7 @@ class Plan(SKFunctionBase):
     _skill_name: str = PrivateAttr()
     _description: str = PrivateAttr()
     _is_semantic: bool = PrivateAttr()
-    _request_settings: CompleteRequestSettings = PrivateAttr()
+    _request_settings: AIRequestSettings = PrivateAttr()
     DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
     @property
@@ -80,7 +81,7 @@ class Plan(SKFunctionBase):
             return not self._is_semantic
 
     @property
-    def request_settings(self) -> CompleteRequestSettings:
+    def request_settings(self) -> AIRequestSettings:
         return self._request_settings
 
     @property
@@ -134,11 +135,13 @@ class Plan(SKFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[SKContext] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        logger: Optional[Logger] = None,
+        **kwargs,
         # TODO: cancellation_token: CancellationToken,
     ) -> SKContext:
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
@@ -147,15 +150,12 @@ class Plan(SKFunctionBase):
                 variables=self._state,
                 skill_collection=ReadOnlySkillCollection(),
                 memory=memory or NullMemory(),
-                logger=logger if logger is not None else NullLogger(),
             )
 
         if self._function is not None:
-            result = await self._function.invoke_async(
-                context=context, settings=settings
-            )
+            result = await self._function.invoke_async(context=context, settings=settings)
             if result.error_occurred:
-                result.log.error(
+                logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
                         self._skill_name, self._name, result.last_error_description
                     )
@@ -176,10 +176,12 @@ class Plan(SKFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[SKContext] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> SKContext:
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
@@ -188,13 +190,12 @@ class Plan(SKFunctionBase):
                 variables=self._state,
                 skill_collection=ReadOnlySkillCollection(),
                 memory=memory or NullMemory(),
-                logger=logger,
             )
 
         if self._function is not None:
             result = self._function.invoke(context=context, settings=settings)
             if result.error_occurred:
-                result.log.error(
+                logger.error(
                     result.last_exception,
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
                         self.skill_name, self.name, context.last_error_description
@@ -223,14 +224,12 @@ class Plan(SKFunctionBase):
 
     def set_ai_configuration(
         self,
-        settings: CompleteRequestSettings,
+        settings: AIRequestSettings,
     ) -> SKFunctionBase:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
-    def set_ai_service(
-        self, service: Callable[[], TextCompletionClientBase]
-    ) -> SKFunctionBase:
+    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> SKFunctionBase:
         if self._function is not None:
             self._function.set_ai_service(service)
 
@@ -308,7 +307,6 @@ class Plan(SKFunctionBase):
                 variables=variables,
                 memory=context.memory,
                 skill_collection=context.skills,
-                logger=context.log,
             )
             result = await step.invoke_async(context=func_context)
             result_value = result.result
@@ -316,8 +314,7 @@ class Plan(SKFunctionBase):
             if result.error_occurred:
                 raise KernelException(
                     KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occurred while running plan step: "
-                    + result.last_error_description,
+                    "Error occurred while running plan step: " + result.last_error_description,
                     result.last_exception,
                 )
 
@@ -329,9 +326,7 @@ class Plan(SKFunctionBase):
                 current_plan_result = ""
                 if Plan.DEFAULT_RESULT_KEY in self._state.variables:
                     current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
-                self._state.set(
-                    Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value
-                )
+                self._state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
 
             # Update state with outputs (if any)
             for output in step._outputs:
@@ -345,9 +340,7 @@ class Plan(SKFunctionBase):
 
         return self
 
-    def add_variables_to_context(
-        self, variables: ContextVariables, context: SKContext
-    ) -> None:
+    def add_variables_to_context(self, variables: ContextVariables, context: SKContext) -> None:
         for key in variables.variables:
             if key not in context.variables:
                 context.variables.set(key, variables[key])
@@ -369,9 +362,7 @@ class Plan(SKFunctionBase):
 
         return context
 
-    def get_next_step_variables(
-        self, variables: ContextVariables, step: "Plan"
-    ) -> ContextVariables:
+    def get_next_step_variables(self, variables: ContextVariables, step: "Plan") -> ContextVariables:
         # Priority for Input
         # - Parameters (expand from variables if needed)
         # - SKContext.Variables
@@ -406,9 +397,7 @@ class Plan(SKFunctionBase):
 
             if param.name in variables:
                 step_variables.set(param.name, variables[param.name])
-            elif param.name in self._state and (
-                self._state[param.name] is not None and self._state[param.name] != ""
-            ):
+            elif param.name in self._state and (self._state[param.name] is not None and self._state[param.name] != ""):
                 step_variables.set(param.name, self._state[param.name])
 
         for param_var in step.parameters.variables:
@@ -431,15 +420,11 @@ class Plan(SKFunctionBase):
 
         return step_variables
 
-    def expand_from_variables(
-        self, variables: ContextVariables, input_string: str
-    ) -> str:
+    def expand_from_variables(self, variables: ContextVariables, input_string: str) -> str:
         result = input_string
         variables_regex = r"\$(?P<var>\w+)"
         matches = [m for m in re.finditer(variables_regex, input_string)]
-        ordered_matches = sorted(
-            matches, key=lambda m: len(m.group("var")), reverse=True
-        )
+        ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
 
         for match in ordered_matches:
             var_name = match.group("var")

@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -46,7 +45,7 @@ public sealed class ThreadHarness
     {
         var assistant =
             await new AssistantBuilder()
-                .AddOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
                 .WithName("DeleteMe")
                 .BuildAsync()
                 .ConfigureAwait(true);

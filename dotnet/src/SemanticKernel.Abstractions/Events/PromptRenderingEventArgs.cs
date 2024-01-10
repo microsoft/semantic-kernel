@@ -1,18 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Events;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Event arguments available to the Kernel.PromptRendering event.
+/// Provides a <see cref="KernelEventArgs"/> used in events raised just before a prompt is rendered.
 /// </summary>
-public class PromptRenderingEventArgs : KernelEventArgs
+[Experimental("SKEXP0004")]
+public sealed class PromptRenderingEventArgs : KernelEventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderingEventArgs"/> class.
     /// </summary>
-    /// <param name="function">Kernel function</param>
-    /// <param name="arguments">Kernel function arguments</param>
-    public PromptRenderingEventArgs(KernelFunction function, KernelArguments arguments) : base(function, arguments)
+    /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
+    /// <param name="arguments">The arguments associated with the operation.</param>
+    public PromptRenderingEventArgs(KernelFunction function, KernelArguments arguments) :
+        base(function, arguments, metadata: null)
     {
     }
 }

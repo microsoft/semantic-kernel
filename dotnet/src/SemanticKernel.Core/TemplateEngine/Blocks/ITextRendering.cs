@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Interface of static blocks that don't need async IO to be rendered.
@@ -11,5 +11,5 @@ internal interface ITextRendering
     /// </summary>
     /// <param name="arguments">Optional arguments the block rendering</param>
     /// <returns>Rendered content</returns>
-    public string Render(KernelArguments? arguments);
+    public object? Render(KernelArguments? arguments);
 }

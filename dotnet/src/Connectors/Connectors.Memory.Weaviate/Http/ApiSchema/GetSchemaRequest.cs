@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class GetSchemaRequest
 {

@@ -26,6 +26,7 @@ public sealed class EmailPlugin
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
+    private static readonly char[] s_separator = { ',', ';' };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmailPlugin"/> class.
@@ -37,7 +38,7 @@ public sealed class EmailPlugin
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(EmailPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(EmailPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -69,7 +70,7 @@ public sealed class EmailPlugin
 
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Sending email to '{0}' with subject '{1}'", recipients, subject);
-        string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+        string[] recipientList = recipients.Split(s_separator, StringSplitOptions.RemoveEmptyEntries);
         await this._connector.SendEmailAsync(subject, content, recipientList, cancellationToken).ConfigureAwait(false);
     }
 

@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data.Common;
-using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
+using Microsoft.SemanticKernel.Connectors.Kusto;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Kusto;
+namespace SemanticKernel.Connectors.UnitTests.Kusto;
 
 /// <summary>
 /// Unit tests for <see cref="KustoMemoryStore"/> class.

@@ -1,86 +1,51 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Function result after execution.
+/// Represents the result of a <see cref="KernelFunction"/> invocation.
 /// </summary>
 public sealed class FunctionResult
 {
-    internal Dictionary<string, object>? _metadata;
-
-    /// <summary>
-    /// Name of executed function.
-    /// </summary>
-    public string FunctionName { get; internal set; }
-
-    /// <summary>
-    /// Return true if the function result is for a function that was cancelled.
-    /// </summary>
-    public bool IsCancellationRequested { get; internal set; }
-
-    /// <summary>
-    /// Return true if the function should be skipped.
-    /// </summary>
-    public bool IsSkipRequested { get; internal set; }
-
-    /// <summary>
-    /// Return true if the function should be repeated.
-    /// </summary>
-    public bool IsRepeatRequested { get; internal set; }
-
-    /// <summary>
-    /// Metadata for storing additional information about function execution result.
-    /// </summary>
-    public Dictionary<string, object> Metadata
-    {
-        get => this._metadata ??= new();
-        internal set => this._metadata = value;
-    }
-
-    /// <summary>
-    /// Function result type (support inspection).
-    /// </summary>
-    public Type? ValueType => this.Value?.GetType();
-
-    /// <summary>
-    /// Function result object.
-    /// </summary>
-    internal object? Value { get; private set; } = null;
-
-    /// <summary>
-    /// The culture configured on the Kernel that executed the function.
-    /// </summary>
-    internal CultureInfo Culture { get; set; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
-    /// <param name="functionName">Name of executed function.</param>
-    public FunctionResult(string functionName)
+    /// <param name="function">The <see cref="KernelFunction"/> whose result is represented by this instance.</param>
+    /// <param name="value">The resulting object of the function's invocation.</param>
+    /// <param name="culture">The culture configured on the <see cref="Kernel"/> that executed the function.</param>
+    /// <param name="metadata">Metadata associated with the function's execution</param>
+    public FunctionResult(KernelFunction function, object? value = null, CultureInfo? culture = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        this.FunctionName = functionName;
-        this.Culture = CultureInfo.InvariantCulture;
-    }
+        Verify.NotNull(function);
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionResult"/> class.
-    /// </summary>
-    /// <param name="functionName">Name of executed function.</param>
-    /// <param name="value">Function result object.</param>
-    /// <param name="culture">The culture configured on the Kernel that executed the function.</param>
-    public FunctionResult(string functionName, object? value, CultureInfo culture)
-        : this(functionName)
-    {
+        this.Function = function;
         this.Value = value;
-        this.Culture = culture;
+        this.Culture = culture ?? CultureInfo.InvariantCulture;
+        this.Metadata = metadata;
     }
+
+    /// <summary>
+    /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
+    /// </summary>
+    public KernelFunction Function { get; }
+
+    /// <summary>
+    /// Gets any metadata associated with the function's execution.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+
+    /// <summary>
+    /// Gets the <see cref="Type"/> of the function's result.
+    /// </summary>
+    /// <remarks>
+    /// This or a base type is the type expected to be passed as the generic
+    /// argument to <see cref="GetValue{T}"/>.
+    /// </remarks>
+    public Type? ValueType => this.Value?.GetType();
 
     /// <summary>
     /// Returns function result value.
@@ -89,11 +54,6 @@ public sealed class FunctionResult
     /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
     public T? GetValue<T>()
     {
-        if (this.IsCancellationRequested)
-        {
-            throw new OperationCanceledException("Cannot get result value from a cancelled function.");
-        }
-
         if (this.Value is null)
         {
             return default;
@@ -104,66 +64,33 @@ public sealed class FunctionResult
             return typedResult;
         }
 
+        if (this.Value is KernelContent content)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (T?)(object?)content.ToString();
+            }
+
+            if (content.InnerContent is T innerContent)
+            {
+                return innerContent;
+            }
+        }
+
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
-    /// <summary>
-    /// Get typed value from metadata.
-    /// </summary>
-    public bool TryGetMetadataValue<T>(string key, out T value)
-    {
-        if (this._metadata is { } metadata &&
-            metadata.TryGetValue(key, out object? valueObject) &&
-            valueObject is T typedValue)
-        {
-            value = typedValue;
-            return true;
-        }
-
-        value = default!;
-        return false;
-    }
-
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return ConvertToString(this.Value, this.Culture) ?? string.Empty;
-    }
+    public override string ToString() =>
+        InternalTypeConverter.ConvertToString(this.Value, this.Culture) ?? string.Empty;
 
-    private static string? ConvertToString(object? value, CultureInfo culture)
-    {
-        if (value == null) { return null; }
+    /// <summary>
+    /// Function result object.
+    /// </summary>
+    internal object? Value { get; }
 
-        var sourceType = value.GetType();
-
-        var converterFunction = GetTypeConverterDelegate(sourceType);
-
-        return converterFunction == null
-            ? value.ToString()
-            : converterFunction(value, culture);
-    }
-
-    private static Func<object?, CultureInfo, string?>? GetTypeConverterDelegate(Type sourceType) =>
-        s_converters.GetOrAdd(sourceType, static sourceType =>
-        {
-            // Strings just render as themselves.
-            if (sourceType == typeof(string))
-            {
-                return (input, cultureInfo) => (string)input!;
-            }
-
-            // Look up and use a type converter.
-            if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
-            {
-                return (input, cultureInfo) =>
-                {
-                    return converter.ConvertToString(context: null, cultureInfo, input);
-                };
-            }
-
-            return null;
-        });
-
-    /// <summary>Converter functions for converting types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
+    /// <summary>
+    /// The culture configured on the Kernel that executed the function.
+    /// </summary>
+    internal CultureInfo Culture { get; }
 }

@@ -4,27 +4,24 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
-using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Connectors.Chroma;
+using Microsoft.SemanticKernel.Connectors.DuckDB;
+using Microsoft.SemanticKernel.Connectors.Kusto;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Postgres;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Redis;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
-using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
-// ReSharper disable once InconsistentNaming
 public static class Example15_TextMemoryPlugin
 {
     private const string MemoryCollectionName = "aboutMe";
@@ -49,8 +46,8 @@ public static class Example15_TextMemoryPlugin
         // MongoDB Memory Store - a store that persists data in a MongoDB database
         // store = CreateSampleMongoDBMemoryStore();
 
-        // Azure Cognitive Search Memory Store - a store that persists data in a hosted Azure Cognitive Search database
-        // store = CreateSampleAzureCognitiveSearchMemoryStore();
+        // Azure AI Search Memory Store - a store that persists data in a hosted Azure AI Search database
+        // store = CreateSampleAzureAISearchMemoryStore();
 
         // Qdrant Memory Store - a store that persists data in a local or remote Qdrant database
         // store = CreateSampleQdrantMemoryStore();
@@ -94,9 +91,9 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-    private static IMemoryStore CreateSampleAzureCognitiveSearchMemoryStore()
+    private static IMemoryStore CreateSampleAzureAISearchMemoryStore()
     {
-        IMemoryStore store = new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey);
+        IMemoryStore store = new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey);
         return store;
     }
 
@@ -151,14 +148,13 @@ public static class Example15_TextMemoryPlugin
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .WithOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Create an embedding generator to use for semantic memory.
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
@@ -202,11 +198,11 @@ public static class Example15_TextMemoryPlugin
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.InvokeAsync(memoryPlugin["Save"], new KernelArguments()
+        await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
+            [TextMemoryPlugin.InputParam] = "My family is from New York",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
-            ["input"] = "My family is from New York"
         }, cancellationToken);
 
         // Retrieve a specific memory with the Kernel
@@ -245,12 +241,12 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
-        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new KernelArguments()
+        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new()
         {
+            [TextMemoryPlugin.InputParam] = "Ask: where do I live?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
-            ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
         Console.WriteLine($"Answer: {result.GetValue<string>()}");
@@ -269,10 +265,10 @@ public static class Example15_TextMemoryPlugin
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemoryPlugin Recall in a Prompt Function
+        // PART 4: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
-        // the text completion model to answer a natural language query.
+        // the text generation model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
@@ -293,11 +289,12 @@ Answer:
 
         var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.InvokeAsync(aboutMeOracle, new KernelArguments()
+        result = await kernel.InvokeAsync(aboutMeOracle, new()
         {
+            [TextMemoryPlugin.InputParam] = "Do I live in the same town where I grew up?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
-            ["input"] = "Do I live in the same town where I grew up?"
         }, cancellationToken);
 
         Console.WriteLine("Ask: Do I live in the same town where I grew up?");

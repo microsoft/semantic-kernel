@@ -3,6 +3,7 @@
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 /// <summary>
 /// Tool entry
 /// </summary>

@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Postgres;
+namespace SemanticKernel.Connectors.UnitTests.Postgres;
 
 /// <summary>
 /// Unit tests for <see cref="PostgresMemoryStore"/> class.

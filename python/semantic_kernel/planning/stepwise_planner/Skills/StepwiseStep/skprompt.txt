@@ -24,6 +24,20 @@ Here is an example of a valid $JSON_BLOB:
   "action": "functionName",
   "action_variables": {"parameterName": "some value", ...}
 }
+
+Here is another example of a valid $JSON_BLOB:
+{
+  "action": "_Function_.Name",
+  "action_variables": {"parameterName": "some value", ...}
+}
+
+Here is another example of a valid $JSON_BLOB:
+{
+  "action": "FunctionName2",
+  "action_variables": {"parameterName": "some value", ...}
+}
+
+The $JSON_BLOB must contain an "action_variables" key, with the {"parameterName": "some value", ...} value in the response.
 [END USAGE INSTRUCTIONS]
 [END INSTRUCTION]
 

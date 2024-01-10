@@ -3,19 +3,16 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using RepoUtils;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
 public static class Example07_BingAndGooglePlugins
 {
     public static async Task RunAsync()
@@ -29,9 +26,8 @@ public static class Example07_BingAndGooglePlugins
             return;
         }
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -77,7 +73,7 @@ public static class Example07_BingAndGooglePlugins
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
-        var result = await kernel.InvokeAsync(function, question);
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");

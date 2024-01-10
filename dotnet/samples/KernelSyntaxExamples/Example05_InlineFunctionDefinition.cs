@@ -3,10 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using RepoUtils;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-// ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
 {
     public static async Task RunAsync()
@@ -16,7 +14,7 @@ public static class Example05_InlineFunctionDefinition
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (openAIModelId is null || openAIApiKey is null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
@@ -28,9 +26,8 @@ public static class Example05_InlineFunctionDefinition
          *          function inline if you like.
          */
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -51,10 +48,10 @@ Event: {{$input}}
 
         var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        var result = await kernel.InvokeAsync(excuseFunction, "I missed the F1 final race");
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "I missed the F1 final race" });
         Console.WriteLine(result.GetValue<string>());
 
-        result = await kernel.InvokeAsync(excuseFunction, "sorry I forgot your birthday");
+        result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "sorry I forgot your birthday" });
         Console.WriteLine(result.GetValue<string>());
 
         var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
