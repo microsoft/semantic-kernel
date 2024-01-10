@@ -33,9 +33,9 @@ public sealed class Kernel
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
     /// <summary>Contains collection of function filters.</summary>
-    private readonly IList<IFunctionFilter>? _functionFilters;
+    private readonly IFunctionFilter[] _functionFilters;
     /// <summary>Contains collection of prompt filters.</summary>
-    private readonly IList<IPromptFilter>? _promptFilters;
+    private readonly IPromptFilter[] _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -334,7 +334,7 @@ public sealed class Kernel
     {
         FunctionInvokingContext? context = null;
 
-        if (this._functionFilters is { Count: > 0 })
+        if (this._functionFilters is { Length: > 0 })
         {
             context = new(function, arguments);
 
@@ -352,7 +352,7 @@ public sealed class Kernel
     {
         FunctionInvokedContext? context = null;
 
-        if (this._functionFilters is { Count: > 0 })
+        if (this._functionFilters is { Length: > 0 })
         {
             context = new(arguments, result);
 
@@ -370,7 +370,7 @@ public sealed class Kernel
     {
         PromptRenderingContext? context = null;
 
-        if (this._promptFilters is { Count: > 0 })
+        if (this._promptFilters is { Length: > 0 })
         {
             context = new(function, arguments);
 
@@ -388,7 +388,7 @@ public sealed class Kernel
     {
         PromptRenderedContext? context = null;
 
-        if (this._promptFilters is { Count: > 0 })
+        if (this._promptFilters is { Length: > 0 })
         {
             context = new(function, arguments, renderedPrompt);
 
