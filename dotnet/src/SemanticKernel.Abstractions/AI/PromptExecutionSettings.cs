@@ -31,7 +31,7 @@ public class PromptExecutionSettings : ICloneable
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
     [JsonPropertyName("model_id")]
-    public virtual string? ModelId { get; set; }
+    public string? ModelId { get; set; }
 
     /// <summary>
     /// Extra properties that may be included in the serialized execution settings.

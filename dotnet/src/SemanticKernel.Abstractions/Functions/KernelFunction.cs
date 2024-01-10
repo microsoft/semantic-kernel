@@ -102,6 +102,9 @@ public abstract class KernelFunction
     /// Gets a copy of the prompt execution settings associated with this function.
     /// </summary>
     /// <remarks>
+    /// The returned dictionary is a deep copy of the settings associated with this function, and
+    /// the <see cref="PromptExecutionSettings"/> can be changed without affecting the function's
+    /// copy of the settings.
     /// </remarks>
     public IReadOnlyDictionary<string, PromptExecutionSettings>? GetExecutionSettings()
     {
