@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -15,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 /// if the service they are calling supports additional properties. For an example, please reference
 /// the Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIPromptExecutionSettings implementation.
 /// </remarks>
-public class PromptExecutionSettings
+public class PromptExecutionSettings : ICloneable
 {
     /// <summary>
     /// Gets the default service identifier.
@@ -30,7 +31,7 @@ public class PromptExecutionSettings
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
     [JsonPropertyName("model_id")]
-    public string? ModelId { get; set; }
+    public virtual string? ModelId { get; set; }
 
     /// <summary>
     /// Extra properties that may be included in the serialized execution settings.
@@ -39,5 +40,15 @@ public class PromptExecutionSettings
     /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="PromptExecutionSettings"/>.
     /// </remarks>
     [JsonExtensionData]
-    public Dictionary<string, object>? ExtensionData { get; set; }
+    public virtual Dictionary<string, object>? ExtensionData { get; set; }
+
+    /// <inheritdoc/>
+    public virtual object Clone()
+    {
+        return new PromptExecutionSettings
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
+        };
+    }
 }

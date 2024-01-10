@@ -139,6 +139,28 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     public ToolCallBehavior? ToolCallBehavior { get; set; }
 
+    /// <inheritdoc/>
+    public override object Clone()
+    {
+        return new OpenAIPromptExecutionSettings
+        {
+            ModelId = this.ModelId,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            PresencePenalty = this.PresencePenalty,
+            FrequencyPenalty = this.FrequencyPenalty,
+            MaxTokens = this.MaxTokens,
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            ResultsPerPrompt = this.ResultsPerPrompt,
+            Seed = this.Seed,
+            ResponseFormat = this.ResponseFormat,
+            ChatSystemPrompt = this.ChatSystemPrompt,
+            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
+            ToolCallBehavior = this.ToolCallBehavior,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
+        };
+    }
+
     /// <summary>
     /// Default value for chat system property.
     /// </summary>

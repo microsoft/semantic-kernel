@@ -22,7 +22,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         out PromptExecutionSettings? serviceSettings) where T : class, IAIService
     {
         // Allow the execution settings from the kernel arguments to take precedence
-        var executionSettings = arguments.ExecutionSettings ?? function.ExecutionSettings;
+        var executionSettings = arguments.ExecutionSettings ?? function.GetExecutionSettings();
         if (executionSettings is null || executionSettings.Count == 0)
         {
             service = GetAnyService(kernel);

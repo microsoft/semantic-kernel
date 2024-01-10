@@ -610,6 +610,21 @@ public class KernelFunctionFromPromptTests
         // Assert
         mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
+
+    [Fact]
+    public void KernelFunctionExecutionSettingsAreReadOnly()
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings { MaxTokens = 1000 };
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Name = "Prompt", Template = "Prompt", ExecutionSettings = new() { ["service"] = executionSettings } });
+
+        // Act
+        OpenAIPromptExecutionSettings settings = (OpenAIPromptExecutionSettings)function.GetExecutionSettings()!["service"];
+        settings.MaxTokens = 2000;
+
+        // Assert
+        Assert.Equal(1000, executionSettings.MaxTokens);
+    }
     private sealed class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();

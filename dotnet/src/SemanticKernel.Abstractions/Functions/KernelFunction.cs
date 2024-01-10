@@ -17,6 +17,9 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction
 {
+    /// <summary>The execution settings for the function.</summary>
+    private readonly Dictionary<string, PromptExecutionSettings>? _executionSettings = null;
+
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -71,11 +74,6 @@ public abstract class KernelFunction
     public KernelFunctionMetadata Metadata { get; init; }
 
     /// <summary>
-    /// Gets the prompt execution settings.
-    /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
     /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
@@ -97,7 +95,28 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
         };
-        this.ExecutionSettings = executionSettings;
+        this._executionSettings = executionSettings;
+    }
+
+    /// <summary>
+    /// Gets a copy of the prompt execution settings associated with this function.
+    /// </summary>
+    /// <remarks>
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? GetExecutionSettings()
+    {
+        if (this._executionSettings == null)
+        {
+            return null;
+        }
+
+        var dictionary = new Dictionary<string, PromptExecutionSettings>();
+        foreach (var keyValue in this._executionSettings)
+        {
+            dictionary.Add(keyValue.Key, (PromptExecutionSettings)keyValue.Value.Clone());
+        }
+
+        return dictionary;
     }
 
     /// <summary>

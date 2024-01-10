@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
@@ -85,7 +86,7 @@ public class OrderedAIServiceSelectorTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        Assert.Equivalent(executionSettings, defaultExecutionSettings);
     }
 
     [Fact]
@@ -144,7 +145,7 @@ public class OrderedAIServiceSelectorTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        Assert.Equivalent(executionSettings, defaultExecutionSettings);
     }
 
     [Fact]
@@ -165,7 +166,7 @@ public class OrderedAIServiceSelectorTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        Assert.Equivalent(executionSettings, defaultExecutionSettings);
     }
 
     [Theory]
@@ -222,7 +223,30 @@ public class OrderedAIServiceSelectorTests
         // Assert
         Assert.NotNull(aiService);
         Assert.Equal("model2", aiService.GetModelId());
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        Assert.Equivalent(executionSettings, defaultExecutionSettings);
+    }
+
+    [Fact]
+    public void ItReturnsCorrectTypeOfPromptExecutionSettings()
+    {
+        // Arrange
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(null, new TextGenerationService("model1"));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(null, new TextGenerationService("model2"));
+        Kernel kernel = builder.Build();
+
+        var arguments = new KernelArguments();
+        var executionSettings = new OpenAIPromptExecutionSettings() { ModelId = "model2", MaxTokens = 1000 };
+        var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings: executionSettings);
+        var serviceSelector = new OrderedAIServiceSelector();
+
+        // Act
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, arguments);
+
+        // Assert
+        Assert.NotNull(aiService);
+        Assert.Equal("model2", aiService.GetModelId());
+        Assert.Equivalent(executionSettings, defaultExecutionSettings);
     }
 
     #region private
