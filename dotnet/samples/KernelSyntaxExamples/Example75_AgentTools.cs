@@ -106,7 +106,7 @@ public static class Example75_AgentTools
                 defaultAgent,
                 retrievalAgent,
                 "Where did sam go?",
-                "When does the flight leave seattle?",
+                "When does the flight leave Seattle?",
                 "What is the hotel contact info at the destination?");
         }
         finally

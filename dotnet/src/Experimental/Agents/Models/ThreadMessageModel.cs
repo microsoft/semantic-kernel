@@ -169,7 +169,7 @@ internal sealed class ThreadMessageModel
         public string FileId { get; set; } = string.Empty;
 
         /// <summary>
-        /// The citiation.
+        /// The citation.
         /// </summary>
         [JsonPropertyName("quote")]
         public string Quote { get; set; } = string.Empty;
