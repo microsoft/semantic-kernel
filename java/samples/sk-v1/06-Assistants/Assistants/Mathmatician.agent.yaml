@@ -4,4 +4,5 @@ template: |
 template_format: handlebars
 description: An assistant that generates images.
 execution_settings:
-  - model_id_pattern: ^gpt-4
+  gpt-4:
+    model_id_pattern: ^gpt-4

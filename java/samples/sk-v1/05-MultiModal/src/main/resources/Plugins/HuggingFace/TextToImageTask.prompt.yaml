@@ -10,4 +10,5 @@ output_variable:
     type: Image
     description: The generated image.
 execution_settings:
-  - model_id_pattern: ^runwayml/stable-diffusion-v1-5
+  runwayml:
+    model_id_pattern: ^runwayml/stable-diffusion-v1-5
