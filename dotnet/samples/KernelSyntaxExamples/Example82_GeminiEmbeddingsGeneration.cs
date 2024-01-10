@@ -15,21 +15,60 @@ public static class Example82_GeminiEmbeddingsGeneration
     {
         Console.WriteLine("======== Gemini Chat Completion ========");
 
-        string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
-        string geminiEmbeddingModelId = TestConfiguration.GoogleAI.Gemini.EmbeddingModelId;
+        await GoogleAIGemini();
+        await VertexAIGemini();
+    }
 
-        if (geminiApiKey is null || geminiEmbeddingModelId is null)
+    private static async Task GoogleAIGemini()
+    {
+        Console.WriteLine("===== Google AI Gemini API =====");
+
+        string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
+        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
+
+        if (geminiApiKey is null || geminiModelId is null)
         {
             Console.WriteLine("Gemini credentials not found. Skipping example.");
             return;
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiEmbeddingsGeneration(
-                modelId: geminiEmbeddingModelId,
+            .AddGoogleAIGeminiChatCompletion(
+                modelId: geminiModelId,
                 apiKey: geminiApiKey)
             .Build();
 
+        await Run(kernel);
+    }
+
+    private static async Task VertexAIGemini()
+    {
+        Console.WriteLine("===== Vertex AI Gemini API =====");
+
+        string geminiApiKey = TestConfiguration.VertexAI.Gemini.ApiKey;
+        string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
+        string geminiLocation = TestConfiguration.VertexAI.Gemini.Location;
+        string geminiProject = TestConfiguration.VertexAI.Gemini.ProjectId;
+
+        if (geminiApiKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
+        {
+            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            return;
+        }
+
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddVertexAIGeminiEmbeddingsGeneration(
+                modelId: geminiModelId,
+                apiKey: geminiApiKey,
+                location: geminiLocation,
+                projectId: geminiProject)
+            .Build();
+
+        await Run(kernel);
+    }
+
+    private static async Task Run(Kernel kernel)
+    {
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
         ReadOnlyMemory<float> embeddings = await embeddingGenerator.GenerateEmbeddingAsync("Hello world!");
         Console.WriteLine("Embeddings:");
