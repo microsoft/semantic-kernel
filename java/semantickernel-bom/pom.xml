@@ -48,11 +48,6 @@
                 <artifactId>semantickernel-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 <!--
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
@@ -98,11 +93,6 @@
                 <version>${project.version}</version>
             </dependency>
 -->
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-settings-loader</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>aiservices-azureopenai</artifactId>

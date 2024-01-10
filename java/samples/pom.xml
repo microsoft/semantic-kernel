@@ -100,11 +100,6 @@
             <artifactId>semantickernel-connectors-ai-openai</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>${log4j2.version}</version>

@@ -83,9 +83,6 @@
 
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
-        <!--
-        <module>semantickernel-core</module>
-        -->
     </modules>
 
     <dependencyManagement>
@@ -727,7 +724,7 @@
             <id>with-samples</id>
             <modules>
                 <module>samples</module>
-<!--                <module>api-test</module>-->
+                <module>api-test</module>
             </modules>
         </profile>
         <profile>

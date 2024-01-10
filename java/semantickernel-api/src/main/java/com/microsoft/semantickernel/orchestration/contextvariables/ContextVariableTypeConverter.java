@@ -32,7 +32,7 @@ public class ContextVariableTypeConverter<T> {
             super(
                 clazz,
                 x -> {
-                    throw new RuntimeException("Noop converter should not be called");
+                    return (T) x;
                 },
                 x -> {
                     throw new RuntimeException("Noop converter should not be called");

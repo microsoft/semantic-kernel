@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 public class OutputVariable {
 
@@ -22,5 +23,13 @@ public class OutputVariable {
 
     public String getDescription() {
         return description;
+    }
+
+    public Class<?> getType() {
+        try {
+            return this.getClass().getClassLoader().loadClass(type);
+        } catch (ClassNotFoundException e) {
+            throw new SKException("Could not find return type " + type);
+        }
     }
 }

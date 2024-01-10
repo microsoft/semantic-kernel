@@ -1,21 +1,19 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.util.List;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.AzureOpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
 
@@ -37,7 +35,7 @@ public class Main {
         KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/PersonaChat.prompt.yaml"));
 
-        ChatCompletionService gpt35Turbo = AzureOpenAIChatCompletion.builder()
+        ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(GPT_35_DEPLOYMENT_NAME != null ? GPT_35_DEPLOYMENT_NAME : "gpt-35-turbo")
             .build();

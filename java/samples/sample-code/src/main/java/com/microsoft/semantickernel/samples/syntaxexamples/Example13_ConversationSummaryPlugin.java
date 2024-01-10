@@ -7,7 +7,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments.Builder;
@@ -227,7 +227,7 @@ public class Example13_ConversationSummaryPlugin {
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
 
-            textGenerationService = AzureOpenAITextGenerationService.builder()
+            textGenerationService = OpenAITextGenerationService.builder()
                 .withOpenAIAsyncClient(client)
                 .withModelId("text-davinci-003")
                 .build();

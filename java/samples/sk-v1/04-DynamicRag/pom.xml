@@ -16,10 +16,6 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core</artifactId>
-        </dependency>
         <!--
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>

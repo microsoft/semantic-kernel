@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -60,8 +61,21 @@ public class DefaultKernel implements Kernel {
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType) {
-        return function.invokeAsync(this, arguments,
-            ContextVariableTypes.getDefaultVariableTypeForClass(resultType));
+
+        ContextVariableType<T> contextVariable;
+
+        try {
+            contextVariable = ContextVariableTypes.getDefaultVariableTypeForClass(resultType);
+        } catch (Exception e) {
+            if (resultType.isAssignableFrom(
+                function.getMetadata().getReturnParameter().getParameterType())) {
+                contextVariable = new ContextVariableType<>(new NoopConverter<>(resultType),
+                    resultType);
+            } else {
+                throw e;
+            }
+        }
+        return function.invokeAsync(this, arguments, contextVariable);
     }
 
     @Override

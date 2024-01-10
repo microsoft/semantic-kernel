@@ -75,9 +75,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
         return function.invoke(kernel, this, arguments)
-            .map(it -> {
-                return ContextVariable.of(variableType.getConverter().fromObject(it));
-            });
+            .map(variableType::of);
     }
 
     public interface ImplementationFunc {
@@ -140,7 +138,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             description,
             getFunction(method, target),
             getParameters(method),
-            new KernelReturnParameterMetadata(returnDescription)
+            new KernelReturnParameterMetadata<>(returnDescription, method.getReturnType())
         );
     }
 
