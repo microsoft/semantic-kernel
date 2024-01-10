@@ -39,7 +39,8 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
-    public static GeminiConfig Gemini => LoadSection<GeminiConfig>();
+    public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
+    public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -177,11 +178,30 @@ public sealed class TestConfiguration
         public string ConnectionString { get; set; }
     }
 
-    public class GeminiConfig
+    public class GoogleAIConfig
+    {
+        public GoogleAIGeminiConfig Gemini { get; set; }
+    }
+
+    public class VertexAIConfig
+    {
+        public VertexAIGeminiConfig Gemini { get; set; }
+    }
+
+    public class GoogleAIGeminiConfig
     {
         public string ApiKey { get; set; }
         public string ModelId { get; set; }
         public string EmbeddingModelId { get; set; }
+    }
+
+    public class VertexAIGeminiConfig
+    {
+        public string ApiKey { get; set; }
+        public string ModelId { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public string Location { get; set; }
+        public string ProjectId { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.

@@ -15,8 +15,8 @@ public static class Example82_GeminiEmbeddingsGeneration
     {
         Console.WriteLine("======== Gemini Chat Completion ========");
 
-        string geminiApiKey = TestConfiguration.Gemini.ApiKey;
-        string geminiEmbeddingModelId = TestConfiguration.Gemini.EmbeddingModelId;
+        string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
+        string geminiEmbeddingModelId = TestConfiguration.GoogleAI.Gemini.EmbeddingModelId;
 
         if (geminiApiKey is null || geminiEmbeddingModelId is null)
         {

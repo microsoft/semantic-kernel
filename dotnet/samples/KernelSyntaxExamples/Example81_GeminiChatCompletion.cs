@@ -18,8 +18,8 @@ public static class Example81_GeminiChatCompletion
     {
         Console.WriteLine("======== Gemini Chat Completion ========");
 
-        string geminiApiKey = TestConfiguration.Gemini.ApiKey;
-        string geminiModelId = TestConfiguration.Gemini.ModelId;
+        string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
+        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {

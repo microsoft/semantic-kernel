@@ -21,11 +21,11 @@ public sealed class GeminiEmbeddingGenerationTests
         .Build();
 
     [Fact(Skip = "This test is for manual verification.")]
-    public async Task GeminiEmbeddingsGenerationAsync()
+    public async Task GoogleAIGeminiEmbeddingsGenerationAsync()
     {
         // Arrange
         const string Input = "Expand this abbreviation: LLM";
-        var geminiService = new GoogleAIGeminiTextEmbeddingGenerationService(this.GetModel(), this.GetApiKey());
+        var geminiService = new GoogleAIGeminiTextEmbeddingGenerationService(this.GoogleAIGetModel(), this.GoogleAIGetApiKey());
 
         // Act
         var response = await geminiService.GenerateEmbeddingAsync(Input);
@@ -34,6 +34,29 @@ public sealed class GeminiEmbeddingGenerationTests
         Assert.Equal(768, response.Length);
     }
 
-    private string GetModel() => this._configuration.GetSection("Gemini:EmbeddingModelId").Get<string>()!;
-    private string GetApiKey() => this._configuration.GetSection("Gemini:ApiKey").Get<string>()!;
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task VertexAIGeminiEmbeddingsGenerationAsync()
+    {
+        // Arrange
+        const string Input = "Expand this abbreviation: LLM";
+        var geminiService = new VertexAIGeminiTextEmbeddingGenerationService(
+            model: this.VertexAIGetModel(),
+            apiKey: this.VertexAIGetApiKey(),
+            location: this.VertexAIGetLocation(),
+            projectId: this.VertexAIGetProjectId());
+
+        // Act
+        var response = await geminiService.GenerateEmbeddingAsync(Input);
+
+        // Assert
+        Assert.Equal(768, response.Length);
+    }
+
+    private string GoogleAIGetModel() => this._configuration.GetSection("GoogleAI:Gemini:EmbeddingModelId").Get<string>()!;
+    private string GoogleAIGetApiKey() => this._configuration.GetSection("GoogleAI:Gemini:ApiKey").Get<string>()!;
+
+    private string VertexAIGetModel() => this._configuration.GetSection("VertexAI:Gemini:EmbeddingModelId").Get<string>()!;
+    private string VertexAIGetApiKey() => this._configuration.GetSection("VertexAI:Gemini:ApiKey").Get<string>()!;
+    private string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Gemini:Location").Get<string>()!;
+    private string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:Gemini:ProjectId").Get<string>()!;
 }

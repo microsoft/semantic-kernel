@@ -25,9 +25,21 @@
   "HuggingFace": {
     "ApiKey": ""
   },
-  "Gemini": {
-    "ModelId": "gemini-pro",
-    "ApiKey": ""
+  "GoogleAI": {
+    "Gemini": {
+      "ModelId": "gemini-pro",
+      "EmbeddingModelId": "",
+      "ApiKey": ""
+    }
+  },
+  "VertexAI": {
+    "Gemini": {
+      "ModelId": "gemini-pro",
+      "EmbeddingModelId": "",
+      "ApiKey": "",
+      "Location": "",
+      "ProjectId": ""
+    }
   },
   "Bing": {
     "ApiKey": ""
