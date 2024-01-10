@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple
 
 from numpy import ndarray
