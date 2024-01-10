@@ -102,7 +102,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Yields:
             str -- Completion result.
         """
-        return await self.complete_chat_stream_async([{"role": "user", "content": prompt}], request_settings, **kwargs)
+        response = self.complete_chat_stream_async([{"role": "user", "content": prompt}], request_settings, **kwargs)
+        async for line in response:
+            yield line
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         return OllamaChatRequestSettings

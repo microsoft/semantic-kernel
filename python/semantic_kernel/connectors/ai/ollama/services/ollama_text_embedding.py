@@ -23,7 +23,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
 
     Arguments:
         ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/chat
+        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
         session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
     """
 
