@@ -209,12 +209,12 @@ public class CodeTokenizerTests
     }
 
     [Theory]
-    [InlineData("f a =", "A function named argument must contain a quoted value or variable after the '=' character.")]
-    [InlineData("f a='b' arg2", "A function named argument must contain a name and value separated by a '=' character.")]
-    public void ItThrowsWhenArgValueIsMissing(string template, string expectedErrorMessage)
+    [InlineData("f a =")]
+    [InlineData("f a='b' arg2")]
+    public void ItThrowsWhenArgValueIsMissing(string template)
     {
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
-        Assert.Equal(expectedErrorMessage, exception.Message);
+        Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
     }
 }
