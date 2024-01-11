@@ -2,14 +2,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion.
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion.
 public static class Example36_MultiCompletion
 {
     public static async Task RunAsync()
@@ -22,28 +18,29 @@ public static class Example36_MultiCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
-        var chatCompletion = new AzureOpenAIChatCompletion(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+        var chatCompletionService = new AzureOpenAIChatCompletionService(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
-        await ChatCompletionAsync(chatCompletion);
+        await ChatCompletionAsync(chatCompletionService);
     }
 
     private static async Task OpenAIMultiChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        IChatCompletion chatCompletion = new OpenAIChatCompletion(
+        var chatCompletionService = new OpenAIChatCompletionService(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await ChatCompletionAsync(chatCompletion);
+        await ChatCompletionAsync(chatCompletionService);
     }
 
-    private static async Task ChatCompletionAsync(IChatCompletion chatCompletion)
+    private static async Task ChatCompletionAsync(IChatCompletionService chatCompletionService)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -56,10 +53,10 @@ public static class Example36_MultiCompletion
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
 
-        await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
+        foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings))
         {
-            Console.Write(message);
-            Console.WriteLine("-------------");
+            Console.Write(chatMessageChoice.Content);
+            Console.WriteLine("\n-------------\n");
         }
 
         Console.WriteLine();

@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-import pydantic as pdt
+from pydantic import Field
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.sk_pydantic import SKBaseModel
@@ -10,8 +10,8 @@ from semantic_kernel.skill_definition.function_view import FunctionView
 
 
 class FunctionsView(SKBaseModel):
-    semantic_functions: Dict[str, List[FunctionView]] = pdt.Field(default_factory=dict)
-    native_functions: Dict[str, List[FunctionView]] = pdt.Field(default_factory=dict)
+    semantic_functions: Dict[str, List[FunctionView]] = Field(default_factory=dict)
+    native_functions: Dict[str, List[FunctionView]] = Field(default_factory=dict)
 
     def add_function(self, view: FunctionView) -> "FunctionsView":
         if view.is_semantic:
@@ -35,10 +35,7 @@ class FunctionsView(SKBaseModel):
         if as_sf and as_nf:
             raise KernelException(
                 KernelException.ErrorCodes.AmbiguousImplementation,
-                (
-                    f"There are 2 functions with the same name: {function_name}."
-                    "One is native and the other semantic."
-                ),
+                (f"There are 2 functions with the same name: {function_name}." "One is native and the other semantic."),
             )
 
         return as_sf
@@ -53,10 +50,7 @@ class FunctionsView(SKBaseModel):
         if as_sf and as_nf:
             raise KernelException(
                 KernelException.ErrorCodes.AmbiguousImplementation,
-                (
-                    f"There are 2 functions with the same name: {function_name}."
-                    "One is native and the other semantic."
-                ),
+                (f"There are 2 functions with the same name: {function_name}." "One is native and the other semantic."),
             )
 
         return as_nf

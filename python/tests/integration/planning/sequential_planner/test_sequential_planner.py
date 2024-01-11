@@ -36,18 +36,30 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     if use_chat_model:
         kernel.add_chat_service(
             "chat_completion",
-            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
+            sk_oai.AzureChatCompletion(
+                deployment_name="gpt-35-turbo",
+                endpoint=endpoint,
+                api_key=api_key,
+            ),
         )
     else:
         kernel.add_text_completion_service(
             "text_completion",
-            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
+            sk_oai.AzureChatCompletion(
+                deployment_name="gpt-35-turbo",
+                endpoint=endpoint,
+                api_key=api_key,
+            ),
         )
 
     if use_embeddings:
         kernel.add_text_embedding_generation_service(
             "text_embedding",
-            sk_oai.AzureTextEmbedding("text-embedding-ada-002", endpoint, api_key),
+            sk_oai.AzureTextEmbedding(
+                deployment_name="text-embedding-ada-002",
+                endpoint=endpoint,
+                api_key=api_key,
+            ),
         )
     return kernel
 
@@ -84,10 +96,7 @@ async def test_create_plan_function_flow_async(
     plan = await planner.create_plan_async(prompt)
 
     # Assert
-    assert any(
-        step.name == expected_function and step.skill_name == expected_skill
-        for step in plan._steps
-    )
+    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)
 
 
 @pytest.mark.parametrize(
@@ -143,9 +152,7 @@ async def test_create_plan_with_defaults_async(
     raises=semantic_kernel.planning.planning_exception.PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_goal_relevant_async(
-    get_aoai_config, prompt, expected_function, expected_skill
-):
+async def test_create_plan_goal_relevant_async(get_aoai_config, prompt, expected_function, expected_skill):
     # Arrange
     kernel = initialize_kernel(get_aoai_config, use_embeddings=True)
     kernel.import_skill(EmailSkillFake())
@@ -161,7 +168,4 @@ async def test_create_plan_goal_relevant_async(
     plan = await retry(lambda: planner.create_plan_async(prompt))
 
     # Assert
-    assert any(
-        step.name == expected_function and step.skill_name == expected_skill
-        for step in plan._steps
-    )
+    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)

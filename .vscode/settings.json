@@ -71,7 +71,8 @@
     "**/Thumbs.db": true
   },
   "cSpell.words": [
-    "Partitioner"
+    "Partitioner",
+    "SKEXP"
   ],
   "[java]": {
     "editor.formatOnSave": false,
@@ -90,5 +91,10 @@
   },
   "java.debug.settings.onBuildFailureProceed": true,
   "java.compile.nullAnalysis.mode": "disabled",
-  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln"
+  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
+  "python.testing.pytestArgs": [
+    "python/tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

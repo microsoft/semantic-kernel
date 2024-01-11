@@ -3,11 +3,11 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities;
@@ -57,7 +57,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
     {
         //Arrange
         this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("{\"details\": \"fake-response-content\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("{\"details\": \"fake-response-content\"}", Encoding.UTF8, "application/json");
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 

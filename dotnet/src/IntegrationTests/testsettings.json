@@ -30,5 +30,22 @@
   },
   "Postgres": {
     "ConnectionString": ""
+  },
+  "MongoDB": {
+    "ConnectionString": "",
+    "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
+  },
+  "Planners": {
+    "AzureOpenAI": {
+      "ServiceId": "azure-gpt-35-turbo",
+      "DeploymentName": "gpt-35-turbo",
+      "Endpoint": "",
+      "ApiKey": ""
+    },
+    "OpenAI": {
+      "ServiceId": "openai-gpt-4",
+      "ModelId": "gpt-4",
+      "ApiKey": ""
+    }
   }
 }

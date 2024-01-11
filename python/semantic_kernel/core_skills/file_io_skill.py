@@ -5,14 +5,14 @@ import typing as t
 
 import aiofiles
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class FileIOSkill(PydanticField):
+class FileIOSkill(SKBaseModel):
     """
     Description: Read and write from a file.
 

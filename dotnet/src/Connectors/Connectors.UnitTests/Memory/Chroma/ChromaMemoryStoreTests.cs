@@ -7,14 +7,13 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Chroma;
+namespace SemanticKernel.Connectors.UnitTests.Chroma;
 
 /// <summary>
 /// Unit tests for <see cref="ChromaMemoryStore"/> class.
@@ -115,7 +114,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => store.DeleteCollectionAsync(CollectionName));
 
         // Assert
-        Assert.IsType<SKException>(exception);
+        Assert.IsType<KernelException>(exception);
         Assert.Equal(ExpectedExceptionMessage, exception.Message);
     }
 
@@ -202,7 +201,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
-            .Throws(new SKException(CollectionDoesNotExistErrorMessage));
+            .Throws(new KernelException(CollectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -210,7 +209,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => store.GetAsync(CollectionName, MemoryRecordKey, withEmbedding: true));
 
         // Assert
-        Assert.IsType<SKException>(exception);
+        Assert.IsType<KernelException>(exception);
         Assert.Equal(CollectionDoesNotExistErrorMessage, exception.Message);
     }
 

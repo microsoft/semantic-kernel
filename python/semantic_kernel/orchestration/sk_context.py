@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import Any, Dict, Generic, Literal, Optional, Tuple, Union
 
-import pydantic as pdt
+from pydantic import Field, PrivateAttr
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import (
@@ -11,7 +11,7 @@ from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryT,
 )
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKGenericModel
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
 )
@@ -19,28 +19,27 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 
+logger: logging.Logger = logging.getLogger(__name__)
 
-class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
+
+class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
 
     memory: SemanticTextMemoryT
     variables: ContextVariables
     # This field can be used to hold anything that is not a string
-    skill_collection: ReadOnlySkillCollection = pdt.Field(
-        default_factory=ReadOnlySkillCollection
-    )
-    _objects: Dict[str, Any] = pdt.PrivateAttr(default_factory=dict)
-    _error_occurred: bool = pdt.PrivateAttr(False)
-    _last_exception: Optional[Exception] = pdt.PrivateAttr(None)
-    _last_error_description: str = pdt.PrivateAttr("")
-    _logger: Logger = pdt.PrivateAttr()
+    skill_collection: ReadOnlySkillCollection = Field(default_factory=ReadOnlySkillCollection)
+    _objects: Dict[str, Any] = PrivateAttr(default_factory=dict)
+    _error_occurred: bool = PrivateAttr(False)
+    _last_exception: Optional[Exception] = PrivateAttr(None)
+    _last_error_description: str = PrivateAttr("")
 
     def __init__(
         self,
         variables: ContextVariables,
         memory: SemanticTextMemoryBase,
         skill_collection: Union[ReadOnlySkillCollection, None],
-        logger: Optional[Logger] = None,
+        **kwargs,
         # TODO: cancellation token?
     ) -> None:
         """
@@ -50,18 +49,14 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
             variables {ContextVariables} -- The context variables.
             memory {SemanticTextMemoryBase} -- The semantic text memory.
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
-            logger {Logger} -- The logger.
         """
-        # Local import to avoid circular dependency
-        from semantic_kernel import NullLogger
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
 
         if skill_collection is None:
             skill_collection = ReadOnlySkillCollection()
 
-        super().__init__(
-            variables=variables, memory=memory, skill_collection=skill_collection
-        )
-        self._logger = logger or NullLogger()
+        super().__init__(variables=variables, memory=memory, skill_collection=skill_collection)
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
@@ -147,16 +142,6 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
         """
         self.skill_collection = value
 
-    @property
-    def log(self) -> Logger:
-        """
-        The logger.
-
-        Returns:
-            Logger -- The logger.
-        """
-        return self._logger
-
     def __setitem__(self, key: str, value: Any) -> None:
         """
         Sets a context variable.
@@ -235,9 +220,7 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
         assert self.skill_collection is not None  # for type checker
 
         if self.skill_collection.has_native_function(skill_name, function_name):
-            the_func = self.skill_collection.get_native_function(
-                skill_name, function_name
-            )
+            the_func = self.skill_collection.get_native_function(skill_name, function_name)
             return True, the_func
 
         if self.skill_collection.has_native_function(None, function_name):
@@ -245,9 +228,7 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
             return True, the_func
 
         if self.skill_collection.has_semantic_function(skill_name, function_name):
-            the_func = self.skill_collection.get_semantic_function(
-                skill_name, function_name
-            )
+            the_func = self.skill_collection.get_semantic_function(skill_name, function_name)
             return True, the_func
 
         return False, None

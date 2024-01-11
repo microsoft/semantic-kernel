@@ -1,22 +1,26 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
+import logging
 import typing as t
+from typing import ClassVar
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
+logger: logging.Logger = logging.getLogger(__name__)
 
-class TextMemorySkill(PydanticField):
-    COLLECTION_PARAM = "collection"
-    RELEVANCE_PARAM = "relevance"
-    KEY_PARAM = "key"
-    LIMIT_PARAM = "limit"
-    DEFAULT_COLLECTION = "generic"
-    DEFAULT_RELEVANCE = 0.75
-    DEFAULT_LIMIT = 1
+
+class TextMemorySkill(SKBaseModel):
+    COLLECTION_PARAM: ClassVar[str] = "collection"
+    RELEVANCE_PARAM: ClassVar[str] = "relevance"
+    KEY_PARAM: ClassVar[str] = "key"
+    LIMIT_PARAM: ClassVar[str] = "limit"
+    DEFAULT_COLLECTION: ClassVar[str] = "generic"
+    DEFAULT_RELEVANCE: ClassVar[float] = "0.75"
+    DEFAULT_LIMIT: ClassVar[int] = "1"
 
     # @staticmethod
     @sk_function(
@@ -58,27 +62,19 @@ class TextMemorySkill(PydanticField):
         """
 
         if context.variables is None:
-            raise ValueError(
-                "The context doesn't have the variables required to know how to recall memory"
-            )
+            raise ValueError("The context doesn't have the variables required to know how to recall memory")
         if context.memory is None:
             raise ValueError("The context doesn't have a memory instance to search")
 
-        collection = context.variables.get(
-            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
-        )
+        collection = context.variables.get(TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION)
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
 
-        relevance = context.variables.get(
-            TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE
-        )
+        relevance = context.variables.get(TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE)
         if not relevance:
             raise ValueError("Relevance value not defined for TextMemorySkill")
 
-        limit = context.variables.get(
-            TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT
-        )
+        limit = context.variables.get(TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT)
         if limit is None or str(limit).strip() == "":
             raise ValueError("Limit value not defined for TextMemorySkill")
 
@@ -89,8 +85,7 @@ class TextMemorySkill(PydanticField):
             min_relevance_score=float(relevance),
         )
         if results is None or len(results) == 0:
-            if context.log is not None:
-                context.log.warning(f"Memory not found in collection: {collection}")
+            logger.warning(f"Memory not found in collection: {collection}")
             return ""
 
         return results[0].text if limit == 1 else json.dumps([r.text for r in results])
@@ -125,15 +120,11 @@ class TextMemorySkill(PydanticField):
         """
 
         if context.variables is None:
-            raise ValueError(
-                "The context doesn't have the variables required to know how to recall memory"
-            )
+            raise ValueError("The context doesn't have the variables required to know how to recall memory")
         if context.memory is None:
             raise ValueError("The context doesn't have a memory instance to search")
 
-        collection = context.variables.get(
-            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
-        )
+        collection = context.variables.get(TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION)
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
 

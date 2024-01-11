@@ -12,7 +12,6 @@ using Resources;
 using SharpToken;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
-// ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
 {
     private const string Text = @"The city of Venice, located in the northeastern part of Italy,
@@ -157,10 +156,8 @@ known as coral polyps.";
     /// </summary>
     private static TokenCounter DeepDevTokenCounter => (string input) =>
     {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         // Initialize encoding by encoding name
         var tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // Initialize encoding by model name
         // var tokenizer = TokenizerBuilder.CreateByModelNameAsync("gpt-4").GetAwaiter().GetResult();
@@ -170,19 +167,12 @@ known as coral polyps.";
     };
 
     private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
-    {
-        switch (counterType)
+        counterType switch
         {
-            case TokenCounterType.SharpToken:
-                return (string input) => SharpTokenTokenCounter(input);
-            case TokenCounterType.MicrosoftML:
-                return (string input) => MicrosoftMLTokenCounter(input);
-            case TokenCounterType.DeepDev:
-                return (string input) => DeepDevTokenCounter(input);
-            case TokenCounterType.MicrosoftMLRoberta:
-                return (string input) => MicrosoftMLRobertaTokenCounter(input);
-            default:
-                throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null);
-        }
-    };
+            TokenCounterType.SharpToken => (string input) => SharpTokenTokenCounter(input),
+            TokenCounterType.MicrosoftML => (string input) => MicrosoftMLTokenCounter(input),
+            TokenCounterType.DeepDev => (string input) => DeepDevTokenCounter(input),
+            TokenCounterType.MicrosoftMLRoberta => (string input) => MicrosoftMLRobertaTokenCounter(input),
+            _ => throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null),
+        };
 }
