@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,15 +79,11 @@ internal sealed class ChatThread : IAgentThread
             yield return await this.AddUserMessageAsync(userMessage, cancellationToken).ConfigureAwait(false);
         }
 
-        // Define tools as part of the run definition, since there's no enforcement that an agent
-        // is initialized with the same tools every time.
-        var tools = agent.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
-
         // Finalize prompt / agent instructions using provided parameters.
         var instructions = await agent.AsPromptTemplate().RenderAsync(agent.Kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         // Create run using templated prompt
-        var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, instructions, tools, cancellationToken).ConfigureAwait(false);
+        var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, instructions, agent.Tools, cancellationToken).ConfigureAwait(false);
         var run = new ChatRun(runModel, agent.Kernel, this._restContext);
         var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 

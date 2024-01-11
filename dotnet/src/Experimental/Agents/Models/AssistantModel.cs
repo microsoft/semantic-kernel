@@ -88,4 +88,36 @@ internal sealed record AssistantModel
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Assistant file model.
+    /// </summary>
+    public sealed class FileModel
+    {
+        /// <summary>
+        /// ID of the assistant.
+        /// </summary>
+        [JsonPropertyName("assistant_id")]
+        public string AssistantId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// ID of the uploaded file.
+        /// </summary>
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Unix timestamp (in seconds) for when the assistant was created
+        /// </summary>
+        [JsonPropertyName("created_at")]
+        public long CreatedAt { get; init; }
+
+        /// <summary>
+        /// Always "assistant.file"
+        /// </summary>
+        [JsonPropertyName("object")]
+#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
+        public string Object { get; init; } = "assistant.file";
+#pragma warning restore CA1720 // Identifier contains type name
+    }
 }
