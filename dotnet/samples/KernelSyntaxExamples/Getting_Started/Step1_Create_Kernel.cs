@@ -12,10 +12,6 @@ namespace GettingStarted;
 // This example shows how to create and use a <see cref="Kernel"/>.
 public class Step1_Create_Kernel : BaseTest
 {
-    public Step1_Create_Kernel(ITestOutputHelper output) : base(output)
-    {
-    }
-
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> and use it to execute prompts.
     /// </summary>
@@ -51,5 +47,9 @@ public class Step1_Create_Kernel : BaseTest
         // Example 4. Invoke the kernel with a templated prompt and execution settings
         arguments = new(new OpenAIPromptExecutionSettings { MaxTokens = 500, Temperature = 0.5 }) { { "topic", "dogs" } };
         WriteLine(await kernel.InvokePromptAsync("Tell me a story about {{$topic}}", arguments));
+    }
+
+    public Step1_Create_Kernel(ITestOutputHelper output) : base(output)
+    {
     }
 }
