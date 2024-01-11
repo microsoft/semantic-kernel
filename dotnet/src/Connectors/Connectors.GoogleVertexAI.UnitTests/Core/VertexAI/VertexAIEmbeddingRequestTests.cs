@@ -19,7 +19,7 @@ public sealed class VertexAIEmbeddingRequestTests
         var modelId = "modelId";
 
         // Act
-        var request = VertexAIEmbeddingRequest.FromData(data, modelId);
+        var request = VertexAIEmbeddingRequest.FromData(data);
 
         // Assert
         Assert.Equal(2, request.Requests.Count);

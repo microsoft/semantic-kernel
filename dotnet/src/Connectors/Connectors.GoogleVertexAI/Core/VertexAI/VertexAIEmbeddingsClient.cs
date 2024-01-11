@@ -67,7 +67,7 @@ internal sealed class VertexAIEmbeddingsClient : ClientBase, IEmbeddingsClient
     #region PRIVATE METHODS
 
     private VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
-        => VertexAIEmbeddingRequest.FromData(data, this._embeddingModelId);
+        => VertexAIEmbeddingRequest.FromData(data);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<VertexAIEmbeddingResponse>(body));

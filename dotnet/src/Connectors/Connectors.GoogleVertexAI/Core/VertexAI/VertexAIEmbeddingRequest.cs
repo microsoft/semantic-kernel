@@ -15,12 +15,21 @@ internal sealed class VertexAIEmbeddingRequest
     [JsonPropertyName("instances")]
     public IList<VertexAIGeminiEmbeddingRequestEmbedContent> Requests { get; set; }
 
-    public static VertexAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId) => new()
+    [JsonPropertyName("parameters")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public VertexAIEmbeddingParameters? Parameters { get; set; }
+
+    public static VertexAIEmbeddingRequest FromData(IEnumerable<string> data) => new()
     {
         Requests = data.Select(text => new VertexAIGeminiEmbeddingRequestEmbedContent
         {
             Content = text
-        }).ToList()
+        }).ToList(),
+        Parameters = new VertexAIEmbeddingParameters
+        {
+            // todo make configurable when ITextEmbeddingGenerationService will support parameters
+            AutoTruncate = false
+        }
     };
 }
 
@@ -36,4 +45,10 @@ internal sealed class VertexAIGeminiEmbeddingRequestEmbedContent
     [JsonPropertyName("taskType")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? TaskType { get; set; } // todo: enum
+}
+
+internal sealed class VertexAIEmbeddingParameters
+{
+    [JsonPropertyName("autoTruncate")]
+    public bool AutoTruncate { get; set; }
 }
