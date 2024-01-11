@@ -40,7 +40,7 @@ public sealed class VertexAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { EmbeddingModelId = model };
-        this.Client = new GeminiClient(
+        this.Client = new VertexAIGeminiClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             configuration: geminiConfiguration,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),

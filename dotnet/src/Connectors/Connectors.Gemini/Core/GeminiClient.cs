@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 /// <summary>
 /// Represents a client for interacting with the Gemini API.
 /// </summary>
-internal sealed class GeminiClient : ClientBase, IGeminiClient
+internal class GeminiClient : ClientBase, IGeminiClient
 {
     private readonly IHttpRequestFactory _httpRequestFactory;
     private readonly IEndpointProvider _endpointProvider;
@@ -62,7 +62,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     #region PUBLIC METHODS
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
+    public virtual async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
@@ -81,7 +81,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
+    public virtual async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -105,7 +105,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
+    public virtual async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
@@ -124,7 +124,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -147,7 +147,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         }
     }
 
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+    public virtual async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
@@ -164,7 +164,7 @@ internal sealed class GeminiClient : ClientBase, IGeminiClient
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    public async Task<int> CountTokensAsync(
+    public virtual async Task<int> CountTokensAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
