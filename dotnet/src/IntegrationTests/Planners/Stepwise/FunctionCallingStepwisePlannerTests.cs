@@ -4,6 +4,8 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -21,7 +23,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
+        this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
+        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -131,8 +135,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.AddOpenAIChatCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey);
 
@@ -143,6 +148,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+    private readonly ILoggerFactory _logger;
 
     public void Dispose()
     {
