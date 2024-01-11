@@ -7,7 +7,7 @@ from semantic_kernel.semantic_functions.prompt_template_base import PromptTempla
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.skill_definition.parameter_view import ParameterView
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (

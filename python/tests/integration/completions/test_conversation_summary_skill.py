@@ -7,14 +7,14 @@ from test_utils import retry
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.core_skills.conversation_summary_skill import (
-    ConversationSummarySkill,
+from semantic_kernel.core_plugins.conversation_summary_plugin import (
+    ConversationSummaryPlugin,
 )
 
 
 @pytest.mark.asyncio
-async def test_azure_summarize_conversation_using_skill(setup_summarize_conversation_using_skill, get_aoai_config):
-    kernel, chatTranscript = setup_summarize_conversation_using_skill
+async def test_azure_summarize_conversation_using_plugin(setup_summarize_conversation_using_plugin, get_aoai_config):
+    kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAI__DeploymentName"]
@@ -30,10 +30,10 @@ async def test_azure_summarize_conversation_using_skill(setup_summarize_conversa
         sk_oai.AzureTextCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
     )
 
-    conversationSummarySkill = kernel.import_skill(ConversationSummarySkill(kernel), "conversationSummary")
+    conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
     summary = await retry(
-        lambda: kernel.run_async(conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript)
+        lambda: kernel.run_async(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
     )
 
     output = str(summary).strip().lower()
@@ -43,10 +43,10 @@ async def test_azure_summarize_conversation_using_skill(setup_summarize_conversa
 
 
 @pytest.mark.asyncio
-async def test_oai_summarize_conversation_using_skill(
-    setup_summarize_conversation_using_skill,
+async def test_oai_summarize_conversation_using_plugin(
+    setup_summarize_conversation_using_plugin,
 ):
-    kernel, chatTranscript = setup_summarize_conversation_using_skill
+    kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
@@ -60,10 +60,10 @@ async def test_oai_summarize_conversation_using_skill(
         sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id=org_id),
     )
 
-    conversationSummarySkill = kernel.import_skill(ConversationSummarySkill(kernel), "conversationSummary")
+    conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
     summary = await retry(
-        lambda: kernel.run_async(conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript)
+        lambda: kernel.run_async(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
     )
 
     output = str(summary).strip().lower()

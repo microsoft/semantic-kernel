@@ -8,7 +8,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
     OpenAIChatMessage,
 )
-from semantic_kernel.core_skills import MathSkill
+from semantic_kernel.core_plugins import MathPlugin
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -37,17 +37,17 @@ kernel.add_chat_service(
     ),
 )
 
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-# adding skills to the kernel
-# the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
-kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-# the math skill is a core skill and has the function calling enabled.
-kernel.import_skill(MathSkill(), skill_name="math")
+plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+# adding plugins to the kernel
+# the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
+kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+# the math plugin is a core plugin and has the function calling enabled.
+kernel.import_plugin(MathPlugin(), plugin_name="math")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
+# the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 functions = [
     {

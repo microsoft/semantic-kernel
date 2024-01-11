@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.skill_definition.sk_function_decorator import sk_function
+from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 
-class EmailSkillFake:
+class EmailPluginFake:
     @sk_function(
         description="Given an email address and message body, send an email",
         name="SendEmail",

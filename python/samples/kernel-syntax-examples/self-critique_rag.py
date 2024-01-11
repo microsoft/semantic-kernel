@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.memory.azure_cognitive_search import (
     AzureCognitiveSearchMemoryStore,
 )
-from semantic_kernel.core_skills.text_memory_skill import TextMemorySkill
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
 COLLECTION_NAME = "generic"
@@ -35,8 +35,8 @@ async def populate_memory(kernel: sk.Kernel) -> None:
 
 async def main() -> None:
     kernel = sk.Kernel()
-    tms = TextMemorySkill()
-    kernel.import_skill(tms, "memory")
+    tms = TextMemoryPlugin()
+    kernel.import_plugin(tms, "memory")
 
     config = dotenv_values(".env")
 

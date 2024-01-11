@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
     get_function_calling_object,
 )
-from semantic_kernel.core_skills.time_skill import TimeSkill
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 
 kernel = sk.Kernel()
 
@@ -49,17 +49,17 @@ kernel.add_chat_service(
     chat_service,
 )
 
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-# adding skills to the kernel
-# the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
-kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-# the math skill is a core skill and has the function calling enabled.
-kernel.import_skill(TimeSkill(), skill_name="time")
+plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+# adding plugins to the kernel
+# the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
+kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+# the math plugin is a core plugin and has the function calling enabled.
+kernel.import_plugin(TimePlugin(), plugin_name="time")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
+# the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_config = sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
     max_tokens=2000,
@@ -76,9 +76,9 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 # calling the chat, you could add a overloaded version of the settings here,
-# to enable or disable function calling or set the function calling to a specific skill.
+# to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
-filter = {"exclude_skill": ["ChatBot"]}
+filter = {"exclude_plugin": ["ChatBot"]}
 functions = get_function_calling_object(kernel, filter)
 
 
@@ -99,7 +99,7 @@ async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
 
     context = await chat_completion_with_function_call(
         kernel,
-        chat_skill_name="ChatBot",
+        chat_plugin_name="ChatBot",
         chat_function_name="Chat",
         context=context,
         functions=functions,

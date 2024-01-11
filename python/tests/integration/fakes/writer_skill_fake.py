@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
 
-# TODO: this fake skill is temporal usage.
-# C# supports import skill from samples dir by using test helper and python should do the same
+# TODO: this fake plugin is temporal usage.
+# C# supports import plugin from samples dir by using test helper and python should do the same
 # `semantic-kernel/dotnet/src/IntegrationTests/TestHelpers.cs`
 
 
-class WriterSkillFake:
+class WriterPluginFake:
     @sk_function(
         description="Translate",
         name="Translate",

@@ -25,12 +25,12 @@ class FunctionCall(SKBaseModel):
         return ContextVariables(variables={k.lower(): str(v) for k, v in args.items()})
 
     def split_name(self) -> Tuple[str, str]:
-        """Split the name into a skill and function name."""
+        """Split the name into a plugin and function name."""
         if "-" not in self.name:
             return None, self.name
         return self.name.split("-")
 
     def split_name_dict(self) -> dict:
-        """Split the name into a skill and function name."""
+        """Split the name into a plugin and function name."""
         parts = self.split_name()
-        return {"skill_name": parts[0], "function_name": parts[1]}
+        return {"plugin_name": parts[0], "function_name": parts[1]}
