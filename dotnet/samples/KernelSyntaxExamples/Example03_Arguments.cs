@@ -12,10 +12,6 @@ namespace Examples;
 // This example shows how to use kernel arguments when invoking functions.
 public class Example03_Arguments : BaseTest
 {
-    public Example03_Arguments(ITestOutputHelper output) : base(output)
-    {
-    }
-
     [Fact]
     public async Task RunAsync()
     {
@@ -45,5 +41,9 @@ public class Example03_Arguments : BaseTest
 
         // FunctionResult.ToString() automatically converts the result to string
         this.WriteLine($"FunctionResult.ToString() -> {functionResult}");
+    }
+
+    public Example03_Arguments(ITestOutputHelper output) : base(output)
+    {
     }
 }

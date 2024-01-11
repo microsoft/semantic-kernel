@@ -9,10 +9,6 @@ namespace Examples;
 
 public class Example01_MethodFunctions : BaseTest
 {
-    public Example01_MethodFunctions(ITestOutputHelper output) : base(output)
-    {
-    }
-
     [Fact]
     public Task RunAsync()
     {
@@ -27,5 +23,9 @@ public class Example01_MethodFunctions : BaseTest
         this.WriteLine(result);
 
         return Task.CompletedTask;
+    }
+
+    public Example01_MethodFunctions(ITestOutputHelper output) : base(output)
+    {
     }
 }
