@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Internal;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
-using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -20,9 +20,11 @@ public partial class AgentBuilder
 {
     private readonly AssistantModel _model;
     private readonly KernelPluginCollection _plugins;
-
+    private readonly HashSet<string> _tools;
+    private readonly List<string> _fileIds;
     private string? _apiKey;
     private Func<HttpClient>? _httpClientProvider;
+    private PromptTemplateConfig? _config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentBuilder"/> class.
@@ -31,6 +33,8 @@ public partial class AgentBuilder
     {
         this._model = new AssistantModel();
         this._plugins = new KernelPluginCollection();
+        this._tools = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        this._fileIds = new List<string>();
     }
 
     /// <summary>
@@ -50,10 +54,14 @@ public partial class AgentBuilder
             throw new AgentException("ApiKey must be provided for agent.");
         }
 
+        this._model.Tools.AddRange(this._tools.Select(t => new ToolModel { Type = t }));
+        this._model.FileIds.AddRange(this._fileIds.Distinct(StringComparer.OrdinalIgnoreCase));
+
         return
             await Agent.CreateAsync(
                 new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
                 this._model,
+                this._config,
                 this._plugins,
                 cancellationToken).ConfigureAwait(false);
     }
@@ -77,15 +85,21 @@ public partial class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder FromTemplate(string template)
     {
-        var deserializer = new DeserializerBuilder().Build();
+        this._config = KernelFunctionYaml.ToPromptTemplateConfig(template);
 
-        var agentKernelModel = deserializer.Deserialize<AgentConfigurationModel>(template);
+        this.WithInstructions(this._config.Template.Trim());
 
-        return
-            this
-                .WithInstructions(agentKernelModel.Instructions.Trim())
-                .WithName(agentKernelModel.Name.Trim())
-                .WithDescription(agentKernelModel.Description.Trim());
+        if (!string.IsNullOrWhiteSpace(this._config.Name))
+        {
+            this.WithName(this._config.Name?.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(this._config.Description))
+        {
+            this.WithDescription(this._config.Description?.Trim());
+        }
+
+        return this;
     }
 
     /// <summary>
@@ -170,6 +184,29 @@ public partial class AgentBuilder
     }
 
     /// <summary>
+    /// Enable the code-interpreter tool with this agent.
+    /// </summary>
+    /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
+    public AgentBuilder WithCodeInterpreter()
+    {
+        this._tools.Add(Agent.ToolCodeInterpreter);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Enable the retrieval tool with this agent.
+    /// </summary>
+    /// <param name="fileIds">Optional set of uploaded file identifiers.</param>
+    /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
+    public AgentBuilder WithRetrieval(params string[] fileIds)
+    {
+        this._tools.Add(Agent.ToolRetrieval);
+
+        return this.WithFiles(fileIds);
+    }
+
+    /// <summary>
     /// Define functions associated with agent instance (optional).
     /// </summary>
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
@@ -190,6 +227,36 @@ public partial class AgentBuilder
     public AgentBuilder WithPlugins(IEnumerable<KernelPlugin> plugins)
     {
         this._plugins.AddRange(plugins);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Associate an uploaded file with the agent, by identifier.
+    /// </summary>
+    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
+    public AgentBuilder WithFile(string fileId)
+    {
+        if (!string.IsNullOrWhiteSpace(fileId))
+        {
+            this._fileIds.Add(fileId);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Associate uploaded files with the agent, by identifier.
+    /// </summary>
+    /// <param name="fileIds">The uploaded file identifiers.</param>
+    /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
+    public AgentBuilder WithFiles(params string[] fileIds)
+    {
+        if (fileIds.Length > 0)
+        {
+            this._fileIds.AddRange(fileIds);
+        }
 
         return this;
     }
