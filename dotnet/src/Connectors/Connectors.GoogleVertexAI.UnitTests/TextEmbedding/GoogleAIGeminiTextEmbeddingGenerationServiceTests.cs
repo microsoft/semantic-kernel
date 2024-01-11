@@ -10,14 +10,14 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.TextEmbedding;
 
-public sealed class GoogleAIGeminiTextEmbeddingGenerationServiceTests
+public sealed class GoogleAITextEmbeddingGenerationServiceTests
 {
     [Fact]
     public void AttributesShouldContainModelId()
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new GoogleAIGeminiTextEmbeddingGenerationService(model, "key");
+        var service = new GoogleAITextEmbeddingGenerationService(model, "key");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);

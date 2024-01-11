@@ -215,13 +215,13 @@ public sealed class GeminiServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddGoogleAIGeminiEmbeddingsGeneration("modelId", "apiKey");
+        kernelBuilder.AddGoogleAIEmbeddingsGeneration("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
         var embeddingsGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
         Assert.NotNull(embeddingsGenerationService);
-        Assert.IsType<GoogleAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+        Assert.IsType<GoogleAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
     [Fact]
@@ -231,13 +231,13 @@ public sealed class GeminiServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddGoogleAIGeminiEmbeddingsGeneration("modelId", "apiKey");
+        services.AddGoogleAIEmbeddingsGeneration("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var embeddingsGenerationService = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
         Assert.NotNull(embeddingsGenerationService);
-        Assert.IsType<GoogleAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+        Assert.IsType<GoogleAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
     [Fact]
@@ -247,13 +247,13 @@ public sealed class GeminiServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddVertexAIGeminiEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        kernelBuilder.AddVertexAIEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
         var kernel = kernelBuilder.Build();
 
         // Assert
         var embeddingsGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
         Assert.NotNull(embeddingsGenerationService);
-        Assert.IsType<VertexAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+        Assert.IsType<VertexAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
     [Fact]
@@ -263,12 +263,12 @@ public sealed class GeminiServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddVertexAIGeminiEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        services.AddVertexAIEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var embeddingsGenerationService = serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
         Assert.NotNull(embeddingsGenerationService);
-        Assert.IsType<VertexAIGeminiTextEmbeddingGenerationService>(embeddingsGenerationService);
+        Assert.IsType<VertexAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 }

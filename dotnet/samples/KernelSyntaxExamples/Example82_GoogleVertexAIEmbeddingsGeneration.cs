@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
-public static class Example82_GeminiEmbeddingsGeneration
+public static class Example82_GoogleVertexAIEmbeddingsGeneration
 {
     public static async Task RunAsync()
     {
@@ -33,7 +33,7 @@ public static class Example82_GeminiEmbeddingsGeneration
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiEmbeddingsGeneration(
+            .AddGoogleAIEmbeddingsGeneration(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey)
             .Build();
@@ -57,7 +57,7 @@ public static class Example82_GeminiEmbeddingsGeneration
         }
 
         Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiEmbeddingsGeneration(
+            .AddVertexAIEmbeddingsGeneration(
                 modelId: geminiModelId,
                 apiKey: geminiApiKey,
                 location: geminiLocation,

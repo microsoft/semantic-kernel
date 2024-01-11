@@ -25,7 +25,7 @@ public sealed class GeminiEmbeddingGenerationTests
     {
         // Arrange
         const string Input = "Expand this abbreviation: LLM";
-        var geminiService = new GoogleAIGeminiTextEmbeddingGenerationService(this.GoogleAIGetModel(), this.GoogleAIGetApiKey());
+        var geminiService = new GoogleAITextEmbeddingGenerationService(this.GoogleAIGetModel(), this.GoogleAIGetApiKey());
 
         // Act
         var response = await geminiService.GenerateEmbeddingAsync(Input);
@@ -39,7 +39,7 @@ public sealed class GeminiEmbeddingGenerationTests
     {
         // Arrange
         const string Input = "Expand this abbreviation: LLM";
-        var geminiService = new VertexAIGeminiTextEmbeddingGenerationService(
+        var geminiService = new VertexAITextEmbeddingGenerationService(
             model: this.VertexAIGetModel(),
             apiKey: this.VertexAIGetApiKey(),
             location: this.VertexAIGetLocation(),

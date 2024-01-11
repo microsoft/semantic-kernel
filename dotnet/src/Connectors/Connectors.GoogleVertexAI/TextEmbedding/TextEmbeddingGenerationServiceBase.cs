@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-public class GeminiTextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationService
+public class TextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();
     private protected IEmbeddingsClient EmbeddingsClient { get; init; } = null!;

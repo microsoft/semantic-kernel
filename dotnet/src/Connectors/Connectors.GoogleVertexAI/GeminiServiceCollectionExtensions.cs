@@ -303,7 +303,7 @@ public static class GeminiServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Google AI Gemini embeddings generation service to the kernel builder.
+    /// Add Google AI embeddings generation service to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -311,7 +311,7 @@ public static class GeminiServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddGoogleAIGeminiEmbeddingsGeneration(
+    public static IKernelBuilder AddGoogleAIEmbeddingsGeneration(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
@@ -323,7 +323,7 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new GoogleAIGeminiTextEmbeddingGenerationService(
+            new GoogleAITextEmbeddingGenerationService(
                 model: modelId,
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -332,14 +332,14 @@ public static class GeminiServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Google AI Gemini embeddings generation service to the specified service collection.
+    /// Add Google AI embeddings generation service to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddGoogleAIGeminiEmbeddingsGeneration(
+    public static IServiceCollection AddGoogleAIEmbeddingsGeneration(
         this IServiceCollection services,
         string modelId,
         string apiKey,
@@ -350,7 +350,7 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new GoogleAIGeminiTextEmbeddingGenerationService(
+            new GoogleAITextEmbeddingGenerationService(
                 model: modelId,
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
@@ -358,7 +358,7 @@ public static class GeminiServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI Gemini embeddings generation service to the kernel builder.
+    /// Adds Vertex AI embeddings generation service to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -368,7 +368,7 @@ public static class GeminiServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddVertexAIGeminiEmbeddingsGeneration(
+    public static IKernelBuilder AddVertexAIEmbeddingsGeneration(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
@@ -384,7 +384,7 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(projectId);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new VertexAIGeminiTextEmbeddingGenerationService(
+            new VertexAITextEmbeddingGenerationService(
                 model: modelId,
                 apiKey: apiKey,
                 location: location,
@@ -395,7 +395,7 @@ public static class GeminiServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI Gemini embeddings generation service to the specified service collection.
+    /// Adds Vertex AI embeddings generation service to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
@@ -404,7 +404,7 @@ public static class GeminiServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddVertexAIGeminiEmbeddingsGeneration(
+    public static IServiceCollection AddVertexAIEmbeddingsGeneration(
         this IServiceCollection services,
         string modelId,
         string apiKey,
@@ -419,7 +419,7 @@ public static class GeminiServiceCollectionExtensions
         Verify.NotNull(projectId);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new VertexAIGeminiTextEmbeddingGenerationService(
+            new VertexAITextEmbeddingGenerationService(
                 model: modelId,
                 apiKey: apiKey,
                 location: location,

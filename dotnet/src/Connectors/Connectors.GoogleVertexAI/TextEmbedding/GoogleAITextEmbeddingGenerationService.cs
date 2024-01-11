@@ -17,16 +17,16 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a service for generating text embeddings using the Google AI Gemini API.
 /// </summary>
-public sealed class GoogleAIGeminiTextEmbeddingGenerationService : GeminiTextEmbeddingGenerationServiceBase
+public sealed class GoogleAITextEmbeddingGenerationService : TextEmbeddingGenerationServiceBase
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="GoogleAIGeminiTextEmbeddingGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="GoogleAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="model">The model identifier.</param>
     /// <param name="apiKey">The API key.</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public GoogleAIGeminiTextEmbeddingGenerationService(
+    public GoogleAITextEmbeddingGenerationService(
         string model,
         string apiKey,
         HttpClient? httpClient = null,
@@ -40,11 +40,11 @@ public sealed class GoogleAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
             embeddingModelId: model,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
             endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey),
-            logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextEmbeddingGenerationService)));
+            logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)));
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal GoogleAIGeminiTextEmbeddingGenerationService(IEmbeddingsClient client, string embeddingModelId)
+    internal GoogleAITextEmbeddingGenerationService(IEmbeddingsClient client, string embeddingModelId)
     {
         this.EmbeddingsClient = client;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, embeddingModelId);
