@@ -150,7 +150,7 @@ async def chat_completion_with_function_call(
     assert isinstance(
         chat_function._chat_prompt_template, OpenAIChatPromptTemplate
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
-    settings = chat_function._chat_prompt_template.prompt_config.completion
+    settings = chat_function._chat_prompt_template.prompt_config.execution_settings
     if current_call_count >= max_function_calls:
         settings.functions = []
     context = await chat_function.invoke_async(

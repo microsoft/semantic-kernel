@@ -39,11 +39,11 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
 
                 config["parameters"].append(
                     ParameterView(
-                        name,
-                        description,
-                        defaultValue,
-                        type_,
-                        required,
+                        name=name,
+                        description=description,
+                        default_value=defaultValue,
+                        type_=type_,
+                        required=required,
                     )
                 )
 

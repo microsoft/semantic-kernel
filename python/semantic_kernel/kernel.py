@@ -631,7 +631,7 @@ class Kernel:
             )
 
         function = SKFunction.from_semantic_config(plugin_name, function_name, function_config)
-        function.request_settings.update_from_ai_request_settings(function_config.prompt_template_config.completion)
+        function.request_settings.update_from_ai_request_settings(function_config.prompt_template_config.execution_settings)
 
         # Connect the function to the current kernel plugin
         # collection, in case the function is invoked manually
@@ -648,7 +648,7 @@ class Kernel:
             req_settings_type = service.__closure__[0].cell_contents.get_request_settings_class()
 
             function.set_chat_configuration(
-                req_settings_type.from_ai_request_settings(function_config.prompt_template_config.completion)
+                req_settings_type.from_ai_request_settings(function_config.prompt_template_config.execution_settings)
             )
 
             if service is None:
@@ -672,7 +672,7 @@ class Kernel:
             req_settings_type = service.__closure__[0].cell_contents.get_request_settings_class()
 
             function.set_ai_configuration(
-                req_settings_type.from_ai_request_settings(function_config.prompt_template_config.completion)
+                req_settings_type.from_ai_request_settings(function_config.prompt_template_config.execution_settings)
             )
 
             if service is None:

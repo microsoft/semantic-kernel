@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from typing import Optional
 from pydantic import Field, field_validator
 
 from semantic_kernel.sk_pydantic import SKBaseModel
@@ -11,8 +12,8 @@ class ParameterView(SKBaseModel):
     name: str
     description: str
     default_value: str
-    type_: str = Field(default="string", alias="type")
-    required: bool = False
+    type_: Optional[str] = Field(default="string", alias="type")
+    required: Optional[bool] = False
 
     @field_validator("name")
     @classmethod
