@@ -14,7 +14,7 @@ First, let's create a new project, targeting .NET 6 or newer, and add the
 `Microsoft.SemanticKernel` nuget package to your project from the command prompt
 in Visual Studio:
 
-    dotnet add package Microsoft.SemanticKernel --prerelease
+    dotnet add package Microsoft.SemanticKernel
 
 # Running prompts with input parameters
 
@@ -24,7 +24,7 @@ Copy and paste the following code into your project, with your Azure OpenAI key 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-var builder = new KernelBuilder();
+var builder = Kernel.CreateBuilder();
 
 builder.AddAzureOpenAIChatCompletion(
          "gpt-35-turbo",                      // Azure OpenAI Deployment Name
@@ -54,9 +54,9 @@ string text2 = @"
 2. The acceleration of an object depends on the mass of the object and the amount of force applied.
 3. Whenever one object exerts a force on another object, the second object exerts an equal and opposite on the first.";
 
-Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments(text1)));
+Console.WriteLine(await kernel.InvokeAsync(summarize, new() { ["input"] = text1 }));
 
-Console.WriteLine(await kernel.InvokeAsync(summarize, new KernelArguments(text2)));
+Console.WriteLine(await kernel.InvokeAsync(summarize, new() { ["input"] = text2 }));
 
 // Output:
 //   Energy conserved, entropy increases, zero entropy at 0K.
@@ -78,8 +78,8 @@ requirements and setup instructions.
 5. [Using Kernel Arguments to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
 6. [Creating and Executing Plans](./notebooks/05-using-the-planner.ipynb)
 7. [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-8. [Creating images with DALL-E 2](./notebooks/07-DALL-E-2.ipynb)
-9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-2.ipynb)
+8. [Creating images with DALL-E 3](./notebooks/07-DALL-E-3.ipynb)
+9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-3.ipynb)
 10. [BingSearch using Kernel](./notebooks/10-BingSearch-using-kernel.ipynb)
 
 # Nuget packages
@@ -102,13 +102,13 @@ Packages included in **Microsoft.SemanticKernel**:
    engineering, semantic memory and semantic functions definition and orchestration.
 1. **Microsoft.SemanticKernel.Connectors.OpenAI**: connectors to OpenAI and Azure
    OpenAI, allowing to run semantic functions, chats, text to image with GPT3,
-   GPT3.5, GPT4, DALL-E2.
+   GPT3.5, GPT4, DALL-E3.
 
 Other SK packages available at nuget.org:
 
-1. **Microsoft.SemanticKernel.Connectors.Memory.Qdrant**: Qdrant connector for
+1. **Microsoft.SemanticKernel.Connectors.Qdrant**: Qdrant connector for
    plugins and semantic memory.
-2. **Microsoft.SemanticKernel.Connectors.Memory.Sqlite**: SQLite connector for
+2. **Microsoft.SemanticKernel.Connectors.Sqlite**: SQLite connector for
    plugins and semantic memory
 3. **Microsoft.SemanticKernel.Plugins.Document**: Document Plugin: Word processing,
    OpenXML, etc.
@@ -117,4 +117,3 @@ Other SK packages available at nuget.org:
 5. **Microsoft.SemanticKernel.Plugins.OpenApi**: OpenAPI Plugin.
 6. **Microsoft.SemanticKernel.Plugins.Web**: Web Plugin: search the web, download
    files, etc.
-7. **Microsoft.SemanticKernel.Reliability.Polly**: Extension for http resiliency.

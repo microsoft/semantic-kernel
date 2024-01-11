@@ -16,12 +16,12 @@
     <Compile Remove="Example28_ActionPlanner.cs" />
     <Compile Remove="Example31_CustomPlanner.cs" />
     <Compile Remove="Example51_StepwisePlanner.cs" />
-    <Compile Remove="Example63_FlowOrchestrator.cs" />
     <Compile Remove="RepoUtils\PlanExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\GenerateStory.yaml" />
     <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+    <None Remove="Resources\travelinfo.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
@@ -57,6 +57,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" />
+    <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
@@ -93,5 +94,6 @@
     <EmbeddedResource Include="Resources\GenerateStoryHandlebars.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\travelinfo.txt" />
   </ItemGroup>
 </Project>

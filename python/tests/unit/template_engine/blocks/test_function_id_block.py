@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 
 from pytest import mark, raises
 
@@ -10,11 +9,8 @@ from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdB
 
 
 def test_init():
-    function_id_block = FunctionIdBlock(
-        content="skill.function", log=Logger("test_logger")
-    )
+    function_id_block = FunctionIdBlock(content="skill.function")
     assert function_id_block.content == "skill.function"
-    assert isinstance(function_id_block.log, Logger)
 
 
 def test_type_property():

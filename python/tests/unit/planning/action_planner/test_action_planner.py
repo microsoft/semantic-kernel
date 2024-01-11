@@ -66,12 +66,8 @@ async def test_plan_creation_async():
     mock_function = create_mock_function(function_view)
     skills.get_function.return_value = mock_function
 
-    context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
+    return_context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
 
     return_context.variables.update(plan_str)
 
@@ -113,19 +109,13 @@ def mock_context(skills_input):
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        _context = SKContext.model_construct(
-            variables=ContextVariables(), memory=memory, skill_collection=skills
-        )
+        _context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
         _context.variables.update("MOCK FUNCTION CALLED")
         mock_function.invoke_async.return_value = _context
         mock_functions.append(mock_function)
 
     skills.get_function.side_effect = lambda skill_name, function_name: next(
-        (
-            func
-            for func in mock_functions
-            if func.skill_name == skill_name and func.name == function_name
-        ),
+        (func for func in mock_functions if func.skill_name == skill_name and func.name == function_name),
         None,
     )
     skills.get_functions_view.return_value = functionsView
@@ -204,12 +194,8 @@ async def test_invalid_json_throw_async():
     mock_function = create_mock_function(function_view)
     skills.get_function.return_value = mock_function
 
-    context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
+    return_context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
 
     return_context.variables.update(plan_str)
 
@@ -243,12 +229,8 @@ async def test_empty_goal_throw_async():
     mock_function = create_mock_function(function_view)
     skills.get_function.return_value = mock_function
 
-    context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
+    return_context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
     mock_function.invoke_async.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List, Optional, Tuple
+import logging
+from typing import List, Tuple
 
 import numpy as np
 import redis
@@ -19,7 +19,8 @@ from semantic_kernel.connectors.memory.redis.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class RedisMemoryStore(MemoryStoreBase):
@@ -27,7 +28,6 @@ class RedisMemoryStore(MemoryStoreBase):
 
     _database: "redis.Redis"
     _ft: "redis.Redis.ft"
-    _logger: Logger
     # Without RedisAI, it is currently not possible to retrieve index-specific vector attributes to have
     # fully independent collections.
     _query_dialect: int
@@ -45,7 +45,7 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_type: str = "FLOAT32",
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
@@ -59,15 +59,15 @@ class RedisMemoryStore(MemoryStoreBase):
             vector_type {str} -- Vector type, defaults to FLOAT32
             vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
             query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-            logger {Optional[Logger]} -- Logger, defaults to None
 
         """
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if vector_size <= 0:
             raise ValueError("Vector dimension must be a positive integer")
 
         self._database = redis.Redis.from_url(connection_string)
         self._ft = self._database.ft
-        self._logger = logger or NullLogger()
 
         self._query_dialect = query_dialect
         self._vector_distance_metric = vector_distance_metric
@@ -80,7 +80,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         Closes the Redis database connection
         """
-        self._logger.info("Closing Redis connection")
+        logger.info("Closing Redis connection")
         self._database.close()
 
     async def create_collection_async(self, collection_name: str) -> None:
@@ -94,11 +94,9 @@ class RedisMemoryStore(MemoryStoreBase):
         """
 
         if await self.does_collection_exist_async(collection_name):
-            self._logger.info(f'Collection "{collection_name}" already exists.')
+            logger.info(f'Collection "{collection_name}" already exists.')
         else:
-            index_def = IndexDefinition(
-                prefix=f"{collection_name}:", index_type=IndexType.HASH
-            )
+            index_def = IndexDefinition(prefix=f"{collection_name}:", index_type=IndexType.HASH)
             schema = (
                 TextField(name="key"),
                 TextField(name="metadata"),
@@ -115,11 +113,9 @@ class RedisMemoryStore(MemoryStoreBase):
             )
 
             try:
-                self._ft(collection_name).create_index(
-                    definition=index_def, fields=schema
-                )
+                self._ft(collection_name).create_index(definition=index_def, fields=schema)
             except Exception as e:
-                self._logger.error(e)
+                logger.error(e)
                 raise e
 
     async def get_collections_async(self) -> List[str]:
@@ -132,9 +128,7 @@ class RedisMemoryStore(MemoryStoreBase):
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
 
-    async def delete_collection_async(
-        self, collection_name: str, delete_records: bool = True
-    ) -> None:
+    async def delete_collection_async(self, collection_name: str, delete_records: bool = True) -> None:
         """
         Deletes a collection from the data store.
         If the collection does not exist, the database is left unchanged.
@@ -181,7 +175,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
 
         if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
+            logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         # Typical Redis key structure: collection_name:{some identifier}
@@ -196,12 +190,10 @@ class RedisMemoryStore(MemoryStoreBase):
             )
             return record._key
         except Exception as e:
-            self._logger.error(e)
+            logger.error(e)
             raise e
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """
         Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
@@ -225,9 +217,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         return keys
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """
         Gets a memory record from the data store. Does not guarantee that the collection exists.
 
@@ -241,7 +231,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
 
         if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
+            logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         internal_key = get_redis_key(collection_name, key)
@@ -289,7 +279,7 @@ class RedisMemoryStore(MemoryStoreBase):
             key {str} -- ID associated with the memory to remove
         """
         if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
+            logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(get_redis_key(collection_name, key))
@@ -303,7 +293,7 @@ class RedisMemoryStore(MemoryStoreBase):
             keys {List[str]} -- IDs associated with the memory records to remove
         """
         if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
+            logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(*[get_redis_key(collection_name, key) for key in keys])
@@ -331,7 +321,7 @@ class RedisMemoryStore(MemoryStoreBase):
                 order, or an empty list if no relevant matches are found
         """
         if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
+            logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         # Perform a k-nearest neighbors query, score by similarity
@@ -358,9 +348,7 @@ class RedisMemoryStore(MemoryStoreBase):
             if score < min_relevance_score:
                 break
 
-            record = deserialize_document_to_record(
-                self._database, match, self._vector_type, with_embeddings
-            )
+            record = deserialize_document_to_record(self._database, match, self._vector_type, with_embeddings)
             relevant_records.append((record, score))
 
         return relevant_records

@@ -7,6 +7,7 @@ This connector uses Redis to implement Semantic Memory. It requires the [RediSea
 [RediSearch](https://redis.io/docs/interact/search-and-query/) is a source-available Redis module that enables querying, secondary indexing, and full-text search for Redis. These features enable multi-field queries, aggregation, exact phrase matching, numeric filtering, geo filtering and vector similarity semantic search on top of text queries.
 
 Ways to get RediSearch:
+
 1. You can create an [Azure Cache for Redis Enterpise instance](https://learn.microsoft.com/azure/azure-cache-for-redis/quickstart-create-redis-enterprise) and [enable RediSearch module](https://learn.microsoft.com/azure/azure-cache-for-redis/cache-redis-modules).
 
 1. Set up the RediSearch on your self-managed Redis, please refer to its [documentation](https://redis.io/docs/interact/search-and-query/quickstart/).
@@ -22,6 +23,7 @@ docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:la
 ```
 
 2. To use Redis as a semantic memory store:
+   > See [Example 14](../../../samples/KernelSyntaxExamples/Example14_SemanticMemory.cs) and [Example 15](../../../samples/KernelSyntaxExamples/Example15_TextMemoryPlugin.cs) for more memory usage examples with the kernel.
 
 ```csharp
 // ConnectionMultiplexer should be a singleton instance in your application, please consider to dispose of it when your application shuts down.
@@ -30,9 +32,9 @@ ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.Connec
 IDatabase database = connectionMultiplexer.GetDatabase();
 RedisMemoryStore memoryStore = new RedisMemoryStore(database, vectorSize: 1536);
 
-Kernel kernel = new KernelBuilder()
-    .WithLogger(ConsoleLogger.Logger)
-    .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
-    .WithMemoryStorage(memoryStore)
-    .Build();
+var embeddingGenerator = new OpenAITextEmbeddingGenerationService("text-embedding-ada-002", apiKey);
+
+SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
+
+var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 ```

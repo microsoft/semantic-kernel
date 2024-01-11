@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Experimental.Assistants</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Experimental.Assistants</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>alpha</VersionSuffix>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -14,9 +15,6 @@
     <Description>Semantic Kernel Assistants</Description>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="C:\Users\crickman\source\repos\semantic-kernel2/dotnet/nuget/icon.png" />
-  </ItemGroup>
-  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Assistants.UnitTests" />
   </ItemGroup>
   <ItemGroup>
@@ -25,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

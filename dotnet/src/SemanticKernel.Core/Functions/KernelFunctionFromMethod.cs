@@ -34,8 +34,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// </summary>
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
-    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -87,10 +87,24 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
         if (functionResult.Value is TResult result)
         {
             yield return result;
+            yield break;
+        }
+
+        // If the function returns an IAsyncEnumerable<T>, we can stream the results directly.
+        // This helps to enable composition, with a KernelFunctionFromMethod that returns an
+        // Invoke{Prompt}StreamingAsync and returns its result enumerable directly.
+        if (functionResult.Value is IAsyncEnumerable<TResult> asyncEnumerable)
+        {
+            await foreach (TResult item in asyncEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                yield return item;
+            }
+
             yield break;
         }
 
@@ -100,7 +114,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             if (functionResult.Value is not null)
             {
-                yield return (TResult)(object)new StreamingMethodContent(functionResult.Value);
+                yield return (TResult)(object)new StreamingMethodContent(functionResult.Value, functionResult.Metadata);
             }
             yield break;
         }
@@ -597,13 +611,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
     }
 
-    /// <summary>Tracks whether a particular kind of parameter has been seen, throwing an exception if it has, and marking it as seen if it hasn't</summary>
-    private static void TrackUniqueParameterType(ref bool hasParameterType, MethodInfo method, string failureMessage)
-    {
-        ThrowForInvalidSignatureIf(hasParameterType, method, failureMessage);
-        hasParameterType = true;
-    }
-
     /// <summary>
     /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
     /// </summary>
@@ -640,7 +647,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
                     object? Convert(CultureInfo culture)
                     {
-                        if (converter.CanConvertFrom(input?.GetType()))
+                        if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
                             // This line performs string to type conversion 
                             return converter.ConvertFrom(context: null, culture, input);
@@ -655,13 +662,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         // EnumConverter cannot convert integer, so we verify manually
                         if (targetType.IsEnum &&
                             (input is int ||
-                            input is uint ||
-                            input is long ||
-                            input is ulong ||
-                            input is short ||
-                            input is ushort ||
-                            input is byte ||
-                            input is sbyte))
+                             input is uint ||
+                             input is long ||
+                             input is ulong ||
+                             input is short ||
+                             input is ushort ||
+                             input is byte ||
+                             input is sbyte))
                         {
                             return Enum.ToObject(targetType, input);
                         }

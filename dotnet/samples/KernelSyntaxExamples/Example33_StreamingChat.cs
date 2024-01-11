@@ -29,10 +29,10 @@ public static class Example33_StreamingChat
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
-           TestConfiguration.AzureOpenAI.ChatDeploymentName,
-           TestConfiguration.AzureOpenAI.ChatModelId,
-           TestConfiguration.AzureOpenAI.Endpoint,
-           TestConfiguration.AzureOpenAI.ApiKey);
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         await StartStreamingChatAsync(chatCompletionService);
     }

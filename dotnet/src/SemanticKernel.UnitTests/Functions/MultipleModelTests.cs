@@ -125,6 +125,15 @@ public class MultipleModelTests
         var json = @"{
   ""template"": ""template"",
   ""description"": ""Semantic function"",
+""input_variables"":
+    [
+        {
+            ""name"": ""input variable name"",
+            ""description"": ""input variable description"",
+            ""default"": ""default value"",
+            ""is_required"": true
+        }
+    ],
   ""execution_settings"": {
     ""service2"": {
       ""max_tokens"": 100,

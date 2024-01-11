@@ -27,9 +27,7 @@ def create_mock_function(function_view: FunctionView):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "goal", ["Write a poem or joke and send it in an e-mail to Kai."]
-)
+@pytest.mark.parametrize("goal", ["Write a poem or joke and send it in an e-mail to Kai."])
 async def test_it_can_create_plan_async(goal):
     # Arrange
     kernel = Mock(spec=Kernel)
@@ -51,19 +49,13 @@ async def test_it_can_create_plan_async(goal):
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        context = SKContext.model_construct(
-            variables=ContextVariables(), memory=memory, skill_collection=skills
-        )
+        context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
         context.variables.update("MOCK FUNCTION CALLED")
         mock_function.invoke_async.return_value = context
         mock_functions.append(mock_function)
 
     skills.get_function.side_effect = lambda skill_name, function_name: next(
-        (
-            func
-            for func in mock_functions
-            if func.skill_name == skill_name and func.name == function_name
-        ),
+        (func for func in mock_functions if func.skill_name == skill_name and func.name == function_name),
         None,
     )
     skills.get_functions_view.return_value = functionsView
@@ -71,12 +63,8 @@ async def test_it_can_create_plan_async(goal):
     expected_functions = [x[0] for x in input]
     expected_skills = [x[1] for x in input]
 
-    context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
+    return_context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
     plan_string = """
 <plan>
     <function.SummarizeSkill.Summarize/>
@@ -101,10 +89,7 @@ async def test_it_can_create_plan_async(goal):
 
     # Assert
     assert plan.description == goal
-    assert any(
-        step.name in expected_functions and step.skill_name in expected_skills
-        for step in plan._steps
-    )
+    assert any(step.name in expected_functions and step.skill_name in expected_skills for step in plan._steps)
     for expected_function in expected_functions:
         assert any(step.name == expected_function for step in plan._steps)
     for expectedSkill in expected_skills:
@@ -137,9 +122,7 @@ async def test_invalid_xml_throws_async():
         variables=ContextVariables(plan_string), memory=memory, skill_collection=skills
     )
 
-    context = SKContext.model_construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
+    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, skill_collection=skills)
 
     mock_function_flow_function = Mock(spec=SKFunctionBase)
     mock_function_flow_function.invoke_async.return_value = return_context

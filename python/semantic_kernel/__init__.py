@@ -13,6 +13,7 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
+from semantic_kernel.utils.logging import setup_logging
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
     azure_aisearch_settings_from_dot_env,
@@ -51,4 +52,5 @@ __all__ = [
     "SKContext",
     "memory",
     "core_skills",
+    "setup_logging",
 ]
