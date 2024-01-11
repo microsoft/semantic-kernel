@@ -75,28 +75,16 @@ internal sealed class VertexAIGeminiTextGenerationClient : IGeminiTextGeneration
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var contents =
-            await this.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken)
-                .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(prompt);
+        var chatMessages = await this._chatCompletionClient
+            .GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken)
+            .ConfigureAwait(false);
 
-        return (from @group in contents.GroupBy(s => s.ChoiceIndex)
-                let metadata = new GeminiMetadata()
-                {
-                    CandidatesTokenCount = ((GeminiMetadata)@group.Last().Metadata!).CandidatesTokenCount,
-                    TotalTokenCount = ((GeminiMetadata)@group.Last().Metadata!).TotalTokenCount,
-                    PromptTokenCount = ((GeminiMetadata)@group.Last().Metadata!).PromptTokenCount,
-                    CurrentCandidateTokenCount = @group.Sum(s => ((GeminiMetadata)s.Metadata!).CurrentCandidateTokenCount),
-                    FinishReason = ((GeminiMetadata)@group.Last().Metadata!).FinishReason,
-                    Index = @group.Key,
-                    PromptFeedbackBlockReason = ((GeminiMetadata)@group.First().Metadata!).PromptFeedbackBlockReason,
-                    PromptFeedbackSafetyRatings = ((GeminiMetadata)@group.First().Metadata!).PromptFeedbackSafetyRatings,
-                    ResponseSafetyRatings = ((GeminiMetadata)@group.Last().Metadata!).ResponseSafetyRatings,
-                }
-                select new TextContent(
-                    text: @group.Aggregate(string.Empty, (s, content) => s += content.Text),
-                    modelId: @group.First().ModelId,
-                    encoding: @group.First().Encoding,
-                    metadata: metadata))
-            .ToList();
+        return chatMessages.Select(c => new TextContent(
+            text: c.Content,
+            modelId: c.ModelId,
+            encoding: c.Encoding,
+            metadata: c.Metadata)).ToList();
     }
 }
