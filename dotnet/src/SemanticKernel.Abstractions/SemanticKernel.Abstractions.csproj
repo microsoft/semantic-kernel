@@ -33,4 +33,8 @@
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Orchestration\" />
+  </ItemGroup>
 </Project>
