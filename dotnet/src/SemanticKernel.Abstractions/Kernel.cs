@@ -32,10 +32,10 @@ public sealed class Kernel
     private CultureInfo _culture = CultureInfo.InvariantCulture;
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
-    /// <summary>Contains collection of function filters.</summary>
-    private readonly IFunctionFilter[] _functionFilters;
-    /// <summary>Contains collection of prompt filters.</summary>
-    private readonly IPromptFilter[] _promptFilters;
+    /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private FunctionFilterCollection? _functionFilters;
+    /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private PromptFilterCollection? _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -59,10 +59,6 @@ public sealed class Kernel
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
 
-        // Store the provided function and prompt filters if they were registered.
-        this._functionFilters = this.Services.GetServices<IFunctionFilter>().ToArray();
-        this._promptFilters = this.Services.GetServices<IPromptFilter>().ToArray();
-
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
@@ -75,6 +71,22 @@ public sealed class Kernel
             {
                 this._plugins = new(e);
             }
+        }
+
+        // Enumerate any function filters that may have been registered.
+        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+
+        if (functionFilters is not ICollection<IFunctionFilter> functionFilterCollection || functionFilterCollection.Count != 0)
+        {
+            this._functionFilters = new(functionFilters);
+        }
+
+        // Enumerate any prompt filters that may have been registered.
+        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+
+        if (promptFilters is not ICollection<IPromptFilter> promptFilterCollection || promptFilterCollection.Count != 0)
+        {
+            this._promptFilters = new(promptFilters);
         }
     }
 
@@ -124,6 +136,24 @@ public sealed class Kernel
         this._plugins ??
         Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
         this._plugins;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0005")]
+    public FunctionFilterCollection FunctionFilters =>
+        this._functionFilters ??
+        Interlocked.CompareExchange(ref this._functionFilters, new FunctionFilterCollection(), null) ??
+        this._functionFilters;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0005")]
+    public PromptFilterCollection PromptFilters =>
+        this._promptFilters ??
+        Interlocked.CompareExchange(ref this._promptFilters, new PromptFilterCollection(), null) ??
+        this._promptFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -334,7 +364,7 @@ public sealed class Kernel
     {
         FunctionInvokingContext? context = null;
 
-        if (this._functionFilters is { Length: > 0 })
+        if (this._functionFilters is { Count: > 0 })
         {
             context = new(function, arguments);
 
@@ -352,7 +382,7 @@ public sealed class Kernel
     {
         FunctionInvokedContext? context = null;
 
-        if (this._functionFilters is { Length: > 0 })
+        if (this._functionFilters is { Count: > 0 })
         {
             context = new(arguments, result);
 
@@ -370,7 +400,7 @@ public sealed class Kernel
     {
         PromptRenderingContext? context = null;
 
-        if (this._promptFilters is { Length: > 0 })
+        if (this._promptFilters is { Count: > 0 })
         {
             context = new(function, arguments);
 
@@ -388,7 +418,7 @@ public sealed class Kernel
     {
         PromptRenderedContext? context = null;
 
-        if (this._promptFilters is { Length: > 0 })
+        if (this._promptFilters is { Count: > 0 })
         {
             context = new(function, arguments, renderedPrompt);
 
