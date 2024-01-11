@@ -26,7 +26,7 @@ class AIServiceClientBase(SKBaseModel, ABC):
     ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
     def get_request_settings_class(self) -> "AIRequestSettings":
-        """Create a request settings object."""
+        """Get the request settings class."""
         return AIRequestSettings  # pragma: no cover
 
     def instantiate_request_settings(self, **kwargs) -> "AIRequestSettings":

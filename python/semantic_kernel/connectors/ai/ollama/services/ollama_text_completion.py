@@ -38,6 +38,17 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         request_settings: OllamaTextRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {AIRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging (deprecated).
+
+            Returns:
+                Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+        """
         request_settings.prompt = prompt
         request_settings.stream = False
         async with AsyncSession(self.session) as session:
@@ -75,4 +86,5 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                         break
 
     def get_request_settings_class(self) -> "AIRequestSettings":
+        """Get the request settings class."""
         return OllamaTextRequestSettings

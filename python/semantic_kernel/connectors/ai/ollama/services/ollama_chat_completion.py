@@ -40,6 +40,18 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         request_settings: OllamaChatRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
+        """
+        This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+
+        Arguments:
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+                set of messages, from system, user, assistant and function.
+            settings {AIRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging. (Deprecated)
+
+        Returns:
+            Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+        """
         request_settings.messages = messages
         request_settings.stream = False
         async with AsyncSession(self.session) as session:
@@ -83,6 +95,17 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         request_settings: OllamaChatRequestSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {AIRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging (deprecated).
+
+            Returns:
+                Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+        """
         return await self.complete_chat_async([{"role": "user", "content": prompt}], request_settings, **kwargs)
 
     async def complete_stream_async(
@@ -107,4 +130,5 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
             yield line
 
     def get_request_settings_class(self) -> "AIRequestSettings":
+        """Get the request settings class."""
         return OllamaChatRequestSettings
