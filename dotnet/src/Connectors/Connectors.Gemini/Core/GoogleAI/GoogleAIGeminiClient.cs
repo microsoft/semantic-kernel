@@ -30,7 +30,8 @@ internal sealed class GoogleAIGeminiClient : GeminiClient
     /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream (optional)</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GoogleAIGeminiClient(
-        HttpClient httpClient, GeminiConfiguration configuration,
+        HttpClient httpClient,
+        GeminiConfiguration configuration,
         IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
         IStreamJsonParser? streamJsonParser = null,
