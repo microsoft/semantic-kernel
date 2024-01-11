@@ -6,6 +6,7 @@
 
 using System;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.VertexAI;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.VertexAI;
 

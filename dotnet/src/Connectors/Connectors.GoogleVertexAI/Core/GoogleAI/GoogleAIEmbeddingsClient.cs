@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.GoogleAI;
 
 /// <summary>
 /// Represents a client for interacting with the embeddings models by Google AI.
@@ -26,13 +26,13 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
     /// Represents a client for interacting with the embeddings models by Google AI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
-    /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
+    /// <param name="embeddingModelId">Embeddings generation model id</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
     /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GoogleAIEmbeddingsClient(
         HttpClient httpClient,
-        GeminiConfiguration configuration,
+        string embeddingModelId,
         IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
         ILogger? logger = null)
@@ -43,9 +43,8 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
             endpointProvider: endpointProvider,
             logger: logger)
     {
-        VerifyModelId(configuration);
-
-        this._embeddingModelId = configuration.EmbeddingModelId!;
+        Verify.NotNullOrWhiteSpace(embeddingModelId);
+        this._embeddingModelId = embeddingModelId;
     }
 
     /// <inheritdoc/>
@@ -66,12 +65,6 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
     }
 
     #region PRIVATE METHODS
-
-    private static void VerifyModelId(GeminiConfiguration configuration)
-    {
-        Verify.NotNullOrWhiteSpace(configuration?.EmbeddingModelId,
-            $"{nameof(configuration)}.{nameof(configuration.EmbeddingModelId)}");
-    }
 
     private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
         => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId);

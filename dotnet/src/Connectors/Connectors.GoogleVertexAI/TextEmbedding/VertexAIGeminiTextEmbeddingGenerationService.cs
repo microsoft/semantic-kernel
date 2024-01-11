@@ -7,8 +7,8 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.VertexAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.VertexAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -39,10 +39,9 @@ public sealed class VertexAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var geminiConfiguration = new GeminiConfiguration(apiKey) { EmbeddingModelId = model };
         this.EmbeddingsClient = new VertexAIEmbeddingsClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            configuration: geminiConfiguration,
+            embeddingModelId: model,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
             endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiTextEmbeddingGenerationService)));

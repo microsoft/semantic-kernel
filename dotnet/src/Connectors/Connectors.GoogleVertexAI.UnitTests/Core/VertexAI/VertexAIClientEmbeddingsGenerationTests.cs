@@ -12,10 +12,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.VertexAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.VertexAI;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.VertexAI;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.VertexAI;
 
 public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
 {
@@ -60,7 +61,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
     {
         var client = new VertexAIEmbeddingsClient(
             httpClient: this._httpClient,
-            configuration: geminiConfiguration,
+            embeddingModelId: geminiConfiguration.EmbeddingModelId!,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(geminiConfiguration.ApiKey),
             endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration("fake-loc", "fake-proj")));
         return client;

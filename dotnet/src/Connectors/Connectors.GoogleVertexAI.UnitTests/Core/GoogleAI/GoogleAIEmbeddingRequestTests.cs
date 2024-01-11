@@ -4,10 +4,10 @@
 
 #endregion
 
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.GoogleAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.GoogleAI;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.GoogleAI;
 
 public sealed class GoogleAIEmbeddingRequestTests
 {

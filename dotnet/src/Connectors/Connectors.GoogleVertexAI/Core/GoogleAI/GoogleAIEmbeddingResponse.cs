@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.GoogleAI;
 
 internal sealed class GoogleAIEmbeddingResponse
 {

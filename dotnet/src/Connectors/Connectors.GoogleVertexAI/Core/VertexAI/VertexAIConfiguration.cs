@@ -4,7 +4,7 @@
 
 #endregion
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.VertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.VertexAI;
 
 internal sealed class VertexAIConfiguration
 {

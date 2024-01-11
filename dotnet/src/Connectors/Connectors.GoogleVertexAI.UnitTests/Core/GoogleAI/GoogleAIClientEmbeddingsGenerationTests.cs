@@ -12,10 +12,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.GoogleAI;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.GoogleAI;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.GoogleAI;
 
 public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
 {
@@ -83,7 +84,7 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
     {
         var client = new GoogleAIEmbeddingsClient(
             httpClient: this._httpClient,
-            configuration: geminiConfiguration,
+            embeddingModelId: geminiConfiguration.EmbeddingModelId!,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
             endpointProvider: new GoogleAIGeminiEndpointProvider(geminiConfiguration.ApiKey));
         return client;
