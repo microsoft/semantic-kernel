@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using HandlebarsDotNet;
@@ -26,6 +27,40 @@ internal static class KernelHelpersUtils
         }
 
         handlebarsInstance.RegisterHelper(helperName, helper);
+    }
+
+    /// <summary>
+    /// Returns value if defined, else, tries to resolve value from given KernelArguments dictionary.
+    /// </summary>
+    /// <param name="argument">Argument to process.</param>
+    /// <param name="kernelArguments">Dictionary of variables maintained by the Handlebars context.</param>
+    internal static object? GetArgumentValue(object argument, KernelArguments kernelArguments)
+    {
+        // If the argument is of type UndefinedBindingResult, it means that Handlebars attempted to retrieve the value for a binding 
+        // but was unable to do so because the variable was not defined or not passed to the template context at the time of render.
+        // Thus, we try to get the value from the kernel arguments dictionary.
+        if (argument is UndefinedBindingResult result)
+        {
+            return kernelArguments.TryGetValue(result.Value, out var variable) ? variable : result.Value;
+        }
+
+        return argument;
+    }
+
+    /// <summary>
+    /// Processes arguments to resolve unbinded values. If argument was not bound to the Handlebars template at render time, get the value from the KernelArguments dictionary.
+    /// </summary>
+    /// <param name="arguments">Arguments to process.</param>
+    /// <param name="kernelArguments">Dictionary of variables maintained by the Handlebars context.</param>
+    /// <returns>Arguments with processed values.</returns>
+    internal static Arguments ProcessArguments(Arguments arguments, KernelArguments kernelArguments)
+    {
+        var processedArguments = arguments.Select(arg =>
+        {
+            return GetArgumentValue(arg, kernelArguments);
+        });
+
+        return new Arguments(processedArguments.ToArray());
     }
 
     /// <summary>

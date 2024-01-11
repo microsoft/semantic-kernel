@@ -23,9 +23,8 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     private void WriteSampleHeading(string name)
     {
-        this._output.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute {name} Plan ========");
+        this._output.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
-
     private async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -48,28 +47,31 @@ public class Example65_HandlebarsPlanner : BaseTest
                 modelId: chatModelId)
             .Build();
 
-        if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
+        if (pluginDirectoryNames.Length > 0)
         {
-            kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
-        {
-            kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == CourseraPluginName)
-        {
-            await kernel.ImportPluginFromOpenApiAsync(
-                CourseraPluginName,
-                new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
-            );
-        }
-        else
-        {
-            string folder = RepoFiles.SamplePluginsPath();
-
-            foreach (var pluginDirectoryName in pluginDirectoryNames)
+            if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
             {
-                kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+                kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
+            }
+            else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
+            {
+                kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
+            }
+            else if (pluginDirectoryNames[0] == CourseraPluginName)
+            {
+                await kernel.ImportPluginFromOpenApiAsync(
+                    CourseraPluginName,
+                    new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
+                );
+            }
+            else
+            {
+                string folder = RepoFiles.SamplePluginsPath();
+
+                foreach (var pluginDirectoryName in pluginDirectoryNames)
+                {
+                    kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+                }
             }
         }
 
@@ -114,7 +116,8 @@ public class Example65_HandlebarsPlanner : BaseTest
         }
         catch (KernelException ex) when (
             ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase))
+            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InvalidTemplate), StringComparison.CurrentCultureIgnoreCase))
         {
             /*
                 Unable to create plan for goal with available functions.
@@ -134,7 +137,7 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeading("Coursera");
+        this.WriteSampleHeading("Coursera OpenAPI Plugin");
         return RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
     }
 
@@ -142,7 +145,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeading("Dictionary");
+        this.WriteSampleHeading("Basic Types using Local Dictionary Plugin");
         return RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
@@ -164,7 +167,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(true)]
     public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeading("Complex Types with Local Dictionary Plugin");
+        this.WriteSampleHeading("Complex Types using Local Dictionary Plugin");
         return RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
@@ -200,7 +203,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeading("Poetry");
+        this.WriteSampleHeading("Multiple Plugins");
         return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
@@ -229,7 +232,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeading("Book Creation");
+        this.WriteSampleHeading("Loops and Conditionals");
         return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
