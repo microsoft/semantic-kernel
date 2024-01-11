@@ -2,10 +2,8 @@
 
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
@@ -24,7 +22,7 @@ public sealed class OpenAIFunctionToolCallTests
         var toolCall = new ChatCompletionsFunctionToolCall("id", toolCallName, string.Empty);
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
-        // Act && Assert
+        // Act & Assert
         Assert.Equal(expectedName, openAIFunctionToolCall.FullyQualifiedName);
     }
 

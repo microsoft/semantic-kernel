@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
@@ -76,6 +77,22 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
+    }
+
+    [Fact]
+    public async Task GetTextContentsWithEmptyChoicesThrowsExceptionAsync()
+    {
+        // Arrange
+        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"id\":\"response-id\",\"object\":\"text_completion\",\"created\":1646932609,\"model\":\"ada\",\"choices\":[]}")
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelException>(() => service.GetTextContentsAsync("Prompt"));
+
+        Assert.Equal("Text completions not found", exception.Message);
     }
 
     [Fact]
