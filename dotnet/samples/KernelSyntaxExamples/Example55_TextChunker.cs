@@ -20,7 +20,7 @@ public class Example55_TextChunker : BaseTest
     [Fact]
     public void RunExample()
     {
-        this._output.WriteLine("=== Text chunking ===");
+        WriteLine("=== Text chunking ===");
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120);
@@ -35,7 +35,7 @@ public class Example55_TextChunker : BaseTest
     [InlineData(TokenCounterType.DeepDev)]
     public void RunExampleForTokenCounterType(TokenCounterType counterType)
     {
-        this._output.WriteLine($"=== Text chunking with a custom({counterType}) token counter ===");
+        WriteLine($"=== Text chunking with a custom({counterType}) token counter ===");
         var sw = new Stopwatch();
         sw.Start();
         var tokenCounter = s_tokenCounterFactory(counterType);
@@ -44,14 +44,14 @@ public class Example55_TextChunker : BaseTest
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: tokenCounter);
 
         sw.Stop();
-        this._output.WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
+        WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
         WriteParagraphsToConsole(paragraphs);
     }
 
     [Fact]
     public void RunExampleWithHeader()
     {
-        this._output.WriteLine("=== Text chunking with chunk header ===");
+        WriteLine("=== Text chunking with chunk header ===");
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
@@ -63,11 +63,11 @@ public class Example55_TextChunker : BaseTest
     {
         for (var i = 0; i < paragraphs.Count; i++)
         {
-            this._output.WriteLine(paragraphs[i]);
+            WriteLine(paragraphs[i]);
 
             if (i < paragraphs.Count - 1)
             {
-                this._output.WriteLine("------------------------");
+                WriteLine("------------------------");
             }
         }
     }

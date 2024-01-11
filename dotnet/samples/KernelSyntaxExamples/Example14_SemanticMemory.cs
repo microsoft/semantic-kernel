@@ -26,9 +26,9 @@ public class Example14_SemanticMemory : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("==============================================================");
-        this._output.WriteLine("======== Semantic Memory using Azure AI Search ========");
-        this._output.WriteLine("==============================================================");
+        WriteLine("==============================================================");
+        WriteLine("======== Semantic Memory using Azure AI Search ========");
+        WriteLine("==============================================================");
 
         /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
@@ -43,9 +43,9 @@ public class Example14_SemanticMemory : BaseTest
 
         await RunExampleAsync(memoryWithACS);
 
-        this._output.WriteLine("====================================================");
-        this._output.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
-        this._output.WriteLine("====================================================");
+        WriteLine("====================================================");
+        WriteLine("======== Semantic Memory (volatile, in RAM) ========");
+        WriteLine("====================================================");
 
         /* You can build your own semantic memory combining an Embedding Generator
          * with a Memory storage that supports search by similarity (ie semantic search).
@@ -105,21 +105,21 @@ public class Example14_SemanticMemory : BaseTest
 
     private async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
     {
-        this._output.WriteLine("\nQuery: " + query + "\n");
+        WriteLine("\nQuery: " + query + "\n");
 
         var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
         await foreach (MemoryQueryResult memoryResult in memoryResults)
         {
-            this._output.WriteLine($"Result {++i}:");
-            this._output.WriteLine("  URL:     : " + memoryResult.Metadata.Id);
-            this._output.WriteLine("  Title    : " + memoryResult.Metadata.Description);
-            this._output.WriteLine("  Relevance: " + memoryResult.Relevance);
-            this._output.WriteLine();
+            WriteLine($"Result {++i}:");
+            WriteLine("  URL:     : " + memoryResult.Metadata.Id);
+            WriteLine("  Title    : " + memoryResult.Metadata.Description);
+            WriteLine("  Relevance: " + memoryResult.Relevance);
+            WriteLine();
         }
 
-        this._output.WriteLine("----------------------");
+        WriteLine("----------------------");
     }
 
     private async Task StoreMemoryAsync(ISemanticTextMemory memory)
@@ -132,7 +132,7 @@ public class Example14_SemanticMemory : BaseTest
          * care of creating and storing the index
          */
 
-        this._output.WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
+        WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
         var githubFiles = SampleData();
         var i = 0;
         foreach (var entry in githubFiles)
@@ -147,7 +147,7 @@ public class Example14_SemanticMemory : BaseTest
             Console.Write($" #{++i} saved.");
         }
 
-        this._output.WriteLine("\n----------------------");
+        WriteLine("\n----------------------");
     }
 
     private static Dictionary<string, string> SampleData()

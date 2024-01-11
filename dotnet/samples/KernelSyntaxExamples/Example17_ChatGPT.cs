@@ -15,7 +15,7 @@ public class Example17_ChatGPT : BaseTest
     [Fact]
     public async Task OpenAIChatSampleAsync()
     {
-        this._output.WriteLine("======== Open AI - ChatGPT ========");
+        WriteLine("======== Open AI - ChatGPT ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -53,7 +53,7 @@ public class Example17_ChatGPT : BaseTest
     [Fact]
     public async Task AzureOpenAIChatSampleAsync()
     {
-        this._output.WriteLine("======== Azure Open AI - ChatGPT ========");
+        WriteLine("======== Azure Open AI - ChatGPT ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -66,8 +66,8 @@ public class Example17_ChatGPT : BaseTest
 
     private async Task StartChatAsync(IChatCompletionService chatGPT)
     {
-        this._output.WriteLine("Chat content:");
-        this._output.WriteLine("------------------------");
+        WriteLine("Chat content:");
+        WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
@@ -97,8 +97,8 @@ public class Example17_ChatGPT : BaseTest
     {
         var message = chatHistory.Last();
 
-        this._output.WriteLine($"{message.Role}: {message.Content}");
-        this._output.WriteLine("------------------------");
+        WriteLine($"{message.Role}: {message.Content}");
+        WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

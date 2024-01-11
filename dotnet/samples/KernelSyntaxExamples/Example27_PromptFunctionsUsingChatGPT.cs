@@ -15,7 +15,7 @@ public class Example27_PromptFunctionsUsingChatGPT : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== Using Chat GPT model for text generation ========");
+        WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -29,7 +29,7 @@ public class Example27_PromptFunctionsUsingChatGPT : BaseTest
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
         var result = await func.InvokeAsync(kernel, new() { ["input"] = "Jupiter" });
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
 
         /*
         Output:

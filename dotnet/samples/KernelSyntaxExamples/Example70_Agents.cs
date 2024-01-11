@@ -31,7 +31,7 @@ public class Example70_Agent : BaseTest
     [Fact]
     public Task RunSimpleChatAsync()
     {
-        this._output.WriteLine("======== Run:SimpleChat ========");
+        WriteLine("======== Run:SimpleChat ========");
 
         // Call the common chat-loop
         return ChatAsync(
@@ -50,7 +50,7 @@ public class Example70_Agent : BaseTest
     [Fact]
     public Task RunWithMethodFunctionsAsync()
     {
-        this._output.WriteLine("======== Run:WithMethodFunctions ========");
+        WriteLine("======== Run:WithMethodFunctions ========");
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
@@ -72,7 +72,7 @@ public class Example70_Agent : BaseTest
     [Fact]
     public Task RunWithPromptFunctionsAsync()
     {
-        this._output.WriteLine("======== WithPromptFunctions ========");
+        WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
         var function = KernelFunctionFactory.CreateFromPrompt(
@@ -99,7 +99,7 @@ public class Example70_Agent : BaseTest
     [Fact]
     public async Task RunAsFunctionAsync()
     {
-        this._output.WriteLine("======== Run:AsFunction ========");
+        WriteLine("======== Run:AsFunction ========");
 
         // Create parrot agent, same as the other cases.
         var agent =
@@ -114,7 +114,7 @@ public class Example70_Agent : BaseTest
             var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.", new KernelArguments { { "count", 2 } });
 
             // Display result.
-            this._output.WriteLine(response ?? $"No response from agent: {agent.Id}");
+            WriteLine(response ?? $"No response from agent: {agent.Id}");
         }
         finally
         {

@@ -34,8 +34,8 @@ public class Example49_LogitBias : BaseTest
             TokenSelectionBiases = keys.ToDictionary(key => key, key => -100)
         };
 
-        this._output.WriteLine("Chat content:");
-        this._output.WriteLine("------------------------");
+        WriteLine("Chat content:");
+        WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian expert");
 
@@ -75,8 +75,8 @@ public class Example49_LogitBias : BaseTest
     {
         var message = chatHistory.Last();
 
-        this._output.WriteLine($"{message.Role}: {message.Content}");
-        this._output.WriteLine("------------------------");
+        WriteLine($"{message.Role}: {message.Content}");
+        WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

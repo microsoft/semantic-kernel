@@ -29,7 +29,7 @@ public class Example35_GrpcPlugins : BaseTest
         // Run
         var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
-        this._output.WriteLine("Plugin response: {0}", result.GetValue<string>());
+        WriteLine($"Plugin response: {result.GetValue<string>()}");
     }
 
     public Example35_GrpcPlugins(ITestOutputHelper output) : base(output)

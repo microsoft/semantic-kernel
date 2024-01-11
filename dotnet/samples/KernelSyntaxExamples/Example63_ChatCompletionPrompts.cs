@@ -27,21 +27,21 @@ public class Example63_ChatCompletionPrompts : BaseTest
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        this._output.WriteLine("Chat Prompt:");
-        this._output.WriteLine(ChatPrompt);
-        this._output.WriteLine("Chat Prompt Result:");
-        this._output.WriteLine(chatPromptResult);
+        WriteLine("Chat Prompt:");
+        WriteLine(ChatPrompt);
+        WriteLine("Chat Prompt Result:");
+        WriteLine(chatPromptResult);
 
-        this._output.WriteLine("Chat Prompt Streaming Result:");
+        WriteLine("Chat Prompt Streaming Result:");
         string completeMessage = string.Empty;
         await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
         {
             completeMessage += message;
-            this._output.Write(message);
+            Write(message);
         }
 
-        this._output.WriteLine("---------- Streamed Content ----------");
-        this._output.WriteLine(completeMessage);
+        WriteLine("---------- Streamed Content ----------");
+        WriteLine(completeMessage);
 
         /*
         Chat Prompt:

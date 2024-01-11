@@ -174,25 +174,25 @@ public class Example15_TextMemoryPlugin : BaseTest
         //
         // This is a simple way to store memories from a code perspective, without using the Kernel.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        this._output.WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
+        WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
 
-        this._output.WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
+        WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea");
 
-        this._output.WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
+        WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator");
 
-        this._output.WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
+        WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005");
 
-        this._output.WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
+        WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015");
 
         // Retrieve a memory
-        this._output.WriteLine("== PART 1b: Retrieving Memories through the ISemanticTextMemory object ==");
+        WriteLine("== PART 1b: Retrieving Memories through the ISemanticTextMemory object ==");
         MemoryQueryResult? lookup = await textMemory.GetAsync(MemoryCollectionName, "info1");
-        this._output.WriteLine("Memory with key 'info1':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
-        this._output.WriteLine();
+        WriteLine("Memory with key 'info1':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
+        WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 2: Create TextMemoryPlugin, store and retrieve memories through the Kernel.
@@ -200,13 +200,13 @@ public class Example15_TextMemoryPlugin : BaseTest
         // This enables prompt functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        this._output.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
+        WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
         // Import the TextMemoryPlugin into the Kernel for other functions
         var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 
         // Save a memory with the Kernel
-        this._output.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+        WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
         await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
             [TextMemoryPlugin.InputParam] = "My family is from New York",
@@ -215,15 +215,15 @@ public class Example15_TextMemoryPlugin : BaseTest
         });
 
         // Retrieve a specific memory with the Kernel
-        this._output.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
+        WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
         var result = await kernel.InvokeAsync(memoryPlugin["Retrieve"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5"
         });
 
-        this._output.WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
-        this._output.WriteLine();
+        WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
+        WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 3: Recall similar ideas with semantic search
@@ -231,10 +231,10 @@ public class Example15_TextMemoryPlugin : BaseTest
         // Uses AI Embeddings for fuzzy lookup of memories based on intent, rather than a specific key.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        this._output.WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
+        WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
 
-        this._output.WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
-        this._output.WriteLine("Ask: where did I grow up?");
+        WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
+        WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
             collection: MemoryCollectionName,
@@ -243,11 +243,11 @@ public class Example15_TextMemoryPlugin : BaseTest
             minRelevanceScore: 0.79,
             withEmbeddings: true))
         {
-            this._output.WriteLine($"Answer: {answer.Metadata.Text}");
+            WriteLine($"Answer: {answer.Metadata.Text}");
         }
 
-        this._output.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
-        this._output.WriteLine("Ask: where do I live?");
+        WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
+        WriteLine("Ask: where do I live?");
 
         result = await kernel.InvokeAsync(memoryPlugin["Recall"], new()
         {
@@ -257,8 +257,8 @@ public class Example15_TextMemoryPlugin : BaseTest
             [TextMemoryPlugin.RelevanceParam] = "0.79",
         });
 
-        this._output.WriteLine($"Answer: {result.GetValue<string>()}");
-        this._output.WriteLine();
+        WriteLine($"Answer: {result.GetValue<string>()}");
+        WriteLine();
 
         /*
         Output:
@@ -279,7 +279,7 @@ public class Example15_TextMemoryPlugin : BaseTest
         // the text generation model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        this._output.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
+        WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
 
         // Build a prompt function that uses memory to find facts
         const string RecallFunctionDefinition = @"
@@ -305,8 +305,8 @@ Answer:
             [TextMemoryPlugin.RelevanceParam] = "0.79",
         });
 
-        this._output.WriteLine("Ask: Do I live in the same town where I grew up?");
-        this._output.WriteLine($"Answer: {result.GetValue<string>()}");
+        WriteLine("Ask: Do I live in the same town where I grew up?");
+        WriteLine($"Answer: {result.GetValue<string>()}");
 
         /*
         Approximate Output:
@@ -318,25 +318,25 @@ Answer:
         //
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        this._output.WriteLine("== PART 5: Cleanup, deleting database collection ==");
+        WriteLine("== PART 5: Cleanup, deleting database collection ==");
 
-        this._output.WriteLine("Printing Collections in DB...");
+        WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync();
         await foreach (var collection in collections)
         {
-            this._output.WriteLine(collection);
+            WriteLine(collection);
         }
-        this._output.WriteLine();
+        WriteLine();
 
-        this._output.WriteLine("Removing Collection {0}", MemoryCollectionName);
+        WriteLine($"Removing Collection {MemoryCollectionName}");
         await memoryStore.DeleteCollectionAsync(MemoryCollectionName);
-        this._output.WriteLine();
+        WriteLine();
 
-        this._output.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
+        WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync();
         await foreach (var collection in collections)
         {
-            this._output.WriteLine(collection);
+            WriteLine(collection);
         }
     }
 

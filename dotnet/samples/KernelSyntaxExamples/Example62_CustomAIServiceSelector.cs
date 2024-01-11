@@ -20,7 +20,7 @@ public class Example62_CustomAIServiceSelector : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== Example62_CustomAIServiceSelector ========");
+        WriteLine("======== Example62_CustomAIServiceSelector ========");
 
         // Build a kernel with multiple chat completion services
         var builder = Kernel.CreateBuilder()
@@ -34,13 +34,13 @@ public class Example62_CustomAIServiceSelector : BaseTest
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 serviceId: "OpenAIChat");
-        builder.Services.AddSingleton<IAIServiceSelector>(new GptAIServiceSelector(this._output)); // Use the custom AI service selector to select the GPT model
+        builder.Services.AddSingleton<IAIServiceSelector>(new GptAIServiceSelector(this.Output)); // Use the custom AI service selector to select the GPT model
         Kernel kernel = builder.Build();
 
         // This invocation is done with the model selected by the custom selector
         var prompt = "Hello AI, what can you do for me?";
         var result = await kernel.InvokePromptAsync(prompt);
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     /// <summary>

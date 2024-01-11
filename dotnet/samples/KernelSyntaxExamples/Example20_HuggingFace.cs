@@ -17,7 +17,7 @@ public class Example20_HuggingFace : BaseTest
     [Fact]
     public async Task RunInferenceApiExampleAsync()
     {
-        this._output.WriteLine("\n======== HuggingFace Inference API example ========\n");
+        WriteLine("\n======== HuggingFace Inference API example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
@@ -29,7 +29,7 @@ public class Example20_HuggingFace : BaseTest
 
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class Example20_HuggingFace : BaseTest
     [Fact(Skip = "Requires local model or Huggingface Pro subscription")]
     public async Task RunLlamaExampleAsync()
     {
-        this._output.WriteLine("\n======== HuggingFace Llama 2 example ========\n");
+        WriteLine("\n======== HuggingFace Llama 2 example ========\n");
 
         // HuggingFace Llama 2 model: https://huggingface.co/meta-llama/Llama-2-7b-hf
         const string Model = "meta-llama/Llama-2-7b-hf";
@@ -65,7 +65,7 @@ public class Example20_HuggingFace : BaseTest
 
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     public Example20_HuggingFace(ITestOutputHelper output) : base(output)

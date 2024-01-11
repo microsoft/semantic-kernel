@@ -22,7 +22,7 @@ public class Example60_AdvancedMethodFunctions : BaseTest
     [Fact]
     public async Task MethodFunctionsChainingAsync()
     {
-        this._output.WriteLine("Running Method Function Chaining example...");
+        WriteLine("Running Method Function Chaining example...");
 
         var kernel = new Kernel();
 
@@ -30,8 +30,8 @@ public class Example60_AdvancedMethodFunctions : BaseTest
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
-        this._output.WriteLine($"CustomType.Number: {customType!.Number}"); // 2
-        this._output.WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
+        WriteLine($"CustomType.Number: {customType!.Number}"); // 2
+        WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
     }
 
     /// <summary>

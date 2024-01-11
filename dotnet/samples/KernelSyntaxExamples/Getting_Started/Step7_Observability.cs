@@ -31,13 +31,13 @@ public class Step7_Observability : BaseTest
         // Handler which is called before a function is invoked
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            this._output.WriteLine($"Invoking {e.Function.Name}");
+            WriteLine($"Invoking {e.Function.Name}");
         }
 
         // Handler which is called after a prompt is rendered
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            this._output.WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
+            WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
         }
 
         // Handler which is called after a function is invoked
@@ -45,7 +45,7 @@ public class Step7_Observability : BaseTest
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                this._output.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
             }
         }
 
@@ -56,7 +56,7 @@ public class Step7_Observability : BaseTest
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        this._output.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>

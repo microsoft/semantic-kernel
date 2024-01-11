@@ -36,7 +36,7 @@ public class Example61_MultipleLLMs : BaseTest
 
     private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
-        this._output.WriteLine($"======== Service Id: {serviceId} ========");
+        WriteLine($"======== Service Id: {serviceId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -46,12 +46,12 @@ public class Example61_MultipleLLMs : BaseTest
             { serviceId, new PromptExecutionSettings() }
         };
         var result = await kernel.InvokePromptAsync(prompt, arguments);
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     private async Task RunByModelIdAsync(Kernel kernel, string modelId)
     {
-        this._output.WriteLine($"======== Model Id: {modelId} ========");
+        WriteLine($"======== Model Id: {modelId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -61,12 +61,12 @@ public class Example61_MultipleLLMs : BaseTest
            {
                ModelId = modelId
            }));
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     private async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
     {
-        this._output.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
+        WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -80,7 +80,7 @@ public class Example61_MultipleLLMs : BaseTest
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
 
         var result = await kernel.InvokeAsync(function);
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     public Example61_MultipleLLMs(ITestOutputHelper output) : base(output)

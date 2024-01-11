@@ -30,26 +30,26 @@ public class Step1_Create_Kernel : BaseTest
             .Build();
 
         // Example 1. Invoke the kernel with a prompt and display the result
-        this._output.WriteLine(await kernel.InvokePromptAsync("What color is the sky?"));
-        this._output.WriteLine();
+        WriteLine(await kernel.InvokePromptAsync("What color is the sky?"));
+        WriteLine();
 
         // Example 2. Invoke the kernel with a templated prompt and display the result
         KernelArguments arguments = new() { { "topic", "sea" } };
-        this._output.WriteLine(await kernel.InvokePromptAsync("What color is the {{$topic}}?", arguments));
-        this._output.WriteLine();
+        WriteLine(await kernel.InvokePromptAsync("What color is the {{$topic}}?", arguments));
+        WriteLine();
 
         // Example 3. Invoke the kernel with a templated prompt and stream the results to the display
 
         await foreach (var update in kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
-            this._output.Write(update);
+            Write(update);
             // Console.Write(update);
         }
 
-        this._output.WriteLine(string.Empty);
+        WriteLine(string.Empty);
 
         // Example 4. Invoke the kernel with a templated prompt and execution settings
         arguments = new(new OpenAIPromptExecutionSettings { MaxTokens = 500, Temperature = 0.5 }) { { "topic", "dogs" } };
-        this._output.WriteLine(await kernel.InvokePromptAsync("Tell me a story about {{$topic}}", arguments));
+        WriteLine(await kernel.InvokePromptAsync("Tell me a story about {{$topic}}", arguments));
     }
 }

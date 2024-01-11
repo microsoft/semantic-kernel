@@ -30,8 +30,8 @@ public class Example72_AgentCollaboration : BaseTest
     [Fact(Skip = "This test take more than 5 minutes to execute")]
     public async Task RunCollaborationAsync()
     {
-        this._output.WriteLine("======== Example72_AgentCollaboration ========");
-        this._output.WriteLine("======== Run:Collaboration ========");
+        WriteLine("======== Example72_AgentCollaboration ========");
+        WriteLine("======== Run:Collaboration ========");
         IAgentThread? thread = null;
         try
         {
@@ -83,8 +83,8 @@ public class Example72_AgentCollaboration : BaseTest
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginsAsync()
     {
-        this._output.WriteLine("======== Example72_AgentCollaboration ========");
-        this._output.WriteLine("======== Run:AsPlugins ========");
+        WriteLine("======== Example72_AgentCollaboration ========");
+        WriteLine("======== Run:AsPlugins ========");
         try
         {
             // Create copy-writer agent to generate ideas
@@ -106,7 +106,7 @@ public class Example72_AgentCollaboration : BaseTest
             var response = await coordinator.AsPlugin().InvokeAsync("concept: maps made out of egg cartons.");
 
             // Display final result
-            this._output.WriteLine(response);
+            WriteLine(response);
         }
         finally
         {
@@ -150,14 +150,14 @@ public class Example72_AgentCollaboration : BaseTest
 
     private void DisplayMessage(IChatMessage message, IAgent? agent = null)
     {
-        this._output.WriteLine($"[{message.Id}]");
+        WriteLine($"[{message.Id}]");
         if (agent != null)
         {
-            this._output.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
+            WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }
         else
         {
-            this._output.WriteLine($"# {message.Role}: {message.Content}");
+            WriteLine($"# {message.Role}: {message.Content}");
         }
     }
 

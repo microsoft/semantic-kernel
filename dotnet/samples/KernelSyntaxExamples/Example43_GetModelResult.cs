@@ -13,7 +13,7 @@ public class Example43_GetModelResult : BaseTest
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
     {
-        this._output.WriteLine("======== Inline Function Definition + Invocation ========");
+        WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
         Kernel kernel = Kernel.CreateBuilder()
@@ -30,9 +30,9 @@ public class Example43_GetModelResult : BaseTest
         FunctionResult result = await kernel.InvokeAsync(myFunction, new() { ["input"] = "travel" });
 
         // Display results
-        this._output.WriteLine(result.GetValue<string>());
-        this._output.WriteLine(result.Metadata?["Usage"]?.AsJson());
-        this._output.WriteLine();
+        WriteLine(result.GetValue<string>());
+        WriteLine(result.Metadata?["Usage"]?.AsJson());
+        WriteLine();
     }
 
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)

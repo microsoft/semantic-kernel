@@ -31,7 +31,7 @@ public class Step4_Dependency_Injection : BaseTest
         KernelArguments arguments = new() { { "topic", "earth when viewed from space" } };
         await foreach (var update in kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
-            this._output.Write(update);
+            Write(update);
         }
     }
 

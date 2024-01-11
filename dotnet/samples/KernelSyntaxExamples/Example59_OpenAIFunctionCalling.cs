@@ -50,24 +50,24 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
         });
 
-        this._output.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+        WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-            this._output.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
-            this._output.WriteLine();
+            WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+            WriteLine();
         }
 
-        this._output.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+        WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
-                this._output.Write(update);
+                Write(update);
             }
-            this._output.WriteLine();
+            WriteLine();
         }
 
-        this._output.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
@@ -80,7 +80,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
 
                 if (result.Content is not null)
                 {
-                    this._output.Write(result.Content);
+                    Write(result.Content);
                 }
 
                 List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
@@ -103,7 +103,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 }
             }
 
-            this._output.WriteLine();
+            WriteLine();
         }
 
         /* Uncomment this to try in a console chat loop.

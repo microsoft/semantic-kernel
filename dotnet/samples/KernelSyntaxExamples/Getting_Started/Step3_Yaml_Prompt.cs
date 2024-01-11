@@ -31,7 +31,7 @@ public class Step3_Yaml_Prompt : BaseTest
         var function = kernel.CreateFunctionFromPromptYaml(generateStoryYaml);
 
         // Invoke the prompt function and display the result
-        this._output.WriteLine(await kernel.InvokeAsync(function, arguments: new()
+        WriteLine(await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Dog" },
                 { "length", "3" },
@@ -42,7 +42,7 @@ public class Step3_Yaml_Prompt : BaseTest
         function = kernel.CreateFunctionFromPromptYaml(generateStoryHandlebarsYaml, new HandlebarsPromptTemplateFactory());
 
         // Invoke the prompt function and display the result
-        this._output.WriteLine(await kernel.InvokeAsync(function, arguments: new()
+        WriteLine(await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Cat" },
                 { "length", "3" },

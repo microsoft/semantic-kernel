@@ -15,7 +15,7 @@ public class Example33_StreamingChat : BaseTest
     [Fact]
     public Task OpenAIChatStreamSampleAsync()
     {
-        this._output.WriteLine("======== Open AI - ChatGPT Streaming ========");
+        WriteLine("======== Open AI - ChatGPT Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -25,7 +25,7 @@ public class Example33_StreamingChat : BaseTest
     [Fact]
     public Task AzureOpenAIChatStreamSampleAsync()
     {
-        this._output.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
+        WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -38,8 +38,8 @@ public class Example33_StreamingChat : BaseTest
 
     private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
     {
-        this._output.WriteLine("Chat content:");
-        this._output.WriteLine("------------------------");
+        WriteLine("Chat content:");
+        WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian, expert about books");
         await MessageOutputAsync(chatHistory);
@@ -68,18 +68,18 @@ public class Example33_StreamingChat : BaseTest
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                this._output.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
+                Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
                 roleWritten = true;
             }
 
             if (chatUpdate.Content is { Length: > 0 })
             {
                 fullMessage += chatUpdate.Content;
-                this._output.Write(chatUpdate.Content);
+                Write(chatUpdate.Content);
             }
         }
 
-        this._output.WriteLine("\n------------------------");
+        WriteLine("\n------------------------");
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 
@@ -90,8 +90,8 @@ public class Example33_StreamingChat : BaseTest
     {
         var message = chatHistory.Last();
 
-        this._output.WriteLine($"{message.Role}: {message.Content}");
-        this._output.WriteLine("------------------------");
+        WriteLine($"{message.Role}: {message.Content}");
+        WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

@@ -34,7 +34,7 @@ public class Example21_OpenAIPlugins : BaseTest
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        this._output.WriteLine("Function execution result: {0}", result?.Content?.ToString());
+        WriteLine($"Function execution result: {result?.Content}");
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class Example21_OpenAIPlugins : BaseTest
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        this._output.WriteLine("Function execution result: {0}", result?.Content?.ToString());
+        WriteLine($"Function execution result: {result?.Content}");
     }
 
     public Example21_OpenAIPlugins(ITestOutputHelper output) : base(output)

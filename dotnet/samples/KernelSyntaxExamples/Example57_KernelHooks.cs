@@ -20,7 +20,7 @@ public class Example57_KernelHooks : BaseTest
     [Fact]
     public async Task GetUsageAsync()
     {
-        this._output.WriteLine("\n======== Get Usage Data ========\n");
+        WriteLine("\n======== Get Usage Data ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -40,18 +40,18 @@ public class Example57_KernelHooks : BaseTest
         // Define hooks
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            this._output.WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
+            WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            this._output.WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
+            WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel = true;
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            this._output.WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+            WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -65,7 +65,7 @@ public class Example57_KernelHooks : BaseTest
         // Invoke prompt to trigger execution hooks.
         const string Input = "I missed the F1 final race";
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
-        this._output.WriteLine($"Function Result: {result}");
+        WriteLine($"Function Result: {result}");
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class Example57_KernelHooks : BaseTest
     [Fact]
     public async Task GetRenderedPromptAsync()
     {
-        this._output.WriteLine("\n======== Get Rendered Prompt ========\n");
+        WriteLine("\n======== Get Rendered Prompt ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -96,16 +96,16 @@ public class Example57_KernelHooks : BaseTest
         // Define hooks
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            this._output.WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
+            WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
             e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            this._output.WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
+            WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
-            this._output.WriteLine(e.RenderedPrompt);
+            WriteLine(e.RenderedPrompt);
         }
 
         kernel.PromptRendering += MyRenderingHandler;
@@ -114,7 +114,7 @@ public class Example57_KernelHooks : BaseTest
         // Invoke prompt to trigger prompt rendering hooks.
         const string Input = "I missed the F1 final race";
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
-        this._output.WriteLine($"Function Result: {result.GetValue<string>()}");
+        WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ public class Example57_KernelHooks : BaseTest
     [Fact]
     public async Task ChangingResultAsync()
     {
-        this._output.WriteLine("\n======== Changing/Filtering Function Result ========\n");
+        WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -157,7 +157,7 @@ public class Example57_KernelHooks : BaseTest
         // Invoke prompt to trigger execution hooks.
         var result = await kernel.InvokeAsync(writerFunction);
 
-        this._output.WriteLine($"Function Result: {result.GetValue<string>()}");
+        WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ public class Example57_KernelHooks : BaseTest
     [Fact]
     public async Task BeforeInvokeCancellationAsync()
     {
-        this._output.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
+        WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -188,7 +188,7 @@ public class Example57_KernelHooks : BaseTest
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            this._output.WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
+            WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
             e.Cancel = true;
         };
 
@@ -206,10 +206,10 @@ public class Example57_KernelHooks : BaseTest
         }
         catch (KernelFunctionCanceledException fcex)
         {
-            this._output.WriteLine(fcex.Message);
+            WriteLine(fcex.Message);
         }
 
-        this._output.WriteLine($"Function Invocation Times: {functionInvokedCount}");
+        WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ public class Example57_KernelHooks : BaseTest
     [Fact]
     public async Task AfterInvokeCancellationAsync()
     {
-        this._output.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
+        WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -256,11 +256,11 @@ public class Example57_KernelHooks : BaseTest
         }
         catch (KernelFunctionCanceledException fcex)
         {
-            this._output.WriteLine(fcex.Message);
+            WriteLine(fcex.Message);
         }
 
-        this._output.WriteLine($"Function Invoked Times: {functionInvokedCount}");
-        this._output.WriteLine($"Function Invoking Times: {functionInvokingCount}");
+        WriteLine($"Function Invoked Times: {functionInvokedCount}");
+        WriteLine($"Function Invoking Times: {functionInvokingCount}");
     }
 
     private readonly string? _openAIModelId;
@@ -273,7 +273,7 @@ public class Example57_KernelHooks : BaseTest
 
         if (this._openAIModelId == null || this._openAIApiKey == null)
         {
-            this._output.WriteLine("OpenAI credentials not found. Skipping example.");
+            WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
     }

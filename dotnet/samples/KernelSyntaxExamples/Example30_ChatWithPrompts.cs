@@ -40,7 +40,7 @@ public class Example30_ChatWithPrompts : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== Chat with prompts ========");
+        WriteLine("======== Chat with prompts ========");
 
         /* Load 3 files:
          * - 30-system-prompt.txt: the system prompt, used to initialize the chat session.
@@ -81,12 +81,12 @@ public class Example30_ChatWithPrompts : BaseTest
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
         string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, arguments);
-        this._output.WriteLine($"------------------------------------\n{systemMessage}");
+        WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
         string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, arguments);
-        this._output.WriteLine($"------------------------------------\n{userMessage}");
+        WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
         var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
@@ -101,7 +101,7 @@ public class Example30_ChatWithPrompts : BaseTest
 
         // Finally, get the response from AI
         var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
-        this._output.WriteLine($"------------------------------------\n{answer}");
+        WriteLine($"------------------------------------\n{answer}");
 
         /*
 

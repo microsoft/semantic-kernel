@@ -14,7 +14,7 @@ public class Example36_MultiCompletion : BaseTest
     [Fact]
     public Task AzureOpenAIMultiChatCompletionAsync()
     {
-        this._output.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
+        WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
         var chatCompletionService = new AzureOpenAIChatCompletionService(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -28,7 +28,7 @@ public class Example36_MultiCompletion : BaseTest
     [Fact]
     public Task OpenAIMultiChatCompletionAsync()
     {
-        this._output.WriteLine("======== Open AI - Multiple Chat Completion ========");
+        WriteLine("======== Open AI - Multiple Chat Completion ========");
 
         var chatCompletionService = new OpenAIChatCompletionService(
             TestConfiguration.OpenAI.ChatModelId,
@@ -54,11 +54,11 @@ public class Example36_MultiCompletion : BaseTest
 
         foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings))
         {
-            this._output.Write(chatMessageChoice.Content ?? string.Empty);
-            this._output.WriteLine("\n-------------\n");
+            Write(chatMessageChoice.Content ?? string.Empty);
+            WriteLine("\n-------------\n");
         }
 
-        this._output.WriteLine();
+        WriteLine();
     }
 
     public Example36_MultiCompletion(ITestOutputHelper output) : base(output)

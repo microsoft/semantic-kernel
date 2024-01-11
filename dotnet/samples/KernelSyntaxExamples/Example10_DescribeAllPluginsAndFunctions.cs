@@ -50,10 +50,10 @@ public class Example10_DescribeAllPluginsAndFunctions : BaseTest
 
         var functions = kernel.Plugins.GetFunctionsMetadata();
 
-        this._output.WriteLine("**********************************************");
-        this._output.WriteLine("****** Registered plugins and functions ******");
-        this._output.WriteLine("**********************************************");
-        this._output.WriteLine();
+        WriteLine("**********************************************");
+        WriteLine("****** Registered plugins and functions ******");
+        WriteLine("**********************************************");
+        WriteLine();
 
         foreach (KernelFunctionMetadata func in functions)
         {
@@ -65,20 +65,20 @@ public class Example10_DescribeAllPluginsAndFunctions : BaseTest
 
     private void PrintFunction(KernelFunctionMetadata func)
     {
-        this._output.WriteLine($"Plugin: {func.PluginName}");
-        this._output.WriteLine($"   {func.Name}: {func.Description}");
+        WriteLine($"Plugin: {func.PluginName}");
+        WriteLine($"   {func.Name}: {func.Description}");
 
         if (func.Parameters.Count > 0)
         {
-            this._output.WriteLine("      Params:");
+            WriteLine("      Params:");
             foreach (var p in func.Parameters)
             {
-                this._output.WriteLine($"      - {p.Name}: {p.Description}");
-                this._output.WriteLine($"        default: '{p.DefaultValue}'");
+                WriteLine($"      - {p.Name}: {p.Description}");
+                WriteLine($"        default: '{p.DefaultValue}'");
             }
         }
 
-        this._output.WriteLine();
+        WriteLine();
     }
 
     public Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : base(output)

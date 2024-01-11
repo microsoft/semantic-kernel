@@ -29,14 +29,14 @@ public class Step2_Add_Plugins : BaseTest
         Kernel kernel = kernelBuilder.Build();
 
         // Example 1. Invoke the kernel with a prompt that asks the AI for inromation it cannot provide and may hallucinate
-        this._output.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
 
         // Example 2. Invoke the kernel with a templated prompt that invokes a plugin and display the result
-        this._output.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
+        WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
         // Example 3. Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        this._output.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>

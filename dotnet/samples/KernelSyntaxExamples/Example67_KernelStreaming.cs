@@ -24,7 +24,7 @@ public class Example67_KernelStreaming : BaseTest
 
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            this._output.WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
+            WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -41,7 +41,7 @@ public class Example67_KernelStreaming : BaseTest
 
         var roleDisplayed = false;
 
-        this._output.WriteLine("\n===  Prompt Function - Streaming ===\n");
+        WriteLine("\n===  Prompt Function - Streaming ===\n");
 
         string fullContent = string.Empty;
         // Streaming can be of any type depending on the underlying service the function is using.
@@ -50,7 +50,7 @@ public class Example67_KernelStreaming : BaseTest
             // You will be always able to know the type of the update by checking the Type property.
             if (!roleDisplayed && update.Role.HasValue)
             {
-                this._output.WriteLine($"Role: {update.Role}");
+                WriteLine($"Role: {update.Role}");
                 fullContent += $"Role: {update.Role}\n";
                 roleDisplayed = true;
             }
@@ -58,12 +58,12 @@ public class Example67_KernelStreaming : BaseTest
             if (update.Content is { Length: > 0 })
             {
                 fullContent += update.Content;
-                this._output.Write(update.Content);
+                Write(update.Content);
             }
         }
 
-        this._output.WriteLine("\n------  Streamed Content ------\n");
-        this._output.WriteLine(fullContent);
+        WriteLine("\n------  Streamed Content ------\n");
+        WriteLine(fullContent);
     }
 
     public Example67_KernelStreaming(ITestOutputHelper output) : base(output)

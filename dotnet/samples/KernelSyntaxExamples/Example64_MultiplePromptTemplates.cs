@@ -20,7 +20,7 @@ public class Example64_MultiplePromptTemplates : BaseTest
     [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?")]
     public Task RunAsync(string templateFormat, string prompt)
     {
-        this._output.WriteLine("======== Example64_MultiplePromptTemplates ========");
+        WriteLine("======== Example64_MultiplePromptTemplates ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -40,7 +40,7 @@ public class Example64_MultiplePromptTemplates : BaseTest
 
     private async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
-        this._output.WriteLine($"======== {templateFormat} : {prompt} ========");
+        WriteLine($"======== {templateFormat} : {prompt} ========");
 
         var function = kernel.CreateFunctionFromPrompt(
             promptConfig: new PromptTemplateConfig()
@@ -58,7 +58,7 @@ public class Example64_MultiplePromptTemplates : BaseTest
         };
 
         var result = await kernel.InvokeAsync(function, arguments);
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     public Example64_MultiplePromptTemplates(ITestOutputHelper output) : base(output)

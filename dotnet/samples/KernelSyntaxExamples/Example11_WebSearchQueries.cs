@@ -13,7 +13,7 @@ public class Example11_WebSearchQueries : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== WebSearchQueries ========");
+        WriteLine("======== WebSearchQueries ========");
 
         Kernel kernel = new();
 
@@ -24,8 +24,8 @@ public class Example11_WebSearchQueries : BaseTest
         var ask = "What's the tallest building in Europe?";
         var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["query"] = ask });
 
-        this._output.WriteLine(ask + "\n");
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(ask + "\n");
+        WriteLine(result.GetValue<string>());
 
         /* Expected output: 
         * ======== WebSearchQueries ========

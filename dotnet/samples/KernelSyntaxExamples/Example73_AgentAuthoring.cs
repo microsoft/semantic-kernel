@@ -26,7 +26,7 @@ public class Example73_AgentAuthoring : BaseTest
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAgentAsync()
     {
-        this._output.WriteLine("======== Example73_AgentAuthoring ========");
+        WriteLine("======== Example73_AgentAuthoring ========");
         try
         {
             // Initialize the agent with tools
@@ -35,8 +35,8 @@ public class Example73_AgentAuthoring : BaseTest
             // "Stream" messages as they become available
             await foreach (IChatMessage message in articleGenerator.InvokeAsync("Thai food is the best in the world"))
             {
-                this._output.WriteLine($"[{message.Id}]");
-                this._output.WriteLine($"# {message.Role}: {message.Content}");
+                WriteLine($"[{message.Id}]");
+                WriteLine($"# {message.Role}: {message.Content}");
             }
         }
         finally
@@ -48,7 +48,7 @@ public class Example73_AgentAuthoring : BaseTest
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginAsync()
     {
-        this._output.WriteLine("======== Example73_AgentAuthoring ========");
+        WriteLine("======== Example73_AgentAuthoring ========");
         try
         {
             // Initialize the agent with tools
@@ -58,7 +58,7 @@ public class Example73_AgentAuthoring : BaseTest
             string response = await articleGenerator.AsPlugin().InvokeAsync("Thai food is the best in the world");
 
             // Display final result
-            this._output.WriteLine(response);
+            WriteLine(response);
         }
         finally
         {

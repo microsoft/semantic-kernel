@@ -15,7 +15,7 @@ public class Example44_MultiChatCompletion : BaseTest
     [Fact]
     public Task AzureOpenAIMultiChatCompletionAsync()
     {
-        this._output.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
+        WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -29,7 +29,7 @@ public class Example44_MultiChatCompletion : BaseTest
     [Fact]
     public Task OpenAIMultiChatCompletionAsync()
     {
-        this._output.WriteLine("======== Open AI - Multiple Chat Completion ========");
+        WriteLine("======== Open AI - Multiple Chat Completion ========");
 
         OpenAIChatCompletionService chatCompletionService = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -60,7 +60,7 @@ public class Example44_MultiChatCompletion : BaseTest
             await MessageOutputAsync(chatHistory);
         }
 
-        this._output.WriteLine();
+        WriteLine();
     }
 
     /// <summary>
@@ -70,8 +70,8 @@ public class Example44_MultiChatCompletion : BaseTest
     {
         var message = chatHistory.Last();
 
-        this._output.WriteLine($"{message.Role}: {message.Content}");
-        this._output.WriteLine("------------------------");
+        WriteLine($"{message.Role}: {message.Content}");
+        WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

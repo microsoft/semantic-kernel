@@ -33,7 +33,7 @@ public class Example68_GPTVision : BaseTest
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
-        this._output.WriteLine(reply.Content);
+        WriteLine(reply.Content);
     }
 
     public Example68_GPTVision(ITestOutputHelper output) : base(output)

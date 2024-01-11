@@ -26,7 +26,7 @@ public class Example26_AADAuth : BaseTest
     [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== SK with AAD Auth ========");
+        WriteLine("======== SK with AAD Auth ========");
 
         // Optional: choose which authentication to support
         var authOptions = new DefaultAzureCredentialOptions
@@ -59,7 +59,7 @@ public class Example26_AADAuth : BaseTest
 
         // Bot reply
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        this._output.WriteLine(reply);
+        WriteLine(reply);
 
         /* Output: Why did the hourglass go to the doctor? Because it was feeling a little run down! */
     }

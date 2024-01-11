@@ -61,7 +61,7 @@ provides:
     public Task RunAsync()
     {
         // Load assemblies for external plugins
-        this._output.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
+        WriteLine($"Loading {typeof(SimpleCalculatorPlugin).AssemblyQualifiedName}");
 
         return RunExampleAsync();
         //return RunInteractiveAsync();

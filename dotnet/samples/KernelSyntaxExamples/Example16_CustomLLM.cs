@@ -33,7 +33,7 @@ public class Example16_CustomLLM : BaseTest
     [Fact]
     public async Task CustomTextGenerationWithKernelFunctionAsync()
     {
-        this._output.WriteLine("\n======== Custom LLM - Text Completion - KernelFunction ========");
+        WriteLine("\n======== Custom LLM - Text Completion - KernelFunction ========");
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         // Add your text generation service as a singleton instance
@@ -46,41 +46,41 @@ public class Example16_CustomLLM : BaseTest
         var paragraphWritingFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         const string Input = "Why AI is awesome";
-        this._output.WriteLine($"Function input: {Input}\n");
+        WriteLine($"Function input: {Input}\n");
         var result = await paragraphWritingFunction.InvokeAsync(kernel, new() { ["input"] = Input });
 
-        this._output.WriteLine(result);
+        WriteLine(result);
     }
 
     [Fact]
     public async Task CustomTextGenerationAsync()
     {
-        this._output.WriteLine("\n======== Custom LLM  - Text Completion - Raw ========");
+        WriteLine("\n======== Custom LLM  - Text Completion - Raw ========");
 
         const string Prompt = "Write one paragraph on why AI is awesome.";
         var completionService = new MyTextGenerationService();
 
-        this._output.WriteLine($"Prompt: {Prompt}\n");
+        WriteLine($"Prompt: {Prompt}\n");
         var result = await completionService.GetTextContentAsync(Prompt);
 
-        this._output.WriteLine(result);
+        WriteLine(result);
     }
 
     [Fact]
     public async Task CustomTextGenerationStreamAsync()
     {
-        this._output.WriteLine("\n======== Custom LLM  - Text Completion - Raw Streaming ========");
+        WriteLine("\n======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         const string Prompt = "Write one paragraph on why AI is awesome.";
         var completionService = new MyTextGenerationService();
 
-        this._output.WriteLine($"Prompt: {Prompt}\n");
+        WriteLine($"Prompt: {Prompt}\n");
         await foreach (var message in completionService.GetStreamingTextContentsAsync(Prompt))
         {
-            this._output.Write(message);
+            Write(message);
         }
 
-        this._output.WriteLine();
+        WriteLine();
     }
 
     /// <summary>

@@ -17,7 +17,7 @@ public class Example45_MultiStreamingChatCompletion : BaseTest
     [Fact]
     public Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
-        this._output.WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
+        WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -31,7 +31,7 @@ public class Example45_MultiStreamingChatCompletion : BaseTest
     [Fact]
     public Task OpenAIMultiStreamingChatCompletionAsync()
     {
-        this._output.WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
+        WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
@@ -67,12 +67,12 @@ public class Example45_MultiStreamingChatCompletion : BaseTest
 
         await ProcessStreamAsyncEnumerableAsync(chatCompletionService, prompt, executionSettings, consoleLinesPerResult);
 
-        this._output.WriteLine();
+        WriteLine();
 
         // Set cursor position to after displayed results
         // Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
 
-        this._output.WriteLine();
+        WriteLine();
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public class Example45_MultiStreamingChatCompletion : BaseTest
             if (!messagesPerChoice.ContainsKey(chatUpdate.ChoiceIndex))
             {
                 messagesPerChoice[chatUpdate.ChoiceIndex] = $"Role: {chatUpdate.Role ?? new AuthorRole()}\n";
-                this._output.Write($"Choice index: {chatUpdate.ChoiceIndex}, Role: {chatUpdate.Role ?? new AuthorRole()}");
+                Write($"Choice index: {chatUpdate.ChoiceIndex}, Role: {chatUpdate.Role ?? new AuthorRole()}");
             }
 
             // Add latest completion bit, if any
@@ -106,14 +106,14 @@ public class Example45_MultiStreamingChatCompletion : BaseTest
 
             // Overwrite what is currently in the console area for the updated choice
             // Console.Write(messagesPerChoice[chatUpdate.ChoiceIndex]);
-            this._output.Write($"Choice index: {chatUpdate.ChoiceIndex}, Content: {chatUpdate.Content}");
+            Write($"Choice index: {chatUpdate.ChoiceIndex}, Content: {chatUpdate.Content}");
         }
 
         // Display the aggregated results
         foreach (string message in messagesPerChoice.Values)
         {
-            this._output.WriteLine("-------------------");
-            this._output.WriteLine(message);
+            WriteLine("-------------------");
+            WriteLine(message);
         }
     }
 
@@ -124,7 +124,7 @@ public class Example45_MultiStreamingChatCompletion : BaseTest
     {
         for (int i = 0; i < Console.WindowHeight - 2; i++)
         {
-            this._output.WriteLine();
+            WriteLine();
         }
     }
 

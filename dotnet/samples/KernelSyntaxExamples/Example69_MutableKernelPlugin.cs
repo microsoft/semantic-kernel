@@ -27,7 +27,7 @@ public class Example69_MutableKernelPlugin : BaseTest
 
         var result = await kernel.InvokeAsync(kernel.Plugins["Plugin"]["Function"]);
 
-        this._output.WriteLine($"Result: {result}");
+        WriteLine($"Result: {result}");
     }
 
     /// <summary>

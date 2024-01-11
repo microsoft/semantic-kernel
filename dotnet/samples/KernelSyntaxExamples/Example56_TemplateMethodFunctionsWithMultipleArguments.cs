@@ -20,7 +20,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
+        WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -30,7 +30,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
 
         if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
-            this._output.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -57,19 +57,19 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
 ";
 
         // This allows to see the prompt before it's sent to OpenAI
-        this._output.WriteLine("--- Rendered Prompt");
+        WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, arguments);
-        this._output.WriteLine(renderedPrompt);
+        WriteLine(renderedPrompt);
 
         // Run the prompt / prompt function
         var haiku = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        this._output.WriteLine("--- Prompt Function result");
+        WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(haiku, arguments);
-        this._output.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

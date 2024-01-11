@@ -16,7 +16,7 @@ public class Example01_MethodFunctions : BaseTest
     [Fact]
     public Task RunAsync()
     {
-        this._output.WriteLine("======== Functions ========");
+        this.WriteLine("======== Functions ========");
 
         // Load native plugin
         var text = new TextPlugin();
@@ -24,7 +24,7 @@ public class Example01_MethodFunctions : BaseTest
         // Use function without kernel
         var result = text.Uppercase("ciao!");
 
-        this._output.WriteLine(result);
+        this.WriteLine(result);
 
         return Task.CompletedTask;
     }

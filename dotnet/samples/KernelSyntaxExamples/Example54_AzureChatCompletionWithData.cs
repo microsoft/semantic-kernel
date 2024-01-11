@@ -33,7 +33,7 @@ public class Example54_AzureChatCompletionWithData : BaseTest
     [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithChatCompletionAsync()
     {
-        this._output.WriteLine("=== Example with Chat Completion ===");
+        WriteLine("=== Example with Chat Completion ===");
 
         var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
         var chatHistory = new ChatHistory();
@@ -51,9 +51,9 @@ public class Example54_AzureChatCompletionWithData : BaseTest
         // Output
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        this._output.WriteLine($"Ask: {ask}");
-        this._output.WriteLine($"Response: {response}");
-        this._output.WriteLine();
+        WriteLine($"Ask: {ask}");
+        WriteLine($"Response: {response}");
+        WriteLine();
 
         // Chat history maintenance
         if (!string.IsNullOrEmpty(toolResponse))
@@ -68,21 +68,21 @@ public class Example54_AzureChatCompletionWithData : BaseTest
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion Streaming example
-        this._output.WriteLine($"Ask: {ask}");
-        this._output.WriteLine("Response: ");
+        WriteLine($"Ask: {ask}");
+        WriteLine("Response: ");
 
         await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
-            this._output.Write(word);
+            Write(word);
         }
 
-        this._output.WriteLine(Environment.NewLine);
+        WriteLine(Environment.NewLine);
     }
 
     [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithKernelAsync()
     {
-        this._output.WriteLine("=== Example with Kernel ===");
+        WriteLine("=== Example with Kernel ===");
 
         var ask = "How did Emily and David meet?";
 
@@ -100,9 +100,9 @@ public class Example54_AzureChatCompletionWithData : BaseTest
         // Output
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        this._output.WriteLine($"Ask: {ask}");
-        this._output.WriteLine($"Response: {response.GetValue<string>()}");
-        this._output.WriteLine();
+        WriteLine($"Ask: {ask}");
+        WriteLine($"Response: {response.GetValue<string>()}");
+        WriteLine();
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
@@ -112,9 +112,9 @@ public class Example54_AzureChatCompletionWithData : BaseTest
         // Ask: What are Emily and David studying?
         // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
-        this._output.WriteLine($"Ask: {ask}");
-        this._output.WriteLine($"Response: {response.GetValue<string>()}");
-        this._output.WriteLine();
+        WriteLine($"Ask: {ask}");
+        WriteLine($"Response: {response.GetValue<string>()}");
+        WriteLine();
     }
 
     /// <summary>

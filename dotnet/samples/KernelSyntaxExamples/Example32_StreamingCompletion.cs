@@ -23,7 +23,7 @@ public class Example32_StreamingCompletion : BaseTest
     [Fact]
     public Task AzureOpenAITextGenerationStreamAsync()
     {
-        this._output.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
+        WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
         var textGeneration = new AzureOpenAITextGenerationService(
             deploymentName: TestConfiguration.AzureOpenAI.DeploymentName,
@@ -37,7 +37,7 @@ public class Example32_StreamingCompletion : BaseTest
     [Fact]
     public Task OpenAITextGenerationStreamAsync()
     {
-        this._output.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
+        WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
         var textGeneration = new OpenAITextGenerationService("gpt-3.5-turbo-instruct", TestConfiguration.OpenAI.ApiKey);
 
@@ -57,13 +57,13 @@ public class Example32_StreamingCompletion : BaseTest
 
         var prompt = "Write one paragraph why AI is awesome";
 
-        this._output.WriteLine("Prompt: " + prompt);
+        WriteLine("Prompt: " + prompt);
         await foreach (var content in textGeneration.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
-            this._output.Write(content);
+            Write(content);
         }
 
-        this._output.WriteLine();
+        WriteLine();
     }
 
     public Example32_StreamingCompletion(ITestOutputHelper output) : base(output)

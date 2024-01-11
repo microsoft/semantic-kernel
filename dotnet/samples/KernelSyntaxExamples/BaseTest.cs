@@ -8,11 +8,11 @@ namespace Examples;
 
 public abstract class BaseTest
 {
-    protected readonly ITestOutputHelper _output;
+    protected ITestOutputHelper Output { get; }
 
     protected BaseTest(ITestOutputHelper output)
     {
-        this._output = output;
+        this.Output = output;
         LoadUserSecrets();
     }
 
@@ -25,5 +25,23 @@ public abstract class BaseTest
             .Build();
 
         TestConfiguration.Initialize(configRoot);
+    }
+
+    /// <summary>
+    /// This method can be substituted by Console.WriteLine when used in Console apps.
+    /// </summary>
+    /// <param name="target">Target object to write</param>
+    protected void WriteLine(object? target = null)
+    {
+        this.Output.WriteLine(target ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
+    /// </summary>
+    /// <param name="target">Target object to write</param>
+    protected void Write(object? target = null)
+    {
+        this.Output.WriteLine(target ?? string.Empty);
     }
 }

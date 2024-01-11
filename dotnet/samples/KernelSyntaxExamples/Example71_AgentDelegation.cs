@@ -32,11 +32,11 @@ public class Example71_AgentDelegation : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this._output.WriteLine("======== Example71_AgentDelegation ========");
+        WriteLine("======== Example71_AgentDelegation ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            this._output.WriteLine("OpenAI apiKey not found. Skipping example.");
+            WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
 
@@ -82,8 +82,8 @@ public class Example71_AgentDelegation : BaseTest
             {
                 await foreach (var message in response)
                 {
-                    this._output.WriteLine($"[{message.Id}]");
-                    this._output.WriteLine($"# {message.Role}: {message.Content}");
+                    WriteLine($"[{message.Id}]");
+                    WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
         }

@@ -95,10 +95,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         // Run operation via the semantic kernel
         var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);
 
-        this._output.WriteLine("\n\n\n");
+        WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
-        this._output.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
+        WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
 
         // AddComment Function
         arguments["issueKey"] = "TEST-2";
@@ -107,10 +107,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         // Run operation via the semantic kernel
         result = await kernel.InvokeAsync(jiraFunctions["AddComment"], arguments);
 
-        this._output.WriteLine("\n\n\n");
+        WriteLine("\n\n\n");
 
         formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
-        this._output.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
+        WriteLine($"AddComment jiraPlugin response: \n{formattedContent}");
     }
 
     #region Example of authentication providers

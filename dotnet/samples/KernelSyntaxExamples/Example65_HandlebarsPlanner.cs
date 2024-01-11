@@ -23,7 +23,7 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     private void WriteSampleHeading(string name)
     {
-        this._output.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
+        WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
     private async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
@@ -34,7 +34,7 @@ public class Example65_HandlebarsPlanner : BaseTest
 
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            this._output.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
+            WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
             return;
         }
 
@@ -85,7 +85,7 @@ public class Example65_HandlebarsPlanner : BaseTest
                 AllowLoops = allowLoopsInPlan
             });
 
-        this._output.WriteLine($"Goal: {goal}");
+        WriteLine($"Goal: {goal}");
 
         // Create the plan
         var plan = await planner.CreatePlanAsync(kernel, goal);
@@ -93,14 +93,14 @@ public class Example65_HandlebarsPlanner : BaseTest
         // Print the prompt template
         if (shouldPrintPrompt && plan.Prompt is not null)
         {
-            this._output.WriteLine($"\nPrompt template:\n{plan.Prompt}");
+            WriteLine($"\nPrompt template:\n{plan.Prompt}");
         }
 
-        this._output.WriteLine($"\nOriginal plan:\n{plan}");
+        WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
         var result = await plan.InvokeAsync(kernel);
-        this._output.WriteLine($"\nResult:\n{result}\n");
+        WriteLine($"\nResult:\n{result}\n");
     }
 
     [RetryTheory(typeof(HttpOperationException))]
@@ -128,7 +128,7 @@ public class Example65_HandlebarsPlanner : BaseTest
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            this._output.WriteLine($"\n{ex.Message}\n");
+            WriteLine($"\n{ex.Message}\n");
         }
     }
 

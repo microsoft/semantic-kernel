@@ -38,7 +38,7 @@ public class Step6_Responsible_AI : BaseTest
         {
             e.RenderedPrompt += " NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY";
 
-            this._output.WriteLine(e.RenderedPrompt);
+            WriteLine(e.RenderedPrompt);
         }
 
         // Add the handlers to the kernel
@@ -46,7 +46,7 @@ public class Step6_Responsible_AI : BaseTest
         kernel.PromptRendered += MyRenderedHandler;
 
         KernelArguments arguments = new() { { "card_number", "4444 3333 2222 1111" } };
-        this._output.WriteLine(await kernel.InvokePromptAsync("Tell me some useful information about this credit card number {{$card_number}}?", arguments));
+        WriteLine(await kernel.InvokePromptAsync("Tell me some useful information about this credit card number {{$card_number}}?", arguments));
     }
 
     public Step6_Responsible_AI(ITestOutputHelper output) : base(output)

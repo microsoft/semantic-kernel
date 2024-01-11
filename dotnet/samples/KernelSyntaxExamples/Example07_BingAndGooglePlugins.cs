@@ -27,7 +27,7 @@ public class Example07_BingAndGooglePlugins : BaseTest
 
         if (openAIModelId == null || openAIApiKey == null)
         {
-            this._output.WriteLine("OpenAI credentials not found. Skipping example.");
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -41,7 +41,7 @@ public class Example07_BingAndGooglePlugins : BaseTest
         string bingApiKey = TestConfiguration.Bing.ApiKey;
         if (bingApiKey == null)
         {
-            this._output.WriteLine("Bing credentials not found. Skipping example.");
+            this.WriteLine("Bing credentials not found. Skipping example.");
         }
         else
         {
@@ -58,7 +58,7 @@ public class Example07_BingAndGooglePlugins : BaseTest
 
         if (googleApiKey == null || googleSearchEngineId == null)
         {
-            this._output.WriteLine("Google credentials not found. Skipping example.");
+            this.WriteLine("Google credentials not found. Skipping example.");
         }
         else
         {
@@ -74,16 +74,16 @@ public class Example07_BingAndGooglePlugins : BaseTest
 
     private async Task Example1Async(Kernel kernel, string searchPluginName)
     {
-        this._output.WriteLine("======== Bing and Google Search Plugins ========");
+        this.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
-        this._output.WriteLine(question);
-        this._output.WriteLine($"----{searchPluginName}----");
-        this._output.WriteLine(result.GetValue<string>());
+        this.WriteLine(question);
+        this.WriteLine($"----{searchPluginName}----");
+        this.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -100,7 +100,7 @@ public class Example07_BingAndGooglePlugins : BaseTest
 
     private async Task Example2Async(Kernel kernel)
     {
-        this._output.WriteLine("======== Use Search Plugin to answer user questions ========");
+        this.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.
@@ -136,7 +136,7 @@ Question: {{ $question }}.
 Answer: ";
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        this._output.WriteLine(question);
+        this.WriteLine(question);
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
@@ -154,11 +154,11 @@ Answer: ";
             var promptTemplateFactory = new KernelPromptTemplateFactory();
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
-            this._output.WriteLine("---- Fetching information from Bing...");
+            this.WriteLine("---- Fetching information from Bing...");
             var information = await promptTemplate.RenderAsync(kernel);
 
-            this._output.WriteLine("Information found:");
-            this._output.WriteLine(information);
+            this.WriteLine("Information found:");
+            this.WriteLine(information);
 
             // Run the prompt function again, now including information from Bing
             answer = await kernel.InvokeAsync(oracle, new KernelArguments()
@@ -170,11 +170,11 @@ Answer: ";
         }
         else
         {
-            this._output.WriteLine("AI had all the information, no need to query Bing.");
+            this.WriteLine("AI had all the information, no need to query Bing.");
         }
 
-        this._output.WriteLine("---- ANSWER:");
-        this._output.WriteLine(answer.GetValue<string>());
+        this.WriteLine("---- ANSWER:");
+        this.WriteLine(answer.GetValue<string>());
 
         /* OUTPUT:
 

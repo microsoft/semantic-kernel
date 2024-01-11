@@ -29,7 +29,7 @@ public class Step5_Chat_Prompt : BaseTest
             <message role=""system"">Respond with JSON.</message>
         ";
 
-        this._output.WriteLine(await kernel.InvokePromptAsync(chatPrompt));
+        WriteLine(await kernel.InvokePromptAsync(chatPrompt));
     }
 
     public Step5_Chat_Prompt(ITestOutputHelper output) : base(output)
