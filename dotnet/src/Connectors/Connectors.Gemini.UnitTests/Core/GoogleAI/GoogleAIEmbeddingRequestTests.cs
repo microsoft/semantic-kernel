@@ -4,12 +4,12 @@
 
 #endregion
 
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Gemini.UnitTests.Core;
+namespace SemanticKernel.Connectors.Gemini.UnitTests.Core.GoogleAI;
 
-public sealed class GeminiEmbeddingRequestTests
+public sealed class GoogleAIEmbeddingRequestTests
 {
     [Fact]
     public void FromDataReturnsValidRequestWithData()
@@ -19,7 +19,7 @@ public sealed class GeminiEmbeddingRequestTests
         var modelId = "modelId";
 
         // Act
-        var request = GeminiEmbeddingRequest.FromData(data, modelId);
+        var request = GoogleAIEmbeddingRequest.FromData(data, modelId);
 
         // Assert
         Assert.Equal(2, request.Requests.Count);
@@ -35,7 +35,7 @@ public sealed class GeminiEmbeddingRequestTests
         var modelId = "modelId";
 
         // Act
-        var request = GeminiEmbeddingRequest.FromData(data, modelId);
+        var request = GoogleAIEmbeddingRequest.FromData(data, modelId);
 
         // Assert
         Assert.Equal(2, request.Requests.Count);

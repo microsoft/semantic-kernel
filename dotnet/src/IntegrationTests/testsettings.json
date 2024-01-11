@@ -35,7 +35,7 @@
   "VertexAI": {
     "Gemini": {
       "ModelId": "gemini-pro",
-      "EmbeddingModelId": "",
+      "EmbeddingModelId": "textembedding-gecko",
       "ApiKey": "",
       "Location": "",
       "ProjectId": ""

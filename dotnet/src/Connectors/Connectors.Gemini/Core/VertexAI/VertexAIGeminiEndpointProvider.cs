@@ -53,7 +53,7 @@ internal sealed class VertexAIGeminiEndpointProvider : IEndpointProvider
 
     /// <inheritdoc />
     public Uri GetEmbeddingsEndpoint(string modelId)
-        => new($"{this.ModelsEndpoint.AbsoluteUri}{modelId}:batchEmbedContents");
+        => new($"{this.ModelsEndpoint.AbsoluteUri}{modelId}:predict");
 
     /// <inheritdoc />
     public Uri GetCountTokensEndpoint(string modelId)

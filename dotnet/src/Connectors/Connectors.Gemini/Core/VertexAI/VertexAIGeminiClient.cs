@@ -4,6 +4,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -13,11 +14,24 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 
 namespace Microsoft.SemanticKernel.Connectors.Gemini.Core.VertexAI;
 
+/// <summary>
+/// Represents a client for interacting with the Gemini API by Vertex AI.
+/// </summary>
 internal sealed class VertexAIGeminiClient : GeminiClient
 {
+    /// <summary>
+    /// Represents a client for interacting with the Gemini API by Vertex AI.
+    /// </summary>
+    /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
+    /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
+    /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
+    /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
+    /// <param name="streamJsonParser">Stream Json Parser instance used for parsing JSON responses stream (optional)</param>
+    /// <param name="logger">Logger instance used for logging (optional)</param>
     public VertexAIGeminiClient(
         HttpClient httpClient, GeminiConfiguration configuration,
         IHttpRequestFactory httpRequestFactory,
@@ -27,6 +41,7 @@ internal sealed class VertexAIGeminiClient : GeminiClient
         : base(httpClient, configuration, httpRequestFactory, endpointProvider, streamJsonParser, logger) { }
 
     // todo: temp solution due to gemini vertex ai (preview api) support only chat for now
+    /// <inheritdoc/>
     public override async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
@@ -45,6 +60,7 @@ internal sealed class VertexAIGeminiClient : GeminiClient
     }
 
     // TODO: temp solution due to gemini vertex ai (preview api) support only streaming for now
+    /// <inheritdoc/>
     public override async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
@@ -76,6 +92,7 @@ internal sealed class VertexAIGeminiClient : GeminiClient
     }
 
     // TODO: temp solution due to gemini vertex ai (preview api) support only streaming for now
+    /// <inheritdoc/>
     public override async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
@@ -106,4 +123,37 @@ internal sealed class VertexAIGeminiClient : GeminiClient
                     metadata: metadata))
             .ToList();
     }
+
+    /// <inheritdoc/>
+    public override async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        CancellationToken cancellationToken = default)
+    {
+        this.VerifyEmbeddingModelId();
+        Verify.NotNullOrEmpty(data);
+
+        var endpoint = this.EndpointProvider.GetEmbeddingsEndpoint(this.EmbeddingModelId);
+        var geminiRequest = this.GetGeminiEmbeddingRequest(data);
+        using var httpRequestMessage = this.HTTPRequestFactory.CreatePost(geminiRequest, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        return DeserializeAndProcessEmbeddingsResponse(body);
+    }
+
+    private VertexAIEmbeddingRequest GetGeminiEmbeddingRequest(IEnumerable<string> data)
+    {
+        this.VerifyEmbeddingModelId();
+        return VertexAIEmbeddingRequest.FromData(data, this.EmbeddingModelId);
+    }
+
+    private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
+    {
+        var embeddingsResponse = DeserializeResponse<VertexAIEmbeddingResponse>(body);
+        return ProcessEmbeddingsResponse(embeddingsResponse);
+    }
+
+    private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(VertexAIEmbeddingResponse embeddingsResponse)
+        => embeddingsResponse.Predictions.Select(prediction => prediction.Embeddings.Values).ToList();
 }

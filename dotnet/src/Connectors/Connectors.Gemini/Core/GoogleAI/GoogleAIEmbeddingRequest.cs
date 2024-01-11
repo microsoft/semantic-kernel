@@ -8,16 +8,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
+namespace Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
 
-internal sealed class GeminiEmbeddingRequest
+internal sealed class GoogleAIEmbeddingRequest
 {
     [JsonPropertyName("requests")]
-    public IList<GeminiEmbeddingRequestEmbedContent> Requests { get; set; }
+    public IList<GoogleAIGeminiEmbeddingRequestEmbedContent> Requests { get; set; }
 
-    public static GeminiEmbeddingRequest FromData(IEnumerable<string> data, string modelId) => new()
+    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId) => new()
     {
-        Requests = data.Select(text => new GeminiEmbeddingRequestEmbedContent
+        Requests = data.Select(text => new GoogleAIGeminiEmbeddingRequestEmbedContent
         {
             Model = $"models/{modelId}",
             Content = new()
@@ -34,10 +34,11 @@ internal sealed class GeminiEmbeddingRequest
     };
 }
 
-internal sealed class GeminiEmbeddingRequestEmbedContent
+internal sealed class GoogleAIGeminiEmbeddingRequestEmbedContent
 {
     [JsonPropertyName("model")]
-    public string Model { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Model { get; set; }
 
     [JsonPropertyName("title")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

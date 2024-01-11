@@ -36,7 +36,7 @@ public sealed class GoogleAIGeminiChatCompletionService : GeminiChatCompletionSe
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { ModelId = model };
-        this.Client = new GeminiClient(
+        this.Client = new GoogleAIGeminiClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             configuration: geminiConfiguration,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),

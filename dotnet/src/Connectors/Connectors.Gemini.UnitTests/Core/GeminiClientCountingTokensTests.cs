@@ -46,7 +46,7 @@ public sealed class GeminiClientCountingTokensTests : IDisposable
 
     private GeminiClient CreateGeminiClient(GeminiConfiguration geminiConfiguration)
     {
-        var client = new GeminiClient(
+        var client = new GoogleAIGeminiClient(
             httpClient: this._httpClient,
             configuration: geminiConfiguration,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
