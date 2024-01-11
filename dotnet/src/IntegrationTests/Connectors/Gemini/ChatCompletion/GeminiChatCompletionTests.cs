@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Gemini;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Gemini.ChatCompletion;

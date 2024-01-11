@@ -7,7 +7,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Gemini;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 public static class Example80_GeminiTextGeneration
 {

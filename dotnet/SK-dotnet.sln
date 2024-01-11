@@ -192,9 +192,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{731CC542-8BE9-42D4-967D-99206EC2B310}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Gemini", "src\Connectors\Connectors.Gemini\Connectors.Gemini.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.GoogleVertexAI", "src\Connectors\Connectors.GoogleVertexAI\Connectors.GoogleVertexAI.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Gemini.UnitTests", "src\Connectors\Connectors.Gemini.UnitTests\Connectors.Gemini.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.GoogleVertexAI.UnitTests", "src\Connectors\Connectors.GoogleVertexAI.UnitTests\Connectors.GoogleVertexAI.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
