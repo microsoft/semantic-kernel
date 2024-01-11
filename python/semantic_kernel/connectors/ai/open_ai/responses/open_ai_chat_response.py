@@ -85,7 +85,7 @@ class OpenAIChatResponse(AIResponse):
         ]
 
     @property
-    def tool_calls(self) -> Optional[Dict[str, Dict[str, Union[str, FunctionCall]]]]:
+    def tool_calls(self) -> Optional[Dict[int, Dict[str, Union[str, FunctionCall]]]]:
         """Get the function call of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
             if self._tool_calls is not None:
@@ -99,7 +99,7 @@ class OpenAIChatResponse(AIResponse):
         ):
             tool_calls = self.raw_response.choices[0].message.tool_calls
             return {
-                tool.id: {
+                tool.index: {
                     "id": tool.id,
                     "type": tool.type,
                     "function": FunctionCall(
@@ -112,7 +112,7 @@ class OpenAIChatResponse(AIResponse):
         return None
 
     @property
-    def all_tool_calls(self) -> List[Optional[Dict[str, Dict[str, Union[str, FunctionCall]]]]]:
+    def all_tool_calls(self) -> List[Optional[Dict[int, Dict[str, Union[str, FunctionCall]]]]]:
         """Get the function call of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
             if self._tool_calls is not None:
@@ -120,7 +120,7 @@ class OpenAIChatResponse(AIResponse):
             raise ValueError("tool_call is not available for streaming responses, use stream_tool_call instead.")
         return [
             {
-                tool.id: {
+                tool.index: {
                     "id": tool.id,
                     "type": tool.type,
                     "function": FunctionCall(

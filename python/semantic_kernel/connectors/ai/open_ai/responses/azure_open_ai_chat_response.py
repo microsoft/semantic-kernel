@@ -25,47 +25,43 @@ class AzureOpenAIChatResponse(OpenAIChatResponse):
     - parse_stream: get the streaming content of the response.
     """
 
-    _tool_message: Dict[int, str] = PrivateAttr(default_factory=dict)
+    _tool_messages: Dict[int, List[Dict[str, str]]] = PrivateAttr(default_factory=dict)
 
     def parse_choice(self, choice: Choice) -> None:
         super().parse_choice(choice)
         if choice.delta.model_extra and "context" in choice.delta.model_extra:
-            if choice.index in self._tool_message:
-                for extra_context in choice.delta.model_extra.get("context", {}).get("messages", {}):
-                    if extra_context["role"] == "tool":
-                        self._tool_message[choice.index] += extra_context.get("content", "")
+            if choice.index in self._tool_messages:
+                for extra_context in choice.delta.model_extra.get("context", {}).get("messages", []):
+                    i = 00
+                    for message in extra_context:
+                        self._tool_messages[choice.index][0]["content"] += message.get("content", "")
+                        i += 1
             else:
-                for extra_context in choice.delta.model_extra.get("context", {}).get("messages", {}):
-                    if extra_context["role"] == "tool":
-                        self._tool_message[choice.index] = extra_context.get("content", "")
+                for extra_context in choice.delta.model_extra.get("context", {}).get("messages", []):
+                    self._tool_messages[choice.index] = extra_context
 
     @property
-    def tool_message(self) -> Optional[str]:
+    def tool_messages(self) -> Optional[List[Dict[str, str]]]:
         """Get the tool content of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
-            if self._tool_message is not None:
-                return self._tool_message[0]
+            if self._tool_messages is not None:
+                return self._tool_messages[0]
             raise ValueError("tool_content is not available for streaming responses, use stream_tool_content instead.")
-        if self.tool_message_content:
-            return self.tool_message_content
-        if self.raw_response.model_extra and "context" in self.raw_response.model_extra:
-            for m in self.raw_response.model_extra["context"].get("messages", {}):
-                if m["role"] == "tool":
-                    self.tool_message_content = m.get("content", None)
-                    return self.tool_message_content
+        if self._tool_messages:
+            return self._tool_messages[0]
+        for choice in self.raw_response.choices:
+            if choice.message.model_extra and "context" in choice.message.model_extra:
+                self._tool_messages[choice.index] = choice.message.model_extra["context"].get("messages", [])
+        return self._tool_messages[0]
 
     @property
-    def all_tool_messages(self) -> List[Optional[str]]:
+    def all_tool_messages(self) -> Optional[List[List[Dict[str, str]]]]:
         """Get the tool content of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
-            if self._tool_message is not None:
-                return list(self._tool_message.values())
+            if self._tool_messages is not None:
+                return list(self._tool_messages.values())
             raise ValueError("tool_content is not available for streaming responses, use stream_tool_content instead.")
-        if self.tool_message_content:
-            return [self.tool_message_content]
+        if self._tool_messages:
+            return list(self._tool_messages.values())
         if self.raw_response.model_extra and "context" in self.raw_response.model_extra:
-            return [
-                m.get("content", None)
-                for m in self.raw_response.model_extra["context"].get("messages", {})
-                if m["role"] == "tool"
-            ]
+            return [m for m in self.raw_response.model_extra["context"].get("messages", {})]

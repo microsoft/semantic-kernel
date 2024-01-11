@@ -43,21 +43,23 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def store_results(context, result, chat_prompt):
-    chat_prompt.add_message(
-        "assistant",
-        message=result.content,
-        function_call=result.function_call,
-        tool_calls=result.tool_calls,
-    )
-    if "tool_message" in result.model_fields and result.tool_message:
-        context.objects["tool_message"] = result.tool_message
-        chat_prompt.add_message(role="tool", message=result.tool_message)
+    """Stores specific results in the context and chat prompt."""
+    if hasattr(result, "tool_messages"):
+        context.objects["tool_messages"] = result.all_tool_messages
+        for message in result.tool_messages:
+            chat_prompt.add_message(role=message.get("role", "tool"), message=message.get("content", ""))
     if result.content is not None:
         context.variables.update(result.content)
     if result.function_call is not None:
         context.objects["function_calls"] = result.all_function_calls
     if result.tool_calls is not None:
         context.objects["tool_calls"] = result.all_tool_calls
+    chat_prompt.add_message(
+        "assistant",
+        message=result.content,
+        function_call=result.function_call,
+        tool_calls=result.tool_calls,
+    )
     return context, chat_prompt
 
 
