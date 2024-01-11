@@ -1,29 +1,5 @@
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
@@ -40,7 +16,6 @@ import com.azure.ai.openai.models.ChatResponseMessage;
 import com.azure.ai.openai.models.ChatRole;
 import com.azure.ai.openai.models.FunctionCall;
 import com.azure.ai.openai.models.FunctionDefinition;
-import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,9 +25,30 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -76,46 +72,81 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(ChatHistory chatHistory,
-            @Nullable PromptExecutionSettings promptExecutionSettings, @Nullable Kernel kernel) {
+        @Nullable PromptExecutionSettings promptExecutionSettings, @Nullable Kernel kernel) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
         List<FunctionDefinition> functions = Collections.emptyList();
-        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
+        return internalChatMessageContentsAsync(chatRequestMessages, functions,
+            promptExecutionSettings);
 
     }
 
     @Override
-    public Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(ChatHistory chatHistory,
-            PromptExecutionSettings promptExecutionSettings, Kernel kernel)
-    {
-        List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions = Collections.emptyList();
-        return internalStreamingChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
+    public Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
 
+        return internalStreamingChatMessageContentsAsync(
+            getChatRequestMessages(chatHistory),
+            Collections.emptyList(),
+            promptExecutionSettings);
     }
 
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
-            PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
+        PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
         List<FunctionDefinition> functions = getFunctionDefinitions(prompt);
-        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
+        return internalChatMessageContentsAsync(chatRequestMessages, functions,
+            promptExecutionSettings);
     }
 
     @Override
-    public Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(String prompt,
-            PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
-        List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
-        List<FunctionDefinition> functions = getFunctionDefinitions(prompt);
-        return internalStreamingChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
+    public Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(
+        String prompt,
+        PromptExecutionSettings promptExecutionSettings,
+        Kernel kernel) {
+
+        List<String> prompts = Arrays.asList(
+            prompt,
+            "<prompt>" + prompt + "</prompt>"
+        );
+
+        List<ChatRequestMessage> messages = Collections.singletonList(
+            new ChatRequestUserMessage(prompt));
+
+        List<FunctionDefinition> functions = null;
+
+        for (String p : prompts) {
+            try {
+                List<ChatRequestMessage> parsedMessages = getChatRequestMessages(p);
+                List<FunctionDefinition> parsedFunctions = getFunctionDefinitions(p);
+
+                if (!parsedMessages.isEmpty()) {
+                    messages = parsedMessages;
+                    functions = parsedFunctions;
+                    break;
+                }
+            } catch (SKException e) {
+                //ignore
+            }
+        }
+
+        return internalStreamingChatMessageContentsAsync(
+            messages,
+            functions,
+            promptExecutionSettings);
     }
 
     private interface ContentBuffer<T> {
+
         void append(T content);
+
         StreamingChatMessageContent toStreamingChatMessageContent();
     }
 
     private static class AssistantContentBuffer implements ContentBuffer<String> {
+
         private final StringBuilder sb = new StringBuilder();
 
         @Override
@@ -147,12 +178,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         @Override
         public StreamingChatMessageContent toStreamingChatMessageContent() {
-            
+
             StringBuilder sb = new StringBuilder("{\"type\":\"function\", \"function\": ");
             sb.append(String.format("{\"name\":\"%s\", \"parameters\": ", name));
             boolean first = true;
             // when concatentated, args should be valid json
-            for(String argument : arguments) {
+            for (String argument : arguments) {
                 sb.append(argument);
             }
             // close off function, and type
@@ -181,18 +212,20 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     private static class ChatResponseCollector {
 
-        private final Map<AuthorRole,ContentBuffer<?>> roleToContent = new HashMap<>();
+        private final Map<AuthorRole, ContentBuffer<?>> roleToContent = new HashMap<>();
 
         private ContentBuffer<?> collectorFor(AuthorRole role) {
             return roleToContent.computeIfAbsent(role, k -> {
-                if (k == AuthorRole.TOOL) return new ToolContentBuffer();
+                if (k == AuthorRole.TOOL) {
+                    return new ToolContentBuffer();
+                }
                 return new AssistantContentBuffer();
             });
         }
 
         @SuppressWarnings("unchecked")
         private <T> void append(AuthorRole role, T content) {
-            ContentBuffer<T> contentBuffer = (ContentBuffer<T>)collectorFor(role);
+            ContentBuffer<T> contentBuffer = (ContentBuffer<T>) collectorFor(role);
             contentBuffer.append(content);
         }
 
@@ -206,9 +239,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private Flux<StreamingChatMessageContent> internalStreamingChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
-        PromptExecutionSettings promptExecutionSettings)
-    {
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,  promptExecutionSettings);
+        PromptExecutionSettings promptExecutionSettings) {
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
+            promptExecutionSettings);
         return client
             .getChatCompletionsStream(getModelId(), options)
             .filter(chatCompletion -> chatCompletion != null)
@@ -220,17 +253,18 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     .filter(chatResponseMessage -> chatResponseMessage != null)
                     .forEach(chatResponseMessage -> {
                         if (chatResponseMessage.getContent() != null) {
-                            accumulator.append(AuthorRole.ASSISTANT, chatResponseMessage.getContent());
+                            accumulator.append(AuthorRole.ASSISTANT,
+                                chatResponseMessage.getContent());
                         } else if (chatResponseMessage.getToolCalls() != null) {
                             List<ChatCompletionsToolCall> toolCalls = chatResponseMessage.getToolCalls();
                             toolCalls.forEach(toolCall -> {
                                 if (toolCall instanceof ChatCompletionsFunctionToolCall) {
-                                    FunctionCall functionCall = ((ChatCompletionsFunctionToolCall)toolCall).getFunction();
+                                    FunctionCall functionCall = ((ChatCompletionsFunctionToolCall) toolCall).getFunction();
                                     accumulator.append(AuthorRole.TOOL, functionCall);
                                 }
                             });
                         }
-                    }); 
+                    });
                 return accumulator;
             })
             .map(ChatResponseCollector::toStreamingChatMessageContent)
@@ -240,9 +274,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
-        PromptExecutionSettings promptExecutionSettings)
-    {
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions, promptExecutionSettings);
+        PromptExecutionSettings promptExecutionSettings) {
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
+            promptExecutionSettings);
         return client
             .getChatCompletions(getModelId(), options)
             .flatMap(chatCompletions -> Mono.just(toChatMessageContents(chatCompletions)));
@@ -252,8 +286,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
-        PromptExecutionSettings promptExecutionSettings)
-    {
+        PromptExecutionSettings promptExecutionSettings) {
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
 
@@ -279,15 +312,16 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .setMaxTokens(promptExecutionSettings.getMaxTokens())
             // Azure OpenAI WithData API does not allow to send empty array of stop sequences
             // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
-            .setStop(promptExecutionSettings.getStopSequences() == null || promptExecutionSettings.getStopSequences().isEmpty() ? null : promptExecutionSettings.getStopSequences())
+            .setStop(promptExecutionSettings.getStopSequences() == null
+                || promptExecutionSettings.getStopSequences().isEmpty() ? null
+                : promptExecutionSettings.getStopSequences())
             .setUser(promptExecutionSettings.getUser())
             .setLogitBias(new HashMap<>());
 
         return options;
     }
 
-    private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory)
-    {
+    private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {
         List<ChatMessageContent> messages = chatHistory.getMessages();
         if (messages == null || messages.isEmpty()) {
             return new ArrayList<>();
@@ -301,8 +335,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .collect(Collectors.toList());
     }
 
-    private static List<ChatRequestMessage> getChatRequestMessages(String prompt)
-    {
+    private static List<ChatRequestMessage> getChatRequestMessages(String prompt) {
+
         // TODO: XML parsing should be done as a chain of XMLEvent handlers.
         // If one handler does not recognize the element, it should pass it to the next handler.
         // In this way, we can avoid parsing the whole prompt twice and easily extend the parsing logic.
@@ -310,7 +344,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         try (InputStream is = new ByteArrayInputStream(prompt.getBytes())) {
             XMLInputFactory factory = XMLInputFactory.newFactory();
             XMLEventReader reader = factory.createXMLEventReader(is);
-            while(reader.hasNext()) {
+            while (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
                 if (event.isStartElement()) {
                     String name = getElementName(event);
@@ -322,13 +356,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 }
             }
         } catch (IOException | XMLStreamException | IllegalArgumentException e) {
-            LOGGER.error("Error parsing prompt", e);
+            throw new SKException("Failed to parse messages");
         }
         return messages;
     }
 
-    private static List<FunctionDefinition> getFunctionDefinitions(String prompt)
-    {
+    private static List<FunctionDefinition> getFunctionDefinitions(String prompt) {
         // TODO: XML parsing should be done as a chain of XMLEvent handlers. See previous remark.
         // <function pluginName=\"%s\" name=\"%s\"  description=\"%s\">
         //      <parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>...
@@ -340,7 +373,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             FunctionDefinition functionDefinition = null;
             Map<String, String> parameters = new HashMap<>();
             List<String> requiredParmeters = new ArrayList<>();
-            while(reader.hasNext()) {
+            while (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
                 if (event.isStartElement()) {
                     String elementName = getElementName(event);
@@ -352,13 +385,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                         String name = getAttributeValue(event, "name");
                         String description = getAttributeValue(event, "description");
                         // name has to match '^[a-zA-Z0-9_-]{1,64}$'
-                        functionDefinition = new FunctionDefinition(pluginName + "-" +name)
+                        functionDefinition = new FunctionDefinition(pluginName + "-" + name)
                             .setDescription(description);
                     } else if (elementName.equals("parameter")) {
                         String name = getAttributeValue(event, "name");
                         String type = getAttributeValue(event, "type").toLowerCase(Locale.ROOT);
                         String description = getAttributeValue(event, "description");
-                        parameters.put(name, String.format("{\"type\": \"%s\", \"description\": \"%s\"}", "string", description));
+                        parameters.put(name,
+                            String.format("{\"type\": \"%s\", \"description\": \"%s\"}", "string",
+                                description));
 
                         String isRequired = getAttributeValue(event, "isRequired");
                         if (Boolean.parseBoolean(isRequired)) {
@@ -389,7 +424,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                         //}
                         assert functionDefinition != null;
                         if (!parameters.isEmpty()) {
-                            StringBuilder sb = new StringBuilder("{\"type\": \"object\", \"properties\": {");
+                            StringBuilder sb = new StringBuilder(
+                                "{\"type\": \"object\", \"properties\": {");
                             parameters.forEach((name, value) -> {
                                 // make "param": {"type": "string", "description": "desc"},
                                 sb.append(String.format("\"%s\": %s,", name, value));
@@ -435,8 +471,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         return "";
     }
 
-    private static String getAttributeValue(XMLEvent xmlEvent, String attributeName)
-    {
+    private static String getAttributeValue(XMLEvent xmlEvent, String attributeName) {
         if (xmlEvent.isStartElement()) {
             StartElement element = xmlEvent.asStartElement();
             Attribute attribute = element.getAttributeByName(QName.valueOf(attributeName));
@@ -445,11 +480,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         // TODO: programmer's error - log at debug
         return "";
     }
-   
+
     private static ChatRequestMessage getChatRequestMessage(
         String role,
-        String content)
-    {
+        String content) {
         try {
             AuthorRole authorRole = AuthorRole.valueOf(role.toUpperCase());
             return getChatRequestMessage(authorRole, content);
@@ -463,7 +497,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         AuthorRole authorRole,
         String content) {
 
-        switch(authorRole) {
+        switch (authorRole) {
             case ASSISTANT:
                 return new ChatRequestAssistantMessage(content);
             case SYSTEM:
@@ -476,12 +510,13 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 LOGGER.debug("Unexpected author role: " + authorRole);
                 return null;
         }
-    
+
     }
 
     private static List<ChatMessageContent> toChatMessageContents(ChatCompletions chatCompletions) {
 
-        if (chatCompletions == null || chatCompletions.getChoices() == null || chatCompletions.getChoices().isEmpty()) {
+        if (chatCompletions == null || chatCompletions.getChoices() == null
+            || chatCompletions.getChoices().isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -499,22 +534,23 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         if (chatRole == null) {
             return null;
         }
-        if(chatRole == ChatRole.ASSISTANT) {
+        if (chatRole == ChatRole.ASSISTANT) {
             return AuthorRole.ASSISTANT;
         }
-        if(chatRole == ChatRole.SYSTEM) {
+        if (chatRole == ChatRole.SYSTEM) {
             return AuthorRole.SYSTEM;
         }
-        if(chatRole == ChatRole.USER) {
+        if (chatRole == ChatRole.USER) {
             return AuthorRole.USER;
         }
-        if(chatRole == ChatRole.TOOL) {
+        if (chatRole == ChatRole.TOOL) {
             return AuthorRole.TOOL;
         }
         throw new IllegalArgumentException("Unknown chat role: " + chatRole);
     }
 
     public static class Builder implements ChatCompletionService.Builder {
+
         private OpenAIAsyncClient client;
         private String modelId;
 

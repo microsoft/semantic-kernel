@@ -1,12 +1,5 @@
 package com.microsoft.semantickernel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -18,11 +11,19 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DefaultKernel implements Kernel {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultKernel.class);
 
     private final ServiceProvider serviceProvider;
     public KernelPluginCollection plugins;
@@ -121,12 +122,27 @@ public class DefaultKernel implements Kernel {
         public <T> T getService(Class<T> clazz) {
             T service = (T) services.get(clazz);
 
-            if (service == null && clazz.equals(TextGenerationService.class)) {
-                service = (T) services.get(ChatCompletionService.class);
+            if (service == null) {
+                service = (T) services
+                    .entrySet()
+                    .stream()
+                    .filter(it -> clazz.isAssignableFrom(it.getKey()))
+                    .map(it -> it.getValue())
+                    .findFirst()
+                    .orElseGet(() -> null);
+            }
+
+            if (service == null &&
+                (clazz.equals(TextGenerationService.class) ||
+                    clazz.equals(ChatCompletionService.class))) {
+                LOGGER.warn(
+                    "Requested a non-existent service type of {}. Consider requesting a TextAIService instead.",
+                    clazz.getName());
             }
 
             return service;
         }
+
     }
 
     public static class Builder implements Kernel.Builder {
