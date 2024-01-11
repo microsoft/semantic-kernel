@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 /**
  * Interface for text completion services
  */
-public interface TextGenerationService extends AIService, Buildable, TextAIService {
+public interface TextGenerationService extends Buildable, TextAIService {
 
     /**
      * Creates a completion for the prompt and settings.

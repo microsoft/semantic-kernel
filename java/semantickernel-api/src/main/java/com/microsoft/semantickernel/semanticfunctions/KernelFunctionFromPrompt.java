@@ -62,7 +62,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                     .getService(TextAIService.class);
 
                 if (client == null) {
-                    throw new IllegalStateException("Failed to initialise aiService");
+                    throw new IllegalStateException("Failed to initialise aiService, could not find any TextAIService implementations");
                 }
 
                 Flux<StreamingContent<T>> result;

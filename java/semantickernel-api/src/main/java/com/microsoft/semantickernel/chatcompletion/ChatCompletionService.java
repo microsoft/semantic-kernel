@@ -16,7 +16,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface ChatCompletionService extends Buildable, AIService, TextAIService {
+public interface ChatCompletionService extends Buildable, TextAIService {
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
