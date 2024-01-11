@@ -10,8 +10,6 @@ import semantic_kernel as sk
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-from semantic_kernel.connectors.memory.astradb.exceptions import ForbiddenException, ServiceException
-
 try:
     from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient  # noqa: ????
 
@@ -28,13 +26,9 @@ async def retry(func, retries=1):
     for i in range(retries):
         try:
             return await func()
-        except ForbiddenException as e:
+        except Exception as e:
             print(e)
             time.sleep(i * 2)
-        except ServiceException as e:
-            print(e)
-            time.sleep(i * 2)
-
 
 @pytest.fixture(autouse=True, scope="module")
 def slow_down_tests():
