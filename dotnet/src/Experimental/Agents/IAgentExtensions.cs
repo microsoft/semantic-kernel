@@ -16,17 +16,19 @@ public static class IAgentExtensions
     /// </summary>
     /// <param name="agent">the agent</param>
     /// <param name="input">the user input</param>
-    /// <param name="cancellationToken">a cancel token</param>
-    /// <returns>chat messages</returns>
+    /// <param name="arguments">Optional arguments for parameterized instructions</param>
+    /// <param name="cancellationToken">Optional cancellation token</param>
+    /// <returns>Chat messages</returns>
     public static async IAsyncEnumerable<IChatMessage> InvokeAsync(
         this IAgent agent,
         string input,
+        KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IAgentThread thread = await agent.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await foreach (var message in thread.InvokeAsync(agent, input, cancellationToken))
+            await foreach (var message in thread.InvokeAsync(agent, input, arguments, cancellationToken))
             {
                 yield return message;
             }

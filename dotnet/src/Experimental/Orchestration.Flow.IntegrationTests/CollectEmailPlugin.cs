@@ -2,13 +2,12 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Experimental.Orchestration;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
@@ -26,7 +25,7 @@ If I cannot answer, say that I don't know.
 Do not expose the regex unless asked.
 ";
 
-    private readonly IChatCompletion _chat;
+    private readonly IChatCompletionService _chat;
 
     private int MaxTokens { get; set; } = 256;
 
@@ -34,7 +33,7 @@ Do not expose the regex unless asked.
 
     public CollectEmailPlugin(Kernel kernel)
     {
-        this._chat = kernel.GetService<IChatCompletion>();
+        this._chat = kernel.GetRequiredService<IChatCompletionService>();
         this._chatRequestSettings = new OpenAIPromptExecutionSettings
         {
             MaxTokens = this.MaxTokens,
@@ -47,29 +46,33 @@ Do not expose the regex unless asked.
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
     public async Task<string> CollectEmailAsync(
         [Description("The email address provided by the user, pass no matter what the value is")]
+        // ReSharper disable once InconsistentNaming
+#pragma warning disable CA1707 // Identifiers should not contain underscores
         string email_address,
-        ContextVariables variables)
+#pragma warning restore CA1707 // Identifiers should not contain underscores
+        KernelArguments arguments)
     {
-        var chat = this._chat.CreateNewChat(SystemPrompt);
+        var chat = new ChatHistory(SystemPrompt);
         chat.AddUserMessage(Goal);
 
-        ChatHistory? chatHistory = variables.GetChatHistory();
-        if (chatHistory?.Any() ?? false)
+        ChatHistory? chatHistory = arguments.GetChatHistory();
+        if (chatHistory?.Count > 0)
         {
             chat.AddRange(chatHistory);
         }
 
         if (!string.IsNullOrEmpty(email_address) && IsValidEmail(email_address))
         {
-            variables["email_address"] = email_address;
-
             return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
         }
 
         // invalid email, prompt user to provide a valid email
-        variables["email_address"] = string.Empty;
-        variables.PromptInput();
-        return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
+        arguments["email_address"] = string.Empty;
+        arguments.PromptInput();
+
+        var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
+
+        return response.Content ?? string.Empty;
     }
 
     private static bool IsValidEmail(string email)

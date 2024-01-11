@@ -71,9 +71,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         result = await self.upsert_batch(collection_name, [record])
         return result[0]
 
-    async def upsert_batch(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         doc_ids: List[str] = []
         cosmosRecords: List[dict] = []
         for record in records:
@@ -92,9 +90,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.collection.insert_many(cosmosRecords)
         return doc_ids
 
-    async def get(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         if not with_embedding:
             result = self.collection.find_one({"_id": key}, {"embedding": 0})
         else:
@@ -108,9 +104,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             timestamp=result["timestamp"],
         )
 
-    async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         if not with_embeddings:
             results = self.collection.find({"_id": {"$in": keys}}, {"embedding": 0})
         else:
@@ -119,9 +113,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         return [
             MemoryRecord.local_record(
                 id=result["_id"],
-                embedding=np.array(result["embedding"])
-                if with_embeddings
-                else np.array([]),
+                embedding=np.array(result["embedding"]) if with_embeddings else np.array([]),
                 text=result["text"],
                 description=result["description"],
                 additional_metadata=result["metadata"],
@@ -167,9 +159,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         for aggResult in self.collection.aggregate(pipeline):
             result = MemoryRecord.local_record(
                 id=aggResult["_id"],
-                embedding=np.array(aggResult["document"]["embedding"])
-                if with_embeddings
-                else np.array([]),
+                embedding=np.array(aggResult["document"]["embedding"]) if with_embeddings else np.array([]),
                 text=aggResult["document"]["text"],
                 description=aggResult["document"]["description"],
                 additional_metadata=aggResult["document"]["metadata"],

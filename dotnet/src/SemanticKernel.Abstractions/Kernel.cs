@@ -250,7 +250,7 @@ public sealed class Kernel
             // mapping. We can query for that service and and then use it to try to get a service.
             if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
-                if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?> keys))
+                if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
                 {
                     return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
                 }

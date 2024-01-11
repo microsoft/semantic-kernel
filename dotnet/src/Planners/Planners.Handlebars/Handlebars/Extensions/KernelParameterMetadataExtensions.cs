@@ -5,16 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal static class KernelParameterMetadataExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
-    {
-        WriteIndented = true,
-    };
-
     /// <summary>
     /// Checks if type is primitive or string
     /// </summary>
@@ -39,6 +35,11 @@ internal static class KernelParameterMetadataExtensions
     /// </summary>
     public static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type)
     {
+        return type.ToHandlebarsParameterTypeMetadata(new HashSet<Type>());
+    }
+
+    private static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type, HashSet<Type> processedTypes)
+    {
         var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
         if (type.TryGetGenericResultType(out var taskResultType))
         {
@@ -52,7 +53,8 @@ internal static class KernelParameterMetadataExtensions
                     Properties = resultTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
                 });
 
-                parameterTypes.AddNestedComplexTypes(resultTypeProperties);
+                processedTypes.Add(taskResultType);
+                parameterTypes.AddNestedComplexTypes(resultTypeProperties, processedTypes);
             }
         }
         else if (type.IsClass && type != typeof(string))
@@ -67,18 +69,23 @@ internal static class KernelParameterMetadataExtensions
                 Properties = properties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
             });
 
-            parameterTypes.AddNestedComplexTypes(properties);
+            processedTypes.Add(type);
+            parameterTypes.AddNestedComplexTypes(properties, processedTypes);
         }
 
         return parameterTypes;
     }
 
-    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties)
+    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties, HashSet<Type> processedTypes)
     {
         // Add nested complex types
         foreach (var property in properties)
         {
-            parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata());
+            // Only convert the property type if we have not already done so.
+            if (!processedTypes.Contains(property.PropertyType))
+            {
+                parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata(processedTypes));
+            }
         }
     }
 
@@ -96,7 +103,13 @@ internal static class KernelParameterMetadataExtensions
     public static KernelParameterMetadata ParseJsonSchema(this KernelParameterMetadata parameter)
     {
         var schema = parameter.Schema!;
-        var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
+
+        var type = "object";
+        if (schema.RootElement.TryGetProperty("type", out var typeNode))
+        {
+            type = typeNode.Deserialize<string>()!;
+        }
+
         if (IsPrimitiveOrStringType(type) || type == "null")
         {
             return new(parameter)
@@ -111,7 +124,7 @@ internal static class KernelParameterMetadataExtensions
 
     public static string ToJsonString(this JsonElement jsonProperties)
     {
-        return JsonSerializer.Serialize(jsonProperties, s_jsonOptionsCache);
+        return JsonSerializer.Serialize(jsonProperties, JsonOptionsCache.WriteIndented);
     }
 
     public static string GetSchemaTypeName(this KernelParameterMetadata parameter)

@@ -63,10 +63,36 @@ public sealed class PromptTemplateConfig
         Verify.NotNullOrWhiteSpace(json);
 
         Exception? innerException = null;
-        PromptTemplateConfig? result = null;
+        PromptTemplateConfig? config = null;
         try
         {
-            result = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
+            config = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
+            if (config is null)
+            {
+                throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
+            }
+
+            // Prevent the default value from being any type other than a string.
+            // It's a temporary limitation that helps shape the public API surface
+            // (changing the type of the Default property to object) now, before the release.
+            // This helps avoid a breaking change while a proper solution for
+            // dealing with the different deserialization outputs of JSON/YAML prompt configurations is being evaluated.
+            foreach (var inputVariable in config.InputVariables)
+            {
+                // The value of the default property becomes a JsonElement after deserialization because that is how the JsonSerializer handles properties of the object type.
+                if (inputVariable.Default is JsonElement element)
+                {
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        inputVariable.Default = element.ToString();
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
+                            $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{config.Name ?? config.Description}'.");
+                    }
+                }
+            }
         }
         catch (JsonException e)
         {
@@ -74,7 +100,7 @@ public sealed class PromptTemplateConfig
         }
 
         return
-            result ??
+            config ??
             throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
     }
 
@@ -211,7 +237,7 @@ public sealed class PromptTemplateConfig
                     Description = p.Description,
                     DefaultValue = p.Default,
                     IsRequired = p.IsRequired,
-                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : typeof(string),
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType() ?? typeof(string),
                     Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
                 };
             }

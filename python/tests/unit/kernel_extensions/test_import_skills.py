@@ -19,9 +19,7 @@ def test_skill_can_be_imported():
     # import skills
     skills_directory = os.path.join(os.path.dirname(__file__), "../..", "test_skills")
     # path to skills directory
-    skill_config_dict = kernel.import_semantic_skill_from_directory(
-        skills_directory, "TestSkill"
-    )
+    skill_config_dict = kernel.import_semantic_skill_from_directory(skills_directory, "TestSkill")
 
     assert skill_config_dict is not None
     assert len(skill_config_dict) == 1
@@ -36,13 +34,9 @@ def test_native_skill_can_be_imported():
     kernel = sk.Kernel()
 
     # import skills
-    skills_directory = os.path.join(
-        os.path.dirname(__file__), "../..", "test_native_skills"
-    )
+    skills_directory = os.path.join(os.path.dirname(__file__), "../..", "test_native_skills")
     # path to skills directory
-    skill_config_dict = kernel.import_native_skill_from_directory(
-        skills_directory, "TestNativeSkill"
-    )
+    skill_config_dict = kernel.import_native_skill_from_directory(skills_directory, "TestNativeSkill")
 
     assert skill_config_dict is not None
     assert len(skill_config_dict) == 1

@@ -66,16 +66,14 @@ internal static class KernelFunctionMetadataExtensions
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $" (default value: {parameter.DefaultValue})";
+            var defaultValueString = InternalTypeConverter.ConvertToString(parameter.DefaultValue);
+            defaultValueString = string.IsNullOrEmpty(defaultValueString) ? string.Empty : $" (default value: {defaultValueString})";
             return $"    - {parameter.Name}: {parameter.Description}{defaultValueString}";
         }));
 
         // description and inputs are indented by 2 spaces
         // While each parameter in inputs is indented by 4 spaces
-        return $@"{function.ToFullyQualifiedName()}:
-  description: {function.Description}
-  inputs:
-{inputs}";
+        return $"{function.ToFullyQualifiedName()}:  description: {function.Description}  inputs:{inputs}";
     }
 
     /// <summary>
