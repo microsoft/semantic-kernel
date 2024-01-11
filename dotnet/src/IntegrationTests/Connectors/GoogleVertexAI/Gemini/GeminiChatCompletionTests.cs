@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Gemini.ChatCompletion;
+namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
 public sealed class GeminiChatCompletionTests
 {

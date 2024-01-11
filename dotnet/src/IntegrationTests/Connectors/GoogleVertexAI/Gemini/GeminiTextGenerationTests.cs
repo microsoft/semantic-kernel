@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Gemini.TextGeneration;
+namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
 public sealed class GeminiTextGenerationTests
 {

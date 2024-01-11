@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Gemini.EmbeddingsGeneration;
+namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
 public sealed class GeminiEmbeddingGenerationTests
 {
