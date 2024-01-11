@@ -148,7 +148,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-    private readonly ILoggerFactory _logger;
+    private readonly XunitLogger<Kernel> _logger;
 
     public void Dispose()
     {
