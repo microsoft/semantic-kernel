@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -83,7 +84,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
         List<FunctionDefinition> functions = Collections.emptyList();
-        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
+        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings, kernel);
 
     }
 
@@ -102,7 +103,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(prompt);
         List<FunctionDefinition> functions = getFunctionDefinitions(prompt);
-        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings);
+        return internalChatMessageContentsAsync(chatRequestMessages, functions, promptExecutionSettings, kernel);
     }
 
     @Override
@@ -143,27 +144,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private Flux<StreamingChatMessageContent> internalStreamingChatMessageContentsAsync(ChatCompletionsOptions options, Kernel kernel) {
         return client
             .getChatCompletionsStream(getModelId(), options)
-            .filter(chatCompletion -> chatCompletion != null)
-            .map(ChatCompletions::getChoices)
+            .mapNotNull(ChatCompletions::getChoices)
             .filter(choices -> choices != null && !choices.isEmpty())
-            .reduceWith(ChatResponseCollector::new, (accumulator, choices) -> {
-                choices.stream()
-                    .map(choice -> choice.getDelta())
-                    .filter(chatResponseMessage -> chatResponseMessage != null)
-                    .forEach(chatResponseMessage -> {
-                        if (chatResponseMessage.getContent() != null) {
-                            accumulator.append(AuthorRole.ASSISTANT, chatResponseMessage.getContent());
-                        } else if (chatResponseMessage.getToolCalls() != null) {
-                            List<ChatCompletionsToolCall> toolCalls = chatResponseMessage.getToolCalls();
-                            toolCalls.forEach(toolCall -> {
-                                if (toolCall instanceof ChatCompletionsFunctionToolCall) {
-                                    accumulator.append(AuthorRole.TOOL,(ChatCompletionsFunctionToolCall)toolCall);
-                                }
-                            });
-                        }
-                    }); 
-                return accumulator;
-            })
+            .reduceWith(ChatResponseCollector::new, (accumulator, choices) -> accumulateResponsesFromStream(accumulator, choices))
             .map(ChatResponseCollector::toStreamingChatMessageContent)
             .map(streamingChatMessageContent -> {
                 if (streamingChatMessageContent.getRole() == AuthorRole.TOOL) {
@@ -177,12 +160,87 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
-        PromptExecutionSettings promptExecutionSettings)
+        PromptExecutionSettings promptExecutionSettings,
+        Kernel kernel)
     {
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions, promptExecutionSettings);
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,  promptExecutionSettings);
+        Mono<List<ChatMessageContent>> results = 
+            internalChatMessageContentsAsync(options, kernel);
+
+        return results.flatMap(list -> {
+                boolean makeSecondCall = false;
+                for (ChatMessageContent messageContent : list) {
+                    if (messageContent.getAuthorRole() == AuthorRole.TOOL) {
+                        makeSecondCall = true;
+                        String content = messageContent.getContent();
+                        String id = messageContent.getModelId();
+                        ChatRequestToolMessage toolMessage = new ChatRequestToolMessage(content, id);
+                        chatRequestMessages.add(toolMessage);
+                    }
+                }
+                if (makeSecondCall) {
+                    return internalChatMessageContentsAsync(options, kernel); 
+                }
+                return Mono.just(list); 
+            });
+    }
+
+    private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(ChatCompletionsOptions options, Kernel kernel) {
+
         return client
             .getChatCompletions(getModelId(), options)
-            .flatMap(chatCompletions -> Mono.just(toChatMessageContents(chatCompletions)));
+            .mapNotNull(ChatCompletions::getChoices)
+            .filter(choices -> choices != null && !choices.isEmpty())
+            .map(this::accumulateResponses)
+            .map(responses -> 
+                responses.stream()
+                    .map(ChatResponseCollector::toChatMessageContent)
+                    .collect(Collectors.toList())
+            );
+            
+    }
+
+    // streaming case
+    private ChatResponseCollector accumulateResponsesFromStream(ChatResponseCollector collector, List<ChatChoice> choices) {
+        choices.stream()
+            .map(choice -> choice.getDelta())
+            .filter(chatResponseMessage -> chatResponseMessage != null)
+            .forEach(chatResponseMessage -> accumulateResponse(collector, chatResponseMessage)); 
+        return collector;
+    }
+
+    // non-streaming case
+    private List<ChatResponseCollector> accumulateResponses(List<ChatChoice> choices) {
+        List<ChatResponseCollector> collectors = new ArrayList<>();
+        choices.stream()
+            .map(choice -> choice.getDelta())
+            .filter(chatResponseMessage -> chatResponseMessage != null)
+            .map(this::accumulateResponse)
+            .filter(chatResponseMessage -> chatResponseMessage != null)
+            .forEach(collectors::add); 
+        return collectors;
+    }
+
+    private ChatResponseCollector accumulateResponse(ChatResponseMessage response) {
+        return accumulateResponse(null, response);
+    }
+
+    private ChatResponseCollector accumulateResponse(ChatResponseCollector collector, ChatResponseMessage response) {
+        // collector is null for the non-streaming case and not null for the streaming case
+        if (response.getContent() != null) {
+            if (collector == null) collector = new ChatResponseCollector();
+            collector.append(AuthorRole.ASSISTANT, response.getContent());
+        } else if (response.getToolCalls() != null) {
+            List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
+            // TODO: This assumes one tool call per response, which is _definitely_ a bad assumption.
+            for( ChatCompletionsToolCall toolCall : toolCalls) {
+                if (collector == null) collector = new ChatResponseCollector();
+                if (toolCall instanceof ChatCompletionsFunctionToolCall) {
+                    collector.append(AuthorRole.TOOL,(ChatCompletionsFunctionToolCall)toolCall);
+                }
+            }
+        }
+        return collector;
     }
 
     /*
@@ -399,7 +457,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                             }
                             // close the object
                             sb.append("}");
-                            //System.out.println(sb.toString());
                             ObjectMapper objectMapper = new ObjectMapper();
                             JsonNode jsonNode = objectMapper.readTree(sb.toString());
                             BinaryData binaryData = BinaryData.fromObject(jsonNode);
@@ -510,6 +567,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private interface ContentBuffer<T> {
         void append(T content);
         StreamingChatMessageContent toStreamingChatMessageContent();
+        ChatMessageContent toChatMessageContent();
     }
 
     private static class AssistantContentBuffer implements ContentBuffer<String> {
@@ -523,6 +581,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Override
         public StreamingChatMessageContent toStreamingChatMessageContent() {
             return new StreamingChatMessageContent(AuthorRole.ASSISTANT, sb.toString());
+        }
+
+        @Override
+        public ChatMessageContent toChatMessageContent() {
+            return new ChatMessageContent(AuthorRole.ASSISTANT, sb.toString());
         }
     }
 
@@ -551,10 +614,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         @Override
         public StreamingChatMessageContent toStreamingChatMessageContent() {
-            
+            return new StreamingChatMessageContent(AuthorRole.TOOL, toJsonString());
+        }
+
+        @Override
+        public ChatMessageContent toChatMessageContent() {
+            return new ChatMessageContent(AuthorRole.TOOL, toJsonString());
+        }
+
+        private String toJsonString() {
             StringBuilder sb = new StringBuilder(
-                String.format("{\"type\":\"function\", \"id\":\"%s\", \"function\": ", id)
-            );
+            String.format("{\"type\":\"function\", \"id\":\"%s\", \"function\": ", id));
             sb.append(String.format("{\"name\":\"%s\", \"parameters\": ", name));
             // when concatentated, args should be valid json
             for(String argument : arguments) {
@@ -563,9 +633,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             // close off function, and type
             sb.append("}}");
             assert isBalanced(sb.toString());
-            return new StreamingChatMessageContent(AuthorRole.TOOL, sb.toString());
+            return sb.toString();
         }
 
+        // used to check that the json string is balanced
         private boolean isBalanced(String str) {
             int openParens = 0;
             int closeParens = 0;
@@ -584,6 +655,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
     }
 
+    // For streaming, 
     private static class ChatResponseCollector {
 
         private final Map<AuthorRole,ContentBuffer<?>> roleToContent = new HashMap<>();
@@ -605,6 +677,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             assert roleToContent.size() == 1;
             ContentBuffer<?> contentBuffer = roleToContent.values().iterator().next();
             return contentBuffer.toStreamingChatMessageContent();
+        }
+
+        private ChatMessageContent toChatMessageContent() {
+            assert roleToContent.size() == 1;
+            ContentBuffer<?> contentBuffer = roleToContent.values().iterator().next();
+            return contentBuffer.toChatMessageContent();
         }
     }
 
