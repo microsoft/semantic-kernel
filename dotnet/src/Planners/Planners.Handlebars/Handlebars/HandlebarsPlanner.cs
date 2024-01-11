@@ -25,7 +25,7 @@ public sealed class HandlebarsPlanner
     public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
     {
         // Options for built-in Handlebars helpers
-        Categories = new Category[] { Category.Math },
+        Categories = new Category[] { Category.DateTime },
         UseCategoryPrefix = false,
 
         // Custom helpers
@@ -85,7 +85,7 @@ public sealed class HandlebarsPlanner
         var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
-        if (completionResults.Content is not null && completionResults.Content.Contains(InsufficientFunctionsError))
+        if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
@@ -94,7 +94,7 @@ public sealed class HandlebarsPlanner
         Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
-            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results");
+            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results\nPlanner output:\n{completionResults}");
         }
 
         var planTemplate = match.Groups[2].Value.Trim();

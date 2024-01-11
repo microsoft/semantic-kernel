@@ -126,13 +126,14 @@ internal static class KernelFunctionHelpers
             var fullyQualifiedParamName = functionMetadata.Name + nameDelimiter + param.Name;
             if (handlebarsArguments is not null && (handlebarsArguments.TryGetValue(fullyQualifiedParamName, out var value) || handlebarsArguments.TryGetValue(param.Name, out value)))
             {
-                if (IsExpectedParameterType(param, value))
+                value = KernelHelpersUtils.GetArgumentValue(value, executionContext);
+                if (value is not null && IsExpectedParameterType(param, value))
                 {
                     executionContext[param.Name] = value;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value.GetType()}.");
+                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType()}.");
                 }
             }
             else if (param.IsRequired)
@@ -152,20 +153,21 @@ internal static class KernelFunctionHelpers
     private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, KernelArguments executionContext, Arguments handlebarsArguments)
     {
         var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
+
         if (requiredParameters.Count <= handlebarsArguments.Length && handlebarsArguments.Length <= functionMetadata.Parameters.Count)
         {
             var argIndex = 0;
-            foreach (var arg in handlebarsArguments)
+            var arguments = KernelHelpersUtils.ProcessArguments(handlebarsArguments, executionContext);
+            foreach (var arg in arguments)
             {
-                var param = functionMetadata.Parameters[argIndex];
+                var param = functionMetadata.Parameters[argIndex++];
                 if (IsExpectedParameterType(param, arg))
                 {
-                    executionContext[param.Name] = handlebarsArguments[argIndex];
-                    argIndex++;
+                    executionContext[param.Name] = arg;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {handlebarsArguments[argIndex].GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg.GetType()}.");
                 }
             }
         }

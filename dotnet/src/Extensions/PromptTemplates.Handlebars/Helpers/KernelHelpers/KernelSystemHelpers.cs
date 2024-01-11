@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
+using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers.KernelHelpersUtils;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
@@ -62,32 +63,34 @@ internal static class KernelSystemHelpers
         handlebarsInstance.RegisterHelper("set", (writer, context, arguments) =>
         {
             var name = string.Empty;
-            object value = string.Empty;
+            object? value = string.Empty;
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
                 var parameters = (IDictionary<string, object>)arguments[0];
                 name = (string)parameters!["name"];
-                value = parameters!["value"];
+                value = GetArgumentValue(parameters!["value"], variables);
             }
             else
             {
-                name = arguments[0].ToString();
-                value = arguments[1];
+                var args = ProcessArguments(arguments, variables);
+                name = args[0].ToString();
+                value = args[1];
             }
 
             // Set the variable in the Handlebars context
             variables[name] = value;
         });
 
-        handlebarsInstance.RegisterHelper("json", static (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("json", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             if (arguments.Length == 0 || arguments[0] is null)
             {
                 throw new HandlebarsRuntimeException("`json` helper requires a value to be passed in.");
             }
 
-            object objectToSerialize = arguments[0];
+            var args = ProcessArguments(arguments, variables);
+            object objectToSerialize = args[0];
             var type = objectToSerialize.GetType();
 
             return type == typeof(string) ? objectToSerialize
@@ -97,22 +100,14 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            var args = arguments.ToList().Select(arg =>
-            {
-                if (arg is UndefinedBindingResult result)
-                {
-                    return variables.TryGetValue(result.Value, out var variable) ? variable : result.Value;
-                }
-
-                return arg;
-            });
-
-            return string.Concat(arguments);
+            var args = ProcessArguments(arguments, variables);
+            return string.Concat(args);
         });
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            return arguments.ToArray();
+            var args = ProcessArguments(arguments, variables);
+            return args.ToArray();
         });
 
         handlebarsInstance.RegisterHelper("raw", static (writer, options, context, arguments) =>
@@ -122,28 +117,44 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("range", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
+            var args = ProcessArguments(arguments, variables);
+
             // Create list with numbers from start to end (inclusive)
-            var start = int.Parse(arguments[0].ToString(), kernel.Culture);
-            var end = int.Parse(arguments[1].ToString(), kernel.Culture) + 1;
+            var start = int.Parse(args[0].ToString(), kernel.Culture);
+            var end = int.Parse(args[1].ToString(), kernel.Culture) + 1;
             var count = end - start;
 
             return Enumerable.Range(start, count);
         });
 
-        handlebarsInstance.RegisterHelper("or", static (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            return arguments.Any(arg => arg != null && arg is not false);
+            var args = ProcessArguments(arguments, variables);
+            return args.Any(arg => arg != null && arg is not false);
         });
 
-        handlebarsInstance.RegisterHelper("equals", static (in HelperOptions options, in Context context, in Arguments arguments) =>
+        handlebarsInstance.RegisterHelper("add", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            var args = ProcessArguments(arguments, variables);
+            return args.Sum(arg => decimal.Parse(arg.ToString(), kernel.Culture));
+        });
+
+        handlebarsInstance.RegisterHelper("subtract", (in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            var args = ProcessArguments(arguments, variables);
+            return args.Aggregate((a, b) => decimal.Parse(a.ToString(), kernel.Culture) - decimal.Parse(b.ToString(), kernel.Culture));
+        });
+
+        handlebarsInstance.RegisterHelper("equals", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             if (arguments.Length < 2)
             {
                 return false;
             }
 
-            object? left = arguments[0];
-            object? right = arguments[1];
+            var args = ProcessArguments(arguments, variables);
+            object? left = args[0];
+            object? right = args[1];
 
             return left == right || (left is not null && left.Equals(right));
         });
