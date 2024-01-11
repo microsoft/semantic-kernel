@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace SemanticKernel.Connectors.UnitTests;
 
-internal class MultipleHttpMessageHandlerStub : DelegatingHandler
+internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
     private int _callIteration = 0;
 

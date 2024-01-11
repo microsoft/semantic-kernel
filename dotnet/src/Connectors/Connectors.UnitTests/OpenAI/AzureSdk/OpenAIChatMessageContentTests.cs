@@ -99,6 +99,6 @@ public sealed class OpenAIChatMessageContentTests
         Assert.Same(expectedToolCalls, actualContent.ToolCalls);
     }
 
-    private class FakeChatCompletionsToolCall(string id) : ChatCompletionsToolCall(id)
+    private sealed class FakeChatCompletionsToolCall(string id) : ChatCompletionsToolCall(id)
     { }
 }

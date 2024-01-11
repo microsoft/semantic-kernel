@@ -54,7 +54,7 @@ public sealed class RequestFailedExceptionExtensionsTests
 
     #region private
 
-    private class FakeResponse(string responseContent, int status) : Response
+    private sealed class FakeResponse(string responseContent, int status) : Response
     {
         private readonly string _responseContent = responseContent;
         private readonly int _status = status;
