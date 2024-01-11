@@ -103,7 +103,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
             api_version="2023-12-01-preview",
             use_extensions=True,
         )
-        kernel.add_chat_service("chat-gpt", chat_service)
+        kernel.add_chat_service("chat-gpt-extensions", chat_service)
 
         prompt_config = sk.PromptTemplateConfig(
             completion=AzureChatRequestSettings(
@@ -113,6 +113,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
                 extra_body=extra,
             )
         )
+        prompt_config.default_services = ["chat-gpt-extensions"]
 
         prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
