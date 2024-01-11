@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 public class GeminiTextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();
-    private protected IGeminiClient Client { get; init; }
+    private protected IEmbeddingsClient EmbeddingsClient { get; init; } = null!;
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -27,6 +27,6 @@ public class GeminiTextEmbeddingGenerationServiceBase : ITextEmbeddingGeneration
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.GenerateEmbeddingsAsync(data, cancellationToken);
+        return this.EmbeddingsClient.GenerateEmbeddingsAsync(data, cancellationToken);
     }
 }

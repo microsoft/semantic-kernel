@@ -16,7 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, ITextGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();
-    private protected IGeminiClient Client { get; init; } = null!;
+    private protected IGeminiTextGenerationClient TextGenerationClient { get; init; } = null!;
+    private protected IGeminiChatCompletionClient ChatCompletionClient { get; init; } = null!;
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -28,7 +29,7 @@ public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, 
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this.ChatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -38,7 +39,7 @@ public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, 
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this.ChatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -48,7 +49,7 @@ public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, 
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this.TextGenerationClient.GenerateTextAsync(prompt, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -58,6 +59,6 @@ public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, 
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this.TextGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
     }
 }

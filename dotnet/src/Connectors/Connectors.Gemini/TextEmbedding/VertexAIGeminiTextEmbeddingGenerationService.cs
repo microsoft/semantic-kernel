@@ -7,8 +7,8 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core.VertexAI;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini.VertexAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -40,7 +40,7 @@ public sealed class VertexAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { EmbeddingModelId = model };
-        this.Client = new VertexAIGeminiClient(
+        this.EmbeddingsClient = new VertexAIEmbeddingsClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             configuration: geminiConfiguration,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
@@ -49,9 +49,9 @@ public sealed class VertexAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal VertexAIGeminiTextEmbeddingGenerationService(IGeminiClient client)
+    internal VertexAIGeminiTextEmbeddingGenerationService(IEmbeddingsClient client, string embeddingModelId)
     {
-        this.Client = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, client.EmbeddingModelId);
+        this.EmbeddingsClient = client;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, embeddingModelId);
     }
 }

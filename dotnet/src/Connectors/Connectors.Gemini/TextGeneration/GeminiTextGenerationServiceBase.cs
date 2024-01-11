@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini;
 public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();
-    private protected IGeminiClient Client { get; init; } = null!;
+    private protected IGeminiTextGenerationClient TextGenerationClient { get; init; } = null!;
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -27,7 +27,7 @@ public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this.TextGenerationClient.GenerateTextAsync(prompt, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -37,6 +37,6 @@ public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this.TextGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
     }
 }

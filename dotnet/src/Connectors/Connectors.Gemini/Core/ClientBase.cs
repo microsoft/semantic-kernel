@@ -5,11 +5,7 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,17 +18,20 @@ namespace Microsoft.SemanticKernel.Connectors.Gemini.Core;
 
 internal abstract class ClientBase
 {
-    private readonly IStreamJsonParser _streamJsonParser;
-    protected HttpClient HTTPClient { get; }
-    protected ILogger Logger { get; }
+    protected readonly IHttpRequestFactory HTTPRequestFactory;
+    protected readonly IEndpointProvider EndpointProvider;
+    protected readonly HttpClient HTTPClient;
+    protected readonly ILogger Logger;
 
     protected ClientBase(
-        IStreamJsonParser streamJsonParser,
         HttpClient httpClient,
+        IHttpRequestFactory httpRequestFactory,
+        IEndpointProvider endpointProvider,
         ILogger? logger)
     {
         this.HTTPClient = httpClient;
-        this._streamJsonParser = streamJsonParser;
+        this.HTTPRequestFactory = httpRequestFactory;
+        this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
     }
 
@@ -53,18 +52,6 @@ internal abstract class ClientBase
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
             .ConfigureAwait(false);
         return body;
-    }
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-    protected async IAsyncEnumerable<GeminiResponse> ProcessResponseStreamAsync(
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-        Stream responseStream,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        foreach (string json in this._streamJsonParser.Parse(responseStream))
-        {
-            yield return DeserializeResponse<GeminiResponse>(json);
-        }
     }
 
     protected async Task<HttpResponseMessage> SendRequestAndGetResponseStreamAsync(
@@ -88,29 +75,5 @@ internal abstract class ClientBase
         }
 
         return geminiResponse;
-    }
-
-    protected static GeminiMetadata GetResponseMetadata(
-        GeminiResponse geminiResponse,
-        GeminiResponseCandidate candidate) => new()
-    {
-        FinishReason = candidate.FinishReason,
-        Index = candidate.Index,
-        PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
-        CurrentCandidateTokenCount = candidate.TokenCount,
-        CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
-        TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
-        PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
-        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings?.ToList(),
-        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
-    };
-
-    protected void LogUsageMetadata(GeminiMetadata metadata)
-    {
-        this.Logger.LogDebug(
-            "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
-            metadata.CandidatesTokenCount,
-            metadata.PromptTokenCount,
-            metadata.TotalTokenCount);
     }
 }

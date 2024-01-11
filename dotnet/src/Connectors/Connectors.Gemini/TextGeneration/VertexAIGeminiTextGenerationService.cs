@@ -7,8 +7,8 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core.VertexAI;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini.VertexAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -40,8 +40,10 @@ public sealed class VertexAIGeminiTextGenerationService : GeminiTextGenerationSe
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { ModelId = model };
-        this.Client = new VertexAIGeminiClient(
+        this.TextGenerationClient = new VertexAIGeminiTextGenerationClient(
+#pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
+#pragma warning restore CA2000
             configuration: geminiConfiguration,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
             endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),
@@ -49,9 +51,9 @@ public sealed class VertexAIGeminiTextGenerationService : GeminiTextGenerationSe
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal VertexAIGeminiTextGenerationService(IGeminiClient client)
+    internal VertexAIGeminiTextGenerationService(IGeminiTextGenerationClient client, string modelId)
     {
-        this.Client = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, client.ModelId);
+        this.TextGenerationClient = client;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 }

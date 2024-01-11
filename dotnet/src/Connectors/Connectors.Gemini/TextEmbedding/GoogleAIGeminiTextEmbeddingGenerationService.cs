@@ -7,8 +7,8 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini.GoogleAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -36,7 +36,7 @@ public sealed class GoogleAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { EmbeddingModelId = model };
-        this.Client = new GoogleAIGeminiClient(
+        this.EmbeddingsClient = new GoogleAIEmbeddingsClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             configuration: geminiConfiguration,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
@@ -45,9 +45,9 @@ public sealed class GoogleAIGeminiTextEmbeddingGenerationService : GeminiTextEmb
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal GoogleAIGeminiTextEmbeddingGenerationService(IGeminiClient client)
+    internal GoogleAIGeminiTextEmbeddingGenerationService(IEmbeddingsClient client, string embeddingModelId)
     {
-        this.Client = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, client.EmbeddingModelId);
+        this.EmbeddingsClient = client;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, embeddingModelId);
     }
 }

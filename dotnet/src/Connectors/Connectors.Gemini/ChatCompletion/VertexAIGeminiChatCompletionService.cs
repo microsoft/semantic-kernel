@@ -4,11 +4,12 @@
 
 #endregion
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core.VertexAI;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini.VertexAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -28,6 +29,10 @@ public sealed class VertexAIGeminiChatCompletionService : GeminiChatCompletionSe
     /// <param name="projectId">Your project ID</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "HttpClient is disposed by the HttpClientProvider")]
     public VertexAIGeminiChatCompletionService(
         string model,
         string apiKey,
@@ -40,18 +45,28 @@ public sealed class VertexAIGeminiChatCompletionService : GeminiChatCompletionSe
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { ModelId = model };
-        this.Client = new VertexAIGeminiClient(
+        this.ChatCompletionClient = new VertexAIGeminiChatCompletionClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             configuration: geminiConfiguration,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
             endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),
-            logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
+            logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
+        this.TextGenerationClient = new VertexAIGeminiTextGenerationClient(
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            configuration: geminiConfiguration,
+            httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
+            endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService)));
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal VertexAIGeminiChatCompletionService(IGeminiClient client)
+    internal VertexAIGeminiChatCompletionService(
+        IGeminiChatCompletionClient chatCompletionClient,
+        IGeminiTextGenerationClient textGenerationClient,
+        string modelId)
     {
-        this.Client = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, client.ModelId);
+        this.ChatCompletionClient = chatCompletionClient;
+        this.TextGenerationClient = textGenerationClient;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 }

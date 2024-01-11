@@ -7,8 +7,9 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Gemini.Abstract;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core;
-using Microsoft.SemanticKernel.Connectors.Gemini.Core.GoogleAI;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini.Common;
+using Microsoft.SemanticKernel.Connectors.Gemini.Core.Gemini.GoogleAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -36,18 +37,28 @@ public sealed class GoogleAIGeminiChatCompletionService : GeminiChatCompletionSe
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var geminiConfiguration = new GeminiConfiguration(apiKey) { ModelId = model };
-        this.Client = new GoogleAIGeminiClient(
+        this.ChatCompletionClient = new GeminiChatCompletionClient(
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             configuration: geminiConfiguration,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
             endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey),
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
+        this.TextGenerationClient = new GeminiTextGenerationClient(
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            configuration: geminiConfiguration,
+            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
+            endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey),
+            logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService)));
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal GoogleAIGeminiChatCompletionService(IGeminiClient client)
+    internal GoogleAIGeminiChatCompletionService(
+        IGeminiChatCompletionClient chatCompletionClient,
+        IGeminiTextGenerationClient textGenerationClient,
+        string modelId)
     {
-        this.Client = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, client.ModelId);
+        this.ChatCompletionClient = chatCompletionClient;
+        this.TextGenerationClient = textGenerationClient;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 }
