@@ -169,6 +169,37 @@ public static class KernelExtensions
     }
     #endregion
 
+    #region CreatePluginFromFunctions
+    /// <summary>Creates a plugin that contains the specified functions.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        CreatePluginFromFunctions(kernel, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that contains the specified functions.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(kernel);
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
+    }
+    #endregion
+
     #region ImportPlugin/AddFromType
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -279,25 +310,6 @@ public static class KernelExtensions
         return plugin;
     }
 
-    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
-    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
-    /// <param name="pluginName">The name for the plugin.</param>
-    /// <param name="description">A description of the plugin.</param>
-    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
-    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description, IEnumerable<KernelFunction>? functions = null)
-    {
-        Verify.NotNull(plugins);
-
-        var plugin = new DefaultKernelPlugin(pluginName, description, functions);
-        plugins.Add(plugin);
-        return plugin;
-    }
-
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -313,6 +325,99 @@ public static class KernelExtensions
         Verify.NotNull(plugins);
 
         plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
+
+        return plugins;
+    }
+    #endregion
+
+    #region ImportPlugin/AddFromFunctions
+    /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        ImportPluginFromFunctions(kernel, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        KernelPlugin plugin = CreatePluginFromFunctions(kernel, pluginName, description, functions);
+        kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        AddFromFunctions(plugins, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(plugins);
+
+        var plugin = new DefaultKernelPlugin(pluginName, description, functions);
+        plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        AddFromFunctions(plugins, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton(KernelPluginFactory.CreateFromFunctions(pluginName, description, functions));
 
         return plugins;
     }

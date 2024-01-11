@@ -503,7 +503,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
         var kernel = new Kernel();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         //Act
         var result = await kernel.InvokeAsync("plugin", "function");
