@@ -165,6 +165,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     {
         if (disposing)
         {
+            this._logger.Dispose();
             this._testOutputHelper.Dispose();
         }
     }
