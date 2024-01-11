@@ -82,17 +82,18 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("json", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            if (arguments.Length == 0 || arguments[0] is null)
+            if (arguments.Length == 0)
             {
                 throw new HandlebarsRuntimeException("`json` helper requires a value to be passed in.");
             }
 
             object objectToSerialize = arguments[0];
-            var type = objectToSerialize.GetType();
 
-            return type == typeof(string) ? objectToSerialize
-                : type == typeof(JsonNode) ? objectToSerialize.ToString()
-                : JsonSerializer.Serialize(objectToSerialize);
+            return objectToSerialize switch
+            {
+                string stringObject => objectToSerialize,
+                _ => JsonSerializer.Serialize(objectToSerialize)
+            };
         });
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -132,7 +133,14 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("or", static (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            return arguments.Any(arg => arg != null && arg is not false);
+            return arguments.Any(arg =>
+            {
+                return arg switch
+                {
+                    bool booleanArg => booleanArg,
+                    _ => arg is null
+                };
+            });
         });
 
         handlebarsInstance.RegisterHelper("equals", static (in HelperOptions options, in Context context, in Arguments arguments) =>
