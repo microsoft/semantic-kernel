@@ -29,7 +29,7 @@ public static class Example59_OpenAIFunctionCalling
         Kernel kernel = builder.Build();
 
         // Add a plugin with some helper functions we want to allow the model to utilize.
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("HelperFunctions", new[]
+        kernel.ImportPluginFromFunctions("HelperFunctions", new[]
         {
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName) =>
@@ -44,7 +44,7 @@ public static class Example59_OpenAIFunctionCalling
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-        }));
+        });
 
         Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
