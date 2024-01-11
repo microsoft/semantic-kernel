@@ -6,6 +6,12 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+    AzureAISearchDataSources,
+    AzureChatRequestSettings,
+    AzureDataSources,
+    ExtraBody,
+)
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
@@ -20,16 +26,12 @@ kernel = sk.Kernel()
 # Load Azure OpenAI Settings
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-# Load Azure OpenAI with data settings
-azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
-    parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-        **sk.azure_aisearch_settings_from_dot_env_as_dict()
-    )
-)
-
-azure_chat_with_data_settings = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-    dataSources=[azure_aisearch_datasource]
-)
+# Create the data source settings
+azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
+az_source = AzureAISearchDataSources(**azure_ai_search_settings)
+az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
+extra = ExtraBody(dataSources=[az_data])
+req_settings = AzureChatRequestSettings(extra_body=extra)
 
 # For example, AI Search index may contain the following document:
 
@@ -56,18 +58,13 @@ kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
 # the math skill is a core skill and has the function calling enabled.
 kernel.import_skill(TimeSkill(), skill_name="time")
 
-# enabling or disabling function calling is done by setting the function_call parameter for the completion.
-# when the function_call parameter is set to "auto" the model will decide which function to use, if any.
-# if you only want to use a specific function, set the name of that function in this parameter,
+# enabling or disabling function calling is done by setting the tool_choice parameter for the completion.
+# when the tool_choice parameter is set to "auto" the model will decide which function to use, if any.
+# if you only want to use a specific tool, set the name of that tool in this parameter,
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_call="auto",
-    data_source_settings=azure_chat_with_data_settings,
-)
+req_settings.tool_choice = "auto"
+prompt_config = sk.PromptTemplateConfig(completion=req_settings)
 prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message("I am an AI assistant here to answer your questions.")

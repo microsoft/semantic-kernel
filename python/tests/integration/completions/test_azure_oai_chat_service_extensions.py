@@ -19,7 +19,6 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_se
     AzureCognitiveSearchMemoryStore,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 
 try:
     azure_cognitive_search_installed = True
@@ -36,7 +35,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.mark.asyncio
 async def create_memory_store():
     # Create an index and populate it with some data
-    collection = f"int-tests-{randint(1000, 9999)}"
+    collection = f"int-tests-chat-extensions-{randint(1000, 9999)}"
     memory_store = AzureCognitiveSearchMemoryStore(vector_size=4)
     await memory_store.create_collection_async(collection)
     time.sleep(1)
@@ -104,9 +103,9 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
             api_version="2023-12-01-preview",
             use_extensions=True,
         )
-        kernel.add_chat_service("chat-gpt", chat_service)
+        kernel.add_chat_service("chat-gpt-extensions", chat_service)
 
-        prompt_config = ChatPromptTemplate(
+        prompt_config = sk.PromptTemplateConfig(
             completion=AzureChatRequestSettings(
                 max_tokens=2000,
                 temperature=0.7,
@@ -114,6 +113,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
                 extra_body=extra,
             )
         )
+        prompt_config.default_services = ["chat-gpt-extensions"]
 
         prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
@@ -126,7 +126,6 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_azure_e2e_chat_completion_with_extensions(
     create_with_data_chat_function,
 ):

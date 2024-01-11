@@ -330,6 +330,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         endpoint=endpoint,
         api_version=api_version,
         api_key=api_key,
+        use_extensions=True,
     )
 
     await azure_chat_completion.complete_chat_async(messages=messages_in, settings=complete_request_settings)
@@ -369,6 +370,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
+        use_extensions=True,
     )
 
     functions = [{"name": "test-function", "description": "test-description"}]
@@ -427,6 +429,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
+        use_extensions=True,
     )
 
     await azure_chat_completion.complete_chat_async(messages, complete_request_settings)

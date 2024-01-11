@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Field
+from pydantic import Field, SerializeAsAny
 from pydantic.dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
@@ -13,13 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class AzureCosmosDBAuthentication:
+class ConnectionStringAuthentication:
     type: Literal["ConnectionString"] = "ConnectionString"
     connectionString: Optional[str] = None
 
 
 @dataclass
-class AzureCosmosDBEmbeddingDependencyType:
+class ApiKeyAuthentication:
+    type: Literal["APIKey"] = "APIKey"
+    key: Optional[str] = None
+
+
+@dataclass
+class AzureEmbeddingDependency:
     type: Literal["DeploymentName"] = "DeploymentName"
     deploymentName: Optional[str] = None
 
@@ -38,14 +44,15 @@ class AzureDataSourceParameters:
     embeddingEndpoint: Optional[str] = None
     embeddingDeploymentName: Optional[str] = None
     strictness: int = 3
+    embeddingDependency: Optional[AzureEmbeddingDependency] = None
 
 
 @dataclass
 class AzureCosmosDBDataSource(AzureDataSourceParameters):
-    authentication: Optional[AzureCosmosDBAuthentication] = None
+    authentication: Optional[ConnectionStringAuthentication] = None
     databaseName: Optional[str] = None
     containerName: Optional[str] = None
-    embeddingDependencyType: Optional[AzureCosmosDBEmbeddingDependencyType] = None
+    embeddingDependencyType: Optional[AzureEmbeddingDependency] = None
 
 
 @dataclass
@@ -53,6 +60,7 @@ class AzureAISearchDataSources(AzureDataSourceParameters):
     endpoint: Optional[str] = None
     key: Optional[str] = None
     queryType: Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"] = "simple"
+    authentication: Optional[ApiKeyAuthentication] = None
 
 
 @dataclass
@@ -60,14 +68,14 @@ class AzureDataSources:
     """Class to hold Azure AI data source parameters."""
 
     type: Literal["AzureCognitiveSearch", "AzureCosmosDB"] = "AzureCognitiveSearch"
-    parameters: Optional[AzureDataSourceParameters] = None
+    parameters: Optional[SerializeAsAny[AzureDataSourceParameters]] = None
 
 
 # @dataclass
 class ExtraBody(SKBaseModel):
     data_sources: Optional[List[AzureDataSources]] = Field(None, alias="dataSources")
-    # input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
-    # output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
+    input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
+    output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
 
     def __getitem__(self, item):
         return getattr(self, item)
