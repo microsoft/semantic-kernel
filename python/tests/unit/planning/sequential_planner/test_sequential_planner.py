@@ -15,7 +15,9 @@ from semantic_kernel.planning.sequential_planner.sequential_planner import (
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.plugin_collection_base import PluginCollectionBase
+from semantic_kernel.plugin_definition.plugin_collection_base import (
+    PluginCollectionBase,
+)
 
 
 def create_mock_function(function_view: FunctionView):
@@ -119,7 +121,9 @@ async def test_invalid_xml_throws_async():
 
     plan_string = "<plan>notvalid<</plan>"
     return_context = SKContext.model_construct(
-        variables=ContextVariables(plan_string), memory=memory, plugin_collection=plugins
+        variables=ContextVariables(plan_string),
+        memory=memory,
+        plugin_collection=plugins,
     )
 
     context = SKContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)

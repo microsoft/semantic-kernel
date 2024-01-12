@@ -34,7 +34,9 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
 
 
 @pytest.mark.asyncio
-async def test_oai_text_completion_with_plugins_with_provided_client(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_text_completion_with_plugins_with_provided_client(
+    setup_tldr_function_for_oai_models, get_oai_config
+):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     api_key, org_id = get_oai_config

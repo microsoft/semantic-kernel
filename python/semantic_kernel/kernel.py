@@ -29,6 +29,14 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
+from semantic_kernel.plugin_definition.plugin_collection_base import (
+    PluginCollectionBase,
+)
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
+)
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
@@ -40,17 +48,14 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
-from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
-from semantic_kernel.plugin_definition.plugin_collection_base import PluginCollectionBase
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
-from semantic_kernel.utils.validation import validate_function_name, validate_plugin_name
+from semantic_kernel.utils.validation import (
+    validate_function_name,
+    validate_plugin_name,
+)
 
 T = TypeVar("T")
 
@@ -631,7 +636,9 @@ class Kernel:
             )
 
         function = SKFunction.from_semantic_config(plugin_name, function_name, function_config)
-        function.request_settings.update_from_ai_request_settings(function_config.prompt_template_config.execution_settings)
+        function.request_settings.update_from_ai_request_settings(
+            function_config.prompt_template_config.execution_settings
+        )
 
         # Connect the function to the current kernel plugin
         # collection, in case the function is invoked manually
@@ -755,7 +762,9 @@ class Kernel:
             # Prepare lambda wrapping AI logic
             function_config = SemanticFunctionConfig(config, template)
 
-            plugin[function_name] = self.register_semantic_function(plugin_directory_name, function_name, function_config)
+            plugin[function_name] = self.register_semantic_function(
+                plugin_directory_name, function_name, function_config
+            )
 
         return plugin
 

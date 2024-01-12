@@ -8,13 +8,15 @@ from pydantic import Field
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.plugin_definition import constants
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.plugin_collection_base import (
+    PluginCollectionBase,
+)
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
     ReadOnlyFunctionCollection,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
-from semantic_kernel.plugin_definition.plugin_collection_base import PluginCollectionBase
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase

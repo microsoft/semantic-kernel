@@ -2,7 +2,12 @@
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.core_plugins import FileIOPlugin, MathPlugin, TextPlugin, TimePlugin
+from semantic_kernel.core_plugins import (
+    FileIOPlugin,
+    MathPlugin,
+    TextPlugin,
+    TimePlugin,
+)
 from semantic_kernel.planning import SequentialPlanner
 
 

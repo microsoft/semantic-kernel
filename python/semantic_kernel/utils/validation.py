@@ -25,7 +25,9 @@ def validate_plugin_name(value: Optional[str]) -> None:
 
     if not re_match(PLUGIN_NAME_REGEX, value):
         raise ValueError(
-            f"Invalid plugin name: {value}. Plugin " f"names may only contain ASCII letters, " f"digits, and underscores."
+            f"Invalid plugin name: {value}. Plugin "
+            f"names may only contain ASCII letters, "
+            f"digits, and underscores."
         )
 
 

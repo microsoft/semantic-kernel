@@ -39,7 +39,10 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         self._messages = []
         if self.prompt_config.execution_settings.extension_data.get("chat_system_prompt"):
             self.add_system_message(self.prompt_config.execution_settings.extension_data["chat_system_prompt"])
-        if hasattr(self.prompt_config.execution_settings, "messages") and self.prompt_config.execution_settings.messages:
+        if (
+            hasattr(self.prompt_config.execution_settings, "messages")
+            and self.prompt_config.execution_settings.messages
+        ):
             for message in self.prompt_config.execution_settings.messages:
                 self.add_message(message["role"], message["content"])
 

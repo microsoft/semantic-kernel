@@ -18,10 +18,10 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_extensions i
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
-from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
 
 
 async def _async_generator(query_result):

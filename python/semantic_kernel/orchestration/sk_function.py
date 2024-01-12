@@ -23,14 +23,14 @@ from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
-from semantic_kernel.semantic_functions.semantic_function_config import (
-    SemanticFunctionConfig,
-)
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
+)
+from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
+from semantic_kernel.semantic_functions.semantic_function_config import (
+    SemanticFunctionConfig,
 )
 
 if TYPE_CHECKING:

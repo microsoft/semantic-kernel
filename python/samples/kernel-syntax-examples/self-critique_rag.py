@@ -101,7 +101,13 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
 
     answer = await kernel.run_async(
         chat_func,
-        input_vars=ContextVariables(variables={"user_input": user_input, "collection": COLLECTION_NAME, "limit": "2"}),
+        input_vars=ContextVariables(
+            variables={
+                "user_input": user_input,
+                "collection": COLLECTION_NAME,
+                "limit": "2",
+            }
+        ),
     )
     print(f"Answer: {str(answer).strip()}")
     check = await kernel.run_async(self_critique_func, input_context=answer)

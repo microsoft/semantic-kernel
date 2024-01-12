@@ -16,6 +16,11 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.sk_function_context_parameter_decorator import (
+    sk_function_context_parameter,
+)
+from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -23,11 +28,6 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.sk_function_context_parameter_decorator import (
-    sk_function_context_parameter,
-)
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -326,7 +326,7 @@ class StepwisePlanner:
         except Exception as e:
             logger.error(
                 e,
-                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}",
+                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}", # noqa: E501
             )
             return (
                 "Something went wrong in system step: ",

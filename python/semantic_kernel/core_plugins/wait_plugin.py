@@ -2,8 +2,8 @@
 
 import asyncio
 
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.plugin_definition import sk_function
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 class WaitPlugin(SKBaseModel):

@@ -6,8 +6,8 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
+from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 
 def not_decorated_native_function(arg1: str) -> str:

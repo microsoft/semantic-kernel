@@ -9,8 +9,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext

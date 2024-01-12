@@ -5,8 +5,8 @@ from typing import Dict, List
 from pydantic import Field
 
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 class FunctionsView(SKBaseModel):

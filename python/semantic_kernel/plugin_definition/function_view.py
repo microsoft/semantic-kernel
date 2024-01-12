@@ -2,8 +2,8 @@
 
 from typing import List
 
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.utils.validation import validate_function_name
 
 

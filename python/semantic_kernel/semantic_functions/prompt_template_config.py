@@ -5,22 +5,25 @@ from typing import Generic, List, TypeVar
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 AIRequestSettingsT = TypeVar("AIRequestSettingsT", bound=AIRequestSettings)
+
 
 class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
     schema_: int = Field(default=1, alias="schema")
     type: str = "completion"
     description: str = ""
-    execution_settings: AIRequestSettingsT = Field(default_factory=AIRequestSettings) # todo: this should be a dict
+    execution_settings: AIRequestSettingsT = Field(default_factory=AIRequestSettings)  # todo: this should be a dict
     default_services: List[str] = Field(default_factory=list)
     parameters: List[ParameterView] = Field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict) -> "PromptTemplateConfig":
-        config = {key: value for key, value in data.items() if key in ["schema", "type", "description", "default_services"]}
+        config = {
+            key: value for key, value in data.items() if key in ["schema", "type", "description", "default_services"]
+        }
         config["parameters"] = []
 
         config = cls._process_execution_settings(config, data)
@@ -55,7 +58,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         if isinstance(concrete_class, TypeVar):
             concrete_class = AIRequestSettings
         return PromptTemplateConfig(execution_settings=concrete_class(extension_data=kwargs))
-    
+
     @classmethod
     def _process_execution_settings(cls, config: dict, data: dict) -> dict:
         exec_settings = data.get("execution_settings", {})
@@ -65,7 +68,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
             settings = settings.copy()
 
             # Extract and remove 'service_id' if it exists
-            #service_id = settings.pop("service_id", service_id)
+            # service_id = settings.pop("service_id", service_id)
 
             # Determine the concrete type
             concrete_type = cls.model_fields["execution_settings"].annotation

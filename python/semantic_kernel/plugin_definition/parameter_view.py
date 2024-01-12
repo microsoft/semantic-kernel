@@ -2,6 +2,7 @@
 
 
 from typing import Optional
+
 from pydantic import Field, field_validator
 
 from semantic_kernel.sk_pydantic import SKBaseModel

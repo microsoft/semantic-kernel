@@ -189,10 +189,11 @@ def _parse_message(
     """
     content = message.content if hasattr(message, "content") else None
     tool_calls = message.tool_calls if hasattr(message, "tool_calls") else None
-    function_calls = [
-        FunctionCall(id=call.id, name=call.function.name, arguments=call.function.arguments)
-        for call in tool_calls
-    ] if tool_calls else None
+    function_calls = (
+        [FunctionCall(id=call.id, name=call.function.name, arguments=call.function.arguments) for call in tool_calls]
+        if tool_calls
+        else None
+    )
 
     # todo: support multiple function calls
     function_call = function_calls[0]

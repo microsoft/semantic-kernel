@@ -11,13 +11,13 @@ from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryT,
 )
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
     ReadOnlyFunctionCollection,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 

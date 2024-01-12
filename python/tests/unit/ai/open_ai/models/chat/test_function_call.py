@@ -20,7 +20,7 @@ async def test_function_call_to_content_variables(create_kernel):
     func_call = FunctionCall(
         name="Test-Function",
         arguments="""{"input": "world", "input2": "world2"}""",
-        id="1234"
+        id="1234",
     )
     context = kernel.create_new_context()
     assert isinstance(func_call.to_context_variables(), ContextVariables)
