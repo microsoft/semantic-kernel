@@ -87,7 +87,9 @@ public sealed class GeminiPartTests
         Assert.False(result);
     }
 
+#pragma warning disable CA1812 // Internal class that is apparently never instantiated; this class is used via reflection
     private sealed class GeminiPartTestData : TheoryData<GeminiPart>
+#pragma warning restore CA1812 // Internal class that is apparently never instantiated
     {
         public GeminiPartTestData()
         {
