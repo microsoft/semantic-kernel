@@ -55,6 +55,11 @@ The Java version of SK adheres to the Git-Flow strategy by being developed in a 
 - The strategy should allow for maintaining several releases in parallel if required.
 - Ideally, the strategy is intuitive and simple so that everyone familiar with Git can adopt and follow it.
 - Ideally, all SK languages are able to adopt and use the same branching strategy.
+- Ability to continually deploy new release with minimal overhead.
+- Ability to release language versions independently and on different schedules.
+- Allow the .Net, Java and Python teams to be able to operate independently.
+- Ability to patch a release (for all languages).
+- Consolidation of PR's and Issues to simplify the triage and review process.
 
 Another aspect to consider when deciding on a branching strategy for SK is access permissions and action scopes. GitHub does not allow enforcing access restrictions on just a part of a repository, such as a folder. This means that it is not possible to restrict SK .NET contributors from pushing Python PRs, which ideally should be done by the corresponding team. However, GitHub does allow assigning access permissions to a branch, which can be successfully leveraged if the appropriate strategy option is chosen. The similar issue occurs with GitHub's required actions/status checks, which can only be set at the branch level. Considering that development for .NET and Python takes place in the 'main' branch, and status checks are configured per branch rather than per folder, it is not possible to configure separate status checks for .NET and Python PRs. As a result, the same status check runs for both .NET and Python PRs, even though it may not be relevant to a specific language.
 
@@ -93,7 +98,7 @@ Cons:
 
 This option has two sub-options that define the way the 'main' branch is used:  
 1. The 'main' branch will contain general/common artifacts such as documentation, GitHub actions, and samples. All language folders will be removed from the 'main' branch, and it can be locked to prevent accidental merges.  
-2. The 'main' branch will include everything that dev branches have for discoverability purposes. A job/action will be implemented to merge commits from dev branches to the 'main' branch. The number of common artifacts between SK languages should be minimized to reduce the potential for merge conflicts. Solution for squash merges should be found as well before deciding on the sub-option.
+2. The 'main' branch will include everything that dev branches have for discoverability purposes. A job/action will be implemented to merge commits from dev branches to the 'main' branch. The number of common artifacts between SK languages should be minimized to reduce the potential for merge conflicts. A solution for the squash merge problem that SK Java is experiencing today should be found before deciding on the sub-option.
 
 The second sub-option is preferred over the first one due to its discoverability benefits. There is no need to select a development branch in the GitHub UI when searching for something in the repository. The 'main' branch is selected by default, and as soon as the latest bits are in the branch, they can be found easily. This intuitive approach is familiar to many, and changing it by requiring the selection of a branch before searching would complicate the search experience and introduce frustration.
 
