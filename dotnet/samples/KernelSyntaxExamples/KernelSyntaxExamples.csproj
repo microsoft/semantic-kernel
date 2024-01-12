@@ -5,7 +5,7 @@
   <PropertyGroup>
     <AssemblyName>KernelSyntaxExamples</AssemblyName>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
