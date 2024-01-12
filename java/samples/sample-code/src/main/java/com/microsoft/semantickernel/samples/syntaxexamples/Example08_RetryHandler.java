@@ -7,7 +7,6 @@ import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -29,12 +28,12 @@ public class Example08_RetryHandler {
             .credential(new AzureKeyCredential("BAD KEY"))
             .buildAsyncClient();
 
-        OpenAITextGenerationService textGenerationService = OpenAITextGenerationService.builder()
+        TextGenerationService textGenerationService = TextGenerationService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId("text-davinci-003")
             .build();
 
-        Kernel kernel = new DefaultKernel.Builder()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .build();
 

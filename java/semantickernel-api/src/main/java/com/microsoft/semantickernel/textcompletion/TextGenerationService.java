@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
-import com.microsoft.semantickernel.AIService;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.builders.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -43,4 +45,32 @@ public interface TextGenerationService extends Buildable, TextAIService {
         String prompt,
         @Nullable PromptExecutionSettings executionSettings,
         @Nullable Kernel kernel);
+
+    static Builder builder() {
+        return ServiceLoadUtil.findServiceLoader(Builder.class,
+                "com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService$Builder")
+            .get();
+    }
+
+
+    /**
+     * Builder for a TextGenerationService
+     */
+    abstract class Builder implements SemanticKernelBuilder<TextGenerationService> {
+
+        protected String modelId;
+        protected OpenAIAsyncClient client;
+
+        public Builder withModelId(String modelId) {
+            this.modelId = modelId;
+            return this;
+        }
+
+        public Builder withOpenAIAsyncClient(OpenAIAsyncClient client) {
+            this.client = client;
+            return this;
+        }
+
+        public abstract TextGenerationService build();
+    }
 }

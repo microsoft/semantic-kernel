@@ -61,7 +61,7 @@ public class Example06_TemplateLanguage {
                 .withModelId("text-davinci-003")
                 .build();
 
-        Kernel kernel = new DefaultKernel.Builder()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .build();
 

@@ -109,7 +109,7 @@ public class DefaultKernel implements Kernel {
         return plugins;
     }
 
-    static class DefaultServiceProvider implements ServiceProvider {
+    public static class DefaultServiceProvider implements ServiceProvider {
 
         private final Map<Class<?>, AIService> services;
 

@@ -31,7 +31,7 @@ public class ConversationSummaryPlugin {
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
     /// </summary>
     public ConversationSummaryPlugin() {
-        PromptExecutionSettings settings = new PromptExecutionSettings.Builder()
+        PromptExecutionSettings settings = PromptExecutionSettings.builder()
             .withMaxTokens(MaxTokens)
             .withTemperature(0.1)
             .withTopP(0.5)
