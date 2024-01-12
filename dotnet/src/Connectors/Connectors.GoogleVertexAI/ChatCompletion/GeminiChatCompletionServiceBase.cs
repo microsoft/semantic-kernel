@@ -13,6 +13,9 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.ChatCompletion;
 
+/// <summary>
+/// Represents a base class for chat completion service using GoogleVertex AI Gemini API.
+/// </summary>
 public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, ITextGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();

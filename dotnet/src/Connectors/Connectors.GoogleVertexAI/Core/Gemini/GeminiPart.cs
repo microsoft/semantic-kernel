@@ -57,33 +57,62 @@ public sealed class GeminiPart
     }
 }
 
+/// <summary>
+/// Inline media bytes like image or video data.
+/// </summary>
 public sealed class GeminiPartInlineData
 {
+    /// <summary>
+    /// The IANA standard MIME type of the source data.
+    /// </summary>
+    /// <remarks>
+    /// Accepted types include: "image/png", "image/jpeg", "image/heic", "image/heif", "image/webp".
+    /// </remarks>
     [JsonPropertyName("mimeType")]
-    public string MimeType { get; set; }
+    public string MimeType { get; set; } = null!;
 
     /// <summary>
     /// Base64 encoded data
     /// </summary>
     [JsonPropertyName("data")]
-    public string InlineData { get; set; }
+    public string InlineData { get; set; } = null!;
 }
 
+/// <summary>
+/// A predicted FunctionCall returned from the model that contains a
+/// string representing the FunctionDeclaration.name with the arguments and their values.
+/// </summary>
 public sealed class GeminiPartFunctionCall
 {
+    /// <summary>
+    /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
+    /// </summary>
     [JsonPropertyName("name")]
-    public string FunctionName { get; set; }
+    public string FunctionName { get; set; } = null!;
 
+    /// <summary>
+    /// Optional. The function parameters and values in JSON object format.
+    /// </summary>
     [JsonPropertyName("args")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<JsonNode>? Arguments { get; set; }
 }
 
+/// <summary>
+/// The result output of a FunctionCall that contains a string representing the FunctionDeclaration.name and
+/// a structured JSON object containing any output from the function is used as context to the model.
+/// </summary>
 public sealed class GeminiPartFunctionResponse
 {
+    /// <summary>
+    /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
+    /// </summary>
     [JsonPropertyName("name")]
-    public string FunctionName { get; set; }
+    public string FunctionName { get; set; } = null!;
 
+    /// <summary>
+    /// Required. The function response in JSON object format.
+    /// </summary>
     [JsonPropertyName("response")]
-    public IList<JsonNode> Response { get; set; }
+    public IList<JsonNode> Response { get; set; } = null!;
 }

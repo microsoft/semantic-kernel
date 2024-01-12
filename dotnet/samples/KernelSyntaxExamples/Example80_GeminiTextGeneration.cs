@@ -15,11 +15,11 @@ public static class Example80_GeminiTextGeneration
     {
         Console.WriteLine("============= Gemini Text Generation =============");
 
-        await GoogleAIGemini();
-        await VertexAIGemini();
+        await GoogleAIGeminiAsync();
+        await VertexAIGeminiAsync();
     }
 
-    private static async Task GoogleAIGemini()
+    private static async Task GoogleAIGeminiAsync()
     {
         Console.WriteLine("===== Google AI Gemini API =====");
 
@@ -38,10 +38,10 @@ public static class Example80_GeminiTextGeneration
                 apiKey: geminiApiKey)
             .Build();
 
-        await Run(kernel);
+        await RunSampleAsync(kernel);
     }
 
-    private static async Task VertexAIGemini()
+    private static async Task VertexAIGeminiAsync()
     {
         Console.WriteLine("===== Vertex AI Gemini API =====");
 
@@ -64,18 +64,18 @@ public static class Example80_GeminiTextGeneration
                 projectId: geminiProject)
             .Build();
 
-        await Run(kernel);
+        await RunSampleAsync(kernel);
     }
 
-    private static async Task Run(Kernel kernel)
+    private static async Task RunSampleAsync(Kernel kernel)
     {
-        await SimplePrompt(kernel);
-        await FunctionFromPrompt(kernel);
-        await StreamingText(kernel);
-        await StreamingFunctionFromPrompt(kernel);
+        await SimplePromptAsync(kernel);
+        await FunctionFromPromptAsync(kernel);
+        await StreamingTextAsync(kernel);
+        await StreamingFunctionFromPromptAsync(kernel);
     }
 
-    private static async Task StreamingFunctionFromPrompt(Kernel kernel)
+    private static async Task StreamingFunctionFromPromptAsync(Kernel kernel)
     {
         Console.WriteLine("======== Streaming Function From Prompt ========");
 
@@ -90,7 +90,7 @@ public static class Example80_GeminiTextGeneration
         Console.WriteLine("");
     }
 
-    private static async Task StreamingText(Kernel kernel)
+    private static async Task StreamingTextAsync(Kernel kernel)
     {
         Console.WriteLine("======== Streaming Text ========");
 
@@ -108,7 +108,7 @@ Write the story in Spanish.";
         Console.WriteLine("");
     }
 
-    private static async Task FunctionFromPrompt(Kernel kernel)
+    private static async Task FunctionFromPromptAsync(Kernel kernel)
     {
         Console.WriteLine("======== Function From Prompt ========");
 
@@ -132,7 +132,7 @@ Event: {{$input}}
         Console.WriteLine(response);
     }
 
-    private static async Task SimplePrompt(Kernel kernel)
+    private static async Task SimplePromptAsync(Kernel kernel)
     {
         Console.WriteLine("======== Simple Prompt ========");
 

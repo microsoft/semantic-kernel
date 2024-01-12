@@ -71,7 +71,7 @@ internal sealed class VertexAIGeminiChatCompletionClient : GeminiChatCompletionC
                 }
                 select new ChatMessageContent(
                     role: @group.First().Role ?? AuthorRole.Assistant,
-                    content: @group.Aggregate(string.Empty, (s, content) => s += content.Content),
+                    content: @group.Aggregate(string.Empty, (s, content) => s + content.Content),
                     modelId: @group.First().ModelId,
                     encoding: @group.First().Encoding,
                     metadata: metadata))

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.VertexAI;
 internal sealed class VertexAIEmbeddingRequest
 {
     [JsonPropertyName("instances")]
-    public IList<VertexAIGeminiEmbeddingRequestEmbedContent> Requests { get; set; }
+    public IList<VertexAIGeminiEmbeddingRequestEmbedContent> Requests { get; set; } = null!;
 
     [JsonPropertyName("parameters")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -40,7 +40,7 @@ internal sealed class VertexAIGeminiEmbeddingRequestEmbedContent
     public string? Title { get; set; }
 
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string Content { get; set; } = null!;
 
     [JsonPropertyName("taskType")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

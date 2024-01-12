@@ -90,7 +90,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
-        foreach (var streamingChatMessageContent in this.ProcessChatResponseStream(responseStream, cancellationToken))
+        foreach (var streamingChatMessageContent in this.ProcessChatResponseStream(responseStream))
         {
             yield return streamingChatMessageContent;
         }
@@ -100,7 +100,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
 
     private static void VerifyModelId(GeminiConfiguration configuration)
     {
-        Verify.NotNullOrWhiteSpace(configuration?.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
+        Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
     }
 
     private static void ValidateChatHistory(ChatHistory chatHistory)
@@ -133,10 +133,9 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     }
 
     private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(
-        Stream responseStream,
-        CancellationToken cancellationToken)
+        Stream responseStream)
     {
-        foreach (var geminiResponse in this.ProcessResponseStream(responseStream, cancellationToken))
+        foreach (var geminiResponse in this.ProcessResponseStream(responseStream))
         {
             foreach (var chatMessageContent in this.ProcessChatResponse(geminiResponse))
             {
@@ -146,8 +145,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     }
 
     private IEnumerable<GeminiResponse> ProcessResponseStream(
-        Stream responseStream,
-        CancellationToken cancellationToken)
+        Stream responseStream)
     {
         foreach (string json in this._streamJsonParser.Parse(responseStream))
         {

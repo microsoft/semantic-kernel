@@ -18,11 +18,11 @@ public static class Example81_GeminiChatCompletion
     {
         Console.WriteLine("======== Gemini Chat Completion ========");
 
-        await GoogleAIGemini();
-        await VertexAIGemini();
+        await GoogleAIGeminiAsync();
+        await VertexAIGeminiAsync();
     }
 
-    private static async Task GoogleAIGemini()
+    private static async Task GoogleAIGeminiAsync()
     {
         Console.WriteLine("===== Google AI Gemini API =====");
 
@@ -41,10 +41,10 @@ public static class Example81_GeminiChatCompletion
                 apiKey: geminiApiKey)
             .Build();
 
-        await Run(kernel);
+        await RunSampleAsync(kernel);
     }
 
-    private static async Task VertexAIGemini()
+    private static async Task VertexAIGeminiAsync()
     {
         Console.WriteLine("===== Vertex AI Gemini API =====");
 
@@ -67,16 +67,16 @@ public static class Example81_GeminiChatCompletion
                 projectId: geminiProject)
             .Build();
 
-        await Run(kernel);
+        await RunSampleAsync(kernel);
     }
 
-    private static async Task Run(Kernel kernel)
+    private static async Task RunSampleAsync(Kernel kernel)
     {
-        await SimpleChat(kernel);
-        await StreamingChat(kernel);
+        await SimpleChatAsync(kernel);
+        await StreamingChatAsync(kernel);
     }
 
-    private static async Task StreamingChat(Kernel kernel)
+    private static async Task StreamingChatAsync(Kernel kernel)
     {
         Console.WriteLine("======== Streaming Chat ========");
 
@@ -102,7 +102,7 @@ public static class Example81_GeminiChatCompletion
         chatHistory.Add(reply);
     }
 
-    private static async Task SimpleChat(Kernel kernel)
+    private static async Task SimpleChatAsync(Kernel kernel)
     {
         Console.WriteLine("======== Simple Chat ========");
 

@@ -13,6 +13,9 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.TextEmbedding;
 
+/// <summary>
+/// Represents a service for generating text using the GoogleVertex AI Gemini API.
+/// </summary>
 public class TextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();

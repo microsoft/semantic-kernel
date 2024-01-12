@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 internal sealed class GeminiRequest
 {
     [JsonPropertyName("contents")]
-    public IList<GeminiRequestContent> Contents { get; set; }
+    public IList<GeminiRequestContent> Contents { get; set; } = null!;
 
     [JsonPropertyName("safetySettings")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -141,7 +141,7 @@ internal sealed class GeminiRequestConfiguration
 internal sealed class GeminiRequestContent
 {
     [JsonPropertyName("parts")]
-    public IList<GeminiPart> Parts { get; set; }
+    public IList<GeminiPart> Parts { get; set; } = null!;
 
     [JsonPropertyName("role")]
     [JsonConverter(typeof(AuthorRoleConverter))]
@@ -152,8 +152,8 @@ internal sealed class GeminiRequestContent
 internal sealed class GeminiRequestInlineData
 {
     [JsonPropertyName("mimeType")]
-    public string MimeType { get; set; }
+    public string MimeType { get; set; } = null!;
 
     [JsonPropertyName("data")]
-    public string Data { get; set; }
+    public string Data { get; set; } = null!;
 }

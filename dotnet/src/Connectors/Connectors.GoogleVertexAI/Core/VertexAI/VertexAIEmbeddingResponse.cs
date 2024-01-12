@@ -13,13 +13,13 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.VertexAI;
 internal sealed class VertexAIEmbeddingResponse
 {
     [JsonPropertyName("predictions")]
-    public IList<VertexAIEmbeddingResponsePrediction> Predictions { get; set; }
+    public IList<VertexAIEmbeddingResponsePrediction> Predictions { get; set; } = null!;
 }
 
 internal sealed class VertexAIEmbeddingResponsePrediction
 {
     [JsonPropertyName("embeddings")]
-    public VertexAIEmbeddingResponseEmbedding Embeddings { get; set; }
+    public VertexAIEmbeddingResponseEmbedding Embeddings { get; set; } = null!;
 }
 
 internal sealed class VertexAIEmbeddingResponseEmbedding

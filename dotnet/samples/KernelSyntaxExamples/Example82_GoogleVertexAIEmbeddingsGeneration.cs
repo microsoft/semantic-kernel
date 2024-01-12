@@ -15,11 +15,11 @@ public static class Example82_GoogleVertexAIEmbeddingsGeneration
     {
         Console.WriteLine("======== Gemini Chat Completion ========");
 
-        await GoogleAIGemini();
-        await VertexAIGemini();
+        await GoogleAIGeminiAsync();
+        await VertexAIGeminiAsync();
     }
 
-    private static async Task GoogleAIGemini()
+    private static async Task GoogleAIGeminiAsync()
     {
         Console.WriteLine("===== Google AI Gemini API =====");
 
@@ -38,10 +38,10 @@ public static class Example82_GoogleVertexAIEmbeddingsGeneration
                 apiKey: geminiApiKey)
             .Build();
 
-        await Run(kernel);
+        await RunSampleAsync(kernel);
     }
 
-    private static async Task VertexAIGemini()
+    private static async Task VertexAIGeminiAsync()
     {
         Console.WriteLine("===== Vertex AI Gemini API =====");
 
@@ -64,10 +64,10 @@ public static class Example82_GoogleVertexAIEmbeddingsGeneration
                 projectId: geminiProject)
             .Build();
 
-        await Run(kernel);
+        await RunSampleAsync(kernel);
     }
 
-    private static async Task Run(Kernel kernel)
+    private static async Task RunSampleAsync(Kernel kernel)
     {
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
         ReadOnlyMemory<float> embeddings = await embeddingGenerator.GenerateEmbeddingAsync("Hello world!");

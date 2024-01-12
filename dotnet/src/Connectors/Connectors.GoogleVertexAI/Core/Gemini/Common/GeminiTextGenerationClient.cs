@@ -88,7 +88,7 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
-        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream, cancellationToken))
+        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream))
         {
             yield return streamingTextContent;
         }
@@ -98,14 +98,13 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
 
     private static void VerifyModelId(GeminiConfiguration configuration)
     {
-        Verify.NotNullOrWhiteSpace(configuration?.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
+        Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
     }
 
     private IEnumerable<StreamingTextContent> ProcessTextResponseStream(
-        Stream responseStream,
-        CancellationToken cancellationToken)
+        Stream responseStream)
     {
-        foreach (var geminiResponse in this.ProcessResponseStream(responseStream, cancellationToken))
+        foreach (var geminiResponse in this.ProcessResponseStream(responseStream))
         {
             foreach (var textContent in this.ProcessTextResponse(geminiResponse))
             {
@@ -115,8 +114,7 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
     }
 
     private IEnumerable<GeminiResponse> ProcessResponseStream(
-        Stream responseStream,
-        CancellationToken cancellationToken)
+        Stream responseStream)
     {
         foreach (string json in this._streamJsonParser.Parse(responseStream))
         {

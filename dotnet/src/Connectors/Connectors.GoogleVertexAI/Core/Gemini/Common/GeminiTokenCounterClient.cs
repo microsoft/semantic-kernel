@@ -73,7 +73,7 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
 
     private static void VerifyModelId(GeminiConfiguration configuration)
     {
-        Verify.NotNullOrWhiteSpace(configuration?.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
+        Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
     }
 
     #endregion

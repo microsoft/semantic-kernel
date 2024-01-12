@@ -105,7 +105,7 @@ public sealed class GeminiStreamJsonParserTests
         // Arrange
         var parser = new GeminiStreamJsonParser();
         var stream = new MemoryStream();
-        string input = """{"foo":"ba\"r"}""";
+        string input = """{"foo":"be\"r"}""";
         WriteToStream(stream, input);
 
         // Act
@@ -121,7 +121,7 @@ public sealed class GeminiStreamJsonParserTests
         // Arrange
         var parser = new GeminiStreamJsonParser();
         var stream = new MemoryStream();
-        string input = """{"foo":"ba\\r"}""";
+        string input = """{"foo":"be\\r"}""";
         WriteToStream(stream, input);
 
         // Act
@@ -137,7 +137,7 @@ public sealed class GeminiStreamJsonParserTests
         // Arrange
         var parser = new GeminiStreamJsonParser();
         var stream = new MemoryStream();
-        string input = """{"foo":"ba\\\"r"}""";
+        string input = """{"foo":"be\\\"r"}""";
         WriteToStream(stream, input);
 
         // Act
@@ -157,6 +157,7 @@ public sealed class GeminiStreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
+        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
         void Act() => parser.Parse(stream, validateJson: true).ToList();
 
         // Assert

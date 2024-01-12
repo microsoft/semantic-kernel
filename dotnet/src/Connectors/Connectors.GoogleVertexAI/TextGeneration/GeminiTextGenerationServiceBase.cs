@@ -12,6 +12,9 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.TextGeneration;
 
+/// <summary>
+/// Represents a base class for text generation service using GoogleVertex AI Gemini API.
+/// </summary>
 public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();

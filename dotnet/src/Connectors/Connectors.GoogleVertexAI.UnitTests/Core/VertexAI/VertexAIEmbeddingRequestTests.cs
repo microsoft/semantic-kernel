@@ -16,7 +16,6 @@ public sealed class VertexAIEmbeddingRequestTests
     {
         // Arrange
         var data = new[] { "text1", "text2" };
-        var modelId = "modelId";
 
         // Act
         var request = VertexAIEmbeddingRequest.FromData(data);

@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.GoogleAI;
 internal sealed class GoogleAIEmbeddingRequest
 {
     [JsonPropertyName("requests")]
-    public IList<GoogleAIGeminiEmbeddingRequestEmbedContent> Requests { get; set; }
+    public IList<GoogleAIGeminiEmbeddingRequestEmbedContent> Requests { get; set; } = null!;
 
     public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId) => new()
     {
@@ -46,7 +46,7 @@ internal sealed class GoogleAIGeminiEmbeddingRequestEmbedContent
     public string? Title { get; set; }
 
     [JsonPropertyName("content")]
-    public GeminiRequestContent Content { get; set; }
+    public GeminiRequestContent Content { get; set; } = null!;
 
     [JsonPropertyName("taskType")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
