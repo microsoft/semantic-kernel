@@ -323,6 +323,136 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function1 = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        var function2 = KernelFunctionFactory.CreateFromMethod((string argument) =>
+        {
+            functionCallCount++;
+            throw new ArgumentException("Some exception");
+        }, "FunctionWithException");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_multiple_function_calls_test_response.txt")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
+
+        Assert.Equal(2, functionCallCount);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
+    {
+        // Arrange
+        const int DefaultMaximumAutoInvokeAttempts = 5;
+        const int AutoInvokeResponsesCount = 6;
+
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]));
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var responses = new List<HttpResponseMessage>();
+
+        for (var i = 0; i < AutoInvokeResponsesCount; i++)
+        {
+            responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) });
+        }
+
+        this._messageHandlerStub.ResponsesToReturn = responses;
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
+
+        Assert.Equal(DefaultMaximumAutoInvokeAttempts, functionCallCount);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsWithRequiredFunctionCallAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+        var openAIFunction = plugin.GetFunctionsMetadata().First().ToOpenAIFunction();
+
+        kernel.Plugins.Add(plugin);
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
+
+        Assert.Equal(1, functionCallCount);
+
+        var requestContents = this._messageHandlerStub.RequestContents;
+
+        Assert.Equal(2, requestContents.Count);
+
+        requestContents.ForEach(Assert.NotNull);
+
+        var firstContent = Encoding.UTF8.GetString(requestContents[0]!);
+        var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
+
+        var firstContentJson = JsonSerializer.Deserialize<JsonElement>(firstContent);
+        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+
+        Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal(0, secondContentJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

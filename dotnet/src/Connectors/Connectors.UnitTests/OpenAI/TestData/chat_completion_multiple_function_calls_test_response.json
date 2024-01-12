@@ -38,7 +38,7 @@
             "id": "4",
             "type": "function",
             "function": {
-              "name": "MyPlugin_NonExistentFunction",
+              "name": "MyPlugin_InvalidArguments",
               "arguments": "invalid_arguments_format"
             }
           }
