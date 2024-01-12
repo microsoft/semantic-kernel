@@ -242,10 +242,12 @@ public sealed class KernelSystemHelpersTests
     [Theory]
     [InlineData("{{#if (equals x y)}}Equal{{else}}Not equal{{/if}}", "Equal")]
     [InlineData("{{#if (equals x)}}Equal{{else}}Not equal{{/if}}", "Not equal")]
+    [InlineData("{{#if (equals a b)}}Equal{{else}}Not equal{{/if}}", "Not equal")]
+    [InlineData("{{#if (equals b z)}}Equal{{else}}Not equal{{/if}}", "Equal")]
     public async Task ItRendersTemplateWithEqualHelperAsync(string template, string expectedResult)
     {
         // Arrange
-        var arguments = new KernelArguments { { "x", 10 }, { "y", 10 } };
+        var arguments = new KernelArguments { { "x", 10 }, { "y", 10 }, { "a", null }, { "b", "test" }, { "z", "test" } };
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
