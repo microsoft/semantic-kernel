@@ -66,7 +66,7 @@ public class TestCompany
 }
 
 // The FunctionResult custom wrapper to parse the result and the tokens
-public record FunctionResultTestDataGen : FunctionResultExtended
+public class FunctionResultTestDataGen : FunctionResultExtended
 {
     public List<TestCompany> TestCompanies { get; set; }
 
@@ -87,9 +87,9 @@ public record FunctionResultTestDataGen : FunctionResultExtended
         CompletionsUsage Usage = (CompletionsUsage)FunctionResult.Metadata?["Usage"];
 
         return new TokenCounts(
-            CompletionTokens: Usage?.CompletionTokens ?? 0,
-            PromptTokens: Usage?.PromptTokens ?? 0,
-            TotalTokens: Usage?.TotalTokens ?? 0);
+            completionTokens: Usage?.CompletionTokens ?? 0,
+            promptTokens: Usage?.PromptTokens ?? 0,
+            totalTokens: Usage?.TotalTokens ?? 0);
     }
 
     private List<TestCompany> ParseTestCompanies()
@@ -103,10 +103,22 @@ public record FunctionResultTestDataGen : FunctionResultExtended
     }
 }
 
-public sealed record TokenCounts(int CompletionTokens, int PromptTokens, int TotalTokens);
+public class TokenCounts
+{
+    public int CompletionTokens { get; init; }
+    public int PromptTokens { get; init; }
+    public int TotalTokens { get; init; }
+
+    public TokenCounts(int completionTokens, int promptTokens, int totalTokens)
+    {
+        CompletionTokens = completionTokens;
+        PromptTokens = promptTokens;
+        TotalTokens = totalTokens;
+    }
+}
 
 // The FunctionResult extension to provide base functionality
-public record FunctionResultExtended
+public class FunctionResultExtended
 {
     public string Result { get; init; }
     public TokenCounts? TokenCounts { get; set; }
