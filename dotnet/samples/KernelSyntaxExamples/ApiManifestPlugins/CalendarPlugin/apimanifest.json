@@ -10,7 +10,7 @@
       "requests": [
         {
           "method": "Get",
-          "uriTemplate": "/me/calendar"
+          "uriTemplate": "/me/calendar/events"
         }
       ]
     }
