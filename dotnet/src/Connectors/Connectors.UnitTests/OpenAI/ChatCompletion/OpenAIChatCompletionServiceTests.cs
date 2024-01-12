@@ -159,8 +159,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(1, optionsJson.GetProperty("messages").GetArrayLength());
-        Assert.Equal("John Doe", optionsJson.GetProperty("messages")[0].GetProperty("tool_call_id").GetString());
+        Assert.Equal(2, optionsJson.GetProperty("messages").GetArrayLength());
+        Assert.Equal("John Doe", optionsJson.GetProperty("messages")[1].GetProperty("tool_call_id").GetString());
     }
 
     [Fact]
@@ -237,6 +237,30 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         {
             Assert.Equal("Test chat streaming response", chunk.Content);
         }
+    }
+
+    [Fact]
+    public async Task ItAddsSystemMessageAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+        var chatHistory = new ChatHistory();
+        chatHistory.AddMessage(AuthorRole.User, "Hello");
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(2, optionsJson.GetProperty("messages").GetArrayLength());
+        Assert.Equal("Assistant is a large language model.", optionsJson.GetProperty("messages")[0].GetProperty("content").GetString());
+        Assert.Equal("system", optionsJson.GetProperty("messages")[0].GetProperty("role").GetString());
+        Assert.Equal("Hello", optionsJson.GetProperty("messages")[1].GetProperty("content").GetString());
+        Assert.Equal("user", optionsJson.GetProperty("messages")[1].GetProperty("role").GetString());
     }
 
     public void Dispose()
