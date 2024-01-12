@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -55,7 +54,7 @@ public static class Example99_ApiManifest
     {
         Console.WriteLine();
         Console.WriteLine($"======== [ApiManifest Plugins] Sample {s_sampleIndex++} - Create and Execute \"{goal}\" Plan ========");
-        Console.WriteLine($"======== Plugins: { string.Join(" ", pluginNames) } ========");
+        Console.WriteLine($"======== Plugins: {string.Join(" ", pluginNames)} ========");
         Console.WriteLine($"======== Expected Output: {expectedOutputDescription} ========");
         Console.WriteLine();
     }
