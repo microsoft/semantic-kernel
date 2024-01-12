@@ -48,6 +48,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         attributes.put(MODEL_ID_KEY, ContextVariable.of(modelId));
     }
 
+    public static OpenAIChatCompletion.Builder builder() {
+        return new OpenAIChatCompletion.Builder();
+    }
+
     @Override
     public Map<String, ContextVariable<?>> getAttributes() {
         return attributes;
