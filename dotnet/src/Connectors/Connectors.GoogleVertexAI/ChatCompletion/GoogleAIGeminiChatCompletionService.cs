@@ -7,6 +7,7 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.Common;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;

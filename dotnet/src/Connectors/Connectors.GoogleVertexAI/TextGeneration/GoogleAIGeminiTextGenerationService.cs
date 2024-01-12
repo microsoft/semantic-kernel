@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.Common;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 

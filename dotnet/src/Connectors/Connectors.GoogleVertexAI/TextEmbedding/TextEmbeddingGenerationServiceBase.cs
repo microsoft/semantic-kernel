@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 using Microsoft.SemanticKernel.Embeddings;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.TextEmbedding;
 
 public class TextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationService
 {

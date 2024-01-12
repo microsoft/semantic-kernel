@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.TextGeneration;
 
 public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
 {

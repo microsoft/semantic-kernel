@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.ChatCompletion;
 
 public abstract class GeminiChatCompletionServiceBase : IChatCompletionService, ITextGenerationService
 {
