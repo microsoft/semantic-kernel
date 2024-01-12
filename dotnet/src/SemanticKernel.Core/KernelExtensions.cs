@@ -711,6 +711,32 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="promptTemplate">Prompt template for the function.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The <typeparamref name="T"/> of the function result value.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    public static Task<T?> InvokePromptAsync<T>(
+        this Kernel kernel,
+        string promptTemplate,
+        CancellationToken cancellationToken = default)
+    {
+        return InvokePromptAsync<T>(
+            kernel,
+            promptTemplate,
+            arguments: null,
+            templateFormat: null,
+            promptTemplateFactory: null,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
     /// <param name="promptTemplateFactory">
@@ -723,6 +749,7 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static Task<T?> InvokePromptAsync<T>(
         this Kernel kernel,
         string promptTemplate,
@@ -730,7 +757,13 @@ public static class KernelExtensions
         string? templateFormat,
         IPromptTemplateFactory? promptTemplateFactory)
     {
-        return InvokePromptAsync<T>(kernel, promptTemplate, arguments, templateFormat, promptTemplateFactory, CancellationToken.None);
+        return InvokePromptAsync<T>(
+            kernel,
+            promptTemplate,
+            arguments,
+            templateFormat,
+            promptTemplateFactory,
+            CancellationToken.None);
     }
     #endregion
 
