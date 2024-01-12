@@ -9,7 +9,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 kernel = sk.Kernel()
 
 useAzureOpenAI = True
-model = "text-davinci-002"
+model = "gpt-35-turbo-instruct" if useAzureOpenAI else "gpt-3.5-turbo-instruct"
 service_id = model
 
 # Configure AI service used by the kernel

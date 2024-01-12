@@ -196,7 +196,7 @@ def _parse_message(
     )
 
     # todo: support multiple function calls
-    function_call = function_calls[0]
+    function_call = function_calls[0] if function_calls else None
 
     if not with_data:
         return (content, None, function_call)
