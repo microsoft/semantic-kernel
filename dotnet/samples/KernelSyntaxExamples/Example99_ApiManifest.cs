@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -18,12 +19,39 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 public static class Example99_ApiManifest
 {
     private static int s_sampleIndex;
+    private static Kernel? s_kernel;
+    private static readonly FunctionCallingStepwisePlanner s_planner = new(s_plannerConfig);
+    private static readonly FunctionCallingStepwisePlannerConfig s_plannerConfig = new()
+    {
+        MaxIterations = 15,
+        MaxTokens = 32000
+    };
 
     /// <summary>
     /// Show how to create a plan with Handlebars and execute it.
     /// </summary>
     public static async Task RunAsync()
     {
+        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+
+        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
+        {
+            Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
+            return;
+        }
+
+        s_kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: chatDeploymentName,
+                endpoint: endpoint,
+                serviceId: "AzureOpenAIChat",
+                apiKey: apiKey,
+                modelId: chatModelId)
+            .Build();
+
         s_sampleIndex = 1;
 
         await RunSampleWithPlannerAsync(
@@ -61,46 +89,21 @@ public static class Example99_ApiManifest
 
     private static async Task RunSampleWithPlannerAsync(string goal, string expectedOutputDescription, params string[] pluginNames)
     {
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
-        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
-        {
-            Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
-            return;
-        }
-
+        _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
         WriteSampleHeadingToConsole(goal, expectedOutputDescription, pluginNames);
+        s_kernel.Plugins.Clear();
+        await AddApiManifestPluginsAsync(pluginNames).ConfigureAwait(false);
 
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
-                serviceId: "AzureOpenAIChat",
-                apiKey: apiKey,
-                modelId: chatModelId)
-            .Build();
-
-        await AddApiManifestPluginsAsync(kernel, pluginNames).ConfigureAwait(false);
-
-        // Create the plan
-        var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig()
-            {
-                MaxIterations = 15,
-                MaxTokens = 32000
-            });
-        var result = await planner.ExecuteAsync(kernel, goal);
+        var result = await s_planner.ExecuteAsync(s_kernel, goal);
 
         Console.WriteLine("--------------------");
         Console.WriteLine($"\nResult:\n{result.FinalAnswer}\n");
         Console.WriteLine("--------------------");
     }
 
-    private static async Task AddApiManifestPluginsAsync(Kernel sk, params string[] pluginNames)
+    private static async Task AddApiManifestPluginsAsync(params string[] pluginNames)
     {
+        _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
 #pragma warning disable SKEXP0053
         if (TestConfiguration.MSGraph.Scopes == null)
         {
@@ -130,7 +133,7 @@ public static class Example99_ApiManifest
             {
 #pragma warning disable SKEXP0042
                 KernelPlugin plugin =
-                await sk.ImportPluginFromApiManifestAsync(
+                await s_kernel.ImportPluginFromApiManifestAsync(
                     pluginName,
                     $"ApiManifestPlugins/{pluginName}/apimanifest.json",
                     new OpenApiFunctionExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync
@@ -141,7 +144,7 @@ public static class Example99_ApiManifest
             }
             catch (Exception ex)
             {
-                sk.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
+                s_kernel.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }
