@@ -8,17 +8,17 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 kernel = sk.Kernel()
 
-useAzureOpenAI = False
+useAzureOpenAI = True
 model = "text-davinci-002"
 service_id = model
 
 # Configure AI service used by the kernel
 if useAzureOpenAI:
-    api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-    kernel.add_text_completion_service(service_id, sk_oai.AzureTextCompletion(model, api_key, endpoint))
+    deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+    kernel.add_text_completion_service(service_id, sk_oai.AzureTextCompletion(deployment_name=model, api_key=api_key, endpoint=endpoint))
 else:
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_text_completion_service(service_id, sk_oai.OpenAITextCompletion(model, api_key, org_id))
+    kernel.add_text_completion_service(service_id, sk_oai.OpenAITextCompletion(deployment_name=model, api_key=api_key, org_id=org_id))
 
 # note: using plugins from the samples folder
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")

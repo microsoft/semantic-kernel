@@ -11,6 +11,7 @@ class FunctionCall(SKBaseModel):
 
     name: str
     arguments: str
+    id: str
 
     def parse_arguments(self) -> Dict[str, str]:
         """Parse the arguments into a dictionary."""

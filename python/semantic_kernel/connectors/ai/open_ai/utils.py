@@ -188,12 +188,14 @@ def _parse_message(
         Tuple[Optional[str], Optional[Dict]] -- The parsed message.
     """
     content = message.content if hasattr(message, "content") else None
-    function_call = message.function_call if hasattr(message, "function_call") else None
-    if function_call:
-        function_call = FunctionCall(
-            name=function_call.name,
-            arguments=function_call.arguments,
-        )
+    tool_calls = message.tool_calls if hasattr(message, "tool_calls") else None
+    function_calls = [
+        FunctionCall(id=call.id, name=call.function.name, arguments=call.function.arguments)
+        for call in tool_calls
+    ] if tool_calls else None
+
+    # todo: support multiple function calls
+    function_call = function_calls[0]
 
     if not with_data:
         return (content, None, function_call)

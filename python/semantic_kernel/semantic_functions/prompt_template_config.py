@@ -14,7 +14,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
     schema_: int = Field(default=1, alias="schema")
     type: str = "completion"
     description: str = ""
-    execution_settings: AIRequestSettingsT = Field(default_factory=AIRequestSettings)
+    execution_settings: AIRequestSettingsT = Field(default_factory=AIRequestSettings) # todo: this should be a dict
     default_services: List[str] = Field(default_factory=list)
     parameters: List[ParameterView] = Field(default_factory=list)
 
@@ -23,11 +23,7 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         config = {key: value for key, value in data.items() if key in ["schema", "type", "description", "default_services"]}
         config["parameters"] = []
 
-        execution_settings_dict = data.get("execution_settings", {}).get("default", {})
-        concrete_type = cls.model_fields["execution_settings"].annotation
-        if isinstance(concrete_type, TypeVar):
-            concrete_type = AIRequestSettings
-        config["execution_settings"] = concrete_type(**execution_settings_dict)
+        config = cls._process_execution_settings(config, data)
 
         if "input_variables" in data:
             for parameter in data["input_variables"]:
@@ -54,8 +50,29 @@ class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
         return cls.from_dict(json.loads(json_str))
 
     @classmethod
-    def from_completion_parameters(cls, **kwargs) -> "PromptTemplateConfig":
+    def from_execution_settings(cls, **kwargs) -> "PromptTemplateConfig":
         concrete_class = cls.model_fields["execution_settings"].annotation
         if isinstance(concrete_class, TypeVar):
             concrete_class = AIRequestSettings
-        return PromptTemplateConfig(execution_settings=concrete_class(**kwargs))
+        return PromptTemplateConfig(execution_settings=concrete_class(extension_data=kwargs))
+    
+    @classmethod
+    def _process_execution_settings(cls, config: dict, data: dict) -> dict:
+        exec_settings = data.get("execution_settings", {})
+
+        for service_id, settings in exec_settings.items():
+            # Copy settings to avoid modifying the original data
+            settings = settings.copy()
+
+            # Extract and remove 'service_id' if it exists
+            #service_id = settings.pop("service_id", service_id)
+
+            # Determine the concrete type
+            concrete_type = cls.model_fields["execution_settings"].annotation
+            if isinstance(concrete_type, TypeVar):
+                concrete_type = AIRequestSettings
+
+            # Initialize the concrete type with the service_id and remaining settings
+            config["execution_settings"] = concrete_type(service_id=service_id, extension_data=settings)
+
+        return config

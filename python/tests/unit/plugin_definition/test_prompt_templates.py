@@ -22,12 +22,15 @@ def test_default_prompt_template_config():
     assert prompt_template_config.schema_ == 1
     assert prompt_template_config.type == "completion"
     assert prompt_template_config.description == ""
-    assert prompt_template_config.completion.extension_data == {}
+    assert prompt_template_config.execution_settings.extension_data == {}
 
 
 def test_default_chat_prompt_template_from_empty_dict():
-    with pytest.raises(KeyError):
-        _ = PromptTemplateConfig.from_dict({})
+    prompt_template_config = PromptTemplateConfig.from_dict({})
+    assert prompt_template_config.schema_ == 1
+    assert prompt_template_config.type == "completion"
+    assert prompt_template_config.description == ""
+    assert prompt_template_config.execution_settings.extension_data == {}
 
 
 def test_default_chat_prompt_template_from_empty_string():
@@ -36,8 +39,11 @@ def test_default_chat_prompt_template_from_empty_string():
 
 
 def test_default_chat_prompt_template_from_empty_json():
-    with pytest.raises(KeyError):
-        _ = PromptTemplateConfig.from_json("{}")
+    prompt_template_config = PromptTemplateConfig.from_dict({})
+    assert prompt_template_config.schema_ == 1
+    assert prompt_template_config.type == "completion"
+    assert prompt_template_config.description == ""
+    assert prompt_template_config.execution_settings.extension_data == {}
 
 
 def test_custom_prompt_template_config():
@@ -45,7 +51,7 @@ def test_custom_prompt_template_config():
         schema_=2,
         type="completion2",
         description="Custom description.",
-        completion=OpenAIChatRequestSettings(
+        execution_settings=OpenAIChatRequestSettings(
             temperature=0.5,
             top_p=0.5,
             presence_penalty=0.5,
@@ -59,14 +65,14 @@ def test_custom_prompt_template_config():
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
-    assert prompt_template_config.completion.temperature == 0.5
-    assert prompt_template_config.completion.top_p == 0.5
-    assert prompt_template_config.completion.presence_penalty == 0.5
-    assert prompt_template_config.completion.frequency_penalty == 0.5
-    assert prompt_template_config.completion.max_tokens == 128
-    assert prompt_template_config.completion.number_of_responses == 2
-    assert prompt_template_config.completion.stop == ["\n"]
-    assert prompt_template_config.completion.logit_bias == {"1": 1.0}
+    assert prompt_template_config.execution_settings.temperature == 0.5
+    assert prompt_template_config.execution_settings.top_p == 0.5
+    assert prompt_template_config.execution_settings.presence_penalty == 0.5
+    assert prompt_template_config.execution_settings.frequency_penalty == 0.5
+    assert prompt_template_config.execution_settings.max_tokens == 128
+    assert prompt_template_config.execution_settings.number_of_responses == 2
+    assert prompt_template_config.execution_settings.stop == ["\n"]
+    assert prompt_template_config.execution_settings.logit_bias == {"1": 1.0}
 
 
 def test_custom_prompt_template_config_from_dict():
@@ -74,29 +80,31 @@ def test_custom_prompt_template_config_from_dict():
         "schema": 2,
         "type": "completion2",
         "description": "Custom description.",
-        "completion": {
-            "temperature": 0.5,
-            "top_p": 0.5,
-            "presence_penalty": 0.5,
-            "frequency_penalty": 0.5,
-            "max_tokens": 128,
-            "number_of_responses": 2,
-            "stop": ["\n"],
-            "logit_bias": {"1": 1},
+        "execution_settings": {
+            "default": {
+                "temperature": 0.5,
+                "top_p": 0.5,
+                "presence_penalty": 0.5,
+                "frequency_penalty": 0.5,
+                "max_tokens": 128,
+                "number_of_responses": 2,
+                "stop": ["\n"],
+                "logit_bias": {"1": 1},
+            },
         },
     }
     prompt_template_config = PromptTemplateConfig.from_dict(prompt_template_dict)
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
-    assert prompt_template_config.completion.extension_data["temperature"] == 0.5
-    assert prompt_template_config.completion.extension_data["top_p"] == 0.5
-    assert prompt_template_config.completion.extension_data["presence_penalty"] == 0.5
-    assert prompt_template_config.completion.extension_data["frequency_penalty"] == 0.5
-    assert prompt_template_config.completion.extension_data["max_tokens"] == 128
-    assert prompt_template_config.completion.extension_data["number_of_responses"] == 2
-    assert prompt_template_config.completion.extension_data["stop"] == ["\n"]
-    assert prompt_template_config.completion.extension_data["logit_bias"] == {"1": 1}
+    assert prompt_template_config.execution_settings.extension_data["temperature"] == 0.5
+    assert prompt_template_config.execution_settings.extension_data["top_p"] == 0.5
+    assert prompt_template_config.execution_settings.extension_data["presence_penalty"] == 0.5
+    assert prompt_template_config.execution_settings.extension_data["frequency_penalty"] == 0.5
+    assert prompt_template_config.execution_settings.extension_data["max_tokens"] == 128
+    assert prompt_template_config.execution_settings.extension_data["number_of_responses"] == 2
+    assert prompt_template_config.execution_settings.extension_data["stop"] == ["\n"]
+    assert prompt_template_config.execution_settings.extension_data["logit_bias"] == {"1": 1}
 
 
 def test_custom_prompt_template_config_from_json():
@@ -105,15 +113,17 @@ def test_custom_prompt_template_config_from_json():
         "schema": 2,
         "type": "completion2",
         "description": "Custom description.",
-        "completion": {
-            "temperature": 0.5,
-            "top_p": 0.5,
-            "presence_penalty": 0.5,
-            "frequency_penalty": 0.5,
-            "max_tokens": 128,
-            "number_of_responses": 2,
-            "stop": ["s"],
-            "logit_bias": {"1": 1}
+        "execution_settings": {
+            "default": {
+                "temperature": 0.5,
+                "top_p": 0.5,
+                "presence_penalty": 0.5,
+                "frequency_penalty": 0.5,
+                "max_tokens": 128,
+                "number_of_responses": 2,
+                "stop": ["s"],
+                "logit_bias": {"1": 1}
+            }
         }
     }
     """
@@ -121,14 +131,14 @@ def test_custom_prompt_template_config_from_json():
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
-    assert prompt_template_config.completion.temperature == 0.5
-    assert prompt_template_config.completion.top_p == 0.5
-    assert prompt_template_config.completion.presence_penalty == 0.5
-    assert prompt_template_config.completion.frequency_penalty == 0.5
-    assert prompt_template_config.completion.max_tokens == 128
-    assert prompt_template_config.completion.number_of_responses == 2
-    assert prompt_template_config.completion.stop == ["s"]
-    assert prompt_template_config.completion.logit_bias == {"1": 1}
+    assert prompt_template_config.execution_settings.temperature == 0.5
+    assert prompt_template_config.execution_settings.top_p == 0.5
+    assert prompt_template_config.execution_settings.presence_penalty == 0.5
+    assert prompt_template_config.execution_settings.frequency_penalty == 0.5
+    assert prompt_template_config.execution_settings.max_tokens == 128
+    assert prompt_template_config.execution_settings.number_of_responses == 2
+    assert prompt_template_config.execution_settings.stop == ["s"]
+    assert prompt_template_config.execution_settings.logit_bias == {"1": 1}
 
 
 def test_chat_prompt_template():
@@ -142,7 +152,7 @@ def test_chat_prompt_template():
 
 
 def test_chat_prompt_template_with_system_prompt():
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_completion_parameters(
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_execution_settings(
         messages=[{"role": "system", "content": "Custom system prompt."}],
     )
 

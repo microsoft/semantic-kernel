@@ -25,14 +25,11 @@ you will return a full answer to me as soon as possible.
 
 kernel = sk.Kernel()
 
-deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-api_version = "2023-07-01-preview"
+api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_chat_service(
-    "chat-gpt",
-    sk_oai.AzureChatCompletion(
-        deployment_name,
-        endpoint,
-        api_version=api_version,
+    "gpt-3.5-turbo",
+    sk_oai.OpenAIChatCompletion(
+        ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
     ),
 )
@@ -49,43 +46,47 @@ kernel.import_plugin(MathPlugin(), plugin_name="math")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-functions = [
+tools = [
     {
-        "name": "search_hotels",
-        "description": "Retrieves hotels from the search index based on the parameters provided",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "location": {
-                    "type": "string",
-                    "description": "The location of the hotel (i.e. Seattle, WA)",
+        "type": "function",
+        "function": {
+            "name": "search_hotels",
+            "description": "Retrieves hotels from the search index based on the parameters provided",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The location of the hotel (i.e. Seattle, WA)",
+                    },
+                    "max_price": {
+                        "type": "number",
+                        "description": "The maximum price for the hotel",
+                    },
+                    "features": {
+                        "type": "string",
+                        "description": "A comma separated list of features (i.e. beachfront, free wifi, etc.)",
+                    },
                 },
-                "max_price": {
-                    "type": "number",
-                    "description": "The maximum price for the hotel",
-                },
-                "features": {
-                    "type": "string",
-                    "description": "A comma separated list of features (i.e. beachfront, free wifi, etc.)",
-                },
+                "required": ["location"],
             },
-            "required": ["location"],
         },
     }
 ]
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+
+prompt_config = sk.PromptTemplateConfig.from_execution_settings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_call="auto",
-    functions=functions,
+    tool_choice="auto",
+    tools=tools,
 )
 prompt_template = sk.ChatPromptTemplate[OpenAIChatMessage](
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
-prompt_template.add_system_message(system_message)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+#prompt_template.add_system_message(system_message)
+#prompt_template.add_user_message("Hi there, who are you?")
+#prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
@@ -97,7 +98,8 @@ async def main() -> None:
     context.variables["user_input"] = "I want to find a hotel in Seattle with free wifi and a pool."
 
     context = await chat_function.invoke_async(context=context)
-    if function_call := context.objects.pop("function_call"):
+    function_call = context.objects.get("function_call", None)  # Default to None if not found
+    if function_call:
         print(f"Function to be called: {function_call.name}")
         print(f"Function parameters: \n{function_call.arguments}")
         return
