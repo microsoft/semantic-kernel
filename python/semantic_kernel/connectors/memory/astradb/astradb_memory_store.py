@@ -13,6 +13,8 @@ from semantic_kernel.connectors.memory.astradb.utils import (
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
+import aiohttp
+
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
 MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE = 10000
@@ -35,6 +37,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         embedding_dim: int,
         similarity: str,
         logger: Optional[logging.Logger] = None,
+        session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
@@ -46,9 +49,11 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
             logger {Optional[logging.Logger]} -- The logger to use. (default: {None})
+            session -- Optional session parameter
         """
         self._embedding_dim = embedding_dim
         self._similarity = similarity
+        self._session = session
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
             raise ValueError(
@@ -79,7 +84,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The list of collections.
         """
-        return self.get_collections()
+        return await self.get_collections()
 
     async def create_collection_async(
         self,
@@ -117,7 +122,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        result = self._client.delete_collection(collection_name)
+        result = await self._client.delete_collection(collection_name)
         if result == True:
             self.logger.info(f"Collection {collection_name} deleted.")
         else:
@@ -132,7 +137,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        return self._client.find_collection(collection_name)
+        return await self._client.find_collection(collection_name)
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a memory record into the data store. Does not guarantee that the collection exists.
@@ -213,7 +218,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             None
         """
         filter = {"_id": key}
-        self._client.delete_documents(collection_name, filter)
+        await self._client.delete_documents(collection_name, filter)
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records. Does not guarantee that the collection exists.
@@ -226,7 +231,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             None
         """
         filter = {"_id": {"$in": keys}}
-        self._client.delete_documents(collection_name, filter)
+        await self._client.delete_documents(collection_name, filter)
 
     async def get_nearest_match_async(
         self,

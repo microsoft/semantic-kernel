@@ -91,12 +91,14 @@ def memory_record3():
         timestamp="timestamp",
     )
 
-
-def test_constructor(get_astradb_config):
+@pytest.mark.asyncio
+async def test_constructor(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(
         app_token, db_id, region, keyspace, 2, "cosine")
-    assert memory.get_collections() is not None
+    result = await retry(lambda: memory.get_collections())
+
+    assert result is not None
 
 
 @pytest.mark.asyncio
