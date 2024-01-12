@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -158,6 +159,18 @@ public class OpenAIPromptExecutionSettingsTests
         AssertExecutionSettings(executionSettings);
     }
 
+    [Theory]
+    [InlineData("", "Assistant is a large language model.")]
+    [InlineData("System prompt", "System prompt")]
+    public void ItUsesCorrectChatSystemPrompt(string chatSystemPrompt, string expectedChatSystemPrompt)
+    {
+        // Arrange & Act
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = chatSystemPrompt };
+
+        // Assert
+        Assert.Equal(expectedChatSystemPrompt, settings.ChatSystemPrompt);
+    }
+
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
@@ -170,5 +183,10 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
         Assert.Equal(128, executionSettings.MaxTokens);
+    }
+
+    private class FakePromptExecutionSettings : PromptExecutionSettings
+    {
+        public string TextProperty { get; set; } = string.Empty;
     }
 }

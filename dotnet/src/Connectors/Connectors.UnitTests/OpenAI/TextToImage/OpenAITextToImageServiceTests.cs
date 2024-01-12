@@ -51,7 +51,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, bool expectedException)
     {
         // Arrange
-        var service = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        var service = new OpenAITextToImageService("api-key", "organization", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(@"{
