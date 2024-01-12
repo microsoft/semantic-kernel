@@ -1,19 +1,11 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.core.exception.HttpResponseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
@@ -26,7 +18,12 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -60,11 +57,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             .flatMapMany(prompt -> {
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                AIService client = kernel.getServiceSelector()
-                    .getService(TextGenerationService.class);
+                AIService client = kernel
+                    .getServiceSelector()
+                    .getService(TextAIService.class);
 
                 if (client == null) {
-                    throw new IllegalStateException("Failed to initialise aiService");
+                    throw new IllegalStateException("Failed to initialise aiService, could not find any TextAIService implementations");
                 }
 
                 Flux<StreamingContent<T>> result;
@@ -77,8 +75,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 }
 
                 if (client instanceof ChatCompletionService) {
-
-                    prompt = "<prompt>".concat(prompt).concat("</prompt>");
                     result = ((ChatCompletionService) client)
                         .getStreamingChatMessageContentsAsync(
                             prompt,
@@ -92,7 +88,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                                         streamingChatMessageContent.getContent());
                                 return Flux.just(new StreamingContent<>(value));
                             } else if (streamingChatMessageContent.getRole() == AuthorRole.TOOL) {
-                                Mono<ContextVariable<String>> toolResult = invokeTool(kernel, streamingChatMessageContent.getContent());
+                                Mono<ContextVariable<String>> toolResult = invokeTool(kernel,
+                                    streamingChatMessageContent.getContent());
                                 return toolResult.flatMapMany(contextVariable -> {
                                     T value = variableType
                                         .getConverter()
@@ -172,7 +169,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
     /*
      * Given a json string, invoke the tool specified in the json string.
-     * At this time, the only tool we have is 'function'. 
+     * At this time, the only tool we have is 'function'.
      * The json string should be of the form:
      * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
      * where 'name' is <plugin name '-' function name>.
@@ -202,13 +199,17 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         JsonNode parameters = jsonNode.get("parameters");
         if (parameters != null) {
             KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
-            if (kernelFunction == null) return Mono.empty();
-            ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(String.class);
+            if (kernelFunction == null) {
+                return Mono.empty();
+            }
+            ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
+                String.class);
             Map<String, ContextVariable<?>> variables = new HashMap<>();
             parameters.fields().forEachRemaining(entry -> {
                 String paramName = entry.getKey();
                 String paramValue = entry.getValue().asText();
-                ContextVariable<String> contextVariable = new ContextVariable<>(variableType, paramValue);                
+                ContextVariable<String> contextVariable = new ContextVariable<>(variableType,
+                    paramValue);
                 variables.put(paramName, contextVariable);
             });
             KernelArguments arguments = KernelArguments.builder().withVariables(variables).build();

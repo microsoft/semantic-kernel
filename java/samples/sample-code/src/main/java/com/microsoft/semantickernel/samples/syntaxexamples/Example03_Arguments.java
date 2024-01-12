@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 public class Example03_Arguments {
 
     public static class StaticTextSkill {
-
         @DefineKernelFunction(
             description = "Change all string chars to uppercase.",
             name = "Uppercase")

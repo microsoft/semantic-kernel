@@ -7,6 +7,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClient;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
@@ -15,7 +16,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface ChatCompletionService extends Buildable, AIService {
+public interface ChatCompletionService extends Buildable, TextAIService {
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,

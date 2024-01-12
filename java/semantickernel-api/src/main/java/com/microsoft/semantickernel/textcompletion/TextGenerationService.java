@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.textcompletion;
 
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
@@ -13,7 +14,7 @@ import reactor.core.publisher.Mono;
 /**
  * Interface for text completion services
  */
-public interface TextGenerationService extends AIService, Buildable {
+public interface TextGenerationService extends Buildable, TextAIService {
 
     /**
      * Creates a completion for the prompt and settings.
