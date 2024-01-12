@@ -326,7 +326,7 @@ class StepwisePlanner:
         except Exception as e:
             logger.error(
                 e,
-                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}", # noqa: E501
+                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}",  # noqa: E501
             )
             return (
                 "Something went wrong in system step: ",
