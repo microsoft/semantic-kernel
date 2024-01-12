@@ -4,6 +4,8 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -21,7 +23,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
+        this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
+        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -72,11 +76,20 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         }
     }
 
-    [Fact(Skip = "System.InvalidProgramException : Common Language Runtime detected an invalid program.")]
+    [Fact]
     public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
     {
+        // Arrange
         Kernel kernel = this.InitializeKernel();
-        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var emailPluginFake = new ThrowingEmailPluginFake();
+        kernel.Plugins.Add(
+            KernelPluginFactory.CreateFromFunctions(
+            "Email",
+            new[] {
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.WritePoemAsync),
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
+            }));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
@@ -97,15 +110,24 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     [Fact]
     public async Task ThrowsWhenPluginFunctionThrowsCriticalExceptionAsync()
     {
+        // Arrange
         Kernel kernel = this.InitializeKernel();
-        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var emailPluginFake = new ThrowingEmailPluginFake();
+        kernel.Plugins.Add(
+            KernelPluginFactory.CreateFromFunctions(
+            "Email",
+            new[] {
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.WriteJokeAsync),
+                KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
+            }));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
 
         // Act & Assert
-        // Planner should call ThrowingEmailPluginFake.GetEmailAddressAsync, which throws InvalidProgramException
-        await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "What is Kelly's email address?"));
+        // Planner should call ThrowingEmailPluginFake.WriteJokeAsync, which throws InvalidProgramException
+        await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "Email a joke to test@example.com"));
     }
 
     private Kernel InitializeKernel()
@@ -113,8 +135,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.AddOpenAIChatCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey);
 
@@ -125,6 +148,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+    private readonly XunitLogger<Kernel> _logger;
 
     public void Dispose()
     {
@@ -141,6 +165,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     {
         if (disposing)
         {
+            this._logger.Dispose();
             this._testOutputHelper.Dispose();
         }
     }
