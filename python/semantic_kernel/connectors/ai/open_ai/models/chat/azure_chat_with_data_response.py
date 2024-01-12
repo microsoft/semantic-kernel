@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 """Azure OpenAI Chat With Data Streaming Response class."""
 from typing import Tuple
+import json
 
 from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
@@ -35,9 +36,15 @@ class AzureChatWithDataStreamResponse:
                     delta = message.choices[0].delta
                     if delta and delta.model_extra and "context" in delta.model_extra:
                         for m in delta.model_extra["context"].get("messages", []):
-                            if m["role"] == "tool":
+                            if m.get("role") == "tool":
                                 self._tool_message = m.get("content", "")
                                 break
+                        if not self._tool_message:
+                            self._tool_message = json.dumps(delta.model_extra["context"])
+                        break
+                    else:
+                        # Ensure missing tool message doesn't cause empty assistant message
+                        self._tool_message = "{}"
                         break
             except StopIteration:
                 break
