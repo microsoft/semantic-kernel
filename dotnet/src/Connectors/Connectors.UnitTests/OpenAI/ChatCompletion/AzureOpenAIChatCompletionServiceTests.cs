@@ -13,6 +13,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
@@ -27,18 +28,18 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
-    private readonly Mock<ILogger> _mockLogger;
 
     public AzureOpenAIChatCompletionServiceTests()
     {
         this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
-        this._mockLogger = new Mock<ILogger>();
 
-        this._mockLogger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+        var mockLogger = new Mock<ILogger>();
 
-        this._mockLoggerFactory.Setup(l => l.CreateLogger(It.IsAny<string>())).Returns(this._mockLogger.Object);
+        mockLogger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(l => l.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
     }
 
     [Theory]
@@ -127,6 +128,114 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var exception = await Assert.ThrowsAsync<KernelException>(() => service.GetChatMessageContentsAsync([]));
 
         Assert.Equal("Chat completions not found", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(129)]
+    public async Task GetChatMessageContentsWithInvalidResultsPerPromptValueThrowsExceptionAsync(int resultsPerPrompt)
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings { ResultsPerPrompt = resultsPerPrompt };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.GetChatMessageContentsAsync([], settings));
+
+        Assert.Contains("The value must be in range between", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsHandlesSettingsCorrectlyAsync()
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings()
+        {
+            MaxTokens = 123,
+            Temperature = 0.6,
+            TopP = 0.5,
+            FrequencyPenalty = 1.6,
+            PresencePenalty = 1.2,
+            ResultsPerPrompt = 5,
+            Seed = 567,
+            TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
+            StopSequences = ["stop_sequence"]
+        };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("User Message");
+        chatHistory.AddSystemMessage("System Message");
+        chatHistory.AddAssistantMessage("Assistant Message");
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, settings);
+
+        // Assert
+        var requestContent = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContent);
+
+        var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
+
+        var messages = content.GetProperty("messages");
+
+        var userMessage = messages[0];
+        var systemMessage = messages[1];
+        var assistantMessage = messages[2];
+
+        Assert.Equal("user", userMessage.GetProperty("role").GetString());
+        Assert.Equal("User Message", userMessage.GetProperty("content").GetString());
+
+        Assert.Equal("system", systemMessage.GetProperty("role").GetString());
+        Assert.Equal("System Message", systemMessage.GetProperty("content").GetString());
+
+        Assert.Equal("assistant", assistantMessage.GetProperty("role").GetString());
+        Assert.Equal("Assistant Message", assistantMessage.GetProperty("content").GetString());
+
+        Assert.Equal(123, content.GetProperty("max_tokens").GetInt32());
+        Assert.Equal(0.6, content.GetProperty("temperature").GetDouble());
+        Assert.Equal(0.5, content.GetProperty("top_p").GetDouble());
+        Assert.Equal(1.6, content.GetProperty("frequency_penalty").GetDouble());
+        Assert.Equal(1.2, content.GetProperty("presence_penalty").GetDouble());
+        Assert.Equal(5, content.GetProperty("n").GetInt32());
+        Assert.Equal(567, content.GetProperty("seed").GetInt32());
+        Assert.Equal(3, content.GetProperty("logit_bias").GetProperty("2").GetInt32());
+        Assert.Equal("stop_sequence", content.GetProperty("stop")[0].GetString());
+    }
+
+    [Theory]
+    [MemberData(nameof(ResponseFormats))]
+    public async Task GetChatMessageContentsHandlesResponseFormatCorrectlyAsync(object responseFormat, string? expectedResponseType)
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = responseFormat
+        };
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync([], settings);
+
+        // Assert
+        var requestContent = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContent);
+
+        var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
+
+        Assert.Equal(expectedResponseType, content.GetProperty("response_format").GetProperty("type").GetString());
     }
 
     [Theory]
@@ -464,4 +573,13 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         ToolCallBehavior.EnableKernelFunctions,
         ToolCallBehavior.AutoInvokeKernelFunctions
     };
+
+    public static TheoryData<object, string?> ResponseFormats => new()
+    {
+        { new FakeChatCompletionsResponseFormat(), null },
+        { "json_object", "json_object" },
+        { "text", "text" }
+    };
+
+    private class FakeChatCompletionsResponseFormat : ChatCompletionsResponseFormat { }
 }
