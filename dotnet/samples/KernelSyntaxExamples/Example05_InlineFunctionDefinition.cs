@@ -3,10 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using RepoUtils;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-// ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
 {
     public static async Task RunAsync()
@@ -16,7 +14,7 @@ public static class Example05_InlineFunctionDefinition
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (openAIModelId is null || openAIApiKey is null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
@@ -28,15 +26,14 @@ public static class Example05_InlineFunctionDefinition
          *          function inline if you like.
          */
 
-        IKernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
-        const string FunctionDefinition = @"
+        string promptTemplate = @"
 Generate a creative reason or excuse for the given event.
 Be creative and be funny. Let your imagination run wild.
 
@@ -49,17 +46,17 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
-        Console.WriteLine(result);
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "I missed the F1 final race" });
+        Console.WriteLine(result.GetValue<string>());
 
-        result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
-        Console.WriteLine(result);
+        result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "sorry I forgot your birthday" });
+        Console.WriteLine(result.GetValue<string>());
 
-        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
+        var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.RunAsync(fixedFunction);
-        Console.WriteLine(result);
+        result = await kernel.InvokeAsync(fixedFunction);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

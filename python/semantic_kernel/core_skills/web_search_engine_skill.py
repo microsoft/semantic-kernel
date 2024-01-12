@@ -27,9 +27,7 @@ class WebSearchEngineSkill:
     def __init__(self, connector: "ConnectorBase") -> None:
         self._connector = connector
 
-    @sk_function(
-        description="Performs a web search for a given query", name="searchAsync"
-    )
+    @sk_function(description="Performs a web search for a given query", name="searchAsync")
     @sk_function_context_parameter(
         name="num_results",
         description="The number of search results to return",
@@ -50,7 +48,7 @@ class WebSearchEngineSkill:
         :return: stringified list of search results
         """
 
-        _, _num_results = context.variables.get("num_results")
-        _, _offset = context.variables.get("offset")
+        _num_results = context.variables.get("num_results")
+        _offset = context.variables.get("offset")
         result = await self._connector.search_async(query, _num_results, _offset)
         return str(result)

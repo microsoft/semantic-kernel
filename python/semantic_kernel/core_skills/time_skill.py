@@ -2,11 +2,11 @@
 
 import datetime
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition import sk_function
 
 
-class TimeSkill(PydanticField):
+class TimeSkill(SKBaseModel):
     """
     Description: TimeSkill provides a set of functions
                  to get the current time and date.
@@ -191,9 +191,7 @@ class TimeSkill(PydanticField):
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @sk_function(
-        description="Get the date of offset from today by a provided number of days"
-    )
+    @sk_function(description="Get the date of offset from today by a provided number of days")
     def days_ago(self, days: str) -> str:
         """
         Get the date a provided number of days in the past

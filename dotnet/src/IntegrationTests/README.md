@@ -4,7 +4,7 @@
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
-2. **OpenAI**: go to [OpenAI](https://openai.com/api/) to register and procure your API key.
+2. **OpenAI**: go to [OpenAI](https://openai.com/product/) to register and procure your API key.
 3. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
 4. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
@@ -48,6 +48,14 @@ dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "Bing:ApiKey" "..."
 dotnet user-secrets set "Postgres:ConnectionString" "..."
+
+dotnet user-secrets set "Planners:AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "Planners:AzureOpenAI:ChatDeploymentName" "gpt-4-1106-preview"
+dotnet user-secrets set "Planners:AzureOpenAI:ServiceId" "gpt-4-1106-preview"
+dotnet user-secrets set "Planners:AzureOpenAI:ApiKey" "..."
+
+dotnet user-secrets set "Planners:OpenAI:ModelId" "gpt-3.5-turbo-1106"
+dotnet user-secrets set "Planners:OpenAI:ApiKey" "..."
 ```
 
 ### Option 2: Use Configuration File

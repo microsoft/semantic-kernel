@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import TYPE_CHECKING, List, Optional
+import logging
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -13,45 +13,52 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PromptTemplate(PromptTemplateBase):
-    _template: str
-    _template_engine: PromptTemplatingEngine
-    _log: Logger
-    _prompt_config: PromptTemplateConfig
+    template: str
+    template_engine: PromptTemplatingEngine
+    prompt_config: PromptTemplateConfig
 
     def __init__(
         self,
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Logger] = None,
+        log: Optional[Any] = None,
     ) -> None:
-        self._template = template
-        self._template_engine = template_engine
-        self._prompt_config = prompt_config
-        self._log = log if log is not None else NullLogger()
+        if log:
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+        super().__init__(
+            template=template,
+            template_engine=template_engine,
+            prompt_config=prompt_config,
+        )
 
     def get_parameters(self) -> List[ParameterView]:
         seen = set()
 
         result = []
-        for param in self._prompt_config.input.parameters:
+        for param in self.prompt_config.parameters:
             if param is None:
                 continue
 
             result.append(
-                ParameterView(param.name, param.description, param.default_value)
+                ParameterView(
+                    name=param.name,
+                    description=param.description,
+                    default_value=param.default_value,
+                )
             )
 
             seen.add(param.name)
 
-        blocks = self._template_engine.extract_blocks(self._template)
+        blocks = self.template_engine.extract_blocks(self.template)
         for block in blocks:
             if block.type != BlockTypes.VARIABLE:
                 continue
@@ -62,11 +69,11 @@ class PromptTemplate(PromptTemplateBase):
             if var_block.name in seen:
                 continue
 
-            result.append(ParameterView(var_block.name, "", ""))
+            result.append(ParameterView(name=var_block.name, description="", default_value=""))
 
             seen.add(var_block.name)
 
         return result
 
     async def render_async(self, context: "SKContext") -> str:
-        return await self._template_engine.render_async(self._template, context)
+        return await self.template_engine.render_async(self.template, context)

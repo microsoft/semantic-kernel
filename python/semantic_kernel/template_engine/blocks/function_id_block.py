@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from re import match as re_match
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import pydantic as pdt
 
@@ -10,20 +10,24 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class FunctionIdBlock(Block):
     _skill_name: str = pdt.PrivateAttr()
     _function_name: str = pdt.PrivateAttr()
 
-    def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
-        super().__init__(content=content and content.strip(), log=log)
+    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
+        super().__init__(content=content and content.strip())
+
+        if log:
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         function_name_parts = self.content.split(".")
         if len(function_name_parts) > 2:
-            self.log.error(f"Invalid function name `{self.content}`")
+            logger.error(f"Invalid function name `{self.content}`")
             raise ValueError(
-                "A function name can contain at most one dot separating "
-                "the skill name from the function name"
+                "A function name can contain at most one dot separating " "the skill name from the function name"
             )
 
         if len(function_name_parts) == 2:
@@ -70,8 +74,7 @@ class FunctionIdBlock(Block):
 
         if self._has_more_than_one_dot(self.content):
             error_msg = (
-                "The function identifier can contain max one '.' "
-                "char separating skill name from function name"
+                "The function identifier can contain max one '.' " "char separating skill name from function name"
             )
             return False, error_msg
 

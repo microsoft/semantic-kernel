@@ -3,10 +3,10 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 public sealed class QdrantVectorDbClientTests : IDisposable
 {

@@ -3,13 +3,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
 public static class Example17_ChatGPT
 {
     public static async Task RunAsync()
@@ -50,37 +47,38 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        await StartChatAsync(openAIChatCompletion);
+        await StartChatAsync(chatCompletionService);
     }
 
     private static async Task AzureOpenAIChatSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
-        AzureChatCompletion azureChatCompletion = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
+        AzureOpenAIChatCompletionService chatCompletionService = new(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
-        await StartChatAsync(azureChatCompletion);
+        await StartChatAsync(chatCompletionService);
     }
 
-    private static async Task StartChatAsync(IChatCompletion chatGPT)
+    private static async Task StartChatAsync(IChatCompletionService chatGPT)
     {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = chatGPT.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
+        var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
 
         // Second user message
@@ -88,8 +86,8 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message
-        reply = await chatGPT.GenerateMessageAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
+        reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
+        chatHistory.Add(reply);
         await MessageOutputAsync(chatHistory);
     }
 
@@ -98,7 +96,7 @@ public static class Example17_ChatGPT
     /// </summary>
     private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
-        var message = chatHistory.Messages.Last();
+        var message = chatHistory.Last();
 
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");

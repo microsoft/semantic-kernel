@@ -30,5 +30,21 @@ def test_when_input_is_final_answer_returns_final_answer(input: str, expected: s
     assert result.final_answer == expected
 
 
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        ("My thought", "My thought"),
+        ("My thought\n", "My thought"),
+        ("My thought\n\n", "My thought"),
+        ("My thought\n\n\n", "My thought"),
+    ],
+)
+def test_when_input_is_only_thought_does_not_throw_error(input: str, expected: str):
+    kernel = Mock(spec=Kernel)
+    planner = StepwisePlanner(kernel)
+    result = planner.parse_result(input)
+    assert result.thought == expected
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

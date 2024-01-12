@@ -3,7 +3,7 @@
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class GetEmbeddingsRequest
 {

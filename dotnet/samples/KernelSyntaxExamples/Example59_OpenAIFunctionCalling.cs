@@ -1,110 +1,134 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/**
- * This example shows how to use OpenAI's function calling capability via the chat completions interface.
- * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
- */
-
-// ReSharper disable once InconsistentNaming
+// This example shows how to use OpenAI's tool calling capability via the chat completions interface.
 public static class Example59_OpenAIFunctionCalling
 {
     public static async Task RunAsync()
     {
-        IKernel kernel = await InitializeKernelAsync();
-        var chatCompletion = kernel.GetService<IChatCompletion>();
-        var chatHistory = chatCompletion.CreateNewChat();
+        // Create kernel.
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
-        OpenAIRequestSettings requestSettings = new()
+        // We recommend the usage of OpenAI latest models for the best experience with tool calling.
+        // i.e. gpt-3.5-turbo-1106 or gpt-4-1106-preview
+        builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
+
+        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
+        Kernel kernel = builder.Build();
+
+        // Add a plugin with some helper functions we want to allow the model to utilize.
+        kernel.ImportPluginFromFunctions("HelperFunctions", new[]
         {
-            // Include all functions registered with the kernel.
-            // Alternatively, you can provide your own list of OpenAIFunctions to include.
-            Functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
-        };
+            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
+            kernel.CreateFunctionFromMethod((string cityName) =>
+                cityName switch
+                {
+                    "Boston" => "61 and rainy",
+                    "London" => "55 and cloudy",
+                    "Miami" => "80 and sunny",
+                    "Paris" => "60 and rainy",
+                    "Tokyo" => "50 and sunny",
+                    "Sydney" => "75 and sunny",
+                    "Tel Aviv" => "80 and sunny",
+                    _ => "31 and snowing",
+                }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+        });
 
-        // Set FunctionCall to the name of a specific function to force the model to use that function.
-        requestSettings.FunctionCall = "TimePlugin-Date";
-        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
-
-        // Set FunctionCall to auto to let the model choose the best function to use.
-        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
-        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
-    }
-
-    private static async Task<IKernel> InitializeKernelAsync()
-    {
-        // Create kernel with chat completions service
-        IKernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
-            //.WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey, serviceId: "chat")
-            .Build();
-
-        // Load functions to kernel
-        kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
-        await kernel.ImportPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters());
-
-        return kernel;
-    }
-
-    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
-    {
-        Console.WriteLine($"User message: {ask}");
-        chatHistory.AddUserMessage(ask);
-
-        // Send request
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
-
-        // Check for message response
-        var chatMessage = await chatResult.GetChatMessageAsync();
-        if (!string.IsNullOrEmpty(chatMessage.Content))
+        Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
-            Console.WriteLine(chatMessage.Content);
-
-            // Add the response to chat history
-            chatHistory.AddAssistantMessage(chatMessage.Content);
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+            Console.WriteLine();
         }
 
-        // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
-        if (functionResponse is not null)
+        Console.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
-            // Print function response details
-            Console.WriteLine("Function name: " + functionResponse.FunctionName);
-            Console.WriteLine("Plugin name: " + functionResponse.PluginName);
-            Console.WriteLine("Arguments: ");
-            foreach (var parameter in functionResponse.Parameters)
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
-                Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
+                Console.Write(update);
             }
+            Console.WriteLine();
+        }
 
-            // If the function returned by OpenAI is an SKFunction registered with the kernel,
-            // you can invoke it using the following code.
-            if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+        Console.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        {
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+            var chatHistory = new ChatHistory();
+
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+            chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+            while (true)
             {
-                var result = (await kernel.RunAsync(func, context)).GetValue<string>();
-                if (!string.IsNullOrEmpty(result))
-                {
-                    Console.WriteLine(result);
+                var result = (OpenAIChatMessageContent)await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-                    // Add the function result to chat history
-                    chatHistory.AddAssistantMessage(result);
+                if (result.Content is not null)
+                {
+                    Console.Write(result.Content);
+                }
+
+                List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
+                if (toolCalls.Count == 0)
+                {
+                    break;
+                }
+
+                chatHistory.Add(result);
+                foreach (var toolCall in toolCalls)
+                {
+                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
+                        JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
+                        "Unable to find function. Please try again!";
+
+                    chatHistory.Add(new ChatMessageContent(
+                        AuthorRole.Tool,
+                        content,
+                        metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
                 }
             }
-            else
+
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("======== Example 4: Use automated function calling with a streaming chat ========");
+        {
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+            var chatHistory = new ChatHistory();
+
+            while (true)
             {
-                Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
+                Console.Write("Question (Type \"quit\" to leave): ");
+                string question = Console.ReadLine() ?? string.Empty;
+                if (question == "quit")
+                {
+                    break;
+                }
+
+                chatHistory.AddUserMessage(question);
+                StringBuilder sb = new();
+                await foreach (var update in chat.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+                {
+                    if (update.Content is not null)
+                    {
+                        Console.Write(update.Content);
+                        sb.Append(update.Content);
+                    }
+                }
+                chatHistory.AddAssistantMessage(sb.ToString());
+                Console.WriteLine();
             }
         }
     }

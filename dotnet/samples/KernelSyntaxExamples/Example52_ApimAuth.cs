@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,14 +9,11 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using RepoUtils;
 
-// ReSharper disable once InconsistentNaming
 public static class Example52_ApimAuth
 {
     public static async Task RunAsync()
@@ -45,39 +43,28 @@ public static class Example52_ApimAuth
             Diagnostics =
             {
                 LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" },
-                ApplicationId = Telemetry.HttpUserAgent,
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
             }
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
 
-        // Create logger factory with default level as warning
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder
-                .SetMinimumLevel(LogLevel.Warning)
-                .AddConsole();
-        });
-
-        var kernel = Kernel.Builder
-            .WithLoggerFactory(loggerFactory)
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory) =>
-                new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory))
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            openAIClient: openAIClient);
+        Kernel kernel = builder.Build();
 
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var funFunctions = kernel.ImportSemanticFunctionsFromDirectory(
-            folder,
-            "FunPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
 
         // Run
-        var result = await kernel.RunAsync(
-            "I have no homework",
-            funFunctions["Excuses"]
+        var result = await kernel.InvokeAsync(
+            kernel.Plugins["FunPlugin"]["Excuses"],
+            new() { ["input"] = "I have no homework" }
         );
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
     }

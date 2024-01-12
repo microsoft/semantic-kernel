@@ -12,11 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// A client for the Pinecone API
@@ -35,8 +33,8 @@ public sealed class PineconeClient : IPineconeClient
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeClient)) : NullLogger.Instance;
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeClient)) ?? NullLogger.Instance;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
@@ -258,7 +256,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new SKException("Must provide at least one of ids, filter, or deleteAll");
+            throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -551,7 +549,7 @@ public sealed class PineconeClient : IPineconeClient
 
     private async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
+        if (this._indexHostMapping.TryGetValue(indexName, out string? indexHost))
         {
             return indexHost;
         }
@@ -562,12 +560,12 @@ public sealed class PineconeClient : IPineconeClient
 
         if (pineconeIndex == null)
         {
-            throw new SKException("Index not found in Pinecone. Create index to perform operations with vectors.");
+            throw new KernelException("Index not found in Pinecone. Create index to perform operations with vectors.");
         }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {
-            throw new SKException($"Host of index {indexName} is unknown.");
+            throw new KernelException($"Host of index {indexName} is unknown.");
         }
 
         this._logger.LogDebug("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);

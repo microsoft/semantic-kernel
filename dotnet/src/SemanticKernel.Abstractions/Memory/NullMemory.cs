@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/> that stores nothing.
 /// </summary>
+[Experimental("SKEXP0003")]
 public sealed class NullMemory : ISemanticTextMemory
 {
     private static readonly Task<string> s_emptyStringTask = Task.FromResult(string.Empty);
@@ -26,6 +28,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return s_emptyStringTask;
@@ -39,6 +42,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string externalSourceName,
         string? description = null,
         string? additionalMetadata = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return s_emptyStringTask;
@@ -49,6 +53,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string collection,
         string key,
         bool withEmbedding = false,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult<MemoryQueryResult?>(null);
@@ -58,6 +63,7 @@ public sealed class NullMemory : ISemanticTextMemory
     public Task RemoveAsync(
         string collection,
         string key,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
@@ -70,6 +76,7 @@ public sealed class NullMemory : ISemanticTextMemory
         int limit = 1,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();
@@ -77,6 +84,7 @@ public sealed class NullMemory : ISemanticTextMemory
 
     /// <inheritdoc/>
     public Task<IList<string>> GetCollectionsAsync(
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IList<string>>(new List<string>());

@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple
 
 import pinecone
@@ -13,7 +13,6 @@ from semantic_kernel.connectors.memory.pinecone.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 # Limitations set by Pinecone at https://docs.pinecone.io/docs/limits
 MAX_DIMENSIONALITY = 20000
@@ -23,11 +22,12 @@ MAX_QUERY_WITH_METADATA_BATCH_SIZE = 1000
 MAX_FETCH_BATCH_SIZE = 1000
 MAX_DELETE_BATCH_SIZE = 1000
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 
-    _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str
     _default_dimensionality: int
@@ -37,7 +37,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key: str,
         environment: str,
         default_dimensionality: int,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
@@ -45,8 +45,9 @@ class PineconeMemoryStore(MemoryStoreBase):
             pinecone_api_key {str} -- The Pinecone API key.
             pinecone_environment {str} -- The Pinecone environment.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ValueError(
                 f"Dimensionality of {default_dimensionality} exceeds "
@@ -55,11 +56,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         self._pinecone_api_key = api_key
         self._pinecone_environment = environment
         self._default_dimensionality = default_dimensionality
-        self._logger = logger or NullLogger()
 
-        pinecone.init(
-            api_key=self._pinecone_api_key, environment=self._pinecone_environment
-        )
+        pinecone.init(api_key=self._pinecone_api_key, environment=self._pinecone_environment)
 
     def get_collections(self) -> List[str]:
         return pinecone.list_indexes()
@@ -91,8 +89,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             dimension_num = self._default_dimensionality
         if dimension_num > MAX_DIMENSIONALITY:
             raise ValueError(
-                f"Dimensionality of {dimension_num} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
         if collection_name not in pinecone.list_indexes():
@@ -106,9 +103,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 metadata_config=metadata_config,
             )
 
-    async def describe_collection_async(
-        self, collection_name: str
-    ) -> Optional[IndexDescription]:
+    async def describe_collection_async(self, collection_name: str) -> Optional[IndexDescription]:
         """Gets the description of the index.
         Arguments:
             collection_name {str} -- The name of the index to get.
@@ -177,9 +172,7 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         return record._id
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -203,18 +196,14 @@ class PineconeMemoryStore(MemoryStoreBase):
             for record in records
         ]
 
-        upsert_response = collection.upsert(
-            vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE
-        )
+        upsert_response = collection.upsert(vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE)
 
         if upsert_response.upserted_count is None:
             raise Exception(f"Error upserting record: {upsert_response.message}")
         else:
             return [record._id for record in records]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -252,13 +241,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        fetch_response = await self.__get_batch_async(
-            collection_name, keys, with_embeddings
-        )
-        return [
-            parse_payload(fetch_response.vectors[key], with_embeddings)
-            for key in fetch_response.vectors.keys()
-        ]
+        fetch_response = await self.__get_batch_async(collection_name, keys, with_embeddings)
+        return [parse_payload(fetch_response.vectors[key], with_embeddings) for key in fetch_response.vectors.keys()]
 
     async def remove_async(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -347,10 +331,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         collection = pinecone.Index(collection_name)
 
         if limit > MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE:
-            raise Exception(
-                "Limit must be less than or equal to "
-                + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
-            )
+            raise Exception("Limit must be less than or equal to " + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}")
         elif limit > MAX_QUERY_WITH_METADATA_BATCH_SIZE:
             query_response = collection.query(
                 vector=embedding.tolist(),
@@ -359,9 +340,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 include_metadata=False,
             )
             keys = [match.id for match in query_response.matches]
-            fetch_response = await self.__get_batch_async(
-                collection_name, keys, with_embeddings
-            )
+            fetch_response = await self.__get_batch_async(collection_name, keys, with_embeddings)
             vectors = fetch_response.vectors
             for match in query_response.matches:
                 vectors[match.id].update(match)
@@ -395,9 +374,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         if len(keys) > MAX_FETCH_BATCH_SIZE:
             fetch_response = index.fetch(keys[0:MAX_FETCH_BATCH_SIZE])
             for i in range(MAX_FETCH_BATCH_SIZE, len(keys), MAX_FETCH_BATCH_SIZE):
-                fetch_response.vectors.update(
-                    index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors
-                )
+                fetch_response.vectors.update(index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors)
         else:
             fetch_response = index.fetch(keys)
         return fetch_response

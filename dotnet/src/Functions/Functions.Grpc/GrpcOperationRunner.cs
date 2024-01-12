@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -13,17 +14,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 /// <summary>
 /// Runs gRPC operation runner.
 /// </summary>
 internal sealed class GrpcOperationRunner
 {
+    /// <summary>Serialization options that use a camel casing naming policy.</summary>
+    private static readonly JsonSerializerOptions s_camelCaseOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    /// <summary>Deserialization options that use case-insensitive property names.</summary>
+    private static readonly JsonSerializerOptions s_propertyCaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
@@ -45,12 +49,14 @@ internal sealed class GrpcOperationRunner
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation run.</returns>
-    public async Task<JsonObject> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public async Task<JsonObject> RunAsync(GrpcOperation operation, KernelArguments arguments, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(operation);
         Verify.NotNull(arguments);
 
-        var address = this.GetAddress(operation, arguments);
+        var stringArgument = CastToStringArguments(arguments, operation);
+
+        var address = this.GetAddress(operation, stringArgument);
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
@@ -71,12 +77,32 @@ internal sealed class GrpcOperationRunner
 
             var invoker = channel.CreateCallInvoker();
 
-            var request = this.GenerateOperationRequest(operation, requestType, arguments);
+            var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
 
             var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
 
             return ConvertResponse(response, responseType);
         }
+    }
+
+    /// <summary>
+    /// Casts argument values of type object to string.
+    /// </summary>
+    /// <param name="arguments">The kernel arguments to be cast.</param>
+    /// <param name="operation">The gRPC operation.</param>
+    /// <returns>A dictionary of arguments with string values.</returns>
+    /// <exception cref="KernelException">Thrown when an argument has an unsupported, non-string type.</exception>
+    private static Dictionary<string, string> CastToStringArguments(KernelArguments arguments, GrpcOperation operation)
+    {
+        return arguments.ToDictionary(item => item.Key, item =>
+        {
+            if (item.Value is string stringValue)
+            {
+                return stringValue;
+            }
+
+            throw new KernelException($"Non-string gRPC operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Name}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+        });
     }
 
     /// <summary>
@@ -87,7 +113,7 @@ internal sealed class GrpcOperationRunner
     /// <returns>The converted response.</returns>
     private static JsonObject ConvertResponse(object response, Type responseType)
     {
-        var content = JsonSerializer.Serialize(response, responseType, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var content = JsonSerializer.Serialize(response, responseType, s_camelCaseOptions);
 
         //First iteration allowing to associate additional metadata with the returned content.
         var result = new JsonObject();
@@ -102,7 +128,7 @@ internal sealed class GrpcOperationRunner
     /// <param name="operation">The gRPC operation.</param>
     /// <param name="arguments">The gRPC operation arguments.</param>
     /// <returns>The channel address.</returns>
-    private string GetAddress(GrpcOperation operation, IDictionary<string, string> arguments)
+    private string GetAddress(GrpcOperation operation, Dictionary<string, string> arguments)
     {
         if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
         {
@@ -111,7 +137,7 @@ internal sealed class GrpcOperationRunner
 
         if (string.IsNullOrEmpty(address))
         {
-            throw new SKException($"No address provided for the '{operation.Name}' gRPC operation.");
+            throw new KernelException($"No address provided for the '{operation.Name}' gRPC operation.");
         }
 
         return address!;
@@ -150,22 +176,18 @@ internal sealed class GrpcOperationRunner
     /// <param name="type">The operation request data type.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The operation request instance.</returns>
-    private object GenerateOperationRequest(GrpcOperation operation, Type type, IDictionary<string, string> arguments)
+    private object GenerateOperationRequest(GrpcOperation operation, Type type, Dictionary<string, string> arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
-        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out var payload))
+        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) ||
+            string.IsNullOrEmpty(payload))
         {
-            throw new SKException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
+            throw new KernelException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
         }
 
         //Deserializing JSON payload to gRPC request message
-        var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        if (instance == null)
-        {
-            throw new SKException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
-        }
-
-        return instance;
+        return JsonSerializer.Deserialize(payload!, type, s_propertyCaseInsensitiveOptions) ??
+            throw new KernelException($"Unable to create gRPC request message for the '{operation.Name}' gRPC operation.");
     }
 
     /// <summary>
@@ -215,21 +237,16 @@ internal sealed class GrpcOperationRunner
             propertyBuilder.SetSetMethod(setterBuilder);
 
             //Add ProtoMember attribute to the data contract with tag/number
-            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) }), new object[] { field.Number });
+            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) })!, new object[] { field.Number });
             propertyBuilder.SetCustomAttribute(dataMemberAttributeBuilder);
         }
 
         //Add ProtoContract attribute to the data contract
-        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes), Array.Empty<object>());
+        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
-        var type = typeBuilder.CreateTypeInfo();
-        if (type == null)
-        {
-            throw new SKException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
-        }
-
-        return type;
+        return typeBuilder.CreateTypeInfo() ??
+            throw new KernelException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
     }
 
     /// <summary>
@@ -237,42 +254,24 @@ internal sealed class GrpcOperationRunner
     /// </summary>
     /// <param name="type">The protobuf data type name.</param>
     /// <returns>The .net type.</returns>
-    private static Type GetNetType(string type)
-    {
-        switch (type)
+    private static Type GetNetType(string type) =>
+        type switch
         {
-            case "TYPE_DOUBLE":
-                return typeof(double);
-            case "TYPE_FLOAT":
-                return typeof(float);
-            case "TYPE_INT64":
-                return typeof(long);
-            case "TYPE_UINT64":
-                return typeof(ulong);
-            case "TYPE_INT32":
-                return typeof(int);
-            case "TYPE_FIXED64":
-                return typeof(ulong);
-            case "TYPE_FIXED32":
-                return typeof(uint);
-            case "TYPE_BOOL":
-                return typeof(bool);
-            case "TYPE_STRING":
-                return typeof(string);
-            case "TYPE_BYTES":
-                return typeof(byte[]);
-            case "TYPE_UINT32":
-                return typeof(uint);
-            case "TYPE_SFIXED32":
-                return typeof(int);
-            case "TYPE_SFIXED64":
-                return typeof(long);
-            case "TYPE_SINT32":
-                return typeof(int);
-            case "TYPE_SINT64":
-                return typeof(long);
-            default:
-                throw new ArgumentException($"Unknown type {type}", nameof(type));
-        }
-    }
+            "TYPE_DOUBLE" => typeof(double),
+            "TYPE_FLOAT" => typeof(float),
+            "TYPE_INT64" => typeof(long),
+            "TYPE_UINT64" => typeof(ulong),
+            "TYPE_INT32" => typeof(int),
+            "TYPE_FIXED64" => typeof(ulong),
+            "TYPE_FIXED32" => typeof(uint),
+            "TYPE_BOOL" => typeof(bool),
+            "TYPE_STRING" => typeof(string),
+            "TYPE_BYTES" => typeof(byte[]),
+            "TYPE_UINT32" => typeof(uint),
+            "TYPE_SFIXED32" => typeof(int),
+            "TYPE_SFIXED64" => typeof(long),
+            "TYPE_SINT32" => typeof(int),
+            "TYPE_SINT64" => typeof(long),
+            _ => throw new ArgumentException($"Unknown type {type}", nameof(type)),
+        };
 }

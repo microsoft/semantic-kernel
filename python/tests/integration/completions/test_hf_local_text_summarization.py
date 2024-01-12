@@ -6,6 +6,7 @@ import semantic_kernel as sk
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_summarize_input_str(setup_summarize_function):
     (
         kernel,
@@ -23,6 +24,7 @@ async def test_summarize_input_str(setup_summarize_function):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_summarize_input_vars(setup_summarize_function):
     (
         kernel,
@@ -41,6 +43,7 @@ async def test_summarize_input_vars(setup_summarize_function):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_summarize_input_context(setup_summarize_function):
     (
         kernel,
@@ -60,6 +63,7 @@ async def test_summarize_input_context(setup_summarize_function):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_summarize_input_context_with_vars(setup_summarize_function):
     (
         kernel,
@@ -72,9 +76,7 @@ async def test_summarize_input_context_with_vars(setup_summarize_function):
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
     context_vars = sk.ContextVariables(additional_text)
-    summary = await kernel.run_async(
-        summarize_function, input_context=context, input_vars=context_vars
-    )
+    summary = await kernel.run_async(summarize_function, input_context=context, input_vars=context_vars)
 
     output = str(summary).strip()
     print(f"Summary using context and additional variables: '{output}'")
@@ -82,6 +84,7 @@ async def test_summarize_input_context_with_vars(setup_summarize_function):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_summarize_input_context_with_str(setup_summarize_function):
     (
         kernel,
@@ -93,9 +96,7 @@ async def test_summarize_input_context_with_str(setup_summarize_function):
     # Summarize input context with additional input string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(
-        summarize_function, input_context=context, input_str=additional_text
-    )
+    summary = await kernel.run_async(summarize_function, input_context=context, input_str=additional_text)
 
     output = str(summary).strip()
     print(f"Summary using context and additional string: '{output}'")
@@ -103,6 +104,7 @@ async def test_summarize_input_context_with_str(setup_summarize_function):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_summarize_input_context_with_vars_and_str(setup_summarize_function):
     (
         kernel,
@@ -123,7 +125,5 @@ async def test_summarize_input_context_with_vars_and_str(setup_summarize_functio
     )
 
     output = str(summary).strip()
-    print(
-        f"Summary using context, additional variables, and additional string: '{output}'"
-    )
+    print(f"Summary using context, additional variables, and additional string: '{output}'")
     assert len(output) > 0

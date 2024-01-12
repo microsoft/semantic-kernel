@@ -3,7 +3,6 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +26,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
     public HttpMessageHandlerStub()
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, "application/json");
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -35,7 +34,12 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        if (request.Content is not null)
+        {
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods; overload doesn't exist on .NET Framework
+            this.RequestContent = await request.Content.ReadAsByteArrayAsync();
+#pragma warning restore CA2016
+        }
         this.ContentHeaders = request.Content?.Headers;
 
         return await Task.FromResult(this.ResponseToReturn);

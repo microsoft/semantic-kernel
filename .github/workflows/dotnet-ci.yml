@@ -22,14 +22,14 @@ jobs:
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
           - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
-          - { os: ubuntu-latest, dotnet: '8.0-preview', configuration: Release }
-  
+          - { os: ubuntu-latest, dotnet: '8.0', configuration: Release }
+
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
       with:
         clean: true
-        
+
     - name: Find solutions
       shell: bash
       run: echo "solutions=$(find ./ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
@@ -43,7 +43,7 @@ jobs:
         for solution in ${{ env.solutions }}; do
           docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /app/$solution"
         done
-        
+
     - name: Find test projects
       shell: bash
       run: echo "testprojects=$(find ./dotnet -type f -name "*UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV

@@ -1,0 +1,91 @@
+name: Run Java Integration Tests and Samples
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "java-development" ]
+    paths:
+      - 'java/**'
+  pull_request:
+    branches: [ "main", "java-development" ]
+    paths:
+      - 'java/**'
+
+permissions:
+  contents: read
+
+jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      javaChanges: ${{ steps.filter.outputs.java }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            java:
+              - 'java/**'
+              - '**/java/**'
+      # run only if 'java' files were changed
+      - name: java tests
+        if: steps.filter.outputs.java == 'true'
+        run: echo "Java file"
+      # run only if not 'java' files were changed
+      - name: not java tests
+        if: steps.filter.outputs.java != 'true'
+        run: echo "NOT java file"
+  java-integration-tests:
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.javaChanges == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        java-versions: [8, 17]
+
+    name: Java Tests on JDK${{ matrix.java-versions }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Need to use JDK 11 to build for JDK 8
+      - name: Set JDK
+        id: set-jdk
+        shell: bash
+        run: |
+          if [[ ${{ matrix.java-versions }} == 8 ]]; then
+            echo "JDK_VERSION=11" >> $GITHUB_OUTPUT
+          else
+            version=${{ matrix.java-versions }}
+            echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
+          distribution: microsoft
+          cache: maven
+
+      - name: Build with Maven
+        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        working-directory: java
+
+      # API tests run on JDK 17+
+      - name: Run integration tests
+        run: ../mvnw -B -Pbug-check clean install --file pom.xml
+        working-directory: java/api-test
+        env:
+          OPENAI_API_KEY: ""
+          AZURE_OPENAI_ENDPOINT: ""
+          AZURE_OPENAI_API_KEY: ""
+          AZURE_OPENAI_DEPLOYMENT_NAME: ""
+        if: ${{ matrix.java-versions >= 17 }}
+
+      # Samples build on JDK 17+
+      - name: Build semantic-kernel samples
+        run: ../mvnw -B clean install --file pom.xml
+        working-directory: java/samples
+        if: ${{ matrix.java-versions >= 17 }}

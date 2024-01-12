@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 def _handles(delegate_type):
@@ -14,7 +13,7 @@ def _handles(delegate_type):
     return decorator
 
 
-class DelegateHandlers(PydanticField):
+class DelegateHandlers(SKBaseModel):
     @staticmethod
     @_handles(DelegateTypes.Void)
     async def handle_void(function, context):
@@ -53,9 +52,7 @@ class DelegateHandlers(PydanticField):
 
     @staticmethod
     @_handles(DelegateTypes.ContextSwitchInSKContextOutTaskSKContext)
-    async def handle_context_switch_in_sk_context_out_task_sk_context(
-        function, context
-    ):
+    async def handle_context_switch_in_sk_context_out_task_sk_context(function, context):
         # Note: Context Switching: allows the function to replace with a
         # new context, e.g. to branch execution path
         context = await function(context)
@@ -99,9 +96,7 @@ class DelegateHandlers(PydanticField):
 
     @staticmethod
     @_handles(DelegateTypes.ContextSwitchInStringAndContextOutTaskContext)
-    async def handle_context_switch_in_string_and_context_out_task_context(
-        function, context
-    ):
+    async def handle_context_switch_in_string_and_context_out_task_context(function, context):
         # Note: Context Switching: allows the function to replace with a
         # new context, e.g. to branch execution path
         context = await function(context.variables.input, context)
@@ -130,6 +125,30 @@ class DelegateHandlers(PydanticField):
     async def handle_out_task(function, context):
         await function()
         return context
+
+    @staticmethod
+    @_handles(DelegateTypes.OutAsyncGenerator)
+    async def handle_out_async_generator(function, context):
+        async for partial in function():
+            yield partial
+
+    @staticmethod
+    @_handles(DelegateTypes.InStringOutAsyncGenerator)
+    async def handle_in_string_out_async_generator(function, context):
+        async for partial in function(context.variables.input):
+            yield partial
+
+    @staticmethod
+    @_handles(DelegateTypes.InContextOutAsyncGenerator)
+    async def handle_in_context_out_async_generator(function, context):
+        async for partial in function(context):
+            yield partial
+
+    @staticmethod
+    @_handles(DelegateTypes.InStringAndContextOutAsyncGenerator)
+    async def handle_in_string_and_context_out_async_generator(function, context):
+        async for partial in function(context.variables.input, context):
+            yield partial
 
     @staticmethod
     @_handles(DelegateTypes.Unknown)

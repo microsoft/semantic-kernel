@@ -11,15 +11,18 @@ from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
 from semantic_kernel import Kernel, SKContext
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PreparedRestApiRequest:
-    def __init__(
-        self, method: str, url: str, params=None, headers=None, request_body=None
-    ):
+    def __init__(self, method: str, url: str, params=None, headers=None, request_body=None):
         self.method = method
         self.url = url
         self.params = params
@@ -36,7 +39,9 @@ class PreparedRestApiRequest:
             f"request_body={self.request_body})"
         )
 
-    def validate_request(self, spec: Spec, logger: logging.Logger = NullLogger()):
+    def validate_request(self, spec: Spec, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         request = requests.Request(
             self.method,
             self.url,
@@ -92,7 +97,7 @@ class RestApiOperation:
 
         url = urljoin(self.server_url, path)
 
-        processed_query_params, processed_headers = {}, {}
+        processed_query_params, processed_headers = {}, headers
         for param in self.params:
             param_name = param["name"]
             param_schema = param["schema"]
@@ -110,22 +115,18 @@ class RestApiOperation:
                     processed_headers[param_name] = param_default
             elif param["in"] == "path":
                 if not path_params or param_name not in path_params:
-                    raise ValueError(
-                        f"Required path parameter {param_name} not provided"
-                    )
+                    raise ValueError(f"Required path parameter {param_name} not provided")
 
         processed_payload = None
         if self.request_body:
-            if (
-                request_body is None
-                and "required" in self.request_body
-                and self.request_body["required"]
-            ):
+            if request_body is None and "required" in self.request_body and self.request_body["required"]:
                 raise ValueError("Payload is required but was not provided")
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
             processed_payload = request_body
+
+        processed_headers[USER_AGENT] = " ".join((HTTP_USER_AGENT, processed_headers.get(USER_AGENT, ""))).rstrip()
 
         req = PreparedRestApiRequest(
             method=self.method,
@@ -151,8 +152,9 @@ class RestApiOperation:
 
 
 class OpenApiParser:
-    def __init__(self, logger: logging.Logger = NullLogger()):
-        self.logger = logger
+    def __init__(self, **kwargs):
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
 
     """
     Import an OpenAPI file.
@@ -170,9 +172,7 @@ class OpenApiParser:
     :return: A dictionary of RestApiOperation objects keyed by operationId
     """
 
-    def create_rest_api_operations(
-        self, parsed_document
-    ) -> Dict[str, RestApiOperation]:
+    def create_rest_api_operations(self, parsed_document) -> Dict[str, RestApiOperation]:
         paths = parsed_document.get("paths", {})
         request_objects = {}
         for path, methods in paths.items():
@@ -206,9 +206,7 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
-        logger: logging.Logger = NullLogger(),
     ):
-        self.logger = logger
         self.spec = Spec.from_dict(parsed_openapi_document)
 
     async def run_operation(
@@ -225,7 +223,7 @@ class OpenApiRunner:
             headers=headers,
             request_body=request_body,
         )
-        is_valid = prepared_request.validate_request(spec=self.spec, logger=self.logger)
+        is_valid = prepared_request.validate_request(spec=self.spec)
         if not is_valid:
             return None
 
@@ -254,56 +252,40 @@ def register_openapi_skill(
     skill_name: str,
     openapi_document: str,
 ) -> Dict[str, SKFunctionBase]:
-    parser = OpenApiParser(logger=kernel.logger)
+    parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
-    openapi_runner = OpenApiRunner(
-        parsed_openapi_document=parsed_doc, logger=kernel.logger
-    )
+    openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc)
 
     skill = {}
 
-    def create_run_operation_function(
-        runner: OpenApiRunner, operation: RestApiOperation
-    ):
+    def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
         @sk_function(
-            description=operation.summary
-            if operation.summary
-            else operation.description,
+            description=operation.summary if operation.summary else operation.description,
             name=operation_id,
         )
-        @sk_function_context_parameter(
-            name="path_params", description="A dictionary of path parameters"
-        )
-        @sk_function_context_parameter(
-            name="query_params", description="A dictionary of query parameters"
-        )
-        @sk_function_context_parameter(
-            name="headers", description="A dictionary of headers"
-        )
-        @sk_function_context_parameter(
-            name="request_body", description="A dictionary of the request body"
-        )
+        @sk_function_context_parameter(name="path_params", description="A dictionary of path parameters")
+        @sk_function_context_parameter(name="query_params", description="A dictionary of query parameters")
+        @sk_function_context_parameter(name="headers", description="A dictionary of headers")
+        @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
         async def run_openapi_operation(sk_context: SKContext) -> str:
-            has_path_params, path_params = sk_context.variables.get("path_params")
-            has_query_params, query_params = sk_context.variables.get("query_params")
-            has_headers, headers = sk_context.variables.get("headers")
-            has_request_body, request_body = sk_context.variables.get("request_body")
+            path_params = sk_context.variables.get("path_params")
+            query_params = sk_context.variables.get("query_params")
+            headers = sk_context.variables.get("headers")
+            request_body = sk_context.variables.get("request_body")
 
             response = await runner.run_operation(
                 operation,
-                path_params=json.loads(path_params) if has_path_params else None,
-                query_params=json.loads(query_params) if has_query_params else None,
-                headers=json.loads(headers) if has_headers else None,
-                request_body=json.loads(request_body) if has_request_body else None,
+                path_params=json.loads(path_params) if path_params else None,
+                query_params=json.loads(query_params) if query_params else None,
+                headers=json.loads(headers) if headers else None,
+                request_body=json.loads(request_body) if request_body else None,
             )
             return response
 
         return run_openapi_operation
 
     for operation_id, operation in operations.items():
-        kernel.logger.info(
-            f"Registering OpenAPI operation: {skill_name}.{operation_id}"
-        )
+        logger.info(f"Registering OpenAPI operation: {skill_name}.{operation_id}")
         skill[operation_id] = create_run_operation_function(openapi_runner, operation)
     return kernel.import_skill(skill, skill_name)

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel;
 
@@ -10,9 +10,9 @@ namespace SemanticKernel.IntegrationTests;
 
 internal static class TestHelpers
 {
-    internal static void ImportAllSamplePlugins(IKernel kernel)
+    internal static void ImportAllSamplePlugins(Kernel kernel)
     {
-        ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins",
+        ImportSamplePromptFunctions(kernel, "../../../../../../samples/plugins",
             "ChatPlugin",
             "SummarizePlugin",
             "WriterPlugin",
@@ -26,9 +26,9 @@ internal static class TestHelpers
             "QAPlugin");
     }
 
-    internal static void ImportAllSampleSkills(IKernel kernel)
+    internal static void ImportAllSampleSkills(Kernel kernel)
     {
-        ImportSampleSemanticFunctions(kernel, "../../../../../../samples/skills",
+        ImportSamplePromptFunctions(kernel, "../../../../../../samples/skills",
             "ChatSkill",
             "SummarizeSkill",
             "WriterSkill",
@@ -42,12 +42,12 @@ internal static class TestHelpers
             "QASkill");
     }
 
-    internal static IDictionary<string, ISKFunction> ImportSamplePlugins(IKernel kernel, params string[] pluginNames)
+    internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
     {
-        return ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
+        return ImportSamplePromptFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
     }
 
-    internal static IDictionary<string, ISKFunction> ImportSampleSemanticFunctions(IKernel kernel, string path, params string[] pluginNames)
+    internal static IReadOnlyKernelPluginCollection ImportSamplePromptFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -57,6 +57,8 @@ internal static class TestHelpers
 
         string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, path));
 
-        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginNames);
+        return new KernelPluginCollection(
+            from pluginName in pluginNames
+            select kernel.ImportPluginFromPromptDirectory(Path.Combine(parentDirectory, pluginName)));
     }
 }

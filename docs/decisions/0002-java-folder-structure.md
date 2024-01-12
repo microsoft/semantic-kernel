@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed}
+status: accepted
 date: 2013-06-19
 deciders: shawncal,johnoliver
 consulted: 

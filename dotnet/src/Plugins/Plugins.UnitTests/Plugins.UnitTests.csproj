@@ -9,7 +9,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111</NoWarn>
+    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0050,SKEXP0051,SKEXP0052,SKEXP0053,SKEXP0054</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
@@ -23,6 +23,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <ProjectReference Include="..\Plugins.Document\Plugins.Document.csproj" />
     <ProjectReference Include="..\Plugins.MsGraph\Plugins.MsGraph.csproj" />
     <ProjectReference Include="..\Plugins.Web\Plugins.Web.csproj" />
+    <ProjectReference Include="..\Plugins.Memory\Plugins.Memory.csproj" />
   </ItemGroup>
 
 </Project>

@@ -44,21 +44,12 @@ internal static class HttpRequest
         {
             byte[] utf8Bytes = payload is string s ?
                 Encoding.UTF8.GetBytes(s) :
-                JsonSerializer.SerializeToUtf8Bytes(payload, s_jsonSerializerOptions);
+                JsonSerializer.SerializeToUtf8Bytes(payload, JsonOptionsCache.Default);
 
             content = new ByteArrayContent(utf8Bytes);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         }
 
         return content;
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 }

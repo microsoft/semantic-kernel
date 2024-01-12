@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
+namespace Microsoft.SemanticKernel.Plugins.Grpc.Model;
 
 /// <summary>
 /// The gRPC operation data contract.

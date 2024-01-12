@@ -4,16 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.
@@ -137,9 +137,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             if (record != null)
             {
-                double similarity = embedding
-                    .Span
-                    .CosineSimilarity(record.Embedding.Span);
+                double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, record.Embedding.Span);
                 if (similarity >= minRelevanceScore)
                 {
                     var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
@@ -236,7 +234,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
         await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
         {
-            ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, s_jsonSerializerOptions);
+            ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default);
 
             var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 
@@ -254,7 +252,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding, s_jsonSerializerOptions),
+            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -264,7 +262,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding, s_jsonSerializerOptions),
+            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -285,7 +283,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, s_jsonSerializerOptions),
+                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, JsonOptionsCache.Default),
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }
@@ -295,15 +293,6 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 
     #endregion

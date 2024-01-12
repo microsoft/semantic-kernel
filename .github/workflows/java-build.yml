@@ -1,0 +1,84 @@
+name: Build Java Semantic Kernel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "java-development" ]
+    paths:
+      - 'java/**'
+  pull_request:
+    branches: [ "main", "java-development" ]
+    paths:
+      - 'java/**'
+
+permissions:
+  contents: read
+
+jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      javaChanges: ${{ steps.filter.outputs.java }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            java:
+              - 'java/**'
+              - '**/java/**'
+      # run only if 'java' files were changed
+      - name: java tests
+        if: steps.filter.outputs.java == 'true'
+        run: echo "Java file"
+      # run only if not 'java' files were changed
+      - name: not java tests
+        if: steps.filter.outputs.java != 'true'
+        run: echo "NOT java file"
+  java-build:
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.javaChanges == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        java-versions: [8, 17]
+
+    name: Java CI on JDK${{ matrix.java-versions }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Need to use JDK 11 to build for JDK 8
+      - name: Set JDK
+        id: set-jdk
+        shell: bash
+        run: |
+          if [[ ${{ matrix.java-versions }} == 8 ]]; then
+            echo "JDK_VERSION=11" >> $GITHUB_OUTPUT
+          else
+            version=${{ matrix.java-versions }}
+            echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
+          distribution: microsoft
+          cache: maven
+
+      - name: Build with Maven
+        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        working-directory: java
+
+      - name: Run tests
+        run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
+        working-directory: java
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test_output_sk_jdk${{ matrix.java-versions }}u
+          path: java/**/target/surefire-reports/*Test.txt

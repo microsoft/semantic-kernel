@@ -7,8 +7,8 @@ want to run the tests included.
 ## LLM setup
 
 Make sure you have an
-[Open AI API Key](https://openai.com/api/) or
-[Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+[OpenAI API Key](https://openai.com/product/) or
+[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
 

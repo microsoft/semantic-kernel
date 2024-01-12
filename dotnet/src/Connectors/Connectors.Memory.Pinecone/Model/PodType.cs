@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pod type of the index, see https://docs.pinecone.io/docs/indexes#pods-pod-types-and-pod-sizes.
@@ -90,10 +90,18 @@ public enum PodType
     /// Enum P2X8 for value: p2.x8
     /// </summary>
     [EnumMember(Value = "p2.x8")]
-    P2X8 = 12
+    P2X8 = 12,
+
+    /// <summary>
+    /// Enum Starter for value: starter
+    /// </summary>
+    [EnumMember(Value = "starter")]
+    Starter = 13
 }
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
+#pragma warning restore CA1812
 {
     public override PodType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -102,7 +110,7 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
         object? enumValue = Enum
             .GetValues(typeToConvert)
             .Cast<object?>()
-            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString())[0]
+            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString()!)[0]
                 .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
 
         if (enumValue != null)
