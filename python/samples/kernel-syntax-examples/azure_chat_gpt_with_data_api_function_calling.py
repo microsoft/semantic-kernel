@@ -64,7 +64,7 @@ kernel.import_plugin(TimePlugin(), plugin_name="time")
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 req_settings.tool_choice = "auto"
-prompt_config = sk.PromptTemplateConfig(completion=req_settings)
+prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)
 prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message("I am an AI assistant here to answer your questions.")

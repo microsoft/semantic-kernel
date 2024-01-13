@@ -53,6 +53,8 @@ class PromptTemplate(PromptTemplateBase):
                     name=param.name,
                     description=param.description,
                     default_value=param.default_value,
+                    type_=param.type_,
+                    required=param.required,
                 )
             )
 

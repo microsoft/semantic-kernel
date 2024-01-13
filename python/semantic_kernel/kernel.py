@@ -781,7 +781,7 @@ class Kernel:
         config = PromptTemplateConfig(
             description=(description if description is not None else "Generic function, unknown purpose"),
             type="completion",
-            completion=AIRequestSettings(extension_data=kwargs),
+            execution_settings=AIRequestSettings(extension_data=kwargs),
         )
 
         validate_function_name(function_name)
