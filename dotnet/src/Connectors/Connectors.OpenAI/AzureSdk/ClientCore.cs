@@ -209,19 +209,15 @@ internal abstract class ClientCore
         Kernel? kernel,
         CancellationToken cancellationToken)
     {
-        var result = new List<ReadOnlyMemory<float>>(data.Count);
-        foreach (string text in data)
+        var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+        var embeddings = response.Value.Data;
+
+        if (embeddings.Count != data.Count)
         {
-            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
-
-            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
-            if (response.Value.Data.Count == 0)
-            {
-                throw new KernelException("Text embedding not found");
-            }
-
-            result.Add(response.Value.Data[0].Embedding.ToArray());
+            throw new KernelException($"Expected {data.Count} text embeddings, but received {embeddings.Count}");
         }
+
+        var result = embeddings.OrderBy((x) => x.Index).Select((x) => x.Embedding).ToList();
 
         return result;
     }
@@ -461,7 +457,7 @@ internal abstract class ClientCore
                 yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
-            // If we don't have a function to invoke, we're done. 
+            // If we don't have a function to invoke, we're done.
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
