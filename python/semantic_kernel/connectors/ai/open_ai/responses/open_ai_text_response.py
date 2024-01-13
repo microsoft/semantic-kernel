@@ -7,10 +7,10 @@ from openai.types import Completion
 from openai.types.chat.chat_completion_chunk import Choice
 from pydantic import PrivateAttr
 
-from semantic_kernel.connectors.ai.ai_response import AIResponse
+from semantic_kernel.models.contents.kernel_content import KernelContent
 
 
-class OpenAITextResponse(AIResponse):
+class OpenAITextResponse(KernelContent):
     """A text completion response from OpenAI.
 
     For streaming responses, make sure to async loop through parse_stream before trying anything else.

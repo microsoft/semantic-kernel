@@ -3,13 +3,10 @@
 import logging
 from typing import (
     Any,
-    AsyncGenerator,
     Dict,
     List,
     Mapping,
     Optional,
-    Tuple,
-    Union,
     overload,
 )
 
@@ -19,12 +16,11 @@ from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
     OpenAIRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_response import OpenAIChatResponse
+from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
     OpenAIConfigBase,
 )
@@ -35,6 +31,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices
+from semantic_kernel.models.contents import ChatMessageContent, StreamingChatMessageContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -162,14 +159,12 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
         **kwargs,
-    ) -> Union[
-        Tuple[Optional[str], Optional[FunctionCall]],
-        List[Tuple[Optional[str], Optional[FunctionCall]]],
-    ]:
+    ) -> List[ChatMessageContent]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            # TODO: replace messages with ChatHistory object with ChatMessageContent objects
+            messages {List[Dict[str,str]]} -- The messages to use for the chat completion.
             settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
             logger {Optional[Logger]} -- The logger instance to use. (Deprecated)
 
@@ -181,8 +176,8 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-
-        return OpenAIChatResponse(raw_response=response, request_settings=settings)
+        
+        return OpenAIChatMessageContent(raw_response=response, request_settings=settings)
         # if len(response.choices) == 1:
         #     return _parse_message(response.choices[0].message)
         # else:
@@ -193,7 +188,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
         **kwargs,
-    ) -> AsyncGenerator[Union[str, List[str]], None]:
+    ) -> List[StreamingChatMessageContent]:
         """Executes a chat completion request and returns the result.
 
         Arguments:

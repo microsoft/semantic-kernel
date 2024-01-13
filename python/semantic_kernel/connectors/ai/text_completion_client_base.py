@@ -2,12 +2,11 @@
 
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
-
-from semantic_kernel.connectors.ai.ai_response import AIResponse
+from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+    from semantic_kernel.models.contents import StreamingTextContent, TextContent
 
 
 class TextCompletionClientBase(ABC):
@@ -19,7 +18,7 @@ class TextCompletionClientBase(ABC):
         prompt: str,
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> AIResponse:
+    ) -> List["TextContent"]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -38,7 +37,7 @@ class TextCompletionClientBase(ABC):
         prompt: str,
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> AIResponse:
+    ) -> List["StreamingTextContent"]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 

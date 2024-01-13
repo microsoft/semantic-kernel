@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.ai_response import AIResponse
+    from semantic_kernel.models.contents.kernel_content import KernelContent
     from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
         OpenAIRequestSettings,
     )
@@ -27,7 +27,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> "AIResponse":
+    ) -> "KernelContent":
         """Executes a completion request and returns the result.
 
         Arguments:
@@ -51,7 +51,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> "AIResponse":
+    ) -> "KernelContent":
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.

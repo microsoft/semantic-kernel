@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
@@ -42,25 +43,17 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def store_results(context, result, chat_prompt):
+def store_results(chat_prompt: ChatPromptTemplate, results: List[ChatMessageContent]):
     """Stores specific results in the context and chat prompt."""
-    if hasattr(result, "tool_messages"):
-        context.objects["tool_messages"] = result.all_tool_messages
-        for message in result.tool_messages:
-            chat_prompt.add_message(role=message.get("role", "tool"), message=message.get("content", ""))
-    if result.content is not None:
-        context.variables.update(result.content)
-    if result.function_call is not None:
-        context.objects["function_calls"] = result.all_function_calls
-    if result.tool_calls is not None:
-        context.objects["tool_calls"] = result.all_tool_calls
+    if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
+        chat_prompt.add_message(role="tool", message=results[0].tool_message)
     chat_prompt.add_message(
         "assistant",
-        message=result.content,
-        function_call=result.function_call,
-        tool_calls=result.tool_calls,
+        message=results[0].content,
+        function_call=results[0].function_call,
+        tool_calls=results[0].tool_calls,
     )
-    return context, chat_prompt
+    return chat_prompt
 
 
 class KernelFunction(KernelFunctionBase):
@@ -149,9 +142,9 @@ class KernelFunction(KernelFunctionBase):
             if not function_config.has_chat_prompt:
                 try:
                     prompt = await function_config.prompt_template.render_async(context)
-                    result = await client.complete_async(prompt, request_settings)
-                    context.objects["response_object"] = result
-                    context.variables.update(result.content)
+                    results = await client.complete_async(prompt, request_settings)
+                    context.objects["results"] = results
+                    context.variables.update(str(results[0]))
                 except Exception as e:
                     # TODO: "critical exceptions"
                     context.fail(str(e), e)
@@ -163,10 +156,11 @@ class KernelFunction(KernelFunctionBase):
                 # Similar to non-chat, render prompt (which renders to a
                 # dict of <role, content, name> messages)
                 messages = await chat_prompt.render_messages_async(context)
-                result = await client.complete_chat_async(messages, request_settings)
-                context.objects["response_object"] = result
+                results = await client.complete_chat_async(messages, request_settings)
+                context.objects["results"] = results
+                context.variables.update(str(results[0]))
                 # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
-                context, chat_prompt = store_results(context, result, chat_prompt)
+                chat_prompt = store_results(chat_prompt, results)
             except Exception as exc:
                 # TODO: "critical exceptions"
                 context.fail(str(exc), exc)
@@ -181,7 +175,7 @@ class KernelFunction(KernelFunctionBase):
                 try:
                     prompt = await function_config.prompt_template.render_async(context)
                     result = await client.complete_stream_async(prompt, request_settings)
-                    context.objects["response_object"] = result
+                    context.objects["results"] = result
                     async for partial_content in result.parse_stream():
                         yield partial_content
                     context.variables.update(result.content)

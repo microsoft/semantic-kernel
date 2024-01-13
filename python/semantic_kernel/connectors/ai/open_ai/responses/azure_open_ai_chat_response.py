@@ -6,10 +6,10 @@ from openai.types.chat import ChatCompletion
 from openai.types.chat.chat_completion_chunk import Choice
 from pydantic import PrivateAttr
 
-from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_response import OpenAIChatResponse
+from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_message_content import OpenAIChatMessageContent
 
 
-class AzureOpenAIChatResponse(OpenAIChatResponse):
+class AzureOpenAIChatResponse(OpenAIChatMessageContent):
     """A response from OpenAI.
 
     For streaming responses, make sure to async loop through parse_stream before trying anything else.

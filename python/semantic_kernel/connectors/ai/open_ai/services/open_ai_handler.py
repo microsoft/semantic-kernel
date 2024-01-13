@@ -2,10 +2,13 @@
 
 import logging
 from abc import ABC
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
+from openai.types import Completion
+from openai.types.chat import ChatCompletion, ChatCompletionChunk
+from openai.types.chat.chat_completion import Choice
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -18,14 +21,12 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_sett
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_response import OpenAIChatResponse
-from semantic_kernel.connectors.ai.open_ai.responses.open_ai_text_response import OpenAITextResponse
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.ai_response import AIResponse
+    pass
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -41,7 +42,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-    ) -> "AIResponse":
+    ) -> Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -58,11 +59,10 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
                 response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
-                self.store_usage(response)
-                return OpenAIChatResponse(raw_response=response, request_settings=request_settings)
-            response = await self.client.completions.create(**request_settings.prepare_settings_dict())
+            else:
+                response = await self.client.completions.create(**request_settings.prepare_settings_dict())
             self.store_usage(response)
-            return OpenAITextResponse(raw_response=response, request_settings=request_settings)
+            return response
         except BadRequestError as ex:
             if ex.code == "content_filter":
                 raise ContentFilterAIException(
@@ -107,3 +107,63 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Return the class with the applicable request settings."""
         return OpenAIRequestSettings
+
+    def get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
+        return {
+            "id": response.id,
+            "created": response.created,
+            "system_fingerprint": response.system_fingerprint,
+            "usage": response.usage,
+        }
+
+    def get_metadata_from_streaming_chat_response(self, response: AsyncStream[ChatCompletion]) -> Dict[str, Any]:
+        return {
+            "id": response.id,
+            "created": response.created,
+            "system_fingerprint": response.system_fingerprint,
+        }
+
+    def get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
+        return {
+            "id": response.id,
+            "created": response.created,
+            "system_fingerprint": response.system_fingerprint,
+            "usage": response.usage,
+        }
+
+    def get_metadata_from_streaming_text_response(self, response: AsyncStream[Completion]) -> Dict[str, Any]:
+        return {
+            "id": response.id,
+            "created": response.created,
+            "system_fingerprint": response.system_fingerprint,
+        }
+
+    def get_metadata_from_chat_choice(self, choice: Choice) -> Dict[str, Any]:
+        return {
+            "finish_reason": choice.finish_reason,
+            "index": choice.index,
+            "logprobs": choice.logprobs,
+        }
+
+    def get_tool_calls_from_chat_choice(self, choice: Choice) -> Optional[List[Dict[str, Any]]]:
+        if choice.message.tool_calls is None:
+            return None
+        return [
+            {
+                "id": tool.id,
+                "type": tool.type,
+                "function": {
+                    "name": tool.function.name,
+                    "arguments": tool.function.arguments,
+                },
+            }
+            for tool in choice.message.tool_calls
+        ]
+
+    def get_function_call_from_chat_choice(self, choice: Choice) -> Optional[Dict[str, Any]]:
+        if choice.message.function_call is None:
+            return None
+        return {
+            "name": choice.message.function_call.name,
+            "arguments": choice.message.function_call.arguments,
+        }

@@ -14,15 +14,18 @@ from typing import (
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
+from openai.types.chat.chat_completion import Choice
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.ai_response import AIResponse
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureChatRequestSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.responses.azure_open_ai_chat_message_content import (
+    AzureOpenAIChatMessageContent,
 )
 from semantic_kernel.connectors.ai.open_ai.responses.azure_open_ai_chat_response import AzureOpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
@@ -35,6 +38,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -275,7 +279,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> AIResponse:
+    ) -> List[ChatMessageContent]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -291,7 +295,25 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        return AzureOpenAIChatResponse(raw_response=response.raw_response, request_settings=response.request_settings)
+        response_metadata = self.get_metadata_from_chat_response(response)
+        return [
+            self._create_return_content(response, choice, response_metadata, settings) for choice in response.choices
+        ]
+        # result = []
+        # for choice in response.choices:
+        #     result.append(
+        #         OpenAIChatMessageContent(
+        #             choice=choice,
+        #             response=response,
+        #             metadata=self.get_metadata_from_chat_choice(choice).update(response_metadata),
+        #             request_settings=settings,
+        #             function_call=self.get_function_call_from_chat_choice(choice),
+        #             tool_calls=self.get_tool_calls_from_chat_choice(choice),
+        #             tool_message=self.get_tool_message_from_chat_choice(choice),
+        #         )
+        #     )
+
+        # return result
         # if len(response.choices) == 1:
         #     return _parse_message(
         #         response.choices[0].message,
@@ -306,12 +328,25 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         #         for choice in response.choices
         #     ]
 
+    def _create_return_content(self, response, choice, response_metadata, settings):
+        metadata = self.get_metadata_from_chat_choice(choice)
+        metadata.update(response_metadata)
+        return AzureOpenAIChatMessageContent(
+            choice=choice,
+            response=response,
+            metadata=metadata,
+            request_settings=settings,
+            function_call=self.get_function_call_from_chat_choice(choice),
+            tool_calls=self.get_tool_calls_from_chat_choice(choice),
+            tool_message=self.get_tool_message_from_chat_choice(choice),
+        )
+
     async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> AIResponse:
+    ) -> List[Any]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -327,7 +362,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        return AzureOpenAIChatResponse(raw_response=response.raw_response, request_settings=response.request_settings)
+        return AzureOpenAIChatResponse(raw_response=response.inner_content, request_settings=response.request_settings)
 
         # if settings.extra_body is not None:
         #     yield AzureChatWithDataStreamResponse(response, settings)
@@ -351,3 +386,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return AzureChatRequestSettings
+
+    def get_tool_message_from_chat_choice(self, choice: Choice) -> Optional[str]:
+        if choice.message.model_extra is not None and "context" in choice.message.model_extra:
+            return choice.message.model_extra["context"].get("messages", {}).get("content", None)
+        return None

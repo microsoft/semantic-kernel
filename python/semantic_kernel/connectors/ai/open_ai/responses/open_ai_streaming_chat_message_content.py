@@ -2,16 +2,15 @@
 
 from typing import AsyncGenerator, Dict, List, Optional, Union
 
-from openai import AsyncStream
 from openai.types.chat import ChatCompletion
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, Choice
+from openai.types.chat.chat_completion_chunk import Choice
 from pydantic import PrivateAttr
 
-from semantic_kernel.connectors.ai.ai_response import AIResponse
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.models.contents import ChatMessageContent
 
 
-class OpenAIChatResponse(AIResponse):
+class OpenAIChatMessageContent(ChatMessageContent):
     """A response from OpenAI.
 
     For streaming responses, make sure to async loop through parse_stream before trying anything else.
@@ -25,19 +24,18 @@ class OpenAIChatResponse(AIResponse):
     - parse_stream: get the streaming content of the response.
     """
 
-    raw_response: Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]
+    inner_content: ChatCompletion
     _parsed_content: Dict[int, str] = PrivateAttr(default_factory=dict)
     _function_calls: Dict[int, Optional[FunctionCall]] = PrivateAttr(default_factory=dict)
     _tool_calls: Dict[int, Dict[int, Dict[str, Union[str, FunctionCall]]]] = PrivateAttr(default_factory=dict)
 
-    @property
-    def content(self) -> Optional[str]:
+    def __str__(self) -> Optional[str]:
         """Get the content of the response."""
         if not isinstance(self.raw_response, ChatCompletion):
             if self._parsed_content is not None:
                 return self._parsed_content.get(0, None)
             raise ValueError("content is not available for streaming responses, use stream_content instead.")
-        return self.raw_response.choices[0].message.content
+        return self.inner_content.choices[0].message.content
 
     @property
     def all_content(self) -> List[Optional[str]]:
