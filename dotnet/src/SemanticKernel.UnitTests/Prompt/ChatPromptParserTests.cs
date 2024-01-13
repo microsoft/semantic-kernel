@@ -64,7 +64,10 @@ public sealed class ChatPromptParserTests
         Assert.Collection(chatHistory,
             c => Assert.Equal("Test with role in double quotes and content in new line.", c.Content),
             c => Assert.Equal("Test with role in single quotes and content in the same line.", c.Content),
-            c => Assert.Equal($"Test with multiline content.{Environment.NewLine}Second line.", c.Content),
+            c => Assert.Equal("""
+                              Test with multiline content.
+                              Second line.
+                              """, c.Content),
             c => Assert.Equal("Test line with tab.", c.Content),
             c => Assert.Equal("Hello, I'm a user.", c.Content));
     }
@@ -84,7 +87,10 @@ public sealed class ChatPromptParserTests
 
         Assert.Collection(chatHistory,
             c => Assert.Equal("Hi how are you?", c.Content),
-            c => Assert.Equal($"Test with multiline content.{Environment.NewLine}Second line.", c.Content),
+            c => Assert.Equal("""
+                              Test with multiline content.
+                              Second line.
+                              """, c.Content),
             c => Assert.True(((TextContent)c.Items![0]).Text!.Equals("explain image", StringComparison.Ordinal)
                              && ((ImageContent)c.Items![1]).Uri!.AbsoluteUri == "https://fake-link-to-image/"));
     }
