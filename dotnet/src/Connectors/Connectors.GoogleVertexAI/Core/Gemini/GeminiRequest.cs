@@ -81,8 +81,8 @@ internal sealed class GeminiRequest
                 {
                     new()
                     {
-                        Text = (c.Content ?? (c.Items?.SingleOrDefault(content => content is TextContent)
-                            as TextContent)?.Text) ?? string.Empty,
+                        Text = (c.Items?.SingleOrDefault(content => content is TextContent)
+                            as TextContent)?.Text ?? c.Content ?? string.Empty,
                     }
                 },
                 Role = c.Role
