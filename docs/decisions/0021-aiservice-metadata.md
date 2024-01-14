@@ -54,7 +54,7 @@ From the perspective of a prompt creator using OpenAI, they will typically tune 
 ## Decision Drivers
 
 * We need a mechanism to store generic metadata for an `IAIService` instance.
-  * It will be the responsibility of the concrete `IAIService` instance to store the metadata that is relevant e.g., model id for OpenAI and HuggingFace AI services.
+  * It will be the responsibility of the concrete `IAIService` instance to store the metadata that is relevant e.g., model id for OpenAI and Hugging Face AI services.
 * We need to be able to iterate over the available `IAIService` instances.
 
 ## Considered Options
