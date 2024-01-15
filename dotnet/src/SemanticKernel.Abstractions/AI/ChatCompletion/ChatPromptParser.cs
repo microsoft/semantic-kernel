@@ -61,7 +61,7 @@ internal static class ChatPromptParser
     }
 
     /// <summary>
-    /// Parses a chat node and constructs a ChatMessageContent object.
+    /// Parses a chat node and constructs a <see cref="ChatMessageContent"/> object.
     /// </summary>
     /// <param name="node">The prompt node to parse.</param>
     /// <returns>A ChatMessageContent object.</returns>
