@@ -18,6 +18,12 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0010")]
 public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingChatMessageContent
 {
+    /// <inheritdoc/>
+    public string? FunctionName { get; set; }
+
+    /// <inheritdoc/>
+    public string? FunctionArgument { get; set; }
+
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
