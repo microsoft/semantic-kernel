@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
+
+from openai import AsyncStream
+from openai.types import Completion, CompletionChoice
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -11,9 +14,9 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_sett
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
+from semantic_kernel.models.contents import StreamingTextContent, TextContent
 
 if TYPE_CHECKING:
-    from semantic_kernel.models.contents.kernel_content import KernelContent
     from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
         OpenAIRequestSettings,
     )
@@ -27,7 +30,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> "KernelContent":
+    ) -> TextContent:
         """Executes a completion request and returns the result.
 
         Arguments:
@@ -44,14 +47,28 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        return response
+        metadata = self.get_metadata_from_text_response(response)
+        return [self._create_return_content(response, choice, metadata) for choice in response.choices]
+
+    def _create_return_content(
+        self, response: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
+    ) -> TextContent:
+        """Create a text content object from a choice."""
+        choice_metadata = self.get_metadata_from_text_choice(choice)
+        choice_metadata.update(response_metadata)
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=choice.text,
+            metadata=choice_metadata,
+        )
 
     async def complete_stream(
         self,
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> "KernelContent":
+    ) -> "StreamingTextContent":
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.
@@ -73,7 +90,27 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         settings.ai_model_id = self.ai_model_id
         settings.stream = True
         response = await self._send_request(request_settings=settings)
-        return response
+        if not isinstance(response, AsyncStream):
+            raise ValueError("Expected an AsyncStream[Completion] response.")
+
+        async for chunk in response:
+            if len(chunk.choices) == 0:
+                continue
+            chunk_metadata = self.get_metadata_from_text_response(chunk)
+            yield [self._create_return_content_stream(chunk, choice, chunk_metadata) for choice in chunk.choices]
+
+    def _create_return_content_stream(
+        self, chunk: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
+    ) -> "StreamingTextContent":
+        """Create a text content object from a choice."""
+        choice_metadata = self.get_metadata_from_text_choice(choice)
+        choice_metadata.update(response_metadata)
+        return StreamingTextContent(
+            inner_content=chunk,
+            ai_model_id=self.ai_model_id,
+            metadata=choice_metadata,
+            text=choice.text,
+        )
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""

@@ -10,7 +10,9 @@ from typing import (
     overload,
 )
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncStream
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -20,6 +22,7 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_sett
     OpenAIChatRequestSettings,
     OpenAIRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.responses import OpenAIStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
     OpenAIConfigBase,
@@ -30,7 +33,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices
 from semantic_kernel.models.contents import ChatMessageContent, StreamingChatMessageContent
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -176,12 +178,22 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        
-        return OpenAIChatMessageContent(raw_response=response, request_settings=settings)
-        # if len(response.choices) == 1:
-        #     return _parse_message(response.choices[0].message)
-        # else:
-        #     return [_parse_message(choice.message) for choice in response.choices]
+        response_metadata = self.get_metadata_from_chat_response(response)
+        return [
+            self._create_return_content(response, choice, response_metadata, settings) for choice in response.choices
+        ]
+
+    def _create_return_content(self, response, choice, response_metadata, settings):
+        metadata = self.get_metadata_from_chat_choice(choice)
+        metadata.update(response_metadata)
+        return OpenAIChatMessageContent(
+            choice=choice,
+            response=response,
+            metadata=metadata,
+            request_settings=settings,
+            function_call=self.get_function_call_from_chat_choice(choice),
+            tool_calls=self.get_tool_calls_from_chat_choice(choice),
+        )
 
     async def complete_chat_stream(
         self,
@@ -204,22 +216,63 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
+        if not isinstance(response, AsyncStream):
+            raise ValueError("Expected an AsyncStream[ChatCompletionChunk] response.")
 
-        # parse the completion text(s) and yield them
+        out_messages = {}
+        tool_call_ids_by_index = {}
+        function_call_by_index = {}
+
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
-            # if multiple responses are requested, keep track of them
-            if settings.number_of_responses > 1:
-                completions = [""] * settings.number_of_responses
-                for choice in chunk.choices:
-                    text, index = _parse_choices(choice)
-                    completions[index] = text
-                yield completions
-            # if only one response is requested, yield it
-            else:
-                text, index = _parse_choices(chunk.choices[0])
-                yield text
+            chunk_metadata = self.get_metadata_from_streaming_chat_response(chunk)
+            contents = [
+                self._create_return_content_stream(chunk, choice, chunk_metadata, settings) for choice in chunk.choices
+            ]
+            self._handle_updates(contents, out_messages, tool_call_ids_by_index, function_call_by_index)
+            yield contents
+
+    def _create_return_content_stream(
+        self,
+        chunk: ChatCompletionChunk,
+        choice: ChunkChoice,
+        chunk_metadata: Dict[str, Any],
+        settings: OpenAIChatRequestSettings,
+    ):
+        metadata = self.get_metadata_from_chat_choice(choice)
+        metadata.update(chunk_metadata)
+        return OpenAIStreamingChatMessageContent(
+            choice=choice,
+            chunk=chunk,
+            metadata=metadata,
+            request_settings=settings,
+            function_call=self.get_function_call_from_chat_choice(choice),
+            tool_calls=self.get_tool_calls_from_chat_choice(choice),
+        )
+
+    def _handle_updates(self, contents, out_messages, tool_call_ids_by_index, function_call_by_index):
+        """Handle updates to the messages, tool_calls and function_calls.
+
+        This will be used for auto-invoking tools.
+        """
+        for index, content in enumerate(contents):
+            if content.content is not None:
+                if index not in out_messages:
+                    out_messages[index] = str(content)
+                else:
+                    out_messages[index] += str(content)
+            if content.tool_calls is not None:
+                if index not in tool_call_ids_by_index:
+                    tool_call_ids_by_index[index] = content.tool_calls
+                else:
+                    for tc_index, tool_call in enumerate(content.tool_calls):
+                        tool_call_ids_by_index[index][tc_index].update(tool_call)
+            if content.function_call is not None:
+                if index not in function_call_by_index:
+                    function_call_by_index[index] = content.function_call
+                else:
+                    function_call_by_index[index].update(content.function_call)
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""

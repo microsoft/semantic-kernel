@@ -10,6 +10,7 @@ from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.completion_choice import CompletionChoice
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -18,6 +19,8 @@ from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClient
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
 )
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
@@ -43,7 +46,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-    ) -> Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]:
+    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion]]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -146,7 +149,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             "logprobs": choice.logprobs,
         }
 
-    def get_tool_calls_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[List[Dict[str, Any]]]:
+    def get_tool_calls_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[List[ToolCall]]:
         if isinstance(choice, Choice):
             content = choice.message
         else:
@@ -154,25 +157,26 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         if content.tool_calls is None:
             return None
         return [
-            {
-                "id": tool.id,
-                "type": tool.type,
-                "function": {
-                    "name": tool.function.name,
-                    "arguments": tool.function.arguments,
-                },
-            }
+            ToolCall(
+                id=tool.id,
+                type=tool.type,
+                function=FunctionCall(name=tool.function.name, arguments=tool.function.arguments),
+            )
             for tool in content.tool_calls
         ]
 
-    def get_function_call_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[Dict[str, Any]]:
+    def get_function_call_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[FunctionCall]:
         if isinstance(choice, Choice):
             content = choice.message
         else:
             content = choice.delta
         if content.function_call is None:
             return None
+        return FunctionCall(name=content.function_call.name, arguments=content.function_call.arguments)
+
+    def get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
         return {
-            "name": content.function_call.name,
-            "arguments": content.function_call.arguments,
+            "finish_reason": choice.finish_reason,
+            "index": choice.index,
+            "logprobs": choice.logprobs,
         }

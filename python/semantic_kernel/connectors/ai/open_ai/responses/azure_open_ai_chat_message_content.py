@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from openai.types.chat import ChatCompletion
 from openai.types.chat.chat_completion import Choice
 
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_message_content import OpenAIChatMessageContent
 
 if TYPE_CHECKING:
@@ -23,8 +25,8 @@ class AzureOpenAIChatMessageContent(OpenAIChatMessageContent):
         response: ChatCompletion,
         metadata: Dict[str, Any],
         request_settings: "AIRequestSettings",
-        function_call: Optional[Dict[str, Any]],
-        tool_calls: Optional[List[Dict[str, Any]]],
+        function_call: Optional[FunctionCall],
+        tool_calls: Optional[List[ToolCall]],
         tool_message: Optional[str],
     ):
         """Initialize a chat response from Azure OpenAI."""

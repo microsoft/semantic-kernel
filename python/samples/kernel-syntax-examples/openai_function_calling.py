@@ -96,15 +96,21 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 async def main() -> None:
     context = kernel.create_new_context()
     context.variables["user_input"] = "I want to find a hotel in Seattle with free wifi and a pool."
-
+    messages = []
+    tool_call = None
     response = chat_function.invoke_stream_async(context=context)
     async for message in response:
-        print(message)
-    if tool_call_choices := context.objects["tool_calls"]:
-        for tool_call in tool_call_choices:
-            for tool in tool_call.values():
-                print(f"Function to be called: {tool['function'].name}")
-                print(f"Function parameters: \n{tool['function'].parse_arguments()}")
+        current = message[0]
+        messages.append(current)
+        if current.tool_calls:
+            if tool_call is None:
+                tool_call = current.tool_calls[0]
+                # continue
+            # tool_call.update(current.tool_calls[0])
+
+    if tool_call:
+        print(f"Function to be called: {tool_call.function.name}")
+        print(f"Function parameters: \n{tool_call.function.parse_arguments()}")
         return
     print("No function was called")
     print(f"Output was: {str(context)}")

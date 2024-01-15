@@ -9,3 +9,6 @@ class StreamingTextContent(StreamingKernelContent):
 
     def __str__(self) -> str:
         return self.text
+
+    def __bytes__(self) -> bytes:
+        return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""

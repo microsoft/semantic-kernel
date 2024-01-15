@@ -340,30 +340,52 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         if not isinstance(response, AsyncStream):
             raise ValueError("Expected an AsyncStream[ChatCompletionChunk] response.")
 
-        content = [""] * settings.number_of_responses
+        out_messages = {}
+        tool_messages_by_index = {}
         tool_call_ids_by_index = {}
-        function_name_by_index = {}
-        function_arguments_by_index = {}
+        function_call_by_index = {}
 
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
             chunk_metadata = self.get_metadata_from_streaming_chat_response(chunk)
-
             contents = [
                 self._create_return_content_stream(chunk, choice, chunk_metadata, settings) for choice in chunk.choices
             ]
-            for index, content in enumerate(contents):
-                if content.content is not None:
-                    content[index] += str(content)
-                if content.tool_calls is not None:
-                    tool_call_ids_by_index[index] += content.tool_calls
-                if content.function_call is not None:
-                    if content.function_call["name"] is not None:
-                        function_name_by_index[index] = content.function_call["name"]
-
-                    function_arguments_by_index[index] += content.function_call["arguments"]
+            self._handle_updates(
+                contents, out_messages, tool_call_ids_by_index, function_call_by_index, tool_messages_by_index
+            )
             yield contents
+
+    def _handle_updates(
+        self, contents, out_messages, tool_call_ids_by_index, function_call_by_index, tool_messages_by_index
+    ):
+        """Handle updates to the messages, tool_calls and function_calls.
+
+        This will be used for auto-invoking tools.
+        """
+        for index, content in enumerate(contents):
+            if content.content is not None:
+                if index not in out_messages:
+                    out_messages[index] = str(content)
+                else:
+                    out_messages[index] += str(content)
+            if content.tool_calls is not None:
+                if index not in tool_call_ids_by_index:
+                    tool_call_ids_by_index[index] = content.tool_calls
+                else:
+                    for tc_index, tool_call in enumerate(content.tool_calls):
+                        tool_call_ids_by_index[index][tc_index].update(tool_call)
+            if content.function_call is not None:
+                if index not in function_call_by_index:
+                    function_call_by_index[index] = content.function_call
+                else:
+                    function_call_by_index[index].update(content.function_call)
+            if content.tool_message is not None:
+                if index not in tool_messages_by_index:
+                    tool_messages_by_index[index] = content.tool_message
+                else:
+                    tool_messages_by_index[index] += content.tool_message
 
     def _create_return_content_stream(
         self,

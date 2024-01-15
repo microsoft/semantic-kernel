@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, Choice
 
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.models.contents import StreamingChatMessageContent
 
 if TYPE_CHECKING:
@@ -25,8 +27,8 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
     """
 
     inner_content: ChatCompletionChunk
-    function_call: Optional[Dict[str, Any]] = None
-    tool_calls: Optional[List[Dict[str, Any]]] = None
+    function_call: Optional[FunctionCall] = None
+    tool_calls: Optional[List[ToolCall]] = None
 
     def __init__(
         self,
@@ -34,8 +36,8 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
         chunk: ChatCompletionChunk,
         metadata: Dict[str, Any],
         request_settings: "AIRequestSettings",
-        function_call: Optional[Dict[str, Any]],
-        tool_calls: Optional[List[Dict[str, Any]]],
+        function_call: Optional[FunctionCall],
+        tool_calls: Optional[List[ToolCall]],
     ):
         """Initialize a chat response from OpenAI."""
         super().__init__(
