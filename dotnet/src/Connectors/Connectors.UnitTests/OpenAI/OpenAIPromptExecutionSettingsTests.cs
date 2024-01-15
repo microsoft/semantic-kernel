@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -183,10 +182,5 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
         Assert.Equal(128, executionSettings.MaxTokens);
-    }
-
-    private class FakePromptExecutionSettings : PromptExecutionSettings
-    {
-        public string TextProperty { get; set; } = string.Empty;
     }
 }

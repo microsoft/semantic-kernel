@@ -579,5 +579,5 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { "text", "text" }
     };
 
-    private class FakeChatCompletionsResponseFormat : ChatCompletionsResponseFormat { }
+    private sealed class FakeChatCompletionsResponseFormat : ChatCompletionsResponseFormat { }
 }
