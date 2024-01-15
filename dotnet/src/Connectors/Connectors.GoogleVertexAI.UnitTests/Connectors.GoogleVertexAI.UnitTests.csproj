@@ -27,6 +27,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.Numerics.Tensors"/>
     <PackageReference Include="System.Text.Json"/>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
@@ -41,7 +45,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
-    <ProjectReference Include="..\Connectors.GoogleVertexAI\Connectors.GoogleVertexAI.csproj" />
+    <ProjectReference Include="..\Connectors.GoogleVertexAI\Connectors.GoogleVertexAI.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
