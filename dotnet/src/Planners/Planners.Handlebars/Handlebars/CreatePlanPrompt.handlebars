@@ -155,6 +155,21 @@ Output:
 {{/each}}
 IMPORTANT: You can only use the helpers that are listed above. Do not use any other helpers that are not explicitly listed here. For example, do not use `\{{log}}` or any `\{{Example}}` helpers, as they are not supported.{{/message}}
 {{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
+{{#if lastError}}
+{{#message role="system"}}
+## Previous attempt
+This previous plan failed to achieve the goal:
+```handlebars
+{{lastPlan}}
+```
+
+The error was :
+```
+{{lastError}}
+```
+
+Try again to achieve the goal while fixing the error.{{/message}}
+{{/if}}
 
 ## Goal
 {{goal}}{{/message}}
