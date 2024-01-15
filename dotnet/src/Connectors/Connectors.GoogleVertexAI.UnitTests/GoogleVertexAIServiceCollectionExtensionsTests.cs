@@ -14,7 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests;
 
-public sealed class GeminiServiceCollectionExtensionsTests
+public sealed class GoogleVertexAIServiceCollectionExtensionsTests
 {
     [Fact]
     public void GoogleAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServices()
