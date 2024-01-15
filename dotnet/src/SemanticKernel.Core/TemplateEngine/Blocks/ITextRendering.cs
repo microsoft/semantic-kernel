@@ -9,7 +9,8 @@ internal interface ITextRendering
     /// <summary>
     /// Render the block using only the given arguments.
     /// </summary>
+    /// <param name="kernel">Kernel instance</param>
     /// <param name="arguments">Optional arguments the block rendering</param>
     /// <returns>Rendered content</returns>
-    public object? Render(KernelArguments? arguments);
+    public object? Render(Kernel kernel, KernelArguments? arguments);
 }

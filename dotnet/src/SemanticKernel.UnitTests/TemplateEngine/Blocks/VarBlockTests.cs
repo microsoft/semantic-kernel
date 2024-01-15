@@ -40,10 +40,11 @@ public class VarBlockTests
     public void ItRendersToNullWithNoArgument()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new VarBlock("$var");
 
         // Act
-        var result = target.Render(new KernelArguments());
+        var result = target.Render(kernel, new KernelArguments());
 
         // Assert
         Assert.Null(result);
@@ -53,6 +54,7 @@ public class VarBlockTests
     public void ItRendersToNullWithNullArgument()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new VarBlock("$var");
         var arguments = new KernelArguments()
         {
@@ -60,7 +62,7 @@ public class VarBlockTests
         };
 
         // Act
-        var result = target.Render(arguments);
+        var result = target.Render(kernel, arguments);
 
         // Assert
         Assert.Null(result);
@@ -70,6 +72,7 @@ public class VarBlockTests
     public void ItRendersToArgumentValueWhenAvailable()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new VarBlock("  $var \n ");
         var arguments = new KernelArguments()
         {
@@ -78,7 +81,7 @@ public class VarBlockTests
         };
 
         // Act
-        var result = target.Render(arguments);
+        var result = target.Render(kernel, arguments);
 
         // Assert
         Assert.Equal("able", result);
@@ -88,6 +91,7 @@ public class VarBlockTests
     public void ItRendersWithOriginalArgumentValueAndType()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new VarBlock(" $var ");
         var arguments = new KernelArguments()
         {
@@ -95,7 +99,7 @@ public class VarBlockTests
         };
 
         // Act
-        var result = target.Render(arguments);
+        var result = target.Render(kernel, arguments);
 
         // Assert
         Assert.IsType<DayOfWeek>(result);
@@ -106,6 +110,7 @@ public class VarBlockTests
     public void ItThrowsIfTheVarNameIsEmpty()
     {
         // Arrange
+        var kernel = new Kernel();
         var arguments = new KernelArguments()
         {
             ["foo"] = "bar",
@@ -114,7 +119,7 @@ public class VarBlockTests
         var target = new VarBlock(" $ ");
 
         // Act + Assert
-        Assert.Throws<KernelException>(() => target.Render(arguments));
+        Assert.Throws<KernelException>(() => target.Render(kernel, arguments));
     }
 
     [Theory]
@@ -165,11 +170,12 @@ public class VarBlockTests
     public void ItAllowsUnderscoreLettersAndDigits(string name, bool isValid)
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new VarBlock($" ${name} ");
         var arguments = new KernelArguments { [name] = "value" };
 
         // Act
-        var result = target.Render(arguments);
+        var result = target.Render(kernel, arguments);
 
         // Assert
         Assert.Equal(isValid, target.IsValid(out _));

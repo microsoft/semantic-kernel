@@ -89,7 +89,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return this._tokens[0].Type switch
         {
-            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this._tokens[0]).Render(arguments)),
+            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this._tokens[0]).Render(kernel, arguments)),
             BlockTypes.FunctionId => this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, arguments, cancellationToken),
             _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
@@ -109,17 +109,25 @@ internal sealed class CodeBlock : Block, ICodeRendering
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.EnrichFunctionArguments(kernel, fBlock, arguments is null ? new KernelArguments() : new KernelArguments(arguments));
         }
-        try
+
+        if (kernel.Plugins.TryGetFunction(fBlock.PluginName, fBlock.FunctionName, out var function))
         {
-            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments, cancellationToken).ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false);
 
             return result.Value;
         }
-        catch (Exception ex)
+        else if (fBlock.PluginName == "CurrentExecutionSettings" && arguments?.CurrentExecutionSettings is not null)
         {
-            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", fBlock.PluginName, fBlock.FunctionName, ex.Message);
-            throw;
+            var type = arguments.CurrentExecutionSettings.GetType();
+            var property = type.GetProperty(fBlock.FunctionName);
+            if (property is not null)
+            {
+                return property.GetValue(arguments.CurrentExecutionSettings);
+            }
         }
+
+        this.Logger.LogError("Function {Plugin}.{Function} execution failed because the plugin collection does not contain a plugin and/or function with the specified names.", fBlock.PluginName, fBlock.FunctionName);
+        throw new KeyNotFoundException($"Function or property {fBlock.PluginName}.{fBlock.FunctionName} not found");
     }
 
     private bool IsValidFunctionCall(out string errorMsg)
@@ -190,7 +198,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Gets the function first parameter name
             firstPositionalParameterName = functionMetadata.Parameters[0].Name;
 
-            firstPositionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
+            firstPositionalInputValue = ((ITextRendering)this._tokens[1]).Render(kernel, arguments);
             // Type check is avoided and marshalling is done by the function itself
 
             // Keep previous trust information when updating the input
@@ -220,7 +228,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
-            arguments[arg.Name] = arg.GetValue(arguments);
+            arguments[arg.Name] = arg.GetValue(kernel, arguments);
         }
 
         return arguments;

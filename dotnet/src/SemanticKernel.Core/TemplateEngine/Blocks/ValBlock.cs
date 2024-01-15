@@ -61,7 +61,7 @@ internal sealed class ValBlock : Block, ITextRendering
 #pragma warning restore CA2254
 
     /// <inheritdoc/>
-    public object? Render(KernelArguments? arguments)
+    public object? Render(Kernel kernel, KernelArguments? arguments)
     {
         return this._value;
     }

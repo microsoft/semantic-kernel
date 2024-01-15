@@ -477,7 +477,7 @@ public sealed class KernelPromptTemplateTests
     }
 
     [Fact]
-    public async Task RenderVarValuesFunctionWithDiffArgTypesAsync()
+    public async Task ItRenderVarValuesFunctionWithDiffArgTypesAsync()
     {
         // Arrange
         int expected_i = 42;
@@ -516,5 +516,31 @@ public sealed class KernelPromptTemplateTests
 
         // Assert
         Assert.Equal("int:42, double:36,6, string:test, Guid:7ac656b1-c917-41c8-9ff5-e8f0eb51fbac, DateTime:05/12/2023 17:52, enum:Monday", result);
+    }
+
+    [Fact]
+    public async Task ItRendersPromptIncludingExecutionSettingsAsync()
+    {
+        // Arrange
+        var template = "This is a prompt that is executed using model id: {{CurrentExecutionSettings.ModelId}}.";
+        var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
+
+        // Act
+        string? result = null;
+
+        try
+        {
+            this._arguments.CurrentExecutionSettings = new PromptExecutionSettings() { ModelId = "gpt-4" };
+
+            result = await target.RenderAsync(this._kernel, this._arguments);
+        }
+        finally
+        {
+            this._arguments.CurrentExecutionSettings = null;
+        }
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("This is a prompt that is executed using model id: gpt-4.", result);
     }
 }

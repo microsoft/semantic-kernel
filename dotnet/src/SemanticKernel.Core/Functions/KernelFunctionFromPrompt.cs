@@ -277,27 +277,40 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         Verify.NotNull(aiService);
 
-        kernel.OnPromptRendering(this, arguments);
-
-        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
-        if (this._logger.IsEnabled(LogLevel.Trace))
+        string? renderedPrompt = null;
+        PromptExecutionSettings? previousExecutionSettings = null;
+        PromptRenderedEventArgs? renderedEventArgs = null;
+        try
         {
-            this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
-        }
+            previousExecutionSettings = arguments.CurrentExecutionSettings;
+            arguments.CurrentExecutionSettings = executionSettings;
 
-        var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
+            kernel.OnPromptRendering(this, arguments);
 
-        if (renderedEventArgs is not null &&
-            renderedEventArgs.Cancel is false &&
-            renderedEventArgs.RenderedPrompt != renderedPrompt)
-        {
-            renderedPrompt = renderedEventArgs.RenderedPrompt;
+            renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+                this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
             }
+
+            renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
+
+            if (renderedEventArgs is not null &&
+                renderedEventArgs.Cancel is false &&
+                renderedEventArgs.RenderedPrompt != renderedPrompt)
+            {
+                renderedPrompt = renderedEventArgs.RenderedPrompt;
+
+                if (this._logger.IsEnabled(LogLevel.Trace))
+                {
+                    this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+                }
+            }
+        }
+        finally
+        {
+            arguments.CurrentExecutionSettings = previousExecutionSettings;
         }
 
         return (aiService, executionSettings, renderedPrompt, renderedEventArgs);

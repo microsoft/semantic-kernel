@@ -25,7 +25,7 @@ internal sealed class TextBlock : Block, ITextRendering
     }
 
     /// <inheritdoc/>
-    public object? Render(KernelArguments? arguments)
+    public object? Render(Kernel kernel, KernelArguments? arguments)
     {
         return this.Content;
     }

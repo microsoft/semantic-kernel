@@ -58,6 +58,11 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; set; }
 
     /// <summary>
+    /// Gets the current prompt execution settings.
+    /// </summary>
+    public PromptExecutionSettings? CurrentExecutionSettings { get; internal set; }
+
+    /// <summary>
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.
     /// </summary>
     public int Count => this._arguments.Count;

@@ -92,12 +92,13 @@ public class NamedArgBlockTests
     public void AllowsAnyNumberOfSpacesBeforeAndAfterEqualSign(string input)
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new NamedArgBlock(input);
 
         // Act + Assert
         Assert.True(target.IsValid(out _));
         Assert.Equal("name", target.Name);
-        Assert.Equal("value", target.GetValue(null));
+        Assert.Equal("value", target.GetValue(kernel, null));
     }
 
     [Fact]
@@ -230,6 +231,7 @@ public class NamedArgBlockTests
     public void ItReturnsArgumentsValueAndType()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new NamedArgBlock("a=$var");
         var arguments = new KernelArguments()
         {
@@ -237,7 +239,7 @@ public class NamedArgBlockTests
         };
 
         // Act
-        var result = target.GetValue(arguments);
+        var result = target.GetValue(kernel, arguments);
 
         // Assert
         Assert.IsType<double>(result);
@@ -248,10 +250,11 @@ public class NamedArgBlockTests
     public void ItRendersToNullWithNoArgument()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new NamedArgBlock("a=$var");
 
         // Act
-        var result = target.GetValue(new KernelArguments());
+        var result = target.GetValue(kernel, new KernelArguments());
 
         // Assert
         Assert.Null(result);
@@ -261,6 +264,7 @@ public class NamedArgBlockTests
     public void ItRendersToNullIfArgumentIsNull()
     {
         // Arrange
+        var kernel = new Kernel();
         var target = new NamedArgBlock("a=$var");
         var arguments = new KernelArguments()
         {
@@ -268,7 +272,7 @@ public class NamedArgBlockTests
         };
 
         // Act
-        var result = target.GetValue(arguments);
+        var result = target.GetValue(kernel, arguments);
 
         // Assert
         Assert.Null(result);

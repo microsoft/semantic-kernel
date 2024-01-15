@@ -62,7 +62,7 @@ internal sealed class VarBlock : Block, ITextRendering
 #pragma warning restore CA2254
 
     /// <inheritdoc/>
-    public object? Render(KernelArguments? arguments)
+    public object? Render(Kernel kernel, KernelArguments? arguments)
     {
         if (arguments == null) { return null; }
 
@@ -76,6 +76,19 @@ internal sealed class VarBlock : Block, ITextRendering
         if (arguments.TryGetValue(this.Name, out object? value))
         {
             return value;
+        }
+
+        if (arguments.TryGetValue(nameof(PromptExecutionSettings), out var executionSettings))
+        {
+            if (executionSettings is PromptExecutionSettings settings)
+            {
+                var type = settings.GetType();
+                var property = type.GetProperty(this.Name);
+                if (property is not null)
+                {
+                    return property.GetValue(settings);
+                }
+            }
         }
 
         this.Logger.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);

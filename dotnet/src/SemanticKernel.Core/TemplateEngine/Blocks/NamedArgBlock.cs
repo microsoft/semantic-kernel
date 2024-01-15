@@ -87,27 +87,28 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
     /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the arguments passed in.
     /// </summary>
+    /// <param name="kernel">Kernel instance.</param>
     /// <param name="arguments">Arguments to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
     /// <returns></returns>
-    internal object? GetValue(KernelArguments? arguments)
+    internal object? GetValue(Kernel kernel, KernelArguments? arguments)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
         {
-            return this._valBlock!.Render(arguments);
+            return this._valBlock!.Render(kernel, arguments);
         }
 
         var valueIsValidVarBlock = this.VarBlock != null && this.VarBlock.IsValid(out var errorMessage2);
         if (valueIsValidVarBlock)
         {
-            return this.VarBlock!.Render(arguments);
+            return this.VarBlock!.Render(kernel, arguments);
         }
 
         return string.Empty;
     }
 
     /// <inheritdoc/>
-    public object? Render(KernelArguments? arguments)
+    public object? Render(Kernel kernel, KernelArguments? arguments)
     {
         return this.Content;
     }

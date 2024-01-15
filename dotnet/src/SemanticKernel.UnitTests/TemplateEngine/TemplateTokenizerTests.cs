@@ -265,13 +265,14 @@ public class TemplateTokenizerTests
     public void ItRendersVariables1()
     {
         // Arrange
+        var kernel = new Kernel();
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
                        "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}{{positional 'abc' p1=$p1}}";
 
         // Act
         var blocks = this._target.Tokenize(template);
 
-        var renderedBlocks = RenderBlocks(blocks);
+        var renderedBlocks = RenderBlocks(kernel, blocks);
 
         // Assert
         Assert.Equal(11, blocks.Count);
@@ -325,7 +326,7 @@ public class TemplateTokenizerTests
 
         // Act
         blocks = this._target.Tokenize(template);
-        renderedBlocks = RenderBlocks(blocks, arguments);
+        renderedBlocks = RenderBlocks(kernel, blocks, arguments);
 
         // Assert
         Assert.Equal(11, blocks.Count);
@@ -372,10 +373,10 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Code, renderedBlocks[10].Type);
     }
 
-    private static List<Block> RenderBlocks(IList<Block> blocks, KernelArguments? arguments = null)
+    private static List<Block> RenderBlocks(Kernel kernel, IList<Block> blocks, KernelArguments? arguments = null)
     {
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
-            : new TextBlock((string?)((ITextRendering)block).Render(arguments))).ToList();
+            : new TextBlock((string?)((ITextRendering)block).Render(kernel, arguments))).ToList();
     }
 }
