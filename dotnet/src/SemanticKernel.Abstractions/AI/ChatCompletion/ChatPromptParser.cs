@@ -86,9 +86,11 @@ internal static class ChatPromptParser
             items.Clear();
         }
 
+        var authorRole = new AuthorRole(node.Attributes[RoleAttributeName]);
+
         return items.Count > 0
-            ? new ChatMessageContent(new AuthorRole(node.Attributes[RoleAttributeName]), items)
-            : new ChatMessageContent(new AuthorRole(node.Attributes[RoleAttributeName]), node.Content);
+            ? new ChatMessageContent(authorRole, items)
+            : new ChatMessageContent(authorRole, node.Content);
     }
 
     /// <summary>
