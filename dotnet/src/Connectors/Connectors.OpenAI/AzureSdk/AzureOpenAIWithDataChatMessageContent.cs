@@ -30,12 +30,17 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
         : base(default, string.Empty, modelId, chatChoice, System.Text.Encoding.UTF8, metadata)
     {
         // An assistant message content must be present, otherwise the chat is not valid.
-        var chatMessage = chatChoice.Messages.First(m => string.Equals(m.Role, AuthorRole.Assistant.Label, StringComparison.OrdinalIgnoreCase));
+        var chatMessage = chatChoice.Messages.FirstOrDefault(m => string.Equals(m.Role, AuthorRole.Assistant.Label, StringComparison.OrdinalIgnoreCase)) ??
+            throw new ArgumentException("Chat is not valid. Chat message does not contain any messages with 'assistant' role.");
 
         this.Content = chatMessage.Content;
         this.Role = new AuthorRole(chatMessage.Role);
 
         this.ToolContent = chatChoice.Messages.FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.OrdinalIgnoreCase))?.Content;
-        ((Dictionary<string, object?>)this.Metadata!).Add(nameof(this.ToolContent), this.ToolContent);
+
+        if (this.Metadata is not null && !string.IsNullOrWhiteSpace(this.ToolContent))
+        {
+            ((Dictionary<string, object?>)this.Metadata).Add(nameof(this.ToolContent), this.ToolContent);
+        }
     }
 }

@@ -30,7 +30,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddAzureOpenAITextGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -38,12 +39,15 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         builder = type switch
         {
             InitializationType.ApiKey => builder.AddAzureOpenAITextGeneration("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.AddAzureOpenAITextGeneration("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClient => builder.AddAzureOpenAITextGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInline => builder.AddAzureOpenAITextGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddAzureOpenAITextGeneration("deployment-name"),
             _ => builder
         };
 
@@ -57,7 +61,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddAzureOpenAITextGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -65,12 +70,15 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         IServiceCollection collection = type switch
         {
             InitializationType.ApiKey => builder.Services.AddAzureOpenAITextGeneration("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextGeneration("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClient => builder.Services.AddAzureOpenAITextGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInline => builder.Services.AddAzureOpenAITextGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddAzureOpenAITextGeneration("deployment-name"),
             _ => builder.Services
         };
 
@@ -83,18 +91,22 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddOpenAITextGenerationAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         builder = type switch
         {
             InitializationType.ApiKey => builder.AddOpenAITextGeneration("model-id", "api-key"),
-            InitializationType.OpenAIClient => builder.AddOpenAITextGeneration("model-id", client),
+            InitializationType.OpenAIClientInline => builder.AddOpenAITextGeneration("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAITextGeneration("model-id"),
             _ => builder
         };
 
@@ -107,18 +119,22 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddOpenAITextGenerationAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         IServiceCollection collection = type switch
         {
             InitializationType.ApiKey => builder.Services.AddOpenAITextGeneration("model-id", "api-key"),
-            InitializationType.OpenAIClient => builder.Services.AddOpenAITextGeneration("model-id", client),
+            InitializationType.OpenAIClientInline => builder.Services.AddOpenAITextGeneration("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddOpenAITextGeneration("model-id"),
             _ => builder.Services
         };
 
@@ -132,7 +148,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -140,12 +157,15 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         builder = type switch
         {
             InitializationType.ApiKey => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClient => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInline => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
             _ => builder
         };
 
@@ -159,7 +179,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -167,12 +188,15 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         IServiceCollection collection = type switch
         {
             InitializationType.ApiKey => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClient => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInline => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
             _ => builder.Services
         };
 
@@ -185,18 +209,22 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         builder = type switch
         {
             InitializationType.ApiKey => builder.AddOpenAITextEmbeddingGeneration("model-id", "api-key"),
-            InitializationType.OpenAIClient => builder.AddOpenAITextEmbeddingGeneration("model-id", client),
+            InitializationType.OpenAIClientInline => builder.AddOpenAITextEmbeddingGeneration("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAITextEmbeddingGeneration("model-id"),
             _ => builder
         };
 
@@ -209,18 +237,22 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         IServiceCollection collection = type switch
         {
             InitializationType.ApiKey => builder.Services.AddOpenAITextEmbeddingGeneration("model-id", "api-key"),
-            InitializationType.OpenAIClient => builder.Services.AddOpenAITextEmbeddingGeneration("model-id", client),
+            InitializationType.OpenAIClientInline => builder.Services.AddOpenAITextEmbeddingGeneration("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddOpenAITextEmbeddingGeneration("model-id"),
             _ => builder.Services
         };
 
@@ -234,7 +266,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     [InlineData(InitializationType.ChatCompletionWithData)]
     public void KernelBuilderAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
     {
@@ -244,12 +277,15 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         var config = this.GetCompletionWithDataConfig();
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         builder = type switch
         {
             InitializationType.ApiKey => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClient => builder.AddAzureOpenAIChatCompletion("deployment-name", client),
+            InitializationType.OpenAIClientInline => builder.AddAzureOpenAIChatCompletion("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddAzureOpenAIChatCompletion("deployment-name"),
             InitializationType.ChatCompletionWithData => builder.AddAzureOpenAIChatCompletion(config),
             _ => builder
         };
@@ -272,7 +308,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     [InlineData(InitializationType.ChatCompletionWithData)]
     public void ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
     {
@@ -282,12 +319,15 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         var config = this.GetCompletionWithDataConfig();
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         IServiceCollection collection = type switch
         {
             InitializationType.ApiKey => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClient => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", client),
+            InitializationType.OpenAIClientInline => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddAzureOpenAIChatCompletion("deployment-name"),
             InitializationType.ChatCompletionWithData => builder.Services.AddAzureOpenAIChatCompletion(config),
             _ => builder.Services
         };
@@ -309,18 +349,22 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         builder = type switch
         {
             InitializationType.ApiKey => builder.AddOpenAIChatCompletion("model-id", "api-key"),
-            InitializationType.OpenAIClient => builder.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientInline => builder.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIChatCompletion("model-id"),
             _ => builder
         };
 
@@ -333,18 +377,22 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.OpenAIClient)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
         // Act
         IServiceCollection collection = type switch
         {
             InitializationType.ApiKey => builder.Services.AddOpenAIChatCompletion("model-id", "api-key"),
-            InitializationType.OpenAIClient => builder.Services.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientInline => builder.Services.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddOpenAIChatCompletion("model-id"),
             _ => builder.Services
         };
 
@@ -428,7 +476,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     {
         ApiKey,
         TokenCredential,
-        OpenAIClient,
+        OpenAIClientInline,
+        OpenAIClientInServiceProvider,
         ChatCompletionWithData
     }
 
