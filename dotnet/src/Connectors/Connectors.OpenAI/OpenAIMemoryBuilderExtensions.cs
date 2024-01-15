@@ -33,7 +33,7 @@ public static class OpenAIMemoryBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, _) =>
             new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
@@ -63,7 +63,7 @@ public static class OpenAIMemoryBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, _) =>
             new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
@@ -91,7 +91,7 @@ public static class OpenAIMemoryBuilderExtensions
         string? orgId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, _) =>
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
