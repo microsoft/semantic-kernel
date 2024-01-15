@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;

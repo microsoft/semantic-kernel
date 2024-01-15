@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.VertexAI;

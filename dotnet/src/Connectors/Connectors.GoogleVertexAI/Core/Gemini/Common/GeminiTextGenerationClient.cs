@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.IO;
@@ -94,8 +90,6 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
         }
     }
 
-    #region PRIVATE METHODS
-
     private static void VerifyModelId(GeminiConfiguration configuration)
     {
         Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
@@ -146,6 +140,4 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
             innerContent: textContent.InnerContent,
             metadata: textContent.Metadata,
             choiceIndex: ((GeminiMetadata)textContent.Metadata!).Index);
-
-    #endregion
 }

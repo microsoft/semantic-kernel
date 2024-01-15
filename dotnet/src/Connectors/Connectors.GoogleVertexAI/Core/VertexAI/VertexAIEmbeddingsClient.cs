@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -64,8 +60,6 @@ internal sealed class VertexAIEmbeddingsClient : ClientBase, IEmbeddingsClient
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    #region PRIVATE METHODS
-
     private VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
         => VertexAIEmbeddingRequest.FromData(data);
 
@@ -74,6 +68,4 @@ internal sealed class VertexAIEmbeddingsClient : ClientBase, IEmbeddingsClient
 
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(VertexAIEmbeddingResponse embeddingsResponse)
         => embeddingsResponse.Predictions.Select(prediction => prediction.Embeddings.Values).ToList();
-
-    #endregion
 }

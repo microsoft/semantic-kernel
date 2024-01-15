@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -96,8 +92,6 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         }
     }
 
-    #region PRIVATE METHODS
-
     private static void VerifyModelId(GeminiConfiguration configuration)
     {
         Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
@@ -189,6 +183,4 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             innerContent: chatMessageContent.InnerContent,
             metadata: chatMessageContent.Metadata,
             choiceIndex: ((GeminiMetadata)chatMessageContent.Metadata!).Index);
-
-    #endregion
 }

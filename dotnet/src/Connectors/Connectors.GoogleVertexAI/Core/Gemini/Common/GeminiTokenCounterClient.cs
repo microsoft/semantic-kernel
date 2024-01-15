@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -63,8 +59,6 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
         return DeserializeAndProcessCountTokensResponse(body);
     }
 
-    #region PRIVATE METHODS
-
     private static int DeserializeAndProcessCountTokensResponse(string body)
     {
         var node = DeserializeResponse<JsonNode>(body);
@@ -75,6 +69,4 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
     {
         Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
     }
-
-    #endregion
 }

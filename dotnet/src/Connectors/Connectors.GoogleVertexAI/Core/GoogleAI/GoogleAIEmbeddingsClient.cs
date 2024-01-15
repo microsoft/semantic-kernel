@@ -1,8 +1,4 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -64,8 +60,6 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    #region PRIVATE METHODS
-
     private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
         => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId);
 
@@ -74,6 +68,4 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
 
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GoogleAIEmbeddingResponse embeddingsResponse)
         => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();
-
-    #endregion
 }
