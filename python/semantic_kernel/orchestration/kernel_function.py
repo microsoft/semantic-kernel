@@ -43,15 +43,15 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def store_results(chat_prompt: ChatPromptTemplate, results: List[ChatMessageContent]):
+def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
     """Stores specific results in the context and chat prompt."""
     if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
         chat_prompt.add_message(role="tool", message=results[0].tool_message)
     chat_prompt.add_message(
         "assistant",
         message=results[0].content,
-        function_call=results[0].function_call,
-        tool_calls=results[0].tool_calls,
+        function_call=results[0].function_call if hasattr(results[0], "function_call") else None,
+        tool_calls=results[0].tool_calls if hasattr(results[0], "tool_calls") else None,
     )
     return chat_prompt
 
@@ -188,12 +188,12 @@ class KernelFunction(KernelFunctionBase):
                 # Similar to non-chat, render prompt (which renders to a
                 # list of <role, content> messages)
                 messages = await chat_prompt.render_messages_async(context)
-                result = await client.complete_chat_stream_async(messages=messages, settings=request_settings)
+                result = client.complete_chat_stream_async(messages=messages, settings=request_settings)
                 context.objects["response_object"] = result
                 # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
-                async for partial_content in result.parse_stream():
+                async for partial_content in result:
                     yield partial_content
-                context, chat_prompt = store_results(context, result, chat_prompt)
+                # context, chat_prompt = store_results(context, result, chat_prompt)
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)

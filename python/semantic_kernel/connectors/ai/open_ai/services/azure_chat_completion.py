@@ -4,6 +4,7 @@
 import logging
 from typing import (
     Any,
+    AsyncGenerator,
     Dict,
     List,
     Mapping,
@@ -12,9 +13,11 @@ from typing import (
     overload,
 )
 
-from openai import AsyncAzureOpenAI
+from openai import AsyncAzureOpenAI, AsyncStream
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import Choice
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -24,10 +27,10 @@ from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSIO
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureChatRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.responses.azure_open_ai_chat_message_content import (
+from semantic_kernel.connectors.ai.open_ai.responses import (
     AzureOpenAIChatMessageContent,
+    AzureOpenAIStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.responses.azure_open_ai_chat_response import AzureOpenAIChatResponse
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -299,34 +302,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         return [
             self._create_return_content(response, choice, response_metadata, settings) for choice in response.choices
         ]
-        # result = []
-        # for choice in response.choices:
-        #     result.append(
-        #         OpenAIChatMessageContent(
-        #             choice=choice,
-        #             response=response,
-        #             metadata=self.get_metadata_from_chat_choice(choice).update(response_metadata),
-        #             request_settings=settings,
-        #             function_call=self.get_function_call_from_chat_choice(choice),
-        #             tool_calls=self.get_tool_calls_from_chat_choice(choice),
-        #             tool_message=self.get_tool_message_from_chat_choice(choice),
-        #         )
-        #     )
-
-        # return result
-        # if len(response.choices) == 1:
-        #     return _parse_message(
-        #         response.choices[0].message,
-        #         with_data=settings.extra_body is not None,
-        #     )
-        # else:
-        #     return [
-        #         _parse_message(
-        #             choice.message,
-        #             with_data=settings.extra_body is not None,
-        #         )
-        #         for choice in response.choices
-        #     ]
 
     def _create_return_content(self, response, choice, response_metadata, settings):
         metadata = self.get_metadata_from_chat_choice(choice)
@@ -346,7 +321,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> List[Any]:
+    ) -> AsyncGenerator[List[AzureOpenAIStreamingChatMessageContent], None]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -362,32 +337,63 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        return AzureOpenAIChatResponse(raw_response=response.inner_content, request_settings=response.request_settings)
+        if not isinstance(response, AsyncStream):
+            raise ValueError("Expected an AsyncStream[ChatCompletionChunk] response.")
 
-        # if settings.extra_body is not None:
-        #     yield AzureChatWithDataStreamResponse(response, settings)
-        # else:
-        #     # parse the completion text(s) and yield them
-        #     async for chunk in response:
-        #         if len(chunk.choices) == 0:
-        #             continue
-        #         # if multiple responses are requested, keep track of them
-        #         if settings.number_of_responses > 1:
-        #             completions = [""] * settings.number_of_responses
-        #             for choice in chunk.choices:
-        #                 text, index = _parse_choices(choice)
-        #                 completions[index] = text
-        #             yield completions
-        #         # if only one response is requested, yield it
-        #         else:
-        #             text, index = _parse_choices(chunk.choices[0])
-        #             yield text
+        content = [""] * settings.number_of_responses
+        tool_call_ids_by_index = {}
+        function_name_by_index = {}
+        function_arguments_by_index = {}
+
+        async for chunk in response:
+            if len(chunk.choices) == 0:
+                continue
+            chunk_metadata = self.get_metadata_from_streaming_chat_response(chunk)
+
+            contents = [
+                self._create_return_content_stream(chunk, choice, chunk_metadata, settings) for choice in chunk.choices
+            ]
+            for index, content in enumerate(contents):
+                if content.content is not None:
+                    content[index] += str(content)
+                if content.tool_calls is not None:
+                    tool_call_ids_by_index[index] += content.tool_calls
+                if content.function_call is not None:
+                    if content.function_call["name"] is not None:
+                        function_name_by_index[index] = content.function_call["name"]
+
+                    function_arguments_by_index[index] += content.function_call["arguments"]
+            yield contents
+
+    def _create_return_content_stream(
+        self,
+        chunk: ChatCompletionChunk,
+        choice: ChunkChoice,
+        chunk_metadata: Dict[str, Any],
+        settings: AzureChatRequestSettings,
+    ):
+        metadata = self.get_metadata_from_chat_choice(choice)
+        metadata.update(chunk_metadata)
+        return AzureOpenAIStreamingChatMessageContent(
+            choice=choice,
+            chunk=chunk,
+            metadata=metadata,
+            request_settings=settings,
+            function_call=self.get_function_call_from_chat_choice(choice),
+            tool_calls=self.get_tool_calls_from_chat_choice(choice),
+            tool_message=self.get_tool_message_from_chat_choice(choice),
+        )
 
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return AzureChatRequestSettings
 
-    def get_tool_message_from_chat_choice(self, choice: Choice) -> Optional[str]:
-        if choice.message.model_extra is not None and "context" in choice.message.model_extra:
-            return choice.message.model_extra["context"].get("messages", {}).get("content", None)
+    def get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
+        """Get the tool message from a choice."""
+        if isinstance(choice, Choice):
+            content = choice.message
+        else:
+            content = choice.delta
+        if content.model_extra is not None and "context" in content.model_extra:
+            return content.model_extra["context"].get("messages", {}).get("content", None)
         return None

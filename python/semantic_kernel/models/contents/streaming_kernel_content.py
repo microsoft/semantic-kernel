@@ -11,18 +11,10 @@ class StreamingKernelContent(SKBaseModel, ABC):
     ai_model_id: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    def model_post_init(self, __context: Any) -> None:
-        """Post init method for model."""
-        self.create_metadata_dictionary()
-
     @abstractmethod
-    def to_string(self) -> str:
+    def __str__(self) -> str:
         pass
 
     @abstractmethod
-    def to_byte_array(self) -> bytes:
-        pass
-
-    def create_metadata_dictionary(self) -> None:
-        """Create metadata dictionary."""
+    def __bytes__(self) -> bytes:
         pass
