@@ -1,3 +1,5 @@
+# This script is for local use to analyze code coverage in more detail using HTML report.
+
 Param(
     [switch]$ProdPackagesOnly = $false
 )
@@ -25,6 +27,7 @@ foreach ($project in $testProjects) {
     dotnet test $testProjectPath `
         --collect:"XPlat Code Coverage" `
         --results-directory:$coverageOutputPath `
+
 }
 
 # Install required tools
@@ -45,7 +48,8 @@ if ($ProdPackagesOnly) {
 
     # Generate report for production assemblies only
     & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html -assemblyfilters:$assemblyFilters
-} else {
+}
+else {
     & reportgenerator -reports:"$coverageOutputPath/**/coverage.cobertura.xml" -targetdir:$reportOutputPath -reporttypes:Html
 }
 
