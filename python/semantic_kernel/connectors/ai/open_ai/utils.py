@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -200,10 +201,13 @@ def _parse_message(
     else:
         tool_content = None
         if message.model_extra and "context" in message.model_extra:
-            for m in message.model_extra["context"].get("messages", []):
-                if m["role"] == "tool":
-                    tool_content = m.get("content", None)
-                    break
+            if "messages" in message.model_extra["context"]:
+                for m in message.model_extra["context"]["messages"]:
+                    if m.get("role") == "tool":
+                        tool_content = m.get("content", None)
+                        break
+            else:
+                tool_content = json.dumps(message.model_extra["context"])
         return (content, tool_content, function_call)
 
 
