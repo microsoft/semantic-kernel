@@ -113,8 +113,7 @@ internal static class ChatPromptParser
 
     private static bool IsValidChildNodes(PromptNode node)
     {
-        return (node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase)) == 1 ||
-                (!node.ChildNodes.Any(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase)) &&
-                 node.Content is not null));
+        var textTagsCount = node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase));
+        return textTagsCount == 1 || (textTagsCount == 0 && node.Content is not null);
     }
 }
