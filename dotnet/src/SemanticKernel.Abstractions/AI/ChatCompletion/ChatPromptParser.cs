@@ -29,7 +29,6 @@ internal static class ChatPromptParser
         // The XML parsing is expensive, so we do a quick up-front check to make sure
         // the text contains "<message", as that's required in any valid XML prompt.
         const string MessageTagStart = "<" + MessageTagName;
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (prompt is not null &&
             prompt.IndexOf(MessageTagStart, StringComparison.OrdinalIgnoreCase) >= 0 &&
             XmlPromptParser.TryParse(prompt, out var nodes) &&
@@ -68,13 +67,13 @@ internal static class ChatPromptParser
     private static ChatMessageContent ParseChatNode(PromptNode node)
     {
         ChatMessageContentItemCollection items = new();
-        foreach (var childNode in node.ChildNodes)
+        foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
-            if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase) && childNode.Content is not null)
+            if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))
             {
-                items.Add(new ImageContent(new Uri(childNode.Content)));
+                items.Add(new ImageContent(new Uri(childNode.Content!)));
             }
-            else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase) && childNode.Content is not null)
+            else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
             {
                 items.Add(new TextContent(childNode.Content));
             }
@@ -97,18 +96,25 @@ internal static class ChatPromptParser
     /// Checks if <see cref="PromptNode"/> is valid chat message.
     /// </summary>
     /// <param name="node">Instance of <see cref="PromptNode"/>.</param>
+    /// <remarks>
+    /// A valid chat message is a node with the following structure:<br/>
+    /// TagName = "message"<br/>
+    /// Attributes = { "role" : "..." }<br/>
+    /// optional one or more child nodes <image>...</image><br/>
+    /// content not null or single child node <text>...</text>
+    /// </remarks>
     private static bool IsValidChatMessage(PromptNode node)
     {
-        // A valid chat message is a node with the following structure:
-        // TagName = "message"
-        // Attributes = { "role" : "..." }
-        // optional one or more child nodes <image>...</image>
-        // content not null or single child node <text>...</text>
         return
             node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
             node.Attributes.ContainsKey(RoleAttributeName) &&
-            (node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase)) == 1 ||
-             (!node.ChildNodes.Any(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase)) &&
-              node.Content is not null));
+            IsValidChildNodes(node);
+    }
+
+    private static bool IsValidChildNodes(PromptNode node)
+    {
+        return (node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase)) == 1 ||
+                (!node.ChildNodes.Any(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase)) &&
+                 node.Content is not null));
     }
 }
