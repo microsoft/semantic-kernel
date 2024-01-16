@@ -10,7 +10,58 @@ using SharpToken;
 
 public static class Example76_TextEmbedding
 {
-    private const string EmbeddingModelName = "text-embedding-ada-002";
+    public static async Task RunAsync()
+    {
+        Console.WriteLine("======== Example76_TextEmbedding ========");
+        await RunExampleAsync();
+    }
+
+    private static async Task RunExampleAsync()
+    {
+        const string EmbeddingModelName = "text-embedding-ada-002";
+        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+            deploymentName: EmbeddingModelName,
+            endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+
+        // To demonstrate batching we'll create abnormally small partitions.
+        var lines = TextChunker.SplitPlainTextLines(ChatTranscript, maxTokensPerLine: 10);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: 25);
+
+        Console.WriteLine($"Split transcript into {paragraphs.Count} paragraphs");
+
+        // Azure OpenAI currently supports input arrays up to 16 for text-embedding-ada-002 (Version 2).
+        // Both require the max input token limit per API request to remain under 8191 for this model.
+        var chunks = paragraphs
+            .ChunkByAggregate(
+                seed: 0,
+                aggregator: (tokenCount, paragraph) => tokenCount + GetTokenCount(EmbeddingModelName, paragraph),
+                predicate: (tokenCount, index) => tokenCount < 8191 && index < 16)
+            .ToList();
+
+        Console.WriteLine($"Consolidated paragraphs into {chunks.Count}");
+
+        // Generate embeddings for each chunk.
+        for (var i = 0; i < chunks.Count; i++)
+        {
+            var chunk = chunks[i];
+            var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(chunk);
+
+            Console.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
+        }
+    }
+
+    // See Example55_TextChunker for more examples of how to count tokens.
+    private static int GetTokenCount(string modelName, string text)
+    {
+        var encoding = GptEncoding.GetEncodingForModel(modelName);
+        var tokens = encoding.Encode(text);
+
+        return tokens.Count;
+    }
+
+    #region Transcript
+
     private const string ChatTranscript =
         @"
 John: Hello, how are you?
@@ -119,52 +170,5 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
-    public static async Task RunAsync()
-    {
-        Console.WriteLine("======== Example76_TextEmbedding ========");
-        await RunExampleAsync();
-    }
-
-    private static async Task RunExampleAsync()
-    {
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
-            deploymentName: EmbeddingModelName,
-            endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
-
-        // To demonstrate batching we'll create abnormally small partitions.
-        var lines = TextChunker.SplitPlainTextLines(ChatTranscript, maxTokensPerLine: 10);
-        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: 25);
-
-        Console.WriteLine($"Split transcript into {paragraphs.Count} paragraphs");
-
-        // Azure OpenAI currently supports input arrays up to 16 for text-embedding-ada-002 (Version 2).
-        // Both require the max input token limit per API request to remain under 8191 for this model.
-        var chunks = paragraphs
-            .ChunkByAggregate(
-                seed: 0,
-                aggregator: (tokenCount, paragraph) => tokenCount + GetTokenCount(paragraph),
-                predicate: (tokenCount, index) => tokenCount < 8191 && index < 16)
-            .ToList();
-
-        Console.WriteLine($"Consolidated paragraphs into {chunks.Count}");
-
-        // Generate embeddings for each chunk.
-        for (var i = 0; i < chunks.Count; i++)
-        {
-            var chunk = chunks[i];
-            var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(chunk);
-
-            Console.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
-        }
-    }
-
-    // See Example55_TextChunker for more examples of how to count tokens.
-    private static int GetTokenCount(string text)
-    {
-        var encoding = GptEncoding.GetEncodingForModel(EmbeddingModelName);
-        var tokens = encoding.Encode(text);
-
-        return tokens.Count;
-    }
+    #endregion
 }
