@@ -103,9 +103,6 @@ dotnet user-secrets set "Google:SearchEngineId" "..."
 
 dotnet user-secrets set "Github:PAT" "github_pat_..."
 
-dotnet user-secrets set "Apim:Endpoint" "https://apim...azure-api.net/"
-dotnet user-secrets set "Apim:SubscriptionKey" "..."
-
 dotnet user-secrets set "Postgres:ConnectionString" "..."
 dotnet user-secrets set "Redis:Configuration" "..."
 dotnet user-secrets set "Kusto:ConnectionString" "..."
@@ -172,10 +169,6 @@ Google__SearchEngineId
 
 # Github
 Github__PAT
-
-# Azure API Management (APIM)
-Apim__Endpoint
-Apim__SubscriptionKey
 
 # Other
 Postgres__ConnectionString
