@@ -31,11 +31,17 @@ In our current software development process, managing changes in the main branch
 
 - Community Feature Branch Strategy
 
-## Decision Outcome
+### Community Feature Branch Strategy
 
-Chosen option: "Feature Branch Strategy", because it allows individual features to be developed in isolation, minimizing conflicts with the main branch and facilitating easier code reviews.
+As soon we identify that contributors are willing to take/create a Feature Issue as a potential connector implementation, we will create a new branch for that feature.
 
-### Consequences
+The contributor(s) will then be one of the responsibles to incrementally add the majority of changes through small Pull Requests to the feature branch under our supervision and review process.
+
+This strategy involves creating a separate branch in the repository for each new big feature, like connectors. This isolation means that changes are made in a controlled environment without affecting the main branch.
+
+We may also engage in the development and changes to the feature branch when needed, the changes and full or co-authorship on the PRs will be tracked and properly referred into the Release Notes.
+
+#### Pros and Cons
 
 - Good, because it allows for focused development on one feature at a time.
 - Good, because it promotes smaller, incremental Pull Requests (PRs), simplifying review processes.
@@ -47,14 +53,6 @@ Chosen option: "Feature Branch Strategy", because it allows individual features 
 
 The effectiveness of the feature branch strategy will be validated through regular code reviews, successful CI/CD pipeline runs, and feedback from the development team.
 
-## Pros and Cons of the Options
+## Decision Outcome
 
-### Community Feature Branch Strategy
-
-As soon we identify that contributors are willing to take/create a Feature Issue as a potential connector implementation, we will create a new branch for that feature.
-
-The contributor(s) will then be one of the responsibles to incrementally add the majority of changes through small Pull Requests to the feature branch under our supervision and review process.
-
-This strategy involves creating a separate branch in the repository for each new big feature, like connectors. This isolation means that changes are made in a controlled environment without affecting the main branch.
-
-We may also engage in the development and changes to the feature branch when needed, the changes and full or co-authorship on the PRs will be tracked and properly referred into the Release Notes.
+Chosen option: "Feature Branch Strategy", because it allows individual features to be developed in isolation, minimizing conflicts with the main branch and facilitating easier code reviews.
