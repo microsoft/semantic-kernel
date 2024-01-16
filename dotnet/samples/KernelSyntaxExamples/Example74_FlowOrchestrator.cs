@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using NCalcPlugins;
 
 /**
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
@@ -58,9 +57,6 @@ provides:
 
     public static Task RunAsync()
     {
-        // Load assemblies for external plugins
-        Console.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
-
         return RunExampleAsync();
         //return RunInteractiveAsync();
     }
