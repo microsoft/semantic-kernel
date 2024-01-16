@@ -3,16 +3,22 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace GettingStarted;
 
 // This example shows how to load a <see cref="KernelPlugin"/> instances.
-public static class Step2_Add_Plugins
+public class Step2_Add_Plugins : BaseTest
 {
     /// <summary>
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -23,14 +29,14 @@ public static class Step2_Add_Plugins
         Kernel kernel = kernelBuilder.Build();
 
         // Example 1. Invoke the kernel with a prompt that asks the AI for inromation it cannot provide and may hallucinate
-        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
 
         // Example 2. Invoke the kernel with a templated prompt that invokes a plugin and display the result
-        Console.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
+        WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
         // Example 3. Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
@@ -41,5 +47,9 @@ public static class Step2_Add_Plugins
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+    }
+
+    public Step2_Add_Plugins(ITestOutputHelper output) : base(output)
+    {
     }
 }

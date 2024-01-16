@@ -1,55 +1,32 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example57_KernelHooks
+namespace Examples;
+
+public class Example57_KernelHooks : BaseTest
 {
-    private static string? s_openAIModelId;
-    private static string? s_openAIApiKey;
-
-    public static async Task RunAsync()
-    {
-        Console.WriteLine("\n======== Using Function Execution Handlers ========\n");
-
-        s_openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        s_openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (s_openAIModelId == null || s_openAIApiKey == null)
-        {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
-            return;
-        }
-
-        await GetUsageAsync();
-
-        await GetRenderedPromptAsync();
-
-        await ChangingResultAsync();
-
-        await BeforeInvokeCancellationAsync();
-
-        await AfterInvokeCancellationAsync();
-    }
-
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to monitor usage:
     /// <see cref="Kernel.FunctionInvoking"/>
     /// <see cref="Kernel.FunctionInvoked"/>
     /// </summary>
-    private static async Task GetUsageAsync()
+    [Fact]
+    public async Task GetUsageAsync()
     {
-        Console.WriteLine("\n======== Get Usage Data ========\n");
+        WriteLine("\n======== Get Usage Data ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                modelId: _openAIModelId!,
+                apiKey: _openAIApiKey!)
             .Build();
 
         // Initialize prompt
@@ -63,18 +40,18 @@ public static class Example57_KernelHooks
         // Define hooks
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
+            WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
+            WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel = true;
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+            WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -88,7 +65,7 @@ public static class Example57_KernelHooks
         // Invoke prompt to trigger execution hooks.
         const string Input = "I missed the F1 final race";
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
-        Console.WriteLine($"Function Result: {result}");
+        WriteLine($"Function Result: {result}");
     }
 
     /// <summary>
@@ -96,15 +73,16 @@ public static class Example57_KernelHooks
     /// <see cref="Kernel.PromptRendering"/>
     /// <see cref="Kernel.PromptRendered"/>
     /// </summary>
-    private static async Task GetRenderedPromptAsync()
+    [Fact]
+    public async Task GetRenderedPromptAsync()
     {
-        Console.WriteLine("\n======== Get Rendered Prompt ========\n");
+        WriteLine("\n======== Get Rendered Prompt ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                modelId: _openAIModelId!,
+                apiKey: _openAIApiKey!)
             .Build();
 
         // Initialize prompt
@@ -118,16 +96,16 @@ public static class Example57_KernelHooks
         // Define hooks
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
+            WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
             e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
+            WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
-            Console.WriteLine(e.RenderedPrompt);
+            WriteLine(e.RenderedPrompt);
         }
 
         kernel.PromptRendering += MyRenderingHandler;
@@ -136,22 +114,23 @@ public static class Example57_KernelHooks
         // Invoke prompt to trigger prompt rendering hooks.
         const string Input = "I missed the F1 final race";
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
-        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
+        WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to post process result:
     /// <see cref="Kernel.FunctionInvoked"/>
     /// </summary>
-    private static async Task ChangingResultAsync()
+    [Fact]
+    public async Task ChangingResultAsync()
     {
-        Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
+        WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+               modelId: _openAIModelId!,
+               apiKey: _openAIApiKey!)
             .Build();
 
         // Initialize function
@@ -178,7 +157,7 @@ public static class Example57_KernelHooks
         // Invoke prompt to trigger execution hooks.
         var result = await kernel.InvokeAsync(writerFunction);
 
-        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
+        WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     /// <summary>
@@ -186,15 +165,16 @@ public static class Example57_KernelHooks
     /// <see cref="Kernel.FunctionInvoking"/>
     /// <see cref="Kernel.FunctionInvoked"/>
     /// </summary>
-    private static async Task BeforeInvokeCancellationAsync()
+    [Fact]
+    public async Task BeforeInvokeCancellationAsync()
     {
-        Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
+        WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+               modelId: _openAIModelId!,
+               apiKey: _openAIApiKey!)
             .Build();
 
         // Initialize prompt
@@ -208,7 +188,7 @@ public static class Example57_KernelHooks
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
+            WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
             e.Cancel = true;
         };
 
@@ -220,8 +200,16 @@ public static class Example57_KernelHooks
         };
 
         // Invoke prompt to trigger execution hooks.
-        var result = await kernel.InvokeAsync(writerFunction);
-        Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
+        try
+        {
+            var result = await kernel.InvokeAsync(writerFunction);
+        }
+        catch (KernelFunctionCanceledException fcex)
+        {
+            WriteLine(fcex.Message);
+        }
+
+        WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
     /// <summary>
@@ -229,15 +217,16 @@ public static class Example57_KernelHooks
     /// <see cref="Kernel.FunctionInvoking"/>
     /// <see cref="Kernel.FunctionInvoked"/>
     /// </summary>
-    private static async Task AfterInvokeCancellationAsync()
+    [Fact]
+    public async Task AfterInvokeCancellationAsync()
     {
-        Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
+        WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+               modelId: _openAIModelId!,
+               apiKey: _openAIApiKey!)
             .Build();
 
         // Initialize prompts
@@ -261,8 +250,31 @@ public static class Example57_KernelHooks
         };
 
         // Invoke prompt to trigger execution hooks.
-        var result = await kernel.InvokeAsync(secondFunction);
-        Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
-        Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
+        try
+        {
+            var result = await kernel.InvokeAsync(secondFunction);
+        }
+        catch (KernelFunctionCanceledException fcex)
+        {
+            WriteLine(fcex.Message);
+        }
+
+        WriteLine($"Function Invoked Times: {functionInvokedCount}");
+        WriteLine($"Function Invoking Times: {functionInvokingCount}");
+    }
+
+    private readonly string? _openAIModelId;
+    private readonly string? _openAIApiKey;
+
+    public Example57_KernelHooks(ITestOutputHelper output) : base(output)
+    {
+        this._openAIModelId = TestConfiguration.OpenAI.ChatModelId;
+        this._openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+
+        if (this._openAIModelId == null || this._openAIApiKey == null)
+        {
+            WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
     }
 }

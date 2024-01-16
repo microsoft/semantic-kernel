@@ -6,21 +6,18 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
-public static class Example45_MultiStreamingChatCompletion
+public class Example45_MultiStreamingChatCompletion : BaseTest
 {
-    // First procress multiple Azure OpenAI chat completions
-    // and then multiple plain OpenAI chat completions.
-    public static async Task RunAsync()
+    [Fact]
+    public Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
-        await AzureOpenAIMultiStreamingChatCompletionAsync();
-        await OpenAIMultiStreamingChatCompletionAsync();
-    }
-
-    private static async Task AzureOpenAIMultiStreamingChatCompletionAsync()
-    {
-        Console.WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
+        WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -28,18 +25,19 @@ public static class Example45_MultiStreamingChatCompletion
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
-        await StreamingChatCompletionAsync(chatCompletionService, 3);
+        return StreamingChatCompletionAsync(chatCompletionService, 3);
     }
 
-    private static async Task OpenAIMultiStreamingChatCompletionAsync()
+    [Fact]
+    public Task OpenAIMultiStreamingChatCompletionAsync()
     {
-        Console.WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
+        WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
 
-        await StreamingChatCompletionAsync(chatCompletionService, 3);
+        return StreamingChatCompletionAsync(chatCompletionService, 3);
     }
 
     /// <summary>
@@ -47,7 +45,7 @@ public static class Example45_MultiStreamingChatCompletion
     /// </summary>
     /// <param name="chatCompletionService">Chat completion service to use</param>
     /// <param name="numResultsPerPrompt">Number of results to get for each chat completion request</param>
-    private static async Task StreamingChatCompletionAsync(IChatCompletionService chatCompletionService,
+    private async Task StreamingChatCompletionAsync(IChatCompletionService chatCompletionService,
                                                            int numResultsPerPrompt)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
@@ -62,24 +60,25 @@ public static class Example45_MultiStreamingChatCompletion
 
         var consoleLinesPerResult = 10;
 
-        ClearDisplayByAddingEmptyLines();
+        // Uncomment this if you want to use a console app to display the results
+        // ClearDisplayByAddingEmptyLines();
 
         var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
 
         await ProcessStreamAsyncEnumerableAsync(chatCompletionService, prompt, executionSettings, consoleLinesPerResult);
 
-        Console.WriteLine();
+        WriteLine();
 
         // Set cursor position to after displayed results
-        Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
+        // Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
 
-        Console.WriteLine();
+        WriteLine();
     }
 
     /// <summary>
     /// Does the actual streaming and display of the chat completion.
     /// </summary>
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletionService chatCompletionService, string prompt,
+    private async Task ProcessStreamAsyncEnumerableAsync(IChatCompletionService chatCompletionService, string prompt,
                                                                 OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var messagesPerChoice = new Dictionary<int, string>();
@@ -90,12 +89,13 @@ public static class Example45_MultiStreamingChatCompletion
         {
             // Set cursor position to the beginning of where this choice (i.e. this result of
             // a single multi-result request) is to be displayed.
-            Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult + 1);
+            // Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult + 1);
 
             // The first time around, start choice text with role information
             if (!messagesPerChoice.ContainsKey(chatUpdate.ChoiceIndex))
             {
                 messagesPerChoice[chatUpdate.ChoiceIndex] = $"Role: {chatUpdate.Role ?? new AuthorRole()}\n";
+                Write($"Choice index: {chatUpdate.ChoiceIndex}, Role: {chatUpdate.Role ?? new AuthorRole()}");
             }
 
             // Add latest completion bit, if any
@@ -105,18 +105,30 @@ public static class Example45_MultiStreamingChatCompletion
             }
 
             // Overwrite what is currently in the console area for the updated choice
-            Console.Write(messagesPerChoice[chatUpdate.ChoiceIndex]);
+            // Console.Write(messagesPerChoice[chatUpdate.ChoiceIndex]);
+            Write($"Choice index: {chatUpdate.ChoiceIndex}, Content: {chatUpdate.Content}");
+        }
+
+        // Display the aggregated results
+        foreach (string message in messagesPerChoice.Values)
+        {
+            WriteLine("-------------------");
+            WriteLine(message);
         }
     }
 
     /// <summary>
     /// Add enough new lines to clear the console window.
     /// </summary>
-    private static void ClearDisplayByAddingEmptyLines()
+    private void ClearDisplayByAddingEmptyLines()
     {
         for (int i = 0; i < Console.WindowHeight - 2; i++)
         {
-            Console.WriteLine();
+            WriteLine();
         }
+    }
+
+    public Example45_MultiStreamingChatCompletion(ITestOutputHelper output) : base(output)
+    {
     }
 }

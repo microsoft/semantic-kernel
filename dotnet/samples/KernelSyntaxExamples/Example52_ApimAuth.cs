@@ -13,10 +13,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
+using Xunit.Abstractions;
 
-public static class Example52_ApimAuth
+namespace Examples;
+
+public class Example52_ApimAuth : BaseTest
 {
-    public static async Task RunAsync()
+    public async Task RunAsync()
     {
         // Azure API Management details
         // For more information see 'Protect your Azure OpenAI API keys with Azure API Management' here: https://learn.microsoft.com/en-us/semantic-kernel/deploy/
@@ -67,6 +70,10 @@ public static class Example52_ApimAuth
         Console.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
+    }
+
+    public Example52_ApimAuth(ITestOutputHelper output) : base(output)
+    {
     }
 }
 

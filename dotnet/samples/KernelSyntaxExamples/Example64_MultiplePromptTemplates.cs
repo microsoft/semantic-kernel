@@ -1,54 +1,46 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using xRetry;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows how to use multiple prompt template formats.
-public static class Example64_MultiplePromptTemplates
+public class Example64_MultiplePromptTemplates : BaseTest
 {
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
-    public static async Task RunAsync()
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData("semantic-kernel", "Hello AI, my name is {{$name}}. What is the origin of my name?")]
+    [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?")]
+    public Task RunAsync(string templateFormat, string prompt)
     {
-        Console.WriteLine("======== Example64_MultiplePromptTemplates ========");
-
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
-        if (apiKey == null || chatDeploymentName == null || endpoint == null || chatModelId == null)
-        {
-            Console.WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
-            return;
-        }
+        WriteLine("======== Example64_MultiplePromptTemplates ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey,
-                modelId: chatModelId)
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
         var promptTemplateFactory = new AggregatorPromptTemplateFactory(
             new KernelPromptTemplateFactory(),
             new HandlebarsPromptTemplateFactory());
 
-        var skPrompt = "Hello AI, my name is {{$name}}. What is the origin of my name?";
-        var handlebarsPrompt = "Hello AI, my name is {{name}}. What is the origin of my name?";
-
-        await RunPromptAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
-        await RunPromptAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
+        return RunPromptAsync(kernel, prompt, templateFormat, promptTemplateFactory);
     }
 
-    public static async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+    private async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
-        Console.WriteLine($"======== {templateFormat} : {prompt} ========");
+        WriteLine($"======== {templateFormat} : {prompt} ========");
 
         var function = kernel.CreateFunctionFromPrompt(
             promptConfig: new PromptTemplateConfig()
@@ -66,6 +58,10 @@ public static class Example64_MultiplePromptTemplates
         };
 
         var result = await kernel.InvokeAsync(function, arguments);
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
+    }
+
+    public Example64_MultiplePromptTemplates(ITestOutputHelper output) : base(output)
+    {
     }
 }

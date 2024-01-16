@@ -22,3 +22,4 @@ resharper_inconsistent_naming_highlighting = none # InconsistentNaming
 resharper_equal_expression_comparison_highlighting = none # EqualExpressionComparison
 resharper_check_namespace_highlighting = none # CheckNamespace
 resharper_arrange_object_creation_when_type_not_evident_highlighting = none # Disable "Arrange object creation when type is not evident" highlighting
+resharper_arrange_this_qualifier_highlighting = none # Disable "Arrange 'this.' qualifier" highlighting

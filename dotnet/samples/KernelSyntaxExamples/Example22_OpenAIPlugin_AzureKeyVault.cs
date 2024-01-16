@@ -13,8 +13,12 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example22_OpenAIPlugin_AzureKeyVault
+namespace Examples;
+
+public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
 {
     private const string SecretName = "Foo";
     private const string SecretValue = "Bar";
@@ -38,7 +42,8 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
     ///
     ///   5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/samples/KernelSyntaxExamples/Resources/22-ai-plugin.json
     /// </summary>
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup credentials")]
+    public async Task RunAsync()
     {
         var authenticationProvider = new OpenAIAuthenticationProvider(
             new Dictionary<string, Dictionary<string, string>>()
@@ -78,7 +83,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         await GetSecretFromAzureKeyVaultWithRetryAsync(kernel, plugin);
     }
 
-    public static async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, KernelPlugin plugin)
+    private async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments
@@ -97,7 +102,7 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 
-    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
+    private static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments();
@@ -110,6 +115,10 @@ public static class Example22_OpenAIPlugin_AzureKeyVault
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
+    }
+
+    public Example22_OpenAIPlugin_AzureKeyVault(ITestOutputHelper output) : base(output)
+    {
     }
 }
 

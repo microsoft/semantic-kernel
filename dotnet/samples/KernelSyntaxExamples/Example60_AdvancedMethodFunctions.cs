@@ -6,23 +6,23 @@ using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows different ways how to define and execute method functions using custom and primitive types.
-public static class Example60_AdvancedMethodFunctions
+public class Example60_AdvancedMethodFunctions : BaseTest
 {
-    public static async Task RunAsync()
-    {
-        await MethodFunctionsChainingAsync();
-    }
-
     #region Method Functions Chaining
 
     /// <summary>
     /// This example executes Function1, which in turn executes Function2.
     /// </summary>
-    private static async Task MethodFunctionsChainingAsync()
+    [Fact]
+    public async Task MethodFunctionsChainingAsync()
     {
-        Console.WriteLine("Running Method Function Chaining example...");
+        WriteLine("Running Method Function Chaining example...");
 
         var kernel = new Kernel();
 
@@ -30,8 +30,8 @@ public static class Example60_AdvancedMethodFunctions
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
-        Console.WriteLine($"CustomType.Number: {customType!.Number}"); // 2
-        Console.WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
+        WriteLine($"CustomType.Number: {customType!.Number}"); // 2
+        WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public static class Example60_AdvancedMethodFunctions
     /// </summary>
     private sealed class FunctionsChainingPlugin
     {
-        public const string PluginName = nameof(FunctionsChainingPlugin);
+        private const string PluginName = nameof(FunctionsChainingPlugin);
 
         [KernelFunction]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
@@ -115,4 +115,8 @@ public static class Example60_AdvancedMethodFunctions
     }
 
     #endregion
+
+    public Example60_AdvancedMethodFunctions(ITestOutputHelper output) : base(output)
+    {
+    }
 }

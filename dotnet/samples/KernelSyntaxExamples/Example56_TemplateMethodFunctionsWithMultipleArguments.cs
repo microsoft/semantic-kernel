@@ -1,22 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example56_TemplateMethodFunctionsWithMultipleArguments
+namespace Examples;
+
+public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
 {
     /// <summary>
     /// Show how to invoke a Method Function written in C# with multiple arguments
     /// from a Prompt Function written in natural language
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
+        WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -26,7 +30,7 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 
         if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -53,19 +57,19 @@ public static class Example56_TemplateMethodFunctionsWithMultipleArguments
 ";
 
         // This allows to see the prompt before it's sent to OpenAI
-        Console.WriteLine("--- Rendered Prompt");
+        WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, arguments);
-        Console.WriteLine(renderedPrompt);
+        WriteLine(renderedPrompt);
 
         // Run the prompt / prompt function
         var haiku = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        Console.WriteLine("--- Prompt Function result");
+        WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(haiku, arguments);
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -78,5 +82,9 @@ A boy with a scar,
 Wizarding world he explores,
 Harry Potter's tale.
          */
+    }
+
+    public Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : base(output)
+    {
     }
 }

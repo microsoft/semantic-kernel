@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /// <summary>
 /// This example shows how to connect your app to Azure OpenAI using
@@ -18,11 +21,12 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// -Shared tokens
 /// -etc.
 /// </summary>
-public static class Example26_AADAuth
+public class Example26_AADAuth : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup credentials")]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== SK with AAD Auth ========");
+        WriteLine("======== SK with AAD Auth ========");
 
         // Optional: choose which authentication to support
         var authOptions = new DefaultAzureCredentialOptions
@@ -55,8 +59,12 @@ public static class Example26_AADAuth
 
         // Bot reply
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
-        Console.WriteLine(reply);
+        WriteLine(reply);
 
         /* Output: Why did the hourglass go to the doctor? Because it was feeling a little run down! */
+    }
+
+    public Example26_AADAuth(ITestOutputHelper output) : base(output)
+    {
     }
 }

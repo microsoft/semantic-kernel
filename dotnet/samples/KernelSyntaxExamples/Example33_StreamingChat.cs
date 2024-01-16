@@ -1,32 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // The following example shows how to use Semantic Kernel with streaming Chat Completion
-public static class Example33_StreamingChat
+public class Example33_StreamingChat : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public Task OpenAIChatStreamSampleAsync()
     {
-        await AzureOpenAIChatStreamSampleAsync();
-        await OpenAIChatStreamSampleAsync();
-    }
-
-    private static async Task OpenAIChatStreamSampleAsync()
-    {
-        Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
+        WriteLine("======== Open AI - ChatGPT Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        await StartStreamingChatAsync(chatCompletionService);
+        return this.StartStreamingChatAsync(chatCompletionService);
     }
 
-    private static async Task AzureOpenAIChatStreamSampleAsync()
+    [Fact]
+    public Task AzureOpenAIChatStreamSampleAsync()
     {
-        Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
+        WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -34,13 +33,13 @@ public static class Example33_StreamingChat
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
-        await StartStreamingChatAsync(chatCompletionService);
+        return this.StartStreamingChatAsync(chatCompletionService);
     }
 
-    private static async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
+    private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
     {
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
+        WriteLine("Chat content:");
+        WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian, expert about books");
         await MessageOutputAsync(chatHistory);
@@ -60,7 +59,7 @@ public static class Example33_StreamingChat
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
+    private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
         string fullMessage = string.Empty;
@@ -69,31 +68,35 @@ public static class Example33_StreamingChat
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
+                Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
                 roleWritten = true;
             }
 
             if (chatUpdate.Content is { Length: > 0 })
             {
                 fullMessage += chatUpdate.Content;
-                Console.Write(chatUpdate.Content);
+                Write(chatUpdate.Content);
             }
         }
 
-        Console.WriteLine("\n------------------------");
+        WriteLine("\n------------------------");
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
-    private static Task MessageOutputAsync(ChatHistory chatHistory)
+    private Task MessageOutputAsync(ChatHistory chatHistory)
     {
         var message = chatHistory.Last();
 
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
+        WriteLine($"{message.Role}: {message.Content}");
+        WriteLine("------------------------");
 
         return Task.CompletedTask;
+    }
+
+    public Example33_StreamingChat(ITestOutputHelper output) : base(output)
+    {
     }
 }

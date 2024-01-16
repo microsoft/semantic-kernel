@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows how to use chat completion standardized prompts.
-public static class Example63_ChatCompletionPrompts
+public class Example63_ChatCompletionPrompts : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         const string ChatPrompt = @"
             <message role=""user"">What is Seattle?</message>
@@ -23,17 +27,21 @@ public static class Example63_ChatCompletionPrompts
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        Console.WriteLine("Chat Prompt:");
-        Console.WriteLine(ChatPrompt);
-        Console.WriteLine("Chat Prompt Result:");
-        Console.WriteLine(chatPromptResult);
+        WriteLine("Chat Prompt:");
+        WriteLine(ChatPrompt);
+        WriteLine("Chat Prompt Result:");
+        WriteLine(chatPromptResult);
 
-        Console.WriteLine("Chat Prompt Streaming Result:");
+        WriteLine("Chat Prompt Streaming Result:");
+        string completeMessage = string.Empty;
         await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
         {
-            Console.Write(message);
+            completeMessage += message;
+            Write(message);
         }
-        Console.WriteLine();
+
+        WriteLine("---------- Streamed Content ----------");
+        WriteLine(completeMessage);
 
         /*
         Chat Prompt:
@@ -50,5 +58,9 @@ public static class Example63_ChatCompletionPrompts
           }
         }
         */
+    }
+
+    public Example63_ChatCompletionPrompts(ITestOutputHelper output) : base(output)
+    {
     }
 }

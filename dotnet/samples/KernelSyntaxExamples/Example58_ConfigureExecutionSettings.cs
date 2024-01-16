@@ -5,8 +5,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit.Abstractions;
 
-public static class Example58_ConfigureExecutionSettings
+namespace Examples;
+
+public class Example58_ConfigureExecutionSettings : BaseTest
 {
     /// <summary>
     /// Show how to configure model execution settings
@@ -93,5 +96,9 @@ Hello! As an AI language model, I can help you with a variety of tasks, includin
 3. Assisting with problem-solving and brainstorming ideas.
 4. Providing explanations and
          */
+    }
+
+    public Example58_ConfigureExecutionSettings(ITestOutputHelper output) : base(output)
+    {
     }
 }

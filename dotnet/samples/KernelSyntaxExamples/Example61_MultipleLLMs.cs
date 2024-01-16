@@ -1,60 +1,42 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using xRetry;
+using Xunit.Abstractions;
 
-public static class Example61_MultipleLLMs
+namespace Examples;
+
+public class Example61_MultipleLLMs : BaseTest
 {
     /// <summary>
     /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
-    public static async Task RunAsync()
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Example61_MultipleLLMs ========");
-
-        string azureApiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string azureDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string azureModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string azureEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
-        if (azureApiKey == null || azureDeploymentName == null || azureModelId == null || azureEndpoint == null)
-        {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
-            return;
-        }
-
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (openAIModelId == null || openAIApiKey == null)
-        {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
-            return;
-        }
-
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
-                deploymentName: azureDeploymentName,
-                endpoint: azureEndpoint,
-                apiKey: azureApiKey,
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: azureModelId)
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .AddOpenAIChatCompletion(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey,
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey,
                 serviceId: "OpenAIChat")
             .Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
-        await RunByModelIdAsync(kernel, openAIModelId);
-        await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", azureModelId, openAIModelId);
+        await RunByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
+        await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId);
     }
 
-    public static async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
+    private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
-        Console.WriteLine($"======== Service Id: {serviceId} ========");
+        WriteLine($"======== Service Id: {serviceId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -64,12 +46,12 @@ public static class Example61_MultipleLLMs
             { serviceId, new PromptExecutionSettings() }
         };
         var result = await kernel.InvokePromptAsync(prompt, arguments);
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
-    public static async Task RunByModelIdAsync(Kernel kernel, string modelId)
+    private async Task RunByModelIdAsync(Kernel kernel, string modelId)
     {
-        Console.WriteLine($"======== Model Id: {modelId} ========");
+        WriteLine($"======== Model Id: {modelId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -79,12 +61,12 @@ public static class Example61_MultipleLLMs
            {
                ModelId = modelId
            }));
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
-    public static async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
+    private async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
     {
-        Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
+        WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -98,6 +80,10 @@ public static class Example61_MultipleLLMs
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
 
         var result = await kernel.InvokeAsync(function);
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
+    }
+
+    public Example61_MultipleLLMs(ITestOutputHelper output) : base(output)
+    {
     }
 }

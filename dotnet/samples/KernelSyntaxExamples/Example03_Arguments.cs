@@ -5,13 +5,17 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Plugins;
+using Xunit;
+using Xunit.Abstractions;
 
+namespace Examples;
 // This example shows how to use kernel arguments when invoking functions.
-public static class Example03_Arguments
+public class Example03_Arguments : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Arguments ========");
+        this.WriteLine("======== Arguments ========");
 
         Kernel kernel = new();
         var textPlugin = kernel.ImportPluginFromType<StaticTextPlugin>();
@@ -26,16 +30,20 @@ public static class Example03_Arguments
 
         // Specify and get the value type as generic parameter
         string? resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
-        Console.WriteLine($"string -> {resultValue}");
+        this.WriteLine($"string -> {resultValue}");
 
         // If you need to access the result metadata, you can use the non-generic version to get the FunctionResult
         FunctionResult functionResult = await kernel.InvokeAsync(textPlugin["AppendDay"], arguments);
         var metadata = functionResult.Metadata;
 
         // Specify the type from the FunctionResult
-        Console.WriteLine($"FunctionResult.GetValue<string>() -> {functionResult.GetValue<string>()}");
+        this.WriteLine($"FunctionResult.GetValue<string>() -> {functionResult.GetValue<string>()}");
 
         // FunctionResult.ToString() automatically converts the result to string
-        Console.WriteLine($"FunctionResult.ToString() -> {functionResult}");
+        this.WriteLine($"FunctionResult.ToString() -> {functionResult}");
+    }
+
+    public Example03_Arguments(ITestOutputHelper output) : base(output)
+    {
     }
 }

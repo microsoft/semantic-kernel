@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example66_FunctionCallingStepwisePlanner
+namespace Examples;
+
+public class Example66_FunctionCallingStepwisePlanner : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        string[] questions = new string[]
-        {
+        string[] questions = {
             "What is the current hour number, plus 5?",
             "What is 387 minus 22? Email the solution to John and Mary.",
             "Write a limerick, translate it to Spanish, and send it to Jane",
@@ -30,7 +33,7 @@ public static class Example66_FunctionCallingStepwisePlanner
         foreach (var question in questions)
         {
             FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(kernel, question);
-            Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
+            WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
             // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");
@@ -44,11 +47,9 @@ public static class Example66_FunctionCallingStepwisePlanner
     private static Kernel InitializeKernel()
     {
         Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+            .AddOpenAIChatCompletion(
+                apiKey: TestConfiguration.OpenAI.ApiKey,
+                modelId: "gpt-3.5-turbo-1106")
             .Build();
 
         kernel.ImportPluginFromType<EmailPlugin>();
@@ -56,5 +57,9 @@ public static class Example66_FunctionCallingStepwisePlanner
         kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
+    }
+
+    public Example66_FunctionCallingStepwisePlanner(ITestOutputHelper output) : base(output)
+    {
     }
 }
