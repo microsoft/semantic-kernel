@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extensions for adding Gemini text generation services to the application.
+/// Extensions for adding GoogleVertexAI generation services to the application.
 /// </summary>
 public static class GoogleVertexAIServiceCollectionExtensions
 {
