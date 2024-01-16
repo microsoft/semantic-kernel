@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
@@ -45,12 +44,11 @@ public class TextBlockTests
     public void ItRendersTheContentAsIs()
     {
         // Act + Assert
-        var kernel = new Kernel();
-        Assert.Equal("", new TextBlock(null).Render(kernel, null));
-        Assert.Equal("", new TextBlock("").Render(kernel, null));
-        Assert.Equal(" ", new TextBlock(" ").Render(kernel, null));
-        Assert.Equal("  ", new TextBlock("  ").Render(kernel, null));
-        Assert.Equal(" \n", new TextBlock(" \n").Render(kernel, null));
-        Assert.Equal("'x'", new TextBlock("'x'").Render(kernel, null));
+        Assert.Equal("", new TextBlock(null).Render(null));
+        Assert.Equal("", new TextBlock("").Render(null));
+        Assert.Equal(" ", new TextBlock(" ").Render(null));
+        Assert.Equal("  ", new TextBlock("  ").Render(null));
+        Assert.Equal(" \n", new TextBlock(" \n").Render(null));
+        Assert.Equal("'x'", new TextBlock("'x'").Render(null));
     }
 }

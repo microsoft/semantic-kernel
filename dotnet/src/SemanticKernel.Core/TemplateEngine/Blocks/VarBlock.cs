@@ -62,7 +62,7 @@ internal sealed class VarBlock : Block, ITextRendering
 #pragma warning restore CA2254
 
     /// <inheritdoc/>
-    public object? Render(Kernel kernel, KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         if (arguments == null) { return null; }
 

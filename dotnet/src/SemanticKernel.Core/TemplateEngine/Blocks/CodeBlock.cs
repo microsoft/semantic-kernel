@@ -89,7 +89,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return this._tokens[0].Type switch
         {
-            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this._tokens[0]).Render(kernel, arguments)),
+            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this._tokens[0]).Render(arguments)),
             BlockTypes.FunctionId => this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], kernel, arguments, cancellationToken),
             _ => throw new KernelException($"Unexpected first token type: {this._tokens[0].Type:G}"),
         };
@@ -198,7 +198,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Gets the function first parameter name
             firstPositionalParameterName = functionMetadata.Parameters[0].Name;
 
-            firstPositionalInputValue = ((ITextRendering)this._tokens[1]).Render(kernel, arguments);
+            firstPositionalInputValue = ((ITextRendering)this._tokens[1]).Render(arguments);
             // Type check is avoided and marshalling is done by the function itself
 
             // Keep previous trust information when updating the input

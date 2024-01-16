@@ -377,6 +377,6 @@ public class TemplateTokenizerTests
     {
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
-            : new TextBlock((string?)((ITextRendering)block).Render(kernel, arguments))).ToList();
+            : new TextBlock((string?)((ITextRendering)block).Render(arguments))).ToList();
     }
 }

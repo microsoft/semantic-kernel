@@ -53,7 +53,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
     }
 
     /// <inheritdoc/>
-    public object? Render(Kernel kernel, KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }

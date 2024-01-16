@@ -95,7 +95,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(kernel, arguments), kernel.Culture));
+                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture));
                     break;
 
                 case ICodeRendering dynamicBlock:

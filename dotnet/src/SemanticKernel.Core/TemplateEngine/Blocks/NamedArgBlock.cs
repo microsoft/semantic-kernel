@@ -95,20 +95,20 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
         {
-            return this._valBlock!.Render(kernel, arguments);
+            return this._valBlock!.Render(arguments);
         }
 
         var valueIsValidVarBlock = this.VarBlock != null && this.VarBlock.IsValid(out var errorMessage2);
         if (valueIsValidVarBlock)
         {
-            return this.VarBlock!.Render(kernel, arguments);
+            return this.VarBlock!.Render(arguments);
         }
 
         return string.Empty;
     }
 
     /// <inheritdoc/>
-    public object? Render(Kernel kernel, KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }
