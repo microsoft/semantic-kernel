@@ -1,5 +1,5 @@
 ---
-# Feature Branch Strategy in Repositories
+# Implementing Feature Branch Strategy for Community Driven Connectors
 
 status: proposed
 contact: rogerbarreto
@@ -53,6 +53,8 @@ The effectiveness of the feature branch strategy will be validated through regul
 
 As soon we identify that contributors are willing to take/create a Feature Issue as a potential connector implementation, we will create a new branch for that feature.
 
-The contributor(s) will then be responsible for incrementally add changes through small Pull Requests to the feature branch under our supervision and review process.
+The contributor(s) will then be one of the responsibles to incrementally add the majority of changes through small Pull Requests to the feature branch under our supervision and review process.
 
 This strategy involves creating a separate branch in the repository for each new big feature, like connectors. This isolation means that changes are made in a controlled environment without affecting the main branch.
+
+We may also engage in the development and changes to the feature branch when needed, the changes and full or co-authorship on the PRs will be tracked and properly referred into the Release Notes.
