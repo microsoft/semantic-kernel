@@ -24,7 +24,6 @@ public class Example06_TemplateLanguage : BaseTest
         if (!ConfigurationValidator.Validate(nameof(Example06_TemplateLanguage),
                 new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }, Output))
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 

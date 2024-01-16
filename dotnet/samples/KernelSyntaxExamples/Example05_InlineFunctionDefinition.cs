@@ -20,7 +20,6 @@ public class Example05_InlineFunctionDefinition : BaseTest
         if (!ConfigurationValidator.Validate(nameof(Example05_InlineFunctionDefinition),
                 new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }, Output))
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 

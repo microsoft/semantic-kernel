@@ -26,7 +26,6 @@ public class Example07_BingAndGooglePlugins : BaseTest
         if (!ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
                 new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }, Output))
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -54,7 +53,6 @@ public class Example07_BingAndGooglePlugins : BaseTest
             using var googleConnector = new GoogleConnector(
                 apiKey: TestConfiguration.Google.ApiKey,
                 searchEngineId: TestConfiguration.Google.SearchEngineId);
-            var google = new WebSearchEnginePlugin(googleConnector);
             kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
             // ReSharper disable once ArrangeThisQualifier
             await Example1Async(kernel, "google");
