@@ -21,19 +21,17 @@ internal sealed class ThrowingEmailPluginFake
         throw new ArgumentException($"Failed to send email to {email_address}");
     }
 
-    [KernelFunction, Description("Lookup an email address for a person given a name")]
-    public Task<string> GetEmailAddressAsync(
-        ILogger logger,
-        [Description("The name of the person to email.")] string? input = null)
-    {
-        // Throw a critical exception for testing
-        throw new InvalidProgramException();
-    }
-
     [KernelFunction, Description("Write a short poem for an e-mail")]
     public Task<string> WritePoemAsync(
         [Description("The topic of the poem.")] string input)
     {
         return Task.FromResult($"Roses are red, violets are blue, {input} is hard, so is this test.");
+    }
+
+    [KernelFunction, Description("Write a joke for an e-mail")]
+    public Task<string> WriteJokeAsync()
+    {
+        // Throw a critical exception for testing
+        throw new InvalidProgramException();
     }
 }

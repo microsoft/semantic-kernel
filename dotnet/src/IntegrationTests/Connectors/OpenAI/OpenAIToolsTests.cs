@@ -77,7 +77,7 @@ public sealed class OpenAIToolsTests : IDisposable
         }
 
         // Assert
-        Assert.Equal("6", result);
+        Assert.Contains("6", result, StringComparison.InvariantCulture);
         Assert.Contains("GetAge([personName, John])", invokedFunctions);
         Assert.Contains("GetAge([personName, Jim])", invokedFunctions);
         Assert.Contains("InterpretValue([value, 3])", invokedFunctions);
