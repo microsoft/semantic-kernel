@@ -13,9 +13,12 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Xunit;
+using Xunit.Abstractions;
+namespace Examples;
 
 // This example shows how to use the Handlebars sequential planner.
-public static class Example99_ApiManifest
+public class Example99_ApiManifest : BaseTest
 {
     private static int s_sampleIndex;
     private static Kernel? s_kernel;
@@ -27,9 +30,10 @@ public static class Example99_ApiManifest
     };
 
     /// <summary>
-    /// Show how to create a plan with Handlebars and execute it.
+    /// Show how to create API Manifest plugins and use them towards a goal.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -38,7 +42,7 @@ public static class Example99_ApiManifest
 
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
+            this.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
             return;
         }
 
@@ -56,37 +60,37 @@ public static class Example99_ApiManifest
         await RunSampleWithPlannerAsync(
             "show the subject of my first message",
             "latest email message subject is shown",
-            "MessagesPlugin").ConfigureAwait(false);
+            "MessagesPlugin");
         await RunSampleWithPlannerAsync("get contents of file with id=test.txt",
             "test.txt file is fetched and the content is shown",
             "DriveItemPlugin",
-            "MessagesPlugin").ConfigureAwait(false);
+            "MessagesPlugin");
         await RunSampleWithPlannerAsync(
             "get contents of file with id=test.txt",
             "test.txt file is not fetched because DriveItemPlugin is not loaded",
-            "MessagesPlugin").ConfigureAwait(false);
+            "MessagesPlugin");
         await RunSampleWithPlannerAsync(
             "tell me how many contacts I have",
             "number of contacts is shown",
             "MessagesPlugin",
-            "ContactsPlugin").ConfigureAwait(false);
+            "ContactsPlugin");
         await RunSampleWithPlannerAsync(
             "tell me title of first event in my calendar",
             "title of first event from calendar is shown if exists",
             "MessagesPlugin",
-            "CalendarPlugin").ConfigureAwait(false);
+            "CalendarPlugin");
     }
 
-    private static void WriteSampleHeadingToConsole(string goal, string expectedOutputDescription, params string[] pluginNames)
+    private void WriteSampleHeadingToConsole(string goal, string expectedOutputDescription, params string[] pluginNames)
     {
-        Console.WriteLine();
-        Console.WriteLine($"======== [ApiManifest Plugins] Sample {s_sampleIndex++} - Create and Execute \"{goal}\" Plan ========");
-        Console.WriteLine($"======== Plugins: {string.Join(" ", pluginNames)} ========");
-        Console.WriteLine($"======== Expected Output: {expectedOutputDescription} ========");
-        Console.WriteLine();
+        this.WriteLine();
+        this.WriteLine($"======== [ApiManifest Plugins] Sample {s_sampleIndex++} - Create and Execute \"{goal}\" Plan ========");
+        this.WriteLine($"======== Plugins: {string.Join(" ", pluginNames)} ========");
+        this.WriteLine($"======== Expected Output: {expectedOutputDescription} ========");
+        this.WriteLine();
     }
 
-    private static async Task RunSampleWithPlannerAsync(string goal, string expectedOutputDescription, params string[] pluginNames)
+    private async Task RunSampleWithPlannerAsync(string goal, string expectedOutputDescription, params string[] pluginNames)
     {
         _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
         WriteSampleHeadingToConsole(goal, expectedOutputDescription, pluginNames);
@@ -95,12 +99,12 @@ public static class Example99_ApiManifest
 
         var result = await s_planner.ExecuteAsync(s_kernel, goal);
 
-        Console.WriteLine("--------------------");
-        Console.WriteLine($"\nResult:\n{result.FinalAnswer}\n");
-        Console.WriteLine("--------------------");
+        this.WriteLine("--------------------");
+        this.WriteLine($"\nResult:\n{result.FinalAnswer}\n");
+        this.WriteLine("--------------------");
     }
 
-    private static async Task AddApiManifestPluginsAsync(params string[] pluginNames)
+    private async Task AddApiManifestPluginsAsync(params string[] pluginNames)
     {
         _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
 #pragma warning disable SKEXP0053
@@ -138,7 +142,7 @@ public static class Example99_ApiManifest
                     new OpenApiFunctionExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync
                     , serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0")))
                     .ConfigureAwait(false);
-                Console.WriteLine($">> {pluginName} is created.");
+                this.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0042
             }
             catch (Exception ex)
@@ -147,6 +151,10 @@ public static class Example99_ApiManifest
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }
+    }
+
+    public Example99_ApiManifest(ITestOutputHelper output) : base(output)
+    {
     }
 }
 

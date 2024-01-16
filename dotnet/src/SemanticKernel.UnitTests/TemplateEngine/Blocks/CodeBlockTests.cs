@@ -34,7 +34,7 @@ public class CodeBlockTests
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         var target = new CodeBlock("plugin.function");
 
@@ -194,7 +194,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "");
@@ -222,7 +222,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
@@ -259,7 +259,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
@@ -282,10 +282,10 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$var");
         var namedArgBlock = new NamedArgBlock("p1=$a1");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("p", "description", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
+        this._kernel.ImportPluginFromFunctions("p", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
         {
             canary = p1;
-        }, "f") }));
+        }, "f") });
 
         // Act
         var functionWithPositionedArgument = new CodeBlock(new List<Block> { funcId, varBlock }, "");
@@ -323,7 +323,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) => { }, "function");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
@@ -363,7 +363,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         // Act
         var codeBlock = new CodeBlock(blockList, "");
@@ -392,15 +392,13 @@ public class CodeBlockTests
             new ValBlock($"'{FooValue}'")
         };
 
-        kernel.Plugins.Add(
-            KernelPluginFactory.CreateFromFunctions("Plugin1", functions: new[]
+        kernel.ImportPluginFromFunctions("Plugin1", functions: new[]
                 {
                     kernel.CreateFunctionFromPrompt(
                         promptTemplate: $"\"This {{{{${parameterName}}}}}",
                         functionName: "Function1")
                 }
-            )
-        );
+            );
 
         kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
         {
@@ -438,15 +436,13 @@ public class CodeBlockTests
             new NamedArgBlock("x12='new'") // Extra parameters are ignored
         };
 
-        kernel.Plugins.Add(
-            KernelPluginFactory.CreateFromFunctions("Plugin1", functions: new[]
+        kernel.ImportPluginFromFunctions("Plugin1", functions: new[]
                 {
                     kernel.CreateFunctionFromPrompt(
                         promptTemplate: "\"This {{$x11}}",
                         functionName: "Function1")
                 }
-            )
-        );
+            );
 
         kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
         {
@@ -490,7 +486,7 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
