@@ -9,11 +9,13 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.GoogleAI;
 internal sealed class GoogleAIEmbeddingResponse
 {
     [JsonPropertyName("embeddings")]
+    [JsonRequired]
     public IList<GoogleAIEmbeddingResponseValues> Embeddings { get; set; } = null!;
 }
 
 internal sealed class GoogleAIEmbeddingResponseValues
 {
     [JsonPropertyName("values")]
+    [JsonRequired]
     public ReadOnlyMemory<float> Values { get; set; }
 }

@@ -65,12 +65,14 @@ public sealed class GeminiPartInlineData
     /// Accepted types include: "image/png", "image/jpeg", "image/heic", "image/heif", "image/webp".
     /// </remarks>
     [JsonPropertyName("mimeType")]
+    [JsonRequired]
     public string MimeType { get; set; } = null!;
 
     /// <summary>
     /// Base64 encoded data
     /// </summary>
     [JsonPropertyName("data")]
+    [JsonRequired]
     public string InlineData { get; set; } = null!;
 }
 
@@ -84,6 +86,7 @@ public sealed class GeminiPartFunctionCall
     /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
     /// </summary>
     [JsonPropertyName("name")]
+    [JsonRequired]
     public string FunctionName { get; set; } = null!;
 
     /// <summary>
@@ -104,11 +107,13 @@ public sealed class GeminiPartFunctionResponse
     /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
     /// </summary>
     [JsonPropertyName("name")]
+    [JsonRequired]
     public string FunctionName { get; set; } = null!;
 
     /// <summary>
     /// Required. The function response in JSON object format.
     /// </summary>
     [JsonPropertyName("response")]
+    [JsonRequired]
     public IList<JsonNode> Response { get; set; } = null!;
 }

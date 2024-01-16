@@ -61,15 +61,22 @@ internal abstract class ClientBase
 
     protected static T DeserializeResponse<T>(string body)
     {
-        T? geminiResponse = JsonSerializer.Deserialize<T>(body);
-        if (geminiResponse is null)
+        try
         {
-            throw new KernelException("Unexpected response from model")
+            T? geminiResponse = JsonSerializer.Deserialize<T>(body);
+            if (geminiResponse is null)
+            {
+                throw new JsonException();
+            }
+
+            return geminiResponse;
+        }
+        catch (JsonException exc)
+        {
+            throw new KernelException("Unexpected response from model", exc)
             {
                 Data = { { "ResponseData", body } },
             };
         }
-
-        return geminiResponse;
     }
 }

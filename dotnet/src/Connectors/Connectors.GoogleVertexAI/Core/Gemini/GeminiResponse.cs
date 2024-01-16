@@ -15,6 +15,7 @@ public sealed class GeminiResponse
     /// Candidate responses from the model.
     /// </summary>
     [JsonPropertyName("candidates")]
+    [JsonRequired]
     public IList<GeminiResponseCandidate> Candidates { get; set; } = null!;
 
     /// <summary>
@@ -39,6 +40,7 @@ public sealed class GeminiResponseCandidate
     /// Generated content returned from the model.
     /// </summary>
     [JsonPropertyName("content")]
+    [JsonRequired]
     public GeminiResponseContent Content { get; set; } = null!;
 
     /// <summary>
@@ -81,6 +83,7 @@ public sealed class GeminiResponseContent
     /// Ordered Parts that constitute a single message. Parts may have different MIME types.
     /// </summary>
     [JsonPropertyName("parts")]
+    [JsonRequired]
     public IList<GeminiPart> Parts { get; set; } = null!;
 
     /// <summary>
