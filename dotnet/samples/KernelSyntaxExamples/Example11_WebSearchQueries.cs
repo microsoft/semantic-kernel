@@ -1,15 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example11_WebSearchQueries
+namespace Examples;
+
+public class Example11_WebSearchQueries : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== WebSearchQueries ========");
+        WriteLine("======== WebSearchQueries ========");
 
         Kernel kernel = new();
 
@@ -20,8 +24,8 @@ public static class Example11_WebSearchQueries
         var ask = "What's the tallest building in Europe?";
         var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["query"] = ask });
 
-        Console.WriteLine(ask + "\n");
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(ask + "\n");
+        WriteLine(result.GetValue<string>());
 
         /* Expected output: 
         * ======== WebSearchQueries ========
@@ -30,5 +34,9 @@ public static class Example11_WebSearchQueries
         * https://www.bing.com/search?q=What%27s%20the%20tallest%20building%20in%20Europe%3F
         * == DONE ==
         */
+    }
+
+    public Example11_WebSearchQueries(ITestOutputHelper output) : base(output)
+    {
     }
 }
