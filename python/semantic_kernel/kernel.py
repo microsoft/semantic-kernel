@@ -4,6 +4,7 @@ import glob
 import importlib
 import inspect
 import locale
+import sys
 import logging
 import os
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
@@ -60,6 +61,7 @@ T = TypeVar("T")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+_sys_encoding = locale.getpreferredencoding() if sys.version_info < (3, 11) else locale.getencoding()
 
 class Kernel:
     _skill_collection: SkillCollectionBase
@@ -829,7 +831,7 @@ class Kernel:
         return {}
 
     def import_semantic_skill_from_directory(
-        self, parent_directory: str, skill_directory_name: str, encoding=locale.getencoding()
+        self, parent_directory: str, skill_directory_name: str, encoding: str = _sys_encoding
     ) -> Dict[str, SKFunctionBase]:
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
