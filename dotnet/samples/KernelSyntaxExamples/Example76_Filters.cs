@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
-public static class Example75_Filters
+public static class Example76_Filters
 {
     private sealed class FirstFunctionFilter : IFunctionFilter
     {
