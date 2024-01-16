@@ -118,7 +118,6 @@ public class CodeTokenizerTests
     public void ItParsesMultiNamedArgFunctionCalls()
     {
         // Arrange
-        var kernel = new Kernel();
         var template1 = "x.y first=$foo second='bar'";
         var arguments = new KernelArguments();
         arguments["foo"] = "fooValue";
@@ -139,12 +138,12 @@ public class CodeTokenizerTests
         Assert.Equal("first=$foo", secondBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, secondBlock?.Type);
         Assert.Equal("first", secondBlock?.Name);
-        Assert.Equal("fooValue", secondBlock?.GetValue(kernel, arguments));
+        Assert.Equal("fooValue", secondBlock?.GetValue(arguments));
 
         Assert.Equal("second='bar'", thirdBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, thirdBlock?.Type);
         Assert.Equal("second", thirdBlock?.Name);
-        Assert.Equal("bar", thirdBlock?.GetValue(kernel, arguments));
+        Assert.Equal("bar", thirdBlock?.GetValue(arguments));
     }
 
     [Fact]
@@ -166,7 +165,6 @@ public class CodeTokenizerTests
     public void ItSupportsEscapingNamedArgs()
     {
         // Arrange
-        var kernel = new Kernel();
         var template = "func name='f\\'oo'";
 
         // Act
@@ -178,14 +176,13 @@ public class CodeTokenizerTests
         Assert.Equal("name='f\'oo'", blocks[1].Content);
         var namedArg = blocks[1] as NamedArgBlock;
         Assert.NotNull(namedArg);
-        Assert.Equal("f'oo", namedArg.GetValue(kernel, null));
+        Assert.Equal("f'oo", namedArg.GetValue(null));
     }
 
     [Fact]
     public void ItSupportsSpacesInNamedArguments()
     {
         // Arrange
-        var kernel = new Kernel();
         var template = "func name = 'foo'";
 
         // Act
@@ -197,7 +194,7 @@ public class CodeTokenizerTests
         Assert.Equal("name='foo'", blocks[1].Content);
         var namedArg = blocks[1] as NamedArgBlock;
         Assert.NotNull(namedArg);
-        Assert.Equal("foo", namedArg.GetValue(kernel, null));
+        Assert.Equal("foo", namedArg.GetValue(null));
         Assert.Equal("name", namedArg.Name);
     }
 

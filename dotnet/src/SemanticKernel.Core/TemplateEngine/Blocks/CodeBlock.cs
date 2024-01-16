@@ -228,7 +228,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 throw new ArgumentException($"Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
-            arguments[arg.Name] = arg.GetValue(kernel, arguments);
+            arguments[arg.Name] = arg.GetValue(arguments);
         }
 
         return arguments;
