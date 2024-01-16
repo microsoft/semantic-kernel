@@ -1,37 +1,37 @@
-﻿#region HEADER
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example81_GeminiChatCompletion
+namespace Examples;
+
+public sealed class Example81_GeminiChatCompletion : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Gemini Chat Completion ========");
+        this.WriteLine("======== Gemini Chat Completion ========");
 
         await GoogleAIGeminiAsync();
         await VertexAIGeminiAsync();
     }
 
-    private static async Task GoogleAIGeminiAsync()
+    private async Task GoogleAIGeminiAsync()
     {
-        Console.WriteLine("===== Google AI Gemini API =====");
+        this.WriteLine("===== Google AI Gemini API =====");
 
         string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {
-            Console.WriteLine("Gemini credentials not found. Skipping example.");
+            this.WriteLine("Gemini credentials not found. Skipping example.");
             return;
         }
 
@@ -44,9 +44,9 @@ public static class Example81_GeminiChatCompletion
         await RunSampleAsync(kernel);
     }
 
-    private static async Task VertexAIGeminiAsync()
+    private async Task VertexAIGeminiAsync()
     {
-        Console.WriteLine("===== Vertex AI Gemini API =====");
+        this.WriteLine("===== Vertex AI Gemini API =====");
 
         string geminiApiKey = TestConfiguration.VertexAI.Gemini.ApiKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -55,7 +55,7 @@ public static class Example81_GeminiChatCompletion
 
         if (geminiApiKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
-            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
         }
 
@@ -70,15 +70,15 @@ public static class Example81_GeminiChatCompletion
         await RunSampleAsync(kernel);
     }
 
-    private static async Task RunSampleAsync(Kernel kernel)
+    private async Task RunSampleAsync(Kernel kernel)
     {
         await SimpleChatAsync(kernel);
         await StreamingChatAsync(kernel);
     }
 
-    private static async Task StreamingChatAsync(Kernel kernel)
+    private async Task StreamingChatAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Streaming Chat ========");
+        this.WriteLine("======== Streaming Chat ========");
 
         var chatHistory = new ChatHistory();
         var chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -102,9 +102,9 @@ public static class Example81_GeminiChatCompletion
         chatHistory.Add(reply);
     }
 
-    private static async Task SimpleChatAsync(Kernel kernel)
+    private async Task SimpleChatAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Simple Chat ========");
+        this.WriteLine("======== Simple Chat ========");
 
         var chatHistory = new ChatHistory();
         var chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -131,17 +131,17 @@ public static class Example81_GeminiChatCompletion
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
-    private static Task MessageOutputAsync(ChatHistory chatHistory)
+    private Task MessageOutputAsync(ChatHistory chatHistory)
     {
         var message = chatHistory.Last();
 
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
+        this.WriteLine($"{message.Role}: {message.Content}");
+        this.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }
 
-    private static async Task<ChatMessageContent> MessageOutputAsync(IAsyncEnumerable<StreamingChatMessageContent> streamingChat)
+    private async Task<ChatMessageContent> MessageOutputAsync(IAsyncEnumerable<StreamingChatMessageContent> streamingChat)
     {
         bool first = true;
         StringBuilder messageBuilder = new();
@@ -149,16 +149,18 @@ public static class Example81_GeminiChatCompletion
         {
             if (first)
             {
-                Console.Write($"{chatMessage.Role}: ");
+                this.Write($"{chatMessage.Role}: ");
                 first = false;
             }
 
-            Console.Write(chatMessage.Content);
+            this.Write(chatMessage.Content);
             messageBuilder.Append(chatMessage.Content);
         }
 
-        Console.WriteLine();
-        Console.WriteLine("------------------------");
+        this.WriteLine();
+        this.WriteLine("------------------------");
         return new ChatMessageContent(AuthorRole.Assistant, messageBuilder.ToString());
     }
+
+    public Example81_GeminiChatCompletion(ITestOutputHelper output) : base(output) { }
 }

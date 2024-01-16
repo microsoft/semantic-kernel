@@ -1,34 +1,34 @@
-﻿#region HEADER
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
-
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example80_GeminiTextGeneration
+namespace Examples;
+
+public sealed class Example80_GeminiTextGeneration : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("============= Gemini Text Generation =============");
+        this.WriteLine("============= Gemini Text Generation =============");
 
         await GoogleAIGeminiAsync();
         await VertexAIGeminiAsync();
     }
 
-    private static async Task GoogleAIGeminiAsync()
+    private async Task GoogleAIGeminiAsync()
     {
-        Console.WriteLine("===== Google AI Gemini API =====");
+        this.WriteLine("===== Google AI Gemini API =====");
 
         string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {
-            Console.WriteLine("Gemini google ai credentials not found. Skipping example.");
+            this.WriteLine("Gemini google ai credentials not found. Skipping example.");
             return;
         }
 
@@ -41,9 +41,9 @@ public static class Example80_GeminiTextGeneration
         await RunSampleAsync(kernel);
     }
 
-    private static async Task VertexAIGeminiAsync()
+    private async Task VertexAIGeminiAsync()
     {
-        Console.WriteLine("===== Vertex AI Gemini API =====");
+        this.WriteLine("===== Vertex AI Gemini API =====");
 
         string geminiApiKey = TestConfiguration.VertexAI.Gemini.ApiKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -52,7 +52,7 @@ public static class Example80_GeminiTextGeneration
 
         if (geminiApiKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
-            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
         }
 
@@ -67,7 +67,7 @@ public static class Example80_GeminiTextGeneration
         await RunSampleAsync(kernel);
     }
 
-    private static async Task RunSampleAsync(Kernel kernel)
+    private async Task RunSampleAsync(Kernel kernel)
     {
         await SimplePromptAsync(kernel);
         await FunctionFromPromptAsync(kernel);
@@ -75,24 +75,24 @@ public static class Example80_GeminiTextGeneration
         await StreamingFunctionFromPromptAsync(kernel);
     }
 
-    private static async Task StreamingFunctionFromPromptAsync(Kernel kernel)
+    private async Task StreamingFunctionFromPromptAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Streaming Function From Prompt ========");
+        this.WriteLine("======== Streaming Function From Prompt ========");
 
         string prompt = "Describe what is GIT and why it is useful. Use simple words. Description should be long.";
         var function = kernel.CreateFunctionFromPrompt(prompt);
         await foreach (string text in kernel.InvokeStreamingAsync<string>(function,
                            new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 600 })))
         {
-            Console.Write(text);
+            this.Write(text);
         }
 
-        Console.WriteLine("");
+        this.WriteLine("");
     }
 
-    private static async Task StreamingTextAsync(Kernel kernel)
+    private async Task StreamingTextAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Streaming Text ========");
+        this.WriteLine("======== Streaming Text ========");
 
         string prompt = @"
 Write a short story about a dragon and a knight.
@@ -102,15 +102,15 @@ Write the story in Spanish.";
         await foreach (string text in kernel.InvokePromptStreamingAsync<string>(prompt,
                            new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 600 })))
         {
-            Console.Write(text);
+            this.Write(text);
         }
 
-        Console.WriteLine("");
+        this.WriteLine("");
     }
 
-    private static async Task FunctionFromPromptAsync(Kernel kernel)
+    private async Task FunctionFromPromptAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Function From Prompt ========");
+        this.WriteLine("======== Function From Prompt ========");
 
         // Function defined using few-shot design pattern
         string promptTemplate = @"
@@ -129,15 +129,17 @@ Event: {{$input}}
         var function = kernel.CreateFunctionFromPrompt(promptTemplate);
         string? response = await kernel.InvokeAsync<string>(function,
             new KernelArguments() { ["Input"] = "sorry I forgot your birthday" });
-        Console.WriteLine(response);
+        this.WriteLine(response);
     }
 
-    private static async Task SimplePromptAsync(Kernel kernel)
+    private async Task SimplePromptAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Simple Prompt ========");
+        this.WriteLine("======== Simple Prompt ========");
 
         string? response = await kernel.InvokePromptAsync<string>("Hi Gemini, what can you do for me?",
             new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 120 }));
-        Console.WriteLine(response);
+        this.WriteLine(response);
     }
+
+    public Example80_GeminiTextGeneration(ITestOutputHelper output) : base(output) { }
 }

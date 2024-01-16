@@ -1,34 +1,35 @@
-﻿#region HEADER
-
-// Copyright (c) Microsoft. All rights reserved.
-
-#endregion
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example82_GoogleVertexAIEmbeddingsGeneration
+namespace Examples;
+
+public sealed class Example82_GoogleVertexAIEmbeddingsGeneration : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Gemini Chat Completion ========");
+        this.WriteLine("======== Gemini Chat Completion ========");
 
         await GoogleAIGeminiAsync();
         await VertexAIGeminiAsync();
     }
 
-    private static async Task GoogleAIGeminiAsync()
+    private async Task GoogleAIGeminiAsync()
     {
-        Console.WriteLine("===== Google AI Gemini API =====");
+        this.WriteLine("===== Google AI Gemini API =====");
 
         string geminiApiKey = TestConfiguration.GoogleAI.Gemini.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {
-            Console.WriteLine("Gemini credentials not found. Skipping example.");
+            this.WriteLine("Gemini credentials not found. Skipping example.");
             return;
         }
 
@@ -41,9 +42,9 @@ public static class Example82_GoogleVertexAIEmbeddingsGeneration
         await RunSampleAsync(kernel);
     }
 
-    private static async Task VertexAIGeminiAsync()
+    private async Task VertexAIGeminiAsync()
     {
-        Console.WriteLine("===== Vertex AI Gemini API =====");
+        this.WriteLine("===== Vertex AI Gemini API =====");
 
         string geminiApiKey = TestConfiguration.VertexAI.Gemini.ApiKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -52,7 +53,7 @@ public static class Example82_GoogleVertexAIEmbeddingsGeneration
 
         if (geminiApiKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
-            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
         }
 
@@ -67,15 +68,17 @@ public static class Example82_GoogleVertexAIEmbeddingsGeneration
         await RunSampleAsync(kernel);
     }
 
-    private static async Task RunSampleAsync(Kernel kernel)
+    private async Task RunSampleAsync(Kernel kernel)
     {
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
         ReadOnlyMemory<float> embeddings = await embeddingGenerator.GenerateEmbeddingAsync("Hello world!");
-        Console.WriteLine("Embeddings:");
+        this.WriteLine("Embeddings:");
         for (int i = 0; i < embeddings.Span.Length; i++)
         {
             float embedding = embeddings.Span[i];
-            Console.WriteLine($"{embedding}");
+            this.WriteLine($"{embedding}");
         }
     }
+
+    public Example82_GoogleVertexAIEmbeddingsGeneration(ITestOutputHelper output) : base(output) { }
 }
