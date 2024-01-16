@@ -47,10 +47,7 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
     )
 
     assert plan is not None
-    assert (
-        plan.description
-        == "Summarize an input, translate to french, and e-mail to John Doe"
-    )
+    assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
 
     assert len(plan._steps) == 4
     step = plan._steps[0]

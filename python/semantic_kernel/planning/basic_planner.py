@@ -166,9 +166,7 @@ class BasicPlanner:
                     param_description = ""
                 else:
                     param_description = param.description
-                available_functions_string += (
-                    "- " + param.name + ": " + param_description + "\n"
-                )
+                available_functions_string += "- " + param.name + ": " + param_description + "\n"
             available_functions_string += "\n"
 
         return available_functions_string
@@ -185,9 +183,7 @@ class BasicPlanner:
         """
 
         # Create the semantic function for the planner with the given prompt
-        planner = kernel.create_semantic_function(
-            prompt, max_tokens=1000, temperature=0.8
-        )
+        planner = kernel.create_semantic_function(prompt, max_tokens=1000, temperature=0.8)
 
         available_functions_string = self._create_available_functions_string(kernel)
 
@@ -207,9 +203,7 @@ class BasicPlanner:
 
         # Filter out good JSON from the result in case additional text is present
         json_regex = r"\{(?:[^{}]|(?R))*\}"
-        generated_plan_string = regex.search(
-            json_regex, plan.generated_plan.result
-        ).group()
+        generated_plan_string = regex.search(json_regex, plan.generated_plan.result).group()
         generated_plan = json.loads(generated_plan_string)
 
         context = ContextVariables()

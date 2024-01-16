@@ -4,26 +4,29 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+    AzureAISearchDataSources,
+    AzureChatRequestSettings,
+    AzureDataSources,
+    ExtraBody,
+)
 
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings
 deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-# Load Azure OpenAI with data settings
-azure_aisearch_datasource = sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSource(
-    parameters=sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureAISearchDataSourceParameters(
-        **sk.azure_aisearch_settings_from_dot_env_as_dict()
-    )
-)
+# Load Azure AI Search settings
+azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
 # Set index language
-azure_aisearch_datasource.parameters.indexLanguage = "en"
+azure_ai_search_settings["indexLanguage"] = "en"
 
-azure_chat_with_data_settings = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.AzureChatWithDataSettings(
-        dataSources=[azure_aisearch_datasource]
-    )
-)
+# Create the data source settings
+az_source = AzureAISearchDataSources(**azure_ai_search_settings)
+az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
+extra = ExtraBody(data_sources=[az_data], input_language="fr", output_language="de")
+req_settings = AzureChatRequestSettings(extra_body=extra)
+prompt_config = sk.PromptTemplateConfig(completion=req_settings)
 
 # For example, AI Search index may contain the following document:
 
@@ -33,7 +36,7 @@ azure_chat_with_data_settings = (
 
 
 chat_service = sk_oai.AzureChatCompletion(
-    base_url=f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment}/extensions",
+    use_extensions=True,
     deployment_name=deployment,
     api_key=api_key,
     endpoint=endpoint,
@@ -44,20 +47,7 @@ kernel.add_chat_service(
     chat_service,
 )
 
-prompt_config = (
-    sk_oai.OpenAIChatPromptTemplateWithDataConfig.from_completion_parameters(
-        max_tokens=2000,
-        temperature=0.7,
-        top_p=0.8,
-        inputLanguage="fr",
-        outputLanguage="de",
-        data_source_settings=azure_chat_with_data_settings,
-    )
-)
-
-prompt_template = sk.ChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
+prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
 prompt_template.add_user_message("Bonjour!")
 prompt_template.add_assistant_message(

@@ -7,6 +7,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Resources;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /// <summary>
 /// Scenario:
@@ -31,16 +35,17 @@ using Resources;
 ///       Out of scope and not in the example: if needed, one could go further and use a semantic
 ///       function (with extra cost) asking AI to generate the text to send to the Chat model.
 /// </summary>
-public static class Example30_ChatWithPrompts
+public class Example30_ChatWithPrompts : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Chat with prompts ========");
+        WriteLine("======== Chat with prompts ========");
 
         /* Load 3 files:
-         * - 28-system-prompt.txt: the system prompt, used to initialize the chat session.
-         * - 28-user-context.txt:  the user context, e.g. a piece of a document the user selected and is asking to process.
-         * - 28-user-prompt.txt:   the user prompt, just for demo purpose showing that one can leverage the same approach also to augment user messages.
+         * - 30-system-prompt.txt: the system prompt, used to initialize the chat session.
+         * - 30-user-context.txt:  the user context, e.g. a piece of a document the user selected and is asking to process.
+         * - 30-user-prompt.txt:   the user prompt, just for demo purpose showing that one can leverage the same approach also to augment user messages.
          */
 
         var systemPromptTemplate = EmbeddedResource.Read("30-system-prompt.txt");
@@ -58,13 +63,13 @@ public static class Example30_ChatWithPrompts
         // Adding required arguments referenced by the prompt templates.
         var arguments = new KernelArguments
         {
-            // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
+            // Put the selected document into the variable used by the system prompt (see 30-system-prompt.txt).
             ["selectedText"] = selectedText,
 
-            // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
+            // Demo another variable, e.g. when the chat started, used by the system prompt (see 30-system-prompt.txt).
             ["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture),
 
-            // This is the user message, store it in the variable used by 28-user-prompt.txt
+            // This is the user message, store it in the variable used by 30-user-prompt.txt
             ["userMessage"] = "extract locations as a bullet point list"
         };
 
@@ -76,12 +81,12 @@ public static class Example30_ChatWithPrompts
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
         string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, arguments);
-        Console.WriteLine($"------------------------------------\n{systemMessage}");
+        WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
         string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, arguments);
-        Console.WriteLine($"------------------------------------\n{userMessage}");
+        WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
         var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
@@ -96,7 +101,7 @@ public static class Example30_ChatWithPrompts
 
         // Finally, get the response from AI
         var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
-        Console.WriteLine($"------------------------------------\n{answer}");
+        WriteLine($"------------------------------------\n{answer}");
 
         /*
 
@@ -120,5 +125,9 @@ public static class Example30_ChatWithPrompts
         - Nubian Desert
 
         */
+    }
+
+    public Example30_ChatWithPrompts(ITestOutputHelper output) : base(output)
+    {
     }
 }

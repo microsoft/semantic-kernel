@@ -5,22 +5,18 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example21_OpenAIPlugins
+namespace Examples;
+
+public class Example21_OpenAIPlugins : BaseTest
 {
-    public static Task RunAsync()
-    {
-        // Uncomment after filling the template below
-        // await RunOpenAIPluginAsync();
-
-        // --------------- Example using Klarna's OpenAI plugin ------------------------
-        return CallKlarnaAsync();
-    }
-
     /// <summary>
     /// Generic template on how to call OpenAI plugins
     /// </summary>
-    public static async Task RunOpenAIPluginAsync()
+    [Fact(Skip = "Run it only after filling the template below")]
+    public async Task RunOpenAIPluginAsync()
     {
         Kernel kernel = new();
 
@@ -38,10 +34,11 @@ public static class Example21_OpenAIPlugins
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
+        WriteLine($"Function execution result: {result?.Content}");
     }
 
-    public static async Task CallKlarnaAsync()
+    [Fact]
+    public async Task CallKlarnaAsync()
     {
         Kernel kernel = new();
 
@@ -58,6 +55,10 @@ public static class Example21_OpenAIPlugins
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
+        WriteLine($"Function execution result: {result?.Content}");
+    }
+
+    public Example21_OpenAIPlugins(ITestOutputHelper output) : base(output)
+    {
     }
 }
