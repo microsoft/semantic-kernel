@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -9,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 /// <summary>
 /// Union field data can be only one of properties in class GeminiPart
 /// </summary>
-public sealed class GeminiPart
+public sealed class GeminiPart : IJsonOnDeserialized
 {
     /// <summary>
     /// Gets or sets the text data.
@@ -50,6 +51,16 @@ public sealed class GeminiPart
             (this.InlineData != null ? 1 : 0) +
             (this.FunctionCall != null ? 1 : 0) +
             (this.FunctionResponse != null ? 1 : 0) == 1;
+    }
+
+    /// <inheritdoc />
+    public void OnDeserialized()
+    {
+        if (!this.IsValid())
+        {
+            throw new JsonException(
+                "GeminiPart is invalid. One and only one property among Text, InlineData, FunctionCall, and FunctionResponse should be set.");
+        }
     }
 }
 
