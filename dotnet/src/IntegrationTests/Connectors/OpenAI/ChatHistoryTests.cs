@@ -3,9 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +68,54 @@ public sealed class ChatHistoryTests : IDisposable
 
         // Assert
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task ItUsesChatSystemPromptFromSettingsAsync()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        builder.Plugins.AddFromType<FakePlugin>();
+        var kernel = builder.Build();
+
+        string systemPrompt = "You are batman. If asked who you are, say 'I am Batman!'";
+
+        OpenAIPromptExecutionSettings settings = new() { ChatSystemPrompt = systemPrompt };
+        ChatHistory history = new();
+
+        // Act
+        history.AddUserMessage("Who are you?");
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent result = await service.GetChatMessageContentAsync(history, settings, kernel);
+
+        // Assert
+        Assert.Contains("Batman", result.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItUsesChatSystemPromptFromChatHistoryAsync()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        builder.Plugins.AddFromType<FakePlugin>();
+        var kernel = builder.Build();
+
+        string systemPrompt = "You are batman. If asked who you are, say 'I am Batman!'";
+
+        OpenAIPromptExecutionSettings settings = new();
+        ChatHistory history = new(systemPrompt);
+
+        // Act
+        history.AddUserMessage("Who are you?");
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent result = await service.GetChatMessageContentAsync(history, settings, kernel);
+
+        // Assert
+        Assert.Contains("Batman", result.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     private void ConfigureAzureOpenAIChatAsText(IKernelBuilder kernelBuilder)

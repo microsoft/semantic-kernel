@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 

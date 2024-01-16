@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
+using xRetry;
+using Xunit.Abstractions;
 
-internal static class Example13_ConversationSummaryPlugin
+namespace Examples;
+
+public class Example13_ConversationSummaryPlugin : BaseTest
 {
     private const string ChatTranscript =
         @"
@@ -116,7 +119,8 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
-    public static async Task RunAsync()
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task RunAsync()
     {
         if (InitializeKernel() is not { } kernel) { return; }
 
@@ -125,9 +129,9 @@ Jane: Goodbye!
         await GetConversationTopicsAsync(kernel);
     }
 
-    private static async Task ConversationSummaryPluginAsync(Kernel kernel)
+    private async Task ConversationSummaryPluginAsync(Kernel kernel)
     {
-        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
+        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
         kernel = kernel.Clone();
 
         KernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
@@ -135,13 +139,13 @@ Jane: Goodbye!
         FunctionResult summary = await kernel.InvokeAsync(
             conversationSummaryPlugin["SummarizeConversation"], new() { ["input"] = ChatTranscript });
 
-        Console.WriteLine("Generated Summary:");
-        Console.WriteLine(summary.GetValue<string>());
+        WriteLine("Generated Summary:");
+        WriteLine(summary.GetValue<string>());
     }
 
-    private static async Task GetConversationActionItemsAsync(Kernel kernel)
+    private async Task GetConversationActionItemsAsync(Kernel kernel)
     {
-        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
+        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         kernel = kernel.Clone();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
@@ -149,13 +153,13 @@ Jane: Goodbye!
         FunctionResult summary = await kernel.InvokeAsync(
             conversationSummary["GetConversationActionItems"], new() { ["input"] = ChatTranscript });
 
-        Console.WriteLine("Generated Action Items:");
-        Console.WriteLine(summary.GetValue<string>());
+        WriteLine("Generated Action Items:");
+        WriteLine(summary.GetValue<string>());
     }
 
-    private static async Task GetConversationTopicsAsync(Kernel kernel)
+    private async Task GetConversationTopicsAsync(Kernel kernel)
     {
-        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
+        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         kernel = kernel.Clone();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
@@ -163,11 +167,11 @@ Jane: Goodbye!
         FunctionResult summary = await kernel.InvokeAsync(
             conversationSummary["GetConversationTopics"], new() { ["input"] = ChatTranscript });
 
-        Console.WriteLine("Generated Topics:");
-        Console.WriteLine(summary.GetValue<string>());
+        WriteLine("Generated Topics:");
+        WriteLine(summary.GetValue<string>());
     }
 
-    private static Kernel? InitializeKernel()
+    private Kernel? InitializeKernel()
     {
         if (!ConfigurationValidator.Validate(nameof(Example13_ConversationSummaryPlugin),
                 new[]
@@ -176,7 +180,7 @@ Jane: Goodbye!
                     TestConfiguration.AzureOpenAI.Endpoint,
                     TestConfiguration.AzureOpenAI.ApiKey,
                     TestConfiguration.AzureOpenAI.ChatModelId
-                }))
+                }, Output))
         {
             return null;
         }
@@ -189,6 +193,8 @@ Jane: Goodbye!
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
     }
+
+    public Example13_ConversationSummaryPlugin(ITestOutputHelper output) : base(output) { }
 }
 
 /* Example Output:

@@ -7,20 +7,26 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
+using Xunit;
+using Xunit.Abstractions;
 using RepoUtils;
+
+namespace Examples;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-public static class Example07_BingAndGooglePlugins
+public class Example07_BingAndGooglePlugins : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup Credentials")]
+    public async Task RunAsync()
     {
         if (!ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
-                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }, Output))
         {
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -32,8 +38,7 @@ public static class Example07_BingAndGooglePlugins
 
         // Load Bing plugin
         if (ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
-                exampleNameSuffix: "Bing",
-                args: new[] { TestConfiguration.Bing.ApiKey }))
+                args: new[] { TestConfiguration.Bing.ApiKey }, output: Output, exampleNameSuffix: "Bing"))
         {
             var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
@@ -44,30 +49,30 @@ public static class Example07_BingAndGooglePlugins
 
         // Load Google plugin
         if (ConfigurationValidator.Validate(nameof(Example07_BingAndGooglePlugins),
-                exampleNameSuffix: "Google",
-                args: new[] { TestConfiguration.Google.ApiKey, TestConfiguration.Google.SearchEngineId }))
+                args: new[] { TestConfiguration.Google.ApiKey, TestConfiguration.Google.SearchEngineId }, output: Output, exampleNameSuffix: "Google"))
         {
             using var googleConnector = new GoogleConnector(
                 apiKey: TestConfiguration.Google.ApiKey,
                 searchEngineId: TestConfiguration.Google.SearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
             kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
+            // ReSharper disable once ArrangeThisQualifier
             await Example1Async(kernel, "google");
         }
     }
 
-    private static async Task Example1Async(Kernel kernel, string searchPluginName)
+    private async Task Example1Async(Kernel kernel, string searchPluginName)
     {
-        Console.WriteLine("======== Bing and Google Search Plugins ========");
+        this.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
-        Console.WriteLine(question);
-        Console.WriteLine($"----{searchPluginName}----");
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine(question);
+        this.WriteLine($"----{searchPluginName}----");
+        this.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -82,9 +87,9 @@ public static class Example07_BingAndGooglePlugins
        */
     }
 
-    private static async Task Example2Async(Kernel kernel)
+    private async Task Example2Async(Kernel kernel)
     {
-        Console.WriteLine("======== Use Search Plugin to answer user questions ========");
+        this.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.
@@ -120,7 +125,7 @@ Question: {{ $question }}.
 Answer: ";
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        Console.WriteLine(question);
+        this.WriteLine(question);
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
@@ -138,11 +143,11 @@ Answer: ";
             var promptTemplateFactory = new KernelPromptTemplateFactory();
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
-            Console.WriteLine("---- Fetching information from Bing...");
+            this.WriteLine("---- Fetching information from Bing...");
             var information = await promptTemplate.RenderAsync(kernel);
 
-            Console.WriteLine("Information found:");
-            Console.WriteLine(information);
+            this.WriteLine("Information found:");
+            this.WriteLine(information);
 
             // Run the prompt function again, now including information from Bing
             answer = await kernel.InvokeAsync(oracle, new KernelArguments()
@@ -154,11 +159,11 @@ Answer: ";
         }
         else
         {
-            Console.WriteLine("AI had all the information, no need to query Bing.");
+            this.WriteLine("AI had all the information, no need to query Bing.");
         }
 
-        Console.WriteLine("---- ANSWER:");
-        Console.WriteLine(answer.GetValue<string>());
+        this.WriteLine("---- ANSWER:");
+        this.WriteLine(answer.GetValue<string>());
 
         /* OUTPUT:
 
@@ -178,4 +183,6 @@ Answer: ";
             * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.
          */
     }
+
+    public Example07_BingAndGooglePlugins(ITestOutputHelper output) : base(output) { }
 }

@@ -8,27 +8,25 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextToImage;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
-public static class Example18_DallE
+public class Example18_DallE : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task OpenAIDallEAsync()
     {
-        await OpenAIDallEAsync();
-        await AzureOpenAIDallEAsync();
-    }
-
-    private static async Task OpenAIDallEAsync()
-    {
-        Console.WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
+        WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
 
         if (!ConfigurationValidator.Validate(nameof(Example18_DallE),
-                exampleNameSuffix: "OpenAI",
                 args: new[]
                 {
                     TestConfiguration.OpenAI.ChatModelId,
                     TestConfiguration.OpenAI.ApiKey
-                }))
+                }, output: Output, exampleNameSuffix: "OpenAI"))
         {
             return;
         }
@@ -43,8 +41,8 @@ public static class Example18_DallE
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
 
-        Console.WriteLine(imageDescription);
-        Console.WriteLine("Image URL: " + image);
+        WriteLine(imageDescription);
+        WriteLine("Image URL: " + image);
 
         /* Output:
 
@@ -53,7 +51,7 @@ public static class Example18_DallE
 
         */
 
-        Console.WriteLine("======== Chat with images ========");
+        WriteLine("======== Chat with images ========");
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
@@ -64,23 +62,23 @@ public static class Example18_DallE
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);
-        Console.WriteLine("User: " + msg);
+        WriteLine("User: " + msg);
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
-        Console.WriteLine("Bot: " + image);
-        Console.WriteLine("Img description: " + reply);
+        WriteLine("Bot: " + image);
+        WriteLine("Img description: " + reply);
 
         msg = "Oh, wow. Not sure where that is, could you provide more details?";
         chatHistory.AddUserMessage(msg);
-        Console.WriteLine("User: " + msg);
+        WriteLine("User: " + msg);
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
-        Console.WriteLine("Bot: " + image);
-        Console.WriteLine("Img description: " + reply);
+        WriteLine("Bot: " + image);
+        WriteLine("Img description: " + reply);
 
         /* Output:
 
@@ -95,12 +93,12 @@ public static class Example18_DallE
         */
     }
 
-    public static async Task AzureOpenAIDallEAsync()
+    [Fact(Skip = "Generating the Image can take too long and often break the test")]
+    public async Task AzureOpenAIDallEAsync()
     {
-        Console.WriteLine("========Azure OpenAI Dall-E 3 Text To Image ========");
+        WriteLine("========Azure OpenAI Dall-E 3 Text To Image ========");
 
         if (!ConfigurationValidator.Validate(nameof(Example18_DallE),
-                exampleNameSuffix: "Azure",
                 args: new[]
                 {
                     TestConfiguration.AzureOpenAI.ImageModelId,
@@ -109,7 +107,7 @@ public static class Example18_DallE
                     TestConfiguration.AzureOpenAI.ChatDeploymentName,
                     TestConfiguration.AzureOpenAI.Endpoint,
                     TestConfiguration.AzureOpenAI.ApiKey
-                }))
+                }, output: Output, exampleNameSuffix: "Azure"))
         {
             return;
         }
@@ -132,6 +130,7 @@ public static class Example18_DallE
             c.AddStandardResilienceHandler().Configure(o =>
             {
                 o.Retry.MaxRetryAttempts = 5;
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
             });
         });
 
@@ -141,8 +140,8 @@ public static class Example18_DallE
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 1024, 1024);
 
-        Console.WriteLine(imageDescription);
-        Console.WriteLine("Image URL: " + image);
+        WriteLine(imageDescription);
+        WriteLine("Image URL: " + image);
 
         /* Output:
 
@@ -151,7 +150,7 @@ public static class Example18_DallE
 
         */
 
-        Console.WriteLine("======== Chat with images ========");
+        WriteLine("======== Chat with images ========");
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
@@ -162,23 +161,23 @@ public static class Example18_DallE
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);
-        Console.WriteLine("User: " + msg);
+        WriteLine("User: " + msg);
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 1024, 1024);
-        Console.WriteLine("Bot: " + image);
-        Console.WriteLine("Img description: " + reply);
+        WriteLine("Bot: " + image);
+        WriteLine("Img description: " + reply);
 
         msg = "Oh, wow. Not sure where that is, could you provide more details?";
         chatHistory.AddUserMessage(msg);
-        Console.WriteLine("User: " + msg);
+        WriteLine("User: " + msg);
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 1024, 1024);
-        Console.WriteLine("Bot: " + image);
-        Console.WriteLine("Img description: " + reply);
+        WriteLine("Bot: " + image);
+        WriteLine("Img description: " + reply);
 
         /* Output:
 
@@ -192,4 +191,6 @@ public static class Example18_DallE
 
         */
     }
+
+    public Example18_DallE(ITestOutputHelper output) : base(output) { }
 }

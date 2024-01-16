@@ -11,15 +11,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example09_FunctionTypes
+namespace Examples;
+
+public class Example09_FunctionTypes : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Method Function types ========");
+        this.WriteLine("======== Method Function types ========");
 
         if (!ConfigurationValidator.Validate(nameof(Example09_FunctionTypes),
-                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }, Output))
         {
             return;
         }
@@ -27,6 +32,7 @@ public static class Example09_FunctionTypes
         var builder = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Warning));
+        builder.Services.AddSingleton(this.Output);
         var kernel = builder.Build();
         kernel.Culture = new CultureInfo("pt-BR");
 
@@ -42,7 +48,7 @@ public static class Example09_FunctionTypes
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputDateTimeWithStringResult)], new() { ["currentDate"] = DateTime.Now });
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithStringResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.MultipleInputsWithVoidResult)], new() { ["x"] = "x string", ["y"] = 100, ["z"] = 1.5 });
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.ComplexInputWithStringResult)], new() { ["complexObject"] = new LocalExamplePlugin() });
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.ComplexInputWithStringResult)], new() { ["complexObject"] = new LocalExamplePlugin(this.Output) });
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputStringTaskWithStringResult)], new() { ["echoInput"] = "return this" });
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputStringTaskWithVoidResult)], new() { ["x"] = "x input" });
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithFunctionResult)]);
@@ -66,19 +72,28 @@ public static class Example09_FunctionTypes
         // You can also use the kernel.Plugins collection to invoke a function
         await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
     }
+
+    public Example09_FunctionTypes(ITestOutputHelper output) : base(output) { }
 }
 // Task functions when are imported as plugins loose the "Async" suffix if present.
 #pragma warning disable IDE1006 // Naming Styles
 
 public class LocalExamplePlugin
 {
+    private readonly ITestOutputHelper _output;
+
+    public LocalExamplePlugin(ITestOutputHelper output)
+    {
+        this._output = output;
+    }
+
     /// <summary>
     /// Example of using a void function with no input
     /// </summary>
     [KernelFunction]
     public void NoInputWithVoidResult()
     {
-        Console.WriteLine($"Running {nameof(this.NoInputWithVoidResult)} -> No input");
+        this._output.WriteLine($"Running {nameof(this.NoInputWithVoidResult)} -> No input");
     }
 
     /// <summary>
@@ -87,7 +102,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public Task NoInputTaskWithVoidResult()
     {
-        Console.WriteLine($"Running {nameof(this.NoInputTaskWithVoidResult)} -> No input");
+        this._output.WriteLine($"Running {nameof(this.NoInputTaskWithVoidResult)} -> No input");
         return Task.CompletedTask;
     }
 
@@ -98,7 +113,7 @@ public class LocalExamplePlugin
     public string InputDateTimeWithStringResult(DateTime currentDate)
     {
         var result = currentDate.ToString(CultureInfo.InvariantCulture);
-        Console.WriteLine($"Running {nameof(this.InputDateTimeWithStringResult)} -> [currentDate = {currentDate}] -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.InputDateTimeWithStringResult)} -> [currentDate = {currentDate}] -> result: {result}");
         return result;
     }
 
@@ -109,7 +124,7 @@ public class LocalExamplePlugin
     public Task<string> NoInputTaskWithStringResult()
     {
         var result = "string result";
-        Console.WriteLine($"Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {result}");
         return Task.FromResult(result);
     }
 
@@ -119,7 +134,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public void MultipleInputsWithVoidResult(string x, int y, double z)
     {
-        Console.WriteLine($"Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {x}, y = {y}, z = {z}]");
+        this._output.WriteLine($"Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {x}, y = {y}, z = {z}]");
     }
 
     /// <summary>
@@ -129,7 +144,7 @@ public class LocalExamplePlugin
     public string ComplexInputWithStringResult(object complexObject)
     {
         var result = complexObject.GetType().Name;
-        Console.WriteLine($"Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {result}");
         return result;
     }
 
@@ -139,7 +154,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public Task<string> InputStringTaskWithStringResult(string echoInput)
     {
-        Console.WriteLine($"Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {echoInput}");
+        this._output.WriteLine($"Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {echoInput}");
         return Task.FromResult(echoInput);
     }
 
@@ -149,7 +164,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public Task InputStringTaskWithVoidResult(string x)
     {
-        Console.WriteLine($"Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {x}]");
+        this._output.WriteLine($"Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {x}]");
         return Task.CompletedTask;
     }
 
@@ -161,7 +176,7 @@ public class LocalExamplePlugin
     {
         var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
         var result = new FunctionResult(myInternalFunction);
-        Console.WriteLine($"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}");
+        this._output.WriteLine($"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}");
         return result;
     }
 
@@ -172,7 +187,7 @@ public class LocalExamplePlugin
     public async Task<FunctionResult> NoInputTaskWithFunctionResult(Kernel kernel)
     {
         var result = await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
-        Console.WriteLine($"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}");
+        this._output.WriteLine($"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}");
         return result;
     }
 
@@ -184,7 +199,7 @@ public class LocalExamplePlugin
     public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel, string textToSummarize)
     {
         var summary = await kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = textToSummarize });
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
         return summary!;
     }
 
@@ -195,7 +210,7 @@ public class LocalExamplePlugin
     public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction executingFunction)
     {
         var result = $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}");
         return result;
     }
 
@@ -206,7 +221,7 @@ public class LocalExamplePlugin
     public Task TaskInjectingLoggerWithNoResult(ILogger logger)
     {
         logger.LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
         return Task.CompletedTask;
     }
 
@@ -220,7 +235,7 @@ public class LocalExamplePlugin
             .CreateLogger<LocalExamplePlugin>()
             .LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
 
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
         return Task.CompletedTask;
     }
 
@@ -237,17 +252,18 @@ public class LocalExamplePlugin
         }
 
         var result = chatMessageContent?.Content;
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}");
         return result ?? string.Empty;
     }
 
     /// <summary>
     /// Example how to inject CultureInfo or IFormatProvider in your function
     /// </summary>
+    [KernelFunction]
     public async Task<string> TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo, IFormatProvider formatProvider)
     {
         var result = $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}";
-        Console.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}");
         return result;
     }
 
@@ -258,7 +274,7 @@ public class LocalExamplePlugin
     public async Task<string> TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
     {
         var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
-        Console.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
         return result;
     }
 

@@ -1,34 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
-public static class Example20_HuggingFace
+public class Example20_HuggingFace : BaseTest
 {
-    public static async Task RunAsync()
-    {
-        await RunInferenceApiExampleAsync();
-        await RunLlamaExampleAsync();
-    }
-
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
     /// More information here: <see href="https://huggingface.co/inference-api"/>
     /// </summary>
-    private static async Task RunInferenceApiExampleAsync()
+    [Fact]
+    public async Task RunInferenceApiExampleAsync()
     {
-        Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
+        WriteLine("\n======== HuggingFace Inference API example ========\n");
 
         if (!ConfigurationValidator.Validate(nameof(Example20_HuggingFace),
-                exampleNameSuffix: "Inference Api",
                 args: new[]
                 {
                     TestConfiguration.HuggingFace.ModelId,
                     TestConfiguration.HuggingFace.ApiKey
-                }))
+                }, output: Output, exampleNameSuffix: "Inference Api"))
         {
             return;
         }
@@ -43,7 +40,7 @@ public static class Example20_HuggingFace
 
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
 
     /// <summary>
@@ -57,13 +54,13 @@ public static class Example20_HuggingFace
     /// Note: Your Hugging Face account email address MUST match the email you provide on the Meta website, or your request will not be approved.
     /// </remarks>
     /// </summary>
-    private static async Task RunLlamaExampleAsync()
+    [Fact(Skip = "Requires local model or Huggingface Pro subscription")]
+    public async Task RunLlamaExampleAsync()
     {
-        Console.WriteLine("\n======== HuggingFace Llama 2 example ========\n");
+        WriteLine("\n======== HuggingFace Llama 2 example ========\n");
 
         if (!ConfigurationValidator.Validate(nameof(Example20_HuggingFace),
-                exampleNameSuffix: "Llama local",
-                args: new[] { TestConfiguration.HuggingFace.ApiKey }))
+                args: new[] { TestConfiguration.HuggingFace.ApiKey }, output: Output, exampleNameSuffix: "Llama local"))
         {
             return;
         }
@@ -72,12 +69,12 @@ public static class Example20_HuggingFace
         const string Model = "meta-llama/Llama-2-7b-hf";
 
         // HuggingFace local HTTP server endpoint
-        const string Endpoint = "http://localhost:5000/completions";
+        // const string Endpoint = "http://localhost:5000/completions";
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
                 model: Model,
-                endpoint: Endpoint,
+                //endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
@@ -85,6 +82,8 @@ public static class Example20_HuggingFace
 
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(result.GetValue<string>());
     }
+
+    public Example20_HuggingFace(ITestOutputHelper output) : base(output) { }
 }

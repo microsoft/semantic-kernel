@@ -8,14 +8,15 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Xunit.Abstractions;
 
 namespace RepoUtils;
 
 public static class ConfigurationValidator
 {
-    public static bool Validate(
-        string exampleName,
+    public static bool Validate(string exampleName,
         string?[] args,
+        ITestOutputHelper output,
         string? exampleNameSuffix = null,
         [CallerArgumentExpression("args")] string argsExpression = "")
     {
@@ -34,9 +35,7 @@ public static class ConfigurationValidator
                 exampleName += $" ({exampleNameSuffix})";
             }
 
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"{exampleName} requires the following parameters to be set in TestConfiguration: {invalidParams}\nSkipping example.");
-            Console.ResetColor();
+            output.WriteLine($"{exampleName} requires the following parameters to be set in TestConfiguration: {invalidParams}\nSkipping example.");
             return false;
         }
 

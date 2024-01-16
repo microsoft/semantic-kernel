@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
@@ -12,20 +11,29 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
-public static class Example59_OpenAIFunctionCalling
+public class Example59_OpenAIFunctionCalling : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create kernel.
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+
+        // We recommend the usage of OpenAI latest models for the best experience with tool calling.
+        // i.e. gpt-3.5-turbo-1106 or gpt-4-1106-preview
+        builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
+
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 
         // Add a plugin with some helper functions we want to allow the model to utilize.
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("HelperFunctions", new[]
+        kernel.ImportPluginFromFunctions("HelperFunctions", new[]
         {
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName) =>
@@ -39,27 +47,27 @@ public static class Example59_OpenAIFunctionCalling
                     "Sydney" => "75 and sunny",
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
-                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
-        }));
+                }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+        });
 
-        Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+        WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-            Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
-            Console.WriteLine();
+            WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+            WriteLine();
         }
 
-        Console.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+        WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
-                Console.Write(update);
+                Write(update);
             }
-            Console.WriteLine();
+            WriteLine();
         }
 
-        Console.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
@@ -72,7 +80,7 @@ public static class Example59_OpenAIFunctionCalling
 
                 if (result.Content is not null)
                 {
-                    Console.Write(result.Content);
+                    Write(result.Content);
                 }
 
                 List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
@@ -95,9 +103,10 @@ public static class Example59_OpenAIFunctionCalling
                 }
             }
 
-            Console.WriteLine();
+            WriteLine();
         }
 
+        /* Uncomment this to try in a console chat loop.
         Console.WriteLine("======== Example 4: Use automated function calling with a streaming chat ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -106,9 +115,9 @@ public static class Example59_OpenAIFunctionCalling
 
             while (true)
             {
-                Console.Write("Question: ");
+                Console.Write("Question (Type \"quit\" to leave): ");
                 string question = Console.ReadLine() ?? string.Empty;
-                if (question == "done")
+                if (question == "quit")
                 {
                     break;
                 }
@@ -126,6 +135,10 @@ public static class Example59_OpenAIFunctionCalling
                 chatHistory.AddAssistantMessage(sb.ToString());
                 Console.WriteLine();
             }
-        }
+        }*/
+    }
+
+    public Example59_OpenAIFunctionCalling(ITestOutputHelper output) : base(output)
+    {
     }
 }

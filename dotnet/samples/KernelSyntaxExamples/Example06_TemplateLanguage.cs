@@ -1,25 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example06_TemplateLanguage
+namespace Examples;
+
+public class Example06_TemplateLanguage : BaseTest
 {
     /// <summary>
     /// Show how to invoke a Method Function written in C#
     /// from a Prompt Function written in natural language
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== TemplateLanguage ========");
+        this.WriteLine("======== TemplateLanguage ========");
 
         if (!ConfigurationValidator.Validate(nameof(Example06_TemplateLanguage),
-                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }))
+                new[] { TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey }, Output))
         {
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -44,19 +49,19 @@ Is it weekend time (weekend/not weekend)?
 ";
 
         // This allows to see the prompt before it's sent to OpenAI
-        Console.WriteLine("--- Rendered Prompt");
+        this.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel);
-        Console.WriteLine(renderedPrompt);
+        this.WriteLine(renderedPrompt);
 
         // Run the prompt / prompt function
         var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        Console.WriteLine("--- Prompt Function result");
+        this.WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(kindOfDay);
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -79,4 +84,6 @@ Is it weekend time (weekend/not weekend)?
             }
          */
     }
+
+    public Example06_TemplateLanguage(ITestOutputHelper output) : base(output) { }
 }
