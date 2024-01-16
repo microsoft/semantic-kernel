@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.4.4.dev"
+version = "0.4.5.dev"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -71,12 +71,6 @@ azure-identity = "^1.13.0"
 [tool.poetry.group.usearch.dependencies]
 usearch = "1.1.1"
 pyarrow = ">=12.0.1,<15.0.0"
-
-[tool.pytest.ini_options]
-addopts = "--cov=semantic_kernel --cov-report term-missing"
-testpaths = [
-    "tests"
-]
 
 [tool.isort]
 profile = "ruff"
