@@ -6,7 +6,7 @@ param (
 $jsonContent = Get-Content $JsonReportPath -Raw | ConvertFrom-Json
 $coverageBelowThreshold = $false
 
-function GetFormattedValue($number) {
+function Get-FormattedValue($number) {
     $formattedNumber = "{0:N1}" -f $number
     $icon = if ($number -ge $CoverageThreshold) { '✅' } else { '❌' }
               
@@ -22,8 +22,8 @@ if ($lineCoverage -lt $CoverageThreshold -or $branchCoverage -lt $CoverageThresh
 
 $totalTableData = [PSCustomObject]@{
     'Metric'          = 'Total Coverage'
-    'Line Coverage'   = GetFormattedValue $lineCoverage
-    'Branch Coverage' = GetFormattedValue $branchCoverage
+    'Line Coverage'   = Get-FormattedValue $lineCoverage
+    'Branch Coverage' = Get-FormattedValue $branchCoverage
 }
 
 $totalTableData | Format-Table -AutoSize
@@ -41,8 +41,8 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
 
     $assemblyTableData += [PSCustomObject]@{
         'Assembly Name' = $assemblyName
-        'Line'          = GetFormattedValue $assemblyLineCoverage
-        'Branch'        = GetFormattedValue $assemblyBranchCoverage
+        'Line'          = Get-FormattedValue $assemblyLineCoverage
+        'Branch'        = Get-FormattedValue $assemblyBranchCoverage
     }
 }
 
