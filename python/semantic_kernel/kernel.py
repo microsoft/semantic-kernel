@@ -63,6 +63,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 _sys_encoding = locale.getpreferredencoding() if sys.version_info < (3, 11) else locale.getencoding()
 
+
 class Kernel:
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
