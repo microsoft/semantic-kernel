@@ -64,14 +64,7 @@ public sealed class AzureOpenAIWithDataChatMessageContentTests
         Assert.Equal("Tool content", content.ToolContent);
         Assert.Equal(AuthorRole.Assistant, content.Role);
 
-        if (includeMetadata)
-        {
-            Assert.NotNull(content.Metadata);
-            Assert.Equal("Tool content", content.Metadata["ToolContent"]);
-        }
-        else
-        {
-            Assert.Null(content.Metadata);
-        }
+        Assert.NotNull(content.Metadata);
+        Assert.Equal("Tool content", content.Metadata["ToolContent"]);
     }
 }
