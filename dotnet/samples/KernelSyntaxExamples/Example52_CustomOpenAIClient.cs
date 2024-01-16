@@ -28,7 +28,7 @@ public static class Example52_CustomOpenAIClient
 
         // Create an HttpClient and include your custom header(s)
         var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("x-my-custom-hHeader", "My custom value");
+        httpClient.DefaultRequestHeaders.Add("x-my-custom-header", "My custom value");
 
         // Configure OpenAIClient to use the customized HttpClient
         var clientOptions = new OpenAIClientOptions
