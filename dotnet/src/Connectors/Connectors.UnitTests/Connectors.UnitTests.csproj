@@ -58,40 +58,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HuggingFace\TestData\completion_test_response.json">
+    <None Update="HuggingFace\TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="HuggingFace\TestData\embeddings_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_multiple_function_calls_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_single_function_call_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_streaming_single_function_call_test_response.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_streaming_multiple_function_calls_test_response.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\text_completion_streaming_test_response.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\text_completion_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_with_data_streaming_test_response.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_with_data_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\chat_completion_streaming_test_response.txt">
+    <None Update="OpenAI\TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
