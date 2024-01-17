@@ -7,11 +7,17 @@ using Microsoft.SemanticKernel;
 using System.Text.Json;
 using System.Diagnostics;
 using System.Collections.Generic;
+using Xunit;
+using Xunit.Abstractions;
+using Examples;
 
-// ReSharper disable once InconsistentNaming
-public static class Example76_StronglyTypedKernelResult
+// The following example shows how to receive the results from the kernel in a strongly typed object
+// wich stores the usage in tokens and converts the JSON result to a strongly typed object, where a validation can also
+// be performed
+public class Example76_StronglyTypedKernelResult : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         Console.WriteLine("======== LLMPrompts ========");
 
@@ -49,6 +55,10 @@ public static class Example76_StronglyTypedKernelResult
         Console.WriteLine($"Test data: {functionResultTestDataGen.Result} \n");
         Console.WriteLine($"Milliseconds: {functionResultTestDataGen.ExecutionTimeInMilliseconds} \n");
         Console.WriteLine($"Total Tokens: {functionResultTestDataGen.TokenCounts!.TotalTokens} \n");
+    }
+
+    public Example76_StronglyTypedKernelResult(ITestOutputHelper output) : base(output)
+    {
     }
 }
 
