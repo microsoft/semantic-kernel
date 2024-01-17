@@ -2,32 +2,21 @@
 
 using System;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
-public static class Example41_HttpClientUsage
+public class Example41_HttpClientUsage : BaseTest
 {
-    public static Task RunAsync()
-    {
-        //Examples showing how to use HttpClient.
-        UseDefaultHttpClient();
-
-        UseCustomHttpClient();
-
-        //Examples showing how to use HttpClientFactory.
-        UseBasicRegistrationWithHttpClientFactory();
-
-        UseNamedRegistrationWitHttpClientFactory();
-
-        return Task.CompletedTask;
-    }
-
     /// <summary>
     /// Demonstrates the usage of the default HttpClient provided by the SK SDK.
     /// </summary>
-    private static void UseDefaultHttpClient()
+    [Fact]
+    public void UseDefaultHttpClient()
     {
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
@@ -39,7 +28,8 @@ public static class Example41_HttpClientUsage
     /// <summary>
     /// Demonstrates the usage of a custom HttpClient.
     /// </summary>
-    private static void UseCustomHttpClient()
+    [Fact]
+    public void UseCustomHttpClient()
     {
         using var httpClient = new HttpClient();
 
@@ -55,7 +45,8 @@ public static class Example41_HttpClientUsage
     /// <summary>
     /// Demonstrates the "basic usage" approach for HttpClientFactory.
     /// </summary>
-    private static void UseBasicRegistrationWithHttpClientFactory()
+    [Fact]
+    public void UseBasicRegistrationWithHttpClientFactory()
     {
         //More details - https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#basic-usage
         var serviceCollection = new ServiceCollection();
@@ -77,7 +68,8 @@ public static class Example41_HttpClientUsage
     /// <summary>
     /// Demonstrates the "named clients" approach for HttpClientFactory.
     /// </summary>
-    private static void UseNamedRegistrationWitHttpClientFactory()
+    [Fact]
+    public void UseNamedRegistrationWitHttpClientFactory()
     {
         // More details https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#named-clients
 
@@ -101,5 +93,9 @@ public static class Example41_HttpClientUsage
                     httpClient: factory.CreateClient("test-client"))
                 .Build();
         });
+    }
+
+    public Example41_HttpClientUsage(ITestOutputHelper output) : base(output)
+    {
     }
 }

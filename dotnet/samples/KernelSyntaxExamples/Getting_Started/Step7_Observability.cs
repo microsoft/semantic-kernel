@@ -3,30 +3,24 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Step7_Observability
+namespace GettingStarted;
+
+public class Step7_Observability : BaseTest
 {
-    /// <summary>
-    /// Shows different ways observe the execution of a <see cref="KernelPlugin"/> instances.
-    /// </summary>
-    public static async Task RunAsync()
-    {
-        await ObservabilityWithHooksAsync();
-
-        await ObservabilityWithFiltersAsync();
-    }
-
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with hooks.
     /// </summary>
-    private static async Task ObservabilityWithHooksAsync()
+    [Fact]
+    public async Task ObservabilityWithHooksAsync()
     {
-        Console.WriteLine("\n======== Observability with Hooks ========\n");
-
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddOpenAIChatCompletion(
@@ -40,7 +34,7 @@ public static class Step7_Observability
         // Handler which is called before a function is invoked
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"Invoking {e.Function.Name}");
+            WriteLine($"Invoking {e.Function.Name}");
         }
 
         // Handler which is called before a prompt is rendered
@@ -52,7 +46,7 @@ public static class Step7_Observability
         // Handler which is called after a prompt is rendered
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
+            WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
         }
 
         // Handler which is called after a function is invoked
@@ -60,7 +54,7 @@ public static class Step7_Observability
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                Console.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
             }
         }
 
@@ -72,16 +66,15 @@ public static class Step7_Observability
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
     /// </summary>
-    private static async Task ObservabilityWithFiltersAsync()
+    [Fact]
+    public async Task ObservabilityWithFiltersAsync()
     {
-        Console.WriteLine("\n======== Observability with Filters ========\n");
-
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddOpenAIChatCompletion(
@@ -97,7 +90,7 @@ public static class Step7_Observability
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
@@ -145,5 +138,9 @@ public static class Step7_Observability
         {
             Console.WriteLine($"Rendering prompt for {context.Function.Name}");
         }
+    }
+
+    public Step7_Observability(ITestOutputHelper output) : base(output)
+    {
     }
 }

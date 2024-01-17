@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -8,15 +7,20 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example10_DescribeAllPluginsAndFunctions
+namespace Examples;
+
+public class Example10_DescribeAllPluginsAndFunctions : BaseTest
 {
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
     /// list of parameters, parameters descriptions, etc.
     /// See the end of the file for a sample of what the output looks like.
     /// </summary>
-    public static Task RunAsync()
+    [Fact]
+    public Task RunAsync()
     {
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
@@ -46,10 +50,10 @@ public static class Example10_DescribeAllPluginsAndFunctions
 
         var functions = kernel.Plugins.GetFunctionsMetadata();
 
-        Console.WriteLine("**********************************************");
-        Console.WriteLine("****** Registered plugins and functions ******");
-        Console.WriteLine("**********************************************");
-        Console.WriteLine();
+        WriteLine("**********************************************");
+        WriteLine("****** Registered plugins and functions ******");
+        WriteLine("**********************************************");
+        WriteLine();
 
         foreach (KernelFunctionMetadata func in functions)
         {
@@ -59,22 +63,26 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-    private static void PrintFunction(KernelFunctionMetadata func)
+    private void PrintFunction(KernelFunctionMetadata func)
     {
-        Console.WriteLine($"Plugin: {func.PluginName}");
-        Console.WriteLine($"   {func.Name}: {func.Description}");
+        WriteLine($"Plugin: {func.PluginName}");
+        WriteLine($"   {func.Name}: {func.Description}");
 
         if (func.Parameters.Count > 0)
         {
-            Console.WriteLine("      Params:");
+            WriteLine("      Params:");
             foreach (var p in func.Parameters)
             {
-                Console.WriteLine($"      - {p.Name}: {p.Description}");
-                Console.WriteLine($"        default: '{p.DefaultValue}'");
+                WriteLine($"      - {p.Name}: {p.Description}");
+                WriteLine($"        default: '{p.DefaultValue}'");
             }
         }
 
-        Console.WriteLine();
+        WriteLine();
+    }
+
+    public Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : base(output)
+    {
     }
 }
 
