@@ -59,13 +59,17 @@ Currently we are looking for community support on the following models
 
 The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a platform that hosts one of the models below:
 
-### Models
+| Model Name | Local Support | Platforms                            | Connectors                                    |
+| ---------- | ------------- | ------------------------------------ | --------------------------------------------- |
+| Gpt-4      | No            | OpenAI, Azure Open AI                | OpenAI                                        |
+| Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio | OpenAI, HuggingFace, LMStudio\*\*             |
+| Gemini     | No            | Google AI Platform                   | GoogleAI\*\*                                  |
+| Llama-2    | Yes           | LMStudio, HuggingFace, Ollama        | HuggingFace, OpenAI, LMStudio\*\*, Ollama\*\* |
+| Mistral    | Yes           | LMStudio, HuggingFace, Ollama        | HuggingFace, OpenAI, LMStudio\*\*, Ollama\*\* |
+| Claude     | No            | Anthropic, Amazon Bedrock            | Anthropic**, Amazon**                         |
+| Titan      | No            | Amazon Bedrock                       | Amazon\*\*                                    |
 
-- **Microsoft's Phi-2**:
-- **Google Gemini**
-- **Facebook Llama + function calling**
-- **Anthropic Claude**
-- **Other Multi-model Models (e.g. Stable Diffusion)**
+_\*\* Connectors not yet available_
 
 Connectors may be needed not per Model basis but rather per platform.
 For example, using OpenAI or HuggingFace connector you may be able to call a Phi-2 Model.
