@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -78,6 +79,7 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Optional execution parameters for the plugin.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
+    [Experimental("SKEXP0099")]
     public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
@@ -232,6 +234,7 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Optional execution parameters for the API functions.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
+    [Experimental("SKEXP0099")]
     public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
@@ -279,7 +282,6 @@ public static class OpenApiKernelExtensions
             var paths = apiDependencyDetails.Requests.Select(request => request.UriTemplate);
             foreach (var path in paths)
             {
-                // requestUrls.Add(path, new List<string> { "GET", "POST", "PATCH", "PUT", "DELETE", "HEAD", "CONNECT", "OPTIONS", "TRACE" }); TODO: support all operations
                 if (path is null)
                 {
                     continue;

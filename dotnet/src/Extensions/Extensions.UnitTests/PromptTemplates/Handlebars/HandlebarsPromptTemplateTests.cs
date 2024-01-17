@@ -21,6 +21,20 @@ public sealed class HandlebarsPromptTemplateTests
         this._arguments = new() { ["input"] = Guid.NewGuid().ToString("X") };
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ItInitializesHandlebarsPromptTemplateInstanceCorrectly(bool includeOptions)
+    {
+        // Arrange & Act
+        var template = includeOptions ?
+            new HandlebarsPromptTemplate(new()) :
+            new HandlebarsPromptTemplate(new(), new());
+
+        // Assert
+        Assert.NotNull(template);
+    }
+
     [Fact]
     public async Task ItRendersVariablesAsync()
     {
@@ -41,20 +55,14 @@ public sealed class HandlebarsPromptTemplateTests
     public async Task ItUsesDefaultValuesAsync()
     {
         // Arrange
-        var template = "Foo {{bar}} {{baz}}";
+        var template = "Foo {{bar}} {{baz}}{{null}}{{empty}}";
         var promptConfig = InitializeHbPromptConfig(template);
-        promptConfig.InputVariables.Add(new InputVariable()
-        {
-            Name = "bar",
-            Description = "Bar",
-            Default = "Bar"
-        });
-        promptConfig.InputVariables.Add(new InputVariable()
-        {
-            Name = "baz",
-            Description = "Baz",
-            Default = "Baz"
-        });
+
+        promptConfig.InputVariables.Add(new() { Name = "bar", Description = "Bar", Default = "Bar" });
+        promptConfig.InputVariables.Add(new() { Name = "baz", Description = "Baz", Default = "Baz" });
+        promptConfig.InputVariables.Add(new() { Name = "null", Description = "Null", Default = null });
+        promptConfig.InputVariables.Add(new() { Name = "empty", Description = "empty", Default = string.Empty });
+
         var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act

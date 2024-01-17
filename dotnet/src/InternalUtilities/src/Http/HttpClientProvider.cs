@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Http;
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class HttpClientProvider
 {
     /// <summary>
