@@ -203,7 +203,7 @@ def test_create_options_azure_data():
     assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
 
 
-def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
+def test_azure_open_ai_chat_request_settings_with_cosmosdb_data_sources():  # noqa: E501
     input_dict = {
         "messages": [{"role": "system", "content": "Hello"}],
         "extra_body": {
@@ -230,3 +230,32 @@ def test_azure_open_ai_chat_request_settings_with_data_sources():  # noqa: E501
     }
     settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
+
+
+def test_azure_open_ai_chat_request_settings_with_aisearch_data_sources():  # noqa: E501
+    input_dict = {
+        "messages": [{"role": "system", "content": "Hello"}],
+        "extra_body": {
+            "dataSources": [
+                {
+                    "type": "AzureCognitiveSearch",
+                    "parameters": {
+                        "authentication": {
+                            "type": "APIKey",
+                            "key": "****",
+                        },
+                        "endpoint": "https://****.search.windows.net/",
+                        "indexName": "azuredocindex",
+                        "queryType": "vector",
+                        "embeddingDependency": {
+                            "type": "DeploymentName",
+                            "deploymentName": "{embedding deployment name}",
+                        },
+                        "fieldsMapping": {"vectorFields": ["contentvector"]},
+                    },
+                }
+            ]
+        },
+    }
+    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
