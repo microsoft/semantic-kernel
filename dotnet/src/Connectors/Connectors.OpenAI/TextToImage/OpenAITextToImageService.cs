@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json;
@@ -87,10 +86,7 @@ public sealed class OpenAITextToImageService : ITextToImageService
         string format, Func<TextToImageResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
-        Debug.Assert(width == height);
-        Debug.Assert(width is 256 or 512 or 1024);
-        Debug.Assert(format is "url" or "b64_json");
-        Debug.Assert(extractResponse is not null);
+        Verify.NotNull(extractResponse);
 
         var requestBody = JsonSerializer.Serialize(new TextToImageRequest
         {

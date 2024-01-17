@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.SemanticKernel;
 
+[ExcludeFromCodeCoverage]
 internal static class Verify
 {
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");

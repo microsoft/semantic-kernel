@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.SemanticKernel;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides internal utility methods for converting types to strings with consideration for CultureInfo.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class InternalTypeConverter
 {
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace System;
@@ -7,6 +8,7 @@ namespace System;
 /// <summary>
 /// Exception extension methods.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ExceptionExtensions
 {
     /// <summary>

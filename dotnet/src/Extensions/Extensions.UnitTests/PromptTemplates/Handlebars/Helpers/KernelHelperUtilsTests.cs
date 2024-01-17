@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using HandlebarsDotNet;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 using Xunit;
@@ -37,4 +38,41 @@ public class KernelHelperUtilsTests
         // Act & Assert  
         Assert.Throws<InvalidOperationException>(() => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, helperName, (HandlebarsReturnHelper)helper2));
     }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(typeof(string), false)]
+    [InlineData(typeof(nuint), true)]
+    [InlineData(typeof(nint), true)]
+    [InlineData(typeof(sbyte), true)]
+    [InlineData(typeof(short), true)]
+    [InlineData(typeof(int), true)]
+    [InlineData(typeof(long), true)]
+    [InlineData(typeof(byte), true)]
+    [InlineData(typeof(ushort), true)]
+    [InlineData(typeof(uint), true)]
+    [InlineData(typeof(ulong), true)]
+    [InlineData(typeof(double), true)]
+    [InlineData(typeof(float), true)]
+    [InlineData(typeof(decimal), true)]
+    public void IsNumericTypeWorksCorrectly(Type? type, bool expectedResult)
+    {
+        Assert.Equal(expectedResult, KernelHelpersUtils.IsNumericType(type));
+    }
+
+    [Theory]
+    [MemberData(nameof(NumberInputs))]
+    public void TryParseAnyNumberWorksCorrectly(string number, bool expectedResult)
+    {
+        Assert.Equal(expectedResult, KernelHelpersUtils.TryParseAnyNumber(number));
+    }
+
+    public static TheoryData<string, bool> NumberInputs => new()
+    {
+        { 1234567890123456789L.ToString(CultureInfo.InvariantCulture), true },
+        { 9876543210987654321UL.ToString(CultureInfo.InvariantCulture), true },
+        { 123.456.ToString(CultureInfo.InvariantCulture), true },
+        { 123456789.0123456789m.ToString(CultureInfo.InvariantCulture), true },
+        { "test", false },
+    };
 }

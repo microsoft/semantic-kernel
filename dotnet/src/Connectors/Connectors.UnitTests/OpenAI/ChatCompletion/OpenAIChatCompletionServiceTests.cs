@@ -3,14 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletion;
@@ -18,17 +23,19 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletion;
 /// <summary>
 /// Unit tests for <see cref="OpenAIChatCompletionService"/>
 /// </summary>
-public sealed class OpenAIChatCompletionTests : IDisposable
+public sealed class OpenAIChatCompletionServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly OpenAIFunction _timepluginDate, _timepluginNow;
     private readonly OpenAIPromptExecutionSettings _executionSettings;
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
-    public OpenAIChatCompletionTests()
+    public OpenAIChatCompletionServiceTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._mockLoggerFactory = new Mock<ILoggerFactory>();
 
         IList<KernelFunctionMetadata> functions = KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
         {
@@ -43,6 +50,37 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         {
             ToolCallBehavior = ToolCallBehavior.EnableFunctions(new[] { this._timepluginDate, this._timepluginNow })
         };
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var service = includeLoggerFactory ?
+            new OpenAIChatCompletionService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
+            new OpenAIChatCompletionService("model-id", "api-key", "organization");
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var client = new OpenAIClient("key");
+        var service = includeLoggerFactory ?
+            new OpenAIChatCompletionService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
+            new OpenAIChatCompletionService("model-id", client);
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
 
     [Fact]
@@ -161,6 +199,44 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         // Assert
         Assert.NotNull(textContent.ModelId);
         Assert.Equal("gpt-3.5-turbo", textContent.ModelId);
+    }
+
+    [Fact]
+    public async Task GetStreamingTextContentsWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("model-id", "api-key", "organization", this._httpClient);
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingTextContentsAsync("Prompt"))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Text);
+        }
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("model-id", "api-key", "organization", this._httpClient);
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([]))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
     }
 
     [Fact]

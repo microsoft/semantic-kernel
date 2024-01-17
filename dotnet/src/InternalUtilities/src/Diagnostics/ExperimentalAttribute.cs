@@ -14,6 +14,7 @@ namespace System.Diagnostics.CodeAnalysis;
 ///   This attribute allows call sites to be flagged with a diagnostic that indicates that an experimental
 ///   feature is used. Authors can use this attribute to ship preview features in their assemblies.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Assembly |
                 AttributeTargets.Module |
                 AttributeTargets.Class |

@@ -101,4 +101,19 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.False(result);
     }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("content", "content")]
+    public void ToStringReturnsString(object? content, string expectedContent)
+    {
+        // Arrange
+        var response = new RestApiOperationResponse(content!, "application/json");
+
+        // Act
+        var result = response.ToString();
+
+        // Assert
+        Assert.Equal(expectedContent, result);
+    }
 }

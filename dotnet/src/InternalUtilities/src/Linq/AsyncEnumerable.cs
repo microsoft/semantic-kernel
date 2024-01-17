@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -8,6 +9,7 @@ using Microsoft.SemanticKernel;
 // Used for compatibility with System.Linq.Async Nuget pkg
 namespace System.Linq;
 
+[ExcludeFromCodeCoverage]
 internal static class AsyncEnumerable
 {
     public static IAsyncEnumerable<T> Empty<T>() => EmptyAsyncEnumerable<T>.Instance;

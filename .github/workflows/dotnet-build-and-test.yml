@@ -12,6 +12,9 @@ on:
   merge_group:
     branches: ["main"]
 
+env:
+  COVERAGE_THRESHOLD: 80
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -82,7 +85,7 @@ jobs:
         run: |
           export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Planners.Core.UnitTests.csproj|Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
           for project in $UT_PROJECTS; do
-            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/"
           done
 
       - name: Run Integration Tests
@@ -108,6 +111,20 @@ jobs:
           Planners__OpenAI__ModelId: ${{ vars.PLANNERS__OPENAI__MODELID }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+
+      # Generate test reports and check coverage
+      - name: Generate test reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+        with:
+          reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
+          targetdir: "./TestResults/Reports"
+          reporttypes: "JsonSummary"
+          # Report for production packages only
+          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Yaml;"
+
+      - name: Check coverage
+        shell: pwsh
+        run: .github/workflows/check-coverage.ps1 -JsonReportPath "TestResults/Reports/Summary.json" -CoverageThreshold $env:COVERAGE_THRESHOLD
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   dotnet-build-and-test-check:
