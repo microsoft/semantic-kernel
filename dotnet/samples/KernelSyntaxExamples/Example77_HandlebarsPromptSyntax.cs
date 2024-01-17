@@ -101,7 +101,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         //    new() {
         //      { "input", companyDescription }
         //    });
-        //Console.WriteLine($"Result: {productsResult}");
+        //This.WriteLine($"Result: {productsResult}");
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////
         // Testing the product description generation
@@ -111,7 +111,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         //    new() {
         //      { "input", ProductDescription }
         //    });
-        //Console.WriteLine($"Result: {productDescriptionResult}");
+        //This.WriteLine($"Result: {productDescriptionResult}");
 
         // Using the planner to generate a plan for the user
         string userPrompt =
@@ -138,7 +138,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         //var planName = "plan4ProductsGeneration.txt";
 
         //// Print the plan to the console
-        //Console.WriteLine($"Plan: {plan}");
+        //This.WriteLine($"Plan: {plan}");
 
         //var serializedPlan = plan.ToString();
         //await File.WriteAllTextAsync(planName, serializedPlan);
@@ -239,7 +239,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                     }
                 );
 
-        Console.WriteLine($"Result:  {result}");
+        this.WriteLine($"Result:  {result}");
     }
 
     public Example77_HandlebarsPromptSyntax(ITestOutputHelper output) : base(output)
