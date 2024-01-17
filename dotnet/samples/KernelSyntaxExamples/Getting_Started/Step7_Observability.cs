@@ -3,16 +3,22 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Step7_Observability
+namespace GettingStarted;
+
+public class Step7_Observability : BaseTest
 {
     /// <summary>
     /// Shows different ways observe the execution of a <see cref="KernelPlugin"/> instances.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -25,13 +31,13 @@ public static class Step7_Observability
         // Handler which is called before a function is invoked
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"Invoking {e.Function.Name}");
+            WriteLine($"Invoking {e.Function.Name}");
         }
 
         // Handler which is called after a prompt is rendered
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
+            WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
         }
 
         // Handler which is called after a function is invoked
@@ -39,7 +45,7 @@ public static class Step7_Observability
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                Console.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
             }
         }
 
@@ -50,7 +56,7 @@ public static class Step7_Observability
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
@@ -61,5 +67,9 @@ public static class Step7_Observability
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+    }
+
+    public Step7_Observability(ITestOutputHelper output) : base(output)
+    {
     }
 }
