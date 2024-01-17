@@ -19,14 +19,14 @@ public class Example76_StronglyTypedKernelResult : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        Console.WriteLine("======== LLMPrompts ========");
+        this.WriteLine("======== LLMPrompts ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIApiKey == null)
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -52,9 +52,9 @@ public class Example76_StronglyTypedKernelResult : BaseTest
             functionResult!,
             sw.ElapsedMilliseconds);
 
-        Console.WriteLine($"Test data: {functionResultTestDataGen.Result} \n");
-        Console.WriteLine($"Milliseconds: {functionResultTestDataGen.ExecutionTimeInMilliseconds} \n");
-        Console.WriteLine($"Total Tokens: {functionResultTestDataGen.TokenCounts!.TotalTokens} \n");
+        this.WriteLine($"Test data: {functionResultTestDataGen.Result} \n");
+        this.WriteLine($"Milliseconds: {functionResultTestDataGen.ExecutionTimeInMilliseconds} \n");
+        this.WriteLine($"Total Tokens: {functionResultTestDataGen.TokenCounts!.TotalTokens} \n");
     }
 
     public Example76_StronglyTypedKernelResult(ITestOutputHelper output) : base(output)
