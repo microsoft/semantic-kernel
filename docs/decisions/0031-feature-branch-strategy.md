@@ -6,7 +6,7 @@ contact: rogerbarreto
 date: 2024-01-16
 deciders: rogerbarreto, markwallace-microsoft, dmytrostruk, sergeymenshik
 consulted:
-informed: Entire Software Engineering Department
+informed:
 ---
 
 # Implementing Feature Branch Strategy for Community Driven Connectors
@@ -52,6 +52,37 @@ We may also engage in the development and changes to the feature branch when nee
 ## Validation
 
 The effectiveness of the feature branch strategy will be validated through regular code reviews, successful CI/CD pipeline runs, and feedback from the development team.
+
+## Connector/Model Priorities
+
+Currently we are looking for community support on the following models
+
+The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a platform that hosts one of the models below:
+
+### Models
+
+- **Microsoft's Phi-2**:
+- **Google Gemini**
+- **Facebook Llama + function calling**
+- **Anthropic Claude**
+- **Other Multi-model Models (e.g. Stable Diffusion)**
+
+Connectors may be needed not per Model basis but rather per platform.
+For example, using OpenAI or HuggingFace connector you may be able to call a Phi-2 Model.
+
+### Potential platforms for connector support:
+
+- **Local Model Support**
+  - LM Studio
+  - Ollama
+  - Pure C# (e.g. LlamaSharp or ONNX runtime)
+- Amazon Bedrock
+- Google AI Platform
+
+### Notes
+
+- Is very important to have easy to reproduce examples for any new model support or added feature.
+- While implementing new features code follow our current existing code-base as a reference and ensure that the code is validated by our CI/CD pipeline requirements, before submitting a PR for review.
 
 ## Decision Outcome
 
