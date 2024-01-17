@@ -65,7 +65,6 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.60.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
     <PackageVersion Include="YamlDotNet" Version="13.7.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />

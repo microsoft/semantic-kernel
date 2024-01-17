@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using NCalcPlugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -60,9 +59,6 @@ provides:
     [Fact(Skip = "Can take more than 1 minute")]
     public Task RunAsync()
     {
-        // Load assemblies for external plugins
-        WriteLine($"Loading {typeof(SimpleCalculatorPlugin).AssemblyQualifiedName}");
-
         return RunExampleAsync();
         //return RunInteractiveAsync();
     }

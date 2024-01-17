@@ -25,7 +25,6 @@
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
-    <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
   </ItemGroup>
 
 </Project>
