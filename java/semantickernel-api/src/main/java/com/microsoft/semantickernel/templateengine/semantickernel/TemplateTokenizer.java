@@ -167,13 +167,6 @@ public class TemplateTokenizer {
                                     break;
 
                                 case FunctionId:
-                                    if (codeBlocks.size() > 2) {
-                                        throw new TemplateException(
-                                                TemplateException.ErrorCodes.SYNTAX_ERROR,
-                                                "Functions support only one parameter: "
-                                                        + contentWithoutDelimiters);
-                                    }
-
                                     blocks.add(new CodeBlock(codeBlocks, contentWithoutDelimiters));
                                     break;
 

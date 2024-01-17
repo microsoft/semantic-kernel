@@ -280,9 +280,9 @@ public class KernelPluginFactory {
         try {
             String config = getFileContents(configFileName, clazz);
 
-            return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
-        } catch (IOException e) {
-            if (e instanceof JsonMappingException) {
+            return PromptTemplateConfig.parseFromJson(config);
+        } catch (Exception e) {
+            if (e instanceof SKException) {
                 LOGGER.error("Failed to parse config file " + configFileName, e);
 
                 throw new SKException("Failed to parse config file " + configFileName, e);

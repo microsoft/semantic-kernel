@@ -2,12 +2,15 @@ package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 import static com.microsoft.semantickernel.templateengine.semantickernel.blocks.BlockTypes.NamedArg;
 
-import com.microsoft.semantickernel.Todo;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NamedArgBlock extends Block implements TextRendering {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NamedArgBlock.class);
 
     private final String name;
     private final String value;
@@ -49,7 +52,24 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     @Override
     public boolean isValid() {
-        throw new Todo();
+        if (Verify.isNullOrEmpty(this.name)) {
+            LOGGER.error("A named argument must have a name");
+            return false;
+        }
+
+        if (this.valBlock != null && !this.valBlock.isValid()) {
+            LOGGER.error("There was an issue with the named argument value for '" + name);
+            return false;
+        } else if (this.varBlock != null && !this.varBlock.isValid()) {
+            LOGGER.error("There was an issue with the named argument value for '" + name);
+            return false;
+        } else if (this.valBlock == null && this.varBlock == null) {
+            LOGGER.error("A named argument must have a value");
+            return false;
+        }
+
+        // Argument names share the same validation as variables
+        return this.argNameAsVarBlock.isValid();
     }
 
     @Nullable

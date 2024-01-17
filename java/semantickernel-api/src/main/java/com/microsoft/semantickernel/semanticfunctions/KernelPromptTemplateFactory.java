@@ -1,21 +1,26 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import static com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory.HANDLEBARS_TEMPLATE_FORMAT;
+import static com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
-import reactor.util.annotation.NonNull;
-
 import java.util.Locale;
-
-import static com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
 
 public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 
-    public PromptTemplate tryCreate(@NonNull PromptTemplateConfig templateConfig) {
-        if (templateConfig.getTemplateFormat() != null &&
-                SEMANTIC_KERNEL_TEMPLATE_FORMAT.equals(templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT))) {
+    public PromptTemplate tryCreate(PromptTemplateConfig templateConfig) {
+        if (templateConfig == null || templateConfig.getTemplateFormat() == null) {
             return new DefaultPromptTemplate(templateConfig);
         }
 
-        throw new UnknownTemplateFormatException(templateConfig.getTemplateFormat());
+        switch (templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT)) {
+            case SEMANTIC_KERNEL_TEMPLATE_FORMAT:
+                return new DefaultPromptTemplate(templateConfig);
+            case HANDLEBARS_TEMPLATE_FORMAT:
+                return new HandlebarsPromptTemplate(templateConfig);
+            default:
+                throw new UnknownTemplateFormatException(templateConfig.getTemplateFormat());
+        }
     }
 }

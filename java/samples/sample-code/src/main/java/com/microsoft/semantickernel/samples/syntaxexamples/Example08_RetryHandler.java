@@ -14,7 +14,8 @@ import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.time.Duration;
 
 public class Example08_RetryHandler {
-
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "text-davinci-003");
     public static void main(String[] args) throws ConfigurationException {
         // Create a Kernel with the HttpClient
         RetryOptions retryOptions = new RetryOptions(new ExponentialBackoffOptions()
@@ -30,7 +31,7 @@ public class Example08_RetryHandler {
 
         TextGenerationService textGenerationService = TextGenerationService.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId("text-davinci-003")
+            .withModelId(MODEL_ID)
             .build();
 
         Kernel kernel = Kernel.builder()

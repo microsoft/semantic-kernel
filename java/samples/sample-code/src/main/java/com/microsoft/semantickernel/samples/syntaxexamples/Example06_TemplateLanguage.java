@@ -4,7 +4,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
@@ -19,12 +18,13 @@ import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
 public class Example06_TemplateLanguage {
 
-    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
-        System.getenv("USE_AZURE_CLIENT"));
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if USE_AZURE_CLIENT is true
+    // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "text-davinci-003");
 
     public static class Time {
 
@@ -45,9 +45,9 @@ public class Example06_TemplateLanguage {
 
         OpenAIAsyncClient client;
 
-        if (USE_AZURE_CLIENT) {
+        if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(CLIENT_KEY))
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
         } else {
@@ -57,9 +57,9 @@ public class Example06_TemplateLanguage {
         }
 
         TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
-                .withOpenAIAsyncClient(client)
-                .withModelId("text-davinci-003")
-                .build();
+            .withOpenAIAsyncClient(client)
+            .withModelId(MODEL_ID)
+            .build();
 
         Kernel kernel = Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
@@ -85,10 +85,8 @@ public class Example06_TemplateLanguage {
         // This allows to see the prompt before it's sent to OpenAI
         System.out.println("--- Rendered Prompt");
 
-        var promptTemplateFactory = new KernelPromptTemplateFactory();
-
-        var promptTemplate = promptTemplateFactory.tryCreate(
-            new PromptTemplateConfig(functionDefinition));
+        var promptTemplate = new KernelPromptTemplateFactory()
+            .tryCreate(new PromptTemplateConfig(functionDefinition));
 
         var renderedPrompt = promptTemplate.renderAsync(kernel, null).block();
         System.out.println(renderedPrompt);

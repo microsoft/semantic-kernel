@@ -4,6 +4,9 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionFromMethod;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -101,6 +104,26 @@ public class KernelFunctionFactory {
             description,
             templateFormat,
             promptTemplateFactory);
+    }
+
+    public static KernelFunction createFromPrompt(
+        PromptTemplateConfig promptConfig,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
+
+        if (promptTemplateFactory == null) {
+            promptTemplateFactory = new KernelPromptTemplateFactory();
+        }
+
+        return KernelFunctionFactory.create(promptTemplateFactory.tryCreate(promptConfig),
+            promptConfig);
+    }
+
+    public static KernelFunction create(
+        PromptTemplate promptTemplate,
+        PromptTemplateConfig promptConfig) {
+        return new KernelFunctionFromPrompt(
+            promptTemplate,
+            promptConfig);
     }
 
     private static Map<String, PromptExecutionSettings> createSettingsDictionary(
