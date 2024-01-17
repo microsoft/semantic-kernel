@@ -6,11 +6,13 @@ import reactor.util.annotation.NonNull;
 
 import java.util.Locale;
 
+import static com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+
 public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 
     public PromptTemplate tryCreate(@NonNull PromptTemplateConfig templateConfig) {
         if (templateConfig.getTemplateFormat() != null &&
-                "semantic-kernel".equals(templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT))) {
+                SEMANTIC_KERNEL_TEMPLATE_FORMAT.equals(templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT))) {
             return new DefaultPromptTemplate(templateConfig);
         }
 
