@@ -27,14 +27,14 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
 
     public async Task RunAsync()
     {
-        Console.WriteLine("======== LLMPrompts ========");
+        this.WriteLine("======== LLMPrompts ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIApiKey == null)
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
