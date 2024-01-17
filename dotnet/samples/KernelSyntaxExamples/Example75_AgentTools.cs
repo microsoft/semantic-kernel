@@ -23,7 +23,7 @@ public sealed class Example75_AgentTools : BaseTest
     private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
 
     // Track agents for clean-up
-    private readonly List<IAgent> s_agents = new();
+    private readonly List<IAgent> _s_agents = new();
 
     /// <summary>
     /// Show how to utilize code_interpreter and retrieval tools.
@@ -73,7 +73,7 @@ public sealed class Example75_AgentTools : BaseTest
         }
         finally
         {
-            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._s_agents.Select(a => a.DeleteAsync()));
         }
     }
 
@@ -116,7 +116,7 @@ public sealed class Example75_AgentTools : BaseTest
         }
         finally
         {
-            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._s_agents.Select(a => a.DeleteAsync()));
         }
     }
 
@@ -166,7 +166,7 @@ public sealed class Example75_AgentTools : BaseTest
 
     private IAgent Track(IAgent agent)
     {
-        s_agents.Add(agent);
+        this._s_agents.Add(agent);
 
         return agent;
     }
