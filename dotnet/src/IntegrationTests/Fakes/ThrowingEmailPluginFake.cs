@@ -3,7 +3,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 #pragma warning disable CA1812 // Uninstantiated internal types

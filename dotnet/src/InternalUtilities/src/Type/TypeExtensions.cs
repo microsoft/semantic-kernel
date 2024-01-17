@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace System;
@@ -8,6 +9,7 @@ namespace System;
 /// <summary>
 /// Extensions methods for <see cref="System.Type"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class TypeExtensions
 {
     /// <summary>
