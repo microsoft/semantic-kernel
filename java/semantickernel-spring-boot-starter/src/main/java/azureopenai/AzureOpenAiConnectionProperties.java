@@ -1,3 +1,5 @@
+package azureopenai;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(AzureOpenAiConnectionProperties.CONFIG_PREFIX)

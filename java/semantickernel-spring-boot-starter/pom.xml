@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
@@ -22,7 +23,6 @@
             <artifactId>spring-boot-starter</artifactId>
             <version>3.2.1</version>
         </dependency>
-
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-ai-openai</artifactId>
@@ -34,8 +34,8 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api</artifactId>
-            <scope>test</scope>
+            <artifactId>semantickernel-core</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -51,7 +51,19 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>3.2.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
+
 
 </project>
