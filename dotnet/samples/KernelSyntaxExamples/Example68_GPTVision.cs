@@ -4,11 +4,16 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows how to use GPT Vision model with different content types (text and image).
-public static class Example68_GPTVision
+public class Example68_GPTVision : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         const string ImageUri = "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg";
 
@@ -28,8 +33,10 @@ public static class Example68_GPTVision
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
-        Console.WriteLine(reply.Content);
+        WriteLine(reply.Content);
+    }
 
-        Console.ReadKey();
+    public Example68_GPTVision(ITestOutputHelper output) : base(output)
+    {
     }
 }
