@@ -2,8 +2,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace KernelSyntaxExamples;
 
@@ -18,9 +21,11 @@ namespace KernelSyntaxExamples;
 // In order to create a Prompt Function that fully benefits from the Handlebars syntax power.
 // The example also shows how to use the HandlebarsPlanner to generate a plan (and persist it) which was used to generate the initial Handlebar template.
 // The example also shows how to create two prompt functions and a plugin to group them together.
-public static class Example77_HandlebarsPromptSyntax
+public class Example77_HandlebarsPromptSyntax : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+
+    public async Task RunAsync()
     {
         Console.WriteLine("======== LLMPrompts ========");
 
@@ -235,5 +240,9 @@ public static class Example77_HandlebarsPromptSyntax
                 );
 
         Console.WriteLine($"Result:  {result}");
+    }
+
+    public Example77_HandlebarsPromptSyntax(ITestOutputHelper output) : base(output)
+    {
     }
 }
