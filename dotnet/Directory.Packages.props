@@ -50,7 +50,6 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
-    <PackageVersion Include="Polly" Version="8.2.0" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.0" />
