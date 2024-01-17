@@ -12,12 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServiceLoadUtil {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceLoadUtil.class);
 
-    private ServiceLoadUtil() {}
+    private ServiceLoadUtil() {
+    }
 
     public static <T>
-            Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
+    Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
 
         T impl = null;
@@ -30,16 +32,16 @@ public class ServiceLoadUtil {
             try {
                 // Service loader not found, attempt to load the alternative class
                 Object instance =
-                        Class.forName(alternativeClassName).getDeclaredConstructor().newInstance();
+                    Class.forName(alternativeClassName).getDeclaredConstructor().newInstance();
                 if (clazz.isInstance(instance)) {
                     impl = (T) instance;
                 }
             } catch (ClassNotFoundException
-                    | InvocationTargetException
-                    | InstantiationException
-                    | IllegalAccessException
-                    | NoSuchMethodException
-                    | RuntimeException e) {
+                     | InvocationTargetException
+                     | InstantiationException
+                     | IllegalAccessException
+                     | NoSuchMethodException
+                     | RuntimeException e) {
                 LOGGER.error("Unable to load service " + clazz.getName() + " ", e);
             }
 
@@ -54,21 +56,21 @@ public class ServiceLoadUtil {
             // Test that we can construct the builder
             if (!clazz.isInstance(constructor.newInstance())) {
                 throw new RuntimeException(
-                        "Builder creates instance of the wrong type: " + clazz.getName());
+                    "Builder creates instance of the wrong type: " + clazz.getName());
             }
 
             return () -> {
                 try {
                     return (T) constructor.newInstance();
                 } catch (InstantiationException
-                        | IllegalAccessException
-                        | InvocationTargetException e) {
+                         | IllegalAccessException
+                         | InvocationTargetException e) {
                     throw new RuntimeException(e);
                 }
             };
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(
-                    "Builder requires a no args constructor: " + clazz.getName());
+                "Builder requires a no args constructor: " + clazz.getName());
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("Builder is of wrong type: " + clazz.getName());
         }

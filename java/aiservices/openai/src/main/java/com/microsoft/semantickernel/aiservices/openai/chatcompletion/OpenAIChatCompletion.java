@@ -357,26 +357,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         throw new IllegalArgumentException("Unknown chat role: " + chatRole);
     }
 
-    public static class Builder implements ChatCompletionService.Builder {
-
-        private OpenAIAsyncClient client;
-        private String modelId;
-
+    public static class Builder extends ChatCompletionService.Builder {
         @Override
         public OpenAIChatCompletion build() {
             return new OpenAIChatCompletion(client, modelId);
-        }
-
-        @Override
-        public Builder withModelId(String modelId) {
-            this.modelId = modelId;
-            return this;
-        }
-
-        @Override
-        public Builder withOpenAIAsyncClient(OpenAIAsyncClient openAIClient) {
-            this.client = openAIClient;
-            return this;
         }
     }
 }

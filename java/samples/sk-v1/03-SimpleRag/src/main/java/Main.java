@@ -2,7 +2,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -11,11 +10,9 @@ import com.microsoft.semantickernel.orchestration.contextvariables.KernelArgumen
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
 import plugins.searchplugin.Search;
 
 public class Main {
@@ -50,7 +47,7 @@ public class Main {
             "Search"
         );
 
-        Kernel kernel = SKBuilders.kernel()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .withPlugin(searchPlugin)

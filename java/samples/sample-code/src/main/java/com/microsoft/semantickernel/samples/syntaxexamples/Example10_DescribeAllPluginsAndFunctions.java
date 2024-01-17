@@ -91,7 +91,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
             textGenerationService = null;
         }
 
-        Kernel kernel = new DefaultKernel.Builder()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .build();
 
@@ -115,22 +115,22 @@ public class Example10_DescribeAllPluginsAndFunctions {
         );
 
         // Not added to kernel so should not be printed
-        var jokeFunction = new KernelFunctionFromPrompt.Builder()
+        var jokeFunction = KernelFunctionFromPrompt.builder()
             .withTemplate("tell a joke about {{$input}}")
             .withDefaultExecutionSettings(
-                new PromptExecutionSettings.Builder()
+                PromptExecutionSettings.builder()
                     .withMaxTokens(150)
                     .build()
             )
             .build();
 
         // Not added to kernel so should not be printed
-        var writeNovel = new KernelFunctionFromPrompt.Builder()
+        var writeNovel = KernelFunctionFromPrompt.builder()
             .withTemplate("write a novel about {{$input}} in {{$language}} language")
             .withName("Novel")
             .withDescription("Write a bedtime story")
             .withDefaultExecutionSettings(
-                new PromptExecutionSettings.Builder()
+                PromptExecutionSettings.builder()
                     .withMaxTokens(150)
                     .build()
             )

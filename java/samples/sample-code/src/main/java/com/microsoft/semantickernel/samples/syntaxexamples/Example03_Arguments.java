@@ -40,7 +40,7 @@ public class Example03_Arguments {
     }
 
     public static void main(String[] args) {
-        Kernel kernel = new DefaultKernel.Builder().build();
+        Kernel kernel = Kernel.builder().build();
 
         // Load native skill
         KernelPlugin functionCollection =

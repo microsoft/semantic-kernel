@@ -107,7 +107,7 @@ public class Example09_FunctionTypes {
                 Example09_FunctionTypes.class
             );
 
-        Kernel kernel = new DefaultKernel.Builder()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .withPlugin(plugin)
             .withPlugin(summarize)

@@ -2,7 +2,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -42,7 +41,7 @@ public class Main {
             .build();
          */
 
-        Kernel kernel = SKBuilders.kernel()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
