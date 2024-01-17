@@ -28,7 +28,7 @@ class HuggingFaceRequestSettings(AIRequestSettings):
         gen_config = self.get_generation_config()
         if "prompt" in kwargs and kwargs["prompt"] is not None:
             return {
-                "prompt": kwargs["prompt"],
+                "text_inputs": kwargs["prompt"],
                 "generation_config": gen_config,
                 "num_return_sequences": self.num_return_sequences,
                 "do_sample": self.do_sample,

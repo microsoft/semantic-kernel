@@ -366,11 +366,20 @@ class SKFunction(SKFunctionBase):
         if input is not None:
             context.variables.update(input)
 
-        loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
+        try:
+            loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
+        except RuntimeError:
+            loop = None
 
         if loop and loop.is_running():
-            coroutine_function = self._invoke_semantic_async if self.is_semantic else self._invoke_native_async
-            return self.run_async_in_executor(lambda: coroutine_function(context, settings))
+
+            def run_coroutine():
+                if self.is_semantic:
+                    return self._invoke_semantic_async(context, settings)
+                else:
+                    return self._invoke_native_async(context)
+
+            return self.run_async_in_executor(run_coroutine)
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))

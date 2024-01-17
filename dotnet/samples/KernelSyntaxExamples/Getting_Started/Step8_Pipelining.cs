@@ -6,17 +6,23 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Step8_Pipelining
+namespace GettingStarted;
+
+public class Step8_Pipelining : BaseTest
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
     /// them in a sequence, passing the output from one as input to the next.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(
@@ -25,7 +31,7 @@ public static class Step8_Pipelining
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 
-        Console.WriteLine("================ PIPELINE ================");
+        WriteLine("================ PIPELINE ================");
         {
             // Create a pipeline of functions that will parse a string into an int, multiply it by a double, truncate it to an int, and then humanize it.
             KernelFunction parseInt32 = KernelFunctionFactory.CreateFromMethod((string s) => double.Parse(s, CultureInfo.InvariantCulture), "parseInt32");
@@ -47,10 +53,10 @@ public static class Step8_Pipelining
             // - The parseInt32 function will be invoked, read "123.456" from the arguments, and parse it into (double)123.456.
             // - The multiplyByN function will be invoked, with i=123.456 and n=78.90, and return (double)9740.6784.
             // - The truncate function will be invoked, with d=9740.6784, and return (int)9740, which will be the final result.
-            Console.WriteLine(await pipeline.InvokeAsync(kernel, args));
+            WriteLine(await pipeline.InvokeAsync(kernel, args));
         }
 
-        Console.WriteLine("================ GRAPH ================");
+        WriteLine("================ GRAPH ================");
         {
             KernelFunction rand = KernelFunctionFactory.CreateFromMethod(() => Random.Shared.Next(), "GetRandomInt32");
             KernelFunction mult = KernelFunctionFactory.CreateFromMethod((int i, int j) => i * j, "Multiply");
@@ -65,8 +71,12 @@ public static class Step8_Pipelining
                 (mult, "")
             }, "graph");
 
-            Console.WriteLine(await graph.InvokeAsync(kernel));
+            WriteLine(await graph.InvokeAsync(kernel));
         }
+    }
+
+    public Step8_Pipelining(ITestOutputHelper output) : base(output)
+    {
     }
 }
 
