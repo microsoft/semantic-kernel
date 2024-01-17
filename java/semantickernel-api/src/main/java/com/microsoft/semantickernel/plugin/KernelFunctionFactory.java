@@ -61,20 +61,32 @@ public class KernelFunctionFactory {
     }
 
 
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
-    /// </summary>
-    /// <param name="promptTemplate">Prompt template for the function.</param>
-    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
-    /// <param name="functionName">The name to use for the function. If null, it will default to a randomly generated name.</param>
-    /// <param name="description">The description to use for the function.</param>
-    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
-    /// <param name="promptTemplateFactory">
-    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
-    /// If null, a default factory will be used.
-    /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
+    /**
+     * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
+     *
+     * @param promptTemplate Prompt template for the function.
+     * @return The created {@link KernelFunction} for invoking the prompt.
+     */
+    public static KernelFunction createFromPrompt(String promptTemplate) {
+        return createFromPrompt(promptTemplate, null, null, null, null, null);
+    }
+
+    /**
+     * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
+     *
+     * @param promptTemplate        Prompt template for the function.
+     * @param executionSettings     Default execution settings to use when invoking this prompt
+     *                              function.
+     * @param functionName          The name to use for the function. If null, it will default to a
+     *                              randomly generated name.
+     * @param description           The description to use for the function.
+     * @param templateFormat        The template format of {@code promptTemplate}. This must be
+     *                              provided if {@code promptTemplateFactory} is not null.
+     * @param promptTemplateFactory The {@link PromptTemplateFactory} to use when interpreting the
+     *                              {@code promptTemplate} into a {@link IPromptTemplate}. If null,
+     *                              a default factory will be used.
+     * @return The created {@link KernelFunction} for invoking the prompt.
+     */
     public static KernelFunction createFromPrompt(
         String promptTemplate,
         @Nullable PromptExecutionSettings executionSettings,

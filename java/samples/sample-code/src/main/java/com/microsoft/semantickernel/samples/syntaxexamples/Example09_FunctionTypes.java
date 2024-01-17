@@ -19,8 +19,10 @@ import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
 import reactor.core.publisher.Mono;
@@ -181,6 +183,18 @@ public class Example09_FunctionTypes {
                 Void.class)
             .block();
 
+        kernel
+            .invokeAsync(plugin.get("noInputComplexReturnTypeAsync"),
+                null,
+                Temporal.class)
+            .block();
+
+        kernel
+            .invokeAsync(plugin.get("noInputComplexReturnType"),
+                null,
+                Temporal.class)
+            .block();
+
         /*
         TODO: support FunctionResult
         kernel
@@ -311,7 +325,8 @@ public class Example09_FunctionTypes {
         ) {
             String result = complexObject.toString();
             System.out.println(
-                "Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {"
+                "Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = "
+                    + complexObject + "] -> result: {"
                     + result + "}");
             return result;
         }
@@ -329,7 +344,8 @@ public class Example09_FunctionTypes {
             String echoInput) {
             return Mono.fromCallable(() -> {
                 System.out.println(
-                    "Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {"
+                    "Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = "
+                        + echoInput + "] -> result: {"
                         + echoInput + "}");
                 return echoInput;
             });
@@ -349,6 +365,25 @@ public class Example09_FunctionTypes {
                     "Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {" + x
                         + "}]");
             });
+        }
+
+        @DefineKernelFunction(
+            name = "noInputComplexReturnTypeAsync",
+            returnType = "java.time.temporal.Temporal"
+        )
+        public Mono<LocalDateTime> noInputComplexReturnTypeAsync() {
+            return Mono.just(
+                LocalDateTime.now()
+            );
+        }
+
+
+        @DefineKernelFunction(
+            name = "noInputComplexReturnType",
+            returnType = "java.time.temporal.Temporal"
+        )
+        public LocalDateTime noInputComplexReturnType() {
+            return LocalDateTime.now();
         }
 
         /*

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -56,11 +57,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             .flatMapMany(prompt -> {
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                AIService client = kernel.getServiceSelector()
-                    .getService(TextGenerationService.class);
+                AIService client = kernel
+                    .getServiceSelector()
+                    .getService(TextAIService.class);
 
                 if (client == null) {
-                    throw new IllegalStateException("Failed to initialise aiService");
+                    throw new IllegalStateException("Failed to initialise aiService, could not find any TextAIService implementations");
                 }
 
                 Flux<StreamingContent<T>> result;
@@ -73,8 +75,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 }
 
                 if (client instanceof ChatCompletionService) {
-
-                    prompt = "<prompt>".concat(prompt).concat("</prompt>");
                     result = ((ChatCompletionService) client)
                         .getStreamingChatMessageContentsAsync(
                             prompt,

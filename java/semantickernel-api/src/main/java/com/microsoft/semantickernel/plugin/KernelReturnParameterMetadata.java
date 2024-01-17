@@ -1,20 +1,22 @@
 package com.microsoft.semantickernel.plugin;
 
-import com.microsoft.semantickernel.Todo;
-
-public class KernelReturnParameterMetadata {
+public class KernelReturnParameterMetadata<T> {
 
     private final String description;
+    private final Class<T> parameterType;
 
-    public KernelReturnParameterMetadata(String description) {
+    public KernelReturnParameterMetadata(
+        String description,
+        Class<T> parameterType) {
         this.description = description;
+        this.parameterType = parameterType;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public String getParameterType() {
-        throw new Todo();
+    public Class<T> getParameterType() {
+        return parameterType;
     }
 }

@@ -6,7 +6,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.azureopenai.AzureOpenAITextGenerationService;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -78,7 +78,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
 
-            textGenerationService = AzureOpenAITextGenerationService.builder()
+            textGenerationService = OpenAITextGenerationService.builder()
                 .withOpenAIAsyncClient(client)
                 .withModelId("text-davinci-003")
                 .build();

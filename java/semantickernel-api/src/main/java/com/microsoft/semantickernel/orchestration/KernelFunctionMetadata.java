@@ -40,4 +40,8 @@ public class KernelFunctionMetadata {
     public String getDescription() {
         return description;
     }
+
+    public KernelReturnParameterMetadata getReturnParameter() {
+        return returnParameter;
+    }
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-public class KernelContent {
+public class KernelContent<T extends KernelContent<T>> {
 
     @Nullable
     private Object innerContent;
@@ -26,6 +26,11 @@ public class KernelContent {
         this.innerContent = innerContent;
         this.modelId = modelId;
         this.metadata = metadata;
+    }
+
+    T setInnerContent(@Nullable Object innerContent) {
+        this.innerContent = innerContent;
+        return (T) this;
     }
 
     @CheckForNull

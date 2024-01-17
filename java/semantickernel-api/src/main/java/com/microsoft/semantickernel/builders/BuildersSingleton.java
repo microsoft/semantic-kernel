@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 
@@ -57,7 +57,7 @@ public enum BuildersSingleton {
 
 
     private static final String FALLBACK_KERNEL_FUNCTION_YAML_BUILDER_CLASS =
-        "com.microsoft.semantickernel.semanticfunctions.KernelFunctionYamlBuilder";
+        "com.microsoft.semantickernel.semanticfunctions.KernelFunctionYaml$Builder";
     private final Map<Class<?>, Supplier<?>>
         builders = new HashMap<>();
 

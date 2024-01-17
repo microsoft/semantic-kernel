@@ -66,7 +66,7 @@ public class Example05_InlineFunctionDefinition {
                 Event: I haven't been to the gym for a year
                 Excuse: I've been too busy training my pet dragon.
                 
-                Event: {{input}}
+                Event: {{$input}}
             """.stripIndent();
 
         var excuseFunction = new KernelFunctionFromPrompt.Builder()

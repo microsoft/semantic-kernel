@@ -1,14 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel;
 
+import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Block;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.FunctionIdBlock;
+import com.microsoft.semantickernel.templateengine.semantickernel.blocks.NamedArgBlock;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Symbols;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.ValBlock;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.VarBlock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /// <summary>
 /// Simple tokenizer used for default SK template code language.
@@ -36,16 +40,20 @@ import java.util.List;
 /// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 /// </summary>
 public class CodeTokenizer {
+
     private enum TokenTypes {
         None(0),
         Value(1),
         Variable(2),
-        FunctionId(3);
+        FunctionId(3),
+        NamedArg(4);
 
-        TokenTypes(int i) {}
+        TokenTypes(int i) {
+        }
     }
 
-    public CodeTokenizer() {}
+    public CodeTokenizer() {
+    }
 
     /// <summary>
     /// Tokenize a code block, without checking for syntax errors
@@ -79,6 +87,11 @@ public class CodeTokenizer {
         // Tokens must be separated by spaces, track their presence
         boolean spaceSeparatorFound = false;
 
+        // Named args may contain string values that contain spaces. These are used
+        // to determine when a space occurs between quotes.
+        boolean namedArgSeparatorFound = false;
+        char namedArgValuePrefix = '\0';
+
         // 1 char only edge case
         if (text.length() == 1) {
             switch (nextChar) {
@@ -103,7 +116,7 @@ public class CodeTokenizer {
         for (int nextCharCursor = 1; nextCharCursor < text.length(); nextCharCursor++) {
             char currentChar = nextChar;
             nextChar = text.charAt(nextCharCursor);
-
+            
             if (skipNextChar) {
                 skipNextChar = false;
                 continue;
@@ -117,6 +130,7 @@ public class CodeTokenizer {
                     currentTokenType = TokenTypes.Value;
                     textValueDelimiter = currentChar;
                 } else {
+                    // A function Id starts here
                     currentTokenType = TokenTypes.FunctionId;
                 }
 
@@ -125,7 +139,8 @@ public class CodeTokenizer {
             }
 
             // While reading a values between quotes
-            if (currentTokenType == TokenTypes.Value) {
+            if (currentTokenType == TokenTypes.Value
+                || (currentTokenType == TokenTypes.NamedArg && isQuote(namedArgValuePrefix))) {
                 // If the current char is escaping the next special char:
                 // - skip the current char (escape char)
                 // - add the next (special char)
@@ -144,6 +159,14 @@ public class CodeTokenizer {
                     currentTokenContent = new StringBuilder();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
+                } else if (currentChar == namedArgValuePrefix
+                    && currentTokenType == TokenTypes.NamedArg) {
+                    blocks.add(new NamedArgBlock(currentTokenContent.toString()));
+                    currentTokenContent = new StringBuilder();
+                    currentTokenType = TokenTypes.None;
+                    spaceSeparatorFound = false;
+                    namedArgSeparatorFound = false;
+                    namedArgValuePrefix = '\0';
                 }
 
                 continue;
@@ -156,13 +179,50 @@ public class CodeTokenizer {
                     blocks.add(new VarBlock(currentTokenContent.toString()));
                     currentTokenContent = new StringBuilder();
                 } else if (currentTokenType == TokenTypes.FunctionId) {
-                    blocks.add(new FunctionIdBlock(currentTokenContent.toString()));
-                    currentTokenContent = new StringBuilder();
-                }
+                    String tokenContent = currentTokenContent.toString();
+                    // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                    // a named arg is used without a function call
 
+                    NamedArgBlock namedArg = getNamedArg(tokenContent);
+
+                    if (namedArg != null) {
+                        blocks.add(namedArg);
+                    } else {
+                        blocks.add(new FunctionIdBlock(tokenContent));
+                    }
+                    currentTokenContent = new StringBuilder();
+                    currentTokenType = TokenTypes.None;
+                } else if (currentTokenType == TokenTypes.NamedArg && namedArgSeparatorFound
+                    && namedArgValuePrefix != 0) {
+                    blocks.add(
+                        new NamedArgBlock(currentTokenContent.toString()));
+                    currentTokenContent = new StringBuilder();
+                    namedArgSeparatorFound = false;
+                    namedArgValuePrefix = '\0';
+                    currentTokenType = TokenTypes.None;
+                }
                 spaceSeparatorFound = true;
                 currentTokenType = TokenTypes.None;
 
+                continue;
+            }
+
+            // If reading a named argument and either the '=' or the value prefix ($, ', or ") haven't been found
+            if (currentTokenType == TokenTypes.NamedArg && (!namedArgSeparatorFound
+                || namedArgValuePrefix == 0)) {
+                if (!namedArgSeparatorFound) {
+                    if (currentChar == Symbols.NamedArgBlockSeparator) {
+                        namedArgSeparatorFound = true;
+                    }
+                } else {
+                    namedArgValuePrefix = currentChar;
+                    if (!isQuote(namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix) {
+                        throw new SKException(
+                            "Named argument values need to be prefixed with a quote or "
+                                + Symbols.VarPrefix);
+                    }
+                }
+                currentTokenContent.append(currentChar);
                 continue;
             }
 
@@ -172,8 +232,8 @@ public class CodeTokenizer {
             if (currentTokenType == TokenTypes.None) {
                 if (!spaceSeparatorFound) {
                     throw new TemplateException(
-                            TemplateException.ErrorCodes.SYNTAX_ERROR,
-                            "Tokens must be separated by one space least");
+                        TemplateException.ErrorCodes.SYNTAX_ERROR,
+                        "Tokens must be separated by one space least");
                 }
 
                 if (isQuote(currentChar)) {
@@ -183,9 +243,12 @@ public class CodeTokenizer {
                 } else if (isVarPrefix(currentChar)) {
                     // A variable starts here
                     currentTokenType = TokenTypes.Variable;
-                } else {
+                } else if (blocks.isEmpty()) {
                     // A function Id starts here
                     currentTokenType = TokenTypes.FunctionId;
+                } else {
+                    // A named arg starts here
+                    currentTokenType = TokenTypes.NamedArg;
                 }
             }
         }
@@ -202,13 +265,25 @@ public class CodeTokenizer {
                 break;
 
             case FunctionId:
-                blocks.add(new FunctionIdBlock(currentTokenContent.toString()));
+                NamedArgBlock namedArg = getNamedArg(currentTokenContent.toString());
+
+                // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                // a named arg is used without a function call
+                if (namedArg != null) {
+                    blocks.add(namedArg);
+                } else {
+                    blocks.add(new FunctionIdBlock(currentTokenContent.toString()));
+                }
+
+                break;
+            case NamedArg:
+                blocks.add(new NamedArgBlock(currentTokenContent.toString()));
                 break;
 
             case None:
                 throw new TemplateException(
-                        TemplateException.ErrorCodes.SYNTAX_ERROR,
-                        "Tokens must be separated by one space least");
+                    TemplateException.ErrorCodes.SYNTAX_ERROR,
+                    "Tokens must be separated by one space least");
         }
 
         return blocks;
@@ -228,5 +303,23 @@ public class CodeTokenizer {
 
     private static boolean CanBeEscaped(char c) {
         return c == Symbols.DblQuote || c == Symbols.SglQuote || c == Symbols.EscapeChar;
+    }
+
+    @Nullable
+    private static NamedArgBlock getNamedArg(String tokenContent) {
+
+        String name = NamedArgBlock.tryGetName(tokenContent);
+        String value = NamedArgBlock.tryGetValue(tokenContent);
+
+        if (Verify.isNullOrEmpty(name) || Verify.isNullOrEmpty(value)) {
+            return null;
+        }
+
+        NamedArgBlock block = new NamedArgBlock(tokenContent, name, value);
+        if (block.isValid()) {
+            return block;
+        }
+
+        return null;
     }
 }
