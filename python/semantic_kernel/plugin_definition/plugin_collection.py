@@ -12,7 +12,7 @@ from semantic_kernel.plugin_definition.plugin_collection_base import (
     PluginCollectionBase,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyFunctionCollection,
+    ReadOnlyPluginCollection,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
@@ -26,22 +26,22 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class PluginCollection(PluginCollectionBase):
     GLOBAL_PLUGIN: ClassVar[str] = constants.GLOBAL_PLUGIN
-    read_only_plugin_collection_: ReadOnlyFunctionCollection = Field(alias="read_only_plugin_collection")
+    read_only_plugin_collection_: ReadOnlyPluginCollection = Field(alias="read_only_plugin_collection")
 
     def __init__(
         self,
         log: Optional[Any] = None,
         plugin_collection: Union[Dict[str, Dict[str, SKFunction]], None] = None,
-        read_only_plugin_collection_: Optional[ReadOnlyFunctionCollection] = None,
+        read_only_plugin_collection_: Optional[ReadOnlyPluginCollection] = None,
     ) -> None:
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if plugin_collection and read_only_plugin_collection_:
             raise ValueError("Only one of `plugin_collection` and `read_only_plugin_collection` can be" " provided")
         elif not plugin_collection and not read_only_plugin_collection_:
-            read_only_plugin_collection = ReadOnlyFunctionCollection({})
+            read_only_plugin_collection = ReadOnlyPluginCollection({})
         elif not read_only_plugin_collection_:
-            read_only_plugin_collection = ReadOnlyFunctionCollection(plugin_collection)
+            read_only_plugin_collection = ReadOnlyPluginCollection(plugin_collection)
         else:
             read_only_plugin_collection = read_only_plugin_collection_
         super().__init__(read_only_plugin_collection=read_only_plugin_collection)

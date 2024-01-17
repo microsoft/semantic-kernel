@@ -31,7 +31,7 @@ from semantic_kernel.plugin_definition.plugin_collection_base import (
     PluginCollectionBase,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyFunctionCollection,
+    ReadOnlyPluginCollection,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
@@ -146,7 +146,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             False,
         ),
         FunctionsView: create_functions_view(),
-        ReadOnlyFunctionCollection: create_plugin_collection().read_only_plugin_collection,
+        ReadOnlyPluginCollection: create_plugin_collection().read_only_plugin_collection,
         DelegateHandlers: DelegateHandlers(),
         DelegateInference: DelegateInference(),
         ContextVariables: create_context_variables(),
@@ -192,7 +192,7 @@ BASE_CLASSES = [
 
 # Classes that don't need serialization
 UNSERIALIZED_CLASSES = [
-    ReadOnlyFunctionCollection,
+    ReadOnlyPluginCollection,
 ]
 
 STATELESS_CLASSES = [
@@ -219,7 +219,7 @@ PYDANTIC_MODELS = [
     ParameterView,
     FunctionView,
     FunctionsView,
-    ReadOnlyFunctionCollection,
+    ReadOnlyPluginCollection,
     PluginCollection,
     ContextVariables,
     SKContext[NullMemory],

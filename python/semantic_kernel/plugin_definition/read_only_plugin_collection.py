@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class ReadOnlyFunctionCollection(ReadOnlyPluginCollectionBase):
+class ReadOnlyPluginCollection(ReadOnlyPluginCollectionBase):
     GLOBAL_PLUGIN: ClassVar[str] = constants.GLOBAL_PLUGIN
     data: Dict[str, Dict[str, SKFunction]] = Field(default_factory=dict)
     model_config = ConfigDict(frozen=False)

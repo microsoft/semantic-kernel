@@ -12,7 +12,7 @@ from semantic_kernel.memory.semantic_text_memory_base import (
 )
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyFunctionCollection,
+    ReadOnlyPluginCollection,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
@@ -28,7 +28,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
     memory: SemanticTextMemoryT
     variables: ContextVariables
     # This field can be used to hold anything that is not a string
-    plugin_collection: ReadOnlyFunctionCollection = Field(default_factory=ReadOnlyFunctionCollection)
+    plugin_collection: ReadOnlyPluginCollection = Field(default_factory=ReadOnlyPluginCollection)
     _objects: Dict[str, Any] = PrivateAttr(default_factory=dict)
     _error_occurred: bool = PrivateAttr(False)
     _last_exception: Optional[Exception] = PrivateAttr(None)
@@ -38,7 +38,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
         self,
         variables: ContextVariables,
         memory: SemanticTextMemoryBase,
-        plugin_collection: Union[ReadOnlyFunctionCollection, None],
+        plugin_collection: Union[ReadOnlyPluginCollection, None],
         **kwargs,
         # TODO: cancellation token?
     ) -> None:
@@ -54,7 +54,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
 
         if plugin_collection is None:
-            plugin_collection = ReadOnlyFunctionCollection()
+            plugin_collection = ReadOnlyPluginCollection()
 
         super().__init__(variables=variables, memory=memory, plugin_collection=plugin_collection)
 

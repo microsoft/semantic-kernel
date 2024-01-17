@@ -21,7 +21,7 @@ from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyFunctionCollection,
+    ReadOnlyPluginCollection,
 )
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
@@ -148,7 +148,7 @@ class Plan(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=self._state,
-                plugin_collection=ReadOnlyFunctionCollection(),
+                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
             )
 
@@ -188,7 +188,7 @@ class Plan(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=self._state,
-                plugin_collection=ReadOnlyFunctionCollection(),
+                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
             )
 
