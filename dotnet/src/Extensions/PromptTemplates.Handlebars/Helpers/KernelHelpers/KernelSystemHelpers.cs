@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers.KernelHelpersUtils;
@@ -84,18 +83,19 @@ internal static class KernelSystemHelpers
 
         handlebarsInstance.RegisterHelper("json", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
-            if (arguments.Length == 0 || arguments[0] is null)
+            if (arguments.Length == 0)
             {
                 throw new HandlebarsRuntimeException("`json` helper requires a value to be passed in.");
             }
 
             var args = ProcessArguments(arguments, variables);
             object objectToSerialize = args[0];
-            var type = objectToSerialize.GetType();
 
-            return type == typeof(string) ? objectToSerialize
-                : type == typeof(JsonNode) ? objectToSerialize.ToString()
-                : JsonSerializer.Serialize(objectToSerialize);
+            return objectToSerialize switch
+            {
+                string stringObject => objectToSerialize,
+                _ => JsonSerializer.Serialize(objectToSerialize)
+            };
         });
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
@@ -130,7 +130,15 @@ internal static class KernelSystemHelpers
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var args = ProcessArguments(arguments, variables);
-            return args.Any(arg => arg != null && arg is not false);
+
+            return args.Any(arg =>
+            {
+                return arg switch
+                {
+                    bool booleanArg => booleanArg,
+                    _ => arg is null
+                };
+            });
         });
 
         handlebarsInstance.RegisterHelper("add", (in HelperOptions options, in Context context, in Arguments arguments) =>
