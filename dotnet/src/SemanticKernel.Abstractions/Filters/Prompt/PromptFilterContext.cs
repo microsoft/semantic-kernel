@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Base class with data related to prompt rendering.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0004")]
 public abstract class PromptFilterContext
 {
     /// <summary>

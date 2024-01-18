@@ -10,8 +10,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides a collection of <see cref="IFunctionFilter"/> instances.
 /// </summary>
-[Experimental("SKEXP0005")]
-public sealed class FunctionFilterCollection : IList<IFunctionFilter>, IReadOnlyList<IFunctionFilter>
+[Experimental("SKEXP0004")]
+internal sealed class FunctionFilterCollection : IList<IFunctionFilter>, IReadOnlyList<IFunctionFilter>
 {
     /// <summary>
     /// The underlying dictionary of filters.

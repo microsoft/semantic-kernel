@@ -10,8 +10,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides a collection of <see cref="IPromptFilter"/> instances.
 /// </summary>
-[Experimental("SKEXP0005")]
-public sealed class PromptFilterCollection : IList<IPromptFilter>, IReadOnlyList<IPromptFilter>
+[Experimental("SKEXP0004")]
+internal sealed class PromptFilterCollection : IList<IPromptFilter>, IReadOnlyList<IPromptFilter>
 {
     /// <summary>
     /// The underlying dictionary of filters.

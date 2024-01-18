@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to function before invocation.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0004")]
 public sealed class FunctionInvokingContext : FunctionFilterContext
 {
     /// <summary>
