@@ -265,7 +265,7 @@ internal abstract class ClientCore
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            if (!autoInvoke || responseData.Choices.Count != 1)
+            if (!autoInvoke || responseData.Choices.Count != 1 || chatExecutionSettings.ToolCallBehavior?.PreInvokeCallback(iteration, null, null) != true) // PreInvokeCallback?
             {
                 return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, metadata)).ToList();
             }

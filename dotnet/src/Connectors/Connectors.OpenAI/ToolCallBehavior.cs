@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+public delegate bool ToolCallPreInvokeCallback(int iteration, string toolName, string[] toolArgs);
 
 /// <summary>Represents a behavior for OpenAI tool calls.</summary>
 public abstract class ToolCallBehavior
@@ -34,6 +37,9 @@ public abstract class ToolCallBehavior
     /// less likely that this limit is reached, as most of the time only a single request is needed.
     /// </remarks>
     private const int DefaultMaximumAutoInvokeAttempts = 5;
+
+
+    public ToolCallPreInvokeCallback PreInvokeCallback { get; set; }
 
     /// <summary>
     /// Gets an instance that will provide all of the <see cref="Kernel"/>'s plugins' function information.
