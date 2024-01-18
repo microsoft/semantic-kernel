@@ -1,17 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.semantickernel.StreamingKernelContent;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import com.microsoft.semantickernel.StreamingKernelContent;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+
 public class StreamingChatMessageContent extends StreamingKernelContent {
 
-    private String content;
-    private AuthorRole role;
+    private final String content;
+    private final AuthorRole role;
     private Charset encoding;
+    private String modelId;
 
     public StreamingChatMessageContent(
         AuthorRole role,
@@ -47,24 +49,26 @@ public class StreamingChatMessageContent extends StreamingKernelContent {
         return content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public AuthorRole getRole() {
         return role;
-    }
-
-    public void setRole(AuthorRole role) {
-        this.role = role;
     }
 
     public Charset getEncoding() {
         return encoding;
     }
 
-    public void setEncoding(Charset encoding) {
+    public StreamingChatMessageContent setEncoding(Charset encoding) {
         this.encoding = encoding;
+        return this;
     }
+
+    public StreamingChatMessageContent setModelId(String modelId) {
+        this.modelId = modelId;
+        return this;
+    }
+
+    public String getModelId() {
+        return modelId;
+    }   
 }
 

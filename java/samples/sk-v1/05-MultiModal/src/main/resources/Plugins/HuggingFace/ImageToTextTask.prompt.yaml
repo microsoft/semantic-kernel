@@ -12,7 +12,7 @@ template_format: handlebars
 description: A function that generates a description of an image.
 input_variables:
 output_variable:
-    type: string
+    type: java.lang.String
     description: The text description of the image.
 execution_settings:
   gpt-4:
