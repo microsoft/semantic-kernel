@@ -95,7 +95,7 @@ public sealed class FunctionCallingStepwisePlanner
 
             // Increment iteration based on the number of model round trips that occurred as a result of the request
             object? value = null;
-            chatResult.Metadata?.TryGetValue("iterations", out value);
+            chatResult.Metadata?.TryGetValue("Iterations", out value);
             if (value is not null and int)
             {
                 iteration += (int)value;

@@ -175,7 +175,7 @@ internal abstract class ClientCore
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int iterations)
     {
         return new Dictionary<string, object?>(5)
         {
@@ -184,16 +184,18 @@ internal abstract class ClientCore
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { "Iterations", iterations }
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions, int iterations)
     {
         return new Dictionary<string, object?>(3)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+            { "Iterations", iterations }
         };
     }
 
@@ -261,8 +263,7 @@ internal abstract class ClientCore
                 throw new KernelException("Chat completions not found");
             }
 
-            Dictionary<string, object?> metadata = GetResponseMetadata(responseData);
-            metadata.Add("iterations", iteration);
+            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData, iteration);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
@@ -444,7 +445,7 @@ internal abstract class ClientCore
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                metadata ??= GetResponseMetadata(update);
+                metadata ??= GetResponseMetadata(update, iteration);
                 streamedRole ??= update.Role;
                 finishReason = update.FinishReason ?? default;
 
