@@ -368,9 +368,9 @@ public sealed class Kernel
         {
             context = new(function, arguments);
 
-            foreach (var filter in this._functionFilters)
+            for (int i = 0; i < this._functionFilters.Count; i++)
             {
-                filter.OnFunctionInvoking(context);
+                this._functionFilters[i].OnFunctionInvoking(context);
             }
         }
 
@@ -386,9 +386,9 @@ public sealed class Kernel
         {
             context = new(arguments, result);
 
-            foreach (var filter in this._functionFilters)
+            for (int i = 0; i < this._functionFilters.Count; i++)
             {
-                filter.OnFunctionInvoked(context);
+                this._functionFilters[i].OnFunctionInvoked(context);
             }
         }
 
@@ -404,9 +404,9 @@ public sealed class Kernel
         {
             context = new(function, arguments);
 
-            foreach (var filter in this._promptFilters)
+            for (int i = 0; i < this._promptFilters.Count; i++)
             {
-                filter.OnPromptRendering(context);
+                this._promptFilters[i].OnPromptRendering(context);
             }
         }
 
@@ -422,9 +422,9 @@ public sealed class Kernel
         {
             context = new(function, arguments, renderedPrompt);
 
-            foreach (var filter in this._promptFilters)
+            for (int i = 0; i < this._promptFilters.Count; i++)
             {
-                filter.OnPromptRendered(context);
+                this._promptFilters[i].OnPromptRendered(context);
             }
         }
 
