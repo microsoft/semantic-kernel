@@ -73,7 +73,6 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
