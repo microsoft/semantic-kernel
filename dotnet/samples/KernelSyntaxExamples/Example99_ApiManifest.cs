@@ -17,7 +17,7 @@ using Xunit;
 using Xunit.Abstractions;
 namespace Examples;
 
-// This example shows how to use the Handlebars sequential planner.
+// This example shows how to use the ApiManifest based plugins
 public class Example99_ApiManifest : BaseTest
 {
     private static int s_sampleIndex;
