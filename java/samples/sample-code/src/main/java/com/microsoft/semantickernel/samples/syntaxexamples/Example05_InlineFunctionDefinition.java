@@ -49,7 +49,7 @@ public class Example05_InlineFunctionDefinition {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
         System.out.println("======== Inline Function Definition ========");

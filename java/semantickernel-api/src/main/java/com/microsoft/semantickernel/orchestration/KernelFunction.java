@@ -101,6 +101,9 @@ public interface KernelFunction extends Buildable {
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType);
 
+    @Nullable
+    Map<String, PromptExecutionSettings> getExecutionSettings();
+
     interface FromPromptBuilder {
 
         FromPromptBuilder withName(String name);

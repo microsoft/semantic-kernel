@@ -52,8 +52,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
     private final OpenAIAsyncClient client;
     private final Map<String, ContextVariable<?>> attributes;
+    private final String serviceId;
 
-    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
+    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId, String serviceId) {
+        this.serviceId = serviceId;
         this.client = client;
         this.attributes = new HashMap<>();
         attributes.put(MODEL_ID_KEY, ContextVariable.of(modelId));
@@ -66,6 +68,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     @Override
     public Map<String, ContextVariable<?>> getAttributes() {
         return attributes;
+    }
+
+    @Override
+    public String getServiceId() {
+        return serviceId;
     }
 
     @Override
@@ -322,6 +329,18 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return options;
         }
 
+        Map<String, Integer> logit = null;
+        if (promptExecutionSettings.getTokenSelectionBiases() != null) {
+            logit = promptExecutionSettings
+                .getTokenSelectionBiases()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                    entry -> entry.getKey().toString(),
+                    entry -> entry.getValue())
+                );
+        }
+
         options
             .setTemperature(promptExecutionSettings.getTemperature())
             .setTopP(promptExecutionSettings.getTopP())
@@ -335,7 +354,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 || promptExecutionSettings.getStopSequences().isEmpty() ? null
                 : promptExecutionSettings.getStopSequences())
             .setUser(promptExecutionSettings.getUser())
-            .setLogitBias(new HashMap<>());
+            .setLogitBias(logit);
 
         return options;
     }
@@ -550,7 +569,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         @Override
         public OpenAIChatCompletion build() {
-            return new OpenAIChatCompletion(client, modelId);
+            return new OpenAIChatCompletion(client, modelId, serviceId);
         }
     }
 }

@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.AIService;
-import com.microsoft.semantickernel.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 
 /**
  * The result of an AI service selection.

@@ -123,7 +123,8 @@ public class KernelFunctionFactory {
         PromptTemplateConfig promptConfig) {
         return new KernelFunctionFromPrompt(
             promptTemplate,
-            promptConfig);
+            promptConfig,
+            null);
     }
 
     private static Map<String, PromptExecutionSettings> createSettingsDictionary(

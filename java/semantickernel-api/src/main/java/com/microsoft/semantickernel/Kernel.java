@@ -10,7 +10,11 @@ import com.microsoft.semantickernel.orchestration.contextvariables.KernelArgumen
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.services.AIServiceSelector;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -57,7 +61,7 @@ public interface Kernel extends Buildable {
 
     List<KernelFunction> getFunctions();
 
-    ServiceProvider getServiceSelector();
+    AIServiceSelector getServiceSelector();
 
     KernelPluginCollection getPlugins();
 
@@ -65,12 +69,16 @@ public interface Kernel extends Buildable {
         return new DefaultKernel.Builder();
     }
 
+
     interface Builder extends SemanticKernelBuilder<Kernel> {
 
-        <T extends AIService> Builder withDefaultAIService(Class<T> clazz, T aiService);
+        <T extends AIService> Builder withAIService(Class<T> clazz, T aiService);
 
         Builder withPromptTemplate(PromptTemplate promptTemplate);
 
         Builder withPlugin(KernelPlugin searchPlugin);
+
+        Builder withServiceSelector(
+            Function<Map<Class<? extends AIService>, AIService>, AIServiceSelector> serviceSelector);
     }
 }

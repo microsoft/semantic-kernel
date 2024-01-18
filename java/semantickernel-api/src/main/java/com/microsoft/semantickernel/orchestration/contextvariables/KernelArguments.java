@@ -61,7 +61,7 @@ public interface KernelArguments extends Buildable, Map<String, ContextVariable<
     <T> ContextVariable<T> get(String key, Class<T> clazz);
 
     @Nullable
-    PromptExecutionSettings getExecutionSettings();
+    Map<String, PromptExecutionSettings> getExecutionSettings();
 
     static Builder builder() {
         return new DefaultKernelArguments.Builder();

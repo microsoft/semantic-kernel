@@ -22,6 +22,7 @@ import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
 import reactor.core.publisher.Flux;
@@ -33,7 +34,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
     private final PromptTemplate template;
 
-    public KernelFunctionFromPrompt(PromptTemplate template, PromptTemplateConfig promptConfig) {
+    public KernelFunctionFromPrompt(
+        PromptTemplate template,
+        PromptTemplateConfig promptConfig,
+        @Nullable
+        Map<String, PromptExecutionSettings> executionSettings) {
         super(
             new KernelFunctionMetadata(
                 promptConfig.getName(),
@@ -41,10 +46,43 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 promptConfig.getKernelParametersMetadata(),
                 promptConfig.getKernelReturnParameterMetadata()
             ),
-            promptConfig.getExecutionSettings()
+            executionSettings != null ? executionSettings : promptConfig.getExecutionSettings()
         );
         this.template = template;
     }
+
+    public static KernelFunction create(
+        PromptTemplateConfig promptConfig
+    ) {
+        return create(
+            promptConfig,
+            null
+        );
+    }
+
+    public static KernelFunction create(
+        PromptTemplateConfig promptConfig,
+        @Nullable
+        PromptTemplateFactory promptTemplateFactory
+    ) {
+        if (promptTemplateFactory == null) {
+            promptTemplateFactory = new KernelPromptTemplateFactory();
+        }
+
+        return create(promptTemplateFactory.tryCreate(promptConfig), promptConfig);
+    }
+
+
+    public static KernelFunction create(
+        PromptTemplate promptTemplate,
+        PromptTemplateConfig promptConfig) {
+        return new KernelFunctionFromPrompt(
+            promptTemplate,
+            promptConfig,
+            null
+        );
+    }
+
 
     @Override
     public <T> Flux<StreamingContent<T>> invokeStreamingAsync(
@@ -57,9 +95,15 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             .flatMapMany(prompt -> {
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                AIService client = kernel
+                AIServiceSelection aiServiceSelection = kernel
                     .getServiceSelector()
-                    .getService(TextAIService.class);
+                    .trySelectAIService(
+                        TextAIService.class,
+                        this,
+                        arguments
+                    );
+
+                AIService client = aiServiceSelection.getService();
 
                 if (client == null) {
                     throw new IllegalStateException(
@@ -68,12 +112,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
                 Flux<StreamingContent<T>> result;
 
-                PromptExecutionSettings executionSettings;
-                if (arguments != null) {
-                    executionSettings = arguments.getExecutionSettings();
-                } else {
-                    executionSettings = null;
-                }
+                PromptExecutionSettings executionSettings = aiServiceSelection.getSettings();
 
                 if (client instanceof ChatCompletionService) {
                     result = ((ChatCompletionService) client)
@@ -234,7 +273,10 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         @Override
         public FromPromptBuilder withExecutionSettings(
             Map<String, PromptExecutionSettings> executionSettings) {
-            this.executionSettings = executionSettings;
+            if (this.executionSettings == null) {
+                this.executionSettings = new HashMap<>();
+            }
+            this.executionSettings.putAll(executionSettings);
             return this;
         }
 
@@ -244,7 +286,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             if (this.executionSettings == null) {
                 this.executionSettings = new HashMap<>();
             }
+
             this.executionSettings.put("default", executionSettings);
+
+            if (executionSettings.getServiceId() != null) {
+                this.executionSettings.put(executionSettings.getServiceId(), executionSettings);
+            }
             return this;
         }
 
@@ -301,14 +348,15 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 temp = new KernelPromptTemplateFactory().tryCreate(config);
             }
 
-            return new KernelFunctionFromPrompt(temp, config);
+            return new KernelFunctionFromPrompt(temp, config, executionSettings);
 
         }
 
         public KernelFunction build(PromptTemplateConfig functionModel) {
             return new KernelFunctionFromPrompt(
                 promptTemplate,
-                functionModel
+                functionModel,
+                executionSettings
             );
         }
     }

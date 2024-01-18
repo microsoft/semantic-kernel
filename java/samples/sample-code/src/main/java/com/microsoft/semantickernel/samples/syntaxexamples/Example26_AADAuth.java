@@ -31,7 +31,7 @@ public class Example26_AADAuth {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, chatService)
+            .withAIService(ChatCompletionService.class, chatService)
             .build();
 
         var chatHistory = new ChatHistory();

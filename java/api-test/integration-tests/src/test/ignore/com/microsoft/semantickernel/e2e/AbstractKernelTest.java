@@ -27,8 +27,8 @@ public class AbstractKernelTest {
         TextCompletion textCompletion = new OpenAITextCompletion(openAIClient, model);
 
         return SKBuilders.kernel()
-                .withDefaultAIService(textCompletion)
-                .withDefaultAIService(
+                .withAIService(textCompletion)
+                .withAIService(
                         SKBuilders.textEmbeddingGeneration()
                                 .withOpenAIClient(openAIClient)
                                 .withModelId(model)

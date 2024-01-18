@@ -102,7 +102,7 @@ public class InlineFunctionWithPreBuiltSkillExample {
                 SKBuilders.textCompletion().withOpenAIAsyncClient(client).withModelId(MODEL).build();
         String prompt = "{{$input}}\nSummarize the content above.";
 
-        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+        Kernel kernel = SKBuilders.kernel().withAIService(textCompletion).build();
 
         CompletionKernelFunction summarize =
                 SKBuilders.completionFunctions()

@@ -42,7 +42,7 @@ public class Main {
          */
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
+            .withAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
 

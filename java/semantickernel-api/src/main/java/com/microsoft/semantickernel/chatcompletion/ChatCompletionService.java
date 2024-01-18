@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.builders.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings.Builder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -49,6 +50,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
 
         protected OpenAIAsyncClient client;
         protected String modelId;
+        protected String serviceId;
 
 
         /**
@@ -74,6 +76,10 @@ public interface ChatCompletionService extends Buildable, TextAIService {
             return this;
         }
 
+        public Builder withServiceId(String serviceId) {
+            this.serviceId = serviceId;
+            return this;
+        }
     }
 
 }

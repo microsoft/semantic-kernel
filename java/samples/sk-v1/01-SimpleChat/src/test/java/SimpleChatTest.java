@@ -61,7 +61,7 @@ public class SimpleChatTest {
     private static void execute(ChatCompletionService gpt35Turbo, List<Message> messages)
         throws IOException {
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
+            .withAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
 

@@ -68,7 +68,7 @@ public class SimpleRagTest {
         );
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
+            .withAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .withPlugin(searchPlugin)
             .build();

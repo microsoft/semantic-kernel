@@ -239,7 +239,7 @@ public class Example13_ConversationSummaryPlugin {
             .build();
 
         return Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
     }
 }

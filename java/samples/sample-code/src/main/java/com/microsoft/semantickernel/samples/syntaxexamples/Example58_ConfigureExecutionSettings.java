@@ -44,10 +44,8 @@ public class Example58_ConfigureExecutionSettings {
             .withOpenAIAsyncClient(client)
             .build();
 
-        System.out.println("======== Using Chat GPT model for text generation ========");
-
         var kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         var prompt = "Hello AI, what can you do for me?";

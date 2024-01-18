@@ -45,6 +45,8 @@ public interface AIService {
      */
     default String getApiVersion() { return getAttribute(this, API_VERSION_KEY); }
 
+    String getServiceId();
+
     /// <summary>
     /// Gets the specified attribute.
     /// </summary>
