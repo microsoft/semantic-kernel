@@ -14,70 +14,73 @@ import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFa
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-
 import java.util.List;
 
 public class Example64_MultiplePromptTemplates {
 
-    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
-            System.getenv("USE_AZURE_CLIENT"));
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if USE_AZURE_CLIENT is true
+    // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
+
 
     public static void main(String[] args) {
         System.out.println("======== Example64_MultiplePromptTemplates ========");
 
         OpenAIAsyncClient client;
 
-        if (USE_AZURE_CLIENT) {
+        if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
+
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
-        ChatCompletionService chatCompletion = OpenAIChatCompletion.builder()
-                .withModelId("gpt-35-turbo")
-                .withOpenAIAsyncClient(client)
-                .build();
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         var kernel = new DefaultKernel.Builder()
-                .withDefaultAIService(ChatCompletionService.class, chatCompletion)
-                .build();
+            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .build();
 
         var templateFactory = new AggregatorPromptTemplateFactory(
-                List.of(
-                        new KernelPromptTemplateFactory(),
-                        new HandlebarsPromptTemplateFactory()
-                )
+            List.of(
+                new KernelPromptTemplateFactory(),
+                new HandlebarsPromptTemplateFactory()
+            )
         );
 
         runPrompt(kernel,
-                "semantic-kernel",
-                "Hello AI, my name is {{$name}}. What is the origin of my name?",
-                templateFactory);
+            "semantic-kernel",
+            "Hello AI, my name is {{$name}}. What is the origin of my name?",
+            templateFactory);
         runPrompt(kernel,
-                "handlebars",
-                "Hello AI, my name is {{name}}. What is the origin of my name?",
-                templateFactory);
+            "handlebars",
+            "Hello AI, my name is {{name}}. What is the origin of my name?",
+            templateFactory);
     }
 
-    public static void runPrompt (Kernel kernel, String templateFormat, String prompt, PromptTemplateFactory templateFactory) {
+    public static void runPrompt(Kernel kernel, String templateFormat, String prompt,
+        PromptTemplateFactory templateFactory) {
         var function = new KernelFunctionFromPrompt.Builder()
-                .withTemplate(prompt)
-                .withTemplateFormat(templateFormat)
-                .withPromptTemplateFactory(templateFactory)
-                .build();
+            .withTemplate(prompt)
+            .withTemplateFormat(templateFormat)
+            .withPromptTemplateFactory(templateFactory)
+            .build();
 
         var arguments = KernelArguments.builder()
-                .withVariable("name", "Bob")
-                .build();
+            .withVariable("name", "Bob")
+            .build();
 
         var result = kernel.invokeAsync(function, arguments, String.class).block();
         System.out.println(result.getValue());

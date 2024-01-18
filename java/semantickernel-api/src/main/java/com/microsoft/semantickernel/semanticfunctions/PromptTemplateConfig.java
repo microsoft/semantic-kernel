@@ -2,7 +2,11 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
@@ -13,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PromptTemplateConfig {
 
     public static final int CURRENT_SCHEMA = 1;
@@ -269,6 +274,14 @@ public class PromptTemplateConfig {
 
     public void setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
         this.executionSettings = executionSettings;
+    }
+
+    public static PromptTemplateConfig parseFromJson(String json) throws SKException {
+        try {
+            return new ObjectMapper().readValue(json, PromptTemplateConfig.class);
+        } catch (JsonProcessingException e) {
+            throw new SKException("Unable to parse prompt template config", e);
+        }
     }
 
 }

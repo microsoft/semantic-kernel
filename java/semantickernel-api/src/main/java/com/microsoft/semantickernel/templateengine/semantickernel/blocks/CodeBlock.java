@@ -37,22 +37,39 @@ public final class CodeBlock extends Block implements CodeRendering {
             return false;
         }
 
-        if (this.tokens.size() > 1) {
-            if (this.tokens.get(0).getType() != BlockTypes.FunctionId) {
-                LOGGER.error("Unexpected second token found: " + this.tokens.get(1).getContent());
-                return false;
-            }
-
-            if (this.tokens.get(1).getType() != BlockTypes.Value
-                && this.tokens.get(1).getType() != BlockTypes.Variable) {
-                LOGGER.error("Functions support only one parameter");
-                return false;
-            }
+        if (this.tokens.size() > 0 && this.tokens.get(0).getType() == BlockTypes.NamedArg) {
+            LOGGER.error("Unexpected named argument found. Expected function name first.");
+            return false;
         }
 
-        if (this.tokens.size() > 2) {
-            LOGGER.error("Unexpected second token found: " + this.tokens.get(1).getContent());
+        if (this.tokens.size() > 1 && !this.isValidFunctionCall()) {
             return false;
+        }
+
+        return true;
+    }
+
+    private boolean isValidFunctionCall() {
+        if (this.tokens.get(0).getType() != BlockTypes.FunctionId) {
+            LOGGER.error("Unexpected second token found: " + tokens.get(1).getContent());
+            return false;
+        }
+
+        if (this.tokens.get(1).getType() != BlockTypes.Value &&
+            this.tokens.get(1).getType() != BlockTypes.Variable &&
+            this.tokens.get(1).getType() != BlockTypes.NamedArg) {
+            LOGGER.error(
+                "The first arg of a function must be a quoted string, variable or named argument");
+            return false;
+        }
+
+        for (int i = 2; i < this.tokens.size(); i++) {
+            if (this.tokens.get(i).getType() != BlockTypes.NamedArg) {
+                LOGGER.error(
+                    "Functions only support named arguments after the first argument. Argument " + i
+                        + " is not named.");
+                return false;
+            }
         }
 
         return true;

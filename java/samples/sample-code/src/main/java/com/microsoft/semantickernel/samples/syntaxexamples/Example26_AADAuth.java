@@ -12,6 +12,8 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 public class Example26_AADAuth {
 
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) throws ConfigurationException {
 
@@ -25,7 +27,7 @@ public class Example26_AADAuth {
 
         ChatCompletionService chatService = ChatCompletionService.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId("gpt-35-turbo-2")
+            .withModelId(MODEL_ID)
             .build();
 
         Kernel kernel = Kernel.builder()

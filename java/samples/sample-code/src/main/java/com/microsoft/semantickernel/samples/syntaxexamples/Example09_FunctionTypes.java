@@ -6,7 +6,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -29,12 +28,13 @@ import reactor.core.publisher.Mono;
 
 public class Example09_FunctionTypes {
 
-    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
-        System.getenv("USE_AZURE_CLIENT"));
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if USE_AZURE_CLIENT is true
+    // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "text-davinci-003");
 
 
     private static class DateTimeContextVariableTypeConverter extends
@@ -72,21 +72,21 @@ public class Example09_FunctionTypes {
 
         OpenAIAsyncClient client;
 
-        if (USE_AZURE_CLIENT) {
+        if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
-                .withOpenAIAsyncClient(client)
-                .withModelId("text-davinci-003")
-                .build();
+            .withOpenAIAsyncClient(client)
+            .withModelId(MODEL_ID)
+            .build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         KernelPlugin plugin = KernelPluginFactory

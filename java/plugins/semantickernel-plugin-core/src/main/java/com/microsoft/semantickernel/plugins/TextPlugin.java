@@ -44,4 +44,19 @@ public class TextPlugin {
             name = "input") String input) {
         return input.toLowerCase(Locale.ROOT);
     }
+
+
+    /// <summary>
+    /// Concatenate two strings into one
+    /// </summary>
+    /// <param name="input">First input to concatenate with</param>
+    /// <param name="input2">Second input to concatenate with</param>
+    /// <returns>Concatenation result from both inputs.</returns>
+    @DefineKernelFunction(description = "Concat two strings into one.", name = "Concat")
+    public String concat(
+        @KernelFunctionParameter(description = "First input to concatenate with", name = "input") String input,
+        @KernelFunctionParameter(description = "Second input to concatenate with", name = "input2") String input2) {
+        return (input + input2);
+    }
+
 }
