@@ -94,7 +94,7 @@ public abstract class ToolCallBehavior
     /// if this is 1, the first request will include the tools, but the subsequent response sending back the tool's result
     /// will not include the tools for further use.
     /// </remarks>
-    internal virtual int MaximumUseAttempts => int.MaxValue;
+    public int MaximumUseAttempts { get; set; } = int.MaxValue;
 
     /// <summary>Gets how many tool call request/response roundtrips are supported with auto-invocation.</summary>
     /// <remarks>
@@ -217,6 +217,12 @@ public abstract class ToolCallBehavior
         {
             this._tool = new ChatCompletionsFunctionToolDefinition(function.ToFunctionDefinition());
             this._choice = new ChatCompletionsToolChoice(this._tool);
+
+            // Unlike <see cref="EnabledFunctions"/> and <see cref="KernelFunctions"/>, this must use 1 as the maximum
+            // use attempts. Otherwise, every call back to the model _requires_ it to invoke the function (as opposed
+            // to allows it), which means we end up doing the same work over and over and over until the maximum is reached.
+            // Thus for "requires", we must send the tool information only once.
+            this.MaximumUseAttempts = 1;
         }
 
         public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.Name}";
@@ -226,14 +232,5 @@ public abstract class ToolCallBehavior
             options.ToolChoice = this._choice;
             options.Tools.Add(this._tool);
         }
-
-        /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
-        /// <remarks>
-        /// Unlike <see cref="EnabledFunctions"/> and <see cref="KernelFunctions"/>, this must use 1 as the maximum
-        /// use attempts. Otherwise, every call back to the model _requires_ it to invoke the function (as opposed
-        /// to allows it), which means we end up doing the same work over and over and over until the maximum is reached.
-        /// Thus for "requires", we must send the tool information only once.
-        /// </remarks>
-        internal override int MaximumUseAttempts => 1;
     }
 }
