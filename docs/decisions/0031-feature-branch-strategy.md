@@ -59,7 +59,7 @@ Currently we are looking for community support on the following models
 
 The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a platform that hosts one of the models below:
 
-| Model Name | Local Support | Platforms                            | Connectors                                    |
+| Model Name | Local Support | Deployment                           | Connectors                                    |
 | ---------- | ------------- | ------------------------------------ | --------------------------------------------- |
 | Gpt-4      | No            | OpenAI, Azure Open AI                | OpenAI                                        |
 | Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio | OpenAI, HuggingFace, LMStudio\*\*             |
@@ -74,7 +74,7 @@ _\*\* Connectors not yet available_
 Connectors may be needed not per Model basis but rather per platform.
 For example, using OpenAI or HuggingFace connector you may be able to call a Phi-2 Model.
 
-### Potential platforms for connector support:
+### Potential deployments for connector support:
 
 - **Local Model Support**
   - LM Studio
@@ -82,6 +82,38 @@ For example, using OpenAI or HuggingFace connector you may be able to call a Phi
   - Pure C# (e.g. LlamaSharp or ONNX runtime)
 - Amazon Bedrock
 - Google AI Platform
+
+## Local Deployment / Offline
+
+### LM Studio
+
+LM Studio has a local deployment option, which can be used to deploy models locally. This option is available for Windows, Linux, and MacOS.
+
+Pros: - API is very similar to OpenAI API - Many models are already supported - Easy to use - Easy to deploy - GPU support
+
+### Ollama
+
+Ollama has a local deployment option, which can be used to deploy models locally. This option is available for Linux and MacOS only for now.
+
+Pros: - Easy to use - Easy to deploy - Supports Docker deployment - GPU support
+Cons: - API is not similar to OpenAI API (Needs a dedicated connector) - Limited model support (does not support Phi-2) - Dont have Windows support
+
+### Comparison
+
+| Feature               | Ollama                | LM Studio                                                                               |
+| --------------------- | --------------------- | --------------------------------------------------------------------------------------- |
+| Local LLM             | Yes                   | Yes                                                                                     |
+| OpenAI API Similarity | Yes                   | Yes                                                                                     |
+| Windows Support       | No                    | Yes                                                                                     |
+| Linux Support         | Yes                   | Yes                                                                                     |
+| MacOS Support         | Yes                   | Yes                                                                                     |
+| Number of Models      | Any converted to GGUF | [25](https://github.com/lmstudio-ai/model-catalog/tree/main/models) +Any GGUF Converted |
+
+| Model Support   | Ollama | LM Studio |
+| --------------- | ------ | --------- |
+| Phi-2 Support   | Yes    | Yes       |
+| Llama-2 Support | Yes    | Yes       |
+| Mixtral Support | Yes    | Yes       |
 
 ### Notes
 
