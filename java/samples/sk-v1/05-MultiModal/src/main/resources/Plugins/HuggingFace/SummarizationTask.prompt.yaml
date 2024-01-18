@@ -11,7 +11,7 @@ template_format: handlebars
 description: A function that summarizes some content.
 input_variables:
 output_variable:
-    type: string
+    type: java.lang.String
     description: The summary.
 execution_settings:
   facebook:

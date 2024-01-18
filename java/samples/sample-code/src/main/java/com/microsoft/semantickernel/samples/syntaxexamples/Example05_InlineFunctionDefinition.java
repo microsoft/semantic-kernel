@@ -8,7 +8,6 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -35,21 +34,21 @@ public class Example05_InlineFunctionDefinition {
 
         if (USE_AZURE_CLIENT) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
-        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
-                .withOpenAIAsyncClient(client)
-                .withModelId("text-davinci-003")
-                .build();
+        TextGenerationService textGenerationService = TextGenerationService.builder()
+            .withOpenAIAsyncClient(client)
+            .withModelId("text-davinci-003")
+            .build();
 
-        Kernel kernel = new DefaultKernel.Builder()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .build();
 
@@ -69,10 +68,10 @@ public class Example05_InlineFunctionDefinition {
                 Event: {{$input}}
             """.stripIndent();
 
-        var excuseFunction = new KernelFunctionFromPrompt.Builder()
+        var excuseFunction = KernelFunctionFromPrompt.builder()
             .withTemplate(promptTemplate)
             .withDefaultExecutionSettings(
-                new PromptExecutionSettings.Builder()
+                PromptExecutionSettings.builder()
                     .withTemperature(0.4)
                     .withTopP(1)
                     .withMaxTokens(100)
@@ -102,7 +101,7 @@ public class Example05_InlineFunctionDefinition {
                 .withZone(ZoneOffset.UTC)
                 .format(Instant.now())
                 + " to French format",
-            new PromptExecutionSettings.Builder()
+            PromptExecutionSettings.builder()
                 .withMaxTokens(100)
                 .build(),
             null,

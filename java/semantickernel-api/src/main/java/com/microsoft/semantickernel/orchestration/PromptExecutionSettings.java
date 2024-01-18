@@ -3,6 +3,9 @@ package com.microsoft.semantickernel.orchestration;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.semantickernel.DefaultKernel;
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.Kernel.Builder;
 
 public class PromptExecutionSettings {
 
@@ -99,6 +102,10 @@ public class PromptExecutionSettings {
         return stopSequences;
     }
 
+
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public static class Builder {
 

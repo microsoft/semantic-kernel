@@ -116,21 +116,9 @@ public class OpenAITextGenerationService implements TextGenerationService {
     /**
      * Builder for a TextGenerationService
      */
-    public static class Builder {
-        private String modelId;
-        private OpenAIAsyncClient client;
+    public static class Builder extends TextGenerationService.Builder {
 
-        public Builder withModelId(String modelId) {
-            this.modelId = modelId;
-            return this;
-        }
-
-        public Builder withOpenAIAsyncClient(OpenAIAsyncClient client) {
-            this.client = client;
-            return this;
-        }
-
-        public OpenAITextGenerationService build() {
+        public TextGenerationService build() {
             return new OpenAITextGenerationService(
                 this.client,
                 this.modelId

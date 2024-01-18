@@ -4,9 +4,8 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
@@ -37,13 +36,13 @@ public class Example27_PromptFunctionsUsingChatGPT {
         }
         System.out.println("======== Using Chat GPT model for text generation ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new OpenAIChatCompletion.Builder()
+        ChatCompletionService openAIChatCompletion = ChatCompletionService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId("gpt-35-turbo-2")
             .build();
 
-        Kernel kernel = new DefaultKernel.Builder()
-            .withDefaultAIService(OpenAIChatCompletion.class, openAIChatCompletion)
+        Kernel kernel = Kernel.builder()
+            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         var func = KernelFunctionFactory.createFromPrompt(

@@ -240,7 +240,7 @@ public class Example13_ConversationSummaryPlugin {
             textGenerationService = null;
         }
 
-        return new DefaultKernel.Builder()
+        return Kernel.builder()
             .withDefaultAIService(TextGenerationService.class, textGenerationService)
             .build();
     }

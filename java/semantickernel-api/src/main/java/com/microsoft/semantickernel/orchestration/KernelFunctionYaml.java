@@ -1,8 +1,15 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
+import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 
@@ -19,28 +26,47 @@ public class KernelFunctionYaml {
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory
     ) throws IOException {
-        return BuildersSingleton.INST.getInstance(Builder.class)
-            .fromPromptYaml(yaml, promptTemplateFactory);
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        return fromYaml(targetStream, promptTemplateFactory);
     }
 
-    public static KernelFunction fromPromptYaml(String yaml) throws IOException {
-        return fromPromptYaml(yaml, null);
+    public static KernelFunction fromPromptYaml(
+        String yaml
+    ) throws IOException {
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        return fromYaml(targetStream, null);
     }
 
     public static KernelFunction fromYaml(Path filePath) throws IOException {
-        return BuildersSingleton.INST.getInstance(Builder.class)
-            .fromYaml(filePath);
+        InputStream inputStream = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream(filePath.toString());
+        return fromYaml(inputStream, null);
     }
 
-    public interface Builder {
+    private static KernelFunction fromYaml(
+        InputStream inputStream,
+        @Nullable PromptTemplateFactory promptTemplateFactory
+    ) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        PromptTemplateConfig functionModel = mapper.readValue(inputStream,
+            PromptTemplateConfig.class);
 
-        KernelFunction fromPromptYaml(String yaml,
-            @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException;
+        PromptTemplate promptTemplate;
+        if (promptTemplateFactory == null) {
+            promptTemplate = new HandlebarsPromptTemplate(functionModel);
+        } else {
+            promptTemplate = promptTemplateFactory.tryCreate(functionModel);
+        }
 
-        KernelFunction fromPromptYaml(String yaml) throws IOException;
-
-        KernelFunction fromYaml(Path filePath) throws IOException;
+        return new KernelFunctionFromPrompt.Builder()
+            .withName(functionModel.getName())
+            .withInputParameters(functionModel.getInputVariables())
+            .withPromptTemplate(promptTemplate)
+            .withPluginName(functionModel.getName()) // TODO: 1.0 add plugin name
+            .withExecutionSettings(functionModel.getExecutionSettings())
+            .withDescription(functionModel.getDescription())
+            .withOutputVariable(functionModel.getOutputVariable())
+            .build();
     }
-
 
 }

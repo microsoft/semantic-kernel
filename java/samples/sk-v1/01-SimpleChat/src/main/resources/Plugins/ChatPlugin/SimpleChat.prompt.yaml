@@ -13,11 +13,11 @@ template_format: handlebars
 description: A function that uses the chat history to respond to the user.
 input_variables:
   - name: messages
-    type: ChatHistory
+    type: com.microsoft.semantickernel.chatcompletion.ChatHistory
     description: The history of the chat.
     is_required: true
 output_variable:
-    type: string
+    type: java.lang.String
     description: The response from the assistant.
 execution_settings:
   gpt-3.5-turbo:

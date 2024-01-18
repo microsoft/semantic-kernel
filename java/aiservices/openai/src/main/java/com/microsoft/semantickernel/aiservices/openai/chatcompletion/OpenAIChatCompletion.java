@@ -1,5 +1,17 @@
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
@@ -32,15 +44,6 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -543,25 +546,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
 
-    public static class Builder implements ChatCompletionService.Builder {
-        private OpenAIAsyncClient client;
-        private String modelId;
+    public static class Builder extends ChatCompletionService.Builder {
 
         @Override
         public OpenAIChatCompletion build() {
             return new OpenAIChatCompletion(client, modelId);
-        }
-
-        @Override
-        public Builder withModelId(String modelId) {
-            this.modelId = modelId;
-            return this;
-        }
-
-        @Override
-        public Builder withOpenAIAsyncClient(OpenAIAsyncClient openAIClient) {
-            this.client = openAIClient;
-            return this;
         }
     }
 }

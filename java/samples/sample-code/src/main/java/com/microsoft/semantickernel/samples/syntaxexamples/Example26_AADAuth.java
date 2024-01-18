@@ -4,10 +4,8 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.identity.DeviceCodeCredential;
 import com.azure.identity.DeviceCodeCredentialBuilder;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion.Builder;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 
@@ -25,13 +23,13 @@ public class Example26_AADAuth {
             .endpoint(CLIENT_ENDPOINT)
             .buildAsyncClient();
 
-        OpenAIChatCompletion chatService = new Builder()
+        ChatCompletionService chatService = ChatCompletionService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId("gpt-35-turbo-2")
             .build();
 
-        Kernel kernel = new DefaultKernel.Builder()
-            .withDefaultAIService(OpenAIChatCompletion.class, chatService)
+        Kernel kernel = Kernel.builder()
+            .withDefaultAIService(ChatCompletionService.class, chatService)
             .build();
 
         var chatHistory = new ChatHistory();

@@ -48,6 +48,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

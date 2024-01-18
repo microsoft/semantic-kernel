@@ -17,16 +17,16 @@ template_format: handlebars
 description: A function that gets uses the chat history to respond to the user.
 input_variables:
   - name: persona
-    type: string
+    type: java.lang.String
     description: The persona of the assistant.
     default: You are a helpful assistant.
     is_required: false
   - name: messages
-    type: ChatHistory
+    type: com.microsoft.semantickernel.chatcompletion.ChatHistory
     description: The history of the chat.
     is_required: true
 output_variable:
-    type: string
+    type: java.lang.String
     description: The response from the assistant.
 execution_settings:
   gpt-4:

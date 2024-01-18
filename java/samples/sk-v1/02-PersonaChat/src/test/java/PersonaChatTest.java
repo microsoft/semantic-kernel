@@ -1,5 +1,4 @@
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
@@ -55,7 +54,7 @@ public class PersonaChatTest {
 
         ChatCompletionService gpt35Turbo = mockService(messages);
 
-        Kernel kernel = SKBuilders.kernel()
+        Kernel kernel = Kernel.builder()
             .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();

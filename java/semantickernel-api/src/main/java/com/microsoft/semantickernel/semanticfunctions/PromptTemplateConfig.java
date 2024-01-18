@@ -30,12 +30,14 @@ public class PromptTemplateConfig {
 
     private Map<String, PromptExecutionSettings> executionSettings;
 
+    public static final String SEMANTIC_KERNEL_TEMPLATE_FORMAT = "semantic-kernel";
+
     public PromptTemplateConfig(String template) {
         this(
             CURRENT_SCHEMA,
             "default",
             template,
-            "semantic-kernel",
+            SEMANTIC_KERNEL_TEMPLATE_FORMAT,
             "",
             Collections.emptyList(),
             new OutputVariable("out", "string"),
