@@ -298,7 +298,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
 
         if (renderedEventArgs is not null &&
-            renderedEventArgs.Cancel is false &&
+            !renderedEventArgs.Cancel &&
             renderedEventArgs.RenderedPrompt != renderedPrompt)
         {
             renderedPrompt = renderedEventArgs.RenderedPrompt;
@@ -312,7 +312,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var renderedContext = kernel.OnPromptRenderedFilter(this, arguments, renderedPrompt);
 
         if (renderedContext is not null &&
-            renderedContext.Cancel is false &&
+            !renderedContext.Cancel &&
             renderedContext.RenderedPrompt != renderedPrompt)
         {
             renderedPrompt = renderedContext.RenderedPrompt;
