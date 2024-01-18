@@ -26,7 +26,6 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-ai-openai</artifactId>
-            <scope>compile, test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -35,7 +34,6 @@
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-core</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
