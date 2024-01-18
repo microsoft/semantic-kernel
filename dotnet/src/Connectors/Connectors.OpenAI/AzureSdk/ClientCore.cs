@@ -261,7 +261,8 @@ internal abstract class ClientCore
                 throw new KernelException("Chat completions not found");
             }
 
-            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
+            Dictionary<string, object?> metadata = GetResponseMetadata(responseData);
+            metadata.Add("iterations", iteration);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.

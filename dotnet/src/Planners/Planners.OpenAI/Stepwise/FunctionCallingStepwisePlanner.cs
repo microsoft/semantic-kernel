@@ -80,18 +80,31 @@ public sealed class FunctionCallingStepwisePlanner
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
 
-        for (int i = 0; i < this.Config.MaxIterations; i++)
+        for (int iteration = 0; iteration < this.Config.MaxIterations; /* iteration is incremented within the loop, dependent on the chat result */)
         {
             // sleep for a bit to avoid rate limiting
-            if (i > 0)
+            if (iteration > 0)
             {
                 await Task.Delay(this.Config.MinIterationTimeMs, cancellationToken).ConfigureAwait(false);
             }
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
+            var chatResult = await this.GetCompletionWithFunctionsAsync(iteration, chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.Add(chatResult);
+
+            // Increment iteration based on the number of model round trips that occurred as a result of the request
+            object? value = null;
+            chatResult.Metadata?.TryGetValue("iterations", out value);
+            if (value is not null and int)
+            {
+                iteration += (int)value;
+            }
+            else
+            {
+                // Could not find iterations in metadata, so assume just one
+                iteration++;
+            }
 
             // Check for final answer
             if (finalAnswerFound)
@@ -101,7 +114,7 @@ public sealed class FunctionCallingStepwisePlanner
                 {
                     FinalAnswer = finalAnswer,
                     ChatHistory = chatHistoryForSteps,
-                    Iterations = i + 1,
+                    Iterations = iteration,
                 };
             }
         }
@@ -116,6 +129,7 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
+        int currentIteration,
         ChatHistory chatHistory,
         Kernel kernel,
         IChatCompletionService chatCompletion,
@@ -124,7 +138,8 @@ public sealed class FunctionCallingStepwisePlanner
         CancellationToken cancellationToken)
     {
         openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
-        openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = 1;
+        //openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = 1;
+        openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = this.Config.MaxIterations - currentIteration;
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
