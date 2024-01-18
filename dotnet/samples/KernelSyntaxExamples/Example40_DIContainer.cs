@@ -6,14 +6,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // The following examples show how to use SK SDK in applications using DI/IoC containers.
-public static class Example40_DIContainer
+public class Example40_DIContainer : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         var collection = new ServiceCollection();
-        collection.AddSingleton<ILoggerFactory>(ConsoleLogger.LoggerFactory);
+        collection.AddSingleton(ConsoleLogger.LoggerFactory);
         collection.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
         collection.AddSingleton<Kernel>();
 
@@ -55,5 +60,9 @@ public static class Example40_DIContainer
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
+    }
+
+    public Example40_DIContainer(ITestOutputHelper output) : base(output)
+    {
     }
 }
