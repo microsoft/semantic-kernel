@@ -100,14 +100,14 @@ Cons: - API is not similar to OpenAI API (Needs a dedicated connector) - Limited
 
 ### Comparison
 
-| Feature               | Ollama                | LM Studio                                                                               |
-| --------------------- | --------------------- | --------------------------------------------------------------------------------------- |
-| Local LLM             | Yes                   | Yes                                                                                     |
-| OpenAI API Similarity | Yes                   | Yes                                                                                     |
-| Windows Support       | No                    | Yes                                                                                     |
-| Linux Support         | Yes                   | Yes                                                                                     |
-| MacOS Support         | Yes                   | Yes                                                                                     |
-| Number of Models      | Any converted to GGUF | [25](https://github.com/lmstudio-ai/model-catalog/tree/main/models) +Any GGUF Converted |
+| Feature               | Ollama                                              | LM Studio                                                                               |
+| --------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Local LLM             | Yes                                                 | Yes                                                                                     |
+| OpenAI API Similarity | Yes                                                 | Yes                                                                                     |
+| Windows Support       | No                                                  | Yes                                                                                     |
+| Linux Support         | Yes                                                 | Yes                                                                                     |
+| MacOS Support         | Yes                                                 | Yes                                                                                     |
+| Number of Models      | [61](https://ollama.ai/library) +Any GGUF converted | [25](https://github.com/lmstudio-ai/model-catalog/tree/main/models) +Any GGUF Converted |
 
 | Model Support   | Ollama | LM Studio |
 | --------------- | ------ | --------- |
