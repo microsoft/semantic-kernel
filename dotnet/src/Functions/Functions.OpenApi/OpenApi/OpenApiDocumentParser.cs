@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -313,7 +312,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
-                propertySchema.ToJsonSchema());
+                propertySchema.ToJsonSchema(),
+                GetParameterValue(propertySchema.Default));
 
             result.Add(property);
         }
@@ -326,7 +326,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// </summary>
     /// <param name="valueMetadata">The value metadata.</param>
     /// <returns>The parameter value.</returns>
-    private static string? GetParameterValue(IOpenApiAny valueMetadata)
+    private static object? GetParameterValue(IOpenApiAny valueMetadata)
     {
         if (valueMetadata is not IOpenApiPrimitive value)
         {
@@ -335,17 +335,17 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return value.PrimitiveType switch
         {
-            PrimitiveType.Integer => ((OpenApiInteger)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.Long => ((OpenApiLong)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.Float => ((OpenApiFloat)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.Double => ((OpenApiDouble)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.String => ((OpenApiString)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.Byte => Convert.ToBase64String(((OpenApiByte)value).Value),
-            PrimitiveType.Binary => Encoding.UTF8.GetString(((OpenApiBinary)value).Value),
-            PrimitiveType.Boolean => ((OpenApiBoolean)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.Date => ((OpenApiDate)value).Value.ToString("o").Substring(0, 10),
-            PrimitiveType.DateTime => ((OpenApiDateTime)value).Value.ToString(CultureInfo.InvariantCulture),
-            PrimitiveType.Password => ((OpenApiPassword)value).Value.ToString(CultureInfo.InvariantCulture),
+            PrimitiveType.Integer => ((OpenApiInteger)value).Value,
+            PrimitiveType.Long => ((OpenApiLong)value).Value,
+            PrimitiveType.Float => ((OpenApiFloat)value).Value,
+            PrimitiveType.Double => ((OpenApiDouble)value).Value,
+            PrimitiveType.String => ((OpenApiString)value).Value,
+            PrimitiveType.Byte => ((OpenApiByte)value).Value,
+            PrimitiveType.Binary => ((OpenApiBinary)value).Value,
+            PrimitiveType.Boolean => ((OpenApiBoolean)value).Value,
+            PrimitiveType.Date => ((OpenApiDate)value).Value,
+            PrimitiveType.DateTime => ((OpenApiDateTime)value).Value,
+            PrimitiveType.Password => ((OpenApiPassword)value).Value,
             _ => throw new KernelException($"The value type - {value.PrimitiveType} is not supported."),
         };
     }
