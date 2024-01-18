@@ -209,15 +209,20 @@ internal abstract class ClientCore
         Kernel? kernel,
         CancellationToken cancellationToken)
     {
-        var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
-        var embeddings = response.Value.Data;
+        var result = new List<ReadOnlyMemory<float>>(data.Count);
 
-        if (embeddings.Count != data.Count)
+        if (data.Count > 0)
         {
-            throw new KernelException($"Expected {data.Count} text embeddings, but received {embeddings.Count}");
-        }
+            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+            var embeddings = response.Value.Data;
 
-        var result = embeddings.OrderBy((x) => x.Index).Select((x) => x.Embedding).ToList();
+            if (embeddings.Count != data.Count)
+            {
+                throw new KernelException($"Expected {data.Count} text embedding(s), but received {embeddings.Count}");
+            }
+
+            result.AddRange(embeddings.OrderBy((x) => x.Index).Select((x) => x.Embedding));
+        }
 
         return result;
     }
