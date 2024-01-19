@@ -10,11 +10,11 @@
       "requests": [
         {
           "method": "Get",
-          "uriTemplate": "/me/drive/root/children/{driveItem-id}/content"
+          "uriTemplate": "/drive/root/children/{driveItem-id}/content"
         },
         {
           "method": "Get",
-          "uriTemplate": "/me/drive/root/children/{driveItem-id}"
+          "uriTemplate": "/drive/root/children/{driveItem-id}"
         }
       ]
     }
