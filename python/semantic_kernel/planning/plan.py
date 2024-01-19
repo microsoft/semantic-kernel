@@ -241,7 +241,9 @@ class Plan(SKFunctionBase):
             self._function.set_default_skill_collection(skills)
 
     def describe(self) -> FunctionView:
-        return self._function.describe()
+        if self._function is not None:
+            return self._function.describe()
+        return None
 
     def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
         if len(plan.steps) == 0:
