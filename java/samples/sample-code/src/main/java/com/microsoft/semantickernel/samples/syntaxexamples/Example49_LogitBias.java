@@ -98,15 +98,6 @@ public class Example49_LogitBias {
         replyMessage.forEach(message -> chatHistory.addAssistantMessage(message.getContent()));
         messageOutputAsync(chatHistory);
 
-        chatHistory.addUserMessage(
-            "I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
-        messageOutputAsync(chatHistory);
-
-        replyMessage = openAIChatCompletion.getChatMessageContentsAsync(chatHistory,
-            settings, kernel).block();
-        replyMessage.forEach(message -> chatHistory.addAssistantMessage(message.getContent()));
-        messageOutputAsync(chatHistory);
-
 
     }
 

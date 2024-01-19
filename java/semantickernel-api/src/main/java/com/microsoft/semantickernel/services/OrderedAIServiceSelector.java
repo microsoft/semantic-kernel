@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OrderedAIServiceSelector extends ParentAIServiceSelector {
+public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderedAIServiceSelector.class);
 
@@ -38,13 +38,8 @@ public class OrderedAIServiceSelector extends ParentAIServiceSelector {
         // Allow the execution settings from the kernel arguments to take precedence
         Map<String, PromptExecutionSettings> executionSettings = null;
 
-        if (arguments != null) {
-            executionSettings = arguments.getExecutionSettings();
-        }
-
-        if (executionSettings == null || executionSettings.isEmpty()) {
-            executionSettings = function.getExecutionSettings();
-        }
+        executionSettings = settingsFromArguments(arguments, executionSettings);
+        executionSettings = settingsFromFunctionSettings(function, executionSettings);
 
         if (executionSettings == null || executionSettings.isEmpty()) {
             AIService service = getAnyService(serviceType);
@@ -123,6 +118,24 @@ public class OrderedAIServiceSelector extends ParentAIServiceSelector {
 
         LOGGER.warn("No service found meeting requirements");
         return null;
+    }
+
+    @Nullable
+    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
+        KernelFunction function, Map<String, PromptExecutionSettings> executionSettings) {
+        if (executionSettings == null || executionSettings.isEmpty()) {
+            executionSettings = function.getExecutionSettings();
+        }
+        return executionSettings;
+    }
+
+    @Nullable
+    private static Map<String, PromptExecutionSettings> settingsFromArguments(
+        KernelArguments arguments, Map<String, PromptExecutionSettings> executionSettings) {
+        if (arguments != null) {
+            executionSettings = arguments.getExecutionSettings();
+        }
+        return executionSettings;
     }
 
     private AIService getServiceByModelId(String modelId) {

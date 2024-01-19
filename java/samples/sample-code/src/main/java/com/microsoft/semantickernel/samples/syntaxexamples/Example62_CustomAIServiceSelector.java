@@ -12,7 +12,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.AIServiceSelection;
-import com.microsoft.semantickernel.services.ParentAIServiceSelector;
+import com.microsoft.semantickernel.services.BaseAIServiceSelector;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -82,7 +82,7 @@ public class Example62_CustomAIServiceSelector {
     }
 
     // A dumb AIServiceSelector that just returns the first service and execution settings it finds
-    static class CustomAIServiceSelector extends ParentAIServiceSelector {
+    static class CustomAIServiceSelector extends BaseAIServiceSelector {
 
         public CustomAIServiceSelector(Map<Class<? extends AIService>, AIService> services) {
             super(services);

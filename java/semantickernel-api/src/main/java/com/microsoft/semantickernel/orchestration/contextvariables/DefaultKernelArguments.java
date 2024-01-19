@@ -27,7 +27,7 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    DefaultKernelArguments(@NonNull ContextVariable<?> content) {
+    public DefaultKernelArguments(@NonNull ContextVariable<?> content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
         this.executionSettings = new HashMap<>();
@@ -36,8 +36,17 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
     public DefaultKernelArguments(
         Map<String, ContextVariable<?>> variables,
         Map<String, PromptExecutionSettings> executionSettings) {
-        this.variables = new CaseInsensitiveMap<>(variables);
-        this.executionSettings = new HashMap<>(executionSettings);
+        if (variables == null) {
+            this.variables = new CaseInsensitiveMap<>();
+        } else {
+            this.variables = new CaseInsensitiveMap<>(variables);
+        }
+
+        if (executionSettings == null) {
+            this.executionSettings = new HashMap<>();
+        } else {
+            this.executionSettings = new HashMap<>(executionSettings);
+        }
     }
 
     public DefaultKernelArguments(
@@ -53,6 +62,10 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
     public DefaultKernelArguments() {
         this.variables = new CaseInsensitiveMap<>();
         this.executionSettings = new HashMap<>();
+    }
+
+    public DefaultKernelArguments(KernelArguments arguments) {
+        this(arguments, new HashMap<>());
     }
 
     @Override
