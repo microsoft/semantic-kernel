@@ -3,8 +3,8 @@
 status: proposed
 contact: gitri-ms
 date: 2024-01-19
-deciders:
-consulted:
+deciders: gitri-ms, stephentoub, alliscode, markwallace-microsoft
+consulted: dmytrostruk
 informed:
 ---
 
@@ -52,11 +52,9 @@ private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
 }
 ```
 
-A downside of this approach is that it does not enable the caller to measure the number of consecutive tool calls/model round trips that were performed for a single request if `ToolCallBehavior.MaximumUseAttempts` was left to its default value.
-
 ### Option #2: Store number of model iterations in chat response metadata
 
-Same as Option #1, but adds an `Iterations` field to the `ChatMessageContent` response metadata. This field would be set to the number of model iterations that occurred as a result of the request, as computed inside `ClientCore.GetChatMessageContentsAsync` or `ClientCore.GetStreamingChatMessageContentsAsync`.
+Same as Option #1, but adds an `Iterations` field to the `ChatMessageContent` response metadata. This field would be set to the number of model iterations that occurred as a result of the request, as computed inside `ClientCore.GetChatMessageContentsAsync` or `ClientCore.GetStreamingChatMessageContentsAsync`. This would enable the caller to measure the _actual_ number of model round trips that were performed for each request.
 
 Updated helper method in _ClientCore.cs_:
 
