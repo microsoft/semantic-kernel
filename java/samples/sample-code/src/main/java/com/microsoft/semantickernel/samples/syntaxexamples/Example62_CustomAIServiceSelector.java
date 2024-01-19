@@ -92,7 +92,11 @@ public class Example62_CustomAIServiceSelector {
         @Override
         public AIServiceSelection trySelectAIService(
             Class<? extends AIService> serviceType,
+
+            @Nullable
             KernelFunction function,
+
+            @Nullable
             KernelArguments arguments,
             Map<Class<? extends AIService>, AIService> services) {
 

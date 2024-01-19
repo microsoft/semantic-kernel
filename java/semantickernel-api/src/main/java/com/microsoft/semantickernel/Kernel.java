@@ -57,6 +57,8 @@ public interface Kernel extends Buildable {
         return new DefaultKernel.Builder();
     }
 
+    <T extends AIService> T getService(Class<T> clazz);
+
 
     interface Builder extends SemanticKernelBuilder<Kernel> {
 

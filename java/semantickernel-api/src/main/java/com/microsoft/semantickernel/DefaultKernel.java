@@ -94,6 +94,16 @@ public class DefaultKernel implements Kernel {
         return plugins;
     }
 
+    @Override
+    public <T extends AIService> T getService(Class<T> clazz) {
+        return (T) serviceSelector
+            .trySelectAIService(
+                clazz,
+                null,
+                null
+            )
+            .getService();
+    }
 
     public static class Builder implements Kernel.Builder {
 

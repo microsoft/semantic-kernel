@@ -31,7 +31,9 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     @Nullable
     public AIServiceSelection trySelectAIService(
         Class<? extends AIService> serviceType,
+        @Nullable
         KernelFunction function,
+        @Nullable
         KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
 
@@ -122,16 +124,21 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
     @Nullable
     private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
-        KernelFunction function, Map<String, PromptExecutionSettings> executionSettings) {
+        @Nullable
+        KernelFunction function,
+        Map<String, PromptExecutionSettings> executionSettings) {
         if (executionSettings == null || executionSettings.isEmpty()) {
-            executionSettings = function.getExecutionSettings();
+            if (function != null) {
+                executionSettings = function.getExecutionSettings();
+            }
         }
         return executionSettings;
     }
 
     @Nullable
     private static Map<String, PromptExecutionSettings> settingsFromArguments(
-        KernelArguments arguments, Map<String, PromptExecutionSettings> executionSettings) {
+        @Nullable KernelArguments arguments,
+        Map<String, PromptExecutionSettings> executionSettings) {
         if (arguments != null) {
             executionSettings = arguments.getExecutionSettings();
         }
