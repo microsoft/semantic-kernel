@@ -240,7 +240,7 @@ class Plan(SKFunctionBase):
         if self._function is not None:
             self._function.set_default_skill_collection(skills)
 
-    def describe(self) -> FunctionView:
+    def describe(self) -> Optional[FunctionView]:
         if self._function is not None:
             return self._function.describe()
         return None
