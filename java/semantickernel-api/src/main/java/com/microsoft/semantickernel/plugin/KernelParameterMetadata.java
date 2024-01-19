@@ -13,13 +13,13 @@ public class KernelParameterMetadata {
     public KernelParameterMetadata(
         String name,
         String description,
-        String defaultValue,
-        boolean isRequired) {
+        Class<?> parameterType,
+        String defaultValue, boolean isRequired) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
         this.isRequired = isRequired;
-        this.parameterType = String.class; // TODO
+        this.parameterType = String.class;
     }
 
     public String getName() {

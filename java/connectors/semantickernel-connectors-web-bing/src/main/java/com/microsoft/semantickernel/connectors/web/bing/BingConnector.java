@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.plugins.web.bing;
+package com.microsoft.semantickernel.connectors.web.bing;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -7,23 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpHeader;
 import com.azure.core.http.HttpHeaderName;
-import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.implementation.jackson.ObjectMapperShim;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
 
 import reactor.core.publisher.Mono;
 
-public class BingConnector {    
+public class BingConnector implements WebSearchEngineConnector {    
 
     private static String BING_SEARCH_URL;
     static { 
@@ -104,9 +101,14 @@ public class BingConnector {
 
     private final String apiKey; // TODO: secure this
     private final HttpClient httpClient;
+
     public BingConnector(String apiKey, HttpClient httpClient) {
         this.apiKey = apiKey;
         this.httpClient = httpClient;
+    }
+
+    public BingConnector(String apiKey) {
+        this(apiKey, HttpClient.createDefault());
     }
 
     public Mono<List<String>> searchAsync(String query, int count, int offset) {   

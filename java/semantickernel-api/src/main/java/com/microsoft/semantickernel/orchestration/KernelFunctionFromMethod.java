@@ -43,7 +43,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         String functionName,
         String description,
         List<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) {
+        KernelReturnParameterMetadata<?> returnParameter) {
         super(
             new KernelFunctionMetadata(
                 functionName,
@@ -94,7 +94,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         String functionName,
         String description,
         List<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) {
+        KernelReturnParameterMetadata<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
 
@@ -512,8 +512,8 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         return new KernelParameterMetadata(
             name,
             description,
-            defaultValue,
-            isRequired
+            null,
+            defaultValue, isRequired
         );
     }
 }
