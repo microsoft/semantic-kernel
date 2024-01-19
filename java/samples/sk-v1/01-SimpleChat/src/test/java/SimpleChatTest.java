@@ -2,20 +2,22 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
+import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class SimpleChatTest {
 
@@ -27,7 +29,7 @@ public class SimpleChatTest {
         ChatCompletionService gpt35Turbo = Mockito.mock(ChatCompletionService.class);
 
         for (Message message : messages) {
-            Mockito.when(gpt35Turbo.getStreamingChatMessageContentsAsync(
+            Mockito.when(gpt35Turbo.getChatMessageContentsAsync(
                     Mockito.<String>argThat(
                         argument -> {
                             if (argument != null && argument.contains(message.matcher)) {
@@ -38,8 +40,9 @@ public class SimpleChatTest {
                         }),
                     Mockito.any(),
                     Mockito.any()))
-                .thenReturn(Flux.just(
-                    new StreamingChatMessageContent(AuthorRole.ASSISTANT, message.content())));
+                .thenReturn(Mono.just(
+                    Collections.singletonList(
+                        new ChatMessageContent(AuthorRole.ASSISTANT, message.content()))));
         }
         return gpt35Turbo;
     }
@@ -74,8 +77,8 @@ public class SimpleChatTest {
         messages.forEach(message -> {
             chatHistory.addUserMessage(message.matcher);
 
-            List<String> result = kernel
-                .invokeStreamingAsync(
+            ContextVariable<String> result = kernel
+                .invokeAsync(
                     chatFunction,
                     KernelArguments
                         .builder()
@@ -83,15 +86,10 @@ public class SimpleChatTest {
                         .build(),
                     String.class
                 )
-                .collectList()
                 .block();
 
-            result.forEach(
-                functionResult -> {
-                    Assertions.assertEquals(message.content(), functionResult);
-                    chatHistory.addAssistantMessage(functionResult.toString());
-                }
-            );
+            Assertions.assertEquals(message.content(), result.getValue());
+            chatHistory.addAssistantMessage(result.getValue());
         });
     }
 }

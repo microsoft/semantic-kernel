@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public class ChatMessageContent extends KernelContent {
+public class ChatMessageContent extends KernelContent<ChatMessageContent> {
 
     private AuthorRole authorRole;
     private String content;
@@ -37,7 +37,7 @@ public class ChatMessageContent extends KernelContent {
         @Nullable
         String modelId,
         @Nullable
-        Object innerContent,
+        String innerContent,
         @Nullable
         Charset encoding,
         @Nullable
@@ -53,7 +53,7 @@ public class ChatMessageContent extends KernelContent {
         AuthorRole authorRole,
         List<KernelContent> items,
         String modelId,
-        Object innerContent,
+        String innerContent,
         Charset encoding,
         Map<String, ContextVariable<?>> metadata
     ) {

@@ -9,9 +9,9 @@ import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 
-public class Example33_StreamingChat {
+// In .net this is streaming, this is a non-streaming example
+public class Example33_Chat {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
@@ -40,9 +40,9 @@ public class Example33_StreamingChat {
         }
 
         ChatCompletionService chatGPT = OpenAIChatCompletion.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build();
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         System.out.println("Chat content:");
         System.out.println("------------------------");
@@ -55,7 +55,8 @@ public class Example33_StreamingChat {
 
         GPTReply(chatGPT, chatHistory);
 
-        chatHistory.addUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
+        chatHistory.addUserMessage(
+            "I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         messageOutput(chatHistory);
 
         GPTReply(chatGPT, chatHistory);
@@ -68,18 +69,19 @@ public class Example33_StreamingChat {
     }
 
     private static void GPTReply(ChatCompletionService chatGPT, ChatHistory chatHistory) {
-        var reply = chatGPT.getStreamingChatMessageContentsAsync(chatHistory, null, null);
+        var reply = chatGPT.getChatMessageContentsAsync(chatHistory, null, null);
         System.out.print(AuthorRole.ASSISTANT + ": ");
 
         String message = reply
-                .doOnNext(streamingChatMessage -> {
-                    String content = streamingChatMessage.getContent();
-                    System.out.print(content);
-                })
-                .map(StreamingChatMessageContent::getContent)
-                .collect(StringBuilder::new, StringBuilder::append)
-                .map(StringBuilder::toString)
-                .block();
+            .map(it -> {
+                return it.get(0);
+            })
+            .doOnNext(streamingChatMessage -> {
+                String content = streamingChatMessage.getContent();
+                System.out.print(content);
+            })
+            .map(ChatMessageContent::getContent)
+            .block();
 
         System.out.println("\n------------------------");
         chatHistory.addAssistantMessage(message);

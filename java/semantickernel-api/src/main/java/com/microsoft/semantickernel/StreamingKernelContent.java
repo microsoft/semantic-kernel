@@ -4,7 +4,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public abstract class StreamingKernelContent {
+public abstract class StreamingKernelContent<T> {
 
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
@@ -13,7 +13,7 @@ public abstract class StreamingKernelContent {
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
     /// </remarks>
     @Nullable
-    private final Object innerContent;
+    private final T innerContent;
 
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
@@ -32,7 +32,7 @@ public abstract class StreamingKernelContent {
     @Nullable
     private final Map<String, ContextVariable<?>> metadata;
 
-    protected StreamingKernelContent(@Nullable Object innerContent, int choiceIndex,
+    protected StreamingKernelContent(@Nullable T innerContent, int choiceIndex,
         @Nullable String modelId, @Nullable Map<String, ContextVariable<?>> metadata) {
         this.innerContent = innerContent;
         this.choiceIndex = choiceIndex;

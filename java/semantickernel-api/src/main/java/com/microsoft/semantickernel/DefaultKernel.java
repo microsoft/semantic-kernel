@@ -19,7 +19,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DefaultKernel implements Kernel {
@@ -78,21 +77,6 @@ public class DefaultKernel implements Kernel {
             }
         }
         return function.invokeAsync(this, arguments, contextVariable);
-    }
-
-    @Override
-    public <T> Flux<T> invokeStreamingAsync(KernelFunction function,
-        @Nullable KernelArguments arguments, ContextVariableType<T> resultType) {
-        return function.invokeStreamingAsync(this, arguments, resultType)
-            .map(x -> x.innerContent);
-    }
-
-    @Override
-    public <T> Flux<T> invokeStreamingAsync(KernelFunction function,
-        @Nullable KernelArguments arguments, Class<T> resultType) {
-        return function.invokeStreamingAsync(this, arguments,
-                ContextVariableTypes.getDefaultVariableTypeForClass(resultType))
-            .map(x -> x.innerContent);
     }
 
     @Override
