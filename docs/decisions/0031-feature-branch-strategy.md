@@ -32,6 +32,8 @@ In our current software development process, managing changes in the main branch
 
 As soon we identify that contributors are willing to take/create a Feature Issue as a potential connector implementation, we will create a new branch for that feature.
 
+Once we have agreed to take a new connector we will work with the contributors to make sure the implementation progresses and is supported if needed.
+
 The contributor(s) will then be one of the responsibles to incrementally add the majority of changes through small Pull Requests to the feature branch under our supervision and review process.
 
 This strategy involves creating a separate branch in the repository for each new big feature, like connectors. This isolation means that changes are made in a controlled environment without affecting the main branch.
