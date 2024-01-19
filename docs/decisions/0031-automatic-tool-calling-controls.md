@@ -27,9 +27,9 @@ The current implementation of automatic tool calling allows for multiple consecu
 
 ## Considered Options
 
-### Option #1: Make the `ToolCallBehavior.MaximumUseAttempts` property public
+### Option #1: Expose maximum use attempts
 
-Expose the `ToolCallBehavior.MaximumUseAttempts` property so that the caller can modify it to fit their needs. Currently this property is internal, and set to `1` for `ToolCallBehavior.RequireFunction` and `int.MaxValue` for all other implementations of `ToolCallBehavior`. Once it is exceeded, the kernel will stop using tools and request a regular chat response from the model.
+Expose the `ToolCallBehavior.MaximumUseAttempts` property as public so that the caller can modify it to fit their needs. Currently this property is internal, and set to `1` for `ToolCallBehavior.RequireFunction` and `int.MaxValue` for all other implementations of `ToolCallBehavior`. Once it is exceeded, the kernel will stop using tools and request a regular chat response from the model.
 
 This is the simplest option that will enable the planner to accurately enforce the `MaxIterations` limit defined in its configuration. The planner could set this value to `1`, so that each iteration of the planner would map to two model round trips (one tool call and one subsequent chat response).
 
@@ -52,7 +52,7 @@ private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
 }
 ```
 
-### Option #2: Store number of model iterations in chat response metadata
+### Option #2: Expose maximum use attempts and track model iterations
 
 Same as Option #1, but adds an `Iterations` field to the `ChatMessageContent` response metadata. This field would be set to the number of model iterations that occurred as a result of the request, as computed inside `ClientCore.GetChatMessageContentsAsync` or `ClientCore.GetStreamingChatMessageContentsAsync`. This would enable the caller to measure the _actual_ number of model round trips that were performed for each request.
 
@@ -145,7 +145,7 @@ for (int iteration = 0; iteration < this.Config.MaxIterations; /* iteration is i
 }
 ```
 
-### Option #3: Add a pre-invoke callback to `ToolCallBehavior`
+### Option #3: Add a pre-invoke callback and track model iterations
 
 Add a PreInvokeCallback field to `ToolCallBehavior`. This callback would be invoked inside `ClientCore.cs` before a tool call is invoked. If `true`, would proceed with the tool call invocation. This approach would give the caller control over whether or not a tool call is invoked, while still leveraging the kernel's code for invocation.
 
