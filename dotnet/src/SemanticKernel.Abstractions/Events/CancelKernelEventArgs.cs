@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// Provides an <see cref="EventArgs"/> for cancelable operations related
 /// to <see cref="Kernel"/>-based operations.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0004")]
 public abstract class CancelKernelEventArgs : KernelEventArgs
 {
     /// <summary>
