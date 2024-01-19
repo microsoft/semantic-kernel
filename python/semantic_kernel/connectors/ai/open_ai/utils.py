@@ -23,7 +23,7 @@ def _describe_function(function: SKFunctionBase) -> Dict[str, str]:
     """
     func_view = function.describe()
     return {
-        "name": f"{func_view.skill_name}-{func_view.name}",
+        "name": f"{func_view.plugin_name}-{func_view.name}",
         "description": func_view.description,
         "parameters": {
             "type": "object",
@@ -41,51 +41,51 @@ def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) ->
     args:
         kernel: the kernel.
         filter: a dictionary with keys
-            exclude_skill, include_skill, exclude_function, include_function
+            exclude_plugin, include_plugin, exclude_function, include_function
             and lists of the required filter.
-            The function name should be in the format "skill_name-function_name".
-            Using exclude_skill and include_skill at the same time will raise an error.
+            The function name should be in the format "plugin_name-function_name".
+            Using exclude_plugin and include_plugin at the same time will raise an error.
             Using exclude_function and include_function at the same time will raise an error.
             If using include_* implies that all other function will be excluded.
             Example:
                 filter = {
-                    "exclude_skill": ["skill1", "skill2"],
-                    "include_function": ["skill3-function1", "skill4-function2"],
+                    "exclude_plugin": ["plugin1", "plugin2"],
+                    "include_function": ["plugin3-function1", "plugin4-function2"],
                     }
-                will return only skill3-function1 and skill4-function2.
+                will return only plugin3-function1 and plugin4-function2.
                 filter = {
-                    "exclude_function": ["skill1-function1", "skill2-function2"],
+                    "exclude_function": ["plugin1-function1", "plugin2-function2"],
                     }
-                will return all functions except skill1-function1 and skill2-function2.
+                will return all functions except plugin1-function1 and plugin2-function2.
         caller_function_name: the name of the function that is calling the other functions.
     returns:
         a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
     """
-    include_skill = filter.get("include_skill", None)
-    exclude_skill = filter.get("exclude_skill", [])
+    include_plugin = filter.get("include_plugin", None)
+    exclude_plugin = filter.get("exclude_plugin", [])
     include_function = filter.get("include_function", None)
     exclude_function = filter.get("exclude_function", [])
-    if include_skill and exclude_skill:
-        raise ValueError("Cannot use both include_skill and exclude_skill at the same time.")
+    if include_plugin and exclude_plugin:
+        raise ValueError("Cannot use both include_plugin and exclude_plugin at the same time.")
     if include_function and exclude_function:
         raise ValueError("Cannot use both include_function and exclude_function at the same time.")
-    if include_skill:
-        include_skill = [skill.lower() for skill in include_skill]
-    if exclude_skill:
-        exclude_skill = [skill.lower() for skill in exclude_skill]
+    if include_plugin:
+        include_plugin = [plugin.lower() for plugin in include_plugin]
+    if exclude_plugin:
+        exclude_plugin = [plugin.lower() for plugin in exclude_plugin]
     if include_function:
         include_function = [function.lower() for function in include_function]
     if exclude_function:
         exclude_function = [function.lower() for function in exclude_function]
     result = []
     for (
-        skill_name,
-        skill,
-    ) in kernel.skills.data.items():
-        if skill_name in exclude_skill or (include_skill and skill_name not in include_skill):
+        plugin_name,
+        plugin,
+    ) in kernel.plugins.data.items():
+        if plugin_name in exclude_plugin or (include_plugin and plugin_name not in include_plugin):
             continue
-        for function_name, function in skill.items():
-            current_name = f"{skill_name}-{function_name}"
+        for function_name, function in plugin.items():
+            current_name = f"{plugin_name}-{function_name}"
             if current_name in exclude_function or (include_function and current_name not in include_function):
                 continue
             result.append(_describe_function(function))
@@ -106,7 +106,7 @@ async def execute_function_call(kernel: Kernel, function_call: FunctionCall, log
 async def chat_completion_with_function_call(
     kernel: Kernel,
     context: SKContext,
-    chat_skill_name: Optional[str] = None,
+    chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[SKFunctionBase] = None,
     *,
@@ -129,10 +129,10 @@ async def chat_completion_with_function_call(
         functions: the function calling object,
             make sure to use get_function_calling_object method to create it.
         Optional arguments:
-            chat_skill_name: the skill name of the chat function.
+            chat_plugin_name: the plugin name of the chat function.
             chat_function_name: the function name of the chat function.
             chat_function: the chat function, if not provided, it will be retrieved from the kernel.
-                make sure to provide either the chat_function or the chat_skill_name and chat_function_name.
+                make sure to provide either the chat_function or the chat_plugin_name and chat_function_name.
 
             max_function_calls: the maximum number of function calls to execute, defaults to 5.
             current_call_count: the current number of function calls executed.
@@ -147,11 +147,11 @@ async def chat_completion_with_function_call(
     current_call_count = kwargs.get("current_call_count", 0)
     # get the chat function
     if chat_function is None:
-        chat_function = kernel.func(skill_name=chat_skill_name, function_name=chat_function_name)
+        chat_function = kernel.func(plugin_name=chat_plugin_name, function_name=chat_function_name)
     assert isinstance(
         chat_function._chat_prompt_template, OpenAIChatPromptTemplate
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
-    settings = chat_function._chat_prompt_template.prompt_config.completion
+    settings = chat_function._chat_prompt_template.prompt_config.execution_settings
     if current_call_count >= max_function_calls:
         settings.functions = []
     context = await chat_function.invoke_async(
@@ -189,12 +189,15 @@ def _parse_message(
         Tuple[Optional[str], Optional[Dict]] -- The parsed message.
     """
     content = message.content if hasattr(message, "content") else None
-    function_call = message.function_call if hasattr(message, "function_call") else None
-    if function_call:
-        function_call = FunctionCall(
-            name=function_call.name,
-            arguments=function_call.arguments,
-        )
+    tool_calls = message.tool_calls if hasattr(message, "tool_calls") else None
+    function_calls = (
+        [FunctionCall(id=call.id, name=call.function.name, arguments=call.function.arguments) for call in tool_calls]
+        if tool_calls
+        else None
+    )
+
+    # todo: support multiple function calls
+    function_call = function_calls[0] if function_calls else None
 
     if not with_data:
         return (content, None, function_call)

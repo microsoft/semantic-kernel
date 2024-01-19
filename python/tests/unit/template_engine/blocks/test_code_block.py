@@ -7,8 +7,8 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
 )
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -19,17 +19,17 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 class TestCodeBlock:
     def setup_method(self):
-        self.skills = Mock(spec=ReadOnlySkillCollectionBase)
+        self.plugins = Mock(spec=ReadOnlyPluginCollectionBase)
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
         context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            skill_collection=self.skills,
+            plugin_collection=self.plugins,
         )
-        # Make it so our self.skills mock's `has_function` method returns False
-        self.skills.has_function.return_value = False
+        # Make it so our self.plugins mock's `has_function` method returns False
+        self.plugins.has_function.return_value = False
         target = CodeBlock(
             content="functionName",
         )
@@ -42,7 +42,7 @@ class TestCodeBlock:
         context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            skill_collection=self.skills,
+            plugin_collection=self.plugins,
         )
 
         def invoke(_):
@@ -51,15 +51,15 @@ class TestCodeBlock:
         function = SKFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
-            skill_name="",
+            plugin_name="",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        self.skills.has_function.return_value = True
-        self.skills.get_function.return_value = function
+        self.plugins.has_function.return_value = True
+        self.plugins.get_function.return_value = function
 
         target = CodeBlock(
             content="functionName",
@@ -148,7 +148,7 @@ class TestCodeBlock:
         context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            skill_collection=None,
+            plugin_collection=None,
         )
 
         code_block = CodeBlock(
@@ -166,7 +166,7 @@ class TestCodeBlock:
         context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            skill_collection=None,
+            plugin_collection=None,
         )
 
         code_block = CodeBlock(
@@ -182,7 +182,7 @@ class TestCodeBlock:
         context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            skill_collection=None,
+            plugin_collection=None,
         )
 
         code_block = CodeBlock(
@@ -197,7 +197,7 @@ class TestCodeBlock:
         context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            skill_collection=None,
+            plugin_collection=None,
         )
 
         code_block = CodeBlock(
@@ -216,11 +216,11 @@ class TestCodeBlock:
         variables["var1"] = "uno"
         variables["var2"] = "due"
 
-        # Create a context with the variables, memory, and skill collection
+        # Create a context with the variables, memory, and plugin collection
         context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            skill_collection=self.skills,
+            plugin_collection=self.plugins,
         )
 
         # Create a FunctionIdBlock with the function name
@@ -245,16 +245,16 @@ class TestCodeBlock:
         function = SKFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
-            skill_name="",
+            plugin_name="",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        # Mock the skill collection's function retrieval
-        self.skills.has_function.return_value = True
-        self.skills.get_function.return_value = function
+        # Mock the plugin collection's function retrieval
+        self.plugins.has_function.return_value = True
+        self.plugins.get_function.return_value = function
 
         # Create a CodeBlock with the FunctionIdBlock and render it with the context
         code_block = CodeBlock(
@@ -283,11 +283,11 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables[VAR_NAME] = VAR_VALUE
 
-        # Create a context with the variables, memory, and skill collection
+        # Create a context with the variables, memory, and plugin collection
         context = SKContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            skill_collection=self.skills,
+            plugin_collection=self.plugins,
         )
 
         # Create a FunctionIdBlock with the function name and a
@@ -307,16 +307,16 @@ class TestCodeBlock:
         function = SKFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
-            skill_name="",
+            plugin_name="",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        # Mock the skill collection's function retrieval
-        self.skills.has_function.return_value = True
-        self.skills.get_function.return_value = function
+        # Mock the plugin collection's function retrieval
+        self.plugins.has_function.return_value = True
+        self.plugins.get_function.return_value = function
 
         # Create a CodeBlock with the FunctionIdBlock and VarBlock,
         # and render it with the context
@@ -336,11 +336,11 @@ class TestCodeBlock:
         # Define a value to be used in the test
         VALUE = "value"
 
-        # Create a context with empty variables, memory, and skill collection
+        # Create a context with empty variables, memory, and plugin collection
         context = SKContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            skill_collection=self.skills,
+            plugin_collection=self.plugins,
         )
 
         # Create a FunctionIdBlock with the function name and a ValBlock with the value
@@ -359,16 +359,16 @@ class TestCodeBlock:
         function = SKFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
-            skill_name="",
+            plugin_name="",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        # Mock the skill collection's function retrieval
-        self.skills.has_function.return_value = True
-        self.skills.get_function.return_value = function
+        # Mock the plugin collection's function retrieval
+        self.plugins.has_function.return_value = True
+        self.plugins.get_function.return_value = function
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
