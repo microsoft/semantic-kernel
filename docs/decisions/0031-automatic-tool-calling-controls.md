@@ -63,7 +63,7 @@ Updated helper method in _ClientCore.cs_:
 ```csharp
 private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int iterations)
 {
-    return new Dictionary<string, object?>(5)
+    return new Dictionary<string, object?>(6)
     {
         { nameof(completions.Id), completions.Id },
         { nameof(completions.Created), completions.Created },

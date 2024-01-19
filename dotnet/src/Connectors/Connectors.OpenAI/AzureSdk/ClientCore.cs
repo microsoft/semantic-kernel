@@ -177,7 +177,7 @@ internal abstract class ClientCore
 
     private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int iterations)
     {
-        return new Dictionary<string, object?>(5)
+        return new Dictionary<string, object?>(6)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
@@ -190,7 +190,7 @@ internal abstract class ClientCore
 
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions, int iterations)
     {
-        return new Dictionary<string, object?>(3)
+        return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
