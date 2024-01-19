@@ -5,12 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase usage of code_interpreter and retrieval tools.
 /// </summary>
-public static class Example75_AgentTools
+public sealed class Example75_AgentTools : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
@@ -19,18 +23,19 @@ public static class Example75_AgentTools
     private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
 
     // Track agents for clean-up
-    private static readonly List<IAgent> s_agents = new();
+    private readonly List<IAgent> _agents = new();
 
     /// <summary>
     /// Show how to utilize code_interpreter and retrieval tools.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Example75_AgentTools ========");
+        this.WriteLine("======== Example75_AgentTools ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
 
@@ -41,9 +46,9 @@ public static class Example75_AgentTools
         await RunRetrievalToolAsync();
     }
 
-    private static async Task RunCodeInterpreterToolAsync()
+    private async Task RunCodeInterpreterToolAsync()
     {
-        Console.WriteLine("======== Run:CodeInterpreterTool ========");
+        this.WriteLine("======== Run:CodeInterpreterTool ========");
 
         var builder =
             new AgentBuilder()
@@ -68,13 +73,13 @@ public static class Example75_AgentTools
         }
         finally
         {
-            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()));
         }
     }
 
-    private static async Task RunRetrievalToolAsync()
+    private async Task RunRetrievalToolAsync()
     {
-        Console.WriteLine("======== Run:RunRetrievalTool ========");
+        this.WriteLine("======== Run:RunRetrievalTool ========");
 
         // REQUIRED:
         //
@@ -111,7 +116,7 @@ public static class Example75_AgentTools
         }
         finally
         {
-            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()));
         }
     }
 
@@ -119,21 +124,21 @@ public static class Example75_AgentTools
     /// Common chat loop used for: RunCodeInterpreterToolAsync and RunRetrievalToolAsync.
     /// Processes each question for both "default" and "enabled" agents.
     /// </summary>
-    private static async Task ChatAsync(
+    private async Task ChatAsync(
         IAgent defaultAgent,
         IAgent enabledAgent,
         params string[] questions)
     {
         foreach (var question in questions)
         {
-            Console.WriteLine("\nDEFAULT AGENT:");
+            this.WriteLine("\nDEFAULT AGENT:");
             await InvokeAgentAsync(defaultAgent, question);
 
-            Console.WriteLine("\nTOOL ENABLED AGENT:");
+            this.WriteLine("\nTOOL ENABLED AGENT:");
             await InvokeAgentAsync(enabledAgent, question);
         }
 
-        static async Task InvokeAgentAsync(IAgent agent, string question)
+        async Task InvokeAgentAsync(IAgent agent, string question)
         {
             await foreach (var message in agent.InvokeAsync(question))
             {
@@ -143,26 +148,28 @@ public static class Example75_AgentTools
                     content = content.Replace(annotation.Label, string.Empty, StringComparison.Ordinal);
                 }
 
-                Console.WriteLine($"# {message.Role}: {content}");
+                this.WriteLine($"# {message.Role}: {content}");
 
                 if (message.Annotations.Count > 0)
                 {
-                    Console.WriteLine("\n# files:");
+                    this.WriteLine("\n# files:");
                     foreach (var annotation in message.Annotations)
                     {
-                        Console.WriteLine($"* {annotation.FileId}");
+                        this.WriteLine($"* {annotation.FileId}");
                     }
                 }
             }
 
-            Console.WriteLine();
+            this.WriteLine();
         }
     }
 
-    private static IAgent Track(IAgent agent)
+    private IAgent Track(IAgent agent)
     {
-        s_agents.Add(agent);
+        this._agents.Add(agent);
 
         return agent;
     }
+
+    public Example75_AgentTools(ITestOutputHelper output) : base(output) { }
 }

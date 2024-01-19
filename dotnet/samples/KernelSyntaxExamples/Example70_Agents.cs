@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -153,15 +152,15 @@ public class Example70_Agent : BaseTest
         try
         {
             // Display agent identifier.
-            Console.WriteLine($"[{agent.Id}]");
+            this.WriteLine($"[{agent.Id}]");
 
             // Process each user message and agent response.
             foreach (var response in messages.Select(m => thread.InvokeAsync(agent, m, arguments)))
             {
                 await foreach (var message in response)
                 {
-                    Console.WriteLine($"[{message.Id}]");
-                    Console.WriteLine($"# {message.Role}: {message.Content}");
+                    this.WriteLine($"[{message.Id}]");
+                    this.WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
         }
