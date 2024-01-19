@@ -11,12 +11,10 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.services.AIServiceSelector;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -45,16 +43,6 @@ public interface Kernel extends Buildable {
         ContextVariableType<T> resultType);
 
     <T> Mono<ContextVariable<T>> invokeAsync(
-        KernelFunction function,
-        @Nullable KernelArguments arguments,
-        Class<T> resultType);
-
-    <T> Flux<T> invokeStreamingAsync(
-        KernelFunction function,
-        @Nullable KernelArguments arguments,
-        ContextVariableType<T> resultType);
-
-    <T> Flux<T> invokeStreamingAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType);

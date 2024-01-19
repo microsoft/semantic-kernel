@@ -121,7 +121,7 @@ public final class CodeBlock extends Block implements CodeRendering {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.enrichFunctionArguments(kernel, fBlock,
                 arguments ==
-                    null ? new DefaultKernelArguments() : new DefaultKernelArguments(arguments));
+                    null ? new DefaultKernelArguments() : new DefaultKernelArguments(arguments, new HashMap<>()));
         }
 
         return kernel

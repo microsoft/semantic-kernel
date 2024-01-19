@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -54,19 +53,6 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             null
         );
         this.function = implementationFunc;
-    }
-
-    @Override
-    public <T> Flux<StreamingContent<T>> invokeStreamingAsync(
-        Kernel kernel,
-        @Nullable KernelArguments arguments,
-        ContextVariableType<T> variableType) {
-        return function
-            .invoke(kernel, this, arguments)
-            .map(it -> {
-                return new StreamingContent<>(variableType.getConverter().fromObject(it));
-            })
-            .flux();
     }
 
     @Override

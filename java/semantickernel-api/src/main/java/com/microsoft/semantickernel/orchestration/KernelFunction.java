@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -15,8 +10,9 @@ import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-
-import reactor.core.publisher.Flux;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 /**
@@ -70,21 +66,6 @@ public interface KernelFunction extends Buildable {
     default Class<?> getType() {
         throw new UnsupportedOperationException("Deprecated");
     }
-
-    /**
-     * Invokes the <see cref="KernelFunction"/> and streams its results.
-     *
-     * @param kernel    The <see cref="Kernel"/> containing services, plugins, and other state for
-     *                  use throughout the operation.
-     * @param arguments The arguments to pass to the function's invocation, including any
-     *                  {@link PromptExecutionSettings}.
-     * @param <T>       The type of the context variable
-     * @return An {@link Flux} for streaming the results of the function's invocation.
-     */
-    <T> Flux<StreamingContent<T>> invokeStreamingAsync(
-        Kernel kernel,
-        @Nullable KernelArguments arguments,
-        ContextVariableType<T> variableType);
 
     /**
      * Invokes the <see cref="KernelFunction"/>.

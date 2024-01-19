@@ -2,7 +2,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 
-public class StreamingContent<T> {
+public class TextRequestContent<T> {
 
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
@@ -28,7 +28,7 @@ public class StreamingContent<T> {
     public KernelArguments metadata;
 
 
-    public StreamingContent(T content) {
+    public TextRequestContent(T content) {
         this.innerContent = content;
     }
 }
