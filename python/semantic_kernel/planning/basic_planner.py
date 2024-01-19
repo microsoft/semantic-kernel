@@ -40,24 +40,24 @@ description: looks up the a contact and retrieves their email address
 args:
 - name: the name to look up
 
-WriterSkill.EmailTo
+WriterPlugin.EmailTo
 description: email the input text to a recipient
 args:
 - input: the text to email
 - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-WriterSkill.Translate
+WriterPlugin.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
 - language: the language to translate to
 
-WriterSkill.Summarize
+WriterPlugin.Summarize
 description: summarize input text
 args:
 - input: the text to summarize
 
-FunSkill.Joke
+FunPlugin.Joke
 description: Generate a funny joke
 args:
 - input: the input to generate a joke about
@@ -69,29 +69,29 @@ args:
     {
         "input": "cars",
         "subtasks": [
-            {"function": "FunSkill.Joke"},
-            {"function": "WriterSkill.Translate", "args": {"language": "Spanish"}}
+            {"function": "FunPlugin.Joke"},
+            {"function": "WriterPlugin.Translate", "args": {"language": "Spanish"}}
         ]
     }
 
 [AVAILABLE FUNCTIONS]
-WriterSkill.Brainstorm
+WriterPlugin.Brainstorm
 description: Brainstorm ideas
 args:
 - input: the input to brainstorm about
 
-EdgarAllenPoeSkill.Poe
+EdgarAllenPoePlugin.Poe
 description: Write in the style of author Edgar Allen Poe
 args:
 - input: the input to write about
 
-WriterSkill.EmailTo
+WriterPlugin.EmailTo
 description: Write an email to a recipient
 args:
 - input: the input to write about
 - recipient: the recipient's email address.
 
-WriterSkill.Translate
+WriterPlugin.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
@@ -106,10 +106,10 @@ E-mail these ideas to my significant other. Translate it to French."
     {
         "input": "Valentine's Day Date Ideas",
         "subtasks": [
-            {"function": "WriterSkill.Brainstorm"},
-            {"function": "EdgarAllenPoeSkill.Poe"},
-            {"function": "WriterSkill.EmailTo", "args": {"recipient": "significant_other"}},
-            {"function": "WriterSkill.Translate", "args": {"language": "French"}}
+            {"function": "WriterPlugin.Brainstorm"},
+            {"function": "EdgarAllenPoePlugin.Poe"},
+            {"function": "WriterPlugin.EmailTo", "args": {"recipient": "significant_other"}},
+            {"function": "WriterPlugin.Translate", "args": {"language": "French"}}
         ]
     }
 
@@ -133,21 +133,21 @@ class BasicPlanner:
         Given an instance of the Kernel, create the [AVAILABLE FUNCTIONS]
         string for the prompt.
         """
-        # Get a dictionary of skill names to all native and semantic functions
-        native_functions = kernel.skills.get_functions_view().native_functions
-        semantic_functions = kernel.skills.get_functions_view().semantic_functions
+        # Get a dictionary of plugin names to all native and semantic functions
+        native_functions = kernel.plugins.get_functions_view().native_functions
+        semantic_functions = kernel.plugins.get_functions_view().semantic_functions
         native_functions.update(semantic_functions)
 
         # Create a mapping between all function names and their descriptions
         # and also a mapping between function names and their parameters
         all_functions = native_functions
-        skill_names = list(all_functions.keys())
+        plugin_names = list(all_functions.keys())
         all_functions_descriptions_dict = {}
         all_functions_params_dict = {}
 
-        for skill_name in skill_names:
-            for func in all_functions[skill_name]:
-                key = skill_name + "." + func.name
+        for plugin_name in plugin_names:
+            for func in all_functions[plugin_name]:
+                key = plugin_name + "." + func.name
                 all_functions_descriptions_dict[key] = func.description
                 all_functions_params_dict[key] = func.parameters
 
@@ -211,8 +211,8 @@ class BasicPlanner:
         subtasks = generated_plan["subtasks"]
 
         for subtask in subtasks:
-            skill_name, function_name = subtask["function"].split(".")
-            sk_function = kernel.skills.get_function(skill_name, function_name)
+            plugin_name, function_name = subtask["function"].split(".")
+            sk_function = kernel.plugins.get_function(plugin_name, function_name)
 
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)

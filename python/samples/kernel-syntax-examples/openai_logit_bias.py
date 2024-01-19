@@ -68,7 +68,7 @@ async def chat_request_example(kernel, api_key, org_id):
     settings = kernel.get_request_settings_from_service(ChatCompletionClientBase, "chat_service")
     settings = _config_ban_tokens(settings, keys)
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(max_tokens=2000, temperature=0.7, top_p=0.8)
+    prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
     prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
     # Setup chat with prompt
@@ -106,7 +106,7 @@ async def chat_request_example(kernel, api_key, org_id):
 
 
 async def text_complete_request_example(kernel, api_key, org_id):
-    openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
+    openai_text_completion = sk_oai.OpenAITextCompletion("gpt-3.5-turbo-instruct", api_key, org_id)
     kernel.add_text_completion_service("text_service", openai_text_completion)
 
     # Spaces and capitalization affect the token ids.

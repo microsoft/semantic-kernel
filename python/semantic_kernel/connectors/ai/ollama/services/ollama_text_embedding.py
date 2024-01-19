@@ -42,7 +42,8 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         """
         async with AsyncSession(self.session) as session:
             async with session.post(
-                self.url, json={"model": self.ai_model_id, "texts": texts, "options": kwargs}
+                self.url,
+                json={"model": self.ai_model_id, "texts": texts, "options": kwargs},
             ) as response:
                 response.raise_for_status()
                 return array(await response.json())

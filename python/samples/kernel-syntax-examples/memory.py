@@ -62,8 +62,8 @@ async def setup_chat_with_memory(
     context["fact4"] = "where have I traveled?"
     context["fact5"] = "what do I do for work?"
 
-    context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
-    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.8
+    context[sk.core_plugins.TextMemoryPlugin.COLLECTION_PARAM] = "aboutMe"
+    context[sk.core_plugins.TextMemoryPlugin.RELEVANCE_PARAM] = 0.8
 
     context["chat_history"] = ""
 
@@ -102,7 +102,7 @@ async def main() -> None:
     )
 
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-    kernel.import_skill(sk.core_skills.TextMemorySkill())
+    kernel.import_plugin(sk.core_plugins.TextMemoryPlugin())
 
     print("Populating memory...")
     await populate_memory(kernel)

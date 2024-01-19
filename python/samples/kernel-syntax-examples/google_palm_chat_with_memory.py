@@ -13,7 +13,7 @@ kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
 palm_chat_completion = sk_gp.GooglePalmChatCompletion("models/chat-bison-001", apikey)
 kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-kernel.import_skill(sk.core_skills.TextMemorySkill())
+kernel.import_plugin(sk.core_plugins.TextMemoryPlugin())
 
 
 async def populate_memory(kernel: sk.Kernel) -> None:
@@ -67,7 +67,7 @@ async def setup_chat_with_memory(
 
     """.strip()
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(max_tokens=2000, temperature=0.7, top_p=0.8)
+    prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
     prompt_template = sk.ChatPromptTemplate(  # Create the chat prompt template
         "{{$user_input}}", kernel.prompt_template_engine, prompt_config
     )
@@ -82,8 +82,8 @@ async def setup_chat_with_memory(
     context["fact4"] = "where did I travel last year?"
     context["fact5"] = "what do I do for work?"
 
-    context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
-    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.6
+    context[sk.core_plugins.TextMemoryPlugin.COLLECTION_PARAM] = "aboutMe"
+    context[sk.core_plugins.TextMemoryPlugin.RELEVANCE_PARAM] = 0.6
 
     context["chat_history"] = ""
 

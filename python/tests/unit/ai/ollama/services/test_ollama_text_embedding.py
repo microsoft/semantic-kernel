@@ -3,7 +3,9 @@ from unittest.mock import patch
 import pytest
 from numpy import array
 
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import (
+    OllamaTextEmbedding,
+)
 from tests.unit.ai.ollama.utils import MockResponse
 
 

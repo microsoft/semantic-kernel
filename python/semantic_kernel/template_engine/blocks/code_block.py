@@ -6,8 +6,8 @@ from typing import Any, List, Optional, Tuple
 import pydantic as pdt
 
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
 )
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -85,10 +85,10 @@ class CodeBlock(Block):
         raise ValueError(f"Unexpected first token type: {self._tokens[0].type}")
 
     async def _render_function_call_async(self, f_block: FunctionIdBlock, context):
-        if not context.skills:
-            raise ValueError("Skill collection not set")
+        if not context.plugins:
+            raise ValueError("Plugin collection not set")
 
-        function = self._get_function_from_skill_collection(context.skills, f_block)
+        function = self._get_function_from_plugin_collection(context.plugins, f_block)
 
         if not function:
             error_msg = f"Function `{f_block.content}` not found"
@@ -115,13 +115,13 @@ class CodeBlock(Block):
 
         return result.result
 
-    def _get_function_from_skill_collection(
-        self, skills: ReadOnlySkillCollectionBase, f_block: FunctionIdBlock
+    def _get_function_from_plugin_collection(
+        self, plugins: ReadOnlyPluginCollectionBase, f_block: FunctionIdBlock
     ) -> Optional[SKFunctionBase]:
-        if not f_block.skill_name and skills.has_function(None, f_block.function_name):
-            return skills.get_function(None, f_block.function_name)
+        if not f_block.plugin_name and plugins.has_function(None, f_block.function_name):
+            return plugins.get_function(None, f_block.function_name)
 
-        if f_block.skill_name and skills.has_function(f_block.skill_name, f_block.function_name):
-            return skills.get_function(f_block.skill_name, f_block.function_name)
+        if f_block.plugin_name and plugins.has_function(f_block.plugin_name, f_block.function_name):
+            return plugins.get_function(f_block.plugin_name, f_block.function_name)
 
         return None

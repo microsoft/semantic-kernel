@@ -19,12 +19,12 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.read_only_skill_collection import (
-    ReadOnlySkillCollection,
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.read_only_plugin_collection import (
+    ReadOnlyPluginCollection,
 )
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
 )
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class Plan(SKFunctionBase):
     _has_next_step: bool = PrivateAttr()
     _next_step_index: int = PrivateAttr()
     _name: str = PrivateAttr()
-    _skill_name: str = PrivateAttr()
+    _plugin_name: str = PrivateAttr()
     _description: str = PrivateAttr()
     _is_semantic: bool = PrivateAttr()
     _request_settings: AIRequestSettings = PrivateAttr()
@@ -54,8 +54,8 @@ class Plan(SKFunctionBase):
         return self._state
 
     @property
-    def skill_name(self) -> str:
-        return self._skill_name
+    def plugin_name(self) -> str:
+        return self._plugin_name
 
     @property
     def description(self) -> str:
@@ -95,7 +95,7 @@ class Plan(SKFunctionBase):
     def __init__(
         self,
         name: Optional[str] = None,
-        skill_name: Optional[str] = None,
+        plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         next_step_index: Optional[int] = None,
         state: Optional[ContextVariables] = None,
@@ -106,7 +106,7 @@ class Plan(SKFunctionBase):
     ) -> None:
         super().__init__()
         self._name = "" if name is None else name
-        self._skill_name = "" if skill_name is None else skill_name
+        self._plugin_name = "" if plugin_name is None else plugin_name
         self._description = "" if description is None else description
         self._next_step_index = 0 if next_step_index is None else next_step_index
         self._state = ContextVariables() if state is None else state
@@ -123,7 +123,7 @@ class Plan(SKFunctionBase):
 
     @classmethod
     def from_goal(cls, goal: str) -> "Plan":
-        return cls(description=goal, skill_name=cls.__name__)
+        return cls(description=goal, plugin_name=cls.__name__)
 
     @classmethod
     def from_function(cls, function: SKFunctionBase) -> "Plan":
@@ -148,7 +148,7 @@ class Plan(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=self._state,
-                skill_collection=ReadOnlySkillCollection(),
+                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
             )
 
@@ -157,7 +157,7 @@ class Plan(SKFunctionBase):
             if result.error_occurred:
                 logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self._skill_name, self._name, result.last_error_description
+                        self._plugin_name, self._name, result.last_error_description
                     )
                 )
                 return result
@@ -188,7 +188,7 @@ class Plan(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=self._state,
-                skill_collection=ReadOnlySkillCollection(),
+                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
             )
 
@@ -198,7 +198,7 @@ class Plan(SKFunctionBase):
                 logger.error(
                     result.last_exception,
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self.skill_name, self.name, context.last_error_description
+                        self.plugin_name, self.name, context.last_error_description
                     ),
                 )
                 return result
@@ -233,12 +233,12 @@ class Plan(SKFunctionBase):
         if self._function is not None:
             self._function.set_ai_service(service)
 
-    def set_default_skill_collection(
+    def set_default_plugin_collection(
         self,
-        skills: ReadOnlySkillCollectionBase,
+        plugins: ReadOnlyPluginCollectionBase,
     ) -> SKFunctionBase:
         if self._function is not None:
-            self._function.set_default_skill_collection(skills)
+            self._function.set_default_plugin_collection(plugins)
 
     def describe(self) -> Optional[FunctionView]:
         if self._function is not None:
@@ -247,14 +247,14 @@ class Plan(SKFunctionBase):
 
     def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
         if len(plan.steps) == 0:
-            if context.skills is None:
+            if context.plugins is None:
                 raise KernelException(
-                    KernelException.ErrorCodes.SkillCollectionNotSet,
-                    "Skill collection not found in the context",
+                    KernelException.ErrorCodes.PluginCollectionNotSet,
+                    "Plugin collection not found in the context",
                 )
             try:
-                skillFunction = context.skills.get_function(plan.skill_name, plan.name)
-                plan.set_function(skillFunction)
+                pluginFunction = context.plugins.get_function(plan.plugin_name, plan.name)
+                plan.set_function(pluginFunction)
             except Exception:
                 pass
         else:
@@ -270,7 +270,7 @@ class Plan(SKFunctionBase):
             else:
                 new_step = Plan(
                     name=step.name,
-                    skill_name=step.skill_name,
+                    plugin_name=step.plugin_name,
                     description=step.description,
                     next_step_index=0,
                     state=ContextVariables(),
@@ -284,7 +284,7 @@ class Plan(SKFunctionBase):
     def set_function(self, function: SKFunctionBase) -> None:
         self._function = function
         self._name = function.name
-        self._skill_name = function.skill_name
+        self._plugin_name = function.plugin_name
         self._description = function.description
         self._is_semantic = function.is_semantic
         self._request_settings = function.request_settings
@@ -308,7 +308,7 @@ class Plan(SKFunctionBase):
             func_context = SKContext(
                 variables=variables,
                 memory=context.memory,
-                skill_collection=context.skills,
+                plugin_collection=context.plugins,
             )
             result = await step.invoke_async(context=func_context)
             result_value = result.result

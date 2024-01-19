@@ -19,7 +19,7 @@ pytestmark = [
 
 
 @pytest.mark.asyncio
-async def test_gp_chat_service_with_skills(setup_tldr_function_for_oai_models, get_gp_config):
+async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models, get_gp_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
     api_key = get_gp_config
 

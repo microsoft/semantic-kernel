@@ -6,9 +6,10 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 
 def test_function_call():
     # Test initialization with default values
-    fc = FunctionCall(name="Test-Function", arguments="""{"input": "world"}""")
+    fc = FunctionCall(name="Test-Function", arguments="""{"input": "world"}""", id="1234")
     assert fc.name == "Test-Function"
     assert fc.arguments == """{"input": "world"}"""
+    assert fc.id == "1234"
 
 
 @pytest.mark.asyncio
@@ -19,6 +20,7 @@ async def test_function_call_to_content_variables(create_kernel):
     func_call = FunctionCall(
         name="Test-Function",
         arguments="""{"input": "world", "input2": "world2"}""",
+        id="1234",
     )
     context = kernel.create_new_context()
     assert isinstance(func_call.to_context_variables(), ContextVariables)

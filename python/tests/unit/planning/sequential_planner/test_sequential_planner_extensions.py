@@ -16,12 +16,12 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_extensions i
     SequentialPlannerFunctionViewExtension,
     SequentialPlannerSKContextExtension,
 )
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.functions_view import FunctionsView
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
 )
-from semantic_kernel.skill_definition.skill_collection import SkillCollection
 
 
 async def _async_generator(query_result):
@@ -31,7 +31,7 @@ async def _async_generator(query_result):
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_no_functions_async():
     variables = ContextVariables()
-    skills = SkillCollection()
+    plugins = PluginCollection()
 
     memory = Mock(spec=SemanticTextMemoryBase)
     memory_query_result = MemoryQueryResult(
@@ -49,7 +49,7 @@ async def test_can_call_get_available_functions_with_no_functions_async():
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext(variables, memory, skills.read_only_skill_collection)
+    context = SKContext(variables, memory, plugins.read_only_plugin_collection)
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
@@ -69,7 +69,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     functions_view = FunctionsView()
     function_view = FunctionView(
         "functionName",
-        "skillName",
+        "pluginName",
         "description",
         [],
         is_semantic=True,
@@ -77,7 +77,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     )
     native_function_view = FunctionView(
         "nativeFunctionName",
-        "skillName",
+        "pluginName",
         "description",
         [],
         is_semantic=False,
@@ -86,9 +86,9 @@ async def test_can_call_get_available_functions_with_functions_async():
     functions_view.add_function(function_view)
     functions_view.add_function(native_function_view)
 
-    skills = Mock(spec=ReadOnlySkillCollectionBase)
-    skills.get_function.return_value = function_mock
-    skills.get_functions_view.return_value = functions_view
+    plugins = Mock(spec=ReadOnlyPluginCollectionBase)
+    plugins.get_function.return_value = function_mock
+    plugins.get_functions_view.return_value = functions_view
 
     memory_query_result = MemoryQueryResult(
         is_reference=False,
@@ -106,7 +106,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext.model_construct(variables=variables, memory=memory, skill_collection=skills)
+    context = SKContext.model_construct(variables=variables, memory=memory, plugin_collection=plugins)
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
@@ -141,7 +141,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     functions_view = FunctionsView()
     function_view = FunctionView(
         "functionName",
-        "skillName",
+        "pluginName",
         "description",
         [],
         is_semantic=True,
@@ -149,7 +149,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     )
     native_function_view = FunctionView(
         "nativeFunctionName",
-        "skillName",
+        "pluginName",
         "description",
         [],
         is_semantic=False,
@@ -172,16 +172,16 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     memory = Mock(spec=SemanticTextMemoryBase)
     memory.search_async.return_value = _async_generator(memory_query_result)
 
-    skills = Mock(spec=ReadOnlySkillCollectionBase)
-    skills.get_function.return_value = function_mock
-    skills.get_functions_view.return_value = functions_view
-    skills.read_only_skill_collection = skills
+    plugins = Mock(spec=ReadOnlyPluginCollectionBase)
+    plugins.get_function.return_value = function_mock
+    plugins.get_functions_view.return_value = functions_view
+    plugins.read_only_plugin_collection = plugins
 
     # Arrange GetAvailableFunctionsAsync parameters
     context = SKContext.model_construct(
         variables=variables,
         memory=memory,
-        skill_collection=skills,
+        plugin_collection=plugins,
     )
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
@@ -212,7 +212,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
 async def test_can_call_get_available_functions_async_with_default_relevancy_async():
     # Arrange
     variables = ContextVariables()
-    skills = SkillCollection()
+    plugins = PluginCollection()
 
     # Arrange Mock Memory and Result
     memory_query_result = MemoryQueryResult(
@@ -230,7 +230,7 @@ async def test_can_call_get_available_functions_async_with_default_relevancy_asy
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext.model_construct(variables=variables, memory=memory, skill_collection=skills)
+    context = SKContext.model_construct(variables=variables, memory=memory, plugin_collection=plugins)
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 

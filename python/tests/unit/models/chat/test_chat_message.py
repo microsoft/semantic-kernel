@@ -21,7 +21,7 @@ async def test_chat_message_rendering(create_kernel):
     # Test initialization with custom values
     kernel = create_kernel
     expected_content = "Hello, world!"
-    prompt_config = PromptTemplateConfig.from_completion_parameters(max_tokens=2000, temperature=0.7, top_p=0.8)
+    prompt_config = PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
     content_template = PromptTemplate("Hello, {{$input}}!", kernel.prompt_template_engine, prompt_config)
 
     message = ChatMessage(

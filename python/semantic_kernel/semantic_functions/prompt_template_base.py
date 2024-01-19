@@ -7,7 +7,7 @@ from semantic_kernel.sk_pydantic import SKBaseModel
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
-    from semantic_kernel.skill_definition.parameter_view import ParameterView
+    from semantic_kernel.plugin_definition.parameter_view import ParameterView
 
 
 class PromptTemplateBase(SKBaseModel, ABC):

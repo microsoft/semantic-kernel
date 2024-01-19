@@ -19,7 +19,7 @@ kernel = sk.Kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_chat_service("chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(max_tokens=2000, temperature=0.7, top_p=0.8)
+prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
 
 prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 

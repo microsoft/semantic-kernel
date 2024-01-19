@@ -37,10 +37,13 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._messages = []
-        if self.prompt_config.completion.extension_data.get("chat_system_prompt"):
-            self.add_system_message(self.prompt_config.completion.extension_data["chat_system_prompt"])
-        if hasattr(self.prompt_config.completion, "messages") and self.prompt_config.completion.messages:
-            for message in self.prompt_config.completion.messages:
+        if self.prompt_config.execution_settings.extension_data.get("chat_system_prompt"):
+            self.add_system_message(self.prompt_config.execution_settings.extension_data["chat_system_prompt"])
+        if (
+            hasattr(self.prompt_config.execution_settings, "messages")
+            and self.prompt_config.execution_settings.messages
+        ):
+            for message in self.prompt_config.execution_settings.messages:
                 self.add_message(message["role"], message["content"])
 
     async def render_async(self, context: "SKContext") -> str:
@@ -105,20 +108,20 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.
 
-        If there is a chat_system_prompt in the prompt_config.completion settings,
+        If there is a chat_system_prompt in the prompt_config.execution_settings settings,
         that takes precedence over the first message in the list of messages,
         if that is a system message.
         """
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         chat_template = cls(template, template_engine, prompt_config)
-        if prompt_config.completion.chat_system_prompt and messages[0]["role"] == "system":
+        if prompt_config.execution_settings.chat_system_prompt and messages[0]["role"] == "system":
             existing_system_message = messages.pop(0)
-            if existing_system_message["message"] != prompt_config.completion.chat_system_prompt:
+            if existing_system_message["message"] != prompt_config.execution_settings.chat_system_prompt:
                 logger.info(
                     "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
                     existing_system_message["message"],
-                    prompt_config.completion.chat_system_prompt,
+                    prompt_config.execution_settings.chat_system_prompt,
                 )
         for message in messages:
             chat_template.add_message(message["role"], message["message"])

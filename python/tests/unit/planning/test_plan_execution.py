@@ -3,8 +3,8 @@
 import pytest
 
 import semantic_kernel as sk
-from semantic_kernel.core_skills.math_skill import MathSkill
-from semantic_kernel.core_skills.text_skill import TextSkill
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.text_plugin import TextPlugin
 from semantic_kernel.planning import Plan
 
 
@@ -25,10 +25,10 @@ def test_invoke_plan_constructed_with_function():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -44,10 +44,10 @@ async def test_invoke_plan_constructed_with_function_async():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -62,10 +62,10 @@ def test_invoke_empty_plan_with_added_function_step():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -82,10 +82,10 @@ async def test_invoke_empty_plan_with_added_function_step_async():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -101,10 +101,10 @@ def test_invoke_empty_plan_with_added_plan_step():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -122,10 +122,10 @@ async def test_invoke_empty_plan_with_added_plan_step_async():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -142,11 +142,11 @@ def test_invoke_multi_step_plan():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
-    test_function2 = skill_config_dict["trim_end"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
+    test_function2 = plugin_config_dict["trim_end"]
 
     # setup context
     context = kernel.create_new_context()
@@ -165,11 +165,11 @@ async def test_invoke_multi_step_plan_async():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = TextSkill()
-    skill_config_dict = kernel.import_skill(skill, "text")
-    test_function = skill_config_dict["uppercase"]
-    test_function2 = skill_config_dict["trim_end"]
+    # import test (text) plugin
+    plugin = TextPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "text")
+    test_function = plugin_config_dict["uppercase"]
+    test_function2 = plugin_config_dict["trim_end"]
 
     # setup context
     context = kernel.create_new_context()
@@ -188,11 +188,11 @@ async def test_invoke_multi_step_plan_async_with_variables():
     # create a kernel
     kernel = sk.Kernel()
 
-    # import test (text) skill
-    skill = MathSkill()
-    skill_config_dict = kernel.import_skill(skill, "math")
-    test_function = skill_config_dict["Add"]
-    test_function2 = skill_config_dict["Subtract"]
+    # import test (text) plugin
+    plugin = MathPlugin()
+    plugin_config_dict = kernel.import_plugin(plugin, "math")
+    test_function = plugin_config_dict["Add"]
+    test_function2 = plugin_config_dict["Subtract"]
 
     plan = Plan(name="test")
 

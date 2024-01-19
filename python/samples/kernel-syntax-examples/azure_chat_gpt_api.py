@@ -46,7 +46,7 @@ req_settings.top_p = 0.8
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 
-prompt_config = sk.PromptTemplateConfig(completion=req_settings)
+prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)
 
 prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 

@@ -11,8 +11,8 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.skill_definition.read_only_skill_collection import (
-    ReadOnlySkillCollection,
+from semantic_kernel.plugin_definition.read_only_plugin_collection import (
+    ReadOnlyPluginCollection,
 )
 
 
@@ -95,8 +95,8 @@ def context_factory() -> t.Callable[[ContextVariables], SKContext]:
         return SKContext(
             context_variables,
             NullMemory(),
-            skill_collection=ReadOnlySkillCollection(
-                data={ReadOnlySkillCollection.GLOBAL_SKILL.lower(): {f.name: f for f in functions}},
+            plugin_collection=ReadOnlyPluginCollection(
+                data={ReadOnlyPluginCollection.GLOBAL_PLUGIN.lower(): {f.name: f for f in functions}},
             ),
         )
 

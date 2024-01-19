@@ -10,7 +10,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-async def test_azure_e2e_text_completion_with_skill(setup_tldr_function_for_oai_models, get_aoai_config):
+async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai_models, get_aoai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     _, api_key, endpoint = get_aoai_config
@@ -45,7 +45,7 @@ async def test_azure_e2e_text_completion_with_skill(setup_tldr_function_for_oai_
 
 
 @pytest.mark.asyncio
-async def test_azure_e2e_text_completion_with_skill_with_provided_client(
+async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
     setup_tldr_function_for_oai_models, get_aoai_config
 ):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models

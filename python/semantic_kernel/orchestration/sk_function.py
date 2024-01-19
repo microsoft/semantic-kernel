@@ -23,14 +23,14 @@ from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
+)
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
-)
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.parameter_view import ParameterView
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
 )
 
 if TYPE_CHECKING:
@@ -51,13 +51,13 @@ class SKFunction(SKFunctionBase):
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
-    _skill_collection: Optional[ReadOnlySkillCollectionBase]
+    _plugin_collection: Optional[ReadOnlyPluginCollectionBase]
     _ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]
     _ai_request_settings: AIRequestSettings
     _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
-    def from_native_method(method, skill_name="", log=None) -> "SKFunction":
+    def from_native_method(method, plugin_name="", log=None) -> "SKFunction":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if method is None:
@@ -104,14 +104,14 @@ class SKFunction(SKFunctionBase):
             delegate_stream_function=method,
             parameters=parameters,
             description=method.__sk_function_description__,
-            skill_name=skill_name,
+            plugin_name=plugin_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
         )
 
     @staticmethod
     def from_semantic_config(
-        skill_name: str,
+        plugin_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
         log: Optional[Any] = None,
@@ -213,7 +213,7 @@ class SKFunction(SKFunctionBase):
             delegate_stream_function=_local_stream_func,
             parameters=function_config.prompt_template.get_parameters(),
             description=function_config.prompt_template_config.description,
-            skill_name=skill_name,
+            plugin_name=plugin_name,
             function_name=function_name,
             is_semantic=True,
             chat_prompt_template=function_config.prompt_template if function_config.has_chat_prompt else None,
@@ -224,8 +224,8 @@ class SKFunction(SKFunctionBase):
         return self._name
 
     @property
-    def skill_name(self) -> str:
-        return self._skill_name
+    def plugin_name(self) -> str:
+        return self._plugin_name
 
     @property
     def description(self) -> str:
@@ -253,7 +253,7 @@ class SKFunction(SKFunctionBase):
         delegate_function: Callable[..., Any],
         parameters: List[ParameterView],
         description: str,
-        skill_name: str,
+        plugin_name: str,
         function_name: str,
         is_semantic: bool,
         log: Optional[Any] = None,
@@ -267,17 +267,17 @@ class SKFunction(SKFunctionBase):
         self._function = delegate_function
         self._parameters = parameters
         self._description = description
-        self._skill_name = skill_name
+        self._plugin_name = plugin_name
         self._name = function_name
         self._is_semantic = is_semantic
         self._stream_function = delegate_stream_function
-        self._skill_collection = None
+        self._plugin_collection = None
         self._ai_service = None
         self._ai_request_settings = AIRequestSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_skill_collection(self, skills: ReadOnlySkillCollectionBase) -> "SKFunction":
-        self._skill_collection = skills
+    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "SKFunction":
+        self._plugin_collection = plugins
         return self
 
     def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "SKFunction":
@@ -311,7 +311,7 @@ class SKFunction(SKFunctionBase):
     def describe(self) -> FunctionView:
         return FunctionView(
             name=self.name,
-            skill_name=self.skill_name,
+            plugin_name=self.plugin_name,
             description=self.description,
             is_semantic=self.is_semantic,
             parameters=self._parameters,
@@ -353,7 +353,7 @@ class SKFunction(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
-                skill_collection=self._skill_collection,
+                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
             )
         else:
@@ -400,7 +400,7 @@ class SKFunction(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
-                skill_collection=self._skill_collection,
+                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
             )
         else:
@@ -424,7 +424,7 @@ class SKFunction(SKFunctionBase):
 
     async def _invoke_semantic_async(self, context: "SKContext", settings: AIRequestSettings, **kwargs):
         self._verify_is_semantic()
-        self._ensure_context_has_skills(context)
+        self._ensure_context_has_plugins(context)
         new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
@@ -432,7 +432,7 @@ class SKFunction(SKFunctionBase):
     async def _invoke_native_async(self, context):
         self._verify_is_native()
 
-        self._ensure_context_has_skills(context)
+        self._ensure_context_has_plugins(context)
 
         delegate = DelegateHandlers.get_handler(self._delegate_type)
         # for python3.9 compatibility (staticmethod is not callable)
@@ -475,7 +475,7 @@ class SKFunction(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
-                skill_collection=self._skill_collection,
+                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
             )
         else:
@@ -504,14 +504,14 @@ class SKFunction(SKFunctionBase):
 
     async def _invoke_semantic_stream_async(self, context, settings):
         self._verify_is_semantic()
-        self._ensure_context_has_skills(context)
+        self._ensure_context_has_plugins(context)
         async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
             yield stream_msg
 
     async def _invoke_native_stream_async(self, context):
         self._verify_is_native()
 
-        self._ensure_context_has_skills(context)
+        self._ensure_context_has_plugins(context)
 
         delegate = DelegateHandlers.get_handler(self._delegate_type)
         # for python3.9 compatibility (staticmethod is not callable)
@@ -525,11 +525,11 @@ class SKFunction(SKFunctionBase):
 
         context.variables.update(completion)
 
-    def _ensure_context_has_skills(self, context) -> None:
-        if context.skills is not None:
+    def _ensure_context_has_plugins(self, context) -> None:
+        if context.plugins is not None:
             return
 
-        context.skills = self._skill_collection
+        context.plugins = self._plugin_collection
 
     def _trace_function_type_Call(self, type: Enum) -> None:
         logger.debug(f"Executing function type {type}: {type.name}")

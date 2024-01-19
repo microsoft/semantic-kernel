@@ -18,9 +18,9 @@ async def main():
 
     kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
-    skill = kernel.import_semantic_skill_from_directory("../../samples/skills", "FunSkill")
+    plugin = kernel.import_semantic_plugin_from_directory("../../samples/plugins", "FunPlugin")
 
-    joke_function = skill["Joke"]
+    joke_function = plugin["Joke"]
 
     print(joke_function("time travel to dinosaur age"))
 

@@ -16,6 +16,11 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.sk_function_context_parameter_decorator import (
+    sk_function_context_parameter,
+)
+from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -23,11 +28,6 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.sk_function_context_parameter_decorator import (
-    sk_function_context_parameter,
-)
-from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -35,8 +35,8 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Skills/StepwiseStep/config.json")
-PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Skills/StepwiseStep/skprompt.txt")
+PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Plugins/StepwiseStep/config.json")
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Plugins/StepwiseStep/skprompt.txt")
 
 
 def read_file(file_path: str) -> str:
@@ -44,8 +44,8 @@ def read_file(file_path: str) -> str:
         return file.read()
 
 
-# TODO: Original C# uses "StepwisePlanner_Excluded" for RESTRICTED_SKILL_NAME
-RESTRICTED_SKILL_NAME = "StepwisePlanner"
+# TODO: Original C# uses "StepwisePlanner_Excluded" for RESTRICTED_PLUGIN_NAME
+RESTRICTED_PLUGIN_NAME = "StepwisePlanner"
 S_FINAL_ANSWER_REGEX = re.compile(r"\[FINAL[_\s\-]ANSWER\](?P<final_answer>.+)", re.DOTALL)
 S_THOUGHT_REGEX = re.compile(r"(\[THOUGHT\])?(?P<thought>.+?)(?=\[ACTION\]|$)", re.DOTALL)
 S_ACTION_REGEX = re.compile(r"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", re.DOTALL)
@@ -78,7 +78,7 @@ class StepwisePlanner:
         self._kernel = kernel
 
         self.config = config or StepwisePlannerConfig()
-        self.config.excluded_skills.append(RESTRICTED_SKILL_NAME)
+        self.config.excluded_plugins.append(RESTRICTED_PLUGIN_NAME)
 
         prompt_config = prompt_user_config or PromptTemplateConfig()
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
@@ -86,12 +86,12 @@ class StepwisePlanner:
         if prompt_user_config is None:
             prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
 
-        prompt_config.completion.extension_data["max_tokens"] = self.config.max_tokens
+        prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
 
         self._system_step_function = self.import_semantic_function(
             kernel, "StepwiseStep", prompt_template, prompt_config
         )
-        self._native_functions = self._kernel.import_skill(self, RESTRICTED_SKILL_NAME)
+        self._native_functions = self._kernel.import_plugin(self, RESTRICTED_PLUGIN_NAME)
 
         self._context = kernel.create_new_context()
 
@@ -107,7 +107,7 @@ class StepwisePlanner:
 
         plan_step._outputs.append("agent_scratch_pad")
         plan_step._outputs.append("step_count")
-        plan_step._outputs.append("skill_count")
+        plan_step._outputs.append("plugin_count")
         plan_step._outputs.append("steps_taken")
 
         plan = Plan(goal)
@@ -251,11 +251,11 @@ class StepwisePlanner:
             current_count = action_counts.get(step.action, 0)
             action_counts[step.action] = current_count + 1
 
-        skill_call_list_with_counts = [f"{skill}({action_counts[skill]})" for skill in action_counts]
-        skill_call_list_with_counts = ", ".join(skill_call_list_with_counts)
-        skill_call_count_str = str(sum(action_counts.values()))
+        plugin_call_list_with_counts = [f"{plugin}({action_counts[plugin]})" for plugin in action_counts]
+        plugin_call_list_with_counts = ", ".join(plugin_call_list_with_counts)
+        plugin_call_count_str = str(sum(action_counts.values()))
 
-        context.variables.set("skill_count", f"{skill_call_count_str} ({skill_call_list_with_counts})")
+        context.variables.set("plugin_count", f"{plugin_call_count_str} ({plugin_call_list_with_counts})")
 
     def create_scratch_pad(self, question: str, steps_taken: List[SystemStep]) -> str:
         if len(steps_taken) == 0:
@@ -310,7 +310,7 @@ class StepwisePlanner:
             )
 
         try:
-            function = self._kernel.func(target_function.skill_name, target_function.name)
+            function = self._kernel.func(target_function.plugin_name, target_function.name)
             action_context = self.create_action_context(action_variables)
 
             result = await function.invoke_async(context=action_context)
@@ -326,11 +326,11 @@ class StepwisePlanner:
         except Exception as e:
             logger.error(
                 e,
-                f"Something went wrong in system step: {target_function.skill_name}.{target_function.name}. Error: {e}",
+                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}",  # noqa: E501
             )
             return (
                 "Something went wrong in system step: ",
-                f"{target_function.skill_name}.{target_function.name}. Error: {e}",
+                f"{target_function.plugin_name}.{target_function.name}. Error: {e}",
             )
 
     def create_action_context(self, action_variables: Dict[str, str]) -> SKContext:
@@ -342,9 +342,9 @@ class StepwisePlanner:
         return action_context
 
     def get_available_functions(self) -> List[FunctionView]:
-        functions_view = self._context.skills.get_functions_view()
+        functions_view = self._context.plugins.get_functions_view()
 
-        excluded_skills = self.config.excluded_skills or []
+        excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []
 
         available_functions: List[FunctionView] = [
@@ -355,9 +355,9 @@ class StepwisePlanner:
         available_functions = [
             func
             for func in available_functions
-            if (func.skill_name not in excluded_skills and func.name not in excluded_functions)
+            if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
-        available_functions = sorted(available_functions, key=lambda x: (x.skill_name, x.name))
+        available_functions = sorted(available_functions, key=lambda x: (x.plugin_name, x.name))
 
         return available_functions
 
@@ -377,7 +377,7 @@ class StepwisePlanner:
         template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)
 
-        return kernel.register_semantic_function(RESTRICTED_SKILL_NAME, function_name, function_config)
+        return kernel.register_semantic_function(RESTRICTED_PLUGIN_NAME, function_name, function_config)
 
     def to_manual_string(self, function: FunctionView) -> str:
         inputs = [
@@ -395,4 +395,4 @@ class StepwisePlanner:
         return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs:\n{inputs}\n"
 
     def to_fully_qualified_name(self, function: FunctionView):
-        return f"{function.skill_name}.{function.name}"
+        return f"{function.plugin_name}.{function.name}"
