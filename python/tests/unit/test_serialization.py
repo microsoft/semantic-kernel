@@ -5,17 +5,17 @@ import typing_extensions as te
 from pydantic import Field, Json
 
 from semantic_kernel import SKFunctionBase
-from semantic_kernel.core_skills.conversation_summary_skill import (
-    ConversationSummarySkill,
+from semantic_kernel.core_plugins.conversation_summary_plugin import (
+    ConversationSummaryPlugin,
 )
-from semantic_kernel.core_skills.file_io_skill import FileIOSkill
-from semantic_kernel.core_skills.http_skill import HttpSkill
-from semantic_kernel.core_skills.math_skill import MathSkill
-from semantic_kernel.core_skills.text_memory_skill import TextMemorySkill
-from semantic_kernel.core_skills.text_skill import TextSkill
-from semantic_kernel.core_skills.time_skill import TimeSkill
-from semantic_kernel.core_skills.wait_skill import WaitSkill
-from semantic_kernel.core_skills.web_search_engine_skill import WebSearchEngineSkill
+from semantic_kernel.core_plugins.file_io_plugin import FileIOPlugin
+from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
+from semantic_kernel.core_plugins.text_plugin import TextPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
+from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -23,19 +23,21 @@ from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
+from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
+from semantic_kernel.plugin_definition.plugin_collection_base import (
+    PluginCollectionBase,
+)
+from semantic_kernel.plugin_definition.read_only_plugin_collection import (
+    ReadOnlyPluginCollection,
+)
+from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+    ReadOnlyPluginCollectionBase,
+)
+from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 from semantic_kernel.sk_pydantic import SKBaseModel
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.functions_view import FunctionsView
-from semantic_kernel.skill_definition.parameter_view import ParameterView
-from semantic_kernel.skill_definition.read_only_skill_collection import (
-    ReadOnlySkillCollection,
-)
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
-)
-from semantic_kernel.skill_definition.sk_function_decorator import sk_function
-from semantic_kernel.skill_definition.skill_collection import SkillCollection
-from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -78,7 +80,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         result.add_function(
             FunctionView(
                 name="function1",
-                skill_name="skill1",
+                plugin_name="plugin1",
                 description="Native function",
                 parameters=[],
                 is_semantic=False,
@@ -88,7 +90,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         result.add_function(
             FunctionView(
                 name="function1",
-                skill_name="skill1",
+                plugin_name="plugin1",
                 description="Semantic function",
                 parameters=[],
                 is_semantic=True,
@@ -113,10 +115,10 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             variables={"foo": "bar"},
         )
 
-    def create_skill_collection() -> SkillCollection:
-        """Return a skill collection."""
-        # TODO: Add a few skills to this collection.
-        return SkillCollection()
+    def create_plugin_collection() -> PluginCollection:
+        """Return a plugin collection."""
+        # TODO: Add a few plugins to this collection.
+        return PluginCollection()
 
     cls_obj_map = {
         Block: Block(content="foo"),
@@ -144,16 +146,16 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             False,
         ),
         FunctionsView: create_functions_view(),
-        ReadOnlySkillCollection: create_skill_collection().read_only_skill_collection,
+        ReadOnlyPluginCollection: create_plugin_collection().read_only_plugin_collection,
         DelegateHandlers: DelegateHandlers(),
         DelegateInference: DelegateInference(),
         ContextVariables: create_context_variables(),
-        SkillCollection: create_skill_collection(),
+        PluginCollection: create_plugin_collection(),
         SKContext[NullMemory]: SKContext[NullMemory](
             # TODO: Test serialization with different types of memories.
             variables=create_context_variables(),
             memory=NullMemory(),
-            skill_collection=create_skill_collection().read_only_skill_collection,
+            plugin_collection=create_plugin_collection().read_only_plugin_collection,
         ),
         NullMemory: NullMemory(),
         SKFunction: create_sk_function(),
@@ -167,30 +169,30 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
-    pytest.param(ConversationSummarySkill, marks=pytest.mark.xfail(reason="Contains data")),
-    FileIOSkill,
-    HttpSkill,
-    MathSkill,
-    TextMemorySkill,
-    TextSkill,
-    TimeSkill,
-    WaitSkill,
-    pytest.param(WebSearchEngineSkill, marks=pytest.mark.xfail(reason="Contains data")),
+    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+    FileIOPlugin,
+    HttpPlugin,
+    MathPlugin,
+    TextMemoryPlugin,
+    TextPlugin,
+    TimePlugin,
+    WaitPlugin,
+    pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
     CodeRenderer,
     PromptTemplatingEngine,
     TextRenderer,
 ]
 
 BASE_CLASSES = [
-    ReadOnlySkillCollectionBase,
-    SkillCollectionBase,
+    ReadOnlyPluginCollectionBase,
+    PluginCollectionBase,
     SemanticTextMemoryBase,
     SKFunctionBase,
 ]
 
 # Classes that don't need serialization
 UNSERIALIZED_CLASSES = [
-    ReadOnlySkillCollection,
+    ReadOnlyPluginCollection,
 ]
 
 STATELESS_CLASSES = [
@@ -217,8 +219,8 @@ PYDANTIC_MODELS = [
     ParameterView,
     FunctionView,
     FunctionsView,
-    ReadOnlySkillCollection,
-    SkillCollection,
+    ReadOnlyPluginCollection,
+    PluginCollection,
     ContextVariables,
     SKContext[NullMemory],
     pytest.param(

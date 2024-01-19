@@ -34,7 +34,7 @@ public class Example08_RetryHandler : BaseTest
 
         var logger = kernel.LoggerFactory.CreateLogger(typeof(Example08_RetryHandler));
 
-        const string Question = "How popular is the Polly library?";
+        const string Question = "How do I add a standard resilience handler in IHttpClientBuilder??";
         logger.LogInformation("Question: {Question}", Question);
 
         // The call to OpenAI will fail and be retried a few times before eventually failing.
