@@ -107,7 +107,7 @@ def setup_tldr_function_for_oai_models(create_kernel):
 
 
 @pytest.fixture(scope="module")
-def setup_summarize_conversation_using_skill(create_kernel):
+def setup_summarize_conversation_using_plugin(create_kernel):
     kernel = create_kernel
     ChatTranscript = """John: Hello, how are you?
         Jane: I'm fine, thanks. How are you?
