@@ -46,43 +46,6 @@ We may also engage in the development and changes to the feature branch when nee
 - Good, because it makes the process of integrating features into the main branch easier and faster.
 - Bad, potentially, if not managed properly, as it can lead to outdated branches if not regularly synchronized with the main branch.
 
-## Connector/Model Priorities
-
-Currently we are looking for community support on the following models
-
-The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a deployment platform that hosts one of the models below:
-
-| Model Name | Local Support | Deployment                                   | Connectors                                      |
-| ---------- | ------------- | -------------------------------------------- | ----------------------------------------------- |
-| Gpt-4      | No            | OpenAI, Azure Open AI                        | OpenAI                                          |
-| Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio, Ollama | OpenAI, HuggingFace, LMStudio\*\*\*, Ollama\*\* |
-| Gemini     | No            | Google AI Platform                           | GoogleAI\*\*                                    |
-| Llama-2    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
-| Mistral    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
-| Claude     | No            | Anthropic, Amazon Bedrock                    | Anthropic**, Amazon**                           |
-| Titan      | No            | Amazon Bedrock                               | Amazon\*\*                                      |
-
-_\*\* Connectors not yet available_
-
-_\*\*\* May not be needed_
-
-Connectors may be needed not per Model basis but rather per deployment platform.
-For example, using OpenAI or HuggingFace connector you may be able to call a Phi-2 Model.
-
-## Connectors to be implemented
-
-The following deployment platforms are not yet supported by any Connectors and we promote those as good examples as desirable ones to be supported and implemented by the community:
-
-Currently the priorities are ordered but not necessarily needs to be implemented sequentially, an
-
-| Deployment Platform | Local Model Support |
-| ------------------- | ------------------- |
-| LMStudio            | Yes                 |
-| Ollama              | Yes                 |
-| GoogleAI            | No                  |
-| Anthropic           | No                  |
-| Amazon              | No                  |
-
 ## Local Deployment Platforms / Offline
 
 ### LM Studio
@@ -133,6 +96,42 @@ Cons:
 | Phi-2 Support   | Yes    | Yes       |
 | Llama-2 Support | Yes    | Yes       |
 | Mistral Support | Yes    | Yes       |
+
+## Connector/Model Priorities
+
+Currently we are looking for community support on the following models
+
+The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a deployment platform that hosts one of the models below:
+
+| Model Name | Local Support | Deployment                                   | Connectors                                      |
+| ---------- | ------------- | -------------------------------------------- | ----------------------------------------------- |
+| Gpt-4      | No            | OpenAI, Azure Open AI                        | OpenAI                                          |
+| Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio, Ollama | OpenAI, HuggingFace, LMStudio\*\*\*, Ollama\*\* |
+| Gemini     | No            | Google AI Platform                           | GoogleAI\*\*                                    |
+| Llama-2    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
+| Mistral    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
+| Claude     | No            | Anthropic, Amazon Bedrock                    | Anthropic**, Amazon**                           |
+| Titan      | No            | Amazon Bedrock                               | Amazon\*\*                                      |
+
+_\*\* Connectors not yet available_
+
+_\*\*\* May not be needed as an OpenAI Connector can be used_
+
+Connectors may be needed not per Model basis but rather per deployment platform.
+For example, using OpenAI or HuggingFace connector you may be able to call a Phi-2 Model.
+
+## Expected Connectors to be implemented
+
+The following deployment platforms are not yet supported by any Connectors and we strongly encourage the community to engage and support on those:
+
+Currently the priorities are ordered but not necessarily needs to be implemented sequentially, an
+
+| Deployment Platform | Local Model Support |
+| ------------------- | ------------------- |
+| Ollama              | Yes                 |
+| GoogleAI            | No                  |
+| Anthropic           | No                  |
+| Amazon              | No                  |
 
 ## Decision Outcome
 
