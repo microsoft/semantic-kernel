@@ -1,5 +1,5 @@
 ---
-# Implementing Feature Branch Strategy for Community Driven Connectors
+# Strategy for Community Driven Connectors and Features
 
 status: proposed
 contact: rogerbarreto
@@ -9,7 +9,7 @@ consulted:
 informed:
 ---
 
-# Implementing Feature Branch Strategy for Community Driven Connectors
+# Strategy for Community Driven Connectors and Features
 
 ## Context and Problem Statement
 
@@ -26,10 +26,7 @@ In our current software development process, managing changes in the main branch
 - **Reduced Risk of Bugs**: Isolating development in feature branches reduces the likelihood of introducing bugs into the main branch. It's easier to identify and fix issues within the confined context of a single feature.
 - **Timely Feature Integration**: Small, incremental pull requests allow for quicker reviews and faster integration of features into the feature branch and make it easier to merge down into main as the code was already previously reviewed. This timeliness ensures that features are merged and ready for deployment sooner, improving the responsiveness to changes.
 - **Code Testing, Coverage and Quality**: To keep a good code quality is imperative that any new code or feature introduced to the codebase is properly tested and validated. Any new feature or code should be covered by unit tests and integration tests. The code should also be validated by our CI/CD pipeline and follow our code quality standards and guidelines.
-
-## Considered Options
-
-- Community Feature Branch Strategy
+- **Examples**: Any new feature or code should be accompanied by examples that demonstrate how to use the new feature or code. This is important to ensure that the new feature or code is properly documented and that the community can easily understand and use it.
 
 ### Community Feature Branch Strategy
 
@@ -49,68 +46,76 @@ We may also engage in the development and changes to the feature branch when nee
 - Good, because it makes the process of integrating features into the main branch easier and faster.
 - Bad, potentially, if not managed properly, as it can lead to outdated branches if not regularly synchronized with the main branch.
 
-## Validation
-
-The effectiveness of the feature branch strategy will be validated through regular code reviews, addesion to our code quality standards and guidelines and successfully passing our pipeline checks.
-
 ## Connector/Model Priorities
 
 Currently we are looking for community support on the following models
 
-The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a platform that hosts one of the models below:
+The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a deployment platform that hosts one of the models below:
 
-| Model Name | Local Support | Deployment                           | Connectors                                    |
-| ---------- | ------------- | ------------------------------------ | --------------------------------------------- |
-| Gpt-4      | No            | OpenAI, Azure Open AI                | OpenAI                                        |
-| Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio | OpenAI, HuggingFace, LMStudio\*\*             |
-| Gemini     | No            | Google AI Platform                   | GoogleAI\*\*                                  |
-| Llama-2    | Yes           | LMStudio, HuggingFace, Ollama        | HuggingFace, OpenAI, LMStudio\*\*, Ollama\*\* |
-| Mistral    | Yes           | LMStudio, HuggingFace, Ollama        | HuggingFace, OpenAI, LMStudio\*\*, Ollama\*\* |
-| Claude     | No            | Anthropic, Amazon Bedrock            | Anthropic**, Amazon**                         |
-| Titan      | No            | Amazon Bedrock                       | Amazon\*\*                                    |
+| Model Name | Local Support | Deployment                                   | Connectors                                      |
+| ---------- | ------------- | -------------------------------------------- | ----------------------------------------------- |
+| Gpt-4      | No            | OpenAI, Azure Open AI                        | OpenAI                                          |
+| Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio, Ollama | OpenAI, HuggingFace, LMStudio\*\*\*, Ollama\*\* |
+| Gemini     | No            | Google AI Platform                           | GoogleAI\*\*                                    |
+| Llama-2    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
+| Mistral    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
+| Claude     | No            | Anthropic, Amazon Bedrock                    | Anthropic**, Amazon**                           |
+| Titan      | No            | Amazon Bedrock                               | Amazon\*\*                                      |
 
 _\*\* Connectors not yet available_
 
-Connectors may be needed not per Model basis but rather per platform.
+_\*\*\* May not be needed_
+
+Connectors may be needed not per Model basis but rather per deployment platform.
 For example, using OpenAI or HuggingFace connector you may be able to call a Phi-2 Model.
 
 ## Connectors to be implemented
 
-The following platforms are not yet supported by any Connectors and we promote those as good examples as desirable ones to be supported and implemented by the community:
+The following deployment platforms are not yet supported by any Connectors and we promote those as good examples as desirable ones to be supported and implemented by the community:
 
 Currently the priorities are ordered but not necessarily needs to be implemented sequentially, an
 
-| Connector Name |
-| -------------- |
-| LMStudio       |
-| Ollama         |
-| GoogleAI       |
-| Anthropic      |
-| Amazon         |
+| Deployment Platform | Local Model Support |
+| ------------------- | ------------------- |
+| LMStudio            | Yes                 |
+| Ollama              | Yes                 |
+| GoogleAI            | No                  |
+| Anthropic           | No                  |
+| Amazon              | No                  |
 
-### Potential deployments for connector support:
-
-- **Local Model Support**
-  - LM Studio
-  - Ollama
-  - Pure C# (e.g. LlamaSharp or ONNX runtime)
-- Amazon Bedrock
-- Google AI Platform
-
-## Local Deployment / Offline
+## Local Deployment Platforms / Offline
 
 ### LM Studio
 
 LM Studio has a local deployment option, which can be used to deploy models locally. This option is available for Windows, Linux, and MacOS.
 
-Pros: - API is very similar to OpenAI API - Many models are already supported - Easy to use - Easy to deploy - GPU support
+Pros:
+
+- API is very similar to OpenAI API
+- Many models are already supported
+- Easy to use
+- Easy to deploy
+- GPU support
+
+Cons:
+
+- May require a license to use in a work environment
 
 ### Ollama
 
 Ollama has a local deployment option, which can be used to deploy models locally. This option is available for Linux and MacOS only for now.
 
-Pros: - Easy to use - Easy to deploy - Supports Docker deployment - GPU support
-Cons: - API is not similar to OpenAI API (Needs a dedicated connector) - Limited model support (does not support Phi-2) - Dont have Windows support
+Pros:
+
+- Easy to use
+- Easy to deploy
+- Supports Docker deployment
+- GPU support
+
+Cons:
+
+- API is not similar to OpenAI API (Needs a dedicated connector)
+- Dont have Windows support
 
 ### Comparison
 
@@ -127,12 +132,7 @@ Cons: - API is not similar to OpenAI API (Needs a dedicated connector) - Limited
 | --------------- | ------ | --------- |
 | Phi-2 Support   | Yes    | Yes       |
 | Llama-2 Support | Yes    | Yes       |
-| Mixtral Support | Yes    | Yes       |
-
-### Notes
-
-- Is very important to have easy to reproduce examples for any new model support or added feature.
-- While implementing new features code follow our current existing code-base as a reference and ensure that the code is validated by our CI/CD pipeline requirements, before submitting a PR for review.
+| Mistral Support | Yes    | Yes       |
 
 ## Decision Outcome
 
