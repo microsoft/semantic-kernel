@@ -129,7 +129,7 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
-        int currentIteration,
+        int iterationsCompleted,
         ChatHistory chatHistory,
         Kernel kernel,
         IChatCompletionService chatCompletion,
@@ -139,7 +139,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
         //openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = 1;
-        openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = this.Config.MaxIterations - currentIteration;
+        openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = this.Config.MaxIterations - iterationsCompleted;
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);

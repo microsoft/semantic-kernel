@@ -100,7 +100,7 @@ Updated helper method in _FunctionCallingStepwisePlanner.cs_:
 
 ```csharp
 private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
-    int currentIteration,
+    int iterationsCompleted,
     ChatHistory chatHistory,
     Kernel kernel,
     IChatCompletionService chatCompletion,
@@ -109,7 +109,7 @@ private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
     CancellationToken cancellationToken)
 {
     openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
-    openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = this.Config.MaxIterations - currentIteration; // limit the number of tool calls to the number of iterations remaining
+    openAIExecutionSettings.ToolCallBehavior.MaximumUseAttempts = this.Config.MaxIterations - iterationsCompleted; // limit the number of tool calls to the number of iterations remaining
 
     await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
     return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -177,7 +177,7 @@ Updated helper method in _FunctionCallingStepwisePlanner.cs_:
 
 ```csharp
 private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
-    int currentIteration,
+    int iterationsCompleted,
     ChatHistory chatHistory,
     Kernel kernel,
     IChatCompletionService chatCompletion,
@@ -187,7 +187,7 @@ private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
 {
     openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
 
-    int iterationsRemaining = this.Config.MaxIterations - currentIteration;
+    int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
     openAIExecutionSettings.ToolCallBehavior.PreInvokeCallback = (iteration, _, _) => { return (iteration < iterationsRemaining); }; // only proceed with tool call if there are iterations remaining for the plan
 
     await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
