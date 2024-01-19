@@ -6,15 +6,15 @@
   },
   "apiDependencies": {
     "microsoft.graph": {
-      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/JsonCompliant/openapi/v1.0/graphexplorer.yaml",
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/graphexplorer.yaml",
       "requests": [
         {
           "method": "Get",
-          "uriTemplate": "/drive/root/children/{driveItem-id}/content"
+          "uriTemplate": "/me/drive/root/children/{driveItem-id}/content"
         },
         {
           "method": "Get",
-          "uriTemplate": "/drive/root/children/{driveItem-id}"
+          "uriTemplate": "/me/drive/root/children/{driveItem-id}"
         }
       ]
     }
