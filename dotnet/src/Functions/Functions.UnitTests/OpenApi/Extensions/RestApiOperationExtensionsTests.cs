@@ -280,18 +280,53 @@ public class RestApiOperationExtensionsTests
 
     private static RestApiOperationPayload CreateTestJsonPayload()
     {
-        var name = new RestApiOperationPayloadProperty("name", "string", true, new List<RestApiOperationPayloadProperty>(), "The name.");
+        var name = new RestApiOperationPayloadProperty(
+            name: "name",
+            type: "string",
+            isRequired: true,
+            properties: new List<RestApiOperationPayloadProperty>(),
+            description: "The name.");
 
-        var leader = new RestApiOperationPayloadProperty("leader", "string", true, new List<RestApiOperationPayloadProperty>(), "The leader.");
+        var leader = new RestApiOperationPayloadProperty(
+            name: "leader",
+            type: "string",
+            isRequired: true,
+            properties: new List<RestApiOperationPayloadProperty>(),
+            description: "The leader.");
 
-        var landmarks = new RestApiOperationPayloadProperty("landmarks", "array", false, new List<RestApiOperationPayloadProperty>(), "The landmarks.");
-        var location = new RestApiOperationPayloadProperty("location", "object", true, new[] { landmarks }, "The location.");
+        var landmarks = new RestApiOperationPayloadProperty(
+            name: "landmarks",
+            type: "array",
+            isRequired: false,
+            properties: new List<RestApiOperationPayloadProperty>(),
+            description: "The landmarks.");
 
-        var rulingCouncil = new RestApiOperationPayloadProperty("rulingCouncil", "object", true, new[] { leader }, "The ruling council.");
+        var location = new RestApiOperationPayloadProperty(
+            name: "location",
+            type: "object",
+            isRequired: true,
+            properties: new[] { landmarks },
+            description: "The location.");
 
-        var population = new RestApiOperationPayloadProperty("population", "integer", true, new List<RestApiOperationPayloadProperty>(), "The population.");
+        var rulingCouncil = new RestApiOperationPayloadProperty(
+            name: "rulingCouncil",
+            type: "object",
+            isRequired: true,
+            properties: new[] { leader },
+            description: "The ruling council.");
 
-        var hasMagicWards = new RestApiOperationPayloadProperty("hasMagicWards", "boolean", false, new List<RestApiOperationPayloadProperty>());
+        var population = new RestApiOperationPayloadProperty(
+            name: "population",
+            type: "integer",
+            isRequired: true,
+            properties: new List<RestApiOperationPayloadProperty>(),
+            description: "The population.");
+
+        var hasMagicWards = new RestApiOperationPayloadProperty(
+            name: "hasMagicWards",
+            type: "boolean",
+            isRequired: false,
+            properties: new List<RestApiOperationPayloadProperty>());
 
         return new RestApiOperationPayload("application/json", new[] { name, location, rulingCouncil, population, hasMagicWards });
     }

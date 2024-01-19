@@ -212,7 +212,7 @@
           {
             "in": "body",
             "name": "body",
-            "description":  "excuse event",
+            "description": "excuse event",
             "schema": {
               "type": "string"
             }
@@ -226,6 +226,101 @@
             }
           }
         }
+      }
+    },
+    "/test-default-values/{string-parameter}": {
+      "put": {
+        "description": "Operation to test default parameter values.",
+        "operationId": "TestDefaultValues",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "string-parameter",
+            "default": "string-value",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "boolean-parameter",
+            "type": "boolean",
+            "default": true
+          },
+          {
+            "in": "header",
+            "name": "integer-parameter",
+            "type": "integer",
+            "format": "int32",
+            "default": 281
+          },
+          {
+            "in": "header",
+            "name": "long-parameter",
+            "type": "integer",
+            "format": "int64",
+            "default": -2814
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "attributes": {
+                  "description": "attributes",
+                  "properties": {
+                    "double-parameter": {
+                      "type": "number",
+                      "format": "double",
+                      "default": -12.01
+                    }
+                  },
+                  "type": "object"
+                },
+                "float-parameter": {
+                  "type": "number",
+                  "format": "float",
+                  "default": 12.01
+                },
+                "encoded-characters-parameter": {
+                  "type": "string",
+                  "format": "byte",
+                  "default": "AQIDBAU="
+                },
+                "binary-data-parameter": {
+                  "type": "string",
+                  "format": "binary",
+                  "default": "23456"
+                },
+                "date-parameter": {
+                  "type": "string",
+                  "format": "date",
+                  "default": "2017-07-21"
+                },
+                "date-time-parameter": {
+                  "type": "string",
+                  "format": "date-time",
+                  "default": "2017-07-21T17:32:28Z"
+                },
+                "password-parameter": {
+                  "type": "string",
+                  "format": "password",
+                  "default": "password-value"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The OK response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "summary": "Get secret"
       }
     }
   },

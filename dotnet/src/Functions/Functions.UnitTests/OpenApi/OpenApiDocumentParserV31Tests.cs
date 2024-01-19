@@ -176,7 +176,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var apiVersion = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-API-Version");
 
         Assert.Equal("integer", apiVersion.Type);
-        Assert.Equal("10", apiVersion.DefaultValue);
+        Assert.Equal(10, apiVersion.DefaultValue);
         Assert.Equal("Requested API version.", apiVersion.Description);
         Assert.True(apiVersion.IsRequired);
     }
@@ -226,7 +226,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(3, operations.Count);
+        Assert.Equal(4, operations.Count);
     }
 
     [Fact]
@@ -341,6 +341,65 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal(
             JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\": \"string\"}")),
             JsonSerializer.Serialize(response.Schema));
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDefaultParametersOfVariousTypesAsync()
+    {
+        //Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "TestDefaultValues");
+        Assert.NotNull(operation);
+
+        var parameters = operation.GetParameters();
+        Assert.Equal(11, parameters.Count);
+
+        var stringParameter = parameters.Single(p => p.Name == "string-parameter");
+        Assert.Equal("string-value", stringParameter.DefaultValue);
+
+        var booleanParameter = parameters.Single(p => p.Name == "boolean-parameter");
+        Assert.True(booleanParameter.DefaultValue is bool value);
+
+        var integerParameter = parameters.Single(p => p.Name == "integer-parameter");
+        Assert.True(integerParameter.DefaultValue is int);
+        Assert.Equal(281, integerParameter.DefaultValue);
+
+        var longParameter = parameters.Single(p => p.Name == "long-parameter");
+        Assert.True(longParameter.DefaultValue is long);
+        Assert.Equal((long)-2814, longParameter.DefaultValue);
+
+        var floatParameter = parameters.Single(p => p.Name == "float-parameter");
+        Assert.True(floatParameter.DefaultValue is float);
+        Assert.Equal((float)12.01, floatParameter.DefaultValue);
+
+        var doubleParameter = parameters.Single(p => p.Name == "double-parameter");
+        Assert.True(doubleParameter.DefaultValue is double);
+        Assert.Equal((double)-12.01, doubleParameter.DefaultValue);
+
+        var encodedCharactersParameter = parameters.Single(p => p.Name == "encoded-characters-parameter");
+        Assert.True(encodedCharactersParameter.DefaultValue is byte[]);
+        Assert.Equal(new byte[] { 1, 2, 3, 4, 5 }, encodedCharactersParameter.DefaultValue);
+
+        var binaryDataParameter = parameters.Single(p => p.Name == "binary-data-parameter");
+        Assert.True(binaryDataParameter.DefaultValue is byte[]);
+        Assert.Equal(new byte[] { 50, 51, 52, 53, 54 }, binaryDataParameter.DefaultValue);
+
+        var dateParameter = parameters.Single(p => p.Name == "date-parameter");
+        Assert.True(dateParameter.DefaultValue is DateTime);
+        Assert.Equal(new DateTime(2017, 07, 21), dateParameter.DefaultValue);
+
+        var dateTimeParameter = parameters.Single(p => p.Name == "date-time-parameter");
+        Assert.True(dateTimeParameter.DefaultValue is DateTimeOffset);
+        Assert.Equal(new DateTimeOffset(2017, 07, 21, 17, 32, 28, TimeSpan.Zero), dateTimeParameter.DefaultValue);
+
+        var passwordParameter = parameters.Single(p => p.Name == "password-parameter");
+        Assert.True(passwordParameter.DefaultValue is string);
+        Assert.Equal("password-value", passwordParameter.DefaultValue);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)

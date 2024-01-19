@@ -179,6 +179,7 @@ internal static class RestApiOperationExtensions
                     expand: false,
                     RestApiOperationParameterLocation.Body,
                     RestApiOperationParameterStyle.Simple,
+                    defaultValue: property.DefaultValue,
                     description: property.Description,
                     schema: property.Schema));
             }
