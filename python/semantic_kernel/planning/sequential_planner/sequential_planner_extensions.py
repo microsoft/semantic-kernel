@@ -11,7 +11,7 @@ from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
-from semantic_kernel.skill_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.function_view import FunctionView
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class SequentialPlannerFunctionViewExtension:
 
     @staticmethod
     def to_fully_qualified_name(function: FunctionView):
-        return f"{function.skill_name}.{function.name}"
+        return f"{function.plugin_name}.{function.name}"
 
     @staticmethod
     def to_embedding_string(function: FunctionView):
@@ -67,17 +67,17 @@ class SequentialPlannerSKContextExtension:
         config: SequentialPlannerConfig,
         semantic_query: str = None,
     ):
-        excluded_skills = config.excluded_skills or []
+        excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
         included_functions = config.included_functions or []
 
-        if context.skills is None:
+        if context.plugins is None:
             raise KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context",
+                KernelException.ErrorCodes.PluginCollectionNotSet,
+                "Plugin collection not found in the context",
             )
 
-        functions_view = context.skills.get_functions_view()
+        functions_view = context.plugins.get_functions_view()
 
         available_functions: List[FunctionView] = [
             *functions_view.semantic_functions.values(),
@@ -88,7 +88,7 @@ class SequentialPlannerSKContextExtension:
         available_functions = [
             func
             for func in available_functions
-            if (func.skill_name not in excluded_skills and func.name not in excluded_functions)
+            if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
 
         if semantic_query is None or isinstance(context.memory, NullMemory) or config.relevancy_threshold is None:
@@ -119,7 +119,7 @@ class SequentialPlannerSKContextExtension:
 
         relevant_functions += [func for func in available_functions if func.name in missing_functions]
 
-        return sorted(relevant_functions, key=lambda x: (x.skill_name, x.name))
+        return sorted(relevant_functions, key=lambda x: (x.plugin_name, x.name))
 
     @staticmethod
     async def get_relevant_functions_async(
