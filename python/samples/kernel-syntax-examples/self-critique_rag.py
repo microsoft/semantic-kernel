@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.memory.azure_cognitive_search import (
     AzureCognitiveSearchMemoryStore,
 )
-from semantic_kernel.core_skills.text_memory_skill import TextMemorySkill
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
 COLLECTION_NAME = "generic"
@@ -35,8 +35,8 @@ async def populate_memory(kernel: sk.Kernel) -> None:
 
 async def main() -> None:
     kernel = sk.Kernel()
-    tms = TextMemorySkill()
-    kernel.import_skill(tms, "memory")
+    tms = TextMemoryPlugin()
+    kernel.import_plugin(tms, "memory")
 
     config = dotenv_values(".env")
 
@@ -101,7 +101,13 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
 
     answer = await kernel.run_async(
         chat_func,
-        input_vars=ContextVariables(variables={"user_input": user_input, "collection": COLLECTION_NAME, "limit": "2"}),
+        input_vars=ContextVariables(
+            variables={
+                "user_input": user_input,
+                "collection": COLLECTION_NAME,
+                "limit": "2",
+            }
+        ),
     )
     print(f"Answer: {str(answer).strip()}")
     check = await kernel.run_async(self_critique_func, input_context=answer)

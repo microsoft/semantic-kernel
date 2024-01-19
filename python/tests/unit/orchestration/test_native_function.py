@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.skill_definition.sk_function_decorator import sk_function
+from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
@@ -28,7 +28,7 @@ def test_init_native_function_with_input_description():
 
     mock_method = mock_function
 
-    native_function = SKFunction.from_native_method(mock_method, "MockSkill")
+    native_function = SKFunction.from_native_method(mock_method, "MockPlugin")
 
     assert native_function._function == mock_method
     assert native_function._parameters[0].name == "input"
@@ -61,7 +61,7 @@ def test_init_native_function_without_input_description():
 
     mock_method = mock_function
 
-    native_function = SKFunction.from_native_method(mock_method, "MockSkill")
+    native_function = SKFunction.from_native_method(mock_method, "MockPlugin")
 
     assert native_function._function == mock_method
     assert native_function._parameters[0].name == "param1"
@@ -87,7 +87,7 @@ def test_init_native_function_from_sk_function_decorator():
     assert decorated_function.__sk_function_input_description__ == "Test input description"
     assert decorated_function.__sk_function_input_default_value__ == "test_default_value"
 
-    native_function = SKFunction.from_native_method(decorated_function, "MockSkill")
+    native_function = SKFunction.from_native_method(decorated_function, "MockPlugin")
 
     assert native_function._function == decorated_function
     assert native_function._parameters[0].name == "input"
@@ -108,7 +108,7 @@ def test_init_native_function_from_sk_function_decorator_defaults():
     assert decorated_function.__sk_function_input_description__ == ""
     assert decorated_function.__sk_function_input_default_value__ == ""
 
-    native_function = SKFunction.from_native_method(decorated_function, "MockSkill")
+    native_function = SKFunction.from_native_method(decorated_function, "MockPlugin")
 
     assert native_function._function == decorated_function
     assert len(native_function._parameters) == 0
