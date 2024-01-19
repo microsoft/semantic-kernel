@@ -10,6 +10,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextGeneration;
