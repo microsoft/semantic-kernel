@@ -47,7 +47,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         System.out.println("======== TemplateMethodFunctionsWithMultipleArguments ========");

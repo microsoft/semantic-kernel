@@ -91,7 +91,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
         kernel.getPlugins().add(

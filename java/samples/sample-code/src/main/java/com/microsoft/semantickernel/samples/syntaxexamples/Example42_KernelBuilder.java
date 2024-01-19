@@ -6,12 +6,12 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.DefaultKernel;
-import com.microsoft.semantickernel.DefaultKernel.DefaultServiceProvider;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
+import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.HashMap;
 
@@ -28,7 +28,7 @@ public class Example42_KernelBuilder {
             .buildAsyncClient();
 
         Kernel kernel1 = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class,
+            .withAIService(ChatCompletionService.class,
                 ChatCompletionService.builder()
                     .withOpenAIAsyncClient(client)
                     .withModelId("gpt-35-turbo-2")
@@ -51,7 +51,7 @@ public class Example42_KernelBuilder {
             .build();
 
         Kernel kernel2 = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
         /////////////////////////////////////////////////////////
 
@@ -68,9 +68,7 @@ public class Example42_KernelBuilder {
         // wrapper, ultimately constructing a Kernel
         // using the public constructor that's available for anyone to use directly if desired.
         Kernel kernel = new DefaultKernel(
-            new DefaultServiceProvider(
-                new HashMap<>()
-            ),
+            new OrderedAIServiceSelector(),
             new KernelPluginCollection()
         );
     }

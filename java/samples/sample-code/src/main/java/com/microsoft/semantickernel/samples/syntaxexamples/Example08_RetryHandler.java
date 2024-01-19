@@ -35,7 +35,7 @@ public class Example08_RetryHandler {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
         String question = "How popular is the Polly library?";

@@ -150,7 +150,7 @@ class AzureCognitiveSearchMemoryTests {
                 .withMemoryStorage(
                         new AzureCognitiveSearchMemoryStore(
                                 searchIndexAsyncClient, memoryRecordMapper))
-                .withDefaultAIService(embeddingGeneration)
+                .withAIService(embeddingGeneration)
                 .build();
     }
 

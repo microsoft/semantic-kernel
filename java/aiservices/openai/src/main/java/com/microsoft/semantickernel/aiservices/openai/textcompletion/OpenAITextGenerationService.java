@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +24,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
     private final OpenAIAsyncClient client;
     private final Map<String, ContextVariable<?>> attributes;
+    private final String serviceId;
 
     /// <summary>
     /// Creates a new <see cref="OpenAITextGenerationService"/> client instance supporting AAD auth
@@ -35,7 +37,8 @@ public class OpenAITextGenerationService implements TextGenerationService {
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAITextGenerationService(
         OpenAIAsyncClient client,
-        String modelId) {
+        String modelId, String serviceId) {
+        this.serviceId = serviceId;
         this.client = client;
         attributes = new HashMap<>();
         attributes.put(MODEL_ID_KEY, ContextVariable.of(modelId));
@@ -51,9 +54,21 @@ public class OpenAITextGenerationService implements TextGenerationService {
     }
 
     @Override
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    @Override
     public Mono<List<TextContent>> getTextContentsAsync(String prompt,
         @Nullable PromptExecutionSettings executionSettings, @Nullable Kernel kernel) {
-        return null;
+        return this
+            .internalCompleteTextAsync(prompt, executionSettings)
+            .map(it -> {
+                return it.stream().map(
+                        TextContent::new
+                    )
+                    .collect(Collectors.toList());
+            });
     }
 
     @Override
@@ -121,7 +136,8 @@ public class OpenAITextGenerationService implements TextGenerationService {
         public TextGenerationService build() {
             return new OpenAITextGenerationService(
                 this.client,
-                this.modelId
+                this.modelId,
+                this.serviceId
             );
         }
     }

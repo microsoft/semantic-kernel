@@ -1,20 +1,18 @@
 package com.microsoft.semantickernel.orchestration;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.DefaultKernel;
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.Kernel.Builder;
+import java.util.List;
+import java.util.Map;
 
 public class PromptExecutionSettings {
 
+    public static final String DEFAULT_SERVICE_ID = "default";
     public static final int DEFAULT_MAX_TOKENS = 256;
     public static final double DEFAULT_TEMPERATURE = 1.0;
     public static final double DEFAULT_TOP_P = 1.0;
     public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
-    public static final int DEFAULT_BEST_OF = 1;    
+    public static final int DEFAULT_BEST_OF = 1;
 
     /// <summary>
     /// Service identifier.
@@ -38,6 +36,11 @@ public class PromptExecutionSettings {
     private final String user;
     private final List<String> stopSequences;
 
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>s
+    public Map<Integer, Integer> tokenSelectionBiases;
+
     public PromptExecutionSettings(
         @JsonProperty("service_id") String serviceId,
         @JsonProperty("model_id") String modelId,
@@ -48,7 +51,8 @@ public class PromptExecutionSettings {
         @JsonProperty("max_tokens") int maxTokens,
         @JsonProperty("best_of") int bestOf,
         @JsonProperty("user") String user,
-        @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
+        @JsonProperty(value = "stop_sequences") List<String> stopSequences,
+        @JsonProperty(value = "token_selection_biases") Map<Integer, Integer> tokenSelectionBiases) {
         this.serviceId = serviceId;
         this.modelId = modelId;
         this.temperature = temperature;
@@ -59,6 +63,7 @@ public class PromptExecutionSettings {
         this.bestOf = bestOf;
         this.user = user;
         this.stopSequences = stopSequences;
+        this.tokenSelectionBiases = tokenSelectionBiases;
     }
 
     public String getServiceId() {
@@ -102,6 +107,10 @@ public class PromptExecutionSettings {
         return stopSequences;
     }
 
+    public Map<Integer, Integer> getTokenSelectionBiases() {
+        return tokenSelectionBiases;
+    }
+
 
     public static Builder builder() {
         return new Builder();
@@ -119,6 +128,7 @@ public class PromptExecutionSettings {
         private int bestOf = Integer.MIN_VALUE;
         private String user;
         private List<String> stopSequences;
+        public Map<Integer, Integer> tokenSelectionBiases;
 
         public Builder withServiceId(String serviceId) {
             this.serviceId = serviceId;
@@ -170,18 +180,24 @@ public class PromptExecutionSettings {
             return this;
         }
 
+        public Builder withTokenSelectionBiases(Map<Integer, Integer> tokenSelectionBiases) {
+            this.tokenSelectionBiases = tokenSelectionBiases;
+            return this;
+        }
+
         public PromptExecutionSettings build() {
             return new PromptExecutionSettings(
                 serviceId,
-                modelId, 
+                modelId,
                 Double.isNaN(temperature) ? DEFAULT_TEMPERATURE : temperature,
                 Double.isNaN(topP) ? DEFAULT_TOP_P : topP,
                 Double.isNaN(presencePenalty) ? DEFAULT_PRESENCE_PENALTY : presencePenalty,
                 Double.isNaN(frequencyPenalty) ? DEFAULT_FREQUENCY_PENALTY : frequencyPenalty,
                 maxTokens == Integer.MIN_VALUE ? DEFAULT_MAX_TOKENS : maxTokens,
                 bestOf == Integer.MIN_VALUE ? DEFAULT_BEST_OF : bestOf,
-                user, 
-                stopSequences
+                user,
+                stopSequences,
+                tokenSelectionBiases
             );
         }
     }

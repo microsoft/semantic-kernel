@@ -62,7 +62,7 @@ public class Example06_TemplateLanguage {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates

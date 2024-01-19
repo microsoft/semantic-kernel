@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernel
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;

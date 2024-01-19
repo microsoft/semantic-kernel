@@ -36,7 +36,7 @@ public class Example05_InlineFunctionDefinitionTest {
             .build();
 
         Kernel kernel = new DefaultKernel.Builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
         System.out.println("======== Inline Function Definition ========");

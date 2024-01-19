@@ -50,7 +50,7 @@ public class Example64_MultiplePromptTemplates {
             .build();
 
         var kernel = new DefaultKernel.Builder()
-            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         var templateFactory = new AggregatorPromptTemplateFactory(

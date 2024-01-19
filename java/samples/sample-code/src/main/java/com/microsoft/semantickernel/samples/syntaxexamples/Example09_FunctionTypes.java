@@ -108,7 +108,7 @@ public class Example09_FunctionTypes {
             );
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .withPlugin(plugin)
             .withPlugin(summarize)
             .withPlugin(examplePlugin)

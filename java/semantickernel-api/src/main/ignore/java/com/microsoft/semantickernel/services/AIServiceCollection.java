@@ -140,7 +140,7 @@ public class AIServiceCollection {
 
         Map<Class<? extends AIService>, String> defaultsClone = new HashMap<>(defaultIds);
 
-        return new DefaultAIServiceProvider(servicesClone, defaultsClone);
+        return new OrderedAIServiceSelector(servicesClone, defaultsClone);
     }
 
     /**

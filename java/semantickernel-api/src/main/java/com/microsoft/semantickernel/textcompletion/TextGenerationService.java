@@ -60,6 +60,7 @@ public interface TextGenerationService extends Buildable, TextAIService {
 
         protected String modelId;
         protected OpenAIAsyncClient client;
+        protected String serviceId;
 
         public Builder withModelId(String modelId) {
             this.modelId = modelId;
@@ -71,6 +72,12 @@ public interface TextGenerationService extends Buildable, TextAIService {
             return this;
         }
 
+        public Builder withServiceId(String serviceId) {
+            this.serviceId = serviceId;
+            return this;
+        }
+
         public abstract TextGenerationService build();
+
     }
 }
