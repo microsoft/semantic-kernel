@@ -20,7 +20,6 @@ namespace Examples;
 // This example shows how to use the ApiManifest based plugins
 public class Example99_ApiManifest : BaseTest
 {
-    private static int s_sampleIndex;
     private static Kernel? s_kernel;
     private static readonly FunctionCallingStepwisePlanner s_planner = new(s_plannerConfig);
     private static readonly FunctionCallingStepwisePlannerConfig s_plannerConfig = new()
@@ -32,8 +31,7 @@ public class Example99_ApiManifest : BaseTest
     /// <summary>
     /// Show how to create API Manifest plugins and use them towards a goal.
     /// </summary>
-    [Fact]
-    public async Task RunAsync()
+    private void TestSetup()
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -54,48 +52,29 @@ public class Example99_ApiManifest : BaseTest
                 apiKey: apiKey,
                 modelId: chatModelId)
             .Build();
-
-        s_sampleIndex = 1;
-
-        await RunSampleWithPlannerAsync(
-            "show the subject of my first message",
-            "latest email message subject is shown",
-            "MessagesPlugin");
-        await RunSampleWithPlannerAsync("get contents of file with id=test.txt",
-            "test.txt file is fetched and the content is shown",
-            "DriveItemPlugin",
-            "MessagesPlugin");
-        await RunSampleWithPlannerAsync(
-            "get contents of file with id=test.txt",
-            "test.txt file is not fetched because DriveItemPlugin is not loaded",
-            "MessagesPlugin");
-        await RunSampleWithPlannerAsync(
-            "tell me how many contacts I have",
-            "number of contacts is shown",
-            "MessagesPlugin",
-            "ContactsPlugin");
-        await RunSampleWithPlannerAsync(
-            "tell me title of first event in my calendar",
-            "title of first event from calendar is shown if exists",
-            "MessagesPlugin",
-            "CalendarPlugin");
     }
 
     private void WriteSampleHeadingToConsole(string goal, string expectedOutputDescription, params string[] pluginNames)
     {
         this.WriteLine();
-        this.WriteLine($"======== [ApiManifest Plugins] Sample {s_sampleIndex++} - Create and Execute \"{goal}\" Plan ========");
+        this.WriteLine($"======== [ApiManifest Plugins] Create and Execute \"{goal}\" Plan ========");
         this.WriteLine($"======== Plugins: {string.Join(" ", pluginNames)} ========");
         this.WriteLine($"======== Expected Output: {expectedOutputDescription} ========");
         this.WriteLine();
     }
 
-    private async Task RunSampleWithPlannerAsync(string goal, string expectedOutputDescription, params string[] pluginNames)
+    [Theory]
+    [InlineData("show the subject of my first message", "latest email message subject is shown", "MessagesPlugin")]
+    [InlineData("get contents of file with id=test.txt", "test.txt file is fetched and the content is shown", "DriveItemPlugin", "MessagesPlugin")]
+    [InlineData("get contents of file with id=test.txt", "test.txt file is not fetched because DriveItemPlugin is not loaded", "MessagesPlugin")]
+    [InlineData("tell me how many contacts I have", "number of contacts is shown", "MessagesPlugin", "ContactsPlugin")]
+    [InlineData("tell me title of first event in my calendar", "title of first event from calendar is shown if exists", "MessagesPlugin", "CalendarPlugin")]
+    public async Task RunSampleWithPlannerAsync(string goal, string expectedOutputDescription, params string[] pluginNames)
     {
         _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
         WriteSampleHeadingToConsole(goal, expectedOutputDescription, pluginNames);
         s_kernel.Plugins.Clear();
-        await AddApiManifestPluginsAsync(pluginNames).ConfigureAwait(false);
+        await AddApiManifestPluginsAsync(pluginNames);
 
         var result = await s_planner.ExecuteAsync(s_kernel, goal);
 
@@ -157,6 +136,7 @@ public class Example99_ApiManifest : BaseTest
 
     public Example99_ApiManifest(ITestOutputHelper output) : base(output)
     {
+        TestSetup();
     }
 }
 
