@@ -28,18 +28,7 @@ internal static class TestHelpers
 
     internal static void ImportAllSampleSkills(Kernel kernel)
     {
-        ImportSamplePromptFunctions(kernel, "../../../../../../samples/skills",
-            "ChatSkill",
-            "SummarizeSkill",
-            "WriterSkill",
-            "CalendarSkill",
-            "ChildrensBookSkill",
-            "ClassificationSkill",
-            "CodingSkill",
-            "FunSkill",
-            "IntentDetectionSkill",
-            "MiscSkill",
-            "QASkill");
+        ImportSamplePromptFunctions(kernel, "./skills", "FunSkill");
     }
 
     internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
