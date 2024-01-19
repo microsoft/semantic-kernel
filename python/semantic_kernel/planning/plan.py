@@ -240,8 +240,10 @@ class Plan(SKFunctionBase):
         if self._function is not None:
             self._function.set_default_skill_collection(skills)
 
-    def describe(self) -> FunctionView:
-        return self._function.describe()
+    def describe(self) -> Optional[FunctionView]:
+        if self._function is not None:
+            return self._function.describe()
+        return None
 
     def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
         if len(plan.steps) == 0:
@@ -400,19 +402,17 @@ class Plan(SKFunctionBase):
             elif param.name in self._state and (self._state[param.name] is not None and self._state[param.name] != ""):
                 step_variables.set(param.name, self._state[param.name])
 
-        for param_var in step.parameters.variables:
-            if param_var in step_variables:
+        for param_name, param_val in step.parameters.variables.items():
+            if param_name in step_variables:
                 continue
 
-            expanded_value = self.expand_from_variables(variables, param_var)
-            if expanded_value.lower() == param_var.lower():
-                step_variables.set(param_var, step.parameters.variables[param_var])
-            elif param_var in variables:
-                step_variables.set(param_var, variables[param_var])
-            elif param_var in self._state:
-                step_variables.set(param_var, self._state[param_var])
+            if param_name in variables:
+                step_variables.set(param_name, param_val)
+            elif param_name in self._state:
+                step_variables.set(param_name, self._state[param_name])
             else:
-                step_variables.set(param_var, expanded_value)
+                expanded_value = self.expand_from_variables(variables, param_val)
+                step_variables.set(param_name, expanded_value)
 
         for item in variables.variables:
             if item not in step_variables:
