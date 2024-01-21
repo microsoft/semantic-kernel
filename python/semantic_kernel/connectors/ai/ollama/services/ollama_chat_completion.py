@@ -30,11 +30,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     Make sure to have the ollama service running either locally or remotely.
 
     Arguments:
-        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
+        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library, defaults to llama2
         url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/chat
         session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
     """
-
+    ai_model_id: str = "llama2"
     url: HttpUrl = "http://localhost:11434/api/chat"
     session: Optional[aiohttp.ClientSession] = None
 
@@ -56,6 +56,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Returns:
             Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
         """
+        request_settings.ai_model_id = self.ai_model_id
         request_settings.messages = messages
         request_settings.stream = False
         async with AsyncSession(self.session) as session:
