@@ -345,7 +345,10 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             if (this.executionSettings == null) {
                 this.executionSettings = new HashMap<>();
             }
-            this.executionSettings.putAll(executionSettings);
+
+            if (executionSettings != null) {
+                this.executionSettings.putAll(executionSettings);
+            }
             return this;
         }
 
