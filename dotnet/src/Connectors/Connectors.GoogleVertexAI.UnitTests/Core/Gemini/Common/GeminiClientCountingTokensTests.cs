@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.Common;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
 using SemanticKernel.UnitTests;
@@ -31,8 +30,7 @@ public sealed class GeminiClientCountingTokensTests : IDisposable
     public async Task ShouldReturnGreaterThanZeroTokenCountAsync()
     {
         // Arrange
-        var geminiConfiguration = new GeminiConfiguration("fake-api-key") { ModelId = "fake-model" };
-        var client = this.CreateTokenCounterClient(geminiConfiguration);
+        var client = this.CreateTokenCounterClient("fake-model", "fake-key");
 
         // Act
         var tokenCount = await client.CountTokensAsync("fake-text");
@@ -41,13 +39,13 @@ public sealed class GeminiClientCountingTokensTests : IDisposable
         Assert.True(tokenCount > 0);
     }
 
-    private GeminiTokenCounterClient CreateTokenCounterClient(GeminiConfiguration geminiConfiguration)
+    private GeminiTokenCounterClient CreateTokenCounterClient(string modelId, string apiKey)
     {
         var client = new GeminiTokenCounterClient(
             httpClient: this._httpClient,
-            configuration: geminiConfiguration,
+            modelId: modelId,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
-            endpointProvider: new GoogleAIGeminiEndpointProvider(geminiConfiguration.ApiKey));
+            endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey));
         return client;
     }
 

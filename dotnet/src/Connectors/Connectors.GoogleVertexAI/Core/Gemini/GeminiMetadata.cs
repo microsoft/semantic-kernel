@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Represents the metadata associated with a Gemini response.

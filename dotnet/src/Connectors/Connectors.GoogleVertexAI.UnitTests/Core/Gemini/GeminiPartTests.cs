@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;

@@ -20,13 +20,13 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
     /// Represents a client for token counting gemini model.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
-    /// <param name="configuration">Gemini configuration instance containing API key and other configuration options</param>
+    /// <param name="modelId">Id of the model to use to counting tokens</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
     /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
-        GeminiConfiguration configuration,
+        string modelId,
         IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
         ILogger? logger = null)
@@ -36,9 +36,9 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
             endpointProvider: endpointProvider,
             logger: logger)
     {
-        VerifyModelId(configuration);
+        Verify.NotNullOrWhiteSpace(modelId);
 
-        this._modelId = configuration.ModelId!;
+        this._modelId = modelId;
     }
 
     /// <inheritdoc/>
@@ -63,10 +63,5 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
     {
         var node = DeserializeResponse<JsonNode>(body);
         return node["totalTokens"]?.GetValue<int>() ?? throw new KernelException("Invalid response from model");
-    }
-
-    private static void VerifyModelId(GeminiConfiguration configuration)
-    {
-        Verify.NotNullOrWhiteSpace(configuration.ModelId, $"{nameof(configuration)}.{nameof(configuration.ModelId)}");
     }
 }

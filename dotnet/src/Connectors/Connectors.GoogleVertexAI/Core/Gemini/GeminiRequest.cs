@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 internal sealed class GeminiRequest
 {
     [JsonPropertyName("contents")]
-    public IList<GeminiRequestContent> Contents { get; set; } = null!;
+    public IList<GeminiContent> Contents { get; set; } = null!;
 
     [JsonPropertyName("safetySettings")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -18,7 +18,7 @@ internal sealed class GeminiRequest
 
     [JsonPropertyName("generationConfig")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiRequestConfiguration? Configuration { get; set; }
+    public ConfigurationElement? Configuration { get; set; }
 
     /// <summary>
     /// Creates a <see cref="GeminiRequest"/> object from the given prompt and execution settings.
@@ -50,7 +50,7 @@ internal sealed class GeminiRequest
     {
         GeminiRequest obj = new()
         {
-            Contents = new List<GeminiRequestContent>
+            Contents = new List<GeminiContent>
             {
                 new()
                 {
@@ -71,7 +71,7 @@ internal sealed class GeminiRequest
     {
         GeminiRequest obj = new()
         {
-            Contents = chatHistory.Select(c => new GeminiRequestContent
+            Contents = chatHistory.Select(c => new GeminiContent
             {
                 Parts = new List<GeminiPart>
                 {
@@ -89,7 +89,7 @@ internal sealed class GeminiRequest
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
     {
-        obj.Configuration = new GeminiRequestConfiguration
+        obj.Configuration = new ConfigurationElement
         {
             Temperature = executionSettings.Temperature,
             TopP = executionSettings.TopP,
@@ -105,51 +105,31 @@ internal sealed class GeminiRequest
         obj.SafetySettings = executionSettings.SafetySettings?.Select(s
             => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
     }
-}
 
-internal sealed class GeminiRequestConfiguration
-{
-    [JsonPropertyName("temperature")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? Temperature { get; set; }
+    internal sealed class ConfigurationElement
+    {
+        [JsonPropertyName("temperature")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? Temperature { get; set; }
 
-    [JsonPropertyName("topP")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? TopP { get; set; }
+        [JsonPropertyName("topP")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? TopP { get; set; }
 
-    [JsonPropertyName("topK")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? TopK { get; set; }
+        [JsonPropertyName("topK")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? TopK { get; set; }
 
-    [JsonPropertyName("maxOutputTokens")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? MaxOutputTokens { get; set; }
+        [JsonPropertyName("maxOutputTokens")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? MaxOutputTokens { get; set; }
 
-    [JsonPropertyName("stopSequences")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IEnumerable<string>? StopSequences { get; set; }
+        [JsonPropertyName("stopSequences")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public IEnumerable<string>? StopSequences { get; set; }
 
-    [JsonPropertyName("candidateCount")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? CandidateCount { get; set; }
-}
-
-internal sealed class GeminiRequestContent
-{
-    [JsonPropertyName("parts")]
-    public IList<GeminiPart> Parts { get; set; } = null!;
-
-    [JsonPropertyName("role")]
-    [JsonConverter(typeof(AuthorRoleConverter))]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public AuthorRole? Role { get; set; }
-}
-
-internal sealed class GeminiRequestInlineData
-{
-    [JsonPropertyName("mimeType")]
-    public string MimeType { get; set; } = null!;
-
-    [JsonPropertyName("data")]
-    public string Data { get; set; } = null!;
+        [JsonPropertyName("candidateCount")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? CandidateCount { get; set; }
+    }
 }

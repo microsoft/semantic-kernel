@@ -42,7 +42,7 @@ internal abstract class GeminiClient : ClientBase
         TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
         PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
         PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
-        ResponseSafetyRatings = candidate.SafetyRatings.ToList(),
+        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
     };
 
     protected void LogUsageMetadata(GeminiMetadata metadata)
