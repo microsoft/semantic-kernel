@@ -92,12 +92,6 @@ public class Example99_ApiManifest : BaseTest
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
         }
 
-        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
-        {
-            throw new InvalidOperationException("Unable to determine current assembly directory.");
-        }
-
         LocalUserMSALCredentialManager credentialManager = await LocalUserMSALCredentialManager.CreateAsync().ConfigureAwait(false);
 
         var token = await credentialManager.GetTokenAsync(
