@@ -98,7 +98,7 @@ Python notebooks:
 - [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
 - [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
 - [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-- [Using Hugging Face for Skills](./notebooks/07-hugging-face-for-skills.ipynb)
+- [Using Hugging Face for Plugins](./notebooks/07-hugging-face-for-plugins.ipynb)
 - [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
 - [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
 - [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
