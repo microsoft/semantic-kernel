@@ -24,5 +24,4 @@ class OpenAITextContent(TextContent):
         __str__: Returns the text of the response.
     """
 
-    # just overriding the inner_content type, so docstring should come from base.
     inner_content: Completion

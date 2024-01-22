@@ -380,12 +380,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
                     tool_call_ids_by_index[index] = content.tool_calls
                 else:
                     for tc_index, tool_call in enumerate(content.tool_calls):
-                        tool_call_ids_by_index[index][tc_index] + tool_call
+                        tool_call_ids_by_index[index][tc_index] += tool_call
             if content.function_call is not None:
                 if index not in function_call_by_index:
                     function_call_by_index[index] = content.function_call
                 else:
-                    function_call_by_index[index] + content.function_call
+                    function_call_by_index[index] += content.function_call
             if content.tool_message is not None:
                 if index not in tool_messages_by_index:
                     tool_messages_by_index[index] = content.tool_message

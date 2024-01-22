@@ -27,7 +27,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
     Methods:
         __str__: Returns the content of the response.
         __bytes__: Returns the content of the response encoded in the encoding.
-        __dict__: Returns a dict representation of the response, with role and content fields.
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
@@ -41,12 +40,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
 
     def __bytes__(self) -> bytes:
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
-
-    def __dict__(self) -> dict:
-        return {
-            "role": self.role.value,
-            "content": self.content,
-        }
 
     def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
         """When combining two StreamingChatMessageContent instances, the content fields are combined.

@@ -29,7 +29,6 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
     Methods:
         __str__: Returns the content of the response.
         __bytes__: Returns the content of the response encoded in the encoding.
-        __dict__: Returns a dict representation of the response, with role and content fields.
         __add__: Combines two StreamingChatMessageContent instances.
     """
 

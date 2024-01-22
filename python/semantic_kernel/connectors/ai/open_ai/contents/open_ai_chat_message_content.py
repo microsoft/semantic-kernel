@@ -27,7 +27,6 @@ class OpenAIChatMessageContent(ChatMessageContent):
 
     Methods:
         __str__: Returns the content of the response.
-        __dict__: Returns a dict representation of the response, with role and content fields.
     """
 
     inner_content: ChatCompletion

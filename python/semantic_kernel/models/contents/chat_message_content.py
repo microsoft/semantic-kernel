@@ -22,21 +22,11 @@ class ChatMessageContent(KernelContent):
 
     Methods:
         __str__: Returns the content of the response.
-        __dict__: Returns a dict representation of the response, with role and content fields.
     """
 
     role: ChatRole
     content: Optional[str] = None
     encoding: Optional[str] = None
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def __str__(self) -> str:
         return self.content
-
-    def __dict__(self) -> dict:
-        return {
-            "role": self.role.value,
-            "content": self.content,
-        }
