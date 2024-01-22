@@ -12,7 +12,12 @@ class ToolCall(SKBaseModel):
     type: Optional[Literal["function"]] = "function"
     function: Optional[FunctionCall] = None
 
-    def update(self, chunk: "ToolCall"):
-        """Update the function call."""
-        if self.function:
-            self.function.update(chunk.function.name, chunk.function.arguments)
+    def __add__(self, other: Optional["ToolCall"]) -> "ToolCall":
+        """Add two tool calls together, combines the function calls, ignores the id."""
+        if not other:
+            return self
+        return ToolCall(
+            id=self.id or other.id,
+            type=self.type or other.type,
+            function=self.function + other.function if self.function else other.function,
+        )

@@ -7,7 +7,10 @@ from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 class StreamingKernelContent(SKBaseModel, ABC):
-    inner_content: Any
+    """Base class for all streaming kernel contents."""
+
+    choice_index: int
+    inner_content: Optional[Any] = None
     ai_model_id: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
@@ -17,4 +20,8 @@ class StreamingKernelContent(SKBaseModel, ABC):
 
     @abstractmethod
     def __bytes__(self) -> bytes:
+        pass
+
+    @abstractmethod
+    def __add__(self, other: "StreamingKernelContent") -> "StreamingKernelContent":
         pass

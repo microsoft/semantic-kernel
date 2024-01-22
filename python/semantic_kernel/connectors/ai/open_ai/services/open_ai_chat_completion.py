@@ -18,12 +18,11 @@ from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
+from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
     OpenAIRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.responses import OpenAIStreamingChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.responses.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
     OpenAIConfigBase,
 )
@@ -179,18 +178,17 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
         response_metadata = self.get_metadata_from_chat_response(response)
-        return [
-            self._create_return_content(response, choice, response_metadata, settings) for choice in response.choices
-        ]
+        return [self._create_return_content(response, choice, response_metadata) for choice in response.choices]
 
-    def _create_return_content(self, response, choice, response_metadata, settings):
+    def _create_return_content(self, response, choice, response_metadata):
         metadata = self.get_metadata_from_chat_choice(choice)
         metadata.update(response_metadata)
         return OpenAIChatMessageContent(
-            choice=choice,
-            response=response,
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
             metadata=metadata,
-            request_settings=settings,
+            role=choice.message.role,
+            content=choice.message.content,
             function_call=self.get_function_call_from_chat_choice(choice),
             tool_calls=self.get_tool_calls_from_chat_choice(choice),
         )
@@ -227,9 +225,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
             if len(chunk.choices) == 0:
                 continue
             chunk_metadata = self.get_metadata_from_streaming_chat_response(chunk)
-            contents = [
-                self._create_return_content_stream(chunk, choice, chunk_metadata, settings) for choice in chunk.choices
-            ]
+            contents = [self._create_return_content_stream(chunk, choice, chunk_metadata) for choice in chunk.choices]
             self._handle_updates(contents, out_messages, tool_call_ids_by_index, function_call_by_index)
             yield contents
 
@@ -238,15 +234,16 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: Dict[str, Any],
-        settings: OpenAIChatRequestSettings,
     ):
         metadata = self.get_metadata_from_chat_choice(choice)
         metadata.update(chunk_metadata)
         return OpenAIStreamingChatMessageContent(
-            choice=choice,
-            chunk=chunk,
+            inner_content=chunk,
+            ai_model_id=self.ai_model_id,
             metadata=metadata,
-            request_settings=settings,
+            role=choice.delta.role,
+            content=choice.delta.content,
+            finish_reason=choice.finish_reason,
             function_call=self.get_function_call_from_chat_choice(choice),
             tool_calls=self.get_tool_calls_from_chat_choice(choice),
         )

@@ -9,7 +9,7 @@ from semantic_kernel.sk_pydantic import SKBaseModel
 class KernelContent(SKBaseModel, ABC):
     """Base class for all kernel contents."""
 
-    inner_content: Any
+    inner_content: Optional[Any] = None
     ai_model_id: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 

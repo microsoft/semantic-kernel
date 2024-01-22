@@ -15,7 +15,7 @@ from typing import (
 
 from openai import AsyncAzureOpenAI, AsyncStream
 from openai.lib.azure import AsyncAzureADTokenProvider
-from openai.types.chat.chat_completion import Choice
+from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
@@ -24,12 +24,14 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+from semantic_kernel.connectors.ai.open_ai.contents import (
+    AzureChatMessageContent,
+    AzureStreamingChatMessageContent,
+)
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureChatRequestSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.responses import (
-    AzureOpenAIChatMessageContent,
-    AzureOpenAIStreamingChatMessageContent,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
@@ -299,18 +301,17 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
         response_metadata = self.get_metadata_from_chat_response(response)
-        return [
-            self._create_return_content(response, choice, response_metadata, settings) for choice in response.choices
-        ]
+        return [self._create_return_content(response, choice, response_metadata) for choice in response.choices]
 
-    def _create_return_content(self, response, choice, response_metadata, settings):
+    def _create_return_content(self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]):
         metadata = self.get_metadata_from_chat_choice(choice)
         metadata.update(response_metadata)
-        return AzureOpenAIChatMessageContent(
-            choice=choice,
-            response=response,
+        return AzureChatMessageContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
             metadata=metadata,
-            request_settings=settings,
+            role=choice.message.role,
+            content=choice.message.content,
             function_call=self.get_function_call_from_chat_choice(choice),
             tool_calls=self.get_tool_calls_from_chat_choice(choice),
             tool_message=self.get_tool_message_from_chat_choice(choice),
@@ -321,7 +322,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
         logger: Optional[Any] = None,
-    ) -> AsyncGenerator[List[AzureOpenAIStreamingChatMessageContent], None]:
+    ) -> AsyncGenerator[List[AzureStreamingChatMessageContent], None]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -349,38 +350,42 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
             if len(chunk.choices) == 0:
                 continue
             chunk_metadata = self.get_metadata_from_streaming_chat_response(chunk)
-            contents = [
-                self._create_return_content_stream(chunk, choice, chunk_metadata, settings) for choice in chunk.choices
-            ]
+            contents = [self._create_return_content_stream(chunk, choice, chunk_metadata) for choice in chunk.choices]
             self._handle_updates(
                 contents, out_messages, tool_call_ids_by_index, function_call_by_index, tool_messages_by_index
             )
             yield contents
 
     def _handle_updates(
-        self, contents, out_messages, tool_call_ids_by_index, function_call_by_index, tool_messages_by_index
+        self,
+        contents: List[AzureStreamingChatMessageContent],
+        out_messages: Dict[int, str],
+        tool_call_ids_by_index: Dict[int, List[ToolCall]],
+        function_call_by_index: Dict[int, FunctionCall],
+        tool_messages_by_index: Dict[int, str],
     ):
         """Handle updates to the messages, tool_calls and function_calls.
 
         This will be used for auto-invoking tools.
         """
+
         for index, content in enumerate(contents):
             if content.content is not None:
                 if index not in out_messages:
-                    out_messages[index] = str(content)
+                    out_messages[index] = content.content
                 else:
-                    out_messages[index] += str(content)
+                    out_messages[index] += content.content
             if content.tool_calls is not None:
                 if index not in tool_call_ids_by_index:
                     tool_call_ids_by_index[index] = content.tool_calls
                 else:
                     for tc_index, tool_call in enumerate(content.tool_calls):
-                        tool_call_ids_by_index[index][tc_index].update(tool_call)
+                        tool_call_ids_by_index[index][tc_index] + tool_call
             if content.function_call is not None:
                 if index not in function_call_by_index:
                     function_call_by_index[index] = content.function_call
                 else:
-                    function_call_by_index[index].update(content.function_call)
+                    function_call_by_index[index] + content.function_call
             if content.tool_message is not None:
                 if index not in tool_messages_by_index:
                     tool_messages_by_index[index] = content.tool_message
@@ -392,15 +397,17 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: Dict[str, Any],
-        settings: AzureChatRequestSettings,
     ):
         metadata = self.get_metadata_from_chat_choice(choice)
         metadata.update(chunk_metadata)
-        return AzureOpenAIStreamingChatMessageContent(
-            choice=choice,
-            chunk=chunk,
+        return AzureStreamingChatMessageContent(
+            choice_index=choice.index,
+            inner_content=chunk,
+            ai_model_id=self.ai_model_id,
             metadata=metadata,
-            request_settings=settings,
+            role=choice.delta.role,
+            content=choice.delta.content,
+            finish_reason=choice.finish_reason,
             function_call=self.get_function_call_from_chat_choice(choice),
             tool_calls=self.get_tool_calls_from_chat_choice(choice),
             tool_message=self.get_tool_message_from_chat_choice(choice),

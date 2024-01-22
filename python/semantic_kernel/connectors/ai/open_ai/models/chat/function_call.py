@@ -14,16 +14,15 @@ class FunctionCall(KernelBaseModel):
     # TODO: check if needed
     id: Optional[str] = None
 
-    def update(self, name: str, arguments: Optional[str]):
-        """Update the function call."""
-        if name:
-            if name != self.name:
-                self.name = name
-        if arguments:
-            if self.arguments is None:
-                self.arguments = arguments
-            else:
-                self.arguments += arguments
+    def __add__(self, other: Optional["FunctionCall"]) -> "FunctionCall":
+        """Add two function calls together, combines the arguments, ignores the name."""
+        if not other:
+            return self
+        return FunctionCall(
+            name=self.name or other.name,
+            arguments=(self.arguments or "") + (other.arguments or ""),
+            id=self.id or other.id,
+        )
 
     def parse_arguments(self) -> Dict[str, str]:
         """Parse the arguments into a dictionary."""

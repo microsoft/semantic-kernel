@@ -8,13 +8,14 @@ from openai.types import Completion, CompletionChoice
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.open_ai.contents import OpenAITextContent
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAITextRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
-from semantic_kernel.models.contents import StreamingTextContent, TextContent
+from semantic_kernel.models.contents import StreamingTextContent
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
@@ -30,7 +31,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> TextContent:
+    ) -> OpenAITextContent:
         """Executes a completion request and returns the result.
 
         Arguments:
@@ -52,11 +53,11 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
 
     def _create_return_content(
         self, response: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
-    ) -> TextContent:
+    ) -> OpenAITextContent:
         """Create a text content object from a choice."""
         choice_metadata = self.get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
-        return TextContent(
+        return OpenAITextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
             text=choice.text,

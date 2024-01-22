@@ -194,6 +194,7 @@ class KernelFunction(KernelFunctionBase):
                 # context, chat_prompt = store_results(context, result, chat_prompt)
             except Exception as e:
                 # TODO: "critical exceptions"
+                logger.error(f"Error occurred while invoking stream function: {str(e)}")
                 context.fail(str(e), e)
 
         return KernelFunction(
@@ -485,6 +486,7 @@ class KernelFunction(KernelFunctionBase):
                 async for stream_msg in self._invoke_native_stream(context):
                     yield stream_msg
         except Exception as e:
+            logger.error(f"Error occurred while invoking stream function: {str(e)}")
             context.fail(str(e), e)
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
