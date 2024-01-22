@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.const import (
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -239,17 +239,17 @@ class OpenApiRunner:
 
 
 """
-Registers a skill with the kernel that can run OpenAPI operations.
-:param kernel: The kernel to register the skill with
-:param skill_name: The name of the skill
+Registers a plugin with the kernel that can run OpenAPI operations.
+:param kernel: The kernel to register the plugin with
+:param plugin_name: The name of the plugin
 :param openapi_document: The OpenAPI document to register. Can be a filename or URL
 :return: A dictionary of SKFunctions keyed by operationId
 """
 
 
-def register_openapi_skill(
+def register_openapi_plugin(
     kernel: Kernel,
-    skill_name: str,
+    plugin_name: str,
     openapi_document: str,
 ) -> Dict[str, SKFunctionBase]:
     parser = OpenApiParser()
@@ -257,7 +257,7 @@ def register_openapi_skill(
     operations = parser.create_rest_api_operations(parsed_doc)
     openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc)
 
-    skill = {}
+    plugin = {}
 
     def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
         @sk_function(
@@ -286,6 +286,6 @@ def register_openapi_skill(
         return run_openapi_operation
 
     for operation_id, operation in operations.items():
-        logger.info(f"Registering OpenAPI operation: {skill_name}.{operation_id}")
-        skill[operation_id] = create_run_operation_function(openapi_runner, operation)
-    return kernel.import_skill(skill, skill_name)
+        logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation_id}")
+        plugin[operation_id] = create_run_operation_function(openapi_runner, operation)
+    return kernel.import_plugin(plugin, plugin_name)

@@ -22,6 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="prompts\GenerateStoryHandlebars.yaml" />
+    <None Remove="skills\FunSkill\Joke\config.json" />
+    <None Remove="skills\FunSkill\Joke\skprompt.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
@@ -86,6 +88,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="prompts\GenerateStoryHandlebars.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="skills\FunSkill\Joke\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="skills\FunSkill\Joke\skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
