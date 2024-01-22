@@ -1,11 +1,13 @@
-package azureopenai;
+package com.microsoft.semantickernel.starter;
+
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(AzureOpenAiConnectionProperties.CONFIG_PREFIX)
-public class AzureOpenAiConnectionProperties {
+@ConfigurationProperties(AzureOpenAIConnectionProperties.CONFIG_PREFIX)
+public class AzureOpenAIConnectionProperties {
 
   public static final String CONFIG_PREFIX = "client.azureopenai";
+
   /**
    * Azure OpenAI API endpoint.From the Azure AI OpenAI at 'Resource Management' select `Keys and
    * Endpoint` and find it on the right side.
