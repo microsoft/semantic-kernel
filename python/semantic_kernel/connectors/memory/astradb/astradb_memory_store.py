@@ -2,7 +2,7 @@
 
 import logging
 from typing import List, Optional, Tuple
-
+import asyncio
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
@@ -36,7 +36,6 @@ class AstraDBMemoryStore(MemoryStoreBase):
         keyspace_name: str,
         embedding_dim: int,
         similarity: str,
-        logger: Optional[logging.Logger] = None,
         session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
@@ -48,7 +47,6 @@ class AstraDBMemoryStore(MemoryStoreBase):
             keyspace_name {str} -- The Astra keyspace
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
-            logger {Optional[logging.Logger]} -- The logger to use. (default: {None})
             session -- Optional session parameter
         """
         self._embedding_dim = embedding_dim
@@ -68,15 +66,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
             keyspace_name=keyspace_name,
             embedding_dim=embedding_dim,
             similarity_function=similarity,
+            session=self._session,
         )
-
-    def get_collections(self) -> List[str]:
-        """Gets the list of collections.
-
-        Returns:
-            List[str] -- The list of collections.
-        """
-        return self._client.find_collections(False)
 
     async def get_collections_async(self) -> List[str]:
         """Gets the list of collections.
@@ -84,7 +75,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The list of collections.
         """
-        return await self.get_collections()
+        return await self._client.find_collections(False)
 
     async def create_collection_async(
         self,
@@ -109,7 +100,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
-        result = self._client.create_collection(collection_name, dimension_num, distance_type)
+        result = await self._client.create_collection(collection_name, dimension_num, distance_type)
         if result == True:
             self.logger.info(f"Collection {collection_name} created.")
 
@@ -153,18 +144,12 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         filter = {"_id": record._id}
         update = {"$set": build_payload(record)}
-        status = self._client.update_document(collection_name, filter, update, True)
+        status = await self._client.update_document(collection_name, filter, update, True)
 
         return status["upsertedId"] if "upsertedId" in status else record._id
 
     async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
-        upserted_ids = []
-
-        for record in records:
-            id = await self.upsert_async(collection_name, record)
-            upserted_ids.append(id)
-
-        return upserted_ids
+        return await asyncio.gather(*[self.upsert_async(collection_name, record) for record in records])
 
     async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record. Does not guarantee that the collection exists.
@@ -178,8 +163,10 @@ class AstraDBMemoryStore(MemoryStoreBase):
             MemoryRecord -- The record.
         """
         filter = {"_id": key}
-        documents = self._client.find_documents(
-            collection_name=collection_name, filter=filter, include_vector=with_embedding
+        documents = await self._client.find_documents(
+            collection_name=collection_name,
+            filter=filter,
+            include_vector=with_embedding,
         )
 
         if len(documents) == 0:
@@ -202,8 +189,10 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
 
         filter = {"_id": {"$in": keys}}
-        documents = self._client.find_documents(
-            collection_name=collection_name, filter=filter, include_vector=with_embeddings
+        documents = await self._client.find_documents(
+            collection_name=collection_name,
+            filter=filter,
+            include_vector=with_embeddings,
         )
         return [parse_payload(document) for document in documents]
 
@@ -278,7 +267,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        matches = self._client.find_documents(
+        matches = await self._client.find_documents(
             collection_name=collection_name,
             vector=embedding.tolist(),
             limit=limit,
