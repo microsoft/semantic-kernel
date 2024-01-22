@@ -8,7 +8,7 @@ class StepwisePlannerConfig:
         self,
         relevancy_threshold: Optional[float] = None,
         max_relevant_functions: int = 100,
-        excluded_skills: List[str] = None,
+        excluded_plugins: List[str] = None,
         excluded_functions: List[str] = None,
         included_functions: List[str] = None,
         max_tokens: int = 1024,
@@ -17,7 +17,7 @@ class StepwisePlannerConfig:
     ):
         self.relevancy_threshold: float = relevancy_threshold
         self.max_relevant_functions: int = max_relevant_functions
-        self.excluded_skills: List[str] = excluded_skills or []
+        self.excluded_plugins: List[str] = excluded_plugins or []
         self.excluded_functions: List[str] = excluded_functions or []
         self.included_functions: List[str] = included_functions or []
         self.max_tokens: int = max_tokens
