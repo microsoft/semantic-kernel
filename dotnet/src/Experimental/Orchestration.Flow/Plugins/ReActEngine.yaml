@@ -53,7 +53,7 @@ template: |
      - input: input for the poem
      - style: style of the poem, leave empty if not specified
     [END AVAILABLE FUNCTIONS]
-    [Question]
+    [QUESTION]
     Write a poem about sun in Whitman's style.
     [THOUGHT]
     I should use WritePoem function for it.
@@ -74,7 +74,7 @@ template: |
     [AVAILABLE FUNCTIONS]
     {{$functionDescriptions}}
     [END AVAILABLE FUNCTIONS]
-    [Question]
+    [QUESTION]
     {{$question}}
     {{$agentScratchPad}}
     [THOUGHT]
@@ -94,11 +94,11 @@ execution_settings:
     presence_penalty:  0.0
     frequency_penalty: 0.0
     max_tokens:        400
-    stop_sequences:    ["[OBSERVATION]", "[Observation]", "[QUESTION]"]
+    stop_sequences:    ["[OBSERVATION]", "[Observation]", "[QUESTION]", "[AVAILABLE FUNCTIONS]"]
   default:  
     temperature:       0.1
     top_p:             1.0
     presence_penalty:  0.0
     frequency_penalty: 0.0
     max_tokens:        400
-    stop_sequences:    ["[OBSERVATION]", "[Observation]", "[QUESTION]"]
+    stop_sequences:    ["[OBSERVATION]", "[Observation]", "[QUESTION]", "[AVAILABLE FUNCTIONS]"]

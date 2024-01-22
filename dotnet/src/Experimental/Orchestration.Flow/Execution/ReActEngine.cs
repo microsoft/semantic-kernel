@@ -159,11 +159,12 @@ internal sealed class ReActEngine
 
         var actionStep = this.ParseResult(llmResponseText);
 
-        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0)
+        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0 || !string.IsNullOrEmpty(actionStep.FinalAnswer))
         {
             return actionStep;
         }
 
+        actionStep.Thought = llmResponseText;
         actionStep.Observation = "Failed to parse valid action step, missing action or final answer.";
         this._logger?.LogWarning("Failed to parse valid action step from llm response={LLMResponseText}", llmResponseText);
         this._logger?.LogWarning("Scratchpad={ScratchPad}", scratchPad);

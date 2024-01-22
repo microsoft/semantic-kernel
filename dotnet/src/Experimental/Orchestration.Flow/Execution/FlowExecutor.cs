@@ -623,7 +623,15 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger.LogInformation("Thought: {Thought}", actionStep.Thought);
             }
 
-            if (!string.IsNullOrEmpty(actionStep.Action!))
+            if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
+            {
+                if (step.Provides.Count() == 1)
+                {
+                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
+                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
+                }
+            }
+            else if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
                 {
@@ -746,14 +754,6 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
                 this._logger?.LogWarning("Action: No result from action");
-            }
-            else if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
-            {
-                if (step.Provides.Count() == 1)
-                {
-                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
-                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
-                }
             }
             else
             {

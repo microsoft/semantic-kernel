@@ -52,7 +52,7 @@ template: |
 
     Begin!
 
-    [Question]
+    [QUESTION]
     {{$question}}
     {{$agentScratchPad}}
 description: Given a request or command or goal generate multi-step plan to reach the goal. After each step LLM is called to perform the reasoning for the next step.
