@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -268,7 +269,15 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 KernelFunctionParameter annotation =
                     parameter.getAnnotation(KernelFunctionParameter.class);
                 if (annotation != null) {
-                    arg = ContextVariable.of(annotation.defaultValue());
+                    // Convert from the defaultValue, which is a String to the argument type 
+                    // Expectation here is that the fromPromptString method will be able to handle a null or empty string
+                    Class<?> type = annotation.type();
+                    ContextVariableType<?> cvType = ContextVariableTypes.getDefaultVariableTypeForClass(type);
+                    if (cvType != null) {
+                        String defaultValue = annotation.defaultValue();
+                        Object value = cvType.getConverter().fromPromptString(defaultValue);
+                        arg = ContextVariable.of(value);
+                    }
 
                     if (NO_DEFAULT_VALUE.equals(arg)) {
                         if (!annotation.required()) {
