@@ -230,7 +230,7 @@ public static class OpenApiKernelExtensions
     /// </summary>
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
-    /// <param name="apiManifestFilePath">The file path of the API manifest.</param>
+    /// <param name="filePath">The file path of the API manifest.</param>
     /// <param name="executionParameters">Optional execution parameters for the API functions.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
@@ -238,7 +238,7 @@ public static class OpenApiKernelExtensions
     public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
-        string apiManifestFilePath,
+        string filePath,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
@@ -249,17 +249,17 @@ public static class OpenApiKernelExtensions
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
-        if (!File.Exists(apiManifestFilePath))
+        if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"ApiManifest file not found: {apiManifestFilePath}");
+            throw new FileNotFoundException($"ApiManifest file not found: {filePath}");
         }
 
-        string apiManifestFileJsonContents = File.ReadAllText(apiManifestFilePath);
+        string apiManifestFileJsonContents = await DocumentLoader.LoadDocumentFromFilePathAsync(filePath,
+            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+            cancellationToken).ConfigureAwait(false);
         JsonDocument jsonDocument = JsonDocument.Parse(apiManifestFileJsonContents);
 
         ApiManifestDocument document = ApiManifestDocument.Load(jsonDocument.RootElement);
-
-        using var openApiReadinghttpClient = new HttpClient();
 
         var functions = new List<KernelFunction>();
         foreach (var apiDependency in document.ApiDependencies)
@@ -269,14 +269,19 @@ public static class OpenApiKernelExtensions
 
             var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
 
-            using var stream = await openApiReadinghttpClient.GetStreamAsync(new Uri(apiDescriptionUrl)).ConfigureAwait(false);
+            var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
+                kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+                httpClient,
+                authCallback: null,
+                HttpHeaderValues.UserAgent,
+                cancellationToken).ConfigureAwait(false);
 
-            var parseResult = await new OpenApiStreamReader(new()
+            OpenApiDiagnostic diagnostic = new();
+            var openApiDocument = new OpenApiStringReader(new()
             {
                 BaseUrl = new(apiDescriptionUrl)
             }
-            ).ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var openApiDocument = parseResult.OpenApiDocument;
+            ).Read(openApiDocumentString, out diagnostic);
 
             var requestUrls = new Dictionary<string, List<string>>();
             var paths = apiDependencyDetails.Requests.Select(request => request.UriTemplate);
@@ -301,7 +306,7 @@ public static class OpenApiKernelExtensions
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
-                executionParameters?.EnableDynamicPayload ?? false,
+                executionParameters?.EnableDynamicPayload ?? true,
                 executionParameters?.EnablePayloadNamespacing ?? false);
 
             foreach (var path in filteredOpenApiDocument.Paths)
