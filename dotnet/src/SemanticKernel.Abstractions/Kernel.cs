@@ -33,9 +33,9 @@ public sealed class Kernel
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
     /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private FunctionFilterCollection? _functionFilters;
+    private NonNullCollection<IFunctionFilter>? _functionFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private PromptFilterCollection? _promptFilters;
+    private NonNullCollection<IPromptFilter>? _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -143,7 +143,7 @@ public sealed class Kernel
     [Experimental("SKEXP0004")]
     public IList<IFunctionFilter> FunctionFilters =>
         this._functionFilters ??
-        Interlocked.CompareExchange(ref this._functionFilters, new FunctionFilterCollection(), null) ??
+        Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
         this._functionFilters;
 
     /// <summary>
@@ -152,7 +152,7 @@ public sealed class Kernel
     [Experimental("SKEXP0004")]
     public IList<IPromptFilter> PromptFilters =>
         this._promptFilters ??
-        Interlocked.CompareExchange(ref this._promptFilters, new PromptFilterCollection(), null) ??
+        Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
         this._promptFilters;
 
     /// <summary>
