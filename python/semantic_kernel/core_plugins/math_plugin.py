@@ -2,7 +2,7 @@
 import typing as t
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -24,7 +24,7 @@ class MathPlugin(KernelBaseModel):
         name="Add",
         input_description="The value to add",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name="Amount",
         description="Amount to add",
         type="number",
@@ -45,7 +45,7 @@ class MathPlugin(KernelBaseModel):
         name="Subtract",
         input_description="The value to subtract",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name="Amount",
         description="Amount to subtract",
         type="number",

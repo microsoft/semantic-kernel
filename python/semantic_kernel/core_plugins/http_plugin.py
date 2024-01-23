@@ -6,7 +6,7 @@ import typing as t
 import aiohttp
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -45,7 +45,7 @@ class HttpPlugin(KernelBaseModel):
                 return await response.text()
 
     @kernel_function(description="Makes a POST request to a uri", name="postAsync")
-    @sk_function_context_parameter(name="body", description="The body of the request")
+    @kernel_function_context_parameter(name="body", description="The body of the request")
     async def post_async(self, url: str, context: "KernelContext") -> str:
         """
         Sends an HTTP POST request to the specified URI and returns
@@ -68,7 +68,7 @@ class HttpPlugin(KernelBaseModel):
                 return await response.text()
 
     @kernel_function(description="Makes a PUT request to a uri", name="putAsync")
-    @sk_function_context_parameter(name="body", description="The body of the request")
+    @kernel_function_context_parameter(name="body", description="The body of the request")
     async def put_async(self, url: str, context: "KernelContext") -> str:
         """
         Sends an HTTP PUT request to the specified URI and returns

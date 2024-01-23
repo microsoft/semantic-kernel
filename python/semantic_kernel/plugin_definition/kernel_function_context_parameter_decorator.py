@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-def sk_function_context_parameter(
+def kernel_function_context_parameter(
     *, name: str, description: str, default_value: str = "", type: str = "string", required: bool = False
 ):
     """

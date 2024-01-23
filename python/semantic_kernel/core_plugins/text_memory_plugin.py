@@ -5,7 +5,7 @@ import typing as t
 from typing import ClassVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -28,17 +28,17 @@ class TextMemoryPlugin(KernelBaseModel):
         name="recall",
         input_description="The information to retrieve",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to search for information",
         default_value=DEFAULT_COLLECTION,
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=RELEVANCE_PARAM,
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
         default_value=DEFAULT_RELEVANCE,
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=LIMIT_PARAM,
         description="The maximum number of relevant memories to recall.",
         default_value=DEFAULT_LIMIT,
@@ -95,12 +95,12 @@ class TextMemoryPlugin(KernelBaseModel):
         name="save",
         input_description="The information to save",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to save the information",
         default_value=DEFAULT_COLLECTION,
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )

@@ -6,7 +6,7 @@ import typing as t
 import aiofiles
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -53,8 +53,8 @@ class FileIOPlugin(KernelBaseModel):
         description="Write a file",
         name="writeAsync",
     )
-    @sk_function_context_parameter(name="path", description="Destination path")
-    @sk_function_context_parameter(name="content", description="File content")
+    @kernel_function_context_parameter(name="path", description="Destination path")
+    @kernel_function_context_parameter(name="content", description="File content")
     async def write_async(self, context: "KernelContext") -> None:
         """
         Write a file

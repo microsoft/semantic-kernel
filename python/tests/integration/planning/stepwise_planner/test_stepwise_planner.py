@@ -16,7 +16,7 @@ from semantic_kernel.planning import StepwisePlanner
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
-from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 
 class TempWebSearchEnginePlugin:
@@ -36,7 +36,7 @@ class TempWebSearchEnginePlugin:
         self._connector = connector
 
     @kernel_function(description="Performs a web search for a given query", name="searchAsync")
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name="query",
         description="The search query",
     )

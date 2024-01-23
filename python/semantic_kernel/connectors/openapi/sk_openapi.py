@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.const import (
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -264,10 +264,10 @@ def register_openapi_plugin(
             description=operation.summary if operation.summary else operation.description,
             name=operation_id,
         )
-        @sk_function_context_parameter(name="path_params", description="A dictionary of path parameters")
-        @sk_function_context_parameter(name="query_params", description="A dictionary of query parameters")
-        @sk_function_context_parameter(name="headers", description="A dictionary of headers")
-        @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
+        @kernel_function_context_parameter(name="path_params", description="A dictionary of path parameters")
+        @kernel_function_context_parameter(name="query_params", description="A dictionary of query parameters")
+        @kernel_function_context_parameter(name="headers", description="A dictionary of headers")
+        @kernel_function_context_parameter(name="request_body", description="A dictionary of the request body")
         async def run_openapi_operation(sk_context: KernelContext) -> str:
             path_params = sk_context.variables.get("path_params")
             query_params = sk_context.variables.get("query_params")
