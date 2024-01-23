@@ -34,7 +34,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -121,7 +121,7 @@ class SKFunction(SKFunctionBase):
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context: "SKContext", **kwargs):
+        async def _local_func(client, request_settings, context: "KernelContext", **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -321,11 +321,11 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         log: Optional[Any] = None,
-    ) -> "SKContext":
+    ) -> "KernelContext":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         return self.invoke(
@@ -340,18 +340,18 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         log: Optional[Any] = None,
-    ) -> "SKContext":
-        from semantic_kernel.orchestration.sk_context import SKContext
+    ) -> "KernelContext":
+        from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
@@ -390,15 +390,15 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         **kwargs: Dict[str, Any],
-    ) -> "SKContext":
-        from semantic_kernel.orchestration.sk_context import SKContext
+    ) -> "KernelContext":
+        from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
@@ -422,7 +422,7 @@ class SKFunction(SKFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(self, context: "SKContext", settings: AIRequestSettings, **kwargs):
+    async def _invoke_semantic_async(self, context: "KernelContext", settings: AIRequestSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
         new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
@@ -466,14 +466,14 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
     ):
-        from semantic_kernel.orchestration.sk_context import SKContext
+        from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,

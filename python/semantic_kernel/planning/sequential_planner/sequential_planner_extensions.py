@@ -7,7 +7,7 @@ from typing import AsyncIterable, List
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
@@ -46,7 +46,7 @@ class SequentialPlannerSKContextExtension:
 
     @staticmethod
     async def get_functions_manual_async(
-        context: SKContext,
+        context: KernelContext,
         semantic_query: str = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
@@ -63,7 +63,7 @@ class SequentialPlannerSKContextExtension:
 
     @staticmethod
     async def get_available_functions_async(
-        context: SKContext,
+        context: KernelContext,
         config: SequentialPlannerConfig,
         semantic_query: str = None,
     ):
@@ -123,7 +123,7 @@ class SequentialPlannerSKContextExtension:
 
     @staticmethod
     async def get_relevant_functions_async(
-        context: SKContext,
+        context: KernelContext,
         available_functions: List[FunctionView],
         memories: AsyncIterable[MemoryQueryResult],
     ) -> List[FunctionView]:
@@ -150,7 +150,7 @@ class SequentialPlannerSKContextExtension:
         return relevant_functions
 
     @staticmethod
-    async def remember_functions_async(context: SKContext, available_functions: List[FunctionView]):
+    async def remember_functions_async(context: KernelContext, available_functions: List[FunctionView]):
         # Check if the functions have already been saved to memory.
         if SequentialPlannerSKContextExtension.PLAN_SK_FUNCTIONS_ARE_REMEMBERED in context.variables:
             return

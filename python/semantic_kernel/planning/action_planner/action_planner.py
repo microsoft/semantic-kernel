@@ -10,7 +10,7 @@ from typing import List, Optional
 import regex
 
 from semantic_kernel import Kernel
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
@@ -165,7 +165,7 @@ class ActionPlanner:
 
     @sk_function(description="List a few good examples of plans to generate", name="GoodExamples")
     @sk_function_context_parameter(name="goal", description="The current goal processed by the planner")
-    def good_examples(self, goal: str, context: SKContext) -> str:
+    def good_examples(self, goal: str, context: KernelContext) -> str:
         return dedent(
             """
             [EXAMPLE]
@@ -201,7 +201,7 @@ class ActionPlanner:
         name="EdgeCaseExamples",
     )
     @sk_function_context_parameter(name="goal", description="The current goal processed by the planner")
-    def edge_case_examples(self, goal: str, context: SKContext) -> str:
+    def edge_case_examples(self, goal: str, context: KernelContext) -> str:
         return dedent(
             '''
             [EXAMPLE]
@@ -232,7 +232,7 @@ class ActionPlanner:
 
     @sk_function(description="List all functions available in the kernel", name="ListOfFunctions")
     @sk_function_context_parameter(name="goal", description="The current goal processed by the planner")
-    def list_of_functions(self, goal: str, context: SKContext) -> str:
+    def list_of_functions(self, goal: str, context: KernelContext) -> str:
         if context.plugins is None:
             raise PlanningException(
                 error_code=PlanningException.ErrorCodes.InvalidConfiguration,

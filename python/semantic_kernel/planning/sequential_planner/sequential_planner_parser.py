@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
@@ -22,7 +22,7 @@ APPEND_TO_RESULT_TAG = "appendToResult"
 class SequentialPlanParser:
     @staticmethod
     def get_plugin_function(
-        context: SKContext,
+        context: KernelContext,
     ) -> Callable[[str, str], Optional[SKFunctionBase]]:
         def function(plugin_name: str, function_name: str) -> Optional[SKFunctionBase]:
             try:

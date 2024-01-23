@@ -17,7 +17,7 @@ from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
@@ -134,19 +134,19 @@ class Plan(SKFunctionBase):
     async def invoke_async(
         self,
         input: Optional[str] = None,
-        context: Optional[SKContext] = None,
+        context: Optional[KernelContext] = None,
         settings: Optional[AIRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
         # TODO: cancellation_token: CancellationToken,
-    ) -> SKContext:
+    ) -> KernelContext:
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=self._state,
                 plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
@@ -175,18 +175,18 @@ class Plan(SKFunctionBase):
     def invoke(
         self,
         input: Optional[str] = None,
-        context: Optional[SKContext] = None,
+        context: Optional[KernelContext] = None,
         settings: Optional[AIRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
-    ) -> SKContext:
+    ) -> KernelContext:
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=self._state,
                 plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
@@ -245,7 +245,7 @@ class Plan(SKFunctionBase):
             return self._function.describe()
         return None
 
-    def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
+    def set_available_functions(self, plan: "Plan", context: KernelContext) -> "Plan":
         if len(plan.steps) == 0:
             if context.plugins is None:
                 raise KernelException(
@@ -297,7 +297,7 @@ class Plan(SKFunctionBase):
         context = kernel.create_new_context(variables)
         return await self.invoke_next_step(context)
 
-    async def invoke_next_step(self, context: SKContext) -> "Plan":
+    async def invoke_next_step(self, context: KernelContext) -> "Plan":
         if self.has_next_step:
             step = self._steps[self._next_step_index]
 
@@ -305,7 +305,7 @@ class Plan(SKFunctionBase):
             variables = self.get_next_step_variables(context.variables, step)
 
             # Invoke the step
-            func_context = SKContext(
+            func_context = KernelContext(
                 variables=variables,
                 memory=context.memory,
                 plugin_collection=context.plugins,
@@ -342,12 +342,12 @@ class Plan(SKFunctionBase):
 
         return self
 
-    def add_variables_to_context(self, variables: ContextVariables, context: SKContext) -> None:
+    def add_variables_to_context(self, variables: ContextVariables, context: KernelContext) -> None:
         for key in variables.variables:
             if key not in context.variables:
                 context.variables.set(key, variables[key])
 
-    def update_context_with_outputs(self, context: SKContext) -> None:
+    def update_context_with_outputs(self, context: KernelContext) -> None:
         result_string = ""
         if Plan.DEFAULT_RESULT_KEY in self._state.variables:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]

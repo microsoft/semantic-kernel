@@ -24,7 +24,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
@@ -46,7 +46,7 @@ class SequentialPlanner:
     RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
     config: SequentialPlannerConfig
-    _context: "SKContext"
+    _context: "KernelContext"
     _function_flow_function: "SKFunctionBase"
 
     def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):

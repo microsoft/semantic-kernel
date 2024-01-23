@@ -5,7 +5,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 class MathPlugin(KernelBaseModel):
@@ -30,7 +30,7 @@ class MathPlugin(KernelBaseModel):
         type="number",
         required=True,
     )
-    def add(self, initial_value_text: str, context: "SKContext") -> str:
+    def add(self, initial_value_text: str, context: "KernelContext") -> str:
         """
         Returns the Addition result of initial and amount values provided.
 
@@ -51,7 +51,7 @@ class MathPlugin(KernelBaseModel):
         type="number",
         required=True,
     )
-    def subtract(self, initial_value_text: str, context: "SKContext") -> str:
+    def subtract(self, initial_value_text: str, context: "KernelContext") -> str:
         """
         Returns the difference of numbers provided.
 
@@ -62,7 +62,7 @@ class MathPlugin(KernelBaseModel):
         return MathPlugin.add_or_subtract(initial_value_text, context, add=False)
 
     @staticmethod
-    def add_or_subtract(initial_value_text: str, context: "SKContext", add: bool) -> str:
+    def add_or_subtract(initial_value_text: str, context: "KernelContext", add: bool) -> str:
         """
         Helper function to perform addition or subtraction based on the add flag.
 

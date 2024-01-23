@@ -6,7 +6,7 @@ from pytest import fixture, mark
 
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.plugin_definition import sk_function
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
@@ -33,7 +33,7 @@ def plugins():
 
 @fixture
 def context(variables, plugins):
-    return SKContext(variables, NullMemory(), plugins)
+    return KernelContext(variables, NullMemory(), plugins)
 
 
 def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVariables):
@@ -123,7 +123,7 @@ async def test_it_renders_code_using_input_async(
     context_factory,
 ):
     @sk_function(name="function")
-    def my_function_async(cx: SKContext) -> str:
+    def my_function_async(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
     func = SKFunction.from_native_method(my_function_async)
@@ -143,7 +143,7 @@ async def test_it_renders_code_using_variables_async(
     context_factory,
 ):
     @sk_function(name="function")
-    def my_function_async(cx: SKContext) -> str:
+    def my_function_async(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
     func = SKFunction.from_native_method(my_function_async)
@@ -163,7 +163,7 @@ async def test_it_renders_async_code_using_variables_async(
     context_factory,
 ):
     @sk_function(name="function")
-    async def my_function_async(cx: SKContext) -> str:
+    async def my_function_async(cx: KernelContext) -> str:
         return cx.variables.input
 
     func = SKFunction.from_native_method(my_function_async)

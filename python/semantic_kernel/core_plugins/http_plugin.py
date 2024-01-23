@@ -9,7 +9,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 class HttpPlugin(KernelBaseModel):
@@ -46,7 +46,7 @@ class HttpPlugin(KernelBaseModel):
 
     @sk_function(description="Makes a POST request to a uri", name="postAsync")
     @sk_function_context_parameter(name="body", description="The body of the request")
-    async def post_async(self, url: str, context: "SKContext") -> str:
+    async def post_async(self, url: str, context: "KernelContext") -> str:
         """
         Sends an HTTP POST request to the specified URI and returns
         the response body as a string.
@@ -69,7 +69,7 @@ class HttpPlugin(KernelBaseModel):
 
     @sk_function(description="Makes a PUT request to a uri", name="putAsync")
     @sk_function_context_parameter(name="body", description="The body of the request")
-    async def put_async(self, url: str, context: "SKContext") -> str:
+    async def put_async(self, url: str, context: "KernelContext") -> str:
         """
         Sends an HTTP PUT request to the specified URI and returns
         the response body as a string.

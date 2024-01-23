@@ -26,7 +26,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
@@ -158,7 +158,7 @@ class Kernel:
     async def run_stream_async(
         self,
         *functions: Any,
-        input_context: Optional[SKContext] = None,
+        input_context: Optional[KernelContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
     ):
@@ -196,7 +196,7 @@ class Kernel:
                     variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
                 else:
                     variables = ContextVariables()
-                context = SKContext(
+                context = KernelContext(
                     variables,
                     self._memory,
                     self._plugin_collection.read_only_plugin_collection,
@@ -223,11 +223,11 @@ class Kernel:
     async def run_async(
         self,
         *functions: Any,
-        input_context: Optional[SKContext] = None,
+        input_context: Optional[KernelContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
         **kwargs: Dict[str, Any],
-    ) -> SKContext:
+    ) -> KernelContext:
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
             context = input_context
@@ -251,7 +251,7 @@ class Kernel:
                 variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
             else:
                 variables = ContextVariables()
-            context = SKContext(
+            context = KernelContext(
                 variables,
                 self._memory,
                 self._plugin_collection.read_only_plugin_collection,
@@ -368,14 +368,14 @@ class Kernel:
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self, variables: Optional[ContextVariables] = None) -> SKContext:
-        return SKContext(
+    def create_new_context(self, variables: Optional[ContextVariables] = None) -> KernelContext:
+        return KernelContext(
             ContextVariables() if not variables else variables,
             self._memory,
             self.plugins,
         )
 
-    def on_function_invoking(self, function_view: FunctionView, context: SKContext) -> FunctionInvokingEventArgs:
+    def on_function_invoking(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokingEventArgs:
         if self._function_invoking_handlers:
             args = FunctionInvokingEventArgs(function_view, context)
             for handler in self._function_invoking_handlers.values():
@@ -383,7 +383,7 @@ class Kernel:
             return args
         return None
 
-    def on_function_invoked(self, function_view: FunctionView, context: SKContext) -> FunctionInvokedEventArgs:
+    def on_function_invoked(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokedEventArgs:
         if self._function_invoked_handlers:
             args = FunctionInvokedEventArgs(function_view, context)
             for handler in self._function_invoked_handlers.values():

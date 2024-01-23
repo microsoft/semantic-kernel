@@ -10,7 +10,7 @@ from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
-from semantic_kernel import Kernel, SKContext
+from semantic_kernel import Kernel, KernelContext
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
@@ -268,7 +268,7 @@ def register_openapi_plugin(
         @sk_function_context_parameter(name="query_params", description="A dictionary of query parameters")
         @sk_function_context_parameter(name="headers", description="A dictionary of headers")
         @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
-        async def run_openapi_operation(sk_context: SKContext) -> str:
+        async def run_openapi_operation(sk_context: KernelContext) -> str:
             path_params = sk_context.variables.get("path_params")
             query_params = sk_context.variables.get("query_params")
             headers = sk_context.variables.get("headers")

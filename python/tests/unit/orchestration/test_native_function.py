@@ -6,11 +6,11 @@ from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 def test_init_native_function_with_input_description():
-    def mock_function(input: str, context: "SKContext") -> None:
+    def mock_function(input: str, context: "KernelContext") -> None:
         pass
 
     mock_function.__sk_function__ = True
@@ -44,7 +44,7 @@ def test_init_native_function_with_input_description():
 
 
 def test_init_native_function_without_input_description():
-    def mock_function(context: "SKContext") -> None:
+    def mock_function(context: "KernelContext") -> None:
         pass
 
     mock_function.__sk_function__ = True

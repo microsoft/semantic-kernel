@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 class ConversationSummaryPlugin:
@@ -41,7 +41,7 @@ class ConversationSummaryPlugin:
         name="SummarizeConversation",
         input_description="A long conversation transcript.",
     )
-    async def summarize_conversation_async(self, input: str, context: "SKContext") -> "SKContext":
+    async def summarize_conversation_async(self, input: str, context: "KernelContext") -> "KernelContext":
         """
         Given a long conversation transcript, summarize the conversation.
 

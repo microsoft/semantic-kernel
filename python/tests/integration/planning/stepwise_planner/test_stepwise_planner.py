@@ -11,7 +11,7 @@ from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning import StepwisePlanner
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
@@ -40,7 +40,7 @@ class TempWebSearchEnginePlugin:
         name="query",
         description="The search query",
     )
-    async def search_async(self, query: str, context: SKContext) -> str:
+    async def search_async(self, query: str, context: KernelContext) -> str:
         query = query or context.variables.get("query")
         result = await self._connector.search_async(query, num_results=5, offset=0)
         return str(result)

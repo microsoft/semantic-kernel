@@ -22,7 +22,7 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
@@ -103,7 +103,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         """Return an SKFunction."""
 
         @sk_function(name="function")
-        def my_function_async(cx: SKContext) -> str:
+        def my_function_async(cx: KernelContext) -> str:
             return f"F({cx.variables.input})"
 
         return SKFunction.from_native_method(my_function_async)
@@ -151,7 +151,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         DelegateInference: DelegateInference(),
         ContextVariables: create_context_variables(),
         PluginCollection: create_plugin_collection(),
-        SKContext[NullMemory]: SKContext[NullMemory](
+        KernelContext[NullMemory]: KernelContext[NullMemory](
             # TODO: Test serialization with different types of memories.
             variables=create_context_variables(),
             memory=NullMemory(),
@@ -222,7 +222,7 @@ PYDANTIC_MODELS = [
     ReadOnlyPluginCollection,
     PluginCollection,
     ContextVariables,
-    SKContext[NullMemory],
+    KernelContext[NullMemory],
     pytest.param(
         SKFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),

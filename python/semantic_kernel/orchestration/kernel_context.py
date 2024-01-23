@@ -22,7 +22,7 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SKContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
+class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
 
     memory: SemanticTextMemoryT

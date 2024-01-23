@@ -8,7 +8,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class TextMemoryPlugin(KernelBaseModel):
         description="The maximum number of relevant memories to recall.",
         default_value=DEFAULT_LIMIT,
     )
-    async def recall_async(self, ask: str, context: "SKContext") -> str:
+    async def recall_async(self, ask: str, context: "KernelContext") -> str:
         """
         Recall a fact from the long term memory.
 
@@ -104,7 +104,7 @@ class TextMemoryPlugin(KernelBaseModel):
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
-    async def save_async(self, text: str, context: "SKContext") -> None:
+    async def save_async(self, text: str, context: "KernelContext") -> None:
         """
         Save a fact to the long term memory.
 

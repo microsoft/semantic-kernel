@@ -5,7 +5,7 @@ from pytest import mark, raises
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
@@ -23,7 +23,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             plugin_collection=self.plugins,
@@ -39,7 +39,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             plugin_collection=self.plugins,
@@ -145,7 +145,7 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables["varName"] = "foo"
 
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             plugin_collection=None,
@@ -163,7 +163,7 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables["varName"] = "bar"
 
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             plugin_collection=None,
@@ -179,7 +179,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(self):
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             plugin_collection=None,
@@ -194,7 +194,7 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block2(self):
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             plugin_collection=None,
@@ -217,7 +217,7 @@ class TestCodeBlock:
         variables["var2"] = "due"
 
         # Create a context with the variables, memory, and plugin collection
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             plugin_collection=self.plugins,
@@ -284,7 +284,7 @@ class TestCodeBlock:
         variables[VAR_NAME] = VAR_VALUE
 
         # Create a context with the variables, memory, and plugin collection
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
             plugin_collection=self.plugins,
@@ -337,7 +337,7 @@ class TestCodeBlock:
         VALUE = "value"
 
         # Create a context with empty variables, memory, and plugin collection
-        context = SKContext.model_construct(
+        context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
             plugin_collection=self.plugins,

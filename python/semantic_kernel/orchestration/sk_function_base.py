@@ -13,7 +13,7 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.plugin_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
     from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
         ReadOnlyPluginCollectionBase,
     )
@@ -97,10 +97,10 @@ class SKFunctionBase(KernelBaseModel):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
-    ) -> "SKContext":
+    ) -> "KernelContext":
         """
         Invokes the function with an explicit string input
         Keyword Arguments:
@@ -120,11 +120,11 @@ class SKFunctionBase(KernelBaseModel):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         **kwargs: Dict[str, Any],
-    ) -> "SKContext":
+    ) -> "KernelContext":
         """
         Invokes the function with an explicit string input
         Keyword Arguments:
