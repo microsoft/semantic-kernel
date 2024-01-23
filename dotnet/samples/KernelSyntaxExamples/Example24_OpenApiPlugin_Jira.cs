@@ -12,8 +12,12 @@ using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example24_OpenApiPlugin_Jira
+namespace Examples;
+
+public class Example24_OpenApiPlugin_Jira : BaseTest
 {
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
@@ -37,7 +41,8 @@ public static class Example24_OpenApiPlugin_Jira
     ///    instance then select "Manage account".
     /// 4. Configure the secrets as described by the ReadMe.md in the dotnet/samples/KernelSyntaxExamples folder.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup credentials")]
+    public async Task RunAsync()
     {
         Kernel kernel = new();
 
@@ -90,10 +95,10 @@ public static class Example24_OpenApiPlugin_Jira
         // Run operation via the semantic kernel
         var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);
 
-        Console.WriteLine("\n\n\n");
+        WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
-        Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
+        WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
 
         // AddComment Function
         arguments["issueKey"] = "TEST-2";
@@ -102,10 +107,10 @@ public static class Example24_OpenApiPlugin_Jira
         // Run operation via the semantic kernel
         result = await kernel.InvokeAsync(jiraFunctions["AddComment"], arguments);
 
-        Console.WriteLine("\n\n\n");
+        WriteLine("\n\n\n");
 
         formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
-        Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
+        WriteLine($"AddComment jiraPlugin response: \n{formattedContent}");
     }
 
     #region Example of authentication providers
@@ -251,4 +256,8 @@ public static class Example24_OpenApiPlugin_Jira
     }
 
     #endregion
+
+    public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
+    {
+    }
 }
