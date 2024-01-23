@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
-using Azure.AI.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
 
