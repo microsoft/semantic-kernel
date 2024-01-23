@@ -19,38 +19,28 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== LLMPrompts ========");
-
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (openAIApiKey == null)
-        {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
-            return;
-        }
+        this.WriteLine("======== Extended function result ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey)
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var promptTestDataGeneration = "Return a JSON with an array of 3 JSON objects with the following fields: First, an id field with a random GUID, next a name field with a random company name and last a description field with a random short company description. Ensure the JSON is valid and it contains a JSON array named testcompanies with the three fields.";
+        var promptTestDataGeneration = "Return a JSON with an array of 3 JSON objects with the following fields: " +
+            "First, an id field with a random GUID, next a name field with a random company name and last a description field with a random short company description. " +
+            "Ensure the JSON is valid and it contains a JSON array named testcompanies with the three fields.";
 
         // Time it
         var sw = new Stopwatch();
         sw.Start();
 
-        FunctionResult functionResult =
-            await kernel.InvokePromptAsync(promptTestDataGeneration);
+        FunctionResult functionResult = await kernel.InvokePromptAsync(promptTestDataGeneration);
 
         // Stop the timer
         sw.Stop();
 
-        var functionResultTestDataGen = new FunctionResultTestDataGen(
-            functionResult!,
-            sw.ElapsedMilliseconds);
+        var functionResultTestDataGen = new FunctionResultTestDataGen(functionResult!, sw.ElapsedMilliseconds);
 
         this.WriteLine($"Test data: {functionResultTestDataGen.Result} \n");
         this.WriteLine($"Milliseconds: {functionResultTestDataGen.ExecutionTimeInMilliseconds} \n");
@@ -65,7 +55,7 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
     /// Helper classes for the example,
     /// put in the same file for simplicity
     /// </summary>
-    // The structure to put the JSON result in a strongly typed object
+    /// <remarks>The structure to put the JSON result in a strongly typed object</remarks>
     private sealed class RootObject
     {
         public List<TestCompany> TestCompanies { get; set; }
@@ -78,16 +68,16 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
         public string Description { get; set; }
     }
 
-    // The FunctionResult custom wrapper to parse the result and the tokens
+    /// <summary>
+    /// The FunctionResult custom wrapper to parse the result and the tokens
+    /// </summary>
     private sealed class FunctionResultTestDataGen : FunctionResultExtended
     {
         public List<TestCompany> TestCompanies { get; set; }
 
         public long ExecutionTimeInMilliseconds { get; init; }
 
-        public FunctionResultTestDataGen(
-            FunctionResult functionResult,
-            long executionTimeInMilliseconds)
+        public FunctionResultTestDataGen(FunctionResult functionResult, long executionTimeInMilliseconds)
             : base(functionResult)
         {
             this.TestCompanies = ParseTestCompanies();
@@ -97,12 +87,12 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
 
         private TokenCounts? ParseTokenCounts()
         {
-            CompletionsUsage Usage = (CompletionsUsage)FunctionResult.Metadata?["Usage"];
+            CompletionsUsage? usage = FunctionResult.Metadata?["Usage"] as CompletionsUsage;
 
             return new TokenCounts(
-                completionTokens: Usage?.CompletionTokens ?? 0,
-                promptTokens: Usage?.PromptTokens ?? 0,
-                totalTokens: Usage?.TotalTokens ?? 0);
+                completionTokens: usage?.CompletionTokens ?? 0,
+                promptTokens: usage?.PromptTokens ?? 0,
+                totalTokens: usage?.TotalTokens ?? 0);
         }
 
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
@@ -114,7 +104,7 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
         {
             // This could also perform some validation logic
             var rootObject = JsonSerializer.Deserialize<RootObject>(this.Result, s_jsonSerializerOptions);
-            List<TestCompany> companies = rootObject.TestCompanies;
+            List<TestCompany> companies = rootObject!.TestCompanies;
 
             return companies;
         }
@@ -134,7 +124,9 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
         }
     }
 
-    // The FunctionResult extension to provide base functionality
+    /// <summary>
+    /// The FunctionResult extension to provide base functionality
+    /// </summary>
     private class FunctionResultExtended
     {
         public string Result { get; init; }
