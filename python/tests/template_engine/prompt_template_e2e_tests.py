@@ -6,7 +6,7 @@ from typing import List, Tuple
 from pytest import mark, raises
 
 from semantic_kernel import Kernel
-from semantic_kernel.skill_definition import sk_function
+from semantic_kernel.plugin_definition import sk_function
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 
@@ -33,7 +33,7 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
     return test_data
 
 
-class MySkill:
+class MyPlugin:
     @sk_function()
     def check123(self, input: str) -> str:
         return "123 ok" if input == "123" else f"{input} != 123"
@@ -86,7 +86,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = "== {{my.check123 $call}} =="
         kernel = Kernel()
-        kernel.import_skill(MySkill(), "my")
+        kernel.import_plugin(MyPlugin(), "my")
         context = kernel.create_new_context()
         context["call"] = "123"
 
@@ -101,7 +101,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = "== {{my.check123 '234'}} =="
         kernel = Kernel()
-        kernel.import_skill(MySkill(), "my")
+        kernel.import_plugin(MyPlugin(), "my")
         context = kernel.create_new_context()
 
         # Act
@@ -115,7 +115,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = "== {{my.check123 'a\\'b'}} =="
         kernel = Kernel()
-        kernel.import_skill(MySkill(), "my")
+        kernel.import_plugin(MyPlugin(), "my")
         context = kernel.create_new_context()
 
         # Act
@@ -129,7 +129,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = '== {{my.check123 "a\\"b"}} =='
         kernel = Kernel()
-        kernel.import_skill(MySkill(), "my")
+        kernel.import_plugin(MyPlugin(), "my")
         context = kernel.create_new_context()
 
         # Act
@@ -143,7 +143,7 @@ class TestPromptTemplateEngine:
     async def test_it_handle_edge_cases_async(self, template: str, expected_result: str):
         # Arrange
         kernel = Kernel()
-        kernel.import_skill(MySkill())
+        kernel.import_plugin(MyPlugin())
         context = kernel.create_new_context()
 
         # Act
