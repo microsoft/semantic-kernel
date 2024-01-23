@@ -8,20 +8,20 @@ import pytest
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.search_engine import BingConnector
-from semantic_kernel.core_skills.math_skill import MathSkill
-from semantic_kernel.core_skills.time_skill import TimeSkill
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.planning import StepwisePlanner
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
 
 
-class TempWebSearchEngineSkill:
+class TempWebSearchEnginePlugin:
     """
-    TODO: replace this class with semantic_kernel.core_skills.web_search_engine_skill.WebSearchEngineSkill
+    TODO: replace this class with semantic_kernel.core_plugins.web_search_engine_plugin.WebSearchEnginePlugin
 
     SKFunction.describe() does not contains info for arguments.
 
@@ -29,7 +29,7 @@ class TempWebSearchEngineSkill:
     BUT this argument must be passed to planner to work appropriately.
 
     This function temporarily add `query` as parameter by using @sk_function_context_parameter.
-    original file is here: semantic-kernel/python/semantic_kernel/core_skills/web_search_engine_skill.py
+    original file is here: semantic-kernel/python/semantic_kernel/core_plugins/web_search_engine_plugin.py
     """
 
     def __init__(self, connector) -> None:
@@ -89,7 +89,7 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
 
 
 @pytest.mark.parametrize(
-    "use_chat_model, prompt, expected_function, expected_skill",
+    "use_chat_model, prompt, expected_function, expected_plugin",
     [
         (
             False,
@@ -112,15 +112,15 @@ async def test_can_create_stepwise_plan(
     use_chat_model,
     prompt,
     expected_function,
-    expected_skill,
+    expected_plugin,
 ):
     # Arrange
     use_embeddings = False
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
-    web_search_engine_skill = TempWebSearchEngineSkill(bing_connector)
-    kernel.import_skill(web_search_engine_skill, "WebSearch")
-    kernel.import_skill(TimeSkill(), "time")
+    web_search_engine_plugin = TempWebSearchEnginePlugin(bing_connector)
+    kernel.import_plugin(web_search_engine_plugin, "WebSearch")
+    kernel.import_plugin(TimePlugin(), "time")
 
     planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 
@@ -128,7 +128,7 @@ async def test_can_create_stepwise_plan(
     plan = planner.create_plan(prompt)
 
     # Assert
-    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)
+    assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)
 
 
 @pytest.mark.parametrize(
@@ -154,10 +154,10 @@ async def test_can_execute_stepwise_plan(
     use_embeddings = False
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
-    web_search_engine_skill = TempWebSearchEngineSkill(bing_connector)
-    kernel.import_skill(web_search_engine_skill, "WebSearch")
-    kernel.import_skill(TimeSkill(), "time")
-    kernel.import_skill(MathSkill(), "math")
+    web_search_engine_plugin = TempWebSearchEnginePlugin(bing_connector)
+    kernel.import_plugin(web_search_engine_plugin, "WebSearch")
+    kernel.import_plugin(TimePlugin(), "time")
+    kernel.import_plugin(MathPlugin(), "math")
 
     planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 

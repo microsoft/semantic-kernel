@@ -9,13 +9,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.sk_pydantic import SKBaseModel
-from semantic_kernel.skill_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
-    from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-        ReadOnlySkillCollectionBase,
+    from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
+        ReadOnlyPluginCollectionBase,
     )
 
 
@@ -26,19 +26,19 @@ class SKFunctionBase(SKBaseModel):
         """
         Name of the function.
 
-        The name is used by the skill collection and in
-        prompt templates; e.g., {{skillName.functionName}}
+        The name is used by the plugin collection and in
+        prompt templates; e.g., {{pluginName.functionName}}
         """
         pass
 
     @property
     @abstractmethod
-    def skill_name(self) -> str:
+    def plugin_name(self) -> str:
         """
-        Name of the skill that contains this function.
+        Name of the plugin that contains this function.
 
-        The name is used by the skill collection and in
-        prompt templates; e.g., {{skillName.functionName}}"""
+        The name is used by the plugin collection and in
+        prompt templates; e.g., {{pluginName.functionName}}"""
         pass
 
     @property
@@ -140,17 +140,17 @@ class SKFunctionBase(SKBaseModel):
         pass
 
     @abstractmethod
-    def set_default_skill_collection(
+    def set_default_plugin_collection(
         self,
-        skills: "ReadOnlySkillCollectionBase",
+        plugins: "ReadOnlyPluginCollectionBase",
     ) -> "SKFunctionBase":
         """
-        Sets the skill collection to use when the function is
+        Sets the plugin collection to use when the function is
         invoked without a context or with a context that doesn't have
-        a skill collection
+        a plugin collection
 
         Arguments:
-            skills {ReadOnlySkillCollectionBase} -- Kernel's skill collection
+            plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
 
         Returns:
             SKFunctionBase -- The function instance
