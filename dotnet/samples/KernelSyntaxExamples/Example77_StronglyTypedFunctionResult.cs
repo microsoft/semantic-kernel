@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel;
 using System.Text.Json;
 using System.Diagnostics;
-using System.Collections.Generic;
+using Microsoft.SemanticKernel;
+using Azure.AI.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
-using Examples;
+
+namespace Examples;
 
 // The following example shows how to receive the results from the kernel in a strongly typed object
 // which stores the usage in tokens and converts the JSON result to a strongly typed object, where a validation can also
