@@ -3,7 +3,7 @@
 using System;
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Represents a factory for creating HttpRequestMessage instances.

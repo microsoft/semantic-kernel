@@ -3,9 +3,8 @@
 using System.Linq;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.Common;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 internal abstract class GeminiClient : ClientBase
 {
@@ -18,7 +17,8 @@ internal abstract class GeminiClient : ClientBase
             httpClient: httpClient,
             httpRequestFactory: httpRequestFactory,
             endpointProvider: endpointProvider,
-            logger: logger) { }
+            logger: logger)
+    { }
 
     protected static GeminiRequest CreateGeminiRequest(
         string prompt,
@@ -33,17 +33,17 @@ internal abstract class GeminiClient : ClientBase
     protected static GeminiMetadata GetResponseMetadata(
         GeminiResponse geminiResponse,
         GeminiResponseCandidate candidate) => new()
-    {
-        FinishReason = candidate.FinishReason,
-        Index = candidate.Index,
-        PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
-        CurrentCandidateTokenCount = candidate.TokenCount,
-        CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
-        TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
-        PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
-        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
-        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
-    };
+        {
+            FinishReason = candidate.FinishReason,
+            Index = candidate.Index,
+            PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+            CurrentCandidateTokenCount = candidate.TokenCount,
+            CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
+            TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
+            PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
+            PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
+            ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+        };
 
     protected void LogUsageMetadata(GeminiMetadata metadata)
     {

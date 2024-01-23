@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 internal interface IGeminiChatCompletionClient
 {

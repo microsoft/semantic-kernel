@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;

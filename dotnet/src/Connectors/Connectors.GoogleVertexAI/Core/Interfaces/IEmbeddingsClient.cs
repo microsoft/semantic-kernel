@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 internal interface IEmbeddingsClient
 {

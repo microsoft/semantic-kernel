@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 

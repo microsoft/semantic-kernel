@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;

@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Internal class for parsing a GEMINI JSON stream into separate GEMINI JSON objects.

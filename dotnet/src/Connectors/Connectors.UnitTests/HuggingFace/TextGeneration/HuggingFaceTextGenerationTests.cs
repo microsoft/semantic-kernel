@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.TextGeneration;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;

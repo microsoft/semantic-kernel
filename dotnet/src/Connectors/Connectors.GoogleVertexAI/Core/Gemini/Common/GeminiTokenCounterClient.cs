@@ -5,9 +5,8 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.Common;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Represents a client for token counting gemini model.
@@ -51,7 +50,7 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
 
         var endpoint = this.EndpointProvider.GetCountTokensEndpoint(this._modelId);
         var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HTTPRequestFactory.CreatePost(geminiRequest, endpoint);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

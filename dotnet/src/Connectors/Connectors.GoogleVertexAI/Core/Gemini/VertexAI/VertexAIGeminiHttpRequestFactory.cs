@@ -2,10 +2,9 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.VertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 internal sealed class VertexAIGeminiHttpRequestFactory : IHttpRequestFactory
 {

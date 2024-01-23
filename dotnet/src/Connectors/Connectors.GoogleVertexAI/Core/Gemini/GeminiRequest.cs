@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 internal sealed class GeminiRequest
 {

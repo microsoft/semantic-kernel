@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Provides a collection of endpoints for the Gemini API.

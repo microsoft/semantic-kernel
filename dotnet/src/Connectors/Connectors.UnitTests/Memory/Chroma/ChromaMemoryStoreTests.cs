@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Chroma;

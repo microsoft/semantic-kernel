@@ -8,8 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.UnitTests;
-
 #pragma warning disable CA1812 // Internal class that is apparently never instantiated; this class is compiled in tests projects
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 #pragma warning restore CA1812 // Internal class that is apparently never instantiated

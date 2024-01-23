@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Represents an interface for retrieving various endpoints related to gemini api.

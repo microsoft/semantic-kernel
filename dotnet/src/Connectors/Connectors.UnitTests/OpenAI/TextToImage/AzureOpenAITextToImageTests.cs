@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;

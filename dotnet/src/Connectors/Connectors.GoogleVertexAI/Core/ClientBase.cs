@@ -7,16 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Abstract;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 internal abstract class ClientBase
 {
-    protected IHttpRequestFactory HTTPRequestFactory { get; }
+    protected IHttpRequestFactory HttpRequestFactory { get; }
     protected IEndpointProvider EndpointProvider { get; }
-    protected HttpClient HTTPClient { get; }
+    protected HttpClient HttpClient { get; }
     protected ILogger Logger { get; }
 
     protected ClientBase(
@@ -25,8 +24,8 @@ internal abstract class ClientBase
         IEndpointProvider endpointProvider,
         ILogger? logger)
     {
-        this.HTTPClient = httpClient;
-        this.HTTPRequestFactory = httpRequestFactory;
+        this.HttpClient = httpClient;
+        this.HttpRequestFactory = httpRequestFactory;
         this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
     }
@@ -43,7 +42,7 @@ internal abstract class ClientBase
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
-        using var response = await this.HTTPClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
+        using var response = await this.HttpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
             .ConfigureAwait(false);
@@ -54,7 +53,7 @@ internal abstract class ClientBase
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
-        var response = await this.HTTPClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+        var response = await this.HttpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return response;
     }

@@ -4,9 +4,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.Common;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core.Gemini.GoogleAI;
-using SemanticKernel.UnitTests;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;

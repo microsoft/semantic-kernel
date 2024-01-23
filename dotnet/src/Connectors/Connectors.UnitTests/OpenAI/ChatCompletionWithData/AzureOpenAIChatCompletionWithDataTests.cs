@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SemanticKernel.UnitTests;
 using Moq;
 using Xunit;
 
