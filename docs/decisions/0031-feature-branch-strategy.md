@@ -138,3 +138,19 @@ Currently the priorities are ordered but not necessarily needs to be implemented
 ## Decision Outcome
 
 Chosen option: "Feature Branch Strategy", because it allows individual features to be developed in isolation, minimizing conflicts with the main branch and facilitating easier code reviews.
+
+## Fequent Asked Questions
+
+### Is there a migration strategy for initiatives that followed the old contribution way with forks, and now have to switch to branches in microsoft/semantic-kernel?
+
+You proceed normally with the fork and PR targetting `main`, as soon we identify that your contribution PR to main is a big and desireable feature (Look at the ones we described as expected in this ADR) we will create a dedicated feature branch (`feature-yourfeature`) where you can retarget our forks PR to target it.
+All further incremental changes and contributions will follow as normal, but instead of `main` you will be targeting the `feature-*` branck.
+
+### How do you want to solve the "up to date with main branch" problem?
+
+This will happen when we all agreed that the current feature implementation is complete and ready to merge in `main`.
+
+As soon the feature is finished, a merge from main will be pushed into the feature branch.
+This will normally trigger the conflicts that need to be sorted.
+That normally will be the last PR targeting the feature branch which will be followed right away by another PR from the `feature` branch targeting `main` with minimal conflicts if any.
+The merging to main might be fast (as all the intermediate feature PRs were all agreed and approved before)
