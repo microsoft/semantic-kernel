@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel import core_skills, memory
+from semantic_kernel import core_plugins, memory
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -51,6 +51,6 @@ __all__ = [
     "SKFunctionBase",
     "SKContext",
     "memory",
-    "core_skills",
+    "core_plugins",
     "setup_logging",
 ]
