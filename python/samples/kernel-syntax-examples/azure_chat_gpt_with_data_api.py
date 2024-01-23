@@ -38,7 +38,7 @@ az_source = AzureAISearchDataSources(**azure_ai_search_settings)
 az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
 req_settings = AzureChatRequestSettings(extra_body=extra)
-prompt_config = sk.PromptTemplateConfig(completion=req_settings)
+prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)
 
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
