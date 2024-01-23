@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 import typing as t
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class MathPlugin(SKBaseModel):
+class MathPlugin(KernelBaseModel):
     """
     Description: MathPlugin provides a set of functions to make Math calculations.
 

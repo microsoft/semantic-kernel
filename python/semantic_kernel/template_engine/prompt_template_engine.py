@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import PrivateAttr
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class PromptTemplateEngine(SKBaseModel):
+class PromptTemplateEngine(KernelBaseModel):
     _tokenizer: TemplateTokenizer = PrivateAttr()
 
     def __init__(self, **kwargs) -> None:

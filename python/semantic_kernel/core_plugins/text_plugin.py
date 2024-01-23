@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
-class TextPlugin(SKBaseModel):
+class TextPlugin(KernelBaseModel):
     """
     TextPlugin provides a set of functions to manipulate strings.
 

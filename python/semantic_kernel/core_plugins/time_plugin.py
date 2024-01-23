@@ -2,11 +2,11 @@
 
 import datetime
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
-class TimePlugin(SKBaseModel):
+class TimePlugin(KernelBaseModel):
     """
     Description: TimePlugin provides a set of functions
                  to get the current time and date.

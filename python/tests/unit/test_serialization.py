@@ -16,6 +16,7 @@ from semantic_kernel.core_plugins.text_plugin import TextPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
 from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -37,7 +38,6 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
 from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -54,7 +54,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
-SKBaseModelFieldT = t.TypeVar("SKBaseModelFieldT", bound=SKBaseModel)
+SKBaseModelFieldT = t.TypeVar("SKBaseModelFieldT", bound=KernelBaseModel)
 
 
 class _Serializable(t.Protocol):
@@ -244,7 +244,7 @@ class TestUsageInPydanticFields:
         Otherwise, they cannot be used in Pydantic models.
         """
 
-        class TestModel(SKBaseModel):
+        class TestModel(KernelBaseModel):
             """A test model."""
 
             field: t.Optional[sk_type] = None
@@ -262,7 +262,7 @@ class TestUsageInPydanticFields:
         Otherwise, they cannot be used in Pydantic models.
         """
 
-        class TestModel(SKBaseModel):
+        class TestModel(KernelBaseModel):
             """A test model."""
 
             field: sk_type = Field(default_factory=lambda: sk_factory(sk_type))

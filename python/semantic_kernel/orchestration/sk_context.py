@@ -6,6 +6,7 @@ from typing import Any, Dict, Generic, Literal, Optional, Tuple, Union
 from pydantic import Field, PrivateAttr
 
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryBase,
     SemanticTextMemoryT,
@@ -17,12 +18,11 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection import (
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
+class SKContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
 
     memory: SemanticTextMemoryT

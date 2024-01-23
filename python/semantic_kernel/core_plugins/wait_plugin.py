@@ -2,11 +2,11 @@
 
 import asyncio
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import sk_function
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
-class WaitPlugin(SKBaseModel):
+class WaitPlugin(KernelBaseModel):
     """
     WaitPlugin provides a set of functions to wait for a certain amount of time.
 

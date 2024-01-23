@@ -3,14 +3,14 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 from pydantic import Field
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class ChatMessage(SKBaseModel):
+class ChatMessage(KernelBaseModel):
     """Class to hold chat messages."""
 
     role: Optional[str] = "assistant"

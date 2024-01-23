@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 def _handles(delegate_type):
@@ -13,7 +13,7 @@ def _handles(delegate_type):
     return decorator
 
 
-class DelegateHandlers(SKBaseModel):
+class DelegateHandlers(KernelBaseModel):
     @staticmethod
     @_handles(DelegateTypes.Void)
     async def handle_void(function, context):

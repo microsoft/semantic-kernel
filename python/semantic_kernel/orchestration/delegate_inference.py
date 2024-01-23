@@ -4,8 +4,8 @@ from inspect import Signature, isasyncgenfunction, iscoroutinefunction, signatur
 from typing import NoReturn
 
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 def _infers(delegate_type):
@@ -76,7 +76,7 @@ def _first_param_is_context(signature: Signature) -> bool:
     return _has_first_param_with_type(signature, SKContext)
 
 
-class DelegateInference(SKBaseModel):
+class DelegateInference(KernelBaseModel):
     @staticmethod
     @_infers(DelegateTypes.Void)
     def infer_void(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
