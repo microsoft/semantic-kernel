@@ -59,7 +59,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         """
         request_settings.messages = messages
         request_settings.stream = False
-        if request_settings.ai_model_id is None:
+        if request_settings.ai_model_id == '':
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:

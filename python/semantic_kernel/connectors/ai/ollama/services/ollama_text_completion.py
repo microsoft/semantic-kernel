@@ -53,7 +53,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = False
-        if request_settings.ai_model_id is None:
+        if request_settings.ai_model_id == '':
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
@@ -79,7 +79,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = True
-        if request_settings.ai_model_id is None:
+        if request_settings.ai_model_id == '':
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
