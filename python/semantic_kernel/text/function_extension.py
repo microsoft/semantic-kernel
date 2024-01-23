@@ -3,11 +3,11 @@
 from typing import List
 
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 
 async def aggregate_chunked_results_async(
-    func: SKFunction, chunked_results: List[str], context: KernelContext
+    func: KernelFunction, chunked_results: List[str], context: KernelContext
 ) -> KernelContext:
     """
     Aggregate the results from the chunked results.

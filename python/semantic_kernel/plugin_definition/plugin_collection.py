@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Union
 
 from pydantic import Field
 
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition import constants
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.plugin_collection_base import (
@@ -31,7 +31,7 @@ class PluginCollection(PluginCollectionBase):
     def __init__(
         self,
         log: Optional[Any] = None,
-        plugin_collection: Union[Dict[str, Dict[str, SKFunction]], None] = None,
+        plugin_collection: Union[Dict[str, Dict[str, KernelFunction]], None] = None,
         read_only_plugin_collection_: Optional[ReadOnlyPluginCollection] = None,
     ) -> None:
         if log:

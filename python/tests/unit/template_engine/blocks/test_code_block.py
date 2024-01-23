@@ -6,7 +6,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
@@ -48,7 +48,7 @@ class TestCodeBlock:
         def invoke(_):
             raise Exception("error")
 
-        function = SKFunction(
+        function = KernelFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
             plugin_name="",
@@ -242,7 +242,7 @@ class TestCodeBlock:
             ctx["var2"] = "overridden"
 
         # Create an SKFunction with the invoke function as its delegate
-        function = SKFunction(
+        function = KernelFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
             plugin_name="",
@@ -304,7 +304,7 @@ class TestCodeBlock:
             canary = ctx["input"]
 
         # Create an SKFunction with the invoke function as its delegate
-        function = SKFunction(
+        function = KernelFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
             plugin_name="",
@@ -356,7 +356,7 @@ class TestCodeBlock:
             canary = ctx["input"]
 
         # Create an SKFunction with the invoke function as its delegate
-        function = SKFunction(
+        function = KernelFunction(
             delegate_type=DelegateTypes.InSKContext,
             delegate_function=invoke,
             plugin_name="",

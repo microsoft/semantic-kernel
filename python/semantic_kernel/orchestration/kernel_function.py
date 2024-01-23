@@ -42,7 +42,7 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SKFunction(KernelFunctionBase):
+class KernelFunction(KernelFunctionBase):
     """
     Semantic Kernel function.
     """
@@ -57,7 +57,7 @@ class SKFunction(KernelFunctionBase):
     _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
-    def from_native_method(method, plugin_name="", log=None) -> "SKFunction":
+    def from_native_method(method, plugin_name="", log=None) -> "KernelFunction":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if method is None:
@@ -98,7 +98,7 @@ class SKFunction(KernelFunctionBase):
             )
             parameters = [input_param] + parameters
 
-        return SKFunction(
+        return KernelFunction(
             delegate_type=DelegateInference.infer_delegate_type(method),
             delegate_function=method,
             delegate_stream_function=method,
@@ -115,7 +115,7 @@ class SKFunction(KernelFunctionBase):
         function_name: str,
         function_config: SemanticFunctionConfig,
         log: Optional[Any] = None,
-    ) -> "SKFunction":
+    ) -> "KernelFunction":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if function_config is None:
@@ -207,7 +207,7 @@ class SKFunction(KernelFunctionBase):
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
 
-        return SKFunction(
+        return KernelFunction(
             delegate_type=DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegate_function=_local_func,
             delegate_stream_function=_local_stream_func,
@@ -276,32 +276,32 @@ class SKFunction(KernelFunctionBase):
         self._ai_request_settings = AIRequestSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "SKFunction":
+    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "KernelFunction":
         self._plugin_collection = plugins
         return self
 
-    def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "SKFunction":
+    def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "KernelFunction":
         if ai_service is None:
             raise ValueError("AI LLM service factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_service = ai_service()
         return self
 
-    def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "SKFunction":
+    def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "KernelFunction":
         if chat_service is None:
             raise ValueError("Chat LLM service factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_service = chat_service()
         return self
 
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "SKFunction":
+    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("AI LLM request settings cannot be `None`")
         self._verify_is_semantic()
         self._ai_request_settings = settings
         return self
 
-    def set_chat_configuration(self, settings: AIRequestSettings) -> "SKFunction":
+    def set_chat_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("Chat LLM request settings cannot be `None`")
         self._verify_is_semantic()

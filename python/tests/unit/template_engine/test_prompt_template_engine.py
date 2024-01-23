@@ -7,7 +7,7 @@ from pytest import fixture, mark
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition import sk_function
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
     ReadOnlyPluginCollection,
@@ -126,7 +126,7 @@ async def test_it_renders_code_using_input_async(
     def my_function_async(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = SKFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function_async)
     assert func is not None
 
     variables.update("INPUT-BAR")
@@ -146,7 +146,7 @@ async def test_it_renders_code_using_variables_async(
     def my_function_async(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = SKFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function_async)
     assert func is not None
 
     variables.set("myVar", "BAR")
@@ -166,7 +166,7 @@ async def test_it_renders_async_code_using_variables_async(
     async def my_function_async(cx: KernelContext) -> str:
         return cx.variables.input
 
-    func = SKFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function_async)
     assert func is not None
 
     variables.set("myVar", "BAR")

@@ -23,7 +23,7 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
@@ -99,14 +99,14 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         )
         return result
 
-    def create_sk_function() -> SKFunction:
+    def create_sk_function() -> KernelFunction:
         """Return an SKFunction."""
 
         @sk_function(name="function")
         def my_function_async(cx: KernelContext) -> str:
             return f"F({cx.variables.input})"
 
-        return SKFunction.from_native_method(my_function_async)
+        return KernelFunction.from_native_method(my_function_async)
 
     def create_context_variables() -> ContextVariables:
         """Return a context variables object."""
@@ -158,7 +158,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             plugin_collection=create_plugin_collection().read_only_plugin_collection,
         ),
         NullMemory: NullMemory(),
-        SKFunction: create_sk_function(),
+        KernelFunction: create_sk_function(),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -224,7 +224,7 @@ PYDANTIC_MODELS = [
     ContextVariables,
     KernelContext[NullMemory],
     pytest.param(
-        SKFunction,
+        KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),
     ),
 ]

@@ -27,8 +27,8 @@ from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
 from semantic_kernel.plugin_definition.plugin_collection_base import (
@@ -142,7 +142,7 @@ class Kernel:
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        function = SKFunction.from_native_method(sk_function, plugin_name)
+        function = KernelFunction.from_native_method(sk_function, plugin_name)
 
         if self.plugins.has_function(plugin_name, function_name):
             raise KernelException(
@@ -410,7 +410,7 @@ class Kernel:
             if not hasattr(candidate, "__sk_function__"):
                 continue
 
-            functions.append(SKFunction.from_native_method(candidate, plugin_name))
+            functions.append(KernelFunction.from_native_method(candidate, plugin_name))
 
         logger.debug(f"Methods imported: {len(functions)}")
 
@@ -635,7 +635,7 @@ class Kernel:
                 f"Function type not supported: {function_type}",
             )
 
-        function = SKFunction.from_semantic_config(plugin_name, function_name, function_config)
+        function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
         function.request_settings.update_from_ai_request_settings(
             function_config.prompt_template_config.execution_settings
         )

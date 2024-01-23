@@ -19,4 +19,4 @@ class KernelBaseModel(BaseModel):
 
 # TODO: remove these aliases in SK v1
 PydanticField = KernelBaseModel
-SKGenericModel = KernelBaseModel
+KernelGenericModel = KernelBaseModel

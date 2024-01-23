@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
 from pydantic import ConfigDict, Field
 
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition import constants
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
@@ -21,12 +21,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class ReadOnlyPluginCollection(ReadOnlyPluginCollectionBase):
     GLOBAL_PLUGIN: ClassVar[str] = constants.GLOBAL_PLUGIN
-    data: Dict[str, Dict[str, SKFunction]] = Field(default_factory=dict)
+    data: Dict[str, Dict[str, KernelFunction]] = Field(default_factory=dict)
     model_config = ConfigDict(frozen=False)
 
     def __init__(
         self,
-        data: Dict[str, Dict[str, SKFunction]] = None,
+        data: Dict[str, Dict[str, KernelFunction]] = None,
         log: Optional[Any] = None,
     ) -> None:
         super().__init__(data=data or {})
