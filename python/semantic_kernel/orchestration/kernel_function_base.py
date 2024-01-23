@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     )
 
 
-class SKFunctionBase(KernelBaseModel):
+class KernelFunctionBase(KernelBaseModel):
     @property
     @abstractmethod
     def name(self) -> str:
@@ -143,7 +143,7 @@ class SKFunctionBase(KernelBaseModel):
     def set_default_plugin_collection(
         self,
         plugins: "ReadOnlyPluginCollectionBase",
-    ) -> "SKFunctionBase":
+    ) -> "KernelFunctionBase":
         """
         Sets the plugin collection to use when the function is
         invoked without a context or with a context that doesn't have
@@ -158,7 +158,7 @@ class SKFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def set_ai_service(self, service_factory: Callable[[], TextCompletionClientBase]) -> "SKFunctionBase":
+    def set_ai_service(self, service_factory: Callable[[], TextCompletionClientBase]) -> "KernelFunctionBase":
         """
         Sets the AI service used by the semantic function, passing in a factory
         method. The factory allows us to lazily instantiate the client and to
@@ -173,7 +173,7 @@ class SKFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "SKFunctionBase":
+    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunctionBase":
         """
         Sets the AI completion settings used with LLM requests
 

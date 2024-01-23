@@ -8,7 +8,7 @@ from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
@@ -65,7 +65,7 @@ async def test_can_call_get_available_functions_with_no_functions_async():
 async def test_can_call_get_available_functions_with_functions_async():
     variables = ContextVariables()
 
-    function_mock = Mock(spec=SKFunctionBase)
+    function_mock = Mock(spec=KernelFunctionBase)
     functions_view = FunctionsView()
     function_view = FunctionView(
         "functionName",
@@ -137,7 +137,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     variables = ContextVariables()
 
     # Arrange FunctionView
-    function_mock = Mock(spec=SKFunctionBase)
+    function_mock = Mock(spec=KernelFunctionBase)
     functions_view = FunctionsView()
     function_view = FunctionView(
         "functionName",

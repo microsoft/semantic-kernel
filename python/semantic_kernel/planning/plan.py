@@ -18,7 +18,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
     ReadOnlyPluginCollection,
@@ -30,10 +30,10 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Plan(SKFunctionBase):
+class Plan(KernelFunctionBase):
     _state: ContextVariables = PrivateAttr()
     _steps: List["Plan"] = PrivateAttr()
-    _function: SKFunctionBase = PrivateAttr()
+    _function: KernelFunctionBase = PrivateAttr()
     _parameters: ContextVariables = PrivateAttr()
     _outputs: List[str] = PrivateAttr()
     _has_next_step: bool = PrivateAttr()
@@ -102,7 +102,7 @@ class Plan(SKFunctionBase):
         parameters: Optional[ContextVariables] = None,
         outputs: Optional[List[str]] = None,
         steps: Optional[List["Plan"]] = None,
-        function: Optional[SKFunctionBase] = None,
+        function: Optional[KernelFunctionBase] = None,
     ) -> None:
         super().__init__()
         self._name = "" if name is None else name
@@ -126,7 +126,7 @@ class Plan(SKFunctionBase):
         return cls(description=goal, plugin_name=cls.__name__)
 
     @classmethod
-    def from_function(cls, function: SKFunctionBase) -> "Plan":
+    def from_function(cls, function: KernelFunctionBase) -> "Plan":
         plan = cls()
         plan.set_function(function)
         return plan
@@ -225,18 +225,18 @@ class Plan(SKFunctionBase):
     def set_ai_configuration(
         self,
         settings: AIRequestSettings,
-    ) -> SKFunctionBase:
+    ) -> KernelFunctionBase:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
-    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> SKFunctionBase:
+    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> KernelFunctionBase:
         if self._function is not None:
             self._function.set_ai_service(service)
 
     def set_default_plugin_collection(
         self,
         plugins: ReadOnlyPluginCollectionBase,
-    ) -> SKFunctionBase:
+    ) -> KernelFunctionBase:
         if self._function is not None:
             self._function.set_default_plugin_collection(plugins)
 
@@ -263,7 +263,7 @@ class Plan(SKFunctionBase):
 
         return plan
 
-    def add_steps(self, steps: Union[List["Plan"], List[SKFunctionBase]]) -> None:
+    def add_steps(self, steps: Union[List["Plan"], List[KernelFunctionBase]]) -> None:
         for step in steps:
             if type(step) is Plan:
                 self._steps.append(step)
@@ -281,7 +281,7 @@ class Plan(SKFunctionBase):
                 new_step.set_function(step)
                 self._steps.append(new_step)
 
-    def set_function(self, function: SKFunctionBase) -> None:
+    def set_function(self, function: KernelFunctionBase) -> None:
         self._function = function
         self._name = function.name
         self._plugin_name = function.plugin_name

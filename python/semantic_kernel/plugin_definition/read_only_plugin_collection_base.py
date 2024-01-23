@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Optional
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
     from semantic_kernel.plugin_definition.functions_view import FunctionsView
 
 
@@ -24,11 +24,11 @@ class ReadOnlyPluginCollectionBase(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def get_semantic_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_semantic_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         pass
 
     @abstractmethod
-    def get_native_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_native_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         pass
 
     @abstractmethod
@@ -36,5 +36,5 @@ class ReadOnlyPluginCollectionBase(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def get_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         pass

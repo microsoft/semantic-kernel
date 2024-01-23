@@ -14,7 +14,7 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class ReadOnlyPluginCollection(ReadOnlyPluginCollectionBase):
             return False
         return self.data[s_name][f_name].is_native
 
-    def get_semantic_function(self, plugin_name: str, function_name: str) -> "SKFunctionBase":
+    def get_semantic_function(self, plugin_name: str, function_name: str) -> "KernelFunctionBase":
         s_name, f_name = self._normalize_names(plugin_name, function_name)
         if self.has_semantic_function(s_name, f_name):
             return self.data[s_name][f_name]
@@ -67,7 +67,7 @@ class ReadOnlyPluginCollection(ReadOnlyPluginCollectionBase):
             f"Function not available: {s_name}.{f_name}",
         )
 
-    def get_native_function(self, plugin_name: str, function_name: str) -> "SKFunctionBase":
+    def get_native_function(self, plugin_name: str, function_name: str) -> "KernelFunctionBase":
         s_name, f_name = self._normalize_names(plugin_name, function_name, True)
         if self.has_native_function(s_name, f_name):
             return self.data[s_name][f_name]
@@ -90,7 +90,7 @@ class ReadOnlyPluginCollection(ReadOnlyPluginCollectionBase):
 
         return result
 
-    def get_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         s_name, f_name = self._normalize_names(plugin_name, function_name, True)
         if self.has_function(s_name, f_name):
             return self.data[s_name][f_name]

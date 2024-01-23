@@ -4,7 +4,7 @@ import pytest
 import typing_extensions as te
 from pydantic import Field, Json
 
-from semantic_kernel import SKFunctionBase
+from semantic_kernel import KernelFunctionBase
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
@@ -187,7 +187,7 @@ BASE_CLASSES = [
     ReadOnlyPluginCollectionBase,
     PluginCollectionBase,
     SemanticTextMemoryBase,
-    SKFunctionBase,
+    KernelFunctionBase,
 ]
 
 # Classes that don't need serialization

@@ -7,7 +7,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning import ActionPlanner
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
@@ -20,8 +20,8 @@ from semantic_kernel.plugin_definition.plugin_collection_base import (
 )
 
 
-def create_mock_function(function_view: FunctionView) -> Mock(spec=SKFunctionBase):
-    mock_function = Mock(spec=SKFunctionBase)
+def create_mock_function(function_view: FunctionView) -> Mock(spec=KernelFunctionBase):
+    mock_function = Mock(spec=KernelFunctionBase)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name
@@ -54,7 +54,7 @@ async def test_plan_creation_async():
     )
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=SKFunctionBase)
+    mock_function = Mock(spec=KernelFunctionBase)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = Mock(spec=PluginCollectionBase)
 
@@ -184,7 +184,7 @@ async def test_invalid_json_throw_async():
     plan_str = '{"":{""function"": ""WriterPlugin.Translate""}}'
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=SKFunctionBase)
+    mock_function = Mock(spec=KernelFunctionBase)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = Mock(spec=PluginCollectionBase)
 
@@ -221,7 +221,7 @@ async def test_empty_goal_throw_async():
     goal = ""
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=SKFunctionBase)
+    mock_function = Mock(spec=KernelFunctionBase)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = Mock(spec=PluginCollectionBase)
 
