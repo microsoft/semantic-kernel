@@ -2,13 +2,17 @@
 
 import logging
 import sys
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
+
+from semantic_kernel.models.contents.text_content import TextContent
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 import google.generativeai as palm
+from google.generativeai.types import Completion
+from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -47,7 +51,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         prompt: str,
         request_settings: GooglePalmTextRequestSettings,
         logger: Optional[Any] = None,
-    ) -> Union[str, List[str]]:
+    ) -> List[TextContent]:
         request_settings.prompt = prompt
         if not request_settings.ai_model_id:
             request_settings.ai_model_id = self.ai_model_id
@@ -66,9 +70,20 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 "Google PaLM service failed to complete the prompt",
                 ex,
             )
-        if request_settings.candidate_count > 1:
-            return [candidate["output"] for candidate in response.candidates]
-        return response.result
+        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+
+    def _create_text_content(self, response: Completion, candidate: TextCompletion) -> TextContent:
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=candidate.get("output"),
+            metadata={
+                "filters": response.get("filters"),
+                "safety_feedback": response.get("safety_feedback"),
+                "citation_metadata": candidate.get("citation_metadata"),
+                "safety_ratings": candidate.get("safety_ratings"),
+            },
+        )
 
     async def complete_stream(
         self,

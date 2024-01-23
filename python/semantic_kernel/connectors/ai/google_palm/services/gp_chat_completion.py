@@ -2,7 +2,10 @@
 
 import logging
 import sys
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple
+
+from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.models.contents.text_content import TextContent
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -10,7 +13,7 @@ else:
     from typing_extensions import Annotated
 
 import google.generativeai as palm
-from google.generativeai.types import ChatResponse
+from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -64,20 +67,37 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         messages: List[Tuple[str, str]],
         settings: GooglePalmRequestSettings,
-    ) -> Union[str, List[str]]:
+    ) -> List[ChatMessageContent]:
         settings.messages = messages
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
 
-        if settings.candidate_count > 1:
-            return [
-                candidate["output"] if candidate["output"] is not None else "I don't know."
-                for candidate in response.candidates
-            ]
-        if response.last is None:
-            return "I don't know."  # PaLM returns None if it doesn't know
-        return response.last
+        return [
+            self._create_chat_message_content(response, candidate, index)
+            for index, candidate in enumerate(response.candidates)
+        ]
+
+    def _create_chat_message_content(
+        self, response: ChatResponse, candidate: MessageDict, index: int
+    ) -> ChatMessageContent:
+        """Create a chat message content object from a response.
+
+        Arguments:
+            response {ChatResponse} -- The response to create the content from.
+
+        Returns:
+            ChatMessageContent -- The created chat message content.
+        """
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.get("filters")}
+        return ChatMessageContent(
+            choice_index=index,
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            role=candidate.get("author"),
+            content=candidate.get("content"),
+        )
 
     async def complete_chat_stream(
         self,
@@ -91,7 +111,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         prompt: str,
         settings: GooglePalmRequestSettings,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> List[TextContent]:
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         settings.messages = [("user", prompt)]
@@ -107,6 +127,23 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         if response.last is None:
             return "I don't know."  # PaLM returns None if it doesn't know
         return response.last
+
+    def _create_text_content(self, response: ChatResponse, candidate: MessageDict) -> TextContent:
+        """Create a text content object from a response.
+
+        Arguments:
+            response {ChatResponse} -- The response to create the content from.
+
+        Returns:
+            TextContent -- The created text content.
+        """
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.get("filters")}
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            text=candidate.get("content"),
+        )
 
     async def complete_stream(
         self,
