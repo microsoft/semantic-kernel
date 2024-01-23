@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
@@ -20,72 +18,38 @@ namespace Examples;
 // This example shows how to use the ApiManifest based plugins
 public class Example99_ApiManifest : BaseTest
 {
-    private static Kernel? s_kernel;
-    private static readonly FunctionCallingStepwisePlanner s_planner = new(s_plannerConfig);
-    private static readonly FunctionCallingStepwisePlannerConfig s_plannerConfig = new()
+    private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
-        MaxIterations = 15,
-        MaxTokens = 32000
+        this.WriteLine();
+        this.WriteLine("======== [ApiManifest Plugins Sample] ========");
+        this.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
+        this.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
+        this.WriteLine();
+    }
+
+    public static readonly IEnumerable<object[]> s_parameters = new List<object[]>
+    {
+        new object[] { "MessagesPlugin", "Getmemessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin" },
+        new object[] { "DriveItemPlugin", "Getdriverootchildrendriveitemidcontent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin" },
+        new object[] { "ContactsPlugin", "Getmecontacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin" },
+        new object[] { "CalendarPlugin", "Getmecalendarevents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"},
     };
 
-    /// <summary>
-    /// Show how to create API Manifest plugins and use them towards a goal.
-    /// </summary>
-    private void TestSetup()
+    [Theory, MemberData(nameof(s_parameters))]
+    public async Task RunSampleWithPlannerAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
     {
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
+        var kernel = Kernel.CreateBuilder().Build();
+        await AddApiManifestPluginsAsync(kernel, pluginsToLoad);
 
-        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
-        {
-            this.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
-            return;
-        }
-
-        s_kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
-                serviceId: "AzureOpenAIChat",
-                apiKey: apiKey,
-                modelId: chatModelId)
-            .Build();
-    }
-
-    private void WriteSampleHeadingToConsole(string goal, string expectedOutputDescription, params string[] pluginNames)
-    {
-        this.WriteLine();
-        this.WriteLine($"======== [ApiManifest Plugins] Create and Execute \"{goal}\" Plan ========");
-        this.WriteLine($"======== Plugins: {string.Join(" ", pluginNames)} ========");
-        this.WriteLine($"======== Expected Output: {expectedOutputDescription} ========");
-        this.WriteLine();
-    }
-
-    [Theory]
-    [InlineData("show the subject of my first message", "latest email message subject is shown", "MessagesPlugin")]
-    [InlineData("get contents of file with id=test.txt", "test.txt file is fetched and the content is shown", "DriveItemPlugin", "MessagesPlugin")]
-    [InlineData("get contents of file with id=test.txt", "test.txt file is not fetched because DriveItemPlugin is not loaded", "MessagesPlugin")]
-    [InlineData("tell me how many contacts I have", "number of contacts is shown", "MessagesPlugin", "ContactsPlugin")]
-    [InlineData("tell me title of first event in my calendar", "title of first event from calendar is shown if exists", "MessagesPlugin", "CalendarPlugin")]
-    public async Task RunSampleWithPlannerAsync(string goal, string expectedOutputDescription, params string[] pluginNames)
-    {
-        _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
-        WriteSampleHeadingToConsole(goal, expectedOutputDescription, pluginNames);
-        s_kernel.Plugins.Clear();
-        await AddApiManifestPluginsAsync(pluginNames);
-
-        var result = await s_planner.ExecuteAsync(s_kernel, goal);
-
+        var result = await kernel.InvokeAsync(pluginToTest, functionToTest, arguments);
         this.WriteLine("--------------------");
-        this.WriteLine($"\nResult:\n{result.FinalAnswer}\n");
+        this.WriteLine($"\nResult:\n{result}\n");
         this.WriteLine("--------------------");
     }
 
-    private async Task AddApiManifestPluginsAsync(params string[] pluginNames)
+    private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
-        _ = s_kernel ?? throw new KernelException("Kernel not initialized!");
 #pragma warning disable SKEXP0053
         if (TestConfiguration.MSGraph.Scopes == null)
         {
@@ -110,7 +74,7 @@ public class Example99_ApiManifest : BaseTest
 #pragma warning disable SKEXP0042
 #pragma warning disable SKEXP0099
                 KernelPlugin plugin =
-                await s_kernel.ImportPluginFromApiManifestAsync(
+                await kernel.ImportPluginFromApiManifestAsync(
                     pluginName,
                     $"ApiManifestPlugins/{pluginName}/apimanifest.json",
                     new OpenApiFunctionExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync
@@ -122,7 +86,7 @@ public class Example99_ApiManifest : BaseTest
             }
             catch (Exception ex)
             {
-                s_kernel.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
+                kernel.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }
@@ -130,7 +94,6 @@ public class Example99_ApiManifest : BaseTest
 
     public Example99_ApiManifest(ITestOutputHelper output) : base(output)
     {
-        TestSetup();
     }
 }
 
