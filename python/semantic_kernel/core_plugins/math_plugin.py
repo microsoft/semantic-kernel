@@ -2,7 +2,7 @@
 import typing as t
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -19,7 +19,7 @@ class MathPlugin(KernelBaseModel):
         {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the SKContext)
     """
 
-    @sk_function(
+    @kernel_function(
         description="Adds value to a value",
         name="Add",
         input_description="The value to add",
@@ -40,7 +40,7 @@ class MathPlugin(KernelBaseModel):
         """
         return MathPlugin.add_or_subtract(initial_value_text, context, add=True)
 
-    @sk_function(
+    @kernel_function(
         description="Subtracts value to a value",
         name="Subtract",
         input_description="The value to subtract",

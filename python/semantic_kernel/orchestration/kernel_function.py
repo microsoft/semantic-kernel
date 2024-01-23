@@ -63,13 +63,13 @@ class KernelFunction(KernelFunctionBase):
         if method is None:
             raise ValueError("Method cannot be `None`")
 
-        assert method.__sk_function__ is not None, "Method is not a SK function"
-        assert method.__sk_function_name__ is not None, "Method name is empty"
+        assert method.__kernel_function__ is not None, "Method is not a SK function"
+        assert method.__kernel_function_name__ is not None, "Method name is empty"
 
         parameters = []
         # sk_function_context_parameters are optionals
-        if hasattr(method, "__sk_function_context_parameters__"):
-            for param in method.__sk_function_context_parameters__:
+        if hasattr(method, "__kernel_function_context_parameters__"):
+            for param in method.__kernel_function_context_parameters__:
                 assert "name" in param, "Parameter name is empty"
                 assert "description" in param, "Parameter description is empty"
                 assert "default_value" in param, "Parameter default value is empty"
@@ -85,14 +85,14 @@ class KernelFunction(KernelFunctionBase):
                 )
 
         if (
-            hasattr(method, "__sk_function_input_description__")
-            and method.__sk_function_input_description__ is not None
-            and method.__sk_function_input_description__ != ""
+            hasattr(method, "__kernel_function_input_description__")
+            and method.__kernel_function_input_description__ is not None
+            and method.__kernel_function_input_description__ != ""
         ):
             input_param = ParameterView(
                 name="input",
-                description=method.__sk_function_input_description__,
-                default_value=method.__sk_function_input_default_value__,
+                description=method.__kernel_function_input_description__,
+                default_value=method.__kernel_function_input_default_value__,
                 type="string",
                 required=False,
             )
@@ -103,9 +103,9 @@ class KernelFunction(KernelFunctionBase):
             delegate_function=method,
             delegate_stream_function=method,
             parameters=parameters,
-            description=method.__sk_function_description__,
+            description=method.__kernel_function_description__,
             plugin_name=plugin_name,
-            function_name=method.__sk_function_name__,
+            function_name=method.__kernel_function_name__,
             is_semantic=False,
         )
 

@@ -8,7 +8,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition import sk_function
+from semantic_kernel.plugin_definition import kernel_function
 from semantic_kernel.plugin_definition.read_only_plugin_collection import (
     ReadOnlyPluginCollection,
 )
@@ -122,7 +122,7 @@ async def test_it_renders_code_using_input_async(
     variables: ContextVariables,
     context_factory,
 ):
-    @sk_function(name="function")
+    @kernel_function(name="function")
     def my_function_async(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
@@ -142,7 +142,7 @@ async def test_it_renders_code_using_variables_async(
     variables: ContextVariables,
     context_factory,
 ):
-    @sk_function(name="function")
+    @kernel_function(name="function")
     def my_function_async(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
@@ -162,7 +162,7 @@ async def test_it_renders_async_code_using_variables_async(
     variables: ContextVariables,
     context_factory,
 ):
-    @sk_function(name="function")
+    @kernel_function(name="function")
     async def my_function_async(cx: KernelContext) -> str:
         return cx.variables.input
 

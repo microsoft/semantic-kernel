@@ -6,15 +6,15 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 
 def not_decorated_native_function(arg1: str) -> str:
     return "test"
 
 
-@sk_function(name="getLightStatus")
+@kernel_function(name="getLightStatus")
 def decorated_native_function(arg1: str) -> str:
     return "test"
 

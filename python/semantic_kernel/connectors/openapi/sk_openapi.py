@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.const import (
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -260,7 +260,7 @@ def register_openapi_plugin(
     plugin = {}
 
     def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
-        @sk_function(
+        @kernel_function(
             description=operation.summary if operation.summary else operation.description,
             name=operation_id,
         )

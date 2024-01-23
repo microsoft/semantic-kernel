@@ -5,7 +5,7 @@ import typing as t
 from typing import ClassVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -23,7 +23,7 @@ class TextMemoryPlugin(KernelBaseModel):
     DEFAULT_LIMIT: ClassVar[int] = "1"
 
     # @staticmethod
-    @sk_function(
+    @kernel_function(
         description="Recall a fact from the long term memory",
         name="recall",
         input_description="The information to retrieve",
@@ -90,7 +90,7 @@ class TextMemoryPlugin(KernelBaseModel):
 
         return results[0].text if limit == 1 else json.dumps([r.text for r in results])
 
-    @sk_function(
+    @kernel_function(
         description="Save information to semantic memory",
         name="save",
         input_description="The information to save",

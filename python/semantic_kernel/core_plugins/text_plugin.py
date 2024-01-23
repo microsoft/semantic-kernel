@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import sk_function
+from semantic_kernel.plugin_definition import kernel_function
 
 
 class TextPlugin(KernelBaseModel):
@@ -28,7 +28,7 @@ class TextPlugin(KernelBaseModel):
         {{text.lowercase $input}} => "hello world"
     """
 
-    @sk_function(description="Trim whitespace from the start and end of a string.")
+    @kernel_function(description="Trim whitespace from the start and end of a string.")
     def trim(self, text: str) -> str:
         """
         Trim whitespace from the start and end of a string.
@@ -39,7 +39,7 @@ class TextPlugin(KernelBaseModel):
         """
         return text.strip()
 
-    @sk_function(description="Trim whitespace from the start of a string.")
+    @kernel_function(description="Trim whitespace from the start of a string.")
     def trim_start(self, text: str) -> str:
         """
         Trim whitespace from the start of a string.
@@ -50,7 +50,7 @@ class TextPlugin(KernelBaseModel):
         """
         return text.lstrip()
 
-    @sk_function(description="Trim whitespace from the end of a string.")
+    @kernel_function(description="Trim whitespace from the end of a string.")
     def trim_end(self, text: str) -> str:
         """
         Trim whitespace from the end of a string.
@@ -61,7 +61,7 @@ class TextPlugin(KernelBaseModel):
         """
         return text.rstrip()
 
-    @sk_function(description="Convert a string to uppercase.")
+    @kernel_function(description="Convert a string to uppercase.")
     def uppercase(self, text: str) -> str:
         """
         Convert a string to uppercase.
@@ -72,7 +72,7 @@ class TextPlugin(KernelBaseModel):
         """
         return text.upper()
 
-    @sk_function(description="Convert a string to lowercase.")
+    @kernel_function(description="Convert a string to lowercase.")
     def lowercase(self, text: str) -> str:
         """
         Convert a string to lowercase.

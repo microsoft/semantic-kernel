@@ -17,10 +17,10 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
 from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 from semantic_kernel.plugin_definition.sk_function_context_parameter_decorator import (
     sk_function_context_parameter,
 )
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -117,7 +117,7 @@ class StepwisePlanner:
         return plan
 
     # TODO: sync C# with https://github.com/microsoft/semantic-kernel/pull/1195
-    @sk_function(name="ExecutePlan", description="Execute a plan")
+    @kernel_function(name="ExecutePlan", description="Execute a plan")
     @sk_function_context_parameter(name="question", description="The question to answer")
     @sk_function_context_parameter(name="function_descriptions", description="List of tool descriptions")
     async def execute_plan_async(self, context: KernelContext) -> KernelContext:

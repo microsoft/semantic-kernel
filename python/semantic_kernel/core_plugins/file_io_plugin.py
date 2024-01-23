@@ -6,7 +6,7 @@ import typing as t
 import aiofiles
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -25,7 +25,7 @@ class FileIOPlugin(KernelBaseModel):
     {{file.writeAsync}}
     """
 
-    @sk_function(
+    @kernel_function(
         description="Read a file",
         name="readAsync",
         input_description="Path of the source file",
@@ -49,7 +49,7 @@ class FileIOPlugin(KernelBaseModel):
             content = await fp.read()
             return content
 
-    @sk_function(
+    @kernel_function(
         description="Write a file",
         name="writeAsync",
     )

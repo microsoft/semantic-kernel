@@ -128,12 +128,12 @@ class Kernel:
         plugin_name: Optional[str],
         sk_function: Callable,
     ) -> KernelFunctionBase:
-        if not hasattr(sk_function, "__sk_function__"):
+        if not hasattr(sk_function, "__kernel_function__"):
             raise KernelException(
                 KernelException.ErrorCodes.InvalidFunctionType,
                 "sk_function argument must be decorated with @sk_function",
             )
-        function_name = sk_function.__sk_function_name__
+        function_name = sk_function.__kernel_function_name__
 
         if plugin_name is None or plugin_name == "":
             plugin_name = PluginCollection.GLOBAL_PLUGIN
@@ -407,7 +407,7 @@ class Kernel:
         # Read every method from the plugin instance
         for _, candidate in candidates:
             # If the method is a semantic function, register it
-            if not hasattr(candidate, "__sk_function__"):
+            if not hasattr(candidate, "__kernel_function__"):
                 continue
 
             functions.append(KernelFunction.from_native_method(candidate, plugin_name))

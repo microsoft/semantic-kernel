@@ -1,7 +1,7 @@
 import typing as t
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, sk_function_context_parameter
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -27,7 +27,7 @@ class WebSearchEnginePlugin:
     def __init__(self, connector: "ConnectorBase") -> None:
         self._connector = connector
 
-    @sk_function(description="Performs a web search for a given query", name="searchAsync")
+    @kernel_function(description="Performs a web search for a given query", name="searchAsync")
     @sk_function_context_parameter(
         name="num_results",
         description="The number of search results to return",

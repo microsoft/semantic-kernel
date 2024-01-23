@@ -26,6 +26,7 @@ from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
 from semantic_kernel.plugin_definition.plugin_collection_base import (
@@ -37,7 +38,6 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection import (
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -102,7 +102,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     def create_sk_function() -> KernelFunction:
         """Return an SKFunction."""
 
-        @sk_function(name="function")
+        @kernel_function(name="function")
         def my_function_async(cx: KernelContext) -> str:
             return f"F({cx.variables.input})"
 

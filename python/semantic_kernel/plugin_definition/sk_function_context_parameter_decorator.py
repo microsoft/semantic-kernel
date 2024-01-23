@@ -17,10 +17,10 @@ def sk_function_context_parameter(
     """
 
     def decorator(func):
-        if not hasattr(func, "__sk_function_context_parameters__"):
-            func.__sk_function_context_parameters__ = []
+        if not hasattr(func, "__kernel_function_context_parameters__"):
+            func.__kernel_function_context_parameters__ = []
 
-        func.__sk_function_context_parameters__.append(
+        func.__kernel_function_context_parameters__.append(
             {
                 "name": name,
                 "description": description,

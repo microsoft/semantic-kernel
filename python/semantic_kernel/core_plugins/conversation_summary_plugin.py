@@ -11,7 +11,7 @@ class ConversationSummaryPlugin:
     Semantic plugin that enables conversations summarization.
     """
 
-    from semantic_kernel.plugin_definition import sk_function
+    from semantic_kernel.plugin_definition import kernel_function
 
     # The max tokens to process in a single semantic function call.
     _max_tokens = 1024
@@ -36,7 +36,7 @@ class ConversationSummaryPlugin:
             top_p=0.5,
         )
 
-    @sk_function(
+    @kernel_function(
         description="Given a long conversation transcript, summarize the conversation.",
         name="SummarizeConversation",
         input_description="A long conversation transcript.",
