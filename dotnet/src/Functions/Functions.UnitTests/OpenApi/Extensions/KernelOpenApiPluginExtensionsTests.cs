@@ -156,7 +156,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     public async Task ItUsesOpenApiDocumentHostUrlWhenServerUrlIsNotProvidedAsync(string documentUri, string expectedServerUrl, string documentFileName)
     {
         // Arrange
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(this._openApiDocument, (doc) =>
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
+
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
         {
             doc.Remove("servers");
             doc.Remove("host");
