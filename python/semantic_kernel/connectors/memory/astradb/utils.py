@@ -4,6 +4,8 @@ from typing import Dict
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 import aiohttp
+
+
 class AsyncSession:
     def __init__(self, session: aiohttp.ClientSession = None):
         self._session = session if session else aiohttp.ClientSession()
@@ -14,9 +16,10 @@ class AsyncSession:
     async def __aexit__(self, *args, **kwargs):
         await self._session.close()
 
+
 def build_payload(record: MemoryRecord) -> dict:
     """
-    Builds a metadata payload to be sent to Pinecone from a MemoryRecord.
+    Builds a metadata payload to be sent to AstraDb from a MemoryRecord.
     """
     payload: dict = {}
     # payload["_id"] = record._id
@@ -32,17 +35,18 @@ def build_payload(record: MemoryRecord) -> dict:
 
 def parse_payload(document: Dict) -> MemoryRecord:
     """
-    Parses a record from Pinecone into a MemoryRecord.
+    Parses a record from AstraDb into a MemoryRecord.
     """
-    text = document["text"] if "text" in document else None
+    text = document.get("text", None)
     description = document["description"] if "description" in document else None
-    additional_metadata = document["additional_metadata"] if "additional_metadata" in document else None
+    additional_metadata = (
+        document["additional_metadata"] if "additional_metadata" in document else None
+    )
 
     return MemoryRecord.local_record(
         id=document["_id"],
         description=description,
         text=text,
         additional_metadata=additional_metadata,
-        embedding=document["$vector"] if "$vector" in document else numpy.array([
-        ]),
+        embedding=document["$vector"] if "$vector" in document else numpy.array([]),
     )

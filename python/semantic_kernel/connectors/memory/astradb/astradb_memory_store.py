@@ -22,11 +22,11 @@ MAX_QUERY_WITH_METADATA_BATCH_SIZE = 1000
 MAX_FETCH_BATCH_SIZE = 1000
 MAX_DELETE_BATCH_SIZE = 1000
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class AstraDBMemoryStore(MemoryStoreBase):
     """A memory store that uses Astra database as the backend."""
-
-    logger: logging.Logger = logging.getLogger(__name__)
 
     def __init__(
         self,
@@ -101,8 +101,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
             )
 
         result = await self._client.create_collection(collection_name, dimension_num, distance_type)
-        if result == True:
-            self.logger.info(f"Collection {collection_name} created.")
+        if result is True:
+            logger.info(f"Collection {collection_name} created.")
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -114,10 +114,10 @@ class AstraDBMemoryStore(MemoryStoreBase):
             None
         """
         result = await self._client.delete_collection(collection_name)
-        if result == True:
-            self.logger.info(f"Collection {collection_name} deleted.")
-        else:
-            self.logger.warning(f"Collection {collection_name} does not exist.")
+        logger.log(
+            logging.INFO if result is True else logging.WARNING,
+            f"Collection {collection_name} {'deleted.' if result is True else 'does not exist.'}",
+        )
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -149,6 +149,17 @@ class AstraDBMemoryStore(MemoryStoreBase):
         return status["upsertedId"] if "upsertedId" in status else record._id
 
     async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+        """Upserts a batch of memory records into the data store. Does not guarantee that the collection exists.
+            If the record already exists, it will be updated.
+            If the record does not exist, it will be created.
+
+        Arguments:
+            collection_name {str} -- The name associated with a collection of embeddings.
+            records {MemoryRecord} -- The memory records to upsert.
+
+        Returns:
+            List[str] -- The unique identifiers for the memory record.
+        """
         return await asyncio.gather(*[self.upsert_async(collection_name, record) for record in records])
 
     async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
