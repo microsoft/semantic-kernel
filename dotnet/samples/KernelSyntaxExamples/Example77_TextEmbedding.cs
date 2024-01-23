@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example76_TextEmbedding : BaseTest
+public class Example77_TextEmbedding : BaseTest
 {
     [Fact]
     public async Task RunAsync()
@@ -64,7 +64,7 @@ public class Example76_TextEmbedding : BaseTest
         return tokens.Count;
     }
 
-    public Example76_TextEmbedding(ITestOutputHelper output) : base(output)
+    public Example77_TextEmbedding(ITestOutputHelper output) : base(output)
     {
     }
 
