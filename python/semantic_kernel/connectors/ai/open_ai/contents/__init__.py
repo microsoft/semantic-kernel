@@ -8,12 +8,10 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
     OpenAIStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_text_content import OpenAITextContent
 
 __all__ = [
     "OpenAIChatMessageContent",
     "OpenAIStreamingChatMessageContent",
-    "OpenAITextContent",
     "AzureChatMessageContent",
     "AzureStreamingChatMessageContent",
 ]

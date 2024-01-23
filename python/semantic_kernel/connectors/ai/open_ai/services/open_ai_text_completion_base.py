@@ -1,21 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict
+from collections.abc import AsyncIterable
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.contents import OpenAITextContent
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAITextRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
-from semantic_kernel.models.contents import StreamingTextContent
+from semantic_kernel.models.contents import StreamingTextContent, TextContent
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
@@ -25,13 +25,17 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
+class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
+    def get_request_settings_class(self) -> "AIRequestSettings":
+        """Create a request settings object."""
+        return OpenAITextRequestSettings
+
     async def complete(
         self,
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> OpenAITextContent:
+    ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
 
         Arguments:
@@ -53,11 +57,11 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
 
     def _create_return_content(
         self, response: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
-    ) -> OpenAITextContent:
+    ) -> "TextContent":
         """Create a text content object from a choice."""
         choice_metadata = self.get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
-        return OpenAITextContent(
+        return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
             text=choice.text,
@@ -69,7 +73,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         prompt: str,
         settings: "OpenAIRequestSettings",
         **kwargs,
-    ) -> "StreamingTextContent":
+    ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.
@@ -107,12 +111,29 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
         choice_metadata = self.get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
         return StreamingTextContent(
+            choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=choice_metadata,
             text=choice.text,
         )
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
-        """Create a request settings object."""
-        return OpenAITextRequestSettings
+    def get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
+        return {
+            "id": response.id,
+            "created": response.created,
+            "system_fingerprint": response.system_fingerprint,
+            "usage": response.usage,
+        }
+
+    def get_metadata_from_streaming_text_response(self, response: Completion) -> Dict[str, Any]:
+        return {
+            "id": response.id,
+            "created": response.created,
+            "system_fingerprint": response.system_fingerprint,
+        }
+
+    def get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
+        return {
+            "logprobs": choice.logprobs,
+        }

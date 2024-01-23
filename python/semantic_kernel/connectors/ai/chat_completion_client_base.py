@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ class ChatCompletionClientBase(ABC):
         messages: List["ChatMessage"],
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> List["StreamingChatMessageContent"]:
+    ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 

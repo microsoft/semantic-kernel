@@ -2,6 +2,7 @@
 
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ class TextCompletionClientBase(ABC):
         prompt: str,
         settings: "AIRequestSettings",
         logger: Optional[Any] = None,
-    ) -> List["StreamingTextContent"]:
+    ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
