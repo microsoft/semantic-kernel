@@ -143,8 +143,8 @@ Chosen option: "Feature Branch Strategy", because it allows individual features 
 
 ### Is there a migration strategy for initiatives that followed the old contribution way with forks, and now have to switch to branches in microsoft/semantic-kernel?
 
-You proceed normally with the fork and PR targetting `main`, as soon we identify that your contribution PR to main is a big and desireable feature (Look at the ones we described as expected in this ADR) we will create a dedicated feature branch (`feature-yourfeature`) where you can retarget our forks PR to target it.
-All further incremental changes and contributions will follow as normal, but instead of `main` you will be targeting the `feature-*` branck.
+You proceed normally with the fork and PR targeting `main`, as soon we identify that your contribution PR to main is a big and desirable feature (Look at the ones we described as expected in this ADR) we will create a dedicated feature branch (`feature-yourfeature`) where you can retarget our forks PR to target it.
+All further incremental changes and contributions will follow as normal, but instead of `main` you will be targeting the `feature-*` branch.
 
 ### How do you want to solve the "up to date with main branch" problem?
 
