@@ -221,7 +221,10 @@ internal abstract class ClientCore
                 throw new KernelException($"Expected {data.Count} text embedding(s), but received {embeddings.Count}");
             }
 
-            result.AddRange(embeddings.OrderBy((x) => x.Index).Select((x) => x.Embedding));
+            for (var i = 0; i < embeddings.Count; i++)
+            {
+                result.Add(embeddings[i].Embedding);
+            }
         }
 
         return result;
