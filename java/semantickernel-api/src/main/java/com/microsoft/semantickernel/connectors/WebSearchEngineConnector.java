@@ -7,6 +7,12 @@ import java.util.List;
 
 public interface WebSearchEngineConnector {
 
+    interface WebPage {
+        String getName();
+        String getUrl();
+        String getSnippet();
+    }
+
     /**
      * Execute a web search engine search.
      * @param query Query to search.
@@ -14,6 +20,6 @@ public interface WebSearchEngineConnector {
      * @param offset Number of results to skip. Defaults to 0.
      * @return First snippet returned from search.
      */
-    Mono<List<String>> searchAsync(String query, int count, int offset);
+    Mono<List<WebPage>> searchAsync(String query, int count, int offset);
 
 }

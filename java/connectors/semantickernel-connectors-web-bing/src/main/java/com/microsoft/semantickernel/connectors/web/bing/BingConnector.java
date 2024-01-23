@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.connectors.web.bing;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.azure.core.http.HttpClient;
@@ -16,7 +16,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import reactor.core.publisher.Mono;
 
@@ -51,7 +54,7 @@ public class BingConnector implements WebSearchEngineConnector {
         private final WebPage[] value;
         @JsonCreator
         public WebPages(
-            @JsonProperty("value") WebPage[] value
+            @JsonProperty("value") BingWebPage[] value
         ) {
             this.value = value;
         }
@@ -61,41 +64,35 @@ public class BingConnector implements WebSearchEngineConnector {
         }
     }
 
-    public static class WebPage {
-        @JsonProperty("name")
-        private String name;
+    public static class BingWebPage implements WebPage {
+        private final String name;
+        private final String url;
+        private final String snippet;
 
-        @JsonProperty("url")
-        private String url;
-
-        @JsonProperty("snippet")
-        private String snippet;
-
-        public WebPage() {
+        @JsonCreator
+        public BingWebPage(
+            @JsonProperty("name") String name,
+            @JsonProperty("url") String url,
+            @JsonProperty("snippet") String snippet
+        ) {
+            this.name = name;
+            this.url = url;
+            this.snippet = snippet;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getUrl() {
             return url;
         }
 
+        @Override
         public String getSnippet() {
             return snippet;
-        }   
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public void setSnippet(String snippet) {
-            this.snippet = snippet;
         }   
     }
 
@@ -111,7 +108,8 @@ public class BingConnector implements WebSearchEngineConnector {
         this(apiKey, HttpClient.createDefault());
     }
 
-    public Mono<List<String>> searchAsync(String query, int count, int offset) {   
+    @Override
+    public Mono<List<WebPage>> searchAsync(String query, int count, int offset) {   
 
         if (count <= 0 || 50 <= count) throw new IllegalArgumentException("count must be between 1 and 50");
         if (offset < 0) throw new IllegalArgumentException("offset must be greater than or equal to 0");
@@ -136,24 +134,27 @@ public class BingConnector implements WebSearchEngineConnector {
         return url;
     }
 
-    private static Mono<List<String>> handleResponse(HttpResponse response) {
+    private static Mono<List<WebPage>> handleResponse(HttpResponse response) {
             return response.getBodyAsString()
-                .flatMap(body -> {
-                    if (body == null || body.isEmpty()) return Mono.empty();
+                .map(body -> {
+                    if (body == null || body.isEmpty()) return null;
                     try {
+                        // Tell ObjectMapper to ignore WebPage when deserializing BingWebPage
+                        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                            .allowIfBaseType(WebPage.class)
+                            .build();
                         ObjectMapper objectMapper = new ObjectMapper()
                             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
+                            .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false)
+                            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_CONCRETE_AND_ARRAYS);
                         BingSearchResponse bingSearchResponse = objectMapper.readValue(body, BingSearchResponse.class);
-                        List<String> urls = new ArrayList<String>();
-                        for (WebPage webPage : bingSearchResponse.getWebPages().getValue()) {
-                            urls.add(webPage.getUrl());
+                        if (bingSearchResponse.getWebPages() != null && bingSearchResponse.getWebPages().getValue() != null) {
+                            return Arrays.asList(bingSearchResponse.getWebPages().getValue());
                         }
-                        return Mono.just(urls);
                     } catch (JsonProcessingException e) {
-                        Mono.error(e);
+                       throw new SKException(e.getMessage(), e);
                     }
-                    return Mono.empty();
+                    return null;
                 });
     }
 }

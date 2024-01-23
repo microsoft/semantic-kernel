@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>aiservices-azureopenai</artifactId>
+            <artifactId>aiservices-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
+import com.microsoft.semantickernel.connectors.WebSearchEngineConnector.WebPage;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionFromMethod;
@@ -70,10 +71,13 @@ public class WebSearchEnginePlugin {
             }
 
             return count == 1
-                ? results.get(0)
+                ? results.get(0).getSnippet()
                 // TODO: .NET code does `JsonSerializer.Serialize(results, s_jsonOptionsCache)` here
                 // The joiner results in "[\"result1\",\"result2\"]"
-                : results.stream().limit(count).collect(Collectors.joining("\",\"", "[\"", "\"]"));
+                : results.stream()
+                    .limit(count)
+                    .map(WebPage::getSnippet)
+                    .collect(Collectors.joining("\",\"", "[\"", "\"]"));
         });
     }
 }

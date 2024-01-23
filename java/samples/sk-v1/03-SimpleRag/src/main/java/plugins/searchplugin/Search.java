@@ -25,7 +25,9 @@ public class Search {
     public Mono<String> searchAsync(
         @KernelFunctionParameter(description="The search query", name="query", type=String.class) String query
     ){
-        return bingConnector.searchAsync(query, 1, 0).map(results -> results.get(0));
+        return bingConnector
+            .searchAsync(query, 1, 0).map(results -> results.get(0))
+            .map(result -> result.getUrl());
     }
 
 }
