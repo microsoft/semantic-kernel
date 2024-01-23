@@ -105,11 +105,15 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
                 totalTokens: Usage?.TotalTokens ?? 0);
         }
 
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         private List<TestCompany> ParseTestCompanies()
         {
             // This could also perform some validation logic
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var rootObject = JsonSerializer.Deserialize<RootObject>(this.Result, options);
+            var rootObject = JsonSerializer.Deserialize<RootObject>(this.Result, s_jsonSerializerOptions);
             List<TestCompany> companies = rootObject.TestCompanies;
 
             return companies;
