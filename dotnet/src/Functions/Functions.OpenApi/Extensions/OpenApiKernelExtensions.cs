@@ -356,8 +356,11 @@ public static class OpenApiKernelExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (ArgumentException)
         {
+            // The exception indicates that the operationId is not a valid function name.  
+            // To comply with the SK Function name requirements, it needs to be converted or sanitized.  
+            // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.  
         }
 
         // Tokenize operation id on forward and back slashes
