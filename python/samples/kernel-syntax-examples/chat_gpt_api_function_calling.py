@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
     get_function_calling_object,
 )
-from semantic_kernel.core_skills import MathSkill
+from semantic_kernel.core_plugins import MathPlugin
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -42,27 +42,27 @@ kernel.add_chat_service(
     ),
 )
 
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-# adding skills to the kernel
-# the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
-kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-# the math skill is a core skill and has the function calling enabled.
-kernel.import_skill(MathSkill(), skill_name="math")
+plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+# adding plugins to the kernel
+# the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
+kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+# the math plugin is a core plugin and has the function calling enabled.
+kernel.import_plugin(MathPlugin(), plugin_name="math")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
+# the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig(
-    completion=sk_oai.AzureChatRequestSettings(
+    execution_settings=sk_oai.AzureChatRequestSettings(
         service_id="chat-gpt",
         ai_model_id=deployment_name,
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
         function_call="auto",
-        functions=get_function_calling_object(kernel, {"exclude_skill": ["ChatBot"]}),
+        functions=get_function_calling_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     )
 )
 prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
@@ -91,7 +91,7 @@ async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
 
     context = await chat_completion_with_function_call(
         kernel,
-        chat_skill_name="ChatBot",
+        chat_plugin_name="ChatBot",
         chat_function_name="Chat",
         context=context,
     )

@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -76,7 +77,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         }
     }
 
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
     {
         // Arrange
@@ -107,7 +108,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.Contains("Email_SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [RetryFact(typeof(HttpOperationException))]
     public async Task ThrowsWhenPluginFunctionThrowsCriticalExceptionAsync()
     {
         // Arrange
