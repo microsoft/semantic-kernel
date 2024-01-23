@@ -16,8 +16,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
 import com.microsoft.semantickernel.exceptions.SKException;
 
@@ -139,15 +137,11 @@ public class BingConnector implements WebSearchEngineConnector {
                 .map(body -> {
                     if (body == null || body.isEmpty()) return null;
                     try {
-                        // Tell ObjectMapper to ignore WebPage when deserializing BingWebPage
-                        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                            .allowIfBaseType(WebPage.class)
-                            .build();
                         ObjectMapper objectMapper = new ObjectMapper()
                             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false)
-                            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_CONCRETE_AND_ARRAYS);
-                        BingSearchResponse bingSearchResponse = objectMapper.readValue(body, BingSearchResponse.class);
+                            .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
+
+                            BingSearchResponse bingSearchResponse = objectMapper.readValue(body, BingSearchResponse.class);
                         if (bingSearchResponse.getWebPages() != null && bingSearchResponse.getWebPages().getValue() != null) {
                             return Arrays.asList(bingSearchResponse.getWebPages().getValue());
                         }
