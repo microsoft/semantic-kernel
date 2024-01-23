@@ -122,28 +122,34 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-        if (renderedEventArgs?.Cancel is true)
+        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        if (result.RenderedEventArgs?.Cancel is true)
         {
-            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
+            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation after prompt rendering.");
         }
 
-        if (aiService is IChatCompletionService chatCompletion)
+        if (result.RenderedContext?.Cancel is true)
         {
-            var chatContent = await chatCompletion.GetChatMessageContentAsync(renderedPrompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            throw new OperationCanceledException("A prompt filter requested cancellation after prompt rendering.");
+        }
+
+        if (result.AIService is IChatCompletionService chatCompletion)
+        {
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
             return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
         }
 
-        if (aiService is ITextGenerationService textGeneration)
+        if (result.AIService is ITextGenerationService textGeneration)
         {
-            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
             return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
         }
 
         // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
-        throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+        throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
@@ -153,25 +159,27 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-        if (renderedEventArgs?.Cancel ?? false)
+        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        if (result.RenderedEventArgs?.Cancel is true || result.RenderedContext?.Cancel is true)
         {
             yield break;
         }
 
         IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
-        if (aiService is IChatCompletionService chatCompletion)
+
+        if (result.AIService is IChatCompletionService chatCompletion)
         {
-            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
+            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
         }
-        else if (aiService is ITextGenerationService textGeneration)
+        else if (result.AIService is ITextGenerationService textGeneration)
         {
-            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, executionSettings, kernel, cancellationToken);
+            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
         }
         else
         {
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
-            throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+            throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
         }
 
         await foreach (var content in asyncReference)
@@ -256,7 +264,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<(IAIService, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<PromptRenderingResult> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
@@ -278,6 +286,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Verify.NotNull(aiService);
 
         kernel.OnPromptRendering(this, arguments);
+        kernel.OnPromptRenderingFilter(this, arguments);
 
         var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
@@ -289,18 +298,37 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
 
         if (renderedEventArgs is not null &&
-            renderedEventArgs.Cancel is false &&
+            !renderedEventArgs.Cancel &&
             renderedEventArgs.RenderedPrompt != renderedPrompt)
         {
             renderedPrompt = renderedEventArgs.RenderedPrompt;
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Rendered prompt changed by handler: {Prompt}", renderedEventArgs.RenderedPrompt);
+                this._logger.LogTrace("Rendered prompt changed by event handler: {Prompt}", renderedEventArgs.RenderedPrompt);
             }
         }
 
-        return (aiService, executionSettings, renderedPrompt, renderedEventArgs);
+        var renderedContext = kernel.OnPromptRenderedFilter(this, arguments, renderedPrompt);
+
+        if (renderedContext is not null &&
+            !renderedContext.Cancel &&
+            renderedContext.RenderedPrompt != renderedPrompt)
+        {
+            renderedPrompt = renderedContext.RenderedPrompt;
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderedContext.RenderedPrompt);
+            }
+        }
+
+        return new(aiService, renderedPrompt)
+        {
+            ExecutionSettings = executionSettings,
+            RenderedEventArgs = renderedEventArgs,
+            RenderedContext = renderedContext
+        };
     }
 
     /// <summary>Create a random, valid function name.</summary>
