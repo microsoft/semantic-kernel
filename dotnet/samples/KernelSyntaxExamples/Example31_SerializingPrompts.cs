@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using System.IO;
-using System.Reflection;
-using Microsoft.SemanticKernel.ChatCompletion;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 
 namespace Examples;
 

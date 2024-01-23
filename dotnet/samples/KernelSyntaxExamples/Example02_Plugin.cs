@@ -3,9 +3,9 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel;
 using Xunit;
 using Xunit.Abstractions;
 

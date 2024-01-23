@@ -22,7 +22,7 @@ public class Example28_FunctionsWithinPrompts : BaseTest
     [Fact(Skip = "Test requires input from stdin and we want to keep calls to Console.ReadLine() for clarity in example")]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Functions withing Prompts ========");
+        this.WriteLine("======== Functions within Prompts ========");
 
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
