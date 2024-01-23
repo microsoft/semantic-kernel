@@ -34,6 +34,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/chat
         session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
     """
+
     ai_model_id: str = "llama2"
     url: HttpUrl = "http://localhost:11434/api/chat"
     session: Optional[aiohttp.ClientSession] = None
