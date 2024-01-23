@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.IOException;
@@ -77,7 +78,7 @@ public class SimpleChatTest {
         messages.forEach(message -> {
             chatHistory.addUserMessage(message.matcher);
 
-            ContextVariable<String> result = kernel
+            FunctionResult<String> result = kernel
                 .invokeAsync(
                     chatFunction,
                     KernelArguments
@@ -88,8 +89,8 @@ public class SimpleChatTest {
                 )
                 .block();
 
-            Assertions.assertEquals(message.content(), result.getValue());
-            chatHistory.addAssistantMessage(result.getValue());
+            Assertions.assertEquals(message.content(), result.getResult());
+            chatHistory.addAssistantMessage(result.getResult());
         });
     }
 }

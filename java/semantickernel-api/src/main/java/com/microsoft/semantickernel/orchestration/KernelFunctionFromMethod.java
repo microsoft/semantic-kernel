@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.contextvariables.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
@@ -56,17 +57,16 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(
+    public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
-        return function.invoke(kernel, this, arguments)
-            .map(variableType::of);
+        return function.invoke(kernel, this, arguments);
     }
 
     public interface ImplementationFunc {
 
-        <T> Mono<T> invoke(
+        <T> Mono<FunctionResult<T>> invoke(
             Kernel kernel,
             KernelFunction function,
             @Nullable
@@ -133,7 +133,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         return new ImplementationFunc() {
             @Override
-            public <T> Mono<T> invoke(Kernel kernel, KernelFunction function,
+            public <T> Mono<FunctionResult<T>> invoke(Kernel kernel, KernelFunction function,
                 @Nullable
                 KernelArguments arguments) {
 
@@ -161,21 +161,12 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                             } else {
                                 return (T) it;
                             }
-                        /*
-                        if (it instanceof KernelFunctionParameter) {
-                            return it;
-                        } else {
-                            return context.update((String) it);
-                        }
-
-                         */
                         });
 
-                    return r;
+                    return r
+                        .map(it -> new FunctionResult<>(ContextVariable.of(it)));
                 } catch (Exception e) {
-
-                    throw new RuntimeException(e);
-                    //return Mono.error(e);
+                    return Mono.error(e);
                 }
             }
         };
@@ -232,12 +223,9 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         @Nullable KernelArguments context,
         Parameter parameter,
         Kernel kernel) {
-        if (context == null) {
-            return context;
-        }
         String variableName = getGetVariableName(parameter);
 
-        ContextVariable<?> arg = context.get(variableName);
+        ContextVariable<?> arg = context == null ? null : context.get(variableName);
         if (arg == null) {
             /*
             // If this is bound to input get the input value

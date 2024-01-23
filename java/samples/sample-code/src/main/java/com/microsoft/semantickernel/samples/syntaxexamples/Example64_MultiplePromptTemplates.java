@@ -83,6 +83,6 @@ public class Example64_MultiplePromptTemplates {
             .build();
 
         var result = kernel.invokeAsync(function, arguments, String.class).block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
     }
 }

@@ -4,8 +4,8 @@ package com.microsoft.semantickernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
@@ -31,18 +31,18 @@ public interface Kernel extends Buildable {
      *                  {@link com.microsoft.semantickernel.orchestration.PromptExecutionSettings}.
      * @return the result of the function's execution, cast to {@link T}.
      */
-    <T> Mono<ContextVariable<T>> invokeAsync(
+    <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> resultType);
 
-    <T> Mono<ContextVariable<T>> invokeAsync(
+    <T> Mono<FunctionResult<T>> invokeAsync(
         String pluginName,
         String functionName,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> resultType);
 
-    <T> Mono<ContextVariable<T>> invokeAsync(
+    <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType);

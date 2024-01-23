@@ -113,7 +113,7 @@ public class Example09_FunctionTypes {
             .withPlugin(summarize)
             .withPlugin(examplePlugin)
             .build();
-
+/*
         // Different ways to invoke a function (not limited to these examples)
         kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null, String.class).block();
         kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null, String.class).block();
@@ -193,6 +193,12 @@ public class Example09_FunctionTypes {
             .invokeAsync(plugin.get("noInputComplexReturnType"),
                 null,
                 Temporal.class)
+            .block();
+*/
+        kernel
+            .invokeAsync(plugin.get("withDefaultValue"),
+                null,
+                String.class)
             .block();
 
         /*
@@ -377,13 +383,27 @@ public class Example09_FunctionTypes {
             );
         }
 
-
         @DefineKernelFunction(
             name = "noInputComplexReturnType",
             returnType = "java.time.temporal.Temporal"
         )
         public LocalDateTime noInputComplexReturnType() {
             return LocalDateTime.now();
+        }
+
+        @DefineKernelFunction(
+            name = "withDefaultValue",
+            returnType = "java.lang.String"
+        )
+        public String withDefaultValue(
+            @KernelFunctionParameter(
+                name = "x",
+                defaultValue = "1",
+                type = int.class
+            )
+            int x
+        ) {
+            return Integer.toString(x);
         }
 
         /*

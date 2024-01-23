@@ -1,13 +1,18 @@
 package com.microsoft.semantickernel.textcompletion;
 
 import com.microsoft.semantickernel.KernelContent;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import java.util.Map;
 
 public class TextContent extends KernelContent<TextContent> {
 
     private final String content;
 
-    public TextContent(String content) {
-        super(content, null, null);
+    public TextContent(
+        String content,
+        String modelId,
+        Map<String, ContextVariable<?>> metadata) {
+        super(content, modelId, metadata);
         this.content = content;
     }
 

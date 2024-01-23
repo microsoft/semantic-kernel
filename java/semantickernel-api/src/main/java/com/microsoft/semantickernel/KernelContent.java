@@ -1,12 +1,12 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import java.util.HashMap;
 import java.util.Map;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-public class KernelContent<T extends KernelContent<T>> {
+public abstract class KernelContent<T extends KernelContent<T>> {
 
     @Nullable
     private Object innerContent;
@@ -25,7 +25,9 @@ public class KernelContent<T extends KernelContent<T>> {
     ) {
         this.innerContent = innerContent;
         this.modelId = modelId;
-        this.metadata = metadata;
+        if (metadata != null) {
+            this.metadata = new HashMap<>(metadata);
+        }
     }
 
     T setInnerContent(@Nullable Object innerContent) {
@@ -48,4 +50,5 @@ public class KernelContent<T extends KernelContent<T>> {
         return metadata;
     }
 
+    public abstract String getContent();
 }

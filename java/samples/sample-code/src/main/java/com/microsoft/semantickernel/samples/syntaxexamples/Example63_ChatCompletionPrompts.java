@@ -55,14 +55,14 @@ public class Example63_ChatCompletionPrompts {
         System.out.println("Chat Prompt:");
         System.out.println(chatPrompt);
         System.out.println("Chat Prompt Result:");
-        System.out.println(chatPromptResult.getValue());
+        System.out.println(chatPromptResult.getResultVariable());
 
         CountDownLatch cdl = new CountDownLatch(1);
         System.out.println("Chat Prompt Result:");
         kernel
             .invokeAsync(chatSemanticFunction, null, String.class)
             .doFinally(x -> cdl.countDown())
-            .subscribe(result -> System.out.println(result.getValue()));
+            .subscribe(result -> System.out.println(result.getResultVariable()));
 
         cdl.await();
     }

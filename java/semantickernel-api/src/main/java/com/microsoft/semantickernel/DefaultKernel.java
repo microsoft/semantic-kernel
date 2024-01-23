@@ -1,10 +1,10 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.contextvariables.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
@@ -40,7 +40,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(
+    public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> resultType) {
@@ -48,7 +48,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(
+    public <T> Mono<FunctionResult<T>> invokeAsync(
         String pluginName,
         String functionName,
         @Nullable KernelArguments arguments,
@@ -58,7 +58,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(
+    public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
         Class<T> resultType) {
