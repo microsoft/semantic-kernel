@@ -2,15 +2,12 @@
 
 import logging
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import List, Union
 
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from openai.types.chat.chat_completion import Choice
-from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
-from openai.types.completion_choice import CompletionChoice
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -19,8 +16,6 @@ from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClient
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
 )
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIEmbeddingRequestSettings,
     OpenAIRequestSettings,
@@ -29,8 +24,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 
-if TYPE_CHECKING:
-    pass
 logger: logging.Logger = logging.getLogger(__name__)
 
 
