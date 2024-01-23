@@ -88,10 +88,10 @@ def get_oai_config():
 
 @pytest.fixture()
 def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
-    """Return a factory for SKContext objects."""
+    """Return a factory for KernelContext objects."""
 
     def create_context(context_variables: ContextVariables, *functions: KernelFunction) -> KernelContext:
-        """Return a SKContext object."""
+        """Return a KernelContext object."""
         return KernelContext(
             context_variables,
             NullMemory(),

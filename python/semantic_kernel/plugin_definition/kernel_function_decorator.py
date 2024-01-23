@@ -9,7 +9,7 @@ def kernel_function(
     input_default_value: str = "",
 ):
     """
-    Decorator for SK functions.
+    Decorator for kernel functions.
 
     Args:
         description -- The description of the function

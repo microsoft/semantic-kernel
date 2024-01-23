@@ -43,7 +43,7 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
         # TODO: cancellation token?
     ) -> None:
         """
-        Initializes a new instance of the SKContext class.
+        Initializes a new instance of the KernelContext class.
 
         Arguments:
             variables {ContextVariables} -- The context variables.
@@ -175,7 +175,7 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
             function_name {str} -- The function name.
 
         Returns:
-            SKFunctionBase -- The function.
+            KernelFunctionBase -- The function.
         """
         if self.plugin_collection is None:
             raise ValueError("The plugin collection hasn't been set")
@@ -213,7 +213,7 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
             function_name {str} -- The function name.
 
         Returns:
-            Tuple[bool, SKFunctionBase] -- A tuple with a boolean indicating
+            Tuple[bool, KernelFunctionBase] -- A tuple with a boolean indicating
             whether the function is registered and the function itself (or None).
         """
         self.throw_if_plugin_collection_not_set()

@@ -126,14 +126,14 @@ class Kernel:
     def register_native_function(
         self,
         plugin_name: Optional[str],
-        sk_function: Callable,
+        kernel_function: Callable,
     ) -> KernelFunctionBase:
-        if not hasattr(sk_function, "__kernel_function__"):
+        if not hasattr(kernel_function, "__kernel_function__"):
             raise KernelException(
                 KernelException.ErrorCodes.InvalidFunctionType,
-                "sk_function argument must be decorated with @sk_function",
+                "kernel_function argument must be decorated with @kernel_function",
             )
-        function_name = sk_function.__kernel_function_name__
+        function_name = kernel_function.__kernel_function_name__
 
         if plugin_name is None or plugin_name == "":
             plugin_name = PluginCollection.GLOBAL_PLUGIN
@@ -142,7 +142,7 @@ class Kernel:
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        function = KernelFunction.from_native_method(sk_function, plugin_name)
+        function = KernelFunction.from_native_method(kernel_function, plugin_name)
 
         if self.plugins.has_function(plugin_name, function_name):
             raise KernelException(
@@ -261,7 +261,8 @@ class Kernel:
         for func in functions:
             while True:
                 assert isinstance(func, KernelFunctionBase), (
-                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) " "must be SKFunctionBase instances"
+                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
+                    "must be KernelFunctionBase instances"
                 )
 
                 if context.error_occurred:

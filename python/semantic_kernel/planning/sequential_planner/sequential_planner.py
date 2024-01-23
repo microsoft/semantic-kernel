@@ -10,7 +10,7 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
     SequentialPlannerConfig,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerSKContextExtension as SKContextExtension,
+    SequentialPlannerKernelContextExtension as KernelContextExtension,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -81,7 +81,9 @@ class SequentialPlanner:
         if len(goal) == 0:
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
-        relevant_function_manual = await SKContextExtension.get_functions_manual_async(self._context, goal, self.config)
+        relevant_function_manual = await KernelContextExtension.get_functions_manual_async(
+            self._context, goal, self.config
+        )
         self._context.variables.set("available_functions", relevant_function_manual)
 
         self._context.variables.update(goal)

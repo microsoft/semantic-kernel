@@ -367,7 +367,7 @@ class Plan(KernelFunctionBase):
     def get_next_step_variables(self, variables: ContextVariables, step: "Plan") -> ContextVariables:
         # Priority for Input
         # - Parameters (expand from variables if needed)
-        # - SKContext.Variables
+        # - KernelContext.Variables
         # - Plan.State
         # - Empty if sending to another plan
         # - Plan.Description

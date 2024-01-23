@@ -48,7 +48,7 @@ class TextMemoryPlugin(KernelBaseModel):
         Recall a fact from the long term memory.
 
         Example:
-            sk_context["input"] = "what is the capital of France?"
+            context["input"] = "what is the capital of France?"
             {{memory.recall $input}} => "Paris"
 
         Args:
@@ -109,8 +109,8 @@ class TextMemoryPlugin(KernelBaseModel):
         Save a fact to the long term memory.
 
         Example:
-            sk_context["input"] = "the capital of France is Paris"
-            sk_context[TextMemoryPlugin.KEY_PARAM] = "countryInfo1"
+            context["input"] = "the capital of France is Paris"
+            context[TextMemoryPlugin.KEY_PARAM] = "countryInfo1"
             {{memory.save $input}}
 
         Args:

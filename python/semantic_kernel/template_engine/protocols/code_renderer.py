@@ -15,7 +15,7 @@ class CodeRenderer(Protocol):
         """
         Render the block using the given context.
 
-        :param context: SK execution context
+        :param context: kernel execution context
         :return: Rendered content
         """
         ...

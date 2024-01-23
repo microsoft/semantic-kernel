@@ -54,7 +54,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
-SKBaseModelFieldT = t.TypeVar("SKBaseModelFieldT", bound=KernelBaseModel)
+KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
 
 class _Serializable(t.Protocol):
@@ -71,7 +71,7 @@ class _Serializable(t.Protocol):
 
 
 @pytest.fixture()
-def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
+def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     """Return a factory for various objects in semantic-kernel."""
 
     def create_functions_view() -> FunctionsView:
@@ -99,8 +99,8 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         )
         return result
 
-    def create_sk_function() -> KernelFunction:
-        """Return an SKFunction."""
+    def create_kernel_function() -> KernelFunction:
+        """Return an KernelFunction."""
 
         @kernel_function(name="function")
         def my_function_async(cx: KernelContext) -> str:
@@ -158,7 +158,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             plugin_collection=create_plugin_collection().read_only_plugin_collection,
         ),
         NullMemory: NullMemory(),
-        KernelFunction: create_sk_function(),
+        KernelFunction: create_kernel_function(),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -232,12 +232,12 @@ PYDANTIC_MODELS = [
 
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
-        "sk_type",
+        "kernel_type",
         BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES + UNSERIALIZED_CLASSES,
     )
     def test_usage_as_optional_field(
         self,
-        sk_type: t.Type[SKBaseModelFieldT],
+        kernel_type: t.Type[KernelBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
 
@@ -247,15 +247,15 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: t.Optional[sk_type] = None
+            field: t.Optional[kernel_type] = None
 
         assert_serializable(TestModel(), TestModel)
 
-    @pytest.mark.parametrize("sk_type", PYDANTIC_MODELS + STATELESS_CLASSES)
+    @pytest.mark.parametrize("kernel_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
-        sk_factory: t.Callable[[t.Type[SKBaseModelFieldT]], SKBaseModelFieldT],
-        sk_type: t.Type[SKBaseModelFieldT],
+        kernel_factory: t.Callable[[t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT],
+        kernel_type: t.Type[KernelBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
 
@@ -265,10 +265,10 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: sk_type = Field(default_factory=lambda: sk_factory(sk_type))
+            field: kernel_type = Field(default_factory=lambda: kernel_factory(kernel_type))
 
         assert_serializable(TestModel(), TestModel)
-        assert_serializable(TestModel(field=sk_factory(sk_type)), TestModel)
+        assert_serializable(TestModel(field=kernel_factory(kernel_type)), TestModel)
 
 
 def assert_serializable(obj: _Serializable, obj_type) -> None:

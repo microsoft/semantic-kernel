@@ -23,13 +23,13 @@ def test_description():
     assert my_func.__kernel_function_description__ == "description"
 
 
-def test_sk_function_name_not_specified():
+def test_kernel_function_name_not_specified():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_no_name")
     assert my_func.__kernel_function_name__ == "func_no_name"
 
 
-def test_sk_function_with_name_specified():
+def test_kernel_function_with_name_specified():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_with_name")
     assert my_func.__kernel_function_name__ == "my-name"

@@ -63,11 +63,11 @@ class KernelFunction(KernelFunctionBase):
         if method is None:
             raise ValueError("Method cannot be `None`")
 
-        assert method.__kernel_function__ is not None, "Method is not a SK function"
+        assert method.__kernel_function__ is not None, "Method is not a Kernel function"
         assert method.__kernel_function_name__ is not None, "Method name is empty"
 
         parameters = []
-        # sk_function_context_parameters are optionals
+        # kernel_function_context_parameters are optionals
         if hasattr(method, "__kernel_function_context_parameters__"):
             for param in method.__kernel_function_context_parameters__:
                 assert "name" in param, "Parameter name is empty"
@@ -208,7 +208,7 @@ class KernelFunction(KernelFunctionBase):
                 context.fail(str(e), e)
 
         return KernelFunction(
-            delegate_type=DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
+            delegate_type=DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext,
             delegate_function=_local_func,
             delegate_stream_function=_local_stream_func,
             parameters=function_config.prompt_template.get_parameters(),

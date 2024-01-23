@@ -106,11 +106,11 @@ class KernelFunctionBase(KernelBaseModel):
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
             variables {ContextVariables} -- The custom input
-            context {SKContext} -- The context to use
+            context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {AIRequestSettings} -- LLM completion settings
         Returns:
-            SKContext -- The updated context, potentially a new one if
+            KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
         """
         pass
@@ -130,11 +130,11 @@ class KernelFunctionBase(KernelBaseModel):
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
             variables {ContextVariables} -- The custom input
-            context {SKContext} -- The context to use
+            context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {AIRequestSettings} -- LLM completion settings
         Returns:
-            SKContext -- The updated context, potentially a new one if
+            KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
         """
         pass
@@ -153,7 +153,7 @@ class KernelFunctionBase(KernelBaseModel):
             plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
 
         Returns:
-            SKFunctionBase -- The function instance
+            KernelFunctionBase -- The function instance
         """
         pass
 
@@ -168,7 +168,7 @@ class KernelFunctionBase(KernelBaseModel):
             service_factory -- AI service factory
 
         Returns:
-            SKFunctionBase -- The function instance
+            KernelFunctionBase -- The function instance
         """
         pass
 
@@ -181,6 +181,6 @@ class KernelFunctionBase(KernelBaseModel):
             settings {AIRequestSettings} -- LLM completion settings
 
         Returns:
-            SKFunctionBase -- The function instance
+            KernelFunctionBase -- The function instance
         """
         pass

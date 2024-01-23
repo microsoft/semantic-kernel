@@ -49,7 +49,7 @@ class TestCodeBlock:
             raise Exception("error")
 
         function = KernelFunction(
-            delegate_type=DelegateTypes.InSKContext,
+            delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
             plugin_name="",
             function_name="funcName",
@@ -241,9 +241,9 @@ class TestCodeBlock:
             ctx["var1"] = "overridden"
             ctx["var2"] = "overridden"
 
-        # Create an SKFunction with the invoke function as its delegate
+        # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
-            delegate_type=DelegateTypes.InSKContext,
+            delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
             plugin_name="",
             function_name="funcName",
@@ -303,9 +303,9 @@ class TestCodeBlock:
             nonlocal canary
             canary = ctx["input"]
 
-        # Create an SKFunction with the invoke function as its delegate
+        # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
-            delegate_type=DelegateTypes.InSKContext,
+            delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
             plugin_name="",
             function_name="funcName",
@@ -355,9 +355,9 @@ class TestCodeBlock:
             nonlocal canary
             canary = ctx["input"]
 
-        # Create an SKFunction with the invoke function as its delegate
+        # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
-            delegate_type=DelegateTypes.InSKContext,
+            delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
             plugin_name="",
             function_name="funcName",

@@ -71,7 +71,7 @@ def test_init_native_function_without_input_description():
     assert native_function._parameters[0].required is True
 
 
-def test_init_native_function_from_sk_function_decorator():
+def test_init_native_function_from_kernel_function_decorator():
     @kernel_function(
         description="Test description",
         name="test_function",
@@ -97,7 +97,7 @@ def test_init_native_function_from_sk_function_decorator():
     assert native_function._parameters[0].required is False
 
 
-def test_init_native_function_from_sk_function_decorator_defaults():
+def test_init_native_function_from_kernel_function_decorator_defaults():
     @kernel_function()
     def decorated_function() -> None:
         pass
