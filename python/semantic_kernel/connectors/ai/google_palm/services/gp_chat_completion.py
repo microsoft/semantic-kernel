@@ -72,7 +72,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
-
         return [
             self._create_chat_message_content(response, candidate, index)
             for index, candidate in enumerate(response.candidates)
@@ -89,7 +88,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             ChatMessageContent -- The created chat message content.
         """
-        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.get("filters")}
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters}
         return ChatMessageContent(
             choice_index=index,
             inner_content=response,

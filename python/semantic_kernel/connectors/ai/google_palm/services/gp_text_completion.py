@@ -78,8 +78,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             ai_model_id=self.ai_model_id,
             text=candidate.get("output"),
             metadata={
-                "filters": response.get("filters"),
-                "safety_feedback": response.get("safety_feedback"),
+                "filters": response.filters,
+                "safety_feedback": response.safety_feedback,
                 "citation_metadata": candidate.get("citation_metadata"),
                 "safety_ratings": candidate.get("safety_ratings"),
             },
