@@ -46,8 +46,8 @@ class ConversationSummaryPlugin:
         Given a long conversation transcript, summarize the conversation.
 
         :param input: A long conversation transcript.
-        :param context: The SKContext for function execution.
-        :return: SKContext with the summarized conversation result.
+        :param context: The KernelContext for function execution.
+        :return: KernelContext with the summarized conversation result.
         """
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import (

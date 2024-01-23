@@ -12,19 +12,19 @@ class TextPlugin(KernelBaseModel):
         kernel.import_plugin(TextPlugin(), plugin_name="text")
 
     Examples:
-        SKContext["input"] = "  hello world  "
+        KernelContext["input"] = "  hello world  "
         {{text.trim $input}} => "hello world"
 
-        SKContext["input"] = "  hello world  "
+        KernelContext["input"] = "  hello world  "
         {{text.trimStart $input} => "hello world  "
 
-        SKContext["input"] = "  hello world  "
+        KernelContext["input"] = "  hello world  "
         {{text.trimEnd $input} => "  hello world"
 
-        SKContext["input"] = "hello world"
+        KernelContext["input"] = "hello world"
         {{text.uppercase $input}} => "HELLO WORLD"
 
-        SKContext["input"] = "HELLO WORLD"
+        KernelContext["input"] = "HELLO WORLD"
         {{text.lowercase $input}} => "hello world"
     """
 
@@ -34,7 +34,7 @@ class TextPlugin(KernelBaseModel):
         Trim whitespace from the start and end of a string.
 
         Example:
-            SKContext["input"] = "  hello world  "
+            KernelContext["input"] = "  hello world  "
             {{text.trim $input}} => "hello world"
         """
         return text.strip()
@@ -45,7 +45,7 @@ class TextPlugin(KernelBaseModel):
         Trim whitespace from the start of a string.
 
          Example:
-             SKContext["input"] = "  hello world  "
+             KernelContext["input"] = "  hello world  "
              {{text.trim $input}} => "hello world  "
         """
         return text.lstrip()
@@ -56,7 +56,7 @@ class TextPlugin(KernelBaseModel):
         Trim whitespace from the end of a string.
 
          Example:
-             SKContext["input"] = "  hello world  "
+             KernelContext["input"] = "  hello world  "
              {{text.trim $input}} => "  hello world"
         """
         return text.rstrip()
@@ -67,7 +67,7 @@ class TextPlugin(KernelBaseModel):
         Convert a string to uppercase.
 
         Example:
-            SKContext["input"] = "hello world"
+            KernelContext["input"] = "hello world"
              {{text.uppercase $input}} => "HELLO WORLD"
         """
         return text.upper()
@@ -78,7 +78,7 @@ class TextPlugin(KernelBaseModel):
         Convert a string to lowercase.
 
          Example:
-             SKContext["input"] = "HELLO WORLD"
+             KernelContext["input"] = "HELLO WORLD"
              {{text.lowercase $input}} => "hello world"
         """
         return text.lower()

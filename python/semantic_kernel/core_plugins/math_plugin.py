@@ -16,7 +16,7 @@ class MathPlugin(KernelBaseModel):
         kernel.import_plugin(MathPlugin(), plugin_name="math")
 
     Examples:
-        {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the SKContext)
+        {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the KernelContext)
     """
 
     @kernel_function(

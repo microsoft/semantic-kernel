@@ -19,7 +19,7 @@ class WebSearchEnginePlugin:
         {{WebSearch.SearchAsync "What is semantic kernel?"}}
         =>  Returns the first `num_results` number of results for the given search query
             and ignores the first `offset` number of results
-            (num_results and offset are specified in SKContext)
+            (num_results and offset are specified in KernelContext)
     """
 
     _connector: "ConnectorBase"

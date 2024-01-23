@@ -243,7 +243,7 @@ Registers a plugin with the kernel that can run OpenAPI operations.
 :param kernel: The kernel to register the plugin with
 :param plugin_name: The name of the plugin
 :param openapi_document: The OpenAPI document to register. Can be a filename or URL
-:return: A dictionary of SKFunctions keyed by operationId
+:return: A dictionary of KernelFunctions keyed by operationId
 """
 
 

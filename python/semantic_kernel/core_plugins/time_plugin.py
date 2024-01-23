@@ -202,7 +202,7 @@ class TimePlugin(KernelBaseModel):
             The date of the offset day.
 
         Example:
-             SKContext["input"] = "3"
+             KernelContext["input"] = "3"
              {{time.days_ago $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today() - datetime.timedelta(days=int(days))
@@ -223,7 +223,7 @@ class TimePlugin(KernelBaseModel):
             The date of the matching day.
 
         Example:
-             SKContext["input"] = "Sunday"
+             KernelContext["input"] = "Sunday"
              {{time.date_matching_last_day_name $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today()
