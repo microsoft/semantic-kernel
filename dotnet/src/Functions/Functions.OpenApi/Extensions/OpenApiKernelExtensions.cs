@@ -356,7 +356,7 @@ public static class OpenApiKernelExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (ArgumentException)
         {
         }
 

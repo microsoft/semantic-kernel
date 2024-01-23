@@ -156,9 +156,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     public async Task ItUsesOpenApiDocumentHostUrlWhenServerUrlIsNotProvidedAsync(string documentUri, string expectedServerUrl, string documentFileName)
     {
         // Arrange
-        var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
-
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(this._openApiDocument, (doc) =>
         {
             doc.Remove("servers");
             doc.Remove("host");
@@ -223,6 +221,24 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         //Check original response
         Assert.NotNull(response);
         Assert.Equal("fake-content", response.Content);
+    }
+
+    [Fact]
+    public async Task ItShouldSanitizeOperationNameAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
+
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "issues/create-mile.stone";
+        });
+
+        // Act
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", content, this._executionParameters);
+
+        // Assert
+        Assert.True(plugin.TryGetFunction("IssuesCreatemilestone", out var _));
     }
 
     public void Dispose()
