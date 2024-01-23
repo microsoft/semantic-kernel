@@ -317,18 +317,7 @@ public static class OpenApiKernelExtensions
                     try
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-
-                        static string GenerateFunctionName(RestApiOperation operation)
-                        {
-                            return operation.Method + operation.Path.TrimStart('/')
-                                .Replace("/", "") // path separator
-                                .Replace("{", "") // id placeholder begin {driveitem-id}
-                                .Replace("}", "") // id placeholder end {driveitem-id}
-                                .Replace("-", "") // id placeholder delimiter {driveitem-id}
-                                .Replace(".", "");// function names with namespaces microsoft.graph.sendMail
-                        }
-
-                        functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory, GenerateFunctionName(operation)));
+                        functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
@@ -402,7 +391,6 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="functionNameOverride">The function name override, if not provided normalized operationId is used</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     private static KernelFunction CreateRestApiFunction(
         string pluginName,
@@ -410,8 +398,7 @@ public static class OpenApiKernelExtensions
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
-        ILoggerFactory? loggerFactory = null,
-        string? functionNameOverride = null)
+        ILoggerFactory? loggerFactory = null)
     {
         IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
@@ -485,7 +472,7 @@ public static class OpenApiKernelExtensions
             parameters: parameters,
             returnParameter: returnParameter,
             description: operation.Description,
-            functionName: functionNameOverride ?? ConvertOperationIdToValidFunctionName(operation.Id, logger),
+            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: loggerFactory);
     }
 
@@ -523,6 +510,7 @@ public static class OpenApiKernelExtensions
 
         logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
 
+        Console.WriteLine(result);
         return result;
     }
 

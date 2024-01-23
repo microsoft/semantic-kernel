@@ -29,10 +29,11 @@ public class Example99_ApiManifest : BaseTest
 
     public static readonly IEnumerable<object[]> s_parameters = new List<object[]>
     {
-        new object[] { "MessagesPlugin", "Getmemessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin" },
-        new object[] { "DriveItemPlugin", "Getdriverootchildrendriveitemidcontent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin" },
-        new object[] { "ContactsPlugin", "Getmecontacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin" },
-        new object[] { "CalendarPlugin", "Getmecalendarevents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"},
+        // function names are sanitized operationIds from the OpenAPI document
+        new object[] { "MessagesPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin" },
+        new object[] { "DriveItemPlugin", "driverootGetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin" },
+        new object[] { "ContactsPlugin", "meListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin" },
+        new object[] { "CalendarPlugin", "mecalendarListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"},
     };
 
     [Theory, MemberData(nameof(s_parameters))]
