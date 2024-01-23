@@ -56,9 +56,10 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Returns:
             Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
         """
-        request_settings.ai_model_id = self.ai_model_id
         request_settings.messages = messages
         request_settings.stream = False
+        if request_settings.ai_model_id is None:
+            request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
@@ -68,7 +69,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     async def complete_chat_stream_async(
         self,
         messages: List[Dict[str, str]],
-        settings: OllamaChatRequestSettings,
+        request_settings: OllamaChatRequestSettings,
         **kwargs,
     ):
         """
@@ -82,10 +83,12 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Yields:
             str -- Completion result.
         """
-        settings.messages = messages
-        settings.stream = True
+        request_settings.messages = messages
+        request_settings.stream = True
+        if request_settings.ai_model_id is None:
+            request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
+            async with session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
