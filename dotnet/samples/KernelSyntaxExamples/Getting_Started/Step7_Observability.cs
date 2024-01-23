@@ -16,9 +16,34 @@ namespace GettingStarted;
 public class Step7_Observability : BaseTest
 {
     /// <summary>
+    /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
+    /// </summary>
+    [Fact]
+    public async Task ObservabilityWithFiltersAsync()
+    {
+        // Create a kernel with OpenAI chat completion
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey);
+
+        kernelBuilder.Plugins.AddFromType<TimeInformation>();
+
+        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
+        kernelBuilder.Services.AddSingleton<IPromptFilter, MyPromptFilter>();
+
+        Kernel kernel = kernelBuilder.Build();
+
+        // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+    }
+
+    /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with hooks.
     /// </summary>
     [Fact]
+    [Obsolete("Events are deprecated in favor of filters.")]
     public async Task ObservabilityWithHooksAsync()
     {
         // Create a kernel with OpenAI chat completion
@@ -63,30 +88,6 @@ public class Step7_Observability : BaseTest
         kernel.PromptRendering += MyRenderingHandler;
         kernel.PromptRendered += MyRenderedHandler;
         kernel.FunctionInvoked += MyInvokedHandler;
-
-        // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
-    }
-
-    /// <summary>
-    /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
-    /// </summary>
-    [Fact]
-    public async Task ObservabilityWithFiltersAsync()
-    {
-        // Create a kernel with OpenAI chat completion
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
-
-        kernelBuilder.Plugins.AddFromType<TimeInformation>();
-
-        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
-        kernelBuilder.Services.AddSingleton<IPromptFilter, MyPromptFilter>();
-
-        Kernel kernel = kernelBuilder.Build();
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
