@@ -13,6 +13,7 @@ public class PromptExecutionSettings {
     public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
     public static final int DEFAULT_BEST_OF = 1;
+    public static final int DEFAULT_RESULTS_PER_PROMPT = 1;
 
     /// <summary>
     /// Service identifier.
@@ -33,6 +34,7 @@ public class PromptExecutionSettings {
     private final double frequencyPenalty;
     private final int maxTokens;
     private final int bestOf;
+    private final int resultsPerPrompt;
     private final String user;
     private final List<String> stopSequences;
 
@@ -49,6 +51,7 @@ public class PromptExecutionSettings {
         @JsonProperty("presence_penalty") double presencePenalty,
         @JsonProperty("frequency_penalty") double frequencyPenalty,
         @JsonProperty("max_tokens") int maxTokens,
+        @JsonProperty("results_per_prompt") int resultsPerPrompt,
         @JsonProperty("best_of") int bestOf,
         @JsonProperty("user") String user,
         @JsonProperty(value = "stop_sequences") List<String> stopSequences,
@@ -60,6 +63,7 @@ public class PromptExecutionSettings {
         this.presencePenalty = presencePenalty;
         this.frequencyPenalty = frequencyPenalty;
         this.maxTokens = maxTokens;
+        this.resultsPerPrompt = resultsPerPrompt;
         this.bestOf = bestOf;
         this.user = user;
         this.stopSequences = stopSequences;
@@ -94,6 +98,10 @@ public class PromptExecutionSettings {
         return maxTokens;
     }
 
+    public int getResultsPerPrompt() {
+        return resultsPerPrompt;
+    }
+
     public int getBestOf() {
         // TODO: not present in com.azure:azure-ai-openai
         return bestOf;
@@ -125,6 +133,7 @@ public class PromptExecutionSettings {
         private double presencePenalty = Double.NaN;
         private double frequencyPenalty = Double.NaN;
         private int maxTokens = Integer.MIN_VALUE;
+        private int resultsPerPrompt = Integer.MIN_VALUE;
         private int bestOf = Integer.MIN_VALUE;
         private String user;
         private List<String> stopSequences;
@@ -165,6 +174,11 @@ public class PromptExecutionSettings {
             return this;
         }
 
+        public Builder withResultsPerPrompt(int resultsPerPrompt) {
+            this.resultsPerPrompt = resultsPerPrompt;
+            return this;
+        }
+
         public Builder withBestOf(int bestOf) {
             this.bestOf = bestOf;
             return this;
@@ -194,6 +208,7 @@ public class PromptExecutionSettings {
                 Double.isNaN(presencePenalty) ? DEFAULT_PRESENCE_PENALTY : presencePenalty,
                 Double.isNaN(frequencyPenalty) ? DEFAULT_FREQUENCY_PENALTY : frequencyPenalty,
                 maxTokens == Integer.MIN_VALUE ? DEFAULT_MAX_TOKENS : maxTokens,
+                resultsPerPrompt == Integer.MIN_VALUE ? DEFAULT_RESULTS_PER_PROMPT : resultsPerPrompt,
                 bestOf == Integer.MIN_VALUE ? DEFAULT_BEST_OF : bestOf,
                 user,
                 stopSequences,
