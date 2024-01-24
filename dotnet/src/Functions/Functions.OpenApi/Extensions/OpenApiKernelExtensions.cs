@@ -283,16 +283,22 @@ public static class OpenApiKernelExtensions
             }
             ).Read(openApiDocumentString, out diagnostic);
 
-            var requestUrls = new Dictionary<string, List<string>>();
-            var paths = apiDependencyDetails.Requests.Select(request => request.UriTemplate);
-            foreach (var path in paths)
+            var requestUrls = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
+            foreach (var (UriTemplate, Method) in pathMethodPairs)
             {
-                if (path is null)
+                if (UriTemplate is null || Method is null)
                 {
                     continue;
                 }
 
-                requestUrls.Add(path, new List<string> { "GET" });
+                if (requestUrls.TryGetValue(UriTemplate, out List<string>? value))
+                {
+                    value.Add(Method);
+                    continue;
+                }
+
+                requestUrls.Add(UriTemplate, new List<string>() { Method });
             }
 
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
@@ -317,18 +323,7 @@ public static class OpenApiKernelExtensions
                     try
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-
-                        static string GenerateFunctionName(RestApiOperation operation)
-                        {
-                            return operation.Method + operation.Path.TrimStart('/')
-                                .Replace("/", "") // path separator
-                                .Replace("{", "") // id placeholder begin {driveitem-id}
-                                .Replace("}", "") // id placeholder end {driveitem-id}
-                                .Replace("-", "") // id placeholder delimiter {driveitem-id}
-                                .Replace(".", "");// function names with namespaces microsoft.graph.sendMail
-                        }
-
-                        functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory, GenerateFunctionName(operation)));
+                        functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
@@ -402,7 +397,6 @@ public static class OpenApiKernelExtensions
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    /// <param name="functionNameOverride">The function name override, if not provided normalized operationId is used</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
     private static KernelFunction CreateRestApiFunction(
         string pluginName,
@@ -410,8 +404,7 @@ public static class OpenApiKernelExtensions
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
-        ILoggerFactory? loggerFactory = null,
-        string? functionNameOverride = null)
+        ILoggerFactory? loggerFactory = null)
     {
         IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
@@ -485,7 +478,7 @@ public static class OpenApiKernelExtensions
             parameters: parameters,
             returnParameter: returnParameter,
             description: operation.Description,
-            functionName: functionNameOverride ?? ConvertOperationIdToValidFunctionName(operation.Id, logger),
+            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: loggerFactory);
     }
 
@@ -503,8 +496,11 @@ public static class OpenApiKernelExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (ArgumentException)
         {
+            // The exception indicates that the operationId is not a valid function name.  
+            // To comply with the SK Function name requirements, it needs to be converted or sanitized.  
+            // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.  
         }
 
         // Tokenize operation id on forward and back slashes
@@ -520,6 +516,7 @@ public static class OpenApiKernelExtensions
 
         logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
 
+        Console.WriteLine(result);
         return result;
     }
 

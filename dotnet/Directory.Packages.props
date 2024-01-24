@@ -54,7 +54,7 @@
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Plugins -->
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.0" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.1" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.0" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
@@ -64,7 +64,6 @@
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
     <PackageVersion Include="Microsoft.OpenApi" Version="[1.6.12, )" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="[1.6.12, )" />
-    <PackageVersion Include="Newtonsoft.Json" Version="[13.0.3, )" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.60.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />

@@ -11,6 +11,10 @@
         {
           "method": "Get",
           "uriTemplate": "/me/messages"
+        },
+        {
+          "method": "Post",
+          "uriTemplate": "/me/messages"
         }
       ]
     }
