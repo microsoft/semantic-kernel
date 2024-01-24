@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable
 from typing import (
     Any,
+    AsyncIterable,
     Dict,
     List,
     Optional,
@@ -27,6 +27,8 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_sett
     OpenAIRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.models.chat.chat_role import ChatRole
+from semantic_kernel.models.chat.finish_reason import FinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -47,21 +49,21 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Executes a chat completion request and returns the result.
 
         Arguments:
-            # TODO: replace messages with ChatHistory object with ChatMessageContent objects
             messages {List[Dict[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Deprecated)
+            settings {OpenAIChatRequestSettings | AzureChatRequestSettings} -- The settings to use for the
+                chat completion request.
 
         Returns:
-            Union[str, List[str]] -- The completion result(s).
+            List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
         """
+        # TODO: replace messages with ChatHistory object with ChatMessageContent objects
         settings.messages = messages
         settings.stream = False
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        response_metadata = self.get_metadata_from_chat_response(response)
-        return [self._create_return_content(response, choice, response_metadata) for choice in response.choices]
+        response_metadata = self._get_metadata_from_chat_response(response)
+        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     async def complete_chat_stream_async(
         self,
@@ -69,15 +71,16 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings: OpenAIRequestSettings,
         **kwargs,
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
-        """Executes a chat completion request and returns the result.
+        """Executes a streaming chat completion request and returns the result.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Deprecated)
+            settings {OpenAIChatRequestSettings | AzureChatRequestSettings} -- The settings to use for the
+                chat completion request.
 
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
+        Yields:
+            List[OpenAIStreamingChatMessageContent | AzureStreamingChatMessageContent] -- A stream of
+                OpenAIStreamingChatMessages or AzureStreamingChatMessageContent when using Azure.
         """
         settings.messages = messages
         settings.stream = True
@@ -92,47 +95,52 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
-            chunk_metadata = self.get_metadata_from_streaming_chat_response(chunk)
-            contents = [self._create_return_content_stream(chunk, choice, chunk_metadata) for choice in chunk.choices]
-            self._handle_updates(contents, update_storage)
+            chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
+            contents = [
+                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
+            ]
+            self._update_storages(contents, update_storage)
             yield contents
 
-    def _create_return_content(
+    def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
     ) -> OpenAIChatMessageContent:
-        metadata = self.get_metadata_from_chat_choice(choice)
+        """Create a chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(response_metadata)
         return OpenAIChatMessageContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=choice.message.role,
+            role=ChatRole(choice.message.role),
             content=choice.message.content,
-            function_call=self.get_function_call_from_chat_choice(choice),
-            tool_calls=self.get_tool_calls_from_chat_choice(choice),
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
         )
 
-    def _create_return_content_stream(
+    def _create_streaming_chat_message_content(
         self,
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: Dict[str, Any],
     ):
-        metadata = self.get_metadata_from_chat_choice(choice)
+        """Create a streaming chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(chunk_metadata)
         return OpenAIStreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=choice.delta.role,
+            role=ChatRole(choice.delta.role),
             content=choice.delta.content,
-            finish_reason=choice.finish_reason,
-            function_call=self.get_function_call_from_chat_choice(choice),
-            tool_calls=self.get_tool_calls_from_chat_choice(choice),
+            finish_reason=FinishReason(choice.finish_reason),
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
         )
 
     def _get_update_storage_fields(self) -> Dict[str, Dict[int, Any]]:
+        """Get the fields to use for storing updates to the messages, tool_calls and function_calls."""
         out_messages = {}
         tool_call_ids_by_index = {}
         function_call_by_index = {}
@@ -142,7 +150,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "function_call_by_index": function_call_by_index,
         }
 
-    def _handle_updates(
+    def _update_storages(
         self, contents: List[OpenAIStreamingChatMessageContent], update_storage: Dict[str, Dict[int, Any]]
     ):
         """Handle updates to the messages, tool_calls and function_calls.
@@ -171,7 +179,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 else:
                     function_call_by_index[index].update(content.function_call)
 
-    def get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
+    def _get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
+        """Get metadata from a chat response."""
         return {
             "id": response.id,
             "created": response.created,
@@ -179,19 +188,22 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "usage": response.usage,
         }
 
-    def get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> Dict[str, Any]:
+    def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> Dict[str, Any]:
+        """Get metadata from a streaming chat response."""
         return {
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
         }
 
-    def get_metadata_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Dict[str, Any]:
+    def _get_metadata_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Dict[str, Any]:
+        """Get metadata from a chat choice."""
         return {
             "logprobs": choice.logprobs,
         }
 
-    def get_tool_calls_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[List[ToolCall]]:
+    def _get_tool_calls_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[List[ToolCall]]:
+        """Get tool calls from a chat choice."""
         if isinstance(choice, Choice):
             content = choice.message
         else:
@@ -207,7 +219,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             for tool in content.tool_calls
         ]
 
-    def get_function_call_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[FunctionCall]:
+    def _get_function_call_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[FunctionCall]:
+        """Get a function call from a chat choice."""
         if isinstance(choice, Choice):
             content = choice.message
         else:

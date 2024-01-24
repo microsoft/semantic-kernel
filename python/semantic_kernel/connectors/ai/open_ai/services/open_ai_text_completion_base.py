@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
@@ -40,10 +39,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAIRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAITextRequestSettings} -- The settings to use for the completion request.
 
         Returns:
-            Union[str, List[str]] -- The completion result(s).
+            List["TextContent"] -- The completion result(s).
         """
         if isinstance(settings, OpenAITextRequestSettings):
             settings.prompt = prompt
@@ -52,14 +51,14 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
-        metadata = self.get_metadata_from_text_response(response)
-        return [self._create_return_content(response, choice, metadata) for choice in response.choices]
+        metadata = self._get_metadata_from_text_response(response)
+        return [self._create_text_content(response, choice, metadata) for choice in response.choices]
 
-    def _create_return_content(
+    def _create_text_content(
         self, response: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
     ) -> "TextContent":
         """Create a text content object from a choice."""
-        choice_metadata = self.get_metadata_from_text_choice(choice)
+        choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
         return TextContent(
             inner_content=response,
@@ -80,10 +79,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAIRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAITextRequestSettings} -- The settings to use for the completion request.
 
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
+        Yields:
+            List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
         """
         if "prompt" in settings.model_fields:
             settings.prompt = prompt
@@ -101,14 +100,14 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
-            chunk_metadata = self.get_metadata_from_text_response(chunk)
-            yield [self._create_return_content_stream(chunk, choice, chunk_metadata) for choice in chunk.choices]
+            chunk_metadata = self._get_metadata_from_text_response(chunk)
+            yield [self._create_streaming_text_content(chunk, choice, chunk_metadata) for choice in chunk.choices]
 
-    def _create_return_content_stream(
+    def _create_streaming_text_content(
         self, chunk: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
     ) -> "StreamingTextContent":
-        """Create a text content object from a choice."""
-        choice_metadata = self.get_metadata_from_text_choice(choice)
+        """Create a streaming text content object from a choice."""
+        choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
         return StreamingTextContent(
             choice_index=choice.index,
@@ -118,7 +117,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             text=choice.text,
         )
 
-    def get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
+    def _get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
+        """Get metadata from a completion response."""
         return {
             "id": response.id,
             "created": response.created,
@@ -126,14 +126,16 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "usage": response.usage,
         }
 
-    def get_metadata_from_streaming_text_response(self, response: Completion) -> Dict[str, Any]:
+    def _get_metadata_from_streaming_text_response(self, response: Completion) -> Dict[str, Any]:
+        """Get metadata from a streaming completion response."""
         return {
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
         }
 
-    def get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
+    def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
+        """Get metadata from a completion choice."""
         return {
             "logprobs": choice.logprobs,
         }

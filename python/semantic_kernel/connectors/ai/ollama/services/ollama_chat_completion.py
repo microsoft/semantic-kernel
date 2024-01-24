@@ -2,8 +2,7 @@
 
 import json
 import logging
-from collections.abc import AsyncIterable
-from typing import Dict, List, Optional
+from typing import AsyncIterable, Dict, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
@@ -59,7 +58,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Returns:
-            Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
         request_settings.messages = messages
         request_settings.stream = False
@@ -91,7 +90,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
             request_settings {OllamaChatRequestSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
         """
         settings.messages = messages
         settings.stream = True
@@ -127,8 +126,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
             settings {AIRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
-            Returns:
-                Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+        Returns:
+            List["TextContent"] -- The completion result(s).
         """
         request_settings.messages = [{"role": "user", "content": prompt}]
         request_settings.stream = False
@@ -159,7 +158,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
             request_settings {OllamaChatRequestSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
         """
 
         settings.messages = [{"role": "user", "content": prompt}]

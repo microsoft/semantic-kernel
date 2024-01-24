@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings

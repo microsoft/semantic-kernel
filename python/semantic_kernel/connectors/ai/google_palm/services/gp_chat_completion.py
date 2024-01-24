@@ -68,6 +68,17 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         messages: List[Tuple[str, str]],
         settings: GooglePalmRequestSettings,
     ) -> List[ChatMessageContent]:
+        """
+        This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+
+        Arguments:
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+                set of messages, from system, user, assistant and function.
+            settings {GooglePalmRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
+        """
         settings.messages = messages
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -111,6 +122,16 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         settings: GooglePalmRequestSettings,
         **kwargs,
     ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {AIRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         settings.messages = [("user", prompt)]

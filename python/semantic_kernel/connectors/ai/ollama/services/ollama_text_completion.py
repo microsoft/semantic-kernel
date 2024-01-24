@@ -2,8 +2,7 @@
 
 import json
 import logging
-from collections.abc import AsyncIterable
-from typing import List, Optional
+from typing import AsyncIterable, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
@@ -40,7 +39,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete(
         self,
         prompt: str,
-        request_settings: OllamaTextRequestSettings,
+        settings: OllamaTextRequestSettings,
         **kwargs,
     ) -> List[TextContent]:
         """
@@ -48,16 +47,15 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIRequestSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging (deprecated).
+            settings {OllamaTextRequestSettings} -- Settings for the request.
 
-            Returns:
-                Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        request_settings.prompt = prompt
-        request_settings.stream = False
+        settings.prompt = prompt
+        settings.stream = False
         async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
+            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 text = await response.text()
                 return [TextContent(inner_content=text, ai_model_id=self.ai_model_id, text=text)]
@@ -65,24 +63,25 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_stream(
         self,
         prompt: str,
-        request_settings: OllamaTextRequestSettings,
+        settings: OllamaTextRequestSettings,
         **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
-        Streams a text completion using a Hugging Face model.
-        Note that this method does not support multiple responses.
+        Streams a text completion using a Ollama model.
+        Note that this method does not support multiple responses,
+        but the result will be a list anyway.
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {HuggingFaceRequestSettings} -- Request settings.
+            request_settings {OllamaTextRequestSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List[StreamingTextContent] -- Completion result.
         """
-        request_settings.prompt = prompt
-        request_settings.stream = True
+        settings.prompt = prompt
+        settings.stream = True
         async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
+            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)

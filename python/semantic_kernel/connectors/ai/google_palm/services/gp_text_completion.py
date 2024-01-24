@@ -47,11 +47,18 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     async def complete(
-        self,
-        prompt: str,
-        request_settings: GooglePalmTextRequestSettings,
-        logger: Optional[Any] = None,
+        self, prompt: str, request_settings: GooglePalmTextRequestSettings, **kwargs
     ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {GooglePalmTextRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         request_settings.prompt = prompt
         if not request_settings.ai_model_id:
             request_settings.ai_model_id = self.ai_model_id
@@ -73,6 +80,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         return [self._create_text_content(response, candidate) for candidate in response.candidates]
 
     def _create_text_content(self, response: Completion, candidate: TextCompletion) -> TextContent:
+        """Create a text content object from a candidate."""
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,

@@ -105,8 +105,8 @@ async def main() -> None:
         if current.tool_calls:
             if tool_call is None:
                 tool_call = current.tool_calls[0]
-                # continue
-            # tool_call.update(current.tool_calls[0])
+            else:
+                tool_call += current.tool_calls[0]
 
     if tool_call:
         print(f"Function to be called: {tool_call.function.name}")

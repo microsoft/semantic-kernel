@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncIterable
 from threading import Thread
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, AsyncIterable, Dict, List, Literal, Optional
 
 import torch
 import transformers
@@ -81,6 +80,16 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         request_settings: HuggingFaceRequestSettings,
         **kwargs,
     ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {HuggingFaceRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
@@ -113,7 +122,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             request_settings {HuggingFaceRequestSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")

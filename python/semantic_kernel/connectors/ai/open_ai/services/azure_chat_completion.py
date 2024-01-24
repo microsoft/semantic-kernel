@@ -38,6 +38,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.models.chat.chat_role import ChatRole
+from semantic_kernel.models.chat.finish_reason import FinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -277,44 +279,47 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         """Create a request settings object."""
         return AzureChatRequestSettings
 
-    def _create_return_content(
+    def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
     ) -> AzureChatMessageContent:
-        metadata = self.get_metadata_from_chat_choice(choice)
+        """Create a Azure chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(response_metadata)
         return AzureChatMessageContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=choice.message.role,
+            role=ChatRole(choice.message.role),
             content=choice.message.content,
-            function_call=self.get_function_call_from_chat_choice(choice),
-            tool_calls=self.get_tool_calls_from_chat_choice(choice),
-            tool_message=self.get_tool_message_from_chat_choice(choice),
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
+            tool_message=self._get_tool_message_from_chat_choice(choice),
         )
 
-    def _create_return_content_stream(
+    def _create_streaming_chat_message_content(
         self,
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: Dict[str, Any],
     ):
-        metadata = self.get_metadata_from_chat_choice(choice)
+        """Create a Azure streaming chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(chunk_metadata)
         return AzureStreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=choice.delta.role,
+            role=ChatRole(choice.delta.role),
             content=choice.delta.content,
-            finish_reason=choice.finish_reason,
-            function_call=self.get_function_call_from_chat_choice(choice),
-            tool_calls=self.get_tool_calls_from_chat_choice(choice),
-            tool_message=self.get_tool_message_from_chat_choice(choice),
+            finish_reason=FinishReason(choice.finish_reason),
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
+            tool_message=self._get_tool_message_from_chat_choice(choice),
         )
 
     def _get_update_storage_fields(self) -> Dict[str, Dict[int, Any]]:
+        """Get the fields to store the updates."""
         out_messages = {}
         tool_messages_by_index = {}
         tool_call_ids_by_index = {}
@@ -326,7 +331,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             "tool_messages_by_index": tool_messages_by_index,
         }
 
-    def _handle_updates(
+    def _update_storages(
         self, contents: List[AzureStreamingChatMessageContent], update_storage: Dict[str, Dict[int, Any]]
     ):
         """Handle updates to the messages, tool_calls and function_calls.
@@ -361,7 +366,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 else:
                     tool_messages_by_index[index] += content.tool_message
 
-    def get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
+    def _get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
         """Get the tool message from a choice."""
         if isinstance(choice, Choice):
             content = choice.message
