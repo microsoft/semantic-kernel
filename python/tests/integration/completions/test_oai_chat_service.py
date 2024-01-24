@@ -9,7 +9,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_skills(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models, get_oai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     api_key, org_id = get_oai_config
@@ -34,7 +34,7 @@ async def test_oai_chat_service_with_skills(setup_tldr_function_for_oai_models, 
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_skills_with_provided_client(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_function_for_oai_models, get_oai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     api_key, org_id = get_oai_config
@@ -67,7 +67,7 @@ async def test_oai_chat_service_with_skills_with_provided_client(setup_tldr_func
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_stream_service_with_skills(setup_tldr_function_for_oai_models, get_aoai_config):
+async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_models, get_aoai_config):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     _, api_key, endpoint = get_aoai_config

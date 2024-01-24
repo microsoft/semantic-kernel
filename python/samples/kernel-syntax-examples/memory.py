@@ -35,7 +35,7 @@ async def search_memory_examples(kernel: sk.Kernel) -> None:
 
 async def setup_chat_with_memory(
     kernel: sk.Kernel,
-) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
+) -> Tuple[sk.KernelFunctionBase, sk.KernelContext]:
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
@@ -62,15 +62,15 @@ async def setup_chat_with_memory(
     context["fact4"] = "where have I traveled?"
     context["fact5"] = "what do I do for work?"
 
-    context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
-    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.8
+    context[sk.core_plugins.TextMemoryPlugin.COLLECTION_PARAM] = "aboutMe"
+    context[sk.core_plugins.TextMemoryPlugin.RELEVANCE_PARAM] = 0.8
 
     context["chat_history"] = ""
 
     return chat_func, context
 
 
-async def chat(kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext) -> bool:
+async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunctionBase, context: sk.KernelContext) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input
@@ -102,7 +102,7 @@ async def main() -> None:
     )
 
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-    kernel.import_skill(sk.core_skills.TextMemorySkill())
+    kernel.import_plugin(sk.core_plugins.TextMemoryPlugin())
 
     print("Populating memory...")
     await populate_memory(kernel)
