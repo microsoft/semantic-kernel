@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class PromptTemplateConfig {
 
     public static final int CURRENT_SCHEMA = 1;
+    public static final String DEFAULT_CONFIG_NAME = "default";
     private String name;
 
     private String template;
@@ -40,7 +41,7 @@ public class PromptTemplateConfig {
     public PromptTemplateConfig(String template) {
         this(
             CURRENT_SCHEMA,
-            "default",
+            DEFAULT_CONFIG_NAME,
             template,
             SEMANTIC_KERNEL_TEMPLATE_FORMAT,
             "",
@@ -78,7 +79,11 @@ public class PromptTemplateConfig {
             this.inputVariables = new ArrayList<>(inputVariables);
         }
         this.outputVariable = outputVariable;
-        this.executionSettings = executionSettings;
+        if (executionSettings == null) {
+            this.executionSettings = new HashMap<>();
+        } else {
+            this.executionSettings = new HashMap<>(executionSettings);
+        }
     }
 
     /**
@@ -224,8 +229,9 @@ public class PromptTemplateConfig {
         return name;
     }
 
-    public void setName(String name) {
+    public PromptTemplateConfig setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getTemplate() {
@@ -271,6 +277,7 @@ public class PromptTemplateConfig {
     public Map<String, PromptExecutionSettings> getExecutionSettings() {
         return executionSettings;
     }
+
 
     public void setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
         this.executionSettings = executionSettings;

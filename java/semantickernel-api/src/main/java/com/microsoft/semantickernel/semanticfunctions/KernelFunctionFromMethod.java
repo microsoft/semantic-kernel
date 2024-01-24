@@ -5,6 +5,8 @@ import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionPara
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
+import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
+import com.microsoft.semantickernel.hooks.FunctionInvokingEventArgs;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -137,16 +139,20 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         return new ImplementationFunc() {
             @Override
-            public <T> Mono<FunctionResult<T>> invoke(Kernel kernel, KernelFunction function,
+            public <T> Mono<FunctionResult<T>> invoke(
+                Kernel kernel,
+                KernelFunction function,
                 @Nullable
                 KernelArguments arguments) {
 
-                //Set<Parameter> inputArgs = determineInputArgs(method);
+                FunctionInvokingEventArgs updatedState = kernel.executeHooks(
+                    new FunctionInvokingEventArgs(function, arguments));
+                KernelArguments updatedArguments = updatedState.getArguments();
 
                 try {
                     List<Object> args =
                         Arrays.stream(method.getParameters())
-                            .map(getParameters(method, arguments, kernel))
+                            .map(getParameters(method, updatedArguments, kernel))
                             .collect(Collectors.toList());
 
                     Mono<?> mono;
@@ -168,7 +174,12 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                         });
 
                     return r
-                        .map(it -> new FunctionResult<>(ContextVariable.of(it)));
+                        .map(it -> new FunctionResult<>(ContextVariable.of(it)))
+                        .map(it -> {
+                            FunctionInvokedEventArgs<T> updatedResult = kernel.executeHooks(
+                                    new FunctionInvokedEventArgs<>(function, updatedArguments, it));
+                            return updatedResult.getResult();
+                        });
                 } catch (Exception e) {
                     return Mono.error(e);
                 }
@@ -231,39 +242,26 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         ContextVariable<?> arg = context == null ? null : context.get(variableName);
         if (arg == null) {
-            /*
-            // If this is bound to input get the input value
-            if (inputArgs.contains(parameter)) {
-                ContextVariable<?> input = context.get(KernelArguments.MAIN_KEY);
-                if (input != null) {
-                    arg = input;
-                }
-            }
+            KernelFunctionParameter annotation =
+                parameter.getAnnotation(KernelFunctionParameter.class);
+            if (annotation != null) {
+                arg = ContextVariable.of(annotation.defaultValue());
 
-             */
-
-            if (arg == null) {
-                KernelFunctionParameter annotation =
-                    parameter.getAnnotation(KernelFunctionParameter.class);
-                if (annotation != null) {
-                    arg = ContextVariable.of(annotation.defaultValue());
-
-                    if (NO_DEFAULT_VALUE.equals(arg)) {
-                        if (!annotation.required()) {
-                            return null;
-                        }
-
-                        throw new AIException(
-                            AIException.ErrorCodes.INVALID_CONFIGURATION,
-                            "Attempted to invoke function "
-                                + method.getDeclaringClass().getName()
-                                + "."
-                                + method.getName()
-                                + ". The context variable \""
-                                + variableName
-                                + "\" has not been set, and no default value is"
-                                + " specified.");
+                if (NO_DEFAULT_VALUE.equals(arg)) {
+                    if (!annotation.required()) {
+                        return null;
                     }
+
+                    throw new AIException(
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
+                        "Attempted to invoke function "
+                            + method.getDeclaringClass().getName()
+                            + "."
+                            + method.getName()
+                            + ". The context variable \""
+                            + variableName
+                            + "\" has not been set, and no default value is"
+                            + " specified.");
                 }
             }
         }

@@ -223,7 +223,8 @@ public class KernelPluginFactory {
             .withPluginName(pluginDirectoryName).withTemplate(template)
             .withTemplateFormat(config.getTemplateFormat())
             .withOutputVariable(config.getOutputVariable())
-            .withPromptTemplateFactory(promptTemplateFactory).build();
+            .withPromptTemplateFactory(promptTemplateFactory)
+            .build();
     }
 
     public static KernelPlugin importPluginFromResourcesDirectory(String parentDirectory,

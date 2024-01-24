@@ -3,6 +3,8 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.hooks.HookEvent;
+import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
@@ -33,6 +35,8 @@ public class Kernel implements Buildable {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
+
+    private final Map<String, KernelHook> hooks = new HashMap<>();
 
     public Kernel(
         AIServiceSelector serviceSelector,
@@ -107,6 +111,21 @@ public class Kernel implements Buildable {
 
     public static Kernel.Builder builder() {
         return new Kernel.Builder();
+    }
+
+    public <T extends HookEvent> T executeHooks(T event) {
+        for (KernelHook hook : hooks.values()) {
+            event = hook.dispatch(event);
+        }
+        return event;
+    }
+
+    public void addHook(String hookName, KernelHook hook) {
+        hooks.put(hookName, hook);
+    }
+
+    public KernelHook removeHook(String hookName) {
+        return hooks.remove(hookName);
     }
 
     public static class Builder implements SemanticKernelBuilder<Kernel> {
