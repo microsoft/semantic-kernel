@@ -25,12 +25,13 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.FunctionResult;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -155,7 +156,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private Function<ChatResponseMessage, ChatResponseCollector> accumulateResponse(
         ChatCompletions completions) {
 
-        Map<String, ContextVariable<?>> metadata = OpenAITextGenerationService.buildMetadata(
+        FunctionResultMetadata metadata = FunctionResultMetadata.build(
             completions.getId(),
             completions.getUsage(),
             completions.getCreatedAt());
@@ -348,10 +349,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable
         private final Charset encoding;
         @Nullable
-        private final Map<String, ContextVariable<?>> metadata;
+        private final FunctionResultMetadata metadata;
 
         private AssistantContentBuffer(@Nullable String modelId, @Nullable String innerContent,
-            @Nullable Charset encoding, @Nullable Map<String, ContextVariable<?>> metadata) {
+            @Nullable Charset encoding, @Nullable FunctionResultMetadata metadata) {
             this.modelId = modelId;
             this.innerContent = innerContent;
             this.encoding = encoding;
@@ -449,7 +450,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable
         private final Charset encoding;
         @Nullable
-        private final Map<String, ContextVariable<?>> metadata;
+        private final FunctionResultMetadata metadata;
 
         private final Map<AuthorRole, ContentBuffer<?>> roleToContent = new HashMap<>();
 
@@ -457,7 +458,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             @Nullable String modelId,
             @Nullable String innerContent,
             @Nullable Charset encoding,
-            @Nullable Map<String, ContextVariable<?>> metadata) {
+            @Nullable FunctionResultMetadata metadata) {
             this.modelId = modelId;
             this.innerContent = innerContent;
             this.encoding = encoding;

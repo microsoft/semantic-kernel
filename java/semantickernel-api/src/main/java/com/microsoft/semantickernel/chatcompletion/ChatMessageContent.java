@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.chatcompletion;
 
 import com.microsoft.semantickernel.KernelContent;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +42,7 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
         @Nullable
         Charset encoding,
         @Nullable
-        Map<String, ContextVariable<?>> metadata
+        FunctionResultMetadata metadata
     ) {
         super(innerContent, modelId, metadata);
         this.authorRole = authorRole;
@@ -55,7 +56,7 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
         String modelId,
         String innerContent,
         Charset encoding,
-        Map<String, ContextVariable<?>> metadata
+        FunctionResultMetadata metadata
     ) {
         super(innerContent, modelId, metadata);
         this.authorRole = authorRole;

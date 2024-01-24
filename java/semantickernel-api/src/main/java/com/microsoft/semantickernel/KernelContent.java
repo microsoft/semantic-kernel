@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -13,7 +13,7 @@ public abstract class KernelContent<T extends KernelContent<T>> {
     @Nullable
     private String modelId;
     @Nullable
-    private Map<String, ContextVariable<?>> metadata;
+    private FunctionResultMetadata metadata;
 
     public KernelContent(
         @Nullable
@@ -21,12 +21,12 @@ public abstract class KernelContent<T extends KernelContent<T>> {
         @Nullable
         String modelId,
         @Nullable
-        Map<String, ContextVariable<?>> metadata
+        FunctionResultMetadata metadata
     ) {
         this.innerContent = innerContent;
         this.modelId = modelId;
         if (metadata != null) {
-            this.metadata = new HashMap<>(metadata);
+            this.metadata = metadata;
         }
     }
 
@@ -46,7 +46,7 @@ public abstract class KernelContent<T extends KernelContent<T>> {
     }
 
     @CheckForNull
-    public Map<String, ContextVariable<?>> getMetadata() {
+    public FunctionResultMetadata getMetadata() {
         return metadata;
     }
 

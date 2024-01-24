@@ -5,6 +5,7 @@ import com.azure.ai.openai.models.CompletionsOptions;
 import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.textcompletion.StreamingTextContent;
@@ -85,7 +86,8 @@ public class OpenAITextGenerationService implements TextGenerationService {
             .getCompletions(getModelId(), completionsOptions)
             .map(completions -> {
 
-                Map<String, ContextVariable<?>> metadata = buildMetadata(completions.getId(),
+                FunctionResultMetadata metadata = FunctionResultMetadata.build(
+                    completions.getId(),
                     completions.getUsage(),
                     completions.getCreatedAt());
 
