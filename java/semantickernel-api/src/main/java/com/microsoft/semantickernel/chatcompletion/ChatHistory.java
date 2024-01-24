@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 
 /**
@@ -81,7 +82,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
     }
 
     public void addMessage(AuthorRole authorRole, String content, Charset encoding,
-        Map<String, ContextVariable<?>> metadata) {
+        FunctionResultMetadata metadata) {
         chatMessageContents.add(
             new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
     }

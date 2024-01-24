@@ -8,8 +8,8 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments.Builder;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
@@ -158,7 +158,7 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        Mono<ContextVariable<String>> summary = kernel
+        Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
@@ -170,7 +170,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Action Items:");
-        System.out.println(summary.block().getValue());
+        System.out.println(summary.block().getResultVariable());
     }
 
     private static void getConversationTopicsAsync() {
@@ -179,7 +179,7 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        Mono<ContextVariable<String>> summary = kernel
+        Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
@@ -191,7 +191,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Topics:");
-        System.out.println(summary.block().getValue());
+        System.out.println(summary.block().getResultVariable());
     }
 
 
@@ -203,7 +203,7 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        Mono<ContextVariable<String>> summary = kernel
+        Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
@@ -215,7 +215,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Summary (This may take some time):");
-        System.out.println(summary.block().getValue());
+        System.out.println(summary.block().getResultVariable());
     }
 
     private static Kernel initializeKernel() {

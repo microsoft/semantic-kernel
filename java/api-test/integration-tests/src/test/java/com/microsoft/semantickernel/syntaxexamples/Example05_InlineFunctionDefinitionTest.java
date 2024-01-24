@@ -6,11 +6,10 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -35,7 +34,7 @@ public class Example05_InlineFunctionDefinitionTest {
             .withModelId("text-davinci-003")
             .build();
 
-        Kernel kernel = new DefaultKernel.Builder()
+        Kernel kernel = Kernel.builder()
             .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
@@ -75,7 +74,7 @@ public class Example05_InlineFunctionDefinitionTest {
                 String.class)
             .block();
 
-        Assertions.assertEquals("a-response", result.getValue());
+        Assertions.assertEquals("a-response", result.getResult());
 
         WireMockUtil.mockCompletionResponse("sorry I forgot your birthday", "a-response-2");
 
@@ -86,7 +85,7 @@ public class Example05_InlineFunctionDefinitionTest {
                 String.class)
             .block();
 
-        Assertions.assertEquals("a-response-2", result.getValue());
+        Assertions.assertEquals("a-response-2", result.getResult());
 
         WireMockUtil.mockCompletionResponse("Translate this date ", "a-response-3");
 
@@ -104,11 +103,11 @@ public class Example05_InlineFunctionDefinitionTest {
             null,
             null);
 
-        ContextVariable<String> fixedFunctionResult = kernel
+        FunctionResult<String> fixedFunctionResult = kernel
             .invokeAsync(fixedFunction, null, String.class)
             .block();
 
-        Assertions.assertEquals("a-response-3", fixedFunctionResult.getValue());
+        Assertions.assertEquals("a-response-3", fixedFunctionResult.getResult());
 
     }
 }

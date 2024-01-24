@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -61,7 +61,7 @@ public class Main {
             // Run the chat function
             // The grounded chat function uses the search plugin to perform a Bing search to ground the response
             // See Plugins/ChatPlugin/GroundedChat.prompt.yaml for the full prompt
-            ContextVariable<String> message = kernel
+            FunctionResult<String> message = kernel
                 .invokeAsync(
                     chatFunction,
                     KernelArguments.builder()
@@ -74,8 +74,8 @@ public class Main {
                 .block();
 
             System.console().printf("Assistant > ");
-            System.out.println(message.getValue());
-            chatHistory.addAssistantMessage(message.getValue());
+            System.out.println(message.getResult());
+            chatHistory.addAssistantMessage(message.getResult());
         }
     }
 }

@@ -195,6 +195,12 @@ public class Example09_FunctionTypes {
                 Temporal.class)
             .block();
 
+        kernel
+            .invokeAsync(plugin.get("withDefaultValue"),
+                null,
+                String.class)
+            .block();
+
         /*
         TODO: support FunctionResult
         kernel
@@ -377,13 +383,27 @@ public class Example09_FunctionTypes {
             );
         }
 
-
         @DefineKernelFunction(
             name = "noInputComplexReturnType",
             returnType = "java.time.temporal.Temporal"
         )
         public LocalDateTime noInputComplexReturnType() {
             return LocalDateTime.now();
+        }
+
+        @DefineKernelFunction(
+            name = "withDefaultValue",
+            returnType = "java.lang.String"
+        )
+        public String withDefaultValue(
+            @KernelFunctionParameter(
+                name = "x",
+                defaultValue = "1",
+                type = int.class
+            )
+            int x
+        ) {
+            return Integer.toString(x);
         }
 
         /*

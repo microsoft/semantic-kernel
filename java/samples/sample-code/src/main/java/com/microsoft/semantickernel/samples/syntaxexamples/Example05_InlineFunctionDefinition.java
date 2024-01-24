@@ -9,7 +9,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -85,7 +85,7 @@ public class Example05_InlineFunctionDefinition {
                     .build(),
                 String.class)
             .block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
 
         result = kernel.invokeAsync(excuseFunction,
                 KernelArguments.builder()
@@ -93,7 +93,7 @@ public class Example05_InlineFunctionDefinition {
                     .build(),
                 String.class)
             .block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
 
         var fixedFunction = KernelFunctionFactory.createFromPrompt(
             "Translate this date " + DateTimeFormatter
@@ -109,10 +109,10 @@ public class Example05_InlineFunctionDefinition {
             null,
             null);
 
-        ContextVariable<String> fixedFunctionResult = kernel
+        FunctionResult<String> fixedFunctionResult = kernel
             .invokeAsync(fixedFunction, null, String.class)
             .block();
-        System.out.println(fixedFunctionResult.getValue());
+        System.out.println(fixedFunctionResult.getResultVariable());
 
     }
 }

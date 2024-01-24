@@ -78,7 +78,7 @@ public class Example62_CustomAIServiceSelector {
             .build();
 
         var result = kernel.invokeAsync(func, arguments, String.class).block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
     }
 
     // A dumb AIServiceSelector that just returns the first service and execution settings it finds
@@ -92,7 +92,11 @@ public class Example62_CustomAIServiceSelector {
         @Override
         public AIServiceSelection trySelectAIService(
             Class<? extends AIService> serviceType,
+
+            @Nullable
             KernelFunction function,
+
+            @Nullable
             KernelArguments arguments,
             Map<Class<? extends AIService>, AIService> services) {
 

@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.BufferedReader;
@@ -58,7 +58,7 @@ public class Main {
             String input = bf.readLine();
             chatHistory.addUserMessage(input);
 
-            ContextVariable<String> message = kernel
+            FunctionResult<String> message = kernel
                 .invokeAsync(
                     chatFunction,
                     KernelArguments
@@ -70,8 +70,8 @@ public class Main {
                 .block();
 
             System.out.print("Assistant > ");
-            System.out.println(message.getValue());
-            chatHistory.addAssistantMessage(message.getValue());
+            System.out.println(message.getResult());
+            chatHistory.addAssistantMessage(message.getResult());
         }
     }
 }

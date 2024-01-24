@@ -1,16 +1,17 @@
 package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.models.Choice;
-import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.textcompletion.StreamingTextContent;
 import com.microsoft.semantickernel.textcompletion.TextContent;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -61,14 +62,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
     @Override
     public Mono<List<TextContent>> getTextContentsAsync(String prompt,
         @Nullable PromptExecutionSettings executionSettings, @Nullable Kernel kernel) {
-        return this
-            .internalCompleteTextAsync(prompt, executionSettings)
-            .map(it -> {
-                return it.stream().map(
-                        TextContent::new
-                    )
-                    .collect(Collectors.toList());
-            });
+        return this.internalCompleteTextAsync(prompt, executionSettings);
     }
 
     @Override
@@ -78,14 +72,11 @@ public class OpenAITextGenerationService implements TextGenerationService {
         @Nullable Kernel kernel) {
         return this
             .internalCompleteTextAsync(prompt, executionSettings)
-            .flatMapMany(it -> {
-                return Flux.fromStream(it.stream())
-                    .map(TextContent::new)
-                    .map(StreamingTextContent::new);
-            });
+            .flatMapMany(it -> Flux.fromStream(it.stream())
+                .map(StreamingTextContent::new));
     }
 
-    protected Mono<List<String>> internalCompleteTextAsync(
+    protected Mono<List<TextContent>> internalCompleteTextAsync(
         String text,
         PromptExecutionSettings requestSettings) {
 
@@ -93,9 +84,37 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
         return client
             .getCompletions(getModelId(), completionsOptions)
-            .flatMapIterable(Completions::getChoices)
-            .mapNotNull(Choice::getText)
-            .collectList();
+            .map(completions -> {
+
+                FunctionResultMetadata metadata = FunctionResultMetadata.build(
+                    completions.getId(),
+                    completions.getUsage(),
+                    completions.getCreatedAt());
+
+                return completions
+                    .getChoices()
+                    .stream()
+                    .map(choice -> {
+                        return new TextContent(
+                            choice.getText(),
+                            completionsOptions.getModel(),
+                            metadata);
+                    })
+                    .collect(Collectors.toList());
+            });
+    }
+
+    public static Map<String, ContextVariable<?>> buildMetadata(
+        String id,
+        CompletionsUsage usage,
+        OffsetDateTime createdAt) {
+
+        Map<String, ContextVariable<?>> metadata = new HashMap<>();
+        metadata.put("id", ContextVariable.of(id));
+        metadata.put("usage", ContextVariable.of(usage));
+        metadata.put("created_at", ContextVariable.of(createdAt));
+
+        return metadata;
     }
 
     private CompletionsOptions getCompletionsOptions(

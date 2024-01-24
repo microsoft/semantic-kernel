@@ -6,12 +6,10 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import java.util.concurrent.CountDownLatch;
 
-public class Example27_PromptFunctionsUsingChatGPT {
-
+public class Example63_ChatCompletionPrompts {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
@@ -21,7 +19,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         OpenAIAsyncClient client;
 
@@ -36,7 +34,6 @@ public class Example27_PromptFunctionsUsingChatGPT {
                 .credential(new KeyCredential(CLIENT_KEY))
                 .buildAsyncClient();
         }
-        System.out.println("======== Using Chat GPT model for text generation ========");
 
         ChatCompletionService openAIChatCompletion = ChatCompletionService.builder()
             .withOpenAIAsyncClient(client)
@@ -47,18 +44,26 @@ public class Example27_PromptFunctionsUsingChatGPT {
             .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
-        var func = KernelFunctionFactory.createFromPrompt(
-            "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
+        String chatPrompt = """
+            <message role="user">What is Seattle?</message>
+            <message role="system">Respond with JSON.</message>
+            """.stripIndent();
 
-        var result = func.invokeAsync(
-                kernel,
-                KernelArguments.builder()
-                    .withVariable("input", "Jupiter")
-                    .build(),
-                ContextVariableTypes.getDefaultVariableTypeForClass(String.class)
-            )
-            .block();
-        System.out.println(result.getResultVariable());
+        var chatSemanticFunction = KernelFunctionFromPrompt.create(chatPrompt);
+        var chatPromptResult = kernel.invokeAsync(chatSemanticFunction, null, String.class).block();
 
+        System.out.println("Chat Prompt:");
+        System.out.println(chatPrompt);
+        System.out.println("Chat Prompt Result:");
+        System.out.println(chatPromptResult.getResultVariable());
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        System.out.println("Chat Prompt Result:");
+        kernel
+            .invokeAsync(chatSemanticFunction, null, String.class)
+            .doFinally(x -> cdl.countDown())
+            .subscribe(result -> System.out.println(result.getResultVariable()));
+
+        cdl.await();
     }
 }

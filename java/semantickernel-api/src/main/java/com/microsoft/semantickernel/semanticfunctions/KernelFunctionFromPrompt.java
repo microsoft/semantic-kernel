@@ -12,10 +12,10 @@ import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.TextRequestContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
@@ -84,7 +84,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     }
 
 
-    private <T> Flux<TextRequestContent<T>> invokeInternalAsync(
+    private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
@@ -108,7 +108,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                         "Failed to initialise aiService, could not find any TextAIService implementations");
                 }
 
-                Flux<TextRequestContent<T>> result;
+                Flux<FunctionResult<T>> result;
 
                 PromptExecutionSettings executionSettings = aiServiceSelection.getSettings();
 
@@ -122,25 +122,40 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                         .concatMap(chatMessageContent -> {
                             if (chatMessageContent.getAuthorRole()
                                 == AuthorRole.ASSISTANT) {
+
                                 T value = variableType
                                     .getConverter()
-                                    .fromPromptString(
-                                        chatMessageContent.getContent());
-                                return Flux.just(new TextRequestContent<>(value));
+                                    .fromObject(chatMessageContent);
 
-                            } else if (chatMessageContent.getAuthorRole()
-                                == AuthorRole.TOOL) {
-                                Mono<ContextVariable<String>> toolResult = invokeTool(kernel,
-                                    chatMessageContent.getContent());
-                                return toolResult.flatMapMany(contextVariable -> {
-                                    T value = variableType
+                                if (value == null) {
+                                    value = variableType
                                         .getConverter()
                                         .fromPromptString(
-                                            contextVariable.getValue());
-                                    return Flux.just(new TextRequestContent<>(value));
-                                });
+                                            chatMessageContent.getContent());
+                                }
+
+                                return Flux.just(
+                                    new FunctionResult<>(
+                                        new ContextVariable<>(variableType, value),
+                                        chatMessageContent.getMetadata()
+                                    )
+                                );
+                            } else if (chatMessageContent.getAuthorRole()
+                                == AuthorRole.TOOL) {
+                                Mono<FunctionResult<String>> toolResult = invokeTool(kernel,
+                                    chatMessageContent.getContent());
+                                return toolResult.flux();
                             }
                             return Flux.empty();
+                        })
+                        .map(it -> {
+                            return new FunctionResult<>(
+                                new ContextVariable<>(
+                                    variableType,
+                                    variableType.of(it.getResult()).getValue()
+                                ),
+                                it.getMetadata()
+                            );
                         });
                     return result;
 
@@ -152,9 +167,25 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             kernel)
                         .flatMapMany(Flux::fromIterable)
                         .concatMap(textContent -> {
-                            T value = variableType.getConverter().fromPromptString(
-                                textContent.getContent());
-                            return Flux.just(new TextRequestContent<>(value));
+                            T value = variableType
+                                .getConverter()
+                                .fromObject(textContent);
+
+                            if (value == null) {
+                                value = variableType
+                                    .getConverter()
+                                    .fromPromptString(textContent.getContent());
+                            }
+
+                            return Flux.just(
+                                new FunctionResult<>(
+                                    new ContextVariable<>(
+                                        variableType,
+                                        value
+                                    ),
+                                    textContent.getMetadata()
+                                )
+                            );
                         });
                 } else {
                     return Flux.error(new IllegalStateException("Unknown service type"));
@@ -194,22 +225,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(
+    public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
-        return invokeInternalAsync(kernel, arguments, variableType).
-            collectList()
-            .map(contents -> {
-                StringBuilder result = contents
-                    .stream()
-                    .reduce(
-                        new StringBuilder(),
-                        (sb, textRequestContent) -> sb.append(textRequestContent.innerContent),
-                        StringBuilder::append);
-                T x = variableType.getConverter().fromPromptString(result.toString());
-                return new ContextVariable<>(variableType, x);
-            });
+        return invokeInternalAsync(kernel, arguments, variableType)
+            .take(1)
+            .single();
     }
 
     /*
@@ -219,7 +241,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
      * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
      * where 'name' is <plugin name '-' function name>.
      */
-    private Mono<ContextVariable<String>> invokeTool(Kernel kernel, String json) {
+    private Mono<FunctionResult<String>> invokeTool(Kernel kernel, String json) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(json);
@@ -236,7 +258,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     /*
      * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
      */
-    private Mono<ContextVariable<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
+    private Mono<FunctionResult<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
         String name = jsonNode.get("name").asText();
         String[] parts = name.split("-");
         String pluginName = parts.length > 0 ? parts[0] : "";
@@ -345,7 +367,10 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             if (this.executionSettings == null) {
                 this.executionSettings = new HashMap<>();
             }
-            this.executionSettings.putAll(executionSettings);
+
+            if (executionSettings != null) {
+                this.executionSettings.putAll(executionSettings);
+            }
             return this;
         }
 

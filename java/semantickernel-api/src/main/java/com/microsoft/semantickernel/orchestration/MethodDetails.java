@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.orchestration.KernelFunctionFromMethod.ImplementationFunc;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import java.util.List;

@@ -28,7 +28,10 @@ public interface AIServiceSelector {
     @Nullable
     AIServiceSelection trySelectAIService(
         Class<? extends AIService> serviceType,
+        @Nullable
         KernelFunction function,
+
+        @Nullable
         KernelArguments arguments
     );
 }

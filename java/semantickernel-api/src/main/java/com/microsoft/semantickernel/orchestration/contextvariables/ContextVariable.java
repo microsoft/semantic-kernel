@@ -15,6 +15,15 @@ public class ContextVariable<T> {
         return value;
     }
 
+    public <U> U getValue(Class<U> clazz) {
+        if (clazz.isAssignableFrom(value.getClass())) {
+            return (U) value;
+        } else {
+            throw new RuntimeException("Cannot cast " + value.getClass() + " to " + clazz);
+        }
+    }
+
+
     public ContextVariableType<T> getType() {
         return type;
     }
@@ -40,7 +49,6 @@ public class ContextVariable<T> {
             (Class<T>) value.getClass());
         return new ContextVariable<T>(type, value);
     }
-
 
     public static <T> ContextVariable<T> of(T value, ContextVariableTypeConverter<T> converter) {
         ContextVariableType<T> type = new ContextVariableType<>(converter, converter.getType());
