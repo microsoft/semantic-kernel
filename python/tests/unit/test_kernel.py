@@ -6,15 +6,15 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.skill_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.function_view import FunctionView
 
 
 def create_mock_function(name) -> SKFunctionBase:
-    function_view = FunctionView(name, "SummarizeSkill", "Summarize an input", [], True, True)
+    function_view = FunctionView(name, "SummarizePlugin", "Summarize an input", [], True, True)
     mock_function = Mock(spec=SKFunctionBase)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
-    mock_function.skill_name = function_view.skill_name
+    mock_function.plugin_name = function_view.plugin_name
     mock_function.description = function_view.description
 
     return mock_function
@@ -28,7 +28,7 @@ async def test_run_async_handles_pre_invocation(pipeline_count):
 
     mock_function = create_mock_function("test_function")
     mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
-    kernel._skill_collection.add_semantic_function(mock_function)
+    kernel._plugin_collection.add_semantic_function(mock_function)
 
     invoked = 0
 
