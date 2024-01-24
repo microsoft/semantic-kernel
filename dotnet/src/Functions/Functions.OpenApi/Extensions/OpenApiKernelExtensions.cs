@@ -283,7 +283,7 @@ public static class OpenApiKernelExtensions
             }
             ).Read(openApiDocumentString, out diagnostic);
 
-            var requestUrls = new Dictionary<string, List<string>>();
+            var requestUrls = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
             foreach (var (UriTemplate, Method) in pathMethodPairs)
             {
