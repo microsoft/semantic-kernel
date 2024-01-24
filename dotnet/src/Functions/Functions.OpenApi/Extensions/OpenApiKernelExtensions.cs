@@ -284,15 +284,21 @@ public static class OpenApiKernelExtensions
             ).Read(openApiDocumentString, out diagnostic);
 
             var requestUrls = new Dictionary<string, List<string>>();
-            var paths = apiDependencyDetails.Requests.Select(request => request.UriTemplate);
-            foreach (var path in paths)
+            var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
+            foreach (var (UriTemplate, Method) in pathMethodPairs)
             {
-                if (path is null)
+                if (UriTemplate is null || Method is null)
                 {
                     continue;
                 }
 
-                requestUrls.Add(path, new List<string> { "GET" });
+                if (requestUrls.TryGetValue(UriTemplate, out List<string>? value))
+                {
+                    value.Add(Method);
+                    continue;
+                }
+
+                requestUrls.Add(UriTemplate, new List<string>() { Method });
             }
 
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
