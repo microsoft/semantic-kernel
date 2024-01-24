@@ -5,13 +5,14 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 
-public class Example27_PromptFunctionsUsingChatGPT {
-
+public class Example43_GetModelResult {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
@@ -21,7 +22,9 @@ public class Example27_PromptFunctionsUsingChatGPT {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
+
     public static void main(String[] args) {
+        System.out.println("======== Open AI - ChatGPT Streaming ========");
 
         OpenAIAsyncClient client;
 
@@ -36,29 +39,38 @@ public class Example27_PromptFunctionsUsingChatGPT {
                 .credential(new KeyCredential(CLIENT_KEY))
                 .buildAsyncClient();
         }
-        System.out.println("======== Using Chat GPT model for text generation ========");
 
-        ChatCompletionService openAIChatCompletion = ChatCompletionService.builder()
-            .withOpenAIAsyncClient(client)
+        ChatCompletionService chatCompletionService = OpenAIChatCompletion.builder()
             .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, chatCompletionService)
             .build();
 
-        var func = KernelFunctionFactory.createFromPrompt(
-            "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
+        System.out.println("======== Inline Function Definition + Invocation ========");
 
-        var result = func.invokeAsync(
-                kernel,
+        // Create function
+        String FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
+        KernelFunction myFunction = KernelFunctionFromPrompt.create(
+            FunctionDefinition);
+
+        // Invoke function through kernel
+        FunctionResult<String> result = kernel.invokeAsync(
+                myFunction,
                 KernelArguments.builder()
-                    .withVariable("input", "Jupiter")
+                    .withVariable("input", "travel")
                     .build(),
-                ContextVariableTypes.getDefaultVariableTypeForClass(String.class)
-            )
+                String.class)
             .block();
-        System.out.println(result.getResultVariable());
 
+        // Display results
+        System.out.println(result.getResult());
+        System.out.println(
+            "Usage: " + result
+                .getMetadata()
+                .getUsage().getTotalTokens());
+        System.out.println();
     }
 }

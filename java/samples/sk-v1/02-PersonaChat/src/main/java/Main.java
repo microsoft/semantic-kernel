@@ -6,14 +6,13 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.util.List;
 
 public class Main {
 
@@ -56,7 +55,7 @@ public class Main {
             // Run the chat function
             // The persona chat function uses the persona variable to set the persona of the chat using a system message
             // See Plugins/ChatPlugin/PersonaChat.prompt.yaml for the full prompt
-            ContextVariable<String> message = kernel
+            FunctionResult<String> message = kernel
                 .invokeAsync(
                     chatFunction,
                     KernelArguments
@@ -70,8 +69,8 @@ public class Main {
                 .block();
 
             System.out.print("Assistant > ");
-            System.out.print(message.getValue());
-            chatHistory.addAssistantMessage(message.getValue());
+            System.out.print(message.getResult());
+            chatHistory.addAssistantMessage(message.getResult());
         }
     }
 }

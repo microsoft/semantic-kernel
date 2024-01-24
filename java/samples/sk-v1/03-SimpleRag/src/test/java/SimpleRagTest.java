@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -84,7 +84,7 @@ public class SimpleRagTest {
             // Run the chat function
             // The grounded chat function uses the search plugin to perform a Bing search to ground the response
             // See Plugins/ChatPlugin/GroundedChat.prompt.yaml for the full prompt
-            ContextVariable<String> result = kernel
+            FunctionResult<String> result = kernel
                 .invokeAsync(
                     chatFunction,
                     KernelArguments.builder()
@@ -96,8 +96,8 @@ public class SimpleRagTest {
                 )
                 .block();
 
-            Assertions.assertEquals(message.content(), result.getValue());
-            chatHistory.addAssistantMessage(result.getValue());
+            Assertions.assertEquals(message.content(), result.getResult());
+            chatHistory.addAssistantMessage(result.getResult());
         });
     }
 }

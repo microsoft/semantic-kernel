@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -19,7 +18,7 @@ public class Example03_ArgumentsTest {
 
     @Test
     public void main() {
-        Kernel kernel = new DefaultKernel.Builder().build();
+        Kernel kernel = Kernel.builder().build();
 
         // Load native skill
         KernelPlugin functionCollection =
@@ -31,12 +30,12 @@ public class Example03_ArgumentsTest {
             .writableClone()
             .setVariable("day", "Monday");
 
-        ContextVariable<String> resultValue = kernel.invokeAsync(
+        FunctionResult<String> resultValue = kernel.invokeAsync(
                 functionCollection.get("AppendDay"),
                 arguments,
                 String.class)
             .block();
 
-        Assertions.assertEquals("Today is: Monday", resultValue.getValue());
+        Assertions.assertEquals("Today is: Monday", resultValue.getResult());
     }
 }

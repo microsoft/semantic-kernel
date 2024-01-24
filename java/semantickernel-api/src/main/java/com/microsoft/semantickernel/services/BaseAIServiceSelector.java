@@ -22,7 +22,11 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
     @Nullable
     public AIServiceSelection trySelectAIService(
         Class<? extends AIService> serviceType,
+
+        @Nullable
         KernelFunction function,
+
+        @Nullable
         KernelArguments arguments) {
         return trySelectAIService(serviceType, function, arguments, services);
     }
@@ -30,7 +34,11 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
     @Nullable
     public abstract AIServiceSelection trySelectAIService(
         Class<? extends AIService> serviceType,
+
+        @Nullable
         KernelFunction function,
+
+        @Nullable
         KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services);
 }

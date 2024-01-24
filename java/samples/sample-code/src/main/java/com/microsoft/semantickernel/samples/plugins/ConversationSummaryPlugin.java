@@ -134,7 +134,7 @@ public class ConversationSummaryPlugin {
                     ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
             })
             .reduce("", (acc, next) -> {
-                return acc + "\n" + next.getValue();
+                return acc + "\n" + next.getResultVariable();
             });
     }
 }

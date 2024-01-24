@@ -5,7 +5,6 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.http.HttpClient;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
@@ -66,7 +65,7 @@ public class Example42_KernelBuilder {
         // KernelBuilder provides a convenient API for creating Kernel instances. However, it is just a
         // wrapper, ultimately constructing a Kernel
         // using the public constructor that's available for anyone to use directly if desired.
-        Kernel kernel = new DefaultKernel(
+        Kernel kernel = new Kernel(
             new OrderedAIServiceSelector(),
             new KernelPluginCollection()
         );

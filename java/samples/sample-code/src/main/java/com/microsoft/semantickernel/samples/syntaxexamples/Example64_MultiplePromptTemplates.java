@@ -4,7 +4,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
@@ -49,7 +48,7 @@ public class Example64_MultiplePromptTemplates {
             .withOpenAIAsyncClient(client)
             .build();
 
-        var kernel = new DefaultKernel.Builder()
+        var kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
@@ -83,6 +82,6 @@ public class Example64_MultiplePromptTemplates {
             .build();
 
         var result = kernel.invokeAsync(function, arguments, String.class).block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
     }
 }
