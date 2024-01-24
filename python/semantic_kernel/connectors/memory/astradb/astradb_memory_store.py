@@ -155,7 +155,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         Arguments:
             collection_name {str} -- The name associated with a collection of embeddings.
-            records {MemoryRecord} -- The memory records to upsert.
+            records {List[MemoryRecord]} -- The memory records to upsert.
 
         Returns:
             List[str] -- The unique identifiers for the memory record.
@@ -248,7 +248,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
         matches = await self.get_nearest_matches_async(
             collection_name=collection_name,
