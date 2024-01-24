@@ -1,5 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.starter;
-
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -19,41 +19,49 @@ import org.springframework.util.Assert;
 @EnableConfigurationProperties(AzureOpenAIConnectionProperties.class)
 public class SemanticKernelAutoConfiguration {
 
-  /**
-   * Creates a {@link OpenAIAsyncClient} with the endpoint and key specified in the
-   * {@link AzureOpenAIConnectionProperties}.
-   *
-   * @param connectionProperties the {@link AzureOpenAIConnectionProperties} to use
-   * @return the {@link OpenAIAsyncClient}
-   */
-  @Bean
-  @ConditionalOnClass(OpenAIAsyncClient.class)
-  @ConditionalOnMissingBean
-  public OpenAIAsyncClient openAIAsyncClient(AzureOpenAIConnectionProperties connectionProperties) {
-    Assert.hasText(connectionProperties.getEndpoint(), "Azure OpenAI endpoint must be set");
-    Assert.hasText(connectionProperties.getKey(), "Azure OpenAI key must be set");
-    return new OpenAIClientBuilder()
-        .endpoint(connectionProperties.getEndpoint())
-        .credential(new AzureKeyCredential(connectionProperties.getKey()))
-        .buildAsyncClient();
-  }
+    String modelId;
 
-  /**
-   * Creates a {@link Kernel} with a default {@link com.microsoft.semantickernel.services.AIService}
-   * that uses the {@link com.microsoft.semantickernel.chatcompletion;} with the model id specified
-   * in the {@link AzureOpenAIConnectionProperties} as DeploymentName.
-   *
-   * @param client the {@link OpenAIAsyncClient} to use
-   * @return the {@link Kernel}
-   */
-  @Bean
-  public Kernel semanticKernel(OpenAIAsyncClient client) {
-    return SKBuilders.kernel()
-        .withDefaultAIService(
-            SKBuilders.textCompletion()
-                .withModelId("modelId")
-                .withOpenAIClient(client)
-                .build())
-        .build();
-  }
+    /**
+     * Creates a {@link OpenAIAsyncClient} with the endpoint and key specified in the {@link
+     * AzureOpenAIConnectionProperties}.
+     *
+     * @param connectionProperties the {@link AzureOpenAIConnectionProperties} to use
+     * @return the {@link OpenAIAsyncClient}
+     */
+    @Bean
+    @ConditionalOnClass(OpenAIAsyncClient.class)
+    @ConditionalOnMissingBean
+    public OpenAIAsyncClient openAIAsyncClient(
+            AzureOpenAIConnectionProperties connectionProperties) {
+        Assert.hasText(connectionProperties.getEndpoint(), "Azure OpenAI endpoint must be set");
+        Assert.hasText(connectionProperties.getKey(), "Azure OpenAI key must be set");
+
+        modelId = connectionProperties.getDeploymentName();
+
+        return new OpenAIClientBuilder()
+                .endpoint(connectionProperties.getEndpoint())
+                .credential(new AzureKeyCredential(connectionProperties.getKey()))
+                .buildAsyncClient();
+    }
+
+    /**
+     * Creates a {@link Kernel} with a default {@link
+     * com.microsoft.semantickernel.services.AIService} that uses the {@link
+     * com.microsoft.semantickernel.chatcompletion;} with the model id specified in the {@link
+     * AzureOpenAIConnectionProperties} as DeploymentName.
+     *
+     * @param client the {@link OpenAIAsyncClient} to use
+     * @return the {@link Kernel}
+     */
+    @Bean
+    public Kernel semanticKernel(OpenAIAsyncClient client) {
+        return SKBuilders.kernel()
+                .withDefaultAIService(
+                        SKBuilders.textCompletion()
+                                .withModelId(modelId)
+                                .withOpenAIClient(client)
+                                .build())
+                .build();
+    }
+
 }
