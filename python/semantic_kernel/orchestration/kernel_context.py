@@ -6,6 +6,7 @@ from typing import Any, Dict, Generic, Literal, Optional, Tuple, Union
 from pydantic import Field, PrivateAttr
 
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryBase,
     SemanticTextMemoryT,
@@ -17,12 +18,11 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection import (
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
     ReadOnlyPluginCollectionBase,
 )
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
+class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
 
     memory: SemanticTextMemoryT
@@ -43,7 +43,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
         # TODO: cancellation token?
     ) -> None:
         """
-        Initializes a new instance of the SKContext class.
+        Initializes a new instance of the KernelContext class.
 
         Arguments:
             variables {ContextVariables} -- The context variables.
@@ -175,7 +175,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             function_name {str} -- The function name.
 
         Returns:
-            SKFunctionBase -- The function.
+            KernelFunctionBase -- The function.
         """
         if self.plugin_collection is None:
             raise ValueError("The plugin collection hasn't been set")
@@ -213,7 +213,7 @@ class SKContext(SKBaseModel, Generic[SemanticTextMemoryT]):
             function_name {str} -- The function name.
 
         Returns:
-            Tuple[bool, SKFunctionBase] -- A tuple with a boolean indicating
+            Tuple[bool, KernelFunctionBase] -- A tuple with a boolean indicating
             whether the function is registered and the function itself (or None).
         """
         self.throw_if_plugin_collection_not_set()

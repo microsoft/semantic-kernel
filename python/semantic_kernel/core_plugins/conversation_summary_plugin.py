@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 class ConversationSummaryPlugin:
@@ -11,7 +11,7 @@ class ConversationSummaryPlugin:
     Semantic plugin that enables conversations summarization.
     """
 
-    from semantic_kernel.plugin_definition import sk_function
+    from semantic_kernel.plugin_definition import kernel_function
 
     # The max tokens to process in a single semantic function call.
     _max_tokens = 1024
@@ -36,18 +36,18 @@ class ConversationSummaryPlugin:
             top_p=0.5,
         )
 
-    @sk_function(
+    @kernel_function(
         description="Given a long conversation transcript, summarize the conversation.",
         name="SummarizeConversation",
         input_description="A long conversation transcript.",
     )
-    async def summarize_conversation_async(self, input: str, context: "SKContext") -> "SKContext":
+    async def summarize_conversation_async(self, input: str, context: "KernelContext") -> "KernelContext":
         """
         Given a long conversation transcript, summarize the conversation.
 
         :param input: A long conversation transcript.
-        :param context: The SKContext for function execution.
-        :return: SKContext with the summarized conversation result.
+        :param context: The KernelContext for function execution.
+        :return: KernelContext with the summarized conversation result.
         """
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import (

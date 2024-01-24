@@ -3,13 +3,13 @@
 import logging
 from typing import Any, Optional, Tuple
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Block(SKBaseModel):
+class Block(KernelBaseModel):
     content: Optional[str] = None
 
     def __init__(self, content: Optional[str] = None, log: Optional[Any] = None) -> None:

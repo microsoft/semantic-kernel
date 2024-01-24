@@ -3,7 +3,7 @@
 import logging
 from typing import Any, List, Optional
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -22,7 +22,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [value]          ::= "'" [text] "'" | '"' [text] '"'
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
-class CodeTokenizer(SKBaseModel):
+class CodeTokenizer(KernelBaseModel):
     def __init__(self, log: Optional[Any] = None):
         super().__init__()
 

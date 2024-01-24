@@ -11,10 +11,10 @@ else:
 from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class AIServiceClientBase(SKBaseModel, ABC):
+class AIServiceClientBase(KernelBaseModel, ABC):
     """Base class for all AI Services.
 
     Has a ai_model_id, any other fields have to be defined by the subclasses.

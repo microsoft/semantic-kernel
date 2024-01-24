@@ -6,7 +6,7 @@ from typing import List, Tuple
 from pytest import mark, raises
 
 from semantic_kernel import Kernel
-from semantic_kernel.plugin_definition import sk_function
+from semantic_kernel.plugin_definition import kernel_function
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 
@@ -34,11 +34,11 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 
 
 class MyPlugin:
-    @sk_function()
+    @kernel_function()
     def check123(self, input: str) -> str:
         return "123 ok" if input == "123" else f"{input} != 123"
 
-    @sk_function()
+    @kernel_function()
     def asis(self, input: str) -> str:
         return input
 

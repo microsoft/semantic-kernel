@@ -7,8 +7,8 @@ import pytest
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner import (
     SequentialPlanner,
@@ -21,7 +21,7 @@ from semantic_kernel.plugin_definition.plugin_collection_base import (
 
 
 def create_mock_function(function_view: FunctionView):
-    mock_function = Mock(spec=SKFunctionBase)
+    mock_function = Mock(spec=KernelFunctionBase)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name
@@ -51,7 +51,7 @@ async def test_it_can_create_plan_async(goal):
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        context = SKContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+        context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
         context.variables.update("MOCK FUNCTION CALLED")
         mock_function.invoke_async.return_value = context
         mock_functions.append(mock_function)
@@ -65,8 +65,10 @@ async def test_it_can_create_plan_async(goal):
     expected_functions = [x[0] for x in input]
     expected_plugins = [x[1] for x in input]
 
-    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
-    return_context = SKContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+    return_context = KernelContext.model_construct(
+        variables=ContextVariables(), memory=memory, plugin_collection=plugins
+    )
     plan_string = """
 <plan>
     <function.SummarizePlugin.Summarize/>
@@ -77,7 +79,7 @@ async def test_it_can_create_plan_async(goal):
 
     return_context.variables.update(plan_string)
 
-    mock_function_flow_function = Mock(spec=SKFunctionBase)
+    mock_function_flow_function = Mock(spec=KernelFunctionBase)
     mock_function_flow_function.invoke_async.return_value = return_context
 
     kernel.plugins = plugins
@@ -120,15 +122,15 @@ async def test_invalid_xml_throws_async():
     plugins.get_functions_view.return_value = functionsView
 
     plan_string = "<plan>notvalid<</plan>"
-    return_context = SKContext.model_construct(
+    return_context = KernelContext.model_construct(
         variables=ContextVariables(plan_string),
         memory=memory,
         plugin_collection=plugins,
     )
 
-    context = SKContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
 
-    mock_function_flow_function = Mock(spec=SKFunctionBase)
+    mock_function_flow_function = Mock(spec=KernelFunctionBase)
     mock_function_flow_function.invoke_async.return_value = return_context
 
     kernel.plugins = plugins

@@ -9,7 +9,7 @@ import re
 from typing import TYPE_CHECKING, Dict, List
 
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
@@ -17,10 +17,10 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.sk_function_context_parameter_decorator import (
-    sk_function_context_parameter,
+from semantic_kernel.plugin_definition.kernel_function_context_parameter_decorator import (
+    kernel_function_context_parameter,
 )
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
+from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -30,7 +30,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -64,8 +64,8 @@ def is_null_or_empty(value: str) -> bool:
 
 class StepwisePlanner:
     config: StepwisePlannerConfig
-    _context: "SKContext"
-    _function_flow_function: "SKFunctionBase"
+    _context: "KernelContext"
+    _function_flow_function: "KernelFunctionBase"
 
     def __init__(
         self,
@@ -117,10 +117,10 @@ class StepwisePlanner:
         return plan
 
     # TODO: sync C# with https://github.com/microsoft/semantic-kernel/pull/1195
-    @sk_function(name="ExecutePlan", description="Execute a plan")
-    @sk_function_context_parameter(name="question", description="The question to answer")
-    @sk_function_context_parameter(name="function_descriptions", description="List of tool descriptions")
-    async def execute_plan_async(self, context: SKContext) -> SKContext:
+    @kernel_function(name="ExecutePlan", description="Execute a plan")
+    @kernel_function_context_parameter(name="question", description="The question to answer")
+    @kernel_function_context_parameter(name="function_descriptions", description="List of tool descriptions")
+    async def execute_plan_async(self, context: KernelContext) -> KernelContext:
         question = context["question"]
 
         steps_taken: List[SystemStep] = []
@@ -239,7 +239,7 @@ class StepwisePlanner:
 
         return result
 
-    def add_execution_stats_to_context(self, steps_taken: List[SystemStep], context: SKContext):
+    def add_execution_stats_to_context(self, steps_taken: List[SystemStep], context: KernelContext):
         context.variables.set("step_count", str(len(steps_taken)))
         context.variables.set("steps_taken", json.dumps([s.__dict__ for s in steps_taken], indent=4))
 
@@ -333,7 +333,7 @@ class StepwisePlanner:
                 f"{target_function.plugin_name}.{target_function.name}. Error: {e}",
             )
 
-    def create_action_context(self, action_variables: Dict[str, str]) -> SKContext:
+    def create_action_context(self, action_variables: Dict[str, str]) -> KernelContext:
         action_context = self._kernel.create_new_context()
         if action_variables is not None:
             for k, v in action_variables.items():
@@ -373,7 +373,7 @@ class StepwisePlanner:
         function_name: str,
         prompt_template: str,
         config: PromptTemplateConfig = None,
-    ) -> "SKFunctionBase":
+    ) -> "KernelFunctionBase":
         template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)
 

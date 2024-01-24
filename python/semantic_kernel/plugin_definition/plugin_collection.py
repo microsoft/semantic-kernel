@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Union
 
 from pydantic import Field
 
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition import constants
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.plugin_collection_base import (
@@ -19,7 +19,7 @@ from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class PluginCollection(PluginCollectionBase):
     def __init__(
         self,
         log: Optional[Any] = None,
-        plugin_collection: Union[Dict[str, Dict[str, SKFunction]], None] = None,
+        plugin_collection: Union[Dict[str, Dict[str, KernelFunction]], None] = None,
         read_only_plugin_collection_: Optional[ReadOnlyPluginCollection] = None,
     ) -> None:
         if log:
@@ -54,7 +54,7 @@ class PluginCollection(PluginCollectionBase):
     def plugin_collection(self):
         return self.read_only_plugin_collection_.data
 
-    def add_semantic_function(self, function: "SKFunctionBase") -> None:
+    def add_semantic_function(self, function: "KernelFunctionBase") -> None:
         if function is None:
             raise ValueError("The function provided cannot be `None`")
 
@@ -63,7 +63,7 @@ class PluginCollection(PluginCollectionBase):
 
         self.plugin_collection.setdefault(s_name, {})[f_name] = function
 
-    def add_native_function(self, function: "SKFunctionBase") -> None:
+    def add_native_function(self, function: "KernelFunctionBase") -> None:
         if function is None:
             raise ValueError("The function provided cannot be `None`")
 
@@ -81,14 +81,14 @@ class PluginCollection(PluginCollectionBase):
     def has_native_function(self, plugin_name: Optional[str], function_name: str) -> bool:
         return self.read_only_plugin_collection_.has_native_function(plugin_name, function_name)
 
-    def get_semantic_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_semantic_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         return self.read_only_plugin_collection_.get_semantic_function(plugin_name, function_name)
 
-    def get_native_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_native_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         return self.read_only_plugin_collection_.get_native_function(plugin_name, function_name)
 
     def get_functions_view(self, include_semantic: bool = True, include_native: bool = True) -> FunctionsView:
         return self.read_only_plugin_collection_.get_functions_view(include_semantic, include_native)
 
-    def get_function(self, plugin_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_function(self, plugin_name: Optional[str], function_name: str) -> "KernelFunctionBase":
         return self.read_only_plugin_collection_.get_function(plugin_name, function_name)

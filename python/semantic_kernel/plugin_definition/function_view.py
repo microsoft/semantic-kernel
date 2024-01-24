@@ -2,12 +2,12 @@
 
 from typing import List
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.utils.validation import validate_function_name
 
 
-class FunctionView(SKBaseModel):
+class FunctionView(KernelBaseModel):
     name: str
     plugin_name: str
     description: str

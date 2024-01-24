@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
+from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 
 # TODO: this fake plugin is temporal usage.
 # C# supports import plugin from samples dir by using test helper and python should do the same
@@ -8,7 +8,7 @@ from semantic_kernel.plugin_definition.sk_function_decorator import sk_function
 
 
 class SummarizePluginFake:
-    @sk_function(
+    @kernel_function(
         description="Summarize",
         name="Summarize",
     )

@@ -2,11 +2,11 @@
 import json
 from typing import Dict, Tuple
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
-class FunctionCall(SKBaseModel):
+class FunctionCall(KernelBaseModel):
     """Class to hold a function call response."""
 
     name: str

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pytest
 
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -14,8 +14,8 @@ from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 
 
-def create_mock_function(function_view: FunctionView) -> SKFunctionBase:
-    mock_function = Mock(spec=SKFunctionBase)
+def create_mock_function(function_view: FunctionView) -> KernelFunctionBase:
+    mock_function = Mock(spec=KernelFunctionBase)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name

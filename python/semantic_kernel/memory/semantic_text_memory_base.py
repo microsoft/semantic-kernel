@@ -3,13 +3,13 @@
 from abc import abstractmethod
 from typing import List, Optional, TypeVar
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBase")
 
 
-class SemanticTextMemoryBase(SKBaseModel):
+class SemanticTextMemoryBase(KernelBaseModel):
     @abstractmethod
     async def save_information_async(
         self,

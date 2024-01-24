@@ -1,4 +1,4 @@
-from semantic_kernel.plugin_definition import sk_function
+from semantic_kernel.plugin_definition import kernel_function
 
 
 class TestNativeEchoBotPlugin:
@@ -6,7 +6,7 @@ class TestNativeEchoBotPlugin:
     Description: Test Native Plugin for testing purposes
     """
 
-    @sk_function(
+    @kernel_function(
         description="Echo for input text",
         name="echoAsync",
         input_description="The text to echo",

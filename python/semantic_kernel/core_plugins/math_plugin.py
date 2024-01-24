@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 import typing as t
 
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
-class MathPlugin(SKBaseModel):
+class MathPlugin(KernelBaseModel):
     """
     Description: MathPlugin provides a set of functions to make Math calculations.
 
@@ -16,21 +16,21 @@ class MathPlugin(SKBaseModel):
         kernel.import_plugin(MathPlugin(), plugin_name="math")
 
     Examples:
-        {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the SKContext)
+        {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the KernelContext)
     """
 
-    @sk_function(
+    @kernel_function(
         description="Adds value to a value",
         name="Add",
         input_description="The value to add",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name="Amount",
         description="Amount to add",
         type="number",
         required=True,
     )
-    def add(self, initial_value_text: str, context: "SKContext") -> str:
+    def add(self, initial_value_text: str, context: "KernelContext") -> str:
         """
         Returns the Addition result of initial and amount values provided.
 
@@ -40,18 +40,18 @@ class MathPlugin(SKBaseModel):
         """
         return MathPlugin.add_or_subtract(initial_value_text, context, add=True)
 
-    @sk_function(
+    @kernel_function(
         description="Subtracts value to a value",
         name="Subtract",
         input_description="The value to subtract",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name="Amount",
         description="Amount to subtract",
         type="number",
         required=True,
     )
-    def subtract(self, initial_value_text: str, context: "SKContext") -> str:
+    def subtract(self, initial_value_text: str, context: "KernelContext") -> str:
         """
         Returns the difference of numbers provided.
 
@@ -62,7 +62,7 @@ class MathPlugin(SKBaseModel):
         return MathPlugin.add_or_subtract(initial_value_text, context, add=False)
 
     @staticmethod
-    def add_or_subtract(initial_value_text: str, context: "SKContext", add: bool) -> str:
+    def add_or_subtract(initial_value_text: str, context: "KernelContext", add: bool) -> str:
         """
         Helper function to perform addition or subtraction based on the add flag.
 

@@ -42,7 +42,7 @@ async def search_memory_examples(kernel: sk.Kernel) -> None:
 
 async def setup_chat_with_memory(
     kernel: sk.Kernel,
-) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
+) -> Tuple[sk.KernelFunctionBase, sk.KernelContext]:
     """
     When using Google PaLM to chat with memories, a chat prompt template is
     essential; otherwise, the kernel will send text prompts to the Google PaLM
@@ -90,7 +90,7 @@ async def setup_chat_with_memory(
     return chat_func, context
 
 
-async def chat(kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext) -> bool:
+async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunctionBase, context: sk.KernelContext) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input

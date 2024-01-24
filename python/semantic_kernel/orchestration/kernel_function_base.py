@@ -7,19 +7,19 @@ from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
     from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
         ReadOnlyPluginCollectionBase,
     )
 
 
-class SKFunctionBase(SKBaseModel):
+class KernelFunctionBase(KernelBaseModel):
     @property
     @abstractmethod
     def name(self) -> str:
@@ -97,20 +97,20 @@ class SKFunctionBase(SKBaseModel):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
-    ) -> "SKContext":
+    ) -> "KernelContext":
         """
         Invokes the function with an explicit string input
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
             variables {ContextVariables} -- The custom input
-            context {SKContext} -- The context to use
+            context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {AIRequestSettings} -- LLM completion settings
         Returns:
-            SKContext -- The updated context, potentially a new one if
+            KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
         """
         pass
@@ -120,21 +120,21 @@ class SKFunctionBase(SKBaseModel):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         **kwargs: Dict[str, Any],
-    ) -> "SKContext":
+    ) -> "KernelContext":
         """
         Invokes the function with an explicit string input
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
             variables {ContextVariables} -- The custom input
-            context {SKContext} -- The context to use
+            context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {AIRequestSettings} -- LLM completion settings
         Returns:
-            SKContext -- The updated context, potentially a new one if
+            KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
         """
         pass
@@ -143,7 +143,7 @@ class SKFunctionBase(SKBaseModel):
     def set_default_plugin_collection(
         self,
         plugins: "ReadOnlyPluginCollectionBase",
-    ) -> "SKFunctionBase":
+    ) -> "KernelFunctionBase":
         """
         Sets the plugin collection to use when the function is
         invoked without a context or with a context that doesn't have
@@ -153,12 +153,12 @@ class SKFunctionBase(SKBaseModel):
             plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
 
         Returns:
-            SKFunctionBase -- The function instance
+            KernelFunctionBase -- The function instance
         """
         pass
 
     @abstractmethod
-    def set_ai_service(self, service_factory: Callable[[], TextCompletionClientBase]) -> "SKFunctionBase":
+    def set_ai_service(self, service_factory: Callable[[], TextCompletionClientBase]) -> "KernelFunctionBase":
         """
         Sets the AI service used by the semantic function, passing in a factory
         method. The factory allows us to lazily instantiate the client and to
@@ -168,12 +168,12 @@ class SKFunctionBase(SKBaseModel):
             service_factory -- AI service factory
 
         Returns:
-            SKFunctionBase -- The function instance
+            KernelFunctionBase -- The function instance
         """
         pass
 
     @abstractmethod
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "SKFunctionBase":
+    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunctionBase":
         """
         Sets the AI completion settings used with LLM requests
 
@@ -181,6 +181,6 @@ class SKFunctionBase(SKBaseModel):
             settings {AIRequestSettings} -- LLM completion settings
 
         Returns:
-            SKFunctionBase -- The function instance
+            KernelFunctionBase -- The function instance
         """
         pass

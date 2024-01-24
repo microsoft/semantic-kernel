@@ -5,13 +5,13 @@ from typing import Generic, List, TypeVar
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 AIRequestSettingsT = TypeVar("AIRequestSettingsT", bound=AIRequestSettings)
 
 
-class PromptTemplateConfig(SKBaseModel, Generic[AIRequestSettingsT]):
+class PromptTemplateConfig(KernelBaseModel, Generic[AIRequestSettingsT]):
     schema_: int = Field(default=1, alias="schema")
     type: str = "completion"
     description: str = ""

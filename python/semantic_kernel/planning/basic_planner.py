@@ -212,17 +212,17 @@ class BasicPlanner:
 
         for subtask in subtasks:
             plugin_name, function_name = subtask["function"].split(".")
-            sk_function = kernel.plugins.get_function(plugin_name, function_name)
+            kernel_function = kernel.plugins.get_function(plugin_name, function_name)
 
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)
             if args:
                 for key, value in args.items():
                     context[key] = value
-                output = await sk_function.invoke_async(variables=context)
+                output = await kernel_function.invoke_async(variables=context)
 
             else:
-                output = await sk_function.invoke_async(variables=context)
+                output = await kernel_function.invoke_async(variables=context)
 
             # Override the input context variable with the output of the function
             context["input"] = output.result

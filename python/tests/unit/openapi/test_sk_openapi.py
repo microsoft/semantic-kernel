@@ -8,7 +8,7 @@ from openapi_core import Spec
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
-from semantic_kernel.connectors.openapi.sk_openapi import (
+from semantic_kernel.connectors.openapi.kernel_openapi import (
     OpenApiParser,
     OpenApiRunner,
     PreparedRestApiRequest,
