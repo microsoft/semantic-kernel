@@ -1,9 +1,9 @@
 ---
 # Strategy for Community Driven Connectors and Features
 
-status: proposed
+status: approved
 contact: rogerbarreto
-date: 2024-01-16
+date: 2024-01-24
 deciders: rogerbarreto, markwallace-microsoft, dmytrostruk, sergeymenshik
 consulted:
 informed:
@@ -105,15 +105,15 @@ Currently we are looking for community support on the following models
 
 The support on the below can be either achieved creating a practical example using one of the existing Connectors against one of this models or providing a new Connector that supports a deployment platform that hosts one of the models below:
 
-| Model Name | Local Support | Deployment                                   | Connectors                                      |
-| ---------- | ------------- | -------------------------------------------- | ----------------------------------------------- |
-| Gpt-4      | No            | OpenAI, Azure Open AI                        | OpenAI                                          |
-| Phi-2      | Yes           | Azure OpenAI, Hugging Face, LMStudio, Ollama | OpenAI, HuggingFace, LMStudio\*\*\*, Ollama\*\* |
-| Gemini     | No            | Google AI Platform                           | GoogleAI\*\*                                    |
-| Llama-2    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
-| Mistral    | Yes           | LMStudio, HuggingFace, Ollama                | HuggingFace, OpenAI, LMStudio\*\*\*, Ollama\*\* |
-| Claude     | No            | Anthropic, Amazon Bedrock                    | Anthropic**, Amazon**                           |
-| Titan      | No            | Amazon Bedrock                               | Amazon\*\*                                      |
+| Model Name | Local Support | Deployment                             | Connectors                                             |
+| ---------- | ------------- | -------------------------------------- | ------------------------------------------------------ |
+| Gpt-4      | No            | OpenAI, Azure                          | Azure+OpenAI                                           |
+| Phi-2      | Yes           | Azure, Hugging Face, LM Studio, Ollama | OpenAI, HuggingFace, LM Studio\*\*\*, Ollama\*\*       |
+| Gemini     | No            | Google AI Platform                     | GoogleAI\*\*                                           |
+| Llama-2    | Yes           | Azure, LM Studio, HuggingFace, Ollama  | HuggingFace, Azure+OpenAI, LM Studio\*\*\*, Ollama\*\* |
+| Mistral    | Yes           | Azure, LM Studio, HuggingFace, Ollama  | HuggingFace, Azure+OpenAI, LM Studio\*\*\*, Ollama\*\* |
+| Claude     | No            | Anthropic, Amazon Bedrock              | Anthropic**, Amazon**                                  |
+| Titan      | No            | Amazon Bedrock                         | Amazon\*\*                                             |
 
 _\*\* Connectors not yet available_
 
