@@ -107,6 +107,10 @@ public class OpenAITextGenerationService implements TextGenerationService {
         if (requestSettings.getMaxTokens() < 1) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
+        if (requestSettings.getResultsPerPrompt() < 1
+                || requestSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Results per prompt must be in range between 1 and {MAX_RESULTS_PER_PROMPT}, inclusive.");
+        }
 
         CompletionsOptions options =
             new CompletionsOptions(Collections.singletonList(text))
@@ -116,6 +120,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
                 .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
                 .setPresencePenalty(requestSettings.getPresencePenalty())
                 .setModel(getModelId())
+                .setN(requestSettings.getResultsPerPrompt())
                 .setUser(requestSettings.getUser())
                 .setBestOf(requestSettings.getBestOf())
                 .setLogitBias(new HashMap<>());
