@@ -87,6 +87,7 @@ public class FunctionFromMethodTests
         var invokedCalled = false;
         var invokingCalled = false;
 
+#pragma warning disable CS0618 // Events are deprecated
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invokingCalled = true;
@@ -97,6 +98,7 @@ public class FunctionFromMethodTests
         {
             invokedCalled = true;
         };
+#pragma warning restore CS0618 // Events are deprecated
 
         // Act
         await foreach (var chunk in sut.InvokeStreamingAsync<StreamingKernelContent>(kernel))
@@ -116,11 +118,14 @@ public class FunctionFromMethodTests
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
         bool invokingCalled = false;
+
+#pragma warning disable CS0618 // Type or member is obsolete
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invokingCalled = true;
             e.Cancel = true;
         };
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
         IAsyncEnumerable<StreamingKernelContent> enumerable = sut.InvokeStreamingAsync<StreamingKernelContent>(kernel);
@@ -142,11 +147,13 @@ public class FunctionFromMethodTests
         var kernel = new Kernel();
         var sut = KernelFunctionFactory.CreateFromMethod(() => "any");
 
+#pragma warning disable CS0618 // Type or member is obsolete
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             // This will have no effect on streaming
             e.Cancel = true;
         };
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var chunkCount = 0;
 

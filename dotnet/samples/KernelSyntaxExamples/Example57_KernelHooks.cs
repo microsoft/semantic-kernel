@@ -10,6 +10,8 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
+#pragma warning disable CS0618 // Events are deprecated
+
 public class Example57_KernelHooks : BaseTest
 {
     /// <summary>
