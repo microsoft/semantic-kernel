@@ -93,34 +93,19 @@ internal sealed class ReActEngine
         var promptConfig = config.ReActPromptTemplateConfig;
         if (promptConfig is null)
         {
-            promptConfig = new PromptTemplateConfig();
-
-            string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.config.json")!;
+            string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.yaml")!;
             if (!string.IsNullOrEmpty(modelId))
             {
-                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.config.json", false);
+                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
                 promptConfigString = string.IsNullOrEmpty(modelConfigString) ? promptConfigString : modelConfigString!;
             }
 
-            if (!string.IsNullOrEmpty(promptConfigString))
-            {
-                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
-            }
-            else
-            {
-                promptConfig.SetMaxTokens(config.MaxTokens);
-            }
-        }
+            promptConfig = KernelFunctionYaml.ToPromptTemplateConfig(promptConfigString);
 
-        var promptTemplate = config.ReActPromptTemplate;
-        if (string.IsNullOrEmpty(promptTemplate))
-        {
-            promptTemplate = EmbeddedResource.Read("Plugins.ReActEngine.skprompt.txt")!;
-
-            if (!string.IsNullOrEmpty(promptTemplate))
+            if (!string.IsNullOrEmpty(modelId))
             {
-                var modelPromptTemplate = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.skprompt.txt", false);
-                promptConfig.Template = string.IsNullOrEmpty(modelPromptTemplate) ? promptTemplate : modelPromptTemplate!;
+                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
+                promptConfigString = string.IsNullOrEmpty(modelConfigString) ? promptConfigString : modelConfigString!;
             }
         }
 
@@ -174,11 +159,12 @@ internal sealed class ReActEngine
 
         var actionStep = this.ParseResult(llmResponseText);
 
-        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0)
+        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0 || !string.IsNullOrEmpty(actionStep.FinalAnswer))
         {
             return actionStep;
         }
 
+        actionStep.Thought = llmResponseText;
         actionStep.Observation = "Failed to parse valid action step, missing action or final answer.";
         this._logger?.LogWarning("Failed to parse valid action step from llm response={LLMResponseText}", llmResponseText);
         this._logger?.LogWarning("Scratchpad={ScratchPad}", scratchPad);

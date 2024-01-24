@@ -23,9 +23,7 @@
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Orchestration.Flow.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="YamlDotNet" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
