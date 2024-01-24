@@ -10,13 +10,13 @@ from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
-from semantic_kernel import Kernel, SKContext
+from semantic_kernel import Kernel, KernelContext
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ Registers a plugin with the kernel that can run OpenAPI operations.
 :param kernel: The kernel to register the plugin with
 :param plugin_name: The name of the plugin
 :param openapi_document: The OpenAPI document to register. Can be a filename or URL
-:return: A dictionary of SKFunctions keyed by operationId
+:return: A dictionary of KernelFunctions keyed by operationId
 """
 
 
@@ -251,7 +251,7 @@ def register_openapi_plugin(
     kernel: Kernel,
     plugin_name: str,
     openapi_document: str,
-) -> Dict[str, SKFunctionBase]:
+) -> Dict[str, KernelFunctionBase]:
     parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
@@ -260,19 +260,19 @@ def register_openapi_plugin(
     plugin = {}
 
     def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
-        @sk_function(
+        @kernel_function(
             description=operation.summary if operation.summary else operation.description,
             name=operation_id,
         )
-        @sk_function_context_parameter(name="path_params", description="A dictionary of path parameters")
-        @sk_function_context_parameter(name="query_params", description="A dictionary of query parameters")
-        @sk_function_context_parameter(name="headers", description="A dictionary of headers")
-        @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
-        async def run_openapi_operation(sk_context: SKContext) -> str:
-            path_params = sk_context.variables.get("path_params")
-            query_params = sk_context.variables.get("query_params")
-            headers = sk_context.variables.get("headers")
-            request_body = sk_context.variables.get("request_body")
+        @kernel_function_context_parameter(name="path_params", description="A dictionary of path parameters")
+        @kernel_function_context_parameter(name="query_params", description="A dictionary of query parameters")
+        @kernel_function_context_parameter(name="headers", description="A dictionary of headers")
+        @kernel_function_context_parameter(name="request_body", description="A dictionary of the request body")
+        async def run_openapi_operation(kernel_context: KernelContext) -> str:
+            path_params = kernel_context.variables.get("path_params")
+            query_params = kernel_context.variables.get("query_params")
+            headers = kernel_context.variables.get("headers")
+            request_body = kernel_context.variables.get("request_body")
 
             response = await runner.run_operation(
                 operation,

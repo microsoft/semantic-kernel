@@ -1,10 +1,10 @@
 import typing as t
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 class WebSearchEnginePlugin:
@@ -19,7 +19,7 @@ class WebSearchEnginePlugin:
         {{WebSearch.SearchAsync "What is semantic kernel?"}}
         =>  Returns the first `num_results` number of results for the given search query
             and ignores the first `offset` number of results
-            (num_results and offset are specified in SKContext)
+            (num_results and offset are specified in KernelContext)
     """
 
     _connector: "ConnectorBase"
@@ -27,18 +27,18 @@ class WebSearchEnginePlugin:
     def __init__(self, connector: "ConnectorBase") -> None:
         self._connector = connector
 
-    @sk_function(description="Performs a web search for a given query", name="searchAsync")
-    @sk_function_context_parameter(
+    @kernel_function(description="Performs a web search for a given query", name="searchAsync")
+    @kernel_function_context_parameter(
         name="num_results",
         description="The number of search results to return",
         default_value="1",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name="offset",
         description="The number of search results to skip",
         default_value="0",
     )
-    async def search_async(self, query: str, context: "SKContext") -> str:
+    async def search_async(self, query: str, context: "KernelContext") -> str:
         """
         Returns the search results of the query provided.
         Returns `num_results` results and ignores the first `offset`.

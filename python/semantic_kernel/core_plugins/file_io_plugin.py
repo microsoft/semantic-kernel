@@ -5,14 +5,14 @@ import typing as t
 
 import aiofiles
 
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
-class FileIOPlugin(SKBaseModel):
+class FileIOPlugin(KernelBaseModel):
     """
     Description: Read and write from a file.
 
@@ -25,7 +25,7 @@ class FileIOPlugin(SKBaseModel):
     {{file.writeAsync}}
     """
 
-    @sk_function(
+    @kernel_function(
         description="Read a file",
         name="readAsync",
         input_description="Path of the source file",
@@ -49,13 +49,13 @@ class FileIOPlugin(SKBaseModel):
             content = await fp.read()
             return content
 
-    @sk_function(
+    @kernel_function(
         description="Write a file",
         name="writeAsync",
     )
-    @sk_function_context_parameter(name="path", description="Destination path")
-    @sk_function_context_parameter(name="content", description="File content")
-    async def write_async(self, context: "SKContext") -> None:
+    @kernel_function_context_parameter(name="path", description="Destination path")
+    @kernel_function_context_parameter(name="content", description="File content")
+    async def write_async(self, context: "KernelContext") -> None:
         """
         Write a file
 
