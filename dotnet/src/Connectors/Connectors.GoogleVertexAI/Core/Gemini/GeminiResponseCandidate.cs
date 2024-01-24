@@ -14,8 +14,7 @@ public sealed class GeminiResponseCandidate
     /// Generated content returned from the model.
     /// </summary>
     [JsonPropertyName("content")]
-    [JsonRequired]
-    public GeminiContent Content { get; set; } = null!;
+    public GeminiContent? Content { get; set; }
 
     /// <summary>
     /// Optional. The reason why the model stopped generating tokens.

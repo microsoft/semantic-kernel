@@ -14,8 +14,7 @@ public sealed class GeminiResponse
     /// Candidate responses from the model.
     /// </summary>
     [JsonPropertyName("candidates")]
-    [JsonRequired]
-    public IList<GeminiResponseCandidate> Candidates { get; set; } = null!;
+    public IList<GeminiResponseCandidate>? Candidates { get; set; }
 
     /// <summary>
     /// Returns the prompt's feedback related to the content filters.
