@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-def sk_function_context_parameter(
+def kernel_function_context_parameter(
     *, name: str, description: str, default_value: str = "", type: str = "string", required: bool = False
 ):
     """
-    Decorator for SK function context parameters.
+    Decorator for kernel function context parameters.
 
     Args:
         name -- The name of the context parameter
@@ -17,10 +17,10 @@ def sk_function_context_parameter(
     """
 
     def decorator(func):
-        if not hasattr(func, "__sk_function_context_parameters__"):
-            func.__sk_function_context_parameters__ = []
+        if not hasattr(func, "__kernel_function_context_parameters__"):
+            func.__kernel_function_context_parameters__ = []
 
-        func.__sk_function_context_parameters__.append(
+        func.__kernel_function_context_parameters__.append(
             {
                 "name": name,
                 "description": description,

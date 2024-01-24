@@ -5,20 +5,20 @@ from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import PrivateAttr
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class PromptTemplateEngine(SKBaseModel):
+class PromptTemplateEngine(KernelBaseModel):
     _tokenizer: TemplateTokenizer = PrivateAttr()
 
     def __init__(self, **kwargs) -> None:
@@ -50,7 +50,7 @@ class PromptTemplateEngine(SKBaseModel):
 
         return blocks
 
-    async def render_async(self, template_text: str, context: "SKContext") -> str:
+    async def render_async(self, template_text: str, context: "KernelContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -64,7 +64,7 @@ class PromptTemplateEngine(SKBaseModel):
         blocks = self.extract_blocks(template_text)
         return await self.render_blocks_async(blocks, context)
 
-    async def render_blocks_async(self, blocks: List[Block], context: "SKContext") -> str:
+    async def render_blocks_async(self, blocks: List[Block], context: "KernelContext") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -114,7 +114,7 @@ class PromptTemplateEngine(SKBaseModel):
 
         return rendered_blocks
 
-    async def render_code_async(self, blocks: List[Block], execution_context: "SKContext") -> List[Block]:
+    async def render_code_async(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.

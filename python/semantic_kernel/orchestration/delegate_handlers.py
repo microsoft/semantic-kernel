@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 def _handles(delegate_type):
@@ -13,7 +13,7 @@ def _handles(delegate_type):
     return decorator
 
 
-class DelegateHandlers(SKBaseModel):
+class DelegateHandlers(KernelBaseModel):
     @staticmethod
     @_handles(DelegateTypes.Void)
     async def handle_void(function, context):
@@ -33,26 +33,26 @@ class DelegateHandlers(SKBaseModel):
         return context
 
     @staticmethod
-    @_handles(DelegateTypes.InSKContext)
-    async def handle_in_sk_context(function, context):
+    @_handles(DelegateTypes.InKernelContext)
+    async def handle_in_kernel_context(function, context):
         function(context)
         return context
 
     @staticmethod
-    @_handles(DelegateTypes.InSKContextOutString)
-    async def handle_in_sk_context_out_string(function, context):
+    @_handles(DelegateTypes.InKernelContextOutString)
+    async def handle_in_kernel_context_out_string(function, context):
         context.variables.update(function(context))
         return context
 
     @staticmethod
-    @_handles(DelegateTypes.InSKContextOutTaskString)
-    async def handle_in_sk_context_out_task_string(function, context):
+    @_handles(DelegateTypes.InKernelContextOutTaskString)
+    async def handle_in_kernel_context_out_task_string(function, context):
         context.variables.update(await function(context))
         return context
 
     @staticmethod
-    @_handles(DelegateTypes.ContextSwitchInSKContextOutTaskSKContext)
-    async def handle_context_switch_in_sk_context_out_task_sk_context(function, context):
+    @_handles(DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext)
+    async def handle_context_switch_in_kernel_context_out_task_kernel_context(function, context):
         # Note: Context Switching: allows the function to replace with a
         # new context, e.g. to branch execution path
         context = await function(context)
