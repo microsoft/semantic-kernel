@@ -292,7 +292,7 @@ public class Example57_KernelHooks {
         var secondFunction = KernelFunctionFromPrompt.create("Write a phrase with Cancellation.");
 
         AtomicInteger invokingCounter = new AtomicInteger(0);
-        kernel.addHook("invoked", (FunctionInvokingHook) event -> {
+        kernel.addHook("invoking", (FunctionInvokingHook) event -> {
             invokingCounter.incrementAndGet();
             return event;
         });
