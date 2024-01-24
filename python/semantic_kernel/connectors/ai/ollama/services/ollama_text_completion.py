@@ -30,6 +30,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
         url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/generate
     """
+
     ai_model_id: str = "llama2"
     url: HttpUrl = "http://localhost:11434/api/generate"
     session: Optional[aiohttp.ClientSession] = None
@@ -53,7 +54,9 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = False
+<<<<<<< HEAD
         if request_settings.ai_model_id == '':
+        if not request_settings.ai_model_id :
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
@@ -79,7 +82,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = True
-        if request_settings.ai_model_id == '':
+        if not request_settings.ai_model_id:
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
