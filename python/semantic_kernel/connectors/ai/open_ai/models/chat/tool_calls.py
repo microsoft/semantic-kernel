@@ -2,10 +2,10 @@
 from typing import Literal, Optional
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class ToolCall(SKBaseModel):
+class ToolCall(KernelBaseModel):
     """Class to hold a tool call response."""
 
     id: Optional[str] = None

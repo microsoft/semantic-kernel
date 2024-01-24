@@ -3,10 +3,10 @@ from typing import Any, Dict, Optional
 
 from pydantic import Field
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class KernelContent(SKBaseModel, ABC):
+class KernelContent(KernelBaseModel, ABC):
     """Base class for all kernel contents."""
 
     inner_content: Optional[Any] = None
