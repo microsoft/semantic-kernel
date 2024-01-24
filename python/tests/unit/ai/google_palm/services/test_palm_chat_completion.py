@@ -46,16 +46,15 @@ def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
         )
 
 
-class MockChatResponse(ChatResponse):
-    def last(self):
-        return ""
-
-    def reply(self):
-        return self
-
-
 @pytest.mark.asyncio
 async def test_google_palm_text_completion_complete_chat_call_with_parameters() -> None:
+    class MockChatResponse(ChatResponse):
+        def last(self):
+            return ""
+
+        def reply(self):
+            return self
+
     gp_response = MockChatResponse()
     gp_response.candidates = [MessageDict(content="Example response", author="assistant")]
     gp_response.filters = None
