@@ -255,14 +255,14 @@ class A:
         self.c = c
 ```
 
-You can uses the `KernelGenericModel` to convert these to pydantic serializable classes.
+You can use the `KernelBaseModel` to convert these to pydantic serializable classes.
 
 ```python
 from typing import Generic
 
-from semantic_kernel.kernel_pydantic import KernelGenericModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-class A(KernelGenericModel, Generic[T1, T2]):
+class A(KernelBaseModel, Generic[T1, T2]):
     # T1 and T2 must be specified in the Generic argument otherwise, pydantic will
     # NOT be able to serialize this class
     a: int
