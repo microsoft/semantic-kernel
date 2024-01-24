@@ -54,8 +54,6 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = False
-<<<<<<< HEAD
-        if request_settings.ai_model_id == '':
         if not request_settings.ai_model_id :
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
