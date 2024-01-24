@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionFromMethod;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;

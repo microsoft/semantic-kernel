@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
@@ -19,7 +18,7 @@ public class Example03_ArgumentsTest {
 
     @Test
     public void main() {
-        Kernel kernel = new DefaultKernel.Builder().build();
+        Kernel kernel = Kernel.builder().build();
 
         // Load native skill
         KernelPlugin functionCollection =
