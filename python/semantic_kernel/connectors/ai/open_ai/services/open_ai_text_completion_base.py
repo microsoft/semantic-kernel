@@ -23,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
-    async def complete_async(
+    async def complete(
         self,
         prompt: str,
         settings: "OpenAIRequestSettings",
@@ -54,7 +54,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
             return response.choices[0].message.content
         return [choice.message.content for choice in response.choices]
 
-    async def complete_stream_async(
+    async def complete_stream(
         self,
         prompt: str,
         settings: "OpenAIRequestSettings",

@@ -59,9 +59,6 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         pinecone.init(api_key=self._pinecone_api_key, environment=self._pinecone_environment)
 
-    def get_collections(self) -> List[str]:
-        return pinecone.list_indexes()
-
     async def create_collection_async(
         self,
         collection_name: str,
@@ -114,7 +111,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             return pinecone.describe_index(collection_name)
         return None
 
-    async def get_collections_async(
+    async def get_collections(
         self,
     ) -> List[str]:
         """Gets the list of collections.

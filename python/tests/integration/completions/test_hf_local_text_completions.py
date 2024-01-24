@@ -135,7 +135,7 @@ async def test_text_generation_with_kwargs():
     context = kernel.create_new_context()
     context["input"] = simple_input
     context_vars = sk.ContextVariables(variables={"input2": "running and"})
-    summary = await kernel.run_async(
+    summary = await kernel.run(
         text2text_function,
         input_context=context,
         input_vars=context_vars,
