@@ -113,7 +113,7 @@ public class Example09_FunctionTypes {
             .withPlugin(summarize)
             .withPlugin(examplePlugin)
             .build();
-/*
+
         // Different ways to invoke a function (not limited to these examples)
         kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null, String.class).block();
         kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null, String.class).block();
@@ -194,7 +194,7 @@ public class Example09_FunctionTypes {
                 null,
                 Temporal.class)
             .block();
-*/
+
         kernel
             .invokeAsync(plugin.get("withDefaultValue"),
                 null,
