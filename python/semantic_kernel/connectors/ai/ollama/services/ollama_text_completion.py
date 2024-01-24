@@ -86,9 +86,11 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
+                    if body.get("done") and body.get("response") is None:
+                        break
                     yield [
                         StreamingTextContent(
-                            inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
+                            choice_index=0, inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
                         )
                     ]
                     if body.get("done"):

@@ -100,6 +100,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
+                    if body.get("done") and body.get("message", {}).get("content") is None:
+                        break
                     yield [
                         StreamingChatMessageContent(
                             choice_index=0,
@@ -165,8 +167,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
+                logger.error(response)
                 async for line in response.content:
                     body = json.loads(line)
+                    if body.get("done") and body.get("message", {}).get("content") is None:
+                        break
                     yield [
                         StreamingTextContent(
                             choice_index=0,
