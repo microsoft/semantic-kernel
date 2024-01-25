@@ -13,12 +13,12 @@ from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner import (
     SequentialPlanner,
 )
+from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
-from semantic_kernel.plugin_definition.default_kernel_plugin  import DefaultKernelPlugin
 
 
 def create_mock_function(function_view: FunctionView):
