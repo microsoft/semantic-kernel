@@ -819,7 +819,7 @@ class Kernel:
             # TODO: this is an example of where plugins are added to the collection in the kernel
             # as part of the register_semantic_function, seems weird to have it hidden?
             # should the register function simply register the function and then we can add to the
-            # plugin collecton later?
+            # plugin collection later?
             functions += [self.register_semantic_function(plugin_directory_name, function_name, function_config)]
 
         plugin = DefaultKernelPlugin(name=plugin_directory_name, functions=functions)
