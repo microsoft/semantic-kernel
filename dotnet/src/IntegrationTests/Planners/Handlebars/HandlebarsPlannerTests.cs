@@ -43,7 +43,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
         // Assert expected function
         Assert.Contains(
-            $"{expectedPlugin}-{expectedFunction}",
+            $"{expectedPlugin}_{expectedFunction}",
             plan.ToString(),
             StringComparison.CurrentCulture
         );
@@ -62,7 +62,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
         // Assert
         Assert.Contains(
-            $"{expectedPlugin}-{expectedFunction}",
+            $"{expectedPlugin}_{expectedFunction}",
             plan.ToString(),
             StringComparison.CurrentCulture
         );

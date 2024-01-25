@@ -21,16 +21,16 @@ public sealed class HandlebarsPlanTests
 
     private const string PlanTemplate =
     @"{{!-- Step 1: Call Bar function --}}  
-{{set ""barResult"" (Foo-Bar)}}  
+{{set ""barResult"" (Foo_Bar)}}  
 
 {{!-- Step 2: Call BazAsync function --}}  
-{{set ""bazAsyncResult"" (Foo-Baz)}}
+{{set ""bazAsyncResult"" (Foo_Baz)}}
 
 {{!-- Step 3: Call Combine function with two words --}}  
-{{set ""combinedWords"" (Foo-Combine x=""Hello"" y=""World"")}}  
+{{set ""combinedWords"" (Foo_Combine x=""Hello"" y=""World"")}}  
 
 {{!-- Step 4: Call StringifyInt function with an integer --}}  
-{{set ""stringifiedInt"" (Foo-StringifyInt x=42)}}  
+{{set ""stringifiedInt"" (Foo_StringifyInt x=42)}}  
 
 {{!-- Step 5: Output the results --}}  
 {{concat barResult bazAsyncResult combinedWords stringifiedInt}}";
@@ -49,7 +49,7 @@ public sealed class HandlebarsPlanTests
     public async Task InvokePlanWithHallucinatedFunctionAsync()
     {
         // Arrange
-        var planWithInvalidHelper = PlanTemplate.Replace("Foo-Combine", "Foo-HallucinatedHelper", StringComparison.CurrentCulture);
+        var planWithInvalidHelper = PlanTemplate.Replace("Foo_Combine", "Foo_HallucinatedHelper", StringComparison.CurrentCulture);
 
         // Act & Assert  
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this.InvokePlanAsync(planWithInvalidHelper));
