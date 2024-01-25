@@ -76,8 +76,9 @@ public sealed class HandlebarsPlanner
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
         // Get CreatePlan prompt template
-        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
-        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
+        var availableFunctions = await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, null /*logger*/, true, cancellationToken).ConfigureAwait(false);
+        //var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
+        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, /*complexParameterTypes, complexParameterSchemas,*/ cancellationToken).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
@@ -85,11 +86,12 @@ public sealed class HandlebarsPlanner
         var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
-        if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
+        /*if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
-        }
+        }*/
+        // TODO: bring back this check
 
         Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
@@ -103,7 +105,7 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
 
-    private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
+    /*List<KernelFunctionMetadata> GetAvailableFunctionsManual(
         Kernel kernel,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas)
@@ -176,7 +178,7 @@ public sealed class HandlebarsPlanner
         }
 
         return parameter;
-    }
+    }*/
 
     private ChatHistory GetChatHistoryFromPrompt(string prompt)
     {
@@ -210,9 +212,10 @@ public sealed class HandlebarsPlanner
 
     private async Task<string> GetHandlebarsTemplateAsync(
         Kernel kernel, string goal,
-        List<KernelFunctionMetadata> availableFunctions,
-        HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        Dictionary<string, string> complexParameterSchemas,
+        //List<KernelFunctionMetadata> availableFunctions,
+        string? availableFunctions,
+        //HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
+        //Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken)
     {
         var createPlanPrompt = this.ReadPrompt("CreatePlanPrompt.handlebars");
@@ -223,8 +226,8 @@ public sealed class HandlebarsPlanner
                 { "nameDelimiter", this._templateFactory.NameDelimiter},
                 { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
                 { "allowLoops", this._options.AllowLoops },
-                { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
-                { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
+                //{ "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
+                //{ "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
                 { "lastPlan", this._options.LastPlan },
                 { "lastError", this._options.LastError }
             };

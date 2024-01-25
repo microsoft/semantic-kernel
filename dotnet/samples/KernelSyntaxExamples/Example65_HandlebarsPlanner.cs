@@ -138,7 +138,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
         this.WriteSampleHeading("Coursera OpenAPI Plugin");
-        return RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
+        return RunSampleAsync("Show me the names of courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
     }
 
     [RetryTheory(typeof(HttpOperationException))]

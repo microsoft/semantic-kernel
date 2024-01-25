@@ -54,7 +54,7 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// <remarks>Categories only filters built-in dotnet helpers, the ones defined here: https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki.</remarks>
     public HandlebarsPromptTemplateOptions()
     {
-        this.PrefixSeparator = "-";
+        this.PrefixSeparator = "_";
         this.Categories = new Category[] {
             Category.Math, // Enables basic math operations (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/Math)
             Category.String // Enables string manipulation (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/String)
