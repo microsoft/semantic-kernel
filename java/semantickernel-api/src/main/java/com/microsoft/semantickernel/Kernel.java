@@ -113,6 +113,13 @@ public class Kernel implements Buildable {
         return function.invokeAsync(this, arguments, hooks, contextVariable);
     }
 
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        KernelFunction function,
+        @Nullable KernelArguments arguments,
+        Class<T> resultType) {
+        return invokeAsync(function, arguments, null, resultType);
+    }
+
     private HookService mergeInGlobalHooks(@Nullable HookService hooks) {
         HookService allHooks = hookService;
         if (hooks != null) {

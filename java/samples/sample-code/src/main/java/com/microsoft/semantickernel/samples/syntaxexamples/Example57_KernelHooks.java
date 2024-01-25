@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
+import com.microsoft.semantickernel.hooks.HookService;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
@@ -61,13 +62,16 @@ public class Example57_KernelHooks {
 
         Builder kernelBuilder = Kernel.builder()
             .withAIService(ChatCompletionService.class, openAIChatCompletion);
-
+/*
         getUsageAsync(kernelBuilder.build());
         getRenderedPromptAsync(kernelBuilder.build());
         changingResultAsync(kernelBuilder.build());
         beforeInvokeCancellationAsync(kernelBuilder.build());
         afterInvokeCancellationAsync(kernelBuilder.build());
         chatCompletionHook(kernelBuilder.build());
+
+ */
+        invocationHook(kernelBuilder.build());
     }
 
 
@@ -126,7 +130,7 @@ public class Example57_KernelHooks {
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
         var result = kernel.invokeAsync(
-            excuseFunction,
+                excuseFunction,
                 KernelArguments
                     .builder()
                     .withVariable("input", input)
@@ -365,4 +369,51 @@ public class Example57_KernelHooks {
         }
     }
 
+    /**
+     * Show use of hooks added on a single invocations.
+     *
+     * @param kernel
+     */
+    private static void invocationHook(Kernel kernel) {
+        // Initialize prompt
+        String functionPrompt = "Write a paragraph about hats";
+
+        var writerFunction = KernelFunctionFromPrompt.builder()
+            .withTemplate(functionPrompt)
+            .withName("Writer")
+            .withDefaultExecutionSettings(PromptExecutionSettings
+                .builder()
+                .withMaxTokens(1000)
+                .withTemperature(1)
+                .withTopP(0.5)
+                .build())
+            .build();
+
+        HookService hooks = new HookService();
+        hooks.addPreChatCompletionHook(event -> {
+            ChatCompletionsOptions options = event.getOptions();
+            List<ChatRequestMessage> messages = options.getMessages();
+
+            messages = new ArrayList<>(messages);
+            messages.add(
+                new ChatRequestSystemMessage("Use upper case text when responding to the prompt."));
+
+            return new PreChatCompletionHookEvent(
+                PreChatCompletionHook.cloneOptionsWithMessages(options, messages)
+            );
+        });
+
+        try {
+            // Invoke prompt to trigger execution hooks.
+            var result = kernel.invokeAsync(
+                    writerFunction,
+                    KernelArguments.builder().build(),
+                    hooks,
+                    String.class)
+                .block();
+            System.out.println("Function Result: " + result.getResult());
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+        }
+    }
 }

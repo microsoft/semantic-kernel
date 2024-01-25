@@ -136,7 +136,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                         .getChatMessageContentsAsync(
                             prompt,
                             executionSettings,
-                            kernel)
+                            kernel,
+                            hooks)
                         .flatMapMany(Flux::fromIterable)
                         .concatMap(chatMessageContent -> {
                             if (chatMessageContent.getAuthorRole()
