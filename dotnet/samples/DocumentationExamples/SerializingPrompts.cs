@@ -25,8 +25,6 @@ public class SerializingPrompts : BaseTest
     {
         WriteLine("======== Serializing Prompts ========");
 
-        string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
