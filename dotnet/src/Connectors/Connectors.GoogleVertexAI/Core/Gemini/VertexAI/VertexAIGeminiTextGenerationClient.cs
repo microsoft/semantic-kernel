@@ -32,5 +32,6 @@ internal sealed class VertexAIGeminiTextGenerationClient : GeminiTextGenerationC
             httpRequestFactory: httpRequestFactory,
             endpointProvider: endpointProvider,
             streamJsonParser: streamJsonParser,
-            logger: logger)) { }
+            logger: logger))
+    { }
 }

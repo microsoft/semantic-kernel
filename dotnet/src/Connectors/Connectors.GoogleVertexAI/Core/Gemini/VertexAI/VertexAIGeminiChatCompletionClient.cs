@@ -37,7 +37,8 @@ internal sealed class VertexAIGeminiChatCompletionClient : GeminiChatCompletionC
             httpRequestFactory: httpRequestFactory,
             endpointProvider: endpointProvider,
             streamJsonParser: streamJsonParser,
-            logger: logger) { }
+            logger: logger)
+    { }
 
     // TODO: temp solution due to gemini vertex ai (preview api) support only streaming for now
     /// <inheritdoc/>
