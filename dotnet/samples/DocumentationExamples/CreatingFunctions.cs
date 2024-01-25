@@ -101,6 +101,6 @@ public class CreatingFunctions : BaseTest
 
     public CreatingFunctions(ITestOutputHelper output) : base(output)
     {
-        SimulatedInputText = [ "What is 49 diivided by 37?" ];
+        SimulatedInputText = ["What is 49 diivided by 37?"];
     }
 }
