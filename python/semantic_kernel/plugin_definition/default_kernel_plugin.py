@@ -21,13 +21,12 @@ class DefaultKernelPlugin(KernelPlugin):
             and they will be automatically converted to a dictionary.
     """
 
-    # Todo: this needs to be converted to a KernelFunction type
     functions: Dict[str, KernelFunctionBase] = Field(default_factory=dict)
 
     @model_validator(mode="before")
     def list_to_dict(cls, values):
         """
-        A root validator to construct the functions dictionary from the functions list.
+        A model validator to construct the functions dictionary from the functions list.
 
         Args:
             values (Dict[str, Any]): The values to validate.

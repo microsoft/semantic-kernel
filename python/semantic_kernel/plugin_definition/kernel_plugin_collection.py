@@ -12,10 +12,29 @@ from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
 class KernelPluginCollection(KernelBaseModel):
+    """
+    The Kernel Plugin Collection class. This class is used to store a collection of plugins.
+
+    Attributes:
+        plugins (Dict[str, KernelPlugin]): The plugins in the collection, indexed by their name.
+    """
     plugins: Optional[Dict[str, KernelPlugin]] = Field(default_factory=dict)
 
     @model_validator(mode="before")
     def process_plugins(cls, values):
+        """
+        Processes the plugins input to the collection. This method is used to convert
+        the plugins input to a dictionary of plugins, indexed by their name.
+
+        Args:
+            values (Dict[str, Any]): The values to validate.
+
+        Returns:
+            The values, with the plugins input converted to a dictionary.
+
+        Raises:
+            ValueError: If the plugins input is invalid.
+        """
         plugins_input = values.get("plugins")
         if isinstance(plugins_input, KernelPluginCollection):
             # Extract plugins from another KernelPluginCollection instance
@@ -137,6 +156,28 @@ class KernelPluginCollection(KernelBaseModel):
         """Clear the collection of all plugins"""
         self.plugins.clear()
 
+    def get_functions_view(self, include_semantic: bool = True, include_native: bool = True) -> FunctionsView:
+        """
+        Get a view of the functions in the collection
+
+        Args:
+            include_semantic (bool): Whether to include semantic functions in the view.
+            include_native (bool): Whether to include native functions in the view.
+
+        Returns:
+            A view of the functions in the collection.
+        """
+        result = FunctionsView()
+
+        for _, plugin in self.plugins.items():
+            for _, function in plugin.functions.items():
+                if include_semantic and function.is_semantic:
+                    result.add_function(function.describe())
+                elif include_native and function.is_native:
+                    result.add_function(function.describe())
+
+        return result
+
     def __iter__(self) -> Any:
         """Define an iterator for the collection"""
         return iter(self.plugins.values())
@@ -166,15 +207,3 @@ class KernelPluginCollection(KernelBaseModel):
         if name not in self.plugins:
             raise KeyError(f"Plugin {name} not found.")
         return self.plugins[name]
-
-    def get_functions_view(self, include_semantic: bool = True, include_native: bool = True) -> FunctionsView:
-        result = FunctionsView()
-
-        for _, plugin in self.plugins.items():
-            for _, function in plugin.functions.items():
-                if include_semantic and function.is_semantic:
-                    result.add_function(function.describe())
-                elif include_native and function.is_native:
-                    result.add_function(function.describe())
-
-        return result

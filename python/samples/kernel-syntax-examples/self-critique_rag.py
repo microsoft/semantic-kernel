@@ -50,6 +50,8 @@ async def main() -> None:
     kernel.add_text_completion_service(
         "dv",
         AzureTextCompletion(
+            # Note: text-davinci-003 is deprecated and will be replaced by
+            # AzureOpenAI's gpt-35-turbo-instruct model.
             deployment_name="text-davinci-003",
             endpoint=AZURE_OPENAI_ENDPOINT,
             api_key=AZURE_OPENAI_API_KEY,

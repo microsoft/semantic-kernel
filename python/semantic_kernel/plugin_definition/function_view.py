@@ -35,6 +35,15 @@ class FunctionView(KernelBaseModel):
         )
 
     def __eq__(self, other):
+        """
+        Compare to another FunctionView instance.
+
+        Args:
+            other (FunctionView): The other FunctionView instance.
+
+        Returns:
+            True if the two instances are equal, False otherwise.
+        """
         if not isinstance(other, FunctionView):
             return False
 
