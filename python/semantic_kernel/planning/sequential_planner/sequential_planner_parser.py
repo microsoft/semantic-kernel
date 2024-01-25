@@ -4,10 +4,10 @@ import re
 from typing import Callable, Optional, Tuple
 from xml.etree import ElementTree as ET
 
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 
@@ -26,7 +26,9 @@ class SequentialPlanParser:
     ) -> Callable[[str, str], Optional[KernelFunctionBase]]:
         def function(plugin_name: str, function_name: str) -> Optional[KernelFunctionBase]:
             try:
-                return context.plugins.get_function(plugin_name, function_name)
+                return context.plugins.get_plugin(plugin_name).get_function(function_name)
+            except KeyError:
+                return None
             except KernelException:
                 return None
 

@@ -5,10 +5,8 @@ from typing import Any, List, Optional, Tuple
 
 import pydantic as pdt
 
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -116,12 +114,14 @@ class CodeBlock(Block):
         return result.result
 
     def _get_function_from_plugin_collection(
-        self, plugins: ReadOnlyPluginCollectionBase, f_block: FunctionIdBlock
+        self, plugins: KernelPluginCollection, f_block: FunctionIdBlock
     ) -> Optional[KernelFunctionBase]:
-        if not f_block.plugin_name and plugins.has_function(None, f_block.function_name):
-            return plugins.get_function(None, f_block.function_name)
-
-        if f_block.plugin_name and plugins.has_function(f_block.plugin_name, f_block.function_name):
-            return plugins.get_function(f_block.plugin_name, f_block.function_name)
+        if f_block.plugin_name is not None and len(f_block.plugin_name) > 0:
+            return plugins[f_block.plugin_name].get_function(f_block.function_name)
+        else:
+            # We now require a plug-in name, but if one isn't set then we'll try to find the function
+            for plugin in plugins:
+                if plugin.has_function(f_block.function_name):
+                    return plugin.get_function(f_block.function_name)
 
         return None

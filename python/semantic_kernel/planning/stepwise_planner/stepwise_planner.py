@@ -30,7 +30,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+    from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 

@@ -7,13 +7,12 @@ import warnings
 import pytest
 
 import semantic_kernel as sk
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
-)
+from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 
 @pytest.fixture(autouse=True)
@@ -92,11 +91,14 @@ def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
 
     def create_context(context_variables: ContextVariables, *functions: KernelFunction) -> KernelContext:
         """Return a KernelContext object."""
+
+        plugin = DefaultKernelPlugin(name="test_plugin", functions=functions)
+
         return KernelContext(
             context_variables,
             NullMemory(),
-            plugin_collection=ReadOnlyPluginCollection(
-                data={ReadOnlyPluginCollection.GLOBAL_PLUGIN.lower(): {f.name: f for f in functions}},
+            plugin_collection=KernelPluginCollection(
+                plugins=[plugin],
             ),
         )
 

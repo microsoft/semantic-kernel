@@ -10,8 +10,8 @@ from typing import List, Optional
 import regex
 
 from semantic_kernel import Kernel
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
@@ -140,14 +140,15 @@ class ActionPlanner:
             plan = Plan(description=goal)
         elif "." in generated_plan["plan"]["function"]:
             plugin, fun = generated_plan["plan"]["function"].split(".")
-            function_ref = self._context.plugins.get_function(plugin, fun)
+            function_ref = self._context.plugins.get_plugin(plugin).get_function(fun)
             logger.info(
                 f"ActionPlanner has picked {plugin}.{fun}. Reference to this function"
                 f" found in context: {function_ref}"
             )
             plan = Plan(description=goal, function=function_ref)
         else:
-            function_ref = self._context.plugins.get_function(generated_plan["plan"]["function"])
+            plugin, fun = generated_plan["plan"]["function"]
+            function_ref = self._context.plugins.get_plugin(plugin).get_function(fun)
             logger.info(
                 f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
                 "              Reference to this function found in context:"

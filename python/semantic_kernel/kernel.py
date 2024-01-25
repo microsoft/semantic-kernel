@@ -5,8 +5,9 @@ import importlib
 import inspect
 import logging
 import os
+import random
+import string
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
-from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -20,6 +21,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
@@ -27,15 +30,13 @@ from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
-from semantic_kernel.plugin_definition.plugin_collection_base import (
-    PluginCollectionBase,
+from semantic_kernel.plugin_definition.default_kernel_plugin import (
+    DefaultKernelPlugin,
 )
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
@@ -63,20 +64,21 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Kernel:
-    _plugin_collection: PluginCollectionBase
+    # TODO: pydantic-ify these fields
+    _plugins: KernelPluginCollection
     _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
 
     def __init__(
         self,
-        plugin_collection: Optional[PluginCollectionBase] = None,
+        plugins: Optional[KernelPluginCollection] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         log: Optional[Any] = None,
     ) -> None:
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        self._plugin_collection = plugin_collection if plugin_collection else PluginCollection()
+        self._plugins = plugins if plugins else KernelPluginCollection()
         self._prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
         self._memory = memory if memory else NullMemory()
 
@@ -102,8 +104,26 @@ class Kernel:
         return self._prompt_template_engine
 
     @property
-    def plugins(self) -> ReadOnlyPluginCollectionBase:
-        return self._plugin_collection.read_only_plugin_collection
+    def plugins(self) -> KernelPluginCollection:
+        return self._plugins
+
+    @plugins.setter
+    def plugins(self, value: KernelPluginCollection) -> None:
+        self._plugins = value
+
+    def add_plugin_to_collection(self, plugin_name: str, functions: List[KernelFunctionBase]) -> None:
+        """
+        Adds a plugin to the kernel's collection of plugins
+
+        Args:
+            plugin_name (str): The name of the plugin
+            functions (List[KernelFunctionBase]): The functions to add to the plugin
+        """
+        if self._plugins.contains(plugin_name):
+            self._plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
+        else:
+            plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
+            self._plugins.add(plugin)
 
     def register_semantic_function(
         self,
@@ -111,15 +131,29 @@ class Kernel:
         function_name: str,
         function_config: SemanticFunctionConfig,
     ) -> KernelFunctionBase:
+        """
+        Creates a semantic function from the plugin name, function name and function config
+
+        Args:
+            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
+            function_name (str): The name of the function
+            function_config (SemanticFunctionConfig): The function config
+
+        Returns:
+            KernelFunctionBase: The created semantic function
+
+        Raises:
+            ValueError: If the plugin name or function name are invalid
+        """
         if plugin_name is None or plugin_name == "":
-            plugin_name = PluginCollection.GLOBAL_PLUGIN
+            plugin_name = f"p_{self.generate_random_ascii_name()}"
         assert plugin_name is not None  # for type checker
 
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
         function = self._create_semantic_function(plugin_name, function_name, function_config)
-        self._plugin_collection.add_semantic_function(function)
+        self.add_plugin_to_collection(plugin_name, [function])
 
         return function
 
@@ -128,6 +162,16 @@ class Kernel:
         plugin_name: Optional[str],
         kernel_function: Callable,
     ) -> KernelFunctionBase:
+        """
+        Creates a native function from the plugin name and kernel function
+
+        Args:
+            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
+            kernel_function (Callable): The kernel function
+
+        Returns:
+            KernelFunctionBase: The created native function
+        """
         if not hasattr(kernel_function, "__kernel_function__"):
             raise KernelException(
                 KernelException.ErrorCodes.InvalidFunctionType,
@@ -136,22 +180,20 @@ class Kernel:
         function_name = kernel_function.__kernel_function_name__
 
         if plugin_name is None or plugin_name == "":
-            plugin_name = PluginCollection.GLOBAL_PLUGIN
+            plugin_name = f"p_{self.generate_random_ascii_name()}"
         assert plugin_name is not None  # for type checker
 
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        function = KernelFunction.from_native_method(kernel_function, plugin_name)
-
-        if self.plugins.has_function(plugin_name, function_name):
+        if self._plugins.contains(plugin_name=plugin_name) and self._plugins[plugin_name].has_function(function_name):
             raise KernelException(
                 KernelException.ErrorCodes.FunctionOverloadNotSupported,
                 "Overloaded functions are not supported, " "please differentiate function names.",
             )
 
-        function.set_default_plugin_collection(self.plugins)
-        self._plugin_collection.add_native_function(function)
+        function = KernelFunction.from_native_method(kernel_function, plugin_name)
+        self.add_plugin_to_collection(plugin_name, [function])
 
         return function
 
@@ -197,9 +239,9 @@ class Kernel:
                 else:
                     variables = ContextVariables()
                 context = KernelContext(
-                    variables,
-                    self._memory,
-                    self._plugin_collection.read_only_plugin_collection,
+                    variables=variables,
+                    memory=self._memory,
+                    plugin_collection=self._plugins,
                 )
         else:
             raise ValueError("No functions passed to run")
@@ -252,9 +294,9 @@ class Kernel:
             else:
                 variables = ContextVariables()
             context = KernelContext(
-                variables,
-                self._memory,
-                self._plugin_collection.read_only_plugin_collection,
+                variables=variables,
+                memory=self._memory,
+                plugin_collection=self._plugins,
             )
 
         pipeline_step = 0
@@ -335,10 +377,7 @@ class Kernel:
         return context
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunctionBase:
-        if self.plugins.has_native_function(plugin_name, function_name):
-            return self.plugins.get_native_function(plugin_name, function_name)
-
-        return self.plugins.get_semantic_function(plugin_name, function_name)
+        return self._plugins.get_plugin(name=plugin_name).get_function(function_name=function_name)
 
     def use_memory(
         self,
@@ -392,12 +431,24 @@ class Kernel:
             return args
         return None
 
-    def import_plugin(self, plugin_instance: Any, plugin_name: str = "") -> Dict[str, KernelFunctionBase]:
-        if plugin_name.strip() == "":
-            plugin_name = PluginCollection.GLOBAL_PLUGIN
-            logger.debug(f"Importing plugin {plugin_name} into the global namespace")
-        else:
-            logger.debug(f"Importing plugin {plugin_name}")
+    def import_plugin(self, plugin_instance: Any, plugin_name: str) -> KernelPlugin:
+        """
+        Import a plugin into the kernel.
+
+        Args:
+            plugin_instance (Any): The plugin instance.
+            plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
+
+        Returns:
+            KernelPlugin: The imported plugin of type KernelPlugin.
+        """
+        if not plugin_name.strip():
+            logger.warn("Unable to import plugin due to missing plugin_name")
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidPluginName,
+                "Plugin name cannot be empty",
+            )
+        logger.debug(f"Importing plugin {plugin_name}")
 
         functions = []
 
@@ -423,11 +474,18 @@ class Kernel:
                 ("Overloaded functions are not supported, " "please differentiate function names."),
             )
 
-        plugin = {}
-        for function in functions:
-            function.set_default_plugin_collection(self.plugins)
-            self._plugin_collection.add_native_function(function)
-            plugin[function.name] = function
+        # This is legacy - figure out why we're setting all plugins on each function?
+        for func in functions:
+            func.set_default_plugin_collection(self._plugins)
+
+        plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
+        # TODO: we shouldn't have to be adding functions to a plugin after the fact
+        # This isn't done in dotnet, and needs to be revisited as we move to v1.0
+        # This is to support the current state of the code
+        if self._plugins.contains(plugin_name):
+            self._plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
+        else:
+            self._plugins.add(plugin)
 
         return plugin
 
@@ -641,11 +699,6 @@ class Kernel:
             function_config.prompt_template_config.execution_settings
         )
 
-        # Connect the function to the current kernel plugin
-        # collection, in case the function is invoked manually
-        # without a context and without a way to find other functions.
-        function.set_default_plugin_collection(self.plugins)
-
         if function_config.has_chat_prompt:
             service = self.get_ai_service(
                 ChatCompletionClientBase,
@@ -699,7 +752,7 @@ class Kernel:
 
     def import_native_plugin_from_directory(
         self, parent_directory: str, plugin_directory_name: str
-    ) -> Dict[str, KernelFunctionBase]:
+    ) -> DefaultKernelPlugin:
         MODULE_NAME = "native_function"
 
         validate_plugin_name(plugin_directory_name)
@@ -728,7 +781,7 @@ class Kernel:
 
     def import_semantic_plugin_from_directory(
         self, parent_directory: str, plugin_directory_name: str
-    ) -> Dict[str, KernelFunctionBase]:
+    ) -> DefaultKernelPlugin:
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
 
@@ -740,7 +793,7 @@ class Kernel:
         if not os.path.exists(plugin_directory):
             raise ValueError(f"Plugin directory does not exist: {plugin_directory_name}")
 
-        plugin = {}
+        functions = []
 
         directories = glob.glob(plugin_directory + "/*/")
         for directory in directories:
@@ -763,11 +816,20 @@ class Kernel:
             # Prepare lambda wrapping AI logic
             function_config = SemanticFunctionConfig(config, template)
 
-            plugin[function_name] = self.register_semantic_function(
-                plugin_directory_name, function_name, function_config
-            )
+            # TODO: this is an example of where plugins are added to the collection in the kernel
+            # as part of the register_semantic_function, seems weird to have it hidden?
+            # should the register function simply register the function and then we can add to the
+            # plugin collecton later?
+            functions += [self.register_semantic_function(plugin_directory_name, function_name, function_config)]
+
+        plugin = DefaultKernelPlugin(name=plugin_directory_name, functions=functions)
 
         return plugin
+
+    def generate_random_ascii_name(self, length=16):
+        # Plugin/Function names can contain upper/lowercase letters, and underscores
+        letters = string.ascii_letters
+        return "".join(random.choices(letters, k=length))
 
     def create_semantic_function(
         self,
@@ -777,7 +839,7 @@ class Kernel:
         description: Optional[str] = None,
         **kwargs: Any,
     ) -> "KernelFunctionBase":
-        function_name = function_name if function_name is not None else f"f_{str(uuid4()).replace('-', '_')}"
+        function_name = function_name if function_name is not None else f"f_{self.generate_random_ascii_name()}"
 
         config = PromptTemplateConfig(
             description=(description if description is not None else "Generic function, unknown purpose"),

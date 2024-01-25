@@ -13,18 +13,15 @@ from semantic_kernel.connectors.ai import AIRequestSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -148,8 +145,8 @@ class Plan(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
+                plugin_collection=KernelPluginCollection(),
             )
 
         if self._function is not None:
@@ -188,8 +185,8 @@ class Plan(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
+                plugin_collection=KernelPluginCollection(),
             )
 
         if self._function is not None:
@@ -233,13 +230,6 @@ class Plan(KernelFunctionBase):
         if self._function is not None:
             self._function.set_ai_service(service)
 
-    def set_default_plugin_collection(
-        self,
-        plugins: ReadOnlyPluginCollectionBase,
-    ) -> KernelFunctionBase:
-        if self._function is not None:
-            self._function.set_default_plugin_collection(plugins)
-
     def describe(self) -> Optional[FunctionView]:
         if self._function is not None:
             return self._function.describe()
@@ -253,7 +243,7 @@ class Plan(KernelFunctionBase):
                     "Plugin collection not found in the context",
                 )
             try:
-                pluginFunction = context.plugins.get_function(plan.plugin_name, plan.name)
+                pluginFunction = context.plugins.get_plugin(plan.plugin_name).get_function(plan.name)
                 plan.set_function(pluginFunction)
             except Exception:
                 pass

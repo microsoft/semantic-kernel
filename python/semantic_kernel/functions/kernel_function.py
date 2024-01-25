@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -22,12 +23,11 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
@@ -51,7 +51,7 @@ class KernelFunction(KernelFunctionBase):
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
-    _plugin_collection: Optional[ReadOnlyPluginCollectionBase]
+    _plugin_collection: Optional[KernelPluginCollection]
     _ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]
     _ai_request_settings: AIRequestSettings
     _chat_prompt_template: ChatPromptTemplate
@@ -276,7 +276,7 @@ class KernelFunction(KernelFunctionBase):
         self._ai_request_settings = AIRequestSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "KernelFunction":
+    def set_default_plugin_collection(self, plugins: KernelPluginCollection) -> "KernelFunction":
         self._plugin_collection = plugins
         return self
 
@@ -353,8 +353,8 @@ class KernelFunction(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugin_collection=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -400,8 +400,8 @@ class KernelFunction(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugin_collection=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -475,8 +475,8 @@ class KernelFunction(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugin_collection=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables

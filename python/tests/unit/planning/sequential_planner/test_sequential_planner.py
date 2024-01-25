@@ -4,19 +4,19 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner import (
     SequentialPlanner,
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.plugin_collection_base import (
-    PluginCollectionBase,
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 
 
@@ -44,7 +44,7 @@ async def test_it_can_create_plan_async(goal):
     ]
 
     functionsView = FunctionsView()
-    plugins = Mock(spec=PluginCollectionBase)
+    plugins = Mock(spec=KernelPluginCollection)
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
         function_view = FunctionView(name, pluginName, description, [], isSemantic, True)
@@ -56,7 +56,7 @@ async def test_it_can_create_plan_async(goal):
         mock_function.invoke_async.return_value = context
         mock_functions.append(mock_function)
 
-    plugins.get_function.side_effect = lambda plugin_name, function_name: next(
+    plugins.get_plugin.get_function.side_effect = lambda plugin_name, function_name: next(
         (func for func in mock_functions if func.plugin_name == plugin_name and func.name == function_name),
         None,
     )
@@ -116,7 +116,7 @@ async def test_invalid_xml_throws_async():
     # Arrange
     kernel = Mock(spec=Kernel)
     memory = Mock(spec=SemanticTextMemoryBase)
-    plugins = Mock(spec=PluginCollectionBase)
+    plugins = Mock(spec=KernelPluginCollection)
 
     functionsView = FunctionsView()
     plugins.get_functions_view.return_value = functionsView

@@ -11,12 +11,12 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
-    from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-        ReadOnlyPluginCollectionBase,
-    )
 
 
 class KernelFunctionBase(KernelBaseModel):
@@ -142,16 +142,14 @@ class KernelFunctionBase(KernelBaseModel):
     @abstractmethod
     def set_default_plugin_collection(
         self,
-        plugins: "ReadOnlyPluginCollectionBase",
+        plugins: "KernelPluginCollection",
     ) -> "KernelFunctionBase":
         """
         Sets the plugin collection to use when the function is
         invoked without a context or with a context that doesn't have
         a plugin collection
-
         Arguments:
-            plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
-
+            plugins {KernelPluginCollection} -- Kernel's plugin collection
         Returns:
             KernelFunctionBase -- The function instance
         """

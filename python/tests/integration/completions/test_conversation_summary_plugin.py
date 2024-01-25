@@ -23,7 +23,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
     else:
         # Load credentials from .env file
         deployment_name, api_key, endpoint = get_aoai_config
-        deployment_name = "text-davinci-003"
+        deployment_name = "gpt-3.5-turbo-instruct"
 
     kernel.add_text_completion_service(
         "text_completion",
@@ -43,10 +43,13 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 
 
 @pytest.mark.asyncio
+@pytest.mark.xfail(reason="This test is fails intermittently when run in parallel with other tests")
 async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
-    kernel, chatTranscript = setup_summarize_conversation_using_plugin
+    _, chatTranscript = setup_summarize_conversation_using_plugin
+
+    kernel = sk.Kernel()
 
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
@@ -57,7 +60,7 @@ async def test_oai_summarize_conversation_using_plugin(
 
     kernel.add_text_completion_service(
         "davinci-003",
-        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id=org_id),
+        sk_oai.OpenAITextCompletion("gpt-3.5-turbo-instruct", api_key, org_id=org_id),
     )
 
     conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")

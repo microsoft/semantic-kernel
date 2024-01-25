@@ -5,7 +5,8 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.function_view import FunctionView
 
 
@@ -28,7 +29,7 @@ async def test_run_async_handles_pre_invocation(pipeline_count):
 
     mock_function = create_mock_function("test_function")
     mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
-    kernel._plugin_collection.add_semantic_function(mock_function)
+    kernel.plugins.add(DefaultKernelPlugin(name="test", functions=[mock_function]))
 
     invoked = 0
 
