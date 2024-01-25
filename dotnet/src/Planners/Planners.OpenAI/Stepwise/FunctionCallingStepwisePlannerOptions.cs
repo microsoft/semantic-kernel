@@ -8,24 +8,32 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Configuration for Stepwise planner instances.
 /// </summary>
-public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
+public sealed class FunctionCallingStepwisePlannerOptions : PlannerOptions
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionCallingStepwisePlannerConfig"/>
+    /// Initializes a new instance of the <see cref="FunctionCallingStepwisePlannerOptions"/>
     /// </summary>
-    public FunctionCallingStepwisePlannerConfig()
-    {
-        this.MaxTokens = 4000;
-    }
+    public FunctionCallingStepwisePlannerOptions() { }
+
+    /// <summary>
+    /// The maximum total number of tokens to allow in a completion request,
+    /// which includes the tokens from the prompt and completion
+    /// </summary>
+    public int? MaxTokens { get; set; }
 
     /// <summary>
     /// The ratio of tokens to allocate to the completion request. (prompt / (prompt + completion))
     /// </summary>
     public double MaxTokensRatio { get; set; } = 0.1;
 
-    internal int MaxCompletionTokens { get { return (int)(this.MaxTokens * this.MaxTokensRatio); } }
+    internal int? MaxCompletionTokens => (this.MaxTokens is null) ? null : (int)(this.MaxTokens * this.MaxTokensRatio);
 
-    internal int MaxPromptTokens { get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); } }
+    internal int? MaxPromptTokens => (this.MaxTokens is null) ? null : (int)(this.MaxTokens * (1 - this.MaxTokensRatio));
+
+    /// <summary>
+    /// Delegate to get the prompt template string.
+    /// </summary>
+    public Func<string>? GetInitialPlanPromptTemplate { get; set; }
 
     /// <summary>
     /// Delegate to get the prompt template string for the step execution phase.

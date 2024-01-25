@@ -45,7 +45,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetFunctionsManualAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions config,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -67,7 +67,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetJsonSchemaFunctionsManualAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions config,
         string? semanticQuery = null,
         ILogger? logger = null,
         bool includeOutputSchema = true,
@@ -89,7 +89,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
     internal static async Task<IEnumerable<KernelFunctionMetadata>> GetFunctionsAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions config,
         string? semanticQuery,
         ILogger? logger,
         CancellationToken cancellationToken)
@@ -110,7 +110,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
     internal static async Task<IEnumerable<KernelFunctionMetadata>> GetAvailableFunctionsAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions config,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
