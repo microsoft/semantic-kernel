@@ -23,7 +23,6 @@ def build_payload(record: MemoryRecord) -> dict:
     Builds a metadata payload to be sent to AstraDb from a MemoryRecord.
     """
     payload: dict = {}
-    # payload["_id"] = record._id
     payload["$vector"] = record.embedding.tolist()
     if record._text:
         payload["text"] = record._text
@@ -40,9 +39,7 @@ def parse_payload(document: Dict) -> MemoryRecord:
     """
     text = document.get("text", None)
     description = document["description"] if "description" in document else None
-    additional_metadata = (
-        document["additional_metadata"] if "additional_metadata" in document else None
-    )
+    additional_metadata = document["additional_metadata"] if "additional_metadata" in document else None
 
     return MemoryRecord.local_record(
         id=document["_id"],
