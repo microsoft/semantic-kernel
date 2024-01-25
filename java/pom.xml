@@ -612,6 +612,7 @@
             </properties>
             <modules>
                 <module>samples</module>
+                <module>semantickernel-spring-starter</module>
             </modules>
         </profile>
         <profile>
