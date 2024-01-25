@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 
 from pydantic import PrivateAttr
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -24,7 +24,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 #                      | "{{" [function-call] "}}"
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
-class TemplateTokenizer(SKBaseModel):
+class TemplateTokenizer(KernelBaseModel):
     _code_tokenizer: CodeTokenizer = PrivateAttr()
 
     def __init__(self, log: Optional[Any] = None):

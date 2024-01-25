@@ -10,7 +10,7 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
     SequentialPlannerConfig,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerSKContextExtension as SKContextExtension,
+    SequentialPlannerKernelContextExtension as KernelContextExtension,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -24,8 +24,8 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
-    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
@@ -46,8 +46,8 @@ class SequentialPlanner:
     RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
     config: SequentialPlannerConfig
-    _context: "SKContext"
-    _function_flow_function: "SKFunctionBase"
+    _context: "KernelContext"
+    _function_flow_function: "KernelFunctionBase"
 
     def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
         assert isinstance(kernel, Kernel)
@@ -81,7 +81,9 @@ class SequentialPlanner:
         if len(goal) == 0:
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
-        relevant_function_manual = await SKContextExtension.get_functions_manual_async(self._context, goal, self.config)
+        relevant_function_manual = await KernelContextExtension.get_functions_manual_async(
+            self._context, goal, self.config
+        )
         self._context.variables.set("available_functions", relevant_function_manual)
 
         self._context.variables.update(goal)

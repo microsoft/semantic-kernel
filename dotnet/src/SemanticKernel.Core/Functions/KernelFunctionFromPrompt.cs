@@ -124,10 +124,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
+#pragma warning disable CS0612 // Events are deprecated
         if (result.RenderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation after prompt rendering.");
         }
+#pragma warning restore CS0612 // Events are deprecated
 
         if (result.RenderedContext?.Cancel is true)
         {
@@ -161,7 +163,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        if (result.RenderedEventArgs?.Cancel is true || result.RenderedContext?.Cancel is true)
+#pragma warning disable CS0612 // Events are deprecated
+        if (result.RenderedEventArgs?.Cancel is true)
+        {
+            yield break;
+        }
+#pragma warning restore CS0612 // Events are deprecated
+
+        if (result.RenderedContext?.Cancel is true)
         {
             yield break;
         }
@@ -285,7 +294,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         Verify.NotNull(aiService);
 
+#pragma warning disable CS0618 // Events are deprecated
         kernel.OnPromptRendering(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
+
         kernel.OnPromptRenderingFilter(this, arguments);
 
         var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
@@ -295,6 +307,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
         }
 
+#pragma warning disable CS0618 // Events are deprecated
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
 
         if (renderedEventArgs is not null &&
@@ -308,6 +321,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 this._logger.LogTrace("Rendered prompt changed by event handler: {Prompt}", renderedEventArgs.RenderedPrompt);
             }
         }
+#pragma warning restore CS0618 // Events are deprecated
 
         var renderedContext = kernel.OnPromptRenderedFilter(this, arguments, renderedPrompt);
 

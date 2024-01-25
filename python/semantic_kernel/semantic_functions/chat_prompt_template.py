@@ -16,7 +16,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
 
@@ -46,7 +46,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             for message in self.prompt_config.execution_settings.messages:
                 self.add_message(message["role"], message["content"])
 
-    async def render_async(self, context: "SKContext") -> str:
+    async def render_async(self, context: "KernelContext") -> str:
         raise NotImplementedError(
             "Can't call render_async on a ChatPromptTemplate.\n" "Use render_messages_async instead."
         )
@@ -83,7 +83,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             )
         )
 
-    async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
+    async def render_messages_async(self, context: "KernelContext") -> List[Dict[str, str]]:
         """Render the content of the message in the chat template, based on the context."""
         if len(self.messages) == 0 or self.messages[-1].role in [
             "assistant",

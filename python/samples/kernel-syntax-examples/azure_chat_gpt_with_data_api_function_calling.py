@@ -79,7 +79,7 @@ filter = {"exclude_plugin": ["ChatBot"]}
 functions = get_function_calling_object(kernel, filter)
 
 
-async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
+async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:
     try:
         user_input = input("User:> ")
         context.variables["user_input"] = user_input

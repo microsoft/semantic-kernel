@@ -514,3 +514,50 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
     assert content_filter_exc.content_filter_result["hate"].filtered
     assert content_filter_exc.content_filter_result["hate"].severity == ContentFilterResultSeverity.HIGH
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create")
+async def test_azure_chat_completion_content_filtering_without_response_code_raises_with_default_code(
+    mock_create,
+) -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    prompt = "some prompt that would trigger the content filtering"
+    messages = [{"role": "user", "content": prompt}]
+    complete_request_settings = AzureChatRequestSettings()
+
+    mock_create.side_effect = openai.BadRequestError(
+        CONTENT_FILTERED_ERROR_FULL_MESSAGE,
+        response=Response(400, request=Request("POST", endpoint)),
+        body={
+            "message": CONTENT_FILTERED_ERROR_MESSAGE,
+            "type": None,
+            "param": "prompt",
+            "code": "content_filter",
+            "status": 400,
+            "innererror": {
+                "content_filter_result": {
+                    "hate": {"filtered": True, "severity": "high"},
+                    "self_harm": {"filtered": False, "severity": "safe"},
+                    "sexual": {"filtered": False, "severity": "safe"},
+                    "violence": {"filtered": False, "severity": "safe"},
+                },
+            },
+        },
+    )
+
+    azure_chat_completion = AzureChatCompletion(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version,
+    )
+
+    with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
+        await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
+
+    content_filter_exc = exc_info.value
+    assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION

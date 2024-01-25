@@ -5,11 +5,11 @@ from typing import Optional
 
 from pydantic import Field, field_validator
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.validation import validate_function_param_name
 
 
-class ParameterView(SKBaseModel):
+class ParameterView(KernelBaseModel):
     name: str
     description: str
     default_value: str
