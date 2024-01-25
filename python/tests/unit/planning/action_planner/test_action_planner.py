@@ -57,8 +57,7 @@ async def test_plan_creation():
     kernel = Mock(spec=Kernel)
     mock_function = Mock(spec=KernelFunctionBase)
     memory = Mock(spec=SemanticTextMemoryBase)
-    plugins = Mock(spec=KernelPluginCollection)
-    mock_plugin = Mock(spec=DefaultKernelPlugin)
+    plugins = KernelPluginCollection()
 
     function_view = FunctionView(
         name="Translate",
@@ -69,8 +68,7 @@ async def test_plan_creation():
     )
     mock_function = create_mock_function(function_view)
 
-    plugins.get_plugin.return_value = mock_plugin
-    plugins.get_plugin.get_function.return_value = mock_function
+    plugins.add(plugin=DefaultKernelPlugin(name=function_view.plugin_name, functions=[mock_function]))
 
     context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
     return_context = KernelContext.model_construct(
@@ -88,8 +86,7 @@ async def test_plan_creation():
     plan = await planner.create_plan(goal)
 
     assert plan is not None
-    # TODO: figure out why the returned plan.description is of type Mock instead of a string
-    # assert plan.description == mock_function.description
+    assert plan.description == mock_function.description
     assert "translate_from" in plan.state
     assert "translate_to" in plan.state
     assert "input" in plan.state

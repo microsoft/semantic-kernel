@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Iterable
 from typing import Any, Dict, List, Optional
 
 from pydantic import Field, model_validator
@@ -40,7 +41,7 @@ class KernelPluginCollection(KernelBaseModel):
         if isinstance(plugins_input, KernelPluginCollection):
             # Extract plugins from another KernelPluginCollection instance
             values["plugins"] = {plugin.name: plugin for plugin in plugins_input.plugins.values()}
-        elif isinstance(plugins_input, (list, set, tuple)):
+        elif isinstance(plugins_input, Iterable):
             # Process an iterable of plugins
             plugins_dict = {}
             for plugin in plugins_input:

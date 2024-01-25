@@ -38,13 +38,11 @@ class DefaultKernelPlugin(KernelPlugin):
             ValueError: If the functions list contains duplicate function names.
         """
         functions_list = values.get("functions", [])
-        seen = set()
         functions_dict = {}
 
         for function in functions_list:
-            if function.name in seen:
+            if function.name in functions_dict:
                 raise ValueError(f"Duplicate function name detected: {function.name}")
-            seen.add(function.name)
             functions_dict[function.name] = function
 
         values["functions"] = functions_dict
@@ -109,7 +107,8 @@ class DefaultKernelPlugin(KernelPlugin):
             raise KeyError(f"Function {name} not found.")
         return self.functions[name]
 
-    def from_function(function: "KernelFunctionBase") -> "DefaultKernelPlugin":
+    @classmethod
+    def from_function(cls, function: "KernelFunctionBase") -> "DefaultKernelPlugin":
         """
         Creates a DefaultKernelPlugin from a KernelFunctionBase instance.
 
@@ -119,4 +118,4 @@ class DefaultKernelPlugin(KernelPlugin):
         Returns:
             A DefaultKernelPlugin instance.
         """
-        return DefaultKernelPlugin(name=function.name, description=function.description, functions=[function])
+        return cls(name=function.name, description=function.description, functions=[function])

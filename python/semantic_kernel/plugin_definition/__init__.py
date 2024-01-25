@@ -9,5 +9,6 @@ __all__ = [
     "kernel_function",
     "kernel_function_context_parameter",
     "KernelPlugin",
-    "KernelPluginCollection" "DefaultKernelPlugin",
+    "KernelPluginCollection",
+    "DefaultKernelPlugin",
 ]

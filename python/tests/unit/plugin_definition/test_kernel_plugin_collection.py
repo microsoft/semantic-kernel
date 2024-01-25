@@ -1,15 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from string import ascii_uppercase
-from typing import TYPE_CHECKING
 
 import pytest
 
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
-
-if TYPE_CHECKING:
-    pass
 
 
 def test_add_plugin():
