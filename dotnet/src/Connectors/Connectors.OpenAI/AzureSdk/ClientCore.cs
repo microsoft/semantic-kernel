@@ -714,7 +714,7 @@ internal abstract class ClientCore
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
-            User = null,
+            User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
 
@@ -758,6 +758,7 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
+            User = executionSettings.User
         };
 
         switch (executionSettings.ResponseFormat)
