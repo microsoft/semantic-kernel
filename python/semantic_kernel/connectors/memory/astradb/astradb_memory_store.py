@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 from typing import List, Optional, Tuple
-import asyncio
+
+import aiohttp
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
@@ -12,8 +14,6 @@ from semantic_kernel.connectors.memory.astradb.utils import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-
-import aiohttp
 
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
@@ -88,7 +88,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Arguments:
             collection_name {str} -- The name of the collection to create.
             dimension_num {int} -- The dimension of the vectors to be stored in this collection.
-            distance_type {str} -- Specifies the similarity metric to be used when querying or comparing vectors within this collection. The available options are dot_product, euclidean, and cosine.
+            distance_type {str} -- Specifies the similarity metric to be used when querying or comparing vectors within
+            this collection. The available options are dot_product, euclidean, and cosine.
         Returns:
             None
         """

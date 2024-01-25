@@ -10,14 +10,7 @@ import semantic_kernel as sk
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-try:
-    from semantic_kernel.connectors.memory.astradb.astra_client import (
-        AstraClient,
-    )  # noqa: ????
-
-    astradb_installed = True
-except ImportError:
-    astradb_installed = False
+astradb_installed = True
 
 pytestmark = pytest.mark.skipif(
     not astradb_installed, reason="astradb is not installed"
@@ -112,7 +105,7 @@ async def test_create_and_get_collection_async(get_astradb_config):
     await retry(lambda: memory.create_collection_async("test_collection"))
     result = await retry(lambda: memory.does_collection_exist_async("test_collection"))
     assert result is not None
-    assert result == True
+    assert result is True
 
 
 @pytest.mark.asyncio

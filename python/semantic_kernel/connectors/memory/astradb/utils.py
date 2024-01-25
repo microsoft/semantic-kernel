@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-import numpy
 from typing import Dict
-from semantic_kernel.memory.memory_record import MemoryRecord
 
 import aiohttp
+import numpy
+
+from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 class AsyncSession:

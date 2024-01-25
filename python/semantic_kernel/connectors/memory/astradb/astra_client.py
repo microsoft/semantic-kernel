@@ -1,6 +1,5 @@
-import requests
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -111,7 +110,7 @@ class AstraClient:
         if vector is not None:
             find_query["sort"] = {"$vector": vector}
 
-        if include_vector is not None and include_vector == False:
+        if include_vector is not None and include_vector is False:
             find_query["projection"] = {"$vector": 0}
 
         if limit is not None:
