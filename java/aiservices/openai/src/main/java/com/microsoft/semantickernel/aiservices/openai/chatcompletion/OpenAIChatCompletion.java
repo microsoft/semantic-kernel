@@ -24,6 +24,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
+import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.hooks.Hooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
@@ -312,6 +313,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         if (promptExecutionSettings == null) {
             return options;
         }
+        if (promptExecutionSettings.getResultsPerPrompt() < 1
+                || promptExecutionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, String.format("Results per prompt must be in range between 1 and %d, inclusive.", MAX_RESULTS_PER_PROMPT));
+        }
 
         Map<String, Integer> logit = null;
         if (promptExecutionSettings.getTokenSelectionBiases() != null) {
@@ -332,6 +337,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .setFrequencyPenalty(promptExecutionSettings.getFrequencyPenalty())
             .setPresencePenalty(promptExecutionSettings.getPresencePenalty())
             .setMaxTokens(promptExecutionSettings.getMaxTokens())
+            .setN(promptExecutionSettings.getResultsPerPrompt())
             // Azure OpenAI WithData API does not allow to send empty array of stop sequences
             // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
             .setStop(promptExecutionSettings.getStopSequences() == null
