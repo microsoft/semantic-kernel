@@ -149,9 +149,14 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
 
     private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
     {
+        if (geminiResponse.Candidates == null || !geminiResponse.Candidates.Any())
+        {
+            throw new KernelException("Gemini API doesn't return any data.");
+        }
+
         var chatMessageContents = geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
-            role: candidate.Content.Role ?? AuthorRole.Assistant,
-            content: candidate.Content.Parts[0].Text,
+            role: candidate.Content?.Role ?? AuthorRole.Assistant,
+            content: candidate.Content?.Parts[0].Text ?? string.Empty,
             modelId: this._modelId,
             innerContent: candidate,
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
