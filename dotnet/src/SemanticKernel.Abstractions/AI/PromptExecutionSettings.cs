@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
@@ -40,4 +42,11 @@ public class PromptExecutionSettings
     /// </remarks>
     [JsonExtensionData]
     public Dictionary<string, object>? ExtensionData { get; set; }
+
+    /// <summary>
+    /// Memory configuration for execution context;
+    /// </summary>
+    [JsonIgnore]
+    [Experimental("SKEXP0003")]
+    public MemoryConfig? MemoryConfig { get; set; }
 }
