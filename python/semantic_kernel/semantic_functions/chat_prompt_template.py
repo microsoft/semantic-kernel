@@ -31,20 +31,43 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Any] = None,
+        parse_chat_system_prompt: bool = False,
+        parse_messages: bool = False,
+        **kwargs: Any,
     ) -> None:
+        """Initialize a chat prompt template.
+
+        if there is a field 'chat_system_prompt' in the prompt_config.execution_settings.extension_data,
+        that value is added to the messages list as a system message,
+        can be controlled by setting the parse_chat_system_prompt parameter to True.
+
+        After that any messages that are in messages in the prompt_config.execution_settings
+        are added to the messages list.
+        Can be controlled by setting the parse_messages parameter to True.
+
+        Arguments:
+            template {str} -- The template to use for the chat prompt.
+            template_engine {PromptTemplatingEngine} -- The templating engine to use.
+            prompt_config {PromptTemplateConfig} -- The prompt config to use.
+            parse_chat_system_prompt {bool} -- Whether to parse the chat_system_prompt from
+                the prompt_config.execution_settings.extension_data.
+            parse_messages {bool} -- Whether to parse the messages from the prompt_config.execution_settings.
+
+        """
         super().__init__(template, template_engine, prompt_config)
-        if log:
+        if "log" in kwargs:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        self._messages = []
-        if self.prompt_config.execution_settings.extension_data.get("chat_system_prompt"):
+
+        if parse_chat_system_prompt and "chat_system_prompt" in self.prompt_config.execution_settings.extension_data:
             self.add_system_message(self.prompt_config.execution_settings.extension_data["chat_system_prompt"])
+
         if (
-            hasattr(self.prompt_config.execution_settings, "messages")
+            parse_messages
+            and hasattr(self.prompt_config.execution_settings, "messages")
             and self.prompt_config.execution_settings.messages
         ):
             for message in self.prompt_config.execution_settings.messages:
-                self.add_message(message["role"], message["content"])
+                self.add_message(**message)
 
     async def render_async(self, context: "KernelContext") -> str:
         raise NotImplementedError(
@@ -75,6 +98,9 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         # When the type is not explicitly set, it is still the typevar, replace with generic ChatMessage
         if isinstance(concrete_message, TypeVar):
             concrete_message = ChatMessage
+        assert issubclass(concrete_message, ChatMessage)
+        if not message and "content" in kwargs:
+            message = kwargs["content"]
         self.messages.append(
             concrete_message(
                 role=role,
@@ -104,26 +130,35 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        log: Optional[Any] = None,
+        parse_chat_system_prompt: bool = False,
+        parse_messages: bool = False,
+        **kwargs: Any,
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs.
 
-        If there is a chat_system_prompt in the prompt_config.execution_settings settings,
-        that takes precedence over the first message in the list of messages,
-        if that is a system message.
-        """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        chat_template = cls(template, template_engine, prompt_config)
-        if prompt_config.execution_settings.chat_system_prompt and messages[0]["role"] == "system":
-            existing_system_message = messages.pop(0)
-            if existing_system_message["message"] != prompt_config.execution_settings.chat_system_prompt:
-                logger.info(
-                    "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
-                    existing_system_message["message"],
-                    prompt_config.execution_settings.chat_system_prompt,
-                )
-        for message in messages:
-            chat_template.add_message(message["role"], message["message"])
+        The parse_messages and parse_chat_system_prompt parameters control whether
+        the messages and chat_system_prompt from the prompt_config.execution_settings
+        are parsed and added to the messages list, not whether or not the 'messages'
+        from the messages parameter are parsed, those are always parsed.
 
+        Arguments:
+            messages {List[Dict[str, str]]} -- The messages to restore,
+                the default format is [{"role": "user", "message": "Hi there"}].
+                if the ChatPromptTemplate is created with a different message type,
+                the messages should contain any fields that are relevant to the message,
+                for instance: ChatPromptTemplate[OpenAIChatMessage].restore can be used with a format:
+                [{"role": "assistant", "function_call": FunctionCall()}].
+            template {str} -- The template to use for the chat prompt.
+            template_engine {PromptTemplatingEngine} -- The templating engine to use.
+            prompt_config {PromptTemplateConfig} -- The prompt config to use.
+            parse_chat_system_prompt {bool} -- Whether to parse the chat_system_prompt from the
+                prompt_config.execution_settings.extension_data.
+            parse_messages {bool} -- Whether to parse the messages from the prompt_config.execution_settings.
+
+        """
+        chat_template = cls(
+            template, template_engine, prompt_config, parse_chat_system_prompt, parse_messages, **kwargs
+        )
+        for message in messages:
+            chat_template.add_message(**message)
         return chat_template
