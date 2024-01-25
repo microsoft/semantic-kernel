@@ -65,7 +65,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
-        return this.DeserializeAndProcessChatResponse(body);
+        return this.ParseAndProcessChatResponse(body);
     }
 
     /// <inheritdoc/>
@@ -144,14 +144,14 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     }
 
     private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(Stream responseStream)
-        => from geminiResponse in this.ProcessResponseStream(responseStream)
+        => from geminiResponse in this.ParseResponseStream(responseStream)
            from chatMessageContent in this.ProcessChatResponse(geminiResponse)
            select GetStreamingChatContentFromChatContent(chatMessageContent);
 
-    private IEnumerable<GeminiResponse> ProcessResponseStream(Stream responseStream)
+    private IEnumerable<GeminiResponse> ParseResponseStream(Stream responseStream)
         => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<GeminiResponse>);
 
-    private List<ChatMessageContent> DeserializeAndProcessChatResponse(string body)
+    private List<ChatMessageContent> ParseAndProcessChatResponse(string body)
         => this.ProcessChatResponse(DeserializeResponse<GeminiResponse>(body));
 
     private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
