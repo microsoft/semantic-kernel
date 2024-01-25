@@ -18,6 +18,7 @@ from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
+from semantic_kernel.plugin_definition.default_kernel_plugin  import DefaultKernelPlugin
 
 
 def create_mock_function(function_view: FunctionView):
@@ -44,7 +45,7 @@ async def test_it_can_create_plan(goal):
     ]
 
     functionsView = FunctionsView()
-    plugins = Mock(spec=KernelPluginCollection)
+    plugins = KernelPluginCollection()
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
         function_view = FunctionView(name, pluginName, description, [], isSemantic, True)
@@ -56,11 +57,9 @@ async def test_it_can_create_plan(goal):
         mock_function.invoke_async.return_value = context
         mock_functions.append(mock_function)
 
-    plugins.get_plugin.get_function.side_effect = lambda plugin_name, function_name: next(
-        (func for func in mock_functions if func.plugin_name == plugin_name and func.name == function_name),
-        None,
-    )
-    plugins.get_functions_view.return_value = functionsView
+        if pluginName not in plugins.plugins:
+            plugins.add(DefaultKernelPlugin(name=pluginName, description="Mock plugin"))
+        plugins.add_functions_to_plugin([mock_function], pluginName)
 
     expected_functions = [x[0] for x in input]
     expected_plugins = [x[1] for x in input]
