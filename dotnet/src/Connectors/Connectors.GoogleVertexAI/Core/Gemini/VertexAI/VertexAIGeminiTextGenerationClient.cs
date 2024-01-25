@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the text generation gemini models by Vertex AI.
 /// </summary>
+// todo: remove this class when gemini vertex ai (preview api) support non-streaming chat completion
 internal sealed class VertexAIGeminiTextGenerationClient : GeminiTextGenerationClient, IGeminiTextGenerationClient
 {
     /// <summary>

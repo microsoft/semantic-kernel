@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the chat completion gemini models by Vertex AI.
 /// </summary>
+// todo: remove this class when gemini vertex ai (preview api) support non-streaming
 internal sealed class VertexAIGeminiChatCompletionClient : GeminiChatCompletionClient
 {
     /// <summary>
