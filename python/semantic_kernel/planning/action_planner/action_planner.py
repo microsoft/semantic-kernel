@@ -10,16 +10,16 @@ from typing import List, Optional
 import regex
 
 from semantic_kernel import Kernel
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.parameter_view import ParameterView
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -33,11 +33,11 @@ class ActionPlanner:
     "no function" if nothing relevant is available.
     """
 
-    RESTRICTED_SKILL_NAME = "ActionPlanner_Excluded"
+    RESTRICTED_PLUGIN_NAME = "ActionPlanner_Excluded"
     config: ActionPlannerConfig
     _stop_sequence: str = "#END-OF-PLAN"
 
-    _planner_function: SKFunctionBase
+    _planner_function: KernelFunctionBase
 
     _kernel: Kernel
     _prompt_template: str
@@ -65,12 +65,12 @@ class ActionPlanner:
         self._prompt_template = prompt if prompt else open(__prompt_file, "r").read()
 
         self._planner_function = kernel.create_semantic_function(
-            skill_name=self.RESTRICTED_SKILL_NAME,
+            plugin_name=self.RESTRICTED_PLUGIN_NAME,
             prompt_template=self._prompt_template,
             max_tokens=self.config.max_tokens,
             stop_sequences=[self._stop_sequence],
         )
-        kernel.import_skill(self, self.RESTRICTED_SKILL_NAME)
+        kernel.import_plugin(self, self.RESTRICTED_PLUGIN_NAME)
 
         self._kernel = kernel
         self._context = kernel.create_new_context()
@@ -139,15 +139,15 @@ class ActionPlanner:
             logger.warn("No suitable function has been identified by ActionPlanner.")
             plan = Plan(description=goal)
         elif "." in generated_plan["plan"]["function"]:
-            skill, fun = generated_plan["plan"]["function"].split(".")
-            function_ref = self._context.skills.get_function(skill, fun)
+            plugin, fun = generated_plan["plan"]["function"].split(".")
+            function_ref = self._context.plugins.get_function(plugin, fun)
             logger.info(
-                f"ActionPlanner has picked {skill}.{fun}. Reference to this function"
+                f"ActionPlanner has picked {plugin}.{fun}. Reference to this function"
                 f" found in context: {function_ref}"
             )
             plan = Plan(description=goal, function=function_ref)
         else:
-            function_ref = self._context.skills.get_function(generated_plan["plan"]["function"])
+            function_ref = self._context.plugins.get_function(generated_plan["plan"]["function"])
             logger.info(
                 f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
                 "              Reference to this function found in context:"
@@ -163,31 +163,31 @@ class ActionPlanner:
 
         return plan
 
-    @sk_function(description="List a few good examples of plans to generate", name="GoodExamples")
-    @sk_function_context_parameter(name="goal", description="The current goal processed by the planner")
-    def good_examples(self, goal: str, context: SKContext) -> str:
+    @kernel_function(description="List a few good examples of plans to generate", name="GoodExamples")
+    @kernel_function_context_parameter(name="goal", description="The current goal processed by the planner")
+    def good_examples(self, goal: str, context: KernelContext) -> str:
         return dedent(
             """
             [EXAMPLE]
             - List of functions:
             // Read a file.
-            FileIOSkill.ReadAsync
+            FileIOPlugin.ReadAsync
             Parameter ""path"": Source file.
             // Write a file.
-            FileIOSkill.WriteAsync
+            FileIOPlugin.WriteAsync
             Parameter ""path"": Destination file. (default value: sample.txt)
             Parameter ""content"": File content.
             // Get the current time.
-            TimeSkill.Time
+            TimePlugin.Time
             No parameters.
             // Makes a POST request to a uri.
-            HttpSkill.PostAsync
+            HttpPlugin.PostAsync
             Parameter ""body"": The body of the request.
             - End list of functions.
             Goal: create a file called ""something.txt"".
             {""plan"":{
             ""rationale"": ""the list contains a function that allows to create files"",
-            ""function"": ""FileIOSkill.WriteAsync"",
+            ""function"": ""FileIOPlugin.WriteAsync"",
             ""parameters"": {
             ""path"": ""something.txt"",
             ""content"": null
@@ -196,28 +196,28 @@ class ActionPlanner:
             """
         )
 
-    @sk_function(
+    @kernel_function(
         description="List a few edge case examples of plans to handle",
         name="EdgeCaseExamples",
     )
-    @sk_function_context_parameter(name="goal", description="The current goal processed by the planner")
-    def edge_case_examples(self, goal: str, context: SKContext) -> str:
+    @kernel_function_context_parameter(name="goal", description="The current goal processed by the planner")
+    def edge_case_examples(self, goal: str, context: KernelContext) -> str:
         return dedent(
             '''
             [EXAMPLE]
             - List of functions:
             // Get the current time.
-            TimeSkill.Time
+            TimePlugin.Time
             No parameters.
             // Write a file.
-            FileIOSkill.WriteAsync
+            FileIOPlugin.WriteAsync
             Parameter ""path"": Destination file. (default value: sample.txt)
             Parameter ""content"": File content.
             // Makes a POST request to a uri.
-            HttpSkill.PostAsync
+            HttpPlugin.PostAsync
             Parameter ""body"": The body of the request.
             // Read a file.
-            FileIOSkill.ReadAsync
+            FileIOPlugin.ReadAsync
             Parameter ""path"": Source file.
             - End list of functions.
             Goal: tell me a joke.
@@ -230,17 +230,17 @@ class ActionPlanner:
             '''
         )
 
-    @sk_function(description="List all functions available in the kernel", name="ListOfFunctions")
-    @sk_function_context_parameter(name="goal", description="The current goal processed by the planner")
-    def list_of_functions(self, goal: str, context: SKContext) -> str:
-        if context.skills is None:
+    @kernel_function(description="List all functions available in the kernel", name="ListOfFunctions")
+    @kernel_function_context_parameter(name="goal", description="The current goal processed by the planner")
+    def list_of_functions(self, goal: str, context: KernelContext) -> str:
+        if context.plugins is None:
             raise PlanningException(
                 error_code=PlanningException.ErrorCodes.InvalidConfiguration,
                 message="Suitable plan not generated by ActionPlanner.",
                 inner_exception=ValueError("No plugins are available."),
             )
 
-        functions_view = context.skills.get_functions_view()
+        functions_view = context.plugins.get_functions_view()
 
         available_functions: List[FunctionView] = [
             *functions_view.semantic_functions.values(),
@@ -252,8 +252,8 @@ class ActionPlanner:
             self._create_function_string(func)
             for func in available_functions
             if (
-                func.skill_name != self.RESTRICTED_SKILL_NAME
-                and func.skill_name not in self.config.excluded_skills
+                func.plugin_name != self.RESTRICTED_PLUGIN_NAME
+                and func.plugin_name not in self.config.excluded_plugins
                 and func.name not in self.config.excluded_functions
             )
         ]
@@ -269,7 +269,7 @@ class ActionPlanner:
         Takes an instance of FunctionView and returns a string that consists of
         function name, function description and parameters in the following format
         // <function-description>
-        <skill-name>.<function-name>
+        <plugin-name>.<function-name>
         Parameter ""<parameter-name>"": <parameter-description> (default value: `default_value`)
         ...
 
@@ -278,8 +278,8 @@ class ActionPlanner:
         """
 
         if not function.description:
-            logger.warn(f"{function.skill_name}.{function.name} is missing a description")
-            description = f"// Function {function.skill_name}.{function.name}."
+            logger.warn(f"{function.plugin_name}.{function.name} is missing a description")
+            description = f"// Function {function.plugin_name}.{function.name}."
         else:
             description = f"// {function.description}"
 
@@ -287,7 +287,7 @@ class ActionPlanner:
         if description[-1] != ".":
             description = f"{description}."
 
-        name = f"{function.skill_name}.{function.name}"
+        name = f"{function.plugin_name}.{function.name}"
 
         parameters_list = [
             result for x in function.parameters if (result := self._create_parameter_string(x)) is not None
