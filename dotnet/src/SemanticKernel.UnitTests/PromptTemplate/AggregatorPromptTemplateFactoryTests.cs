@@ -4,8 +4,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
+
+#pragma warning disable CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
 
 namespace SemanticKernel.UnitTests.PromptTemplate;
 
@@ -44,17 +45,52 @@ public sealed class AggregatorPromptTemplateFactoryTests
         Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 
+    [Fact]
+    public void ItCreatesPromptFunctionsUsingCorrectFactory()
+    {
+        // Arrange
+        var templateString = "{{$input}}";
+        var kernel = new Kernel();
+        var factory1 = new MyPromptTemplateFactory1();
+        var factory2 = new MyPromptTemplateFactory2();
+        var target = new AggregatorPromptTemplateFactory(factory1, factory2);
+
+        // Act
+        var function1 = kernel.CreateFunctionFromPrompt(templateString, templateFormat: "my-format-1", promptTemplateFactory: target);
+        var function2 = kernel.CreateFunctionFromPrompt(templateString, templateFormat: "my-format-1", promptTemplateFactory: target);
+
+        // Assert
+        Assert.NotNull(function1);
+        Assert.NotNull(function2);
+    }
+
+    [Fact]
+    public void ItThrowsExceptionCreatePromptFunctionWithoutFormat()
+    {
+        // Arrange
+        var templateString = "{{$input}}";
+        var kernel = new Kernel();
+        var factory1 = new MyPromptTemplateFactory1();
+
+        // Act & Assert
+        var result = Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompt(templateString, promptTemplateFactory: factory1));
+        Assert.Equal("templateFormat", result.ParamName);
+        Assert.Equal("Template format is required when providing a promptTemplateFactory (Parameter 'templateFormat')", result.Message);
+    }
+
     #region private
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(PromptTemplateConfig promptConfig)
+        public bool TryCreate(PromptTemplateConfig templateConfig, out IPromptTemplate? result)
         {
-            if (promptConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
+            if (templateConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
-                return new MyPromptTemplate1(promptConfig);
+                result = new MyPromptTemplate1(templateConfig);
+                return true;
             }
 
-            throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
+            result = null;
+            return false;
         }
     }
 
@@ -67,7 +103,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptModel = promptConfig;
         }
 
-        public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }
@@ -75,14 +111,16 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
-        public IPromptTemplate Create(PromptTemplateConfig promptConfig)
+        public bool TryCreate(PromptTemplateConfig templateConfig, out IPromptTemplate? result)
         {
-            if (promptConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
+            if (templateConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
-                return new MyPromptTemplate2(promptConfig);
+                result = new MyPromptTemplate2(templateConfig);
+                return true;
             }
 
-            throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
+            result = null;
+            return false;
         }
     }
 
@@ -95,7 +133,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptModel = promptConfig;
         }
 
-        public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }

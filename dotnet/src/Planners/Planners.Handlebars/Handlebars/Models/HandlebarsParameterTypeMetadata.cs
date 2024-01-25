@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
-#pragma warning restore IDE0130
 
-internal class HandlebarsParameterTypeMetadata
+internal sealed class HandlebarsParameterTypeMetadata
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;

@@ -8,14 +8,14 @@ using System.Web;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Supported OpenAI REST API actions for assistants.
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    internal const string BaseAssistantUrl = $"{BaseUrl}assistants";
+    internal const string BaseAssistantUrl = $"{BaseUrl}/assistants";
 
     /// <summary>
     /// Create a new assistant.

@@ -9,21 +9,13 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info1", text="My name is Andrea"
-    )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info2", text="I currently work as a tour guide"
-    )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info3", text="I've been living in Seattle since 2005"
-    )
+    await kernel.memory.save_information_async("aboutMe", id="info1", text="My name is Andrea")
+    await kernel.memory.save_information_async("aboutMe", id="info2", text="I currently work as a tour guide")
+    await kernel.memory.save_information_async("aboutMe", id="info3", text="I've been living in Seattle since 2005")
     await kernel.memory.save_information_async(
         "aboutMe", id="info4", text="I visited France and Italy five times since 2015"
     )
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info5", text="My family is from New York"
-    )
+    await kernel.memory.save_information_async("aboutMe", id="info5", text="My family is from New York")
 
 
 async def search_memory_examples(kernel: sk.Kernel) -> None:
@@ -43,7 +35,7 @@ async def search_memory_examples(kernel: sk.Kernel) -> None:
 
 async def setup_chat_with_memory(
     kernel: sk.Kernel,
-) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
+) -> Tuple[sk.KernelFunctionBase, sk.KernelContext]:
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
@@ -61,9 +53,7 @@ async def setup_chat_with_memory(
     User: {{$user_input}}
     ChatBot: """.strip()
 
-    chat_func = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0.8
-    )
+    chat_func = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0.8)
 
     context = kernel.create_new_context()
     context["fact1"] = "what is my name?"
@@ -72,17 +62,15 @@ async def setup_chat_with_memory(
     context["fact4"] = "where have I traveled?"
     context["fact5"] = "what do I do for work?"
 
-    context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
-    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.8
+    context[sk.core_plugins.TextMemoryPlugin.COLLECTION_PARAM] = "aboutMe"
+    context[sk.core_plugins.TextMemoryPlugin.RELEVANCE_PARAM] = 0.8
 
     context["chat_history"] = ""
 
     return chat_func, context
 
 
-async def chat(
-    kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext
-) -> bool:
+async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunctionBase, context: sk.KernelContext) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input
@@ -108,15 +96,13 @@ async def main() -> None:
     kernel = sk.Kernel()
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_chat_service(
-        "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    )
+    kernel.add_chat_service("chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
     kernel.add_text_embedding_generation_service(
         "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
     )
 
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-    kernel.import_skill(sk.core_skills.TextMemorySkill())
+    kernel.import_plugin(sk.core_plugins.TextMemoryPlugin())
 
     print("Populating memory...")
     await populate_memory(kernel)

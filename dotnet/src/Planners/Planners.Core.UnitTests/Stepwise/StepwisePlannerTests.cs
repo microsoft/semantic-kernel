@@ -3,9 +3,7 @@
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Stepwise.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class StepwisePlannerTests
 {

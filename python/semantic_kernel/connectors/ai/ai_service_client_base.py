@@ -1,27 +1,37 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from abc import ABC
-from logging import Logger
-from typing import Optional
 
-from pydantic import constr, validator
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
-from semantic_kernel.sk_pydantic import SKBaseModel
-from semantic_kernel.utils.null_logger import NullLogger
+from pydantic import StringConstraints
+
+from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class AIServiceClientBase(SKBaseModel, ABC):
+class AIServiceClientBase(KernelBaseModel, ABC):
     """Base class for all AI Services.
 
-    Has a model_id and a logger, any other fields have to be defined by the subclasses.
+    Has a ai_model_id, any other fields have to be defined by the subclasses.
 
-    The model_id can refer to a specific model, like 'gpt-35-turbo' for OpenAI,
+    The ai_model_id can refer to a specific model, like 'gpt-35-turbo' for OpenAI,
     or can just be a string that is used to identify the service.
     """
 
-    model_id: constr(strip_whitespace=True, min_length=1)
-    log: Optional[Logger] = None
+    ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    @validator("log", pre=True)
-    def validate_log(cls, v):
-        return v or NullLogger()
+    def get_request_settings_class(self) -> "AIRequestSettings":
+        """Get the request settings class."""
+        return AIRequestSettings  # pragma: no cover
+
+    def instantiate_request_settings(self, **kwargs) -> "AIRequestSettings":
+        """Create a request settings object.
+
+        All arguments are passed to the constructor of the request settings object.
+        """
+        return self.get_request_settings_class()(**kwargs)

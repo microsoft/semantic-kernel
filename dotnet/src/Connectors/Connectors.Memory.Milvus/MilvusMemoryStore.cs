@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Milvus.Client;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Milvus;
+namespace Microsoft.SemanticKernel.Connectors.Milvus;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for the Milvus vector database.
@@ -22,7 +22,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     private readonly int _vectorSize;
     private readonly SimilarityMetricType _metricType;
     private readonly bool _ownsMilvusClient;
+    private readonly string _indexName;
 
+    private const string DefaultIndexName = "default";
     private const string IsReferenceFieldName = "is_reference";
     private const string ExternalSourceNameFieldName = "external_source_name";
     private const string IdFieldName = "id";
@@ -62,12 +64,13 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, int, SimilarityMetricType)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="port">The port to connect to. Defaults to 19530.</param>
     /// <param name="ssl">Whether to use TLS/SSL. Defaults to <c>false</c>.</param>
     /// <param name="database">The database to connect to. Defaults to the default Milvus database.</param>
+    /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
@@ -76,10 +79,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         int port = DefaultMilvusPort,
         bool ssl = false,
         string? database = null,
+        string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
         ILoggerFactory? loggerFactory = null)
-        : this(new MilvusClient(host, port, ssl, database, callOptions: default, loggerFactory), vectorSize, metricType)
+        : this(new MilvusClient(host, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
     {
         this._ownsMilvusClient = true;
     }
@@ -87,7 +91,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, int, SimilarityMetricType)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="username">The username to use for authentication.</param>
@@ -95,6 +99,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="port">The port to connect to. Defaults to 19530.</param>
     /// <param name="ssl">Whether to use TLS/SSL. Defaults to <c>false</c>.</param>
     /// <param name="database">The database to connect to. Defaults to the default Milvus database.</param>
+    /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
@@ -105,10 +110,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         int port = DefaultMilvusPort,
         bool ssl = false,
         string? database = null,
+        string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
         ILoggerFactory? loggerFactory = null)
-        : this(new MilvusClient(host, username, password, port, ssl, database, callOptions: default, loggerFactory), vectorSize, metricType)
+        : this(new MilvusClient(host, username, password, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
     {
         this._ownsMilvusClient = true;
     }
@@ -116,13 +122,14 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, int, SimilarityMetricType)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="apiKey">An API key to be used for authentication, instead of a username and password.</param>
     /// <param name="port">The port to connect to. Defaults to 19530.</param>
     /// <param name="ssl">Whether to use TLS/SSL. Defaults to <c>false</c>.</param>
     /// <param name="database">The database to connect to. Defaults to the default Milvus database.</param>
+    /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
@@ -132,10 +139,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         int port = DefaultMilvusPort,
         bool ssl = false,
         string? database = null,
+        string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
         ILoggerFactory? loggerFactory = null)
-        : this(new MilvusClient(host, apiKey, port, ssl, database, callOptions: default, loggerFactory), vectorSize, metricType)
+        : this(new MilvusClient(host, apiKey, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
     {
         this._ownsMilvusClient = true;
     }
@@ -144,23 +152,27 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// Initializes a new instance of <see cref="MilvusMemoryStore" /> over the given <see cref="MilvusClient" />.
     /// </summary>
     /// <param name="client">A <see cref="MilvusClient" /> configured with the necessary endpoint and authentication information.</param>
+    /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
     public MilvusMemoryStore(
         MilvusClient client,
+        string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip)
-        : this(client, ownsMilvusClient: false, vectorSize, metricType)
+        : this(client, ownsMilvusClient: false, indexName, vectorSize, metricType)
     {
     }
 
     private MilvusMemoryStore(
         MilvusClient client,
         bool ownsMilvusClient,
+        string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip)
     {
         this.Client = client;
+        this._indexName = indexName ?? DefaultIndexName;
         this._vectorSize = vectorSize;
         this._metricType = metricType;
         this._ownsMilvusClient = ownsMilvusClient;
@@ -186,8 +198,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
             MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, DefaultConsistencyLevel, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, cancellationToken: cancellationToken).ConfigureAwait(false);
-            await collection.WaitForIndexBuildAsync("float_vector", cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, indexName: this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.WaitForIndexBuildAsync("float_vector", this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await collection.LoadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await collection.WaitForCollectionLoadAsync(waitingInterval: TimeSpan.FromMilliseconds(100), timeout: TimeSpan.FromMinutes(1), cancellationToken: cancellationToken).ConfigureAwait(false);

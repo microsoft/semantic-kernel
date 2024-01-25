@@ -6,11 +6,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+using Microsoft.SemanticKernel.Connectors.DuckDB;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.DuckDB;
+namespace SemanticKernel.Connectors.UnitTests.DuckDB;
 
 /// <summary>
 /// Unit tests of <see cref="DuckDBMemoryStore"/>.

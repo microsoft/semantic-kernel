@@ -8,13 +8,13 @@ using System.Numerics.Tensors;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
+using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using StackExchange.Redis;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Redis;
+namespace SemanticKernel.Connectors.UnitTests.Redis;
 
 /// <summary>
 /// Unit tests of <see cref="RedisMemoryStore"/>.

@@ -5,10 +5,11 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class SamplePluginsTests
 {
     [Fact]
-    public void CanLoadSamplePluginsRequestSettings()
+    public void CanLoadSamplePluginsExecutionSettings()
     {
         // Arrange
         var kernel = new Kernel();
@@ -41,7 +42,7 @@ public class SamplePluginsTests
         Assert.NotNull(kernel.Plugins);
         var metadata = kernel.Plugins.GetFunctionsMetadata();
         Assert.NotNull(metadata);
-        Assert.Equal(48, metadata.Count); // currently we have 48 sample plugin functions
+        Assert.Single(metadata);
         metadata.ToList().ForEach(function =>
         {
             Assert.NotNull(kernel.Plugins.GetFunction(function.PluginName, function.Name));

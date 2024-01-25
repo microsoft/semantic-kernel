@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.MongoDB;
+namespace SemanticKernel.Connectors.UnitTests.MongoDB;
 
 /// <summary>
 /// Unit tests for <see cref="MongoDBMemoryStore"/> class.

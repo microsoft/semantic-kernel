@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 using System.Reflection;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for the <see cref="HandlebarsPlanner"/> interface.
 /// </summary>
-public static class HandlebarsPlannerExtensions
+internal static class HandlebarsPlannerExtensions
 {
     /// <summary>
     /// Reads the prompt for the given file name.
@@ -43,33 +40,5 @@ public static class HandlebarsPlannerExtensions
         var resourceName = $"{name}{supplementalNamespace}.{fileName}";
 
         return assembly.GetManifestResourceStream(resourceName)!;
-    }
-
-    /// <summary>
-    /// Start the stopwatch.
-    /// </summary>
-    public static void StartStopwatch(this HandlebarsPlanner planner)
-    {
-        if (planner.Stopwatch.IsRunning)
-        {
-            throw new InvalidOperationException("Stopwatch is already running.");
-        }
-
-        planner.Stopwatch.Start();
-    }
-
-    /// <summary>
-    /// Stop the stopwatch and return the elapsed time in milliseconds.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static double StopStopwatch(this HandlebarsPlanner planner)
-    {
-        if (planner.Stopwatch.IsRunning)
-        {
-            planner.Stopwatch.Stop();
-            return planner.Stopwatch.Elapsed.TotalMilliseconds;
-        }
-
-        throw new InvalidOperationException("Stopwatch is not running.");
     }
 }

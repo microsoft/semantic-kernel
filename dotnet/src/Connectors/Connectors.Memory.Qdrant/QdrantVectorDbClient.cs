@@ -11,10 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// An implementation of a client for the Qdrant Vector Database. This class is used to
@@ -38,7 +37,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._vectorSize = vectorSize;
         this._httpClient = HttpClientProvider.GetHttpClient();
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(QdrantVectorDbClient)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -62,7 +61,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._httpClient = httpClient;
         this._vectorSize = vectorSize;
         this._endpointOverride = string.IsNullOrEmpty(endpoint) ? null : SanitizeEndpoint(endpoint!);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(QdrantVectorDbClient)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -194,7 +193,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");
@@ -235,7 +234,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");

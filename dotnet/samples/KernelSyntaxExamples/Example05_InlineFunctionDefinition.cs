@@ -3,22 +3,25 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using RepoUtils;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-public static class Example05_InlineFunctionDefinition
+namespace Examples;
+
+public class Example05_InlineFunctionDefinition : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Inline Function Definition ========");
+        this.WriteLine("======== Inline Function Definition ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (openAIModelId is null || openAIApiKey is null)
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -28,9 +31,8 @@ public static class Example05_InlineFunctionDefinition
          *          function inline if you like.
          */
 
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -51,15 +53,19 @@ Event: {{$input}}
 
         var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        var result = await kernel.InvokeAsync(excuseFunction, "I missed the F1 final race");
-        Console.WriteLine(result.GetValue<string>());
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "I missed the F1 final race" });
+        this.WriteLine(result.GetValue<string>());
 
-        result = await kernel.InvokeAsync(excuseFunction, "sorry I forgot your birthday");
-        Console.WriteLine(result.GetValue<string>());
+        result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "sorry I forgot your birthday" });
+        this.WriteLine(result.GetValue<string>());
 
         var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         result = await kernel.InvokeAsync(fixedFunction);
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine(result.GetValue<string>());
+    }
+
+    public Example05_InlineFunctionDefinition(ITestOutputHelper output) : base(output)
+    {
     }
 }

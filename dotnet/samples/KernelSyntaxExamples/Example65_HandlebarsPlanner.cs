@@ -1,92 +1,77 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Handlebars;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
+using xRetry;
+using Xunit;
+using Xunit.Abstractions;
 
-/**
- * This example shows how to use the Handlebars sequential planner.
- */
-public static class Example65_HandlebarsPlanner
+namespace Examples;
+
+// This example shows how to use the Handlebars sequential planner.
+public class Example65_HandlebarsPlanner : BaseTest
 {
     private static int s_sampleIndex;
 
     private const string CourseraPluginName = "CourseraPlugin";
 
-    /// <summary>
-    /// Show how to create a plan with Handlebars and execute it.
-    /// </summary>
-    public static async Task RunAsync()
+    private void WriteSampleHeading(string name)
     {
-        s_sampleIndex = 1;
-        bool shouldPrintPrompt = true;
-
-        // Using primitive types as inputs and outputs
-        await PlanNotPossibleSampleAsync();
-        await RunDictionaryWithBasicTypesSampleAsync();
-        await RunPoetrySampleAsync();
-        await RunBookSampleAsync();
-
-        // Using Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
+        WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
-
-    private static void WriteSampleHeadingToConsole(string name)
-    {
-        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute {name} Plan ========");
-    }
-
-    private static async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
+    private async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
             return;
         }
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
+                apiKey: apiKey,
+                modelId: chatModelId)
             .Build();
 
-        if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
+        if (pluginDirectoryNames.Length > 0)
         {
-            kernel.ImportPluginFromObject(new StringParamsDictionaryPlugin(), StringParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
-        {
-            kernel.ImportPluginFromObject(new ComplexParamsDictionaryPlugin(), ComplexParamsDictionaryPlugin.PluginName);
-        }
-        else if (pluginDirectoryNames[0] == CourseraPluginName)
-        {
-            await kernel.ImportPluginFromOpenApiAsync(
-                CourseraPluginName,
-                new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
-            );
-        }
-        else
-        {
-            string folder = RepoFiles.SamplePluginsPath();
-
-            foreach (var pluginDirectoryName in pluginDirectoryNames)
+            if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
             {
-                kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+                kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
+            }
+            else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
+            {
+                kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
+            }
+            else if (pluginDirectoryNames[0] == CourseraPluginName)
+            {
+                await kernel.ImportPluginFromOpenApiAsync(
+                    CourseraPluginName,
+                    new Uri("https://www.coursera.org/api/rest/v1/search/openapi.yaml")
+                );
+            }
+            else
+            {
+                string folder = RepoFiles.SamplePluginsPath();
+
+                foreach (var pluginDirectoryName in pluginDirectoryNames)
+                {
+                    kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginDirectoryName));
+                }
             }
         }
 
@@ -94,40 +79,45 @@ public static class Example65_HandlebarsPlanner
         // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
         var allowLoopsInPlan = chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
         var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerConfig()
+            new HandlebarsPlannerOptions()
             {
                 // Change this if you want to test with loops regardless of model selection.
                 AllowLoops = allowLoopsInPlan
             });
 
-        Console.WriteLine($"Goal: {goal}");
+        WriteLine($"Goal: {goal}");
 
         // Create the plan
         var plan = await planner.CreatePlanAsync(kernel, goal);
 
         // Print the prompt template
-        if (shouldPrintPrompt)
+        if (shouldPrintPrompt && plan.Prompt is not null)
         {
-            Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
+            WriteLine($"\nPrompt template:\n{plan.Prompt}");
         }
 
-        Console.WriteLine($"\nOriginal plan:\n{plan}");
+        WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = plan.Invoke(kernel, new ContextVariables(), new Dictionary<string, object?>(), CancellationToken.None);
-        Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
+        var result = await plan.InvokeAsync(kernel);
+        WriteLine($"\nResult:\n{result}\n");
     }
 
-    private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Plan Not Possible");
+        WriteSampleHeading("Plan Not Possible");
 
         try
         {
             // Load additional plugins to enable planner but not enough for the given goal.
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
         }
-        catch (KernelException e)
+        catch (KernelException ex) when (
+            ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase)
+            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InvalidTemplate), StringComparison.CurrentCultureIgnoreCase))
         {
             /*
                 Unable to create plan for goal with available functions.
@@ -138,14 +128,25 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"{e.Message}\n");
+            WriteLine($"\n{ex.Message}\n");
         }
     }
 
-    private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(true)]
+
+    public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Dictionary");
-        await RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
+        this.WriteSampleHeading("Coursera OpenAPI Plugin");
+        return RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
+    }
+
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
+    {
+        this.WriteSampleHeading("Basic Types using Local Dictionary Plugin");
+        return RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -162,10 +163,12 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(true)]
+    public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Complex Types with Local Dictionary Plugin");
-        await RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
+        this.WriteSampleHeading("Complex Types using Local Dictionary Plugin");
+        return RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
             {{!-- Step 1: Get two random dictionary entries --}}
@@ -196,10 +199,12 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Poetry");
-        await RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
+        this.WriteSampleHeading("Multiple Plugins");
+        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -223,10 +228,12 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunBookSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Book Creation");
-        await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+        this.WriteSampleHeading("Loops and Conditionals");
+        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}
@@ -249,5 +256,9 @@ public static class Example65_HandlebarsPlanner
                 {{json (get "chapterContent")}}
             {{/each}}
         */
+    }
+
+    public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)
+    {
     }
 }

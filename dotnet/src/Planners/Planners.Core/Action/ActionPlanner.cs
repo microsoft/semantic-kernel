@@ -10,14 +10,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Action Planner allows to select one function out of many, to achieve a given goal.
@@ -88,7 +85,7 @@ public sealed class ActionPlanner
 
         // Create context and logger
         this._contextVariables = new ContextVariables();
-        this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>

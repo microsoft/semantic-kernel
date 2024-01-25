@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
@@ -121,8 +119,8 @@ public class CodeTokenizerTests
     {
         // Arrange
         var template1 = "x.y first=$foo second='bar'";
-        var parameters = new ContextVariables();
-        parameters.Set("foo", "fooValue");
+        var arguments = new KernelArguments();
+        arguments["foo"] = "fooValue";
 
         // Act
         var blocks1 = this._target.Tokenize(template1);
@@ -140,12 +138,12 @@ public class CodeTokenizerTests
         Assert.Equal("first=$foo", secondBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, secondBlock?.Type);
         Assert.Equal("first", secondBlock?.Name);
-        Assert.Equal("fooValue", secondBlock?.GetValue(parameters));
+        Assert.Equal("fooValue", secondBlock?.GetValue(arguments));
 
         Assert.Equal("second='bar'", thirdBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, thirdBlock?.Type);
         Assert.Equal("second", thirdBlock?.Name);
-        Assert.Equal("bar", thirdBlock?.GetValue(parameters));
+        Assert.Equal("bar", thirdBlock?.GetValue(arguments));
     }
 
     [Fact]
@@ -211,12 +209,12 @@ public class CodeTokenizerTests
     }
 
     [Theory]
-    [InlineData("f a =", "A function named argument must contain a quoted value or variable after the '=' character.")]
-    [InlineData("f a='b' arg2", "A function named argument must contain a name and value separated by a '=' character.")]
-    public void ItThrowsWhenArgValueIsMissing(string template, string expectedErrorMessage)
+    [InlineData("f a =")]
+    [InlineData("f a='b' arg2")]
+    public void ItThrowsWhenArgValueIsMissing(string template)
     {
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
-        Assert.Equal(expectedErrorMessage, exception.Message);
+        Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
     }
 }

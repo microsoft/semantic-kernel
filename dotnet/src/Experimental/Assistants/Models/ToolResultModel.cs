@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
-internal class ToolResultModel
+internal sealed class ToolResultModel
 {
     private static readonly object s_placeholder = new();
 

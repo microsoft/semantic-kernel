@@ -1,203 +1,282 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.ChatCompletion;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-public static class Example09_FunctionTypes
+namespace Examples;
+
+public class Example09_FunctionTypes : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Native function types ========");
+        this.WriteLine("======== Method Function types ========");
 
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
-
-        var variables = new ContextVariables();
+        var builder = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Warning));
+        builder.Services.AddSingleton(this.Output);
+        var kernel = builder.Build();
+        kernel.Culture = new CultureInfo("pt-BR");
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var plugin = kernel.ImportPluginFromObject<LocalExamplePlugin>("test");
+        var plugin = kernel.ImportPluginFromType<LocalExamplePlugin>("Examples");
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // Using Kernel.InvokeAsync
-        await kernel.InvokeAsync(plugin["type01"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type01"]);
+        // Different ways to invoke a function (not limited to these examples)
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithVoidResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputDateTimeWithStringResult)], new() { ["currentDate"] = DateTime.Now });
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.MultipleInputsWithVoidResult)], new() { ["x"] = "x string", ["y"] = 100, ["z"] = 1.5 });
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.ComplexInputWithStringResult)], new() { ["complexObject"] = new LocalExamplePlugin(this.Output) });
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputStringTaskWithStringResult)], new() { ["echoInput"] = "return this" });
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.InputStringTaskWithVoidResult)], new() { ["x"] = "x input" });
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputWithFunctionResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.NoInputTaskWithFunctionResult)]);
 
-        await kernel.InvokeAsync(plugin["type02"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type02"]);
+        // Injecting Parameters Examples
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelFunctionWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerWithNoResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerFactoryWithNoResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCancellationTokenWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingServiceSelectorWithStringResult)]);
+        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelWithInputTextAndStringResult)],
+            new()
+            {
+                ["textToSummarize"] = @"C# is a modern, versatile language by Microsoft, blending the efficiency of C++
+                                            with Visual Basic's simplicity. It's ideal for a wide range of applications,
+                                            emphasizing type safety, modularity, and modern programming paradigms."
+            });
 
-        await kernel.InvokeAsync(plugin["type03"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type03"]);
+        // You can also use the kernel.Plugins collection to invoke a function
+        await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
+    }
 
-        await kernel.InvokeAsync(plugin["type04"], variables);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type04"], variables);
-
-        await kernel.InvokeAsync(plugin["type05"], variables);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type05"], variables);
-
-        await kernel.InvokeAsync(plugin["type06"], variables);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type06"], variables);
-
-        await kernel.InvokeAsync(plugin["type07"], variables);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type07"], variables);
-
-        await kernel.InvokeAsync(plugin["type08"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type08"]);
-
-        await kernel.InvokeAsync(plugin["type09"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type09"]);
-
-        await kernel.InvokeAsync(plugin["type10"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type10"]);
-
-        await kernel.InvokeAsync(plugin["type11"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type11"]);
-
-        await kernel.InvokeAsync(plugin["type12"], variables);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type12"], variables);
-
-        await kernel.InvokeAsync(plugin["type18"]);
-        await kernel.InvokeAsync(kernel.Plugins["test"]["type18"]);
+    public Example09_FunctionTypes(ITestOutputHelper output) : base(output)
+    {
     }
 }
+// Task functions when are imported as plugins loose the "Async" suffix if present.
+#pragma warning disable IDE1006 // Naming Styles
 
 public class LocalExamplePlugin
 {
-    [KernelFunction]
-    public void Type01()
+    private readonly ITestOutputHelper _output;
+
+    public LocalExamplePlugin(ITestOutputHelper output)
     {
-        Console.WriteLine("Running function type 1");
+        this._output = output;
     }
 
+    /// <summary>
+    /// Example of using a void function with no input
+    /// </summary>
     [KernelFunction]
-    public string Type02()
+    public void NoInputWithVoidResult()
     {
-        Console.WriteLine("Running function type 2");
-        return "";
+        this._output.WriteLine($"Running {nameof(this.NoInputWithVoidResult)} -> No input");
     }
 
+    /// <summary>
+    /// Example of using a void task function with no input
+    /// </summary>
     [KernelFunction]
-    public async Task<string> Type03Async()
+    public Task NoInputTaskWithVoidResult()
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 3");
-        return "";
+        this._output.WriteLine($"Running {nameof(this.NoInputTaskWithVoidResult)} -> No input");
+        return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Example of using a function with a DateTime input and a string result
+    /// </summary>
     [KernelFunction]
-    public void Type04(ContextVariables variables)
+    public string InputDateTimeWithStringResult(DateTime currentDate)
     {
-        Console.WriteLine("Running function type 4");
+        var result = currentDate.ToString(CultureInfo.InvariantCulture);
+        this._output.WriteLine($"Running {nameof(this.InputDateTimeWithStringResult)} -> [currentDate = {currentDate}] -> result: {result}");
+        return result;
     }
 
+    /// <summary>
+    /// Example of using a Task function with no input and a string result
+    /// </summary>
     [KernelFunction]
-    public string Type05(ContextVariables variables)
+    public Task<string> NoInputTaskWithStringResult()
     {
-        Console.WriteLine("Running function type 5");
-        return "";
+        var result = "string result";
+        this._output.WriteLine($"Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {result}");
+        return Task.FromResult(result);
     }
 
+    /// <summary>
+    /// Example passing multiple parameters with multiple types
+    /// </summary>
     [KernelFunction]
-    public async Task<string> Type06Async(Kernel kernel)
+    public void MultipleInputsWithVoidResult(string x, int y, double z)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new ContextVariables("blah blah blah"));
-        Console.WriteLine($"Running function type 6 [{summary?.GetValue<string>()}]");
-        return "";
+        this._output.WriteLine($"Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {x}, y = {y}, z = {z}]");
     }
 
+    /// <summary>
+    /// Example passing a complex object and returning a string result
+    /// </summary>
     [KernelFunction]
-    public async Task<ContextVariables> Type07Async(ContextVariables variables)
+    public string ComplexInputWithStringResult(object complexObject)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 7");
-        return variables;
+        var result = complexObject.GetType().Name;
+        this._output.WriteLine($"Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {result}");
+        return result;
     }
 
+    /// <summary>
+    /// Example using an async task function echoing the input
+    /// </summary>
     [KernelFunction]
-    public void Type08(string x)
+    public Task<string> InputStringTaskWithStringResult(string echoInput)
     {
-        Console.WriteLine("Running function type 8");
+        this._output.WriteLine($"Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {echoInput}");
+        return Task.FromResult(echoInput);
     }
 
+    /// <summary>
+    /// Example using an async void task with string input
+    /// </summary>
     [KernelFunction]
-    public string Type09(string x)
+    public Task InputStringTaskWithVoidResult(string x)
     {
-        Console.WriteLine("Running function type 9");
-        return "";
+        this._output.WriteLine($"Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {x}]");
+        return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Example using a function to return the result of another inner function
+    /// </summary>
     [KernelFunction]
-    public async Task<string> Type10Async(string x)
+    public FunctionResult NoInputWithFunctionResult()
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 10");
-        return "";
+        var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
+        var result = new FunctionResult(myInternalFunction);
+        this._output.WriteLine($"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}");
+        return result;
     }
 
+    /// <summary>
+    /// Example using a task function to return the result of another kernel function
+    /// </summary>
     [KernelFunction]
-    public void Type11(string x, ContextVariables variables)
+    public async Task<FunctionResult> NoInputTaskWithFunctionResult(Kernel kernel)
     {
-        Console.WriteLine("Running function type 11");
+        var result = await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
+        this._output.WriteLine($"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}");
+        return result;
     }
 
+    /// <summary>
+    /// Example how to inject Kernel in your function
+    /// This example uses the injected kernel to invoke a plugin from within another function
+    /// </summary>
     [KernelFunction]
-    public string Type12(string x, ContextVariables variables)
+    public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel, string textToSummarize)
     {
-        Console.WriteLine("Running function type 12");
-        return "";
+        var summary = await kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = textToSummarize });
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
+        return summary!;
     }
 
-    [KernelFunction]
-    public async Task<string> Type13Async(string x, ContextVariables variables)
+    /// <summary>
+    /// Example how to inject the executing KernelFunction as a parameter
+    /// </summary>
+    [KernelFunction, Description("Example function injecting itself as a parameter")]
+    public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction executingFunction)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 13");
-        return "";
+        var result = $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}");
+        return result;
     }
 
+    /// <summary>
+    /// Example how to inject ILogger in your function
+    /// </summary>
     [KernelFunction]
-    public async Task<ContextVariables> Type14Async(string x, ContextVariables variables)
+    public Task TaskInjectingLoggerWithNoResult(ILogger logger)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 14");
-        return variables;
+        logger.LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+        return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Example how to inject ILoggerFactory in your function
+    /// </summary>
     [KernelFunction]
-    public async Task Type15Async(string x)
+    public Task TaskInjectingLoggerFactoryWithNoResult(ILoggerFactory loggerFactory)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 15");
+        loggerFactory
+            .CreateLogger<LocalExamplePlugin>()
+            .LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
+
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+        return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Example how to inject a service selector in your function and use a specific service
+    /// </summary>
     [KernelFunction]
-    public async Task Type16Async(ContextVariables variables)
+    public async Task<string> TaskInjectingServiceSelectorWithStringResult(Kernel kernel, KernelFunction function, KernelArguments arguments, IAIServiceSelector serviceSelector)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 16");
+        ChatMessageContent? chatMessageContent = null;
+        if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function, arguments, out var chatCompletion, out var executionSettings))
+        {
+            chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new ChatHistory("How much is 5 + 5 ?"), executionSettings);
+        }
+
+        var result = chatMessageContent?.Content;
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}");
+        return result ?? string.Empty;
     }
 
+    /// <summary>
+    /// Example how to inject CultureInfo or IFormatProvider in your function
+    /// </summary>
     [KernelFunction]
-    public async Task Type17Async(string x, ContextVariables variables)
+    public async Task<string> TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo, IFormatProvider formatProvider)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 17");
+        var result = $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}";
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}");
+        return result;
     }
 
+    /// <summary>
+    /// Example how to inject current CancellationToken in your function
+    /// </summary>
     [KernelFunction]
-    public async Task Type18Async()
+    public async Task<string> TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
     {
-        await Task.Delay(0);
-        Console.WriteLine("Running function type 18");
+        var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
+        this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
+        return result;
+    }
+
+    public override string ToString()
+    {
+        return "Complex type result ToString override";
     }
 }
+#pragma warning restore IDE1006 // Naming Styles

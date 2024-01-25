@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
 
 from pytest import mark, raises
 
@@ -10,20 +9,17 @@ from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdB
 
 
 def test_init():
-    function_id_block = FunctionIdBlock(
-        content="skill.function", log=Logger("test_logger")
-    )
-    assert function_id_block.content == "skill.function"
-    assert isinstance(function_id_block.log, Logger)
+    function_id_block = FunctionIdBlock(content="plugin.function")
+    assert function_id_block.content == "plugin.function"
 
 
 def test_type_property():
-    function_id_block = FunctionIdBlock(content="skill.function")
+    function_id_block = FunctionIdBlock(content="plugin.function")
     assert function_id_block.type == BlockTypes.FUNCTION_ID
 
 
 def test_is_valid():
-    function_id_block = FunctionIdBlock(content="skill.function")
+    function_id_block = FunctionIdBlock(content="plugin.function")
     is_valid, error_msg = function_id_block.is_valid()
     assert is_valid
     assert error_msg == ""
@@ -37,14 +33,14 @@ def test_is_valid_empty_identifier():
 
 
 def test_render():
-    function_id_block = FunctionIdBlock(content="skill.function")
+    function_id_block = FunctionIdBlock(content="plugin.function")
     rendered_value = function_id_block.render(ContextVariables())
-    assert rendered_value == "skill.function"
+    assert rendered_value == "plugin.function"
 
 
 def test_init_value_error():
     with raises(ValueError):
-        FunctionIdBlock(content="skill.nope.function")
+        FunctionIdBlock(content="plugin.nope.function")
 
 
 def test_it_trims_spaces():
@@ -109,10 +105,10 @@ def test_it_allows_underscore_dots_letters_and_digits(name, is_valid):
 
 def test_it_allows_only_one_dot():
     target1 = FunctionIdBlock(content="functionName")
-    target2 = FunctionIdBlock(content="skillName.functionName")
+    target2 = FunctionIdBlock(content="pluginName.functionName")
 
     with raises(ValueError):
-        FunctionIdBlock(content="foo.skillName.functionName")
+        FunctionIdBlock(content="foo.pluginName.functionName")
 
     assert target1.is_valid() == (True, "")
     assert target2.is_valid() == (True, "")
