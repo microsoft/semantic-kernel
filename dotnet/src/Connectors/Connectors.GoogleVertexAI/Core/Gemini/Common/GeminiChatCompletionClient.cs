@@ -143,32 +143,16 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         }
     }
 
-    private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(
-        Stream responseStream)
-    {
-        foreach (var geminiResponse in this.ProcessResponseStream(responseStream))
-        {
-            foreach (var chatMessageContent in this.ProcessChatResponse(geminiResponse))
-            {
-                yield return GetStreamingChatContentFromChatContent(chatMessageContent);
-            }
-        }
-    }
+    private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(Stream responseStream)
+        => from geminiResponse in this.ProcessResponseStream(responseStream)
+           from chatMessageContent in this.ProcessChatResponse(geminiResponse)
+           select GetStreamingChatContentFromChatContent(chatMessageContent);
 
-    private IEnumerable<GeminiResponse> ProcessResponseStream(
-        Stream responseStream)
-    {
-        foreach (string json in this._streamJsonParser.Parse(responseStream))
-        {
-            yield return DeserializeResponse<GeminiResponse>(json);
-        }
-    }
+    private IEnumerable<GeminiResponse> ProcessResponseStream(Stream responseStream)
+        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<GeminiResponse>);
 
     private List<ChatMessageContent> DeserializeAndProcessChatResponse(string body)
-    {
-        var geminiResponse = DeserializeResponse<GeminiResponse>(body);
-        return this.ProcessChatResponse(geminiResponse);
-    }
+        => this.ProcessChatResponse(DeserializeResponse<GeminiResponse>(body));
 
     private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
     {
@@ -183,15 +167,21 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             throw new KernelException("Gemini API doesn't return any data.");
         }
 
-        var chatMessageContents = geminiResponse.Candidates.Select(candidate => new ChatMessageContent(
+        var chatMessageContents = this.GetChatMessageContentsFromResponse(geminiResponse);
+        this.LogUsage(chatMessageContents);
+        return chatMessageContents;
+    }
+
+    private void LogUsage(IReadOnlyList<ChatMessageContent> chatMessageContents)
+        => this.LogUsageMetadata((GeminiMetadata)chatMessageContents[0].Metadata!);
+
+    private List<ChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
+        => geminiResponse.Candidates!.Select(candidate => new ChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
             content: candidate.Content?.Parts[0].Text ?? string.Empty,
             modelId: this._modelId,
             innerContent: candidate,
             metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
-        this.LogUsageMetadata((GeminiMetadata)chatMessageContents[0].Metadata!);
-        return chatMessageContents;
-    }
 
     private static GeminiRequest CreateGeminiRequest(
         ChatHistory chatHistory,
