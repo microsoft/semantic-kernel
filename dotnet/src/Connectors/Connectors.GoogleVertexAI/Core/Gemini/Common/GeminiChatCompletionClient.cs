@@ -80,7 +80,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
-        using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
+        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
