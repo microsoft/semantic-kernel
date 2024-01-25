@@ -1,14 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 import os
 
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
-from dotenv import load_dotenv
 
-
-def get_mongodb_search_client(
-    connection_string: str
-):
+def get_mongodb_search_client(connection_string: str):
     """
     Returns a client for Azure Cosmos Mongo vCore Vector DB
 
