@@ -126,7 +126,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
             await File.ReadAllTextAsync(TestDataFilePath))!;
         var textContent = textContents.SingleOrDefault();
         Assert.NotNull(textContent);
-        Assert.Equal(testDataResponse.Candidates[0].Content.Parts[0].Text, textContent.Text);
+        Assert.Equal(testDataResponse.Candidates![0].Content!.Parts[0].Text, textContent.Text);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
             await File.ReadAllTextAsync(TestDataFilePath))!;
-        var testDataCandidate = testDataResponse.Candidates[0];
+        var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = textContents.SingleOrDefault();
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata as GeminiMetadata;
@@ -152,7 +152,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
         Assert.Equal(testDataCandidate.FinishReason, metadata.FinishReason);
         Assert.Equal(testDataCandidate.Index, metadata.Index);
         Assert.True(metadata.ResponseSafetyRatings!.Count
-                    == testDataCandidate.SafetyRatings.Count);
+                    == testDataCandidate.SafetyRatings!.Count);
         Assert.True(metadata.PromptFeedbackSafetyRatings!.Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
         for (var i = 0; i < metadata.ResponseSafetyRatings.Count; i++)
@@ -188,7 +188,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
             await File.ReadAllTextAsync(TestDataFilePath))!;
-        var testDataCandidate = testDataResponse.Candidates[0];
+        var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = textContents.SingleOrDefault();
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata;
@@ -199,7 +199,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
         var responseSafetyRatings = (IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!;
         for (var i = 0; i < responseSafetyRatings.Count; i++)
         {
-            Assert.Equal(testDataCandidate.SafetyRatings[i].Block, responseSafetyRatings[i].Block);
+            Assert.Equal(testDataCandidate.SafetyRatings![i].Block, responseSafetyRatings[i].Block);
             Assert.Equal(testDataCandidate.SafetyRatings[i].Category, responseSafetyRatings[i].Category);
             Assert.Equal(testDataCandidate.SafetyRatings[i].Probability, responseSafetyRatings[i].Probability);
         }
@@ -248,7 +248,7 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
 
         // Assert
         string testDataResponseJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<GeminiResponse>(
-            await File.ReadAllTextAsync(TestDataFilePath))!.Candidates[0]);
+            await File.ReadAllTextAsync(TestDataFilePath))!.Candidates![0]);
         var textContent = textContents.SingleOrDefault();
         Assert.NotNull(textContent);
         Assert.Equal(testDataResponseJson, JsonSerializer.Serialize(textContent.InnerContent));
