@@ -151,6 +151,12 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     {
         if (geminiResponse.Candidates == null || !geminiResponse.Candidates.Any())
         {
+            if (geminiResponse.PromptFeedback?.BlockReason != null)
+            {
+                // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
+                throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
+            }
+
             throw new KernelException("Gemini API doesn't return any data.");
         }
 
