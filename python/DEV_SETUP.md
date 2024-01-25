@@ -121,6 +121,13 @@ You can also run all the tests together under the [tests](tests/) folder.
 
 ## Tools and scripts
 
+## Implementation Decisions 
+
+### Asynchronous programming
+
+It's important to note that must of this library is written with asynchronous in mind. The 
+developer should always assume everything is asynchronous.
+
 ## Pydantic and Serialization
 
 [Pydantic Documentation](https://docs.pydantic.dev/1.10/)
