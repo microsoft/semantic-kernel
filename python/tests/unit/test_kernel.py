@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.function_view import FunctionView
 

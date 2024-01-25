@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 
 if TYPE_CHECKING:

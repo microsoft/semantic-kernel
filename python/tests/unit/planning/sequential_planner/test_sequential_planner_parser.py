@@ -4,8 +4,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,

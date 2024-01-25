@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 logger: logging.Logger = logging.getLogger(__name__)

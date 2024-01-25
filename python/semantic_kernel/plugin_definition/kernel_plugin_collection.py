@@ -4,8 +4,11 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field, model_validator
 
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+# if TYPE_CHECKING:
+#     from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
@@ -18,6 +21,7 @@ class KernelPluginCollection(KernelBaseModel):
     Attributes:
         plugins (Dict[str, KernelPlugin]): The plugins in the collection, indexed by their name.
     """
+
     plugins: Optional[Dict[str, KernelPlugin]] = Field(default_factory=dict)
 
     @model_validator(mode="before")
@@ -67,7 +71,7 @@ class KernelPluginCollection(KernelBaseModel):
             raise ValueError(f"Plugin with name {plugin.name} already exists")
         self.plugins[plugin.name] = plugin
 
-    def add_plugin_from_function(self, plugin_name: str, function: KernelFunctionBase) -> None:
+    def add_plugin_from_function(self, plugin_name: str, function: "KernelFunctionBase") -> None:
         """
         Add a function to a new plugin in the collection
 
@@ -86,7 +90,7 @@ class KernelPluginCollection(KernelBaseModel):
         plugin = DefaultKernelPlugin.from_function(function)
         self.plugins[plugin_name] = plugin
 
-    def add_functions_to_plugin(self, functions: List[KernelFunctionBase], plugin_name: str) -> None:
+    def add_functions_to_plugin(self, functions: List["KernelFunctionBase"], plugin_name: str) -> None:
         """
         Add a function to a plugin in the collection
 

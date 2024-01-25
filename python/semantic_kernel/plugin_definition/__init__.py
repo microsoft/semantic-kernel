@@ -3,8 +3,11 @@ from semantic_kernel.plugin_definition.kernel_function_context_parameter_decorat
     kernel_function_context_parameter,
 )
 from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 __all__ = [
     "kernel_function",
     "kernel_function_context_parameter",
+    "KernelPlugin",
+    "KernelPluginCollection" "DefaultKernelPlugin",
 ]

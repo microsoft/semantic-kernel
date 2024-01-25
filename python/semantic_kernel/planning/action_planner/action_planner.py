@@ -10,8 +10,8 @@ from typing import List, Optional
 import regex
 
 from semantic_kernel import Kernel
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )

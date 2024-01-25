@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Tuple
 
 import pydantic as pdt
 
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes

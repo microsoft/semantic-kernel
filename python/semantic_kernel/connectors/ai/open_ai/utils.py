@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import Func
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 

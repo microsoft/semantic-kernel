@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic_core._pydantic_core import ValidationError
 
-from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import PromptTemplateConfig
@@ -13,7 +13,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import Semantic
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 def test_throws_for_missing_name():
@@ -33,15 +33,15 @@ def test_default_kernel_plugin_construction_with_native_functions():
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    def mock_function(input: str, context: "SKContext") -> None:
+    def mock_function(input: str, context: "KernelContext") -> None:
         pass
 
-    mock_function.__sk_function__ = True
-    mock_function.__sk_function_name__ = "mock_function"
-    mock_function.__sk_function_description__ = "Mock description"
-    mock_function.__sk_function_input_description__ = "Mock input description"
-    mock_function.__sk_function_input_default_value__ = "default_input_value"
-    mock_function.__sk_function_context_parameters__ = [
+    mock_function.__kernel_function__ = True
+    mock_function.__kernel_function_name__ = "mock_function"
+    mock_function.__kernel_function_description__ = "Mock description"
+    mock_function.__kernel_function_input_description__ = "Mock input description"
+    mock_function.__kernel_function_input_default_value__ = "default_input_value"
+    mock_function.__kernel_function_context_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
@@ -51,7 +51,7 @@ def test_default_kernel_plugin_construction_with_native_functions():
 
     mock_method = mock_function
 
-    native_function = SKFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     plugin = DefaultKernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
@@ -66,15 +66,15 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    def mock_function(input: str, context: "SKContext") -> None:
+    def mock_function(input: str, context: "KernelContext") -> None:
         pass
 
-    mock_function.__sk_function__ = True
-    mock_function.__sk_function_name__ = "mock_function"
-    mock_function.__sk_function_description__ = "Mock description"
-    mock_function.__sk_function_input_description__ = "Mock input description"
-    mock_function.__sk_function_input_default_value__ = "default_input_value"
-    mock_function.__sk_function_context_parameters__ = [
+    mock_function.__kernel_function__ = True
+    mock_function.__kernel_function_name__ = "mock_function"
+    mock_function.__kernel_function_description__ = "Mock description"
+    mock_function.__kernel_function_input_description__ = "Mock input description"
+    mock_function.__kernel_function_input_default_value__ = "default_input_value"
+    mock_function.__kernel_function_context_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
@@ -84,7 +84,7 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
 
     mock_method = mock_function
 
-    native_function = SKFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     plugin = DefaultKernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
@@ -106,7 +106,7 @@ def test_default_kernel_plugin_construction_with_semantic_function():
 
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_function"
-    semantic_function = SKFunction.from_semantic_config(
+    semantic_function = KernelFunction.from_semantic_config(
         plugin_name=expected_plugin_name, function_name=expected_function_name, function_config=function_config
     )
 
@@ -130,20 +130,20 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_semantic_function"
-    semantic_function = SKFunction.from_semantic_config(
+    semantic_function = KernelFunction.from_semantic_config(
         plugin_name=expected_plugin_name, function_name=expected_function_name, function_config=function_config
     )
 
     # Construct a nativate function
-    def mock_function(input: str, context: "SKContext") -> None:
+    def mock_function(input: str, context: "KernelContext") -> None:
         pass
 
-    mock_function.__sk_function__ = True
-    mock_function.__sk_function_name__ = "mock_native_function"
-    mock_function.__sk_function_description__ = "Mock description"
-    mock_function.__sk_function_input_description__ = "Mock input description"
-    mock_function.__sk_function_input_default_value__ = "default_input_value"
-    mock_function.__sk_function_context_parameters__ = [
+    mock_function.__kernel_function__ = True
+    mock_function.__kernel_function_name__ = "mock_native_function"
+    mock_function.__kernel_function_description__ = "Mock description"
+    mock_function.__kernel_function_input_description__ = "Mock input description"
+    mock_function.__kernel_function_input_default_value__ = "default_input_value"
+    mock_function.__kernel_function_context_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
@@ -153,7 +153,7 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
     mock_method = mock_function
 
-    native_function = SKFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     # Add both types to the default kernel plugin
     expected_plugin_description = "A unit test plugin"
@@ -181,20 +181,20 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
 
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_function"
-    semantic_function = SKFunction.from_semantic_config(
+    semantic_function = KernelFunction.from_semantic_config(
         plugin_name=expected_plugin_name, function_name=expected_function_name, function_config=function_config
     )
 
     # Construct a nativate function
-    def mock_function(input: str, context: "SKContext") -> None:
+    def mock_function(input: str, context: "KernelContext") -> None:
         pass
 
-    mock_function.__sk_function__ = True
-    mock_function.__sk_function_name__ = expected_function_name
-    mock_function.__sk_function_description__ = "Mock description"
-    mock_function.__sk_function_input_description__ = "Mock input description"
-    mock_function.__sk_function_input_default_value__ = "default_input_value"
-    mock_function.__sk_function_context_parameters__ = [
+    mock_function.__kernel_function__ = True
+    mock_function.__kernel_function_name__ = expected_function_name
+    mock_function.__kernel_function_description__ = "Mock description"
+    mock_function.__kernel_function_input_description__ = "Mock input description"
+    mock_function.__kernel_function_input_default_value__ = "default_input_value"
+    mock_function.__kernel_function_context_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
@@ -203,7 +203,7 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     ]
 
     mock_method = mock_function
-    native_function = SKFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     with pytest.raises(ValueError):
         DefaultKernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])
