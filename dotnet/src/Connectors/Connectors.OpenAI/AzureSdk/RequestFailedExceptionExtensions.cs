@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Linq;
 using System.Net;
 using Azure;
 
@@ -34,5 +36,24 @@ internal static class RequestFailedExceptionExtensions
             responseContent,
             exception.Message,
             exception);
+    }
+
+    public static TimeSpan? GetRetryAfter(this RequestFailedException exception)
+    {
+        var response = exception.GetRawResponse();
+        if (response is null)
+        {
+            return null;
+        }
+
+        if (response.Headers.TryGetValues("Retry-After", out var values))
+        {
+            if (values.FirstOrDefault() is string retryAfterValue && int.TryParse(retryAfterValue, out var seconds))
+            {
+                return TimeSpan.FromSeconds(seconds);
+            }
+        }
+
+        return null;
     }
 }

@@ -959,16 +959,31 @@ internal abstract class ClientCore
         }
     }
 
-    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
+    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request, int maxAttempts = 3)
     {
-        try
+        Exception exception = null!;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            return await request.Invoke().ConfigureAwait(false);
+            try
+            {
+                return await request.Invoke().ConfigureAwait(false);
+            }
+            catch (RequestFailedException e)
+            {
+                exception = e.ToHttpOperationException();
+                if (e.Status == 429) // Too Many Requests
+                {
+                    var retryAfter = e.GetRetryAfter() ?? TimeSpan.FromSeconds(5);
+                    await Task.Delay(retryAfter).ConfigureAwait(false);
+                }
+                else
+                {
+                    throw exception;
+                }
+            }
         }
-        catch (RequestFailedException e)
-        {
-            throw e.ToHttpOperationException();
-        }
+
+        throw exception!;
     }
 
     /// <summary>

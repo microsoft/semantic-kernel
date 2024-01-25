@@ -26,10 +26,11 @@ internal static class HttpClientExtensions
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "The `ReadAsStringAsync` method in the NetStandard 2.0 version does not have an overload that accepts the cancellation token.")]
     internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
     {
+        var retryHttpClient = new RetryHttpClient(client, 3);
         HttpResponseMessage? response = null;
         try
         {
-            response = await client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
+            response = await retryHttpClient.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException e)
         {
