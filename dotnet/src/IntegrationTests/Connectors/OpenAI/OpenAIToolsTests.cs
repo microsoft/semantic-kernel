@@ -37,11 +37,15 @@ public sealed class OpenAIToolsTests : IDisposable
         kernel.ImportPluginFromType<TimeInformation>();
 
         var invokedFunctions = new List<string>();
+
+#pragma warning disable CS0618 // Events are deprecated
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
             invokedFunctions.Add(e.Function.Name);
         }
+
         kernel.FunctionInvoking += MyInvokingHandler;
+#pragma warning restore CS0618 // Events are deprecated
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -60,11 +64,15 @@ public sealed class OpenAIToolsTests : IDisposable
         kernel.ImportPluginFromType<TimeInformation>();
 
         var invokedFunctions = new List<string>();
+
+#pragma warning disable CS0618 // Events are deprecated
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
             invokedFunctions.Add($"{e.Function.Name}({string.Join(", ", e.Arguments)})");
         }
+
         kernel.FunctionInvoking += MyInvokingHandler;
+#pragma warning restore CS0618 // Events are deprecated
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };

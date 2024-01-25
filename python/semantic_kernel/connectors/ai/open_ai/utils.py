@@ -6,17 +6,17 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel import Kernel, SKContext
+from semantic_kernel import Kernel, KernelContext
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _describe_function(function: SKFunctionBase) -> Dict[str, str]:
+def _describe_function(function: KernelFunctionBase) -> Dict[str, str]:
     """Create the object used for function_calling.
 
     Assumes that arguments for semantic functions are optional, for native functions required.
@@ -105,14 +105,14 @@ async def execute_function_call(kernel: Kernel, function_call: FunctionCall, log
 
 async def chat_completion_with_function_call(
     kernel: Kernel,
-    context: SKContext,
+    context: KernelContext,
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
-    chat_function: Optional[SKFunctionBase] = None,
+    chat_function: Optional[KernelFunctionBase] = None,
     *,
     log: Optional[Any] = None,
     **kwargs: Dict[str, Any],
-) -> SKContext:
+) -> KernelContext:
     """Perform a chat completion with auto-executing function calling.
 
     This is a recursive function that will execute the chat function multiple times,

@@ -4,8 +4,8 @@ from inspect import Signature, isasyncgenfunction, iscoroutinefunction, signatur
 from typing import NoReturn
 
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 
 def _infers(delegate_type):
@@ -19,7 +19,7 @@ def _infers(delegate_type):
 def _is_annotation_of_type(annotation, type_to_match) -> bool:
     return (annotation is type_to_match) or (
         # Handle cases where the annotation is provided as a string to avoid circular imports
-        # for example: `async def read_async(self, context: "SKContext"):` in file_io_plugin.py
+        # for example: `async def read_async(self, context: "KernelContext"):` in file_io_plugin.py
         isinstance(annotation, str)
         and annotation == type_to_match.__name__
     )
@@ -34,9 +34,9 @@ def _return_is_str(signature: Signature) -> bool:
 
 
 def _return_is_context(signature: Signature) -> bool:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
-    return _is_annotation_of_type(signature.return_annotation, SKContext)
+    return _is_annotation_of_type(signature.return_annotation, KernelContext)
 
 
 def _return_is_none(signature: Signature) -> bool:
@@ -58,12 +58,12 @@ def _has_first_param_with_type(signature: Signature, annotation, only: bool = Tr
 
 
 def _has_two_params_second_is_context(signature: Signature) -> bool:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
     if len(signature.parameters) < 2:
         return False
     second_param = list(signature.parameters.values())[1]
-    return _is_annotation_of_type(second_param.annotation, SKContext)
+    return _is_annotation_of_type(second_param.annotation, KernelContext)
 
 
 def _first_param_is_str(signature: Signature, only: bool = True) -> bool:
@@ -71,12 +71,12 @@ def _first_param_is_str(signature: Signature, only: bool = True) -> bool:
 
 
 def _first_param_is_context(signature: Signature) -> bool:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
-    return _has_first_param_with_type(signature, SKContext)
+    return _has_first_param_with_type(signature, KernelContext)
 
 
-class DelegateInference(SKBaseModel):
+class DelegateInference(KernelBaseModel):
     @staticmethod
     @_infers(DelegateTypes.Void)
     def infer_void(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
@@ -102,32 +102,32 @@ class DelegateInference(SKBaseModel):
         return matches
 
     @staticmethod
-    @_infers(DelegateTypes.InSKContext)
-    def infer_in_sk_context(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
+    @_infers(DelegateTypes.InKernelContext)
+    def infer_in_kernel_context(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_none(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
         return matches
 
     @staticmethod
-    @_infers(DelegateTypes.InSKContextOutString)
-    def infer_in_sk_context_out_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
+    @_infers(DelegateTypes.InKernelContextOutString)
+    def infer_in_kernel_context_out_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and not awaitable and not is_asyncgenfunc
         return matches
 
     @staticmethod
-    @_infers(DelegateTypes.InSKContextOutTaskString)
-    def infer_in_sk_context_out_task_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
+    @_infers(DelegateTypes.InKernelContextOutTaskString)
+    def infer_in_kernel_context_out_task_string(signature: Signature, awaitable: bool, is_asyncgenfunc: bool) -> bool:
         matches = _first_param_is_context(signature)
         matches = matches and _return_is_str(signature)
         matches = matches and awaitable
         return matches
 
     @staticmethod
-    @_infers(DelegateTypes.ContextSwitchInSKContextOutTaskSKContext)
-    def infer_context_switch_in_sk_context_out_task_sk_context(
+    @_infers(DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext)
+    def infer_context_switch_in_kernel_context_out_task_kernel_context(
         signature: Signature, awaitable: bool, is_asyncgenfunc: bool
     ) -> bool:
         matches = _first_param_is_context(signature)

@@ -74,7 +74,7 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
+async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:
     try:
         user_input = input("User:> ")
         context.variables["user_input"] = user_input

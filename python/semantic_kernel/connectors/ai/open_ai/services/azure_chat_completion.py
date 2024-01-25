@@ -39,7 +39,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
-from semantic_kernel.sk_pydantic import HttpsUrl
+from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
 
