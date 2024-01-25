@@ -1,24 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Represents a client for interacting with the text generation gemini model.
 /// </summary>
-internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationClient
+internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
 {
-    private readonly IStreamJsonParser _streamJsonParser;
-    private readonly string _modelId;
+    private readonly IGeminiChatCompletionClient _chatCompletionClient;
 
     /// <summary>
     /// Represents a client for interacting with the text generation gemini model.
@@ -36,16 +34,21 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
         IEndpointProvider endpointProvider,
         IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
-        : base(
-            httpClient: httpClient,
-            httpRequestFactory: httpRequestFactory,
-            endpointProvider: endpointProvider,
-            logger: logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
 
-        this._modelId = modelId;
-        this._streamJsonParser = streamJsonParser ?? new GeminiStreamJsonParser();
+        this._chatCompletionClient = new GeminiChatCompletionClient(
+            httpClient: httpClient,
+            modelId: modelId,
+            httpRequestFactory: httpRequestFactory,
+            endpointProvider: endpointProvider,
+            streamJsonParser: streamJsonParser,
+            logger: logger);
+    }
+
+    internal GeminiTextGenerationClient(IGeminiChatCompletionClient chatCompletionClient)
+    {
+        this._chatCompletionClient = chatCompletionClient;
     }
 
     /// <inheritdoc/>
@@ -56,14 +59,13 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = this.EndpointProvider.GetTextGenerationEndpoint(this._modelId);
-        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
-
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+        ChatHistory history = new();
+        history.AddUserMessage(prompt);
+        var resultMessages = await this._chatCompletionClient
+            .GenerateChatMessageAsync(history, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
-        return this.DeserializeAndProcessTextResponse(body);
+        return ConvertChatMessagesToTextContents(resultMessages);
     }
 
     /// <inheritdoc/>
@@ -74,64 +76,30 @@ internal class GeminiTextGenerationClient : GeminiClient, IGeminiTextGenerationC
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = this.EndpointProvider.GetStreamTextGenerationEndpoint(this._modelId);
-        var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
-
-        using var response = await this.SendRequestAndGetResponseStreamAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+        ChatHistory history = new();
+        history.AddUserMessage(prompt);
+        var resultMessages = this._chatCompletionClient
+            .StreamGenerateChatMessageAsync(history, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
-        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream))
+        await foreach (var chatMessage in resultMessages)
         {
-            yield return streamingTextContent;
+            yield return ConvertStreamingChatMessageToStreamingTextContent(chatMessage);
         }
     }
 
-    private IEnumerable<StreamingTextContent> ProcessTextResponseStream(
-        Stream responseStream)
-    {
-        foreach (var geminiResponse in this.ProcessResponseStream(responseStream))
-        {
-            foreach (var textContent in this.ProcessTextResponse(geminiResponse))
-            {
-                yield return GetStreamingTextContentFromTextContent(textContent);
-            }
-        }
-    }
+    private static List<TextContent> ConvertChatMessagesToTextContents(IEnumerable<ChatMessageContent> resultMessages)
+        => resultMessages.Select(chatMessage => new TextContent(
+            text: chatMessage.Content,
+            modelId: chatMessage.ModelId,
+            innerContent: chatMessage,
+            metadata: chatMessage.Metadata)).ToList();
 
-    private IEnumerable<GeminiResponse> ProcessResponseStream(
-        Stream responseStream)
-    {
-        foreach (string json in this._streamJsonParser.Parse(responseStream))
-        {
-            yield return DeserializeResponse<GeminiResponse>(json);
-        }
-    }
-
-    private List<TextContent> DeserializeAndProcessTextResponse(string body)
-    {
-        var geminiResponse = DeserializeResponse<GeminiResponse>(body);
-        return this.ProcessTextResponse(geminiResponse);
-    }
-
-    private List<TextContent> ProcessTextResponse(GeminiResponse geminiResponse)
-    {
-        var textContents = geminiResponse.Candidates.Select(candidate => new TextContent(
-            text: candidate.Content.Parts[0].Text,
-            modelId: this._modelId,
-            innerContent: candidate,
-            metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
-        this.LogUsageMetadata((GeminiMetadata)textContents[0].Metadata!);
-        return textContents;
-    }
-
-    private static StreamingTextContent GetStreamingTextContentFromTextContent(TextContent textContent)
+    private static StreamingTextContent ConvertStreamingChatMessageToStreamingTextContent(StreamingChatMessageContent streamingChatMessage)
         => new(
-            text: textContent.Text,
-            modelId: textContent.ModelId,
-            innerContent: textContent.InnerContent,
-            metadata: textContent.Metadata,
-            choiceIndex: ((GeminiMetadata)textContent.Metadata!).Index);
+            text: streamingChatMessage.Content,
+            modelId: streamingChatMessage.ModelId,
+            innerContent: streamingChatMessage,
+            metadata: streamingChatMessage.Metadata,
+            choiceIndex: ((GeminiMetadata)streamingChatMessage.Metadata!).Index);
 }

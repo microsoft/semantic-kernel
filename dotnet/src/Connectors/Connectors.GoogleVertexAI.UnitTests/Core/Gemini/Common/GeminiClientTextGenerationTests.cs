@@ -236,25 +236,6 @@ public sealed class GeminiClientTextGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldReturnResponseWithValidInnerContentAsync()
-    {
-        // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateTextGenerationClient(modelId, apiKey);
-
-        // Act
-        IReadOnlyList<TextContent> textContents = await client.GenerateTextAsync("fake-text");
-
-        // Assert
-        string testDataResponseJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<GeminiResponse>(
-            await File.ReadAllTextAsync(TestDataFilePath))!.Candidates![0]);
-        var textContent = textContents.SingleOrDefault();
-        Assert.NotNull(textContent);
-        Assert.Equal(testDataResponseJson, JsonSerializer.Serialize(textContent.InnerContent));
-    }
-
-    [Fact]
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
