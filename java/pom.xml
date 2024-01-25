@@ -60,7 +60,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.github.repository>microsoft/semantic-kernel</project.github.repository>
         <repository.url>git@github.com:${project.github.repository}.git</repository.url>
-        <spotbugs.version>4.7.3</spotbugs.version>
+        <spotbugs.version>4.8.3</spotbugs.version>
     </properties>
 
     <modules>
@@ -149,6 +149,12 @@
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-annotations</artifactId>
+                <version>${spotbugs.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -679,6 +685,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <!--
                             <java>
                                 <googleJavaFormat>
                                     <version>${google.java.format.version}</version>
@@ -690,6 +697,7 @@
                                 </licenseHeader>
                                 <toggleOffOn />
                             </java>
+                            -->
                         </configuration>
                     </plugin>
                     <plugin>

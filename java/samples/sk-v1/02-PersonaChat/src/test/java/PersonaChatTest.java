@@ -59,7 +59,6 @@ public class PersonaChatTest {
 
         Kernel kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, gpt35Turbo)
-            .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
 
         // Initialize the required functions and services for the kernel

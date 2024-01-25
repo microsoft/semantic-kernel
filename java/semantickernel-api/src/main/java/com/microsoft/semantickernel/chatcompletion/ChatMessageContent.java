@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.chatcompletion;
 
 import com.microsoft.semantickernel.KernelContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 public class ChatMessageContent extends KernelContent<ChatMessageContent> {
@@ -61,7 +61,7 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
         super(innerContent, modelId, metadata);
         this.authorRole = authorRole;
         this.encoding = encoding != null ? encoding : StandardCharsets.UTF_8;
-        this.items = items;
+        this.items = new ArrayList<>(items);
     }
 
     public AuthorRole getAuthorRole() {
@@ -81,11 +81,11 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
     }
 
     public List<KernelContent> getItems() {
-        return items;
+        return Collections.unmodifiableList(items);
     }
 
     public void setItems(List<KernelContent> items) {
-        this.items = items;
+        this.items = new ArrayList<>(items);
     }
 
     @Nullable

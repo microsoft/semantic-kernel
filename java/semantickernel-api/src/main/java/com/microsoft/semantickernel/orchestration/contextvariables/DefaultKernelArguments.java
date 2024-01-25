@@ -2,12 +2,14 @@
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import reactor.util.annotation.NonNull;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
-import reactor.util.annotation.NonNull;
 
 /// <summary>
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
@@ -161,7 +163,7 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
     @Nullable
     @Override
     public Map<String, PromptExecutionSettings> getExecutionSettings() {
-        return executionSettings;
+        return Collections.unmodifiableMap(executionSettings);
     }
 
     @Override

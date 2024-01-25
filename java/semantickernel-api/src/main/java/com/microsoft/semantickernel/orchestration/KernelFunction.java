@@ -92,8 +92,6 @@ public interface KernelFunction extends Buildable {
 
         FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
 
-        FromPromptBuilder withPluginName(String name);
-
         FromPromptBuilder withExecutionSettings(
             Map<String, PromptExecutionSettings> executionSettings);
 

@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTe
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 
@@ -26,14 +27,14 @@ public class KernelFunctionYaml {
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory
     ) throws IOException {
-        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
         return fromYaml(targetStream, promptTemplateFactory);
     }
 
     public static KernelFunction fromPromptYaml(
         String yaml
     ) throws IOException {
-        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
         return fromYaml(targetStream, null);
     }
 
@@ -62,7 +63,6 @@ public class KernelFunctionYaml {
             .withName(functionModel.getName())
             .withInputParameters(functionModel.getInputVariables())
             .withPromptTemplate(promptTemplate)
-            .withPluginName(functionModel.getName()) // TODO: 1.0 add plugin name
             .withExecutionSettings(functionModel.getExecutionSettings())
             .withDescription(functionModel.getDescription())
             .withOutputVariable(functionModel.getOutputVariable())

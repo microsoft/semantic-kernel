@@ -23,6 +23,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -356,12 +357,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         private PromptTemplate promptTemplate;
         private String name;
-        private String pluginName;
         private Map<String, PromptExecutionSettings> executionSettings;
         private String description;
         private List<InputVariable> inputVariables;
         private String template;
-        private String templateFormat;
+        private String templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         private OutputVariable outputVariable;
         private PromptTemplateFactory promptTemplateFactory;
 
@@ -374,19 +374,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         @Override
         public FromPromptBuilder withInputParameters(List<InputVariable> inputVariables) {
-            this.inputVariables = inputVariables;
+            this.inputVariables = new ArrayList<>(inputVariables);
             return this;
         }
 
         @Override
         public FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate) {
             this.promptTemplate = promptTemplate;
-            return this;
-        }
-
-        @Override
-        public FromPromptBuilder withPluginName(String name) {
-            this.pluginName = name;
             return this;
         }
 

@@ -34,6 +34,7 @@ public class KernelFunctionFactory {
         KernelReturnParameterMetadata returnParameter) {
         return createFromMethod(
             method,
+            null,
             functionName,
             description,
             parameters,

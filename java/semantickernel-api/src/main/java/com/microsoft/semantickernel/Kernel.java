@@ -15,11 +15,13 @@ import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,16 +45,12 @@ public class Kernel implements Buildable {
         this.serviceSelector = serviceSelector;
 
         if (plugins != null) {
-            this.plugins = plugins;
+            this.plugins = new KernelPluginCollection(plugins.getPlugins());
         } else {
             this.plugins = new KernelPluginCollection();
         }
 
-        if (hookService != null) {
-            this.hookService = hookService;
-        } else {
-            this.hookService = new HookService();
-        }
+        this.hookService = new HookService(hookService);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
@@ -94,17 +92,24 @@ public class Kernel implements Buildable {
     }
 
     public List<KernelFunction> getFunctions() {
-        return null;
+        return plugins.getPlugins()
+            .stream()
+            .map(KernelPlugin::getFunctions)
+            .flatMap(m -> m.values().stream())
+            .collect(Collectors.toList());
     }
 
     public AIServiceSelector getServiceSelector() {
         return serviceSelector;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KernelPluginCollection getPlugins() {
         return plugins;
     }
 
+
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public HookService getHookService() {
         return hookService;
     }

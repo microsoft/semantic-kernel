@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PromptTemplateConfig {
@@ -59,7 +60,10 @@ public class PromptTemplateConfig {
         String name,
         @JsonProperty("template")
         String template,
-        @JsonProperty("template_format")
+        @Nullable
+        @JsonProperty(
+            value = "template_format",
+            defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT)
         String templateFormat,
         @JsonProperty("description")
         String description,
@@ -71,6 +75,9 @@ public class PromptTemplateConfig {
         Map<String, PromptExecutionSettings> executionSettings) {
         this.name = name;
         this.template = template;
+        if (templateFormat == null) {
+            templateFormat = SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+        }
         this.templateFormat = templateFormat;
         this.description = description;
         if (inputVariables == null) {
@@ -112,6 +119,18 @@ public class PromptTemplateConfig {
         );
     }
 
+    public PromptTemplateConfig(PromptTemplateConfig promptTemplate) {
+        this(
+            promptTemplate.name,
+            promptTemplate.template,
+            promptTemplate.templateFormat,
+            promptTemplate.description,
+            promptTemplate.inputVariables,
+            promptTemplate.outputVariable,
+            promptTemplate.executionSettings
+        );
+    }
+
     public List<KernelParameterMetadata> getKernelParametersMetadata() {
         if (inputVariables == null) {
             return Collections.emptyList();
@@ -139,90 +158,7 @@ public class PromptTemplateConfig {
     }
 
     public void addInputVariable(InputVariable inputVariable) {
-        if (inputVariables == null) {
-            inputVariables = new ArrayList<>();
-        }
         inputVariables.add(inputVariable);
-    }
-
-
-    public static class ExecutionSettingsModel {
-
-        @JsonProperty("model_id")
-        private String modelId;
-
-        @JsonProperty("model_id_pattern")
-        private String modelIdPattern;
-
-        @JsonProperty("service_id")
-        private String serviceId;
-
-        @JsonProperty("temperature")
-        private String temperature;
-
-        @JsonProperty("additional_properties")
-        private final Map<String, Object> additionalProperties;
-
-        public Object get(String propertyName) {
-            return additionalProperties.get(propertyName);
-        }
-
-        public void set(String propertyName, Object value) {
-            additionalProperties.put(propertyName, value);
-        }
-
-        public ExecutionSettingsModel() {
-            this.additionalProperties = new HashMap<>();
-        }
-
-        public ExecutionSettingsModel(
-            String modelId,
-            String modelIdPattern,
-            String serviceId,
-            String temperature,
-            Map<String, Object> additionalProperties) {
-            this.modelId = modelId;
-            this.modelIdPattern = modelIdPattern;
-            this.serviceId = serviceId;
-            this.temperature = temperature;
-            this.additionalProperties = additionalProperties;
-        }
-
-        public String getModelId() {
-            return modelId;
-        }
-
-        public void setModelId(String modelId) {
-            this.modelId = modelId;
-        }
-
-        public String getModelIdPattern() {
-            return modelIdPattern;
-        }
-
-        public void setModelIdPattern(String modelIdPattern) {
-            this.modelIdPattern = modelIdPattern;
-        }
-
-        public String getServiceId() {
-            return serviceId;
-        }
-
-        public void setServiceId(String serviceId) {
-            this.serviceId = serviceId;
-        }
-
-        public String getTemperature() {
-            return temperature;
-        }
-
-        public void setTemperature(String temperature) {
-            this.temperature = temperature;
-        }
-
-        public Map<String, Object> getAdditionalProperties() {
-            return additionalProperties;
-        }
     }
 
     public String getName() {
@@ -259,11 +195,11 @@ public class PromptTemplateConfig {
     }
 
     public List<InputVariable> getInputVariables() {
-        return inputVariables;
+        return Collections.unmodifiableList(inputVariables);
     }
 
     public void setInputVariables(List<InputVariable> inputVariables) {
-        this.inputVariables = inputVariables;
+        this.inputVariables = new ArrayList<>(inputVariables);
     }
 
     public OutputVariable getOutputVariable() {
@@ -275,12 +211,12 @@ public class PromptTemplateConfig {
     }
 
     public Map<String, PromptExecutionSettings> getExecutionSettings() {
-        return executionSettings;
+        return Collections.unmodifiableMap(executionSettings);
     }
 
 
     public void setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
-        this.executionSettings = executionSettings;
+        this.executionSettings = new HashMap<>(executionSettings);
     }
 
     public static PromptTemplateConfig parseFromJson(String json) throws SKException {

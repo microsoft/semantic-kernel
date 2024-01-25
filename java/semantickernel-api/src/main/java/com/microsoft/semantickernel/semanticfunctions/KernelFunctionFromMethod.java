@@ -251,7 +251,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             if (annotation != null) {
                 arg = ContextVariable.of(annotation.defaultValue());
 
-                if (NO_DEFAULT_VALUE.equals(arg)) {
+                if (NO_DEFAULT_VALUE.equals(arg.getValue())) {
                     if (!annotation.required()) {
                         return null;
                     }
@@ -274,7 +274,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             LOGGER.warn(formErrorMessage(method, parameter));
         }
 
-        if (NO_DEFAULT_VALUE.equals(arg)) {
+        if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
             if (parameter.getName().matches("arg\\d")) {
                 throw new AIException(
                     AIException.ErrorCodes.INVALID_CONFIGURATION,

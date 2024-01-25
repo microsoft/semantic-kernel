@@ -27,6 +27,6 @@ public class Plugin {
     }
 
     public List<KernelFunction> functions() {
-        return functions;
+        return Collections.unmodifiableList(functions);
     }
 }

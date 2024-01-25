@@ -1,8 +1,12 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class PromptExecutionSettings {
 
@@ -51,7 +55,9 @@ public class PromptExecutionSettings {
         @JsonProperty("max_tokens") int maxTokens,
         @JsonProperty("best_of") int bestOf,
         @JsonProperty("user") String user,
+        @Nullable
         @JsonProperty(value = "stop_sequences") List<String> stopSequences,
+        @Nullable
         @JsonProperty(value = "token_selection_biases") Map<Integer, Integer> tokenSelectionBiases) {
         this.serviceId = serviceId;
         this.modelId = modelId;
@@ -62,8 +68,17 @@ public class PromptExecutionSettings {
         this.maxTokens = maxTokens;
         this.bestOf = bestOf;
         this.user = user;
-        this.stopSequences = stopSequences;
-        this.tokenSelectionBiases = tokenSelectionBiases;
+        if (stopSequences == null) {
+            this.stopSequences = new ArrayList<>();
+        } else {
+            this.stopSequences = new ArrayList<>(stopSequences);
+        }
+
+        if (tokenSelectionBiases == null) {
+            this.tokenSelectionBiases = new HashMap<>();
+        } else {
+            this.tokenSelectionBiases = new HashMap<>(tokenSelectionBiases);
+        }
     }
 
     public String getServiceId() {
@@ -104,11 +119,11 @@ public class PromptExecutionSettings {
     }
 
     public List<String> getStopSequences() {
-        return stopSequences;
+        return Collections.unmodifiableList(stopSequences);
     }
 
     public Map<Integer, Integer> getTokenSelectionBiases() {
-        return tokenSelectionBiases;
+        return Collections.unmodifiableMap(tokenSelectionBiases);
     }
 
 
@@ -176,7 +191,7 @@ public class PromptExecutionSettings {
         }
 
         public Builder withStopSequences(List<String> stopSequences) {
-            this.stopSequences = stopSequences;
+            this.stopSequences = new ArrayList<>(stopSequences);
             return this;
         }
 
