@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEventArgs;
+import com.microsoft.semantickernel.hooks.HookService;
 import com.microsoft.semantickernel.hooks.PromptRenderedEventArgs;
 import com.microsoft.semantickernel.hooks.PromptRenderingEventArgs;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
@@ -91,26 +92,24 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
+        HookService hooks,
         ContextVariableType<T> variableType) {
 
-        PromptRenderingEventArgs preRenderingHookResult = kernel
-            .getHookService()
+        PromptRenderingEventArgs preRenderingHookResult = hooks
             .executeHooks(new PromptRenderingEventArgs(this, arguments));
 
         return this
             .template
             .renderAsync(kernel, preRenderingHookResult.getArguments())
             .flatMapMany(prompt -> {
-                PromptRenderedEventArgs promptHookResult = kernel
-                    .getHookService()
+                PromptRenderedEventArgs promptHookResult = hooks
                     .executeHooks(new PromptRenderedEventArgs(this, arguments, prompt));
                 prompt = promptHookResult.getPrompt();
                 KernelArguments args = promptHookResult.getArguments();
 
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                FunctionInvokingEventArgs updateArguments = kernel
-                    .getHookService()
+                FunctionInvokingEventArgs updateArguments = hooks
                     .executeHooks(new FunctionInvokingEventArgs(this, args));
                 args = updateArguments.getArguments();
 
@@ -211,8 +210,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
                 return result
                     .map(it -> {
-                        FunctionInvokedEventArgs<T> updatedResult = kernel
-                            .getHookService()
+                        FunctionInvokedEventArgs<T> updatedResult = hooks
                             .executeHooks(
                                 new FunctionInvokedEventArgs<>(
                                     this,
@@ -258,11 +256,24 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
+        @Nullable HookService hooks,
         ContextVariableType<T> variableType) {
-        return invokeInternalAsync(kernel, arguments, variableType)
+        if (hooks == null) {
+            hooks = kernel.getHookService();
+        }
+        return invokeInternalAsync(kernel, arguments, hooks, variableType)
             .take(1)
             .single();
     }
+
+    @Override
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> variableType) {
+        return invokeAsync(kernel, arguments, null, variableType);
+    }
+
 
     /*
      * Given a json string, invoke the tool specified in the json string.

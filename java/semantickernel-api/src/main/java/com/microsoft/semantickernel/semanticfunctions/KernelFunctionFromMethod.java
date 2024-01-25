@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEventArgs;
+import com.microsoft.semantickernel.hooks.HookService;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -67,7 +68,21 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
-        return function.invoke(kernel, this, arguments);
+        return function.invoke(kernel, this, arguments, kernel.getHookService());
+    }
+
+    @Override
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelArguments arguments,
+        @Nullable HookService hooks,
+        ContextVariableType<T> variableType) {
+
+        if (hooks == null) {
+            hooks = kernel.getHookService();
+        }
+
+        return function.invoke(kernel, this, arguments, hooks);
     }
 
     public interface ImplementationFunc {
@@ -76,7 +91,8 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             Kernel kernel,
             KernelFunction function,
             @Nullable
-            KernelArguments arguments);
+            KernelArguments arguments,
+            HookService hooks);
     }
 
 
@@ -143,10 +159,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 Kernel kernel,
                 KernelFunction function,
                 @Nullable
-                KernelArguments arguments) {
+                KernelArguments arguments,
+                HookService hooks) {
 
-                FunctionInvokingEventArgs updatedState = kernel
-                    .getHookService()
+                FunctionInvokingEventArgs updatedState = hooks
                     .executeHooks(
                         new FunctionInvokingEventArgs(function, arguments));
                 KernelArguments updatedArguments = updatedState.getArguments();
@@ -178,8 +194,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                     return r
                         .map(it -> new FunctionResult<>(ContextVariable.of(it)))
                         .map(it -> {
-                            FunctionInvokedEventArgs<T> updatedResult = kernel
-                                .getHookService()
+                            FunctionInvokedEventArgs<T> updatedResult = hooks
                                 .executeHooks(
                                     new FunctionInvokedEventArgs<>(function, updatedArguments, it));
                             return updatedResult.getResult();

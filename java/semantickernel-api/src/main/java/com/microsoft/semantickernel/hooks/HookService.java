@@ -28,33 +28,37 @@ public class HookService {
         }
     }
 
+    public HookService(Map<String, KernelHook<?>> hooks) {
+        this.hooks = new HashMap<>(hooks);
+    }
+
     private Map<String, KernelHook<?>> getHooks() {
         return Collections.unmodifiableMap(hooks);
     }
 
-    public void addFunctionInvokingHook(
+    public String addFunctionInvokingHook(
         Function<FunctionInvokingEventArgs, FunctionInvokingEventArgs> function) {
-        addHook((FunctionInvokingHook) function::apply);
+        return addHook((FunctionInvokingHook) function::apply);
     }
 
-    public void addFunctionInvokedHook(
+    public String addFunctionInvokedHook(
         Function<FunctionInvokedEventArgs, FunctionInvokedEventArgs> function) {
-        addHook((FunctionInvokedHook) function::apply);
+        return addHook((FunctionInvokedHook) function::apply);
     }
 
-    public void addPreChatCompletionHook(
+    public String addPreChatCompletionHook(
         Function<PreChatCompletionHookEvent, PreChatCompletionHookEvent> function) {
-        addHook((PreChatCompletionHook) function::apply);
+        return addHook((PreChatCompletionHook) function::apply);
     }
 
-    public void addPromptRenderedHook(
+    public String addPromptRenderedHook(
         Function<PromptRenderedEventArgs, PromptRenderedEventArgs> function) {
-        addHook((PromptRenderedHook) function::apply);
+        return addHook((PromptRenderedHook) function::apply);
     }
 
-    public void addPromptRenderingHook(
+    public String addPromptRenderingHook(
         Function<PromptRenderingEventArgs, PromptRenderingEventArgs> function) {
-        addHook((PromptRenderingHook) function::apply);
+        return addHook((PromptRenderingHook) function::apply);
     }
 
     public <T extends HookEvent> T executeHooks(T event) {
@@ -80,4 +84,11 @@ public class HookService {
         return hooks.remove(hookName);
     }
 
+    public HookService append(HookService hooks) {
+        Map<String, KernelHook<?>> newHooks = new HashMap<>(this.hooks);
+        newHooks.putAll(this.hooks);
+        newHooks.putAll(hooks.getHooks());
+
+        return new HookService(newHooks);
+    }
 }

@@ -125,7 +125,8 @@ public class Example57_KernelHooks {
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
-        var result = kernel.invokeAsync(excuseFunction,
+        var result = kernel.invokeAsync(
+            excuseFunction,
                 KernelArguments
                     .builder()
                     .withVariable("input", input)

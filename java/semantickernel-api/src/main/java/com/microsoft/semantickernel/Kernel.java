@@ -56,8 +56,17 @@ public class Kernel implements Buildable {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
+        @Nullable HookService hooks,
         ContextVariableType<T> resultType) {
-        return function.invokeAsync(this, arguments, resultType);
+        hooks = mergeInGlobalHooks(hooks);
+        return function.invokeAsync(this, arguments, hooks, resultType);
+    }
+
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        KernelFunction function,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType) {
+        return invokeAsync(function, arguments, null, resultType);
     }
 
 
@@ -65,15 +74,28 @@ public class Kernel implements Buildable {
         String pluginName,
         String functionName,
         @Nullable KernelArguments arguments,
+        @Nullable HookService hooks,
         ContextVariableType<T> resultType) {
+        hooks = mergeInGlobalHooks(hooks);
         return plugins.getFunction(pluginName, functionName)
-            .invokeAsync(this, arguments, resultType);
+            .invokeAsync(this, arguments, hooks, resultType);
+    }
+
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> resultType) {
+        return invokeAsync(pluginName, functionName, arguments, null, resultType);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
+        @Nullable HookService hooks,
         Class<T> resultType) {
+
+        hooks = mergeInGlobalHooks(hooks);
 
         ContextVariableType<T> contextVariable;
 
@@ -88,7 +110,15 @@ public class Kernel implements Buildable {
                 throw e;
             }
         }
-        return function.invokeAsync(this, arguments, contextVariable);
+        return function.invokeAsync(this, arguments, hooks, contextVariable);
+    }
+
+    private HookService mergeInGlobalHooks(@Nullable HookService hooks) {
+        HookService allHooks = hookService;
+        if (hooks != null) {
+            allHooks = allHooks.append(hooks);
+        }
+        return allHooks;
     }
 
     public List<KernelFunction> getFunctions() {

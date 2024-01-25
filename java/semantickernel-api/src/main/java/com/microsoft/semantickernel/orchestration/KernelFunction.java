@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.hooks.HookService;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
@@ -79,6 +80,12 @@ public interface KernelFunction extends Buildable {
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
+        ContextVariableType<T> variableType);
+
+    <T> Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelArguments arguments,
+        HookService hooks,
         ContextVariableType<T> variableType);
 
     @Nullable
