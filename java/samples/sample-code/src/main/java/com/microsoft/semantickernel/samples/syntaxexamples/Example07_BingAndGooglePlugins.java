@@ -5,7 +5,10 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.TextAIService;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
@@ -55,11 +58,19 @@ public class Example07_BingAndGooglePlugins {
         // Load Bing plugin
         var bingConnector = new BingConnector(BING_API_KEY);
         var bing = KernelPluginFactory.createFromObject(new WebSearchEnginePlugin(bingConnector), "bing");
+
+        var chatCompletionService = ChatCompletionService.builder()
+        .withOpenAIAsyncClient(client)
+        .withModelId(MODEL_ID)
+        .build();
+
         var kernel = Kernel.builder()
             .withPlugin(bing)
+            .withDefaultAIService(ChatCompletionService.class, chatCompletionService)
             .build();
 
         example1Async(kernel, "bing");
+        example2Async(kernel);
 
         // Load Google plugin
         // WebSearchEngineConnector googleConnector = new GoogleConnector(GOOGLE_API_KEY, GOOGLE_SEARCH_ENGINE_ID);
@@ -81,7 +92,7 @@ public class Example07_BingAndGooglePlugins {
         var result = kernel.invokeAsync(function, kernelArguments, String.class).block();
 
         System.out.println(question);
-        System.out.println("----{searchPluginName}----");
+        System.out.printf("----%s----%n", searchPluginName);
         System.out.println(result.getValue());
 
         /* OUTPUT:

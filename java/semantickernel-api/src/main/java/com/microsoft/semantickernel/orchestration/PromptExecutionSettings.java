@@ -6,12 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PromptExecutionSettings {
 
     public static final int DEFAULT_MAX_TOKENS = 256;
-    public static final double DEFAULT_TEMPERATURE = 1.0;
+    public static final double DEFAULT_TEMPERATURE= 1.0;
     public static final double DEFAULT_TOP_P = 1.0;
     public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
@@ -41,7 +45,6 @@ public class PromptExecutionSettings {
     private final String modelId;
 
     private final double temperature;
-
     private final double topP;
     private final double presencePenalty;
     private final double frequencyPenalty;
@@ -49,7 +52,9 @@ public class PromptExecutionSettings {
     private final int bestOf;
     private final String user;
     private final List<String> stopSequences;
+    private final ToolCallBehavior toolCallBehavior;
 
+    @JsonCreator
     public PromptExecutionSettings(
         @JsonProperty(SERVICE_ID) String serviceId,
         @JsonProperty(MODEL_ID) String modelId,
@@ -61,59 +66,101 @@ public class PromptExecutionSettings {
         @JsonProperty(MODEL_ID) int bestOf,
         @JsonProperty(USER) String user,
         @JsonProperty(STOP_SEQUENCES) List<String> stopSequences) {
-        this.serviceId = serviceId;
-        this.modelId = modelId;
-        this.temperature = temperature;
-        this.topP = topP;
-        this.presencePenalty = presencePenalty;
-        this.frequencyPenalty = frequencyPenalty;
-        this.maxTokens = maxTokens;
-        this.bestOf = bestOf;
-        this.user = user;
-        this.stopSequences = stopSequences;
+            this(
+                serviceId, 
+                modelId, 
+                temperature, 
+                topP, 
+                presencePenalty,
+                frequencyPenalty, 
+                maxTokens, 
+                bestOf, 
+                user, 
+                stopSequences, 
+                null);
     }
 
+    public PromptExecutionSettings(
+        String serviceId,
+        String modelId,
+        double temperature,
+        double topP,
+        double presencePenalty,
+        double frequencyPenalty,
+        int maxTokens,
+        int bestOf,
+        String user,
+        @Nullable List<String> stopSequences,
+        @Nullable ToolCallBehavior toolCallBehavior) {
+            this.serviceId = serviceId;
+            this.modelId = modelId;
+            this.temperature = temperature;
+            this.topP = topP;
+            this.presencePenalty = presencePenalty;
+            this.frequencyPenalty = frequencyPenalty;
+            this.maxTokens = maxTokens;
+            this.bestOf = bestOf;
+            this.user = user;
+            this.stopSequences = stopSequences != null ? stopSequences : Collections.emptyList();
+            this.toolCallBehavior = toolCallBehavior;    
+    }
+
+    @JsonProperty(SERVICE_ID)
     public String getServiceId() {
         return serviceId;
     }
 
+    @JsonProperty(MODEL_ID)
     public String getModelId() {
         return modelId;
     }
 
+    @JsonProperty(TEMPERATURE)
     public double getTemperature() {
         return Double.isNaN(temperature) ? DEFAULT_TEMPERATURE : temperature;
     }
 
+    @JsonProperty(TOP_P)
     public double getTopP() {
         return topP;
     }
 
+    @JsonProperty(PRESENCE_PENALTY) 
     public double getPresencePenalty() {
         return presencePenalty;
     }
 
+    @JsonProperty(FREQUENCY_PENALTY)
     public double getFrequencyPenalty() {
         return frequencyPenalty;
     }
 
+    @JsonProperty(MAX_TOKENS)
     public int getMaxTokens() {
         return maxTokens;
     }
 
+    @JsonProperty(BEST_OF)
     public int getBestOf() {
         // TODO: not present in com.azure:azure-ai-openai
         return bestOf;
     }
 
+    @JsonProperty(USER)
     public String getUser() {
         return user;
     }
 
+    @JsonProperty(STOP_SEQUENCES)
     public List<String> getStopSequences() {
         return stopSequences;
     }
-
+    
+    @JsonIgnore
+    @Nullable
+    public ToolCallBehavior getToolCallBehavior() {
+        return toolCallBehavior;
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -176,6 +223,11 @@ public class PromptExecutionSettings {
             return this;
         }
 
+        public Builder withToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+            settings.put("toolCallBehavior", toolCallBehavior);
+            return this;
+        }
+
         @SuppressWarnings("unchecked")
         public Builder withStopSequences(List<String> stopSequences) {
             if (stopSequences != null) {
@@ -196,7 +248,8 @@ public class PromptExecutionSettings {
                 (int)settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
                 (int)settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
                 (String)settings.getOrDefault(USER, ""),
-                (List<String>)settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList())
+                (List<String>)settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
+                (ToolCallBehavior)settings.getOrDefault("toolCallBehavior", new ToolCallBehavior())
             );
         }
     }
