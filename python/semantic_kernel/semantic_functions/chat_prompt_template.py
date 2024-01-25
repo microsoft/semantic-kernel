@@ -41,14 +41,16 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         that value is added to the messages list as a system message,
         can be controlled by setting the parse_chat_system_prompt parameter to True.
 
-        After that any messages that are in messages in the prompt_config.execution_settings are added to the messages list.
+        After that any messages that are in messages in the prompt_config.execution_settings
+        are added to the messages list.
         Can be controlled by setting the parse_messages parameter to True.
 
         Arguments:
             template {str} -- The template to use for the chat prompt.
             template_engine {PromptTemplatingEngine} -- The templating engine to use.
             prompt_config {PromptTemplateConfig} -- The prompt config to use.
-            parse_chat_system_prompt {bool} -- Whether to parse the chat_system_prompt from the prompt_config.execution_settings.extension_data.
+            parse_chat_system_prompt {bool} -- Whether to parse the chat_system_prompt from
+                the prompt_config.execution_settings.extension_data.
             parse_messages {bool} -- Whether to parse the messages from the prompt_config.execution_settings.
 
         """
