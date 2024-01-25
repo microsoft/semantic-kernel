@@ -28,7 +28,7 @@ public sealed class FunctionCallingStepwisePlanner
         FunctionCallingStepwisePlannerOptions? options = null)
     {
         this._options = options ?? new();
-        this._generatePlanYaml = this._options.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
+        this._generatePlanYaml = this._options.GetInitialPlanPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
         this._stepPrompt = this._options.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
         this._options.ExcludedPlugins.Add(StepwisePlannerPluginName);
     }

@@ -58,7 +58,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         kernel.ImportPluginFromType<EmailPluginFake>("Email");
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 10 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 10 });
 
         // Act
         var planResult = await planner.ExecuteAsync(kernel, prompt);
@@ -93,7 +93,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             }));
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
 
         // Act
         var planResult = await planner.ExecuteAsync(kernel, "Email a poem about cats to test@example.com");
@@ -124,7 +124,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             }));
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
 
         // Act & Assert
         // Planner should call ThrowingEmailPluginFake.WriteJokeAsync, which throws InvalidProgramException
