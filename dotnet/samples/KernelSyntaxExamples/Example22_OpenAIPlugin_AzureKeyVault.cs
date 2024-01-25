@@ -27,13 +27,13 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
     /// This example demonstrates how to connect an Azure Key Vault plugin to the Semantic Kernel.
     /// To use this example, there are a few requirements:
     ///   1. Register a client application with the Microsoft identity platform.
-    ///   https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app
+    ///   https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
     ///
     ///   2. Create an Azure Key Vault
-    ///   https://learn.microsoft.com/azure/key-vault/general/quick-create-portal
+    ///   https://learn.microsoft.com/en-us/azure/key-vault/general/quick-create-portal
     ///
     ///   3. Add a permission for Azure Key Vault to your client application
-    ///   https://learn.microsoft.com/entra/identity-platform/quickstart-configure-app-access-web-apis
+    ///   https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-configure-app-access-web-apis
     ///
     ///   4. Set your Key Vault endpoint, client ID, and client secret as user secrets using:
     ///   dotnet user-secrets set "KeyVault:Endpoint" "your_endpoint"
