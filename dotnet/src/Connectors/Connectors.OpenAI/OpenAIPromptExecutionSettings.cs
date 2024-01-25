@@ -140,6 +140,11 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public ToolCallBehavior? ToolCallBehavior { get; set; }
 
     /// <summary>
+    /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse
+    /// </summary>
+    public string? User { get; set; }
+
+    /// <summary>
     /// Default value for chat system property.
     /// </summary>
     internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
