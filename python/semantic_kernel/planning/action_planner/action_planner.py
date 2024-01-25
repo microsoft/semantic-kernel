@@ -75,7 +75,7 @@ class ActionPlanner:
         self._kernel = kernel
         self._context = kernel.create_new_context()
 
-    async def create_plan_async(self, goal: str) -> Plan:
+    async def create_plan(self, goal: str) -> Plan:
         """
         :param goal: The input to the planner based on which the plan is made
         :return: a Plan object

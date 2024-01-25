@@ -117,23 +117,43 @@ def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVa
 
 
 @mark.asyncio
-async def test_it_renders_code_using_input_async(
+async def test_it_renders_code_using_input(
     target: PromptTemplateEngine,
     variables: ContextVariables,
     context_factory,
 ):
     @kernel_function(name="function")
-    def my_function_async(cx: KernelContext) -> str:
+    def my_function(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = KernelFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function)
     assert func is not None
 
     variables.update("INPUT-BAR")
     template = "foo-{{function}}-baz"
-    result = await target.render_async(template, context_factory(variables, func))
+    result = await target.render(template, context_factory(variables, func))
 
     assert result == "foo-F(INPUT-BAR)-baz"
+
+
+@mark.asyncio
+async def test_it_renders_code_using_variables(
+    target: PromptTemplateEngine,
+    variables: ContextVariables,
+    context_factory,
+):
+    @kernel_function(name="function")
+    def my_function(cx: KernelContext) -> str:
+        return f"F({cx.variables.input})"
+
+    func = KernelFunction.from_native_method(my_function)
+    assert func is not None
+
+    variables.set("myVar", "BAR")
+    template = "foo-{{function $myVar}}-baz"
+    result = await target.render(template, context_factory(variables, func))
+
+    assert result == "foo-F(BAR)-baz"
 
 
 @mark.asyncio
@@ -143,36 +163,16 @@ async def test_it_renders_code_using_variables_async(
     context_factory,
 ):
     @kernel_function(name="function")
-    def my_function_async(cx: KernelContext) -> str:
-        return f"F({cx.variables.input})"
-
-    func = KernelFunction.from_native_method(my_function_async)
-    assert func is not None
-
-    variables.set("myVar", "BAR")
-    template = "foo-{{function $myVar}}-baz"
-    result = await target.render_async(template, context_factory(variables, func))
-
-    assert result == "foo-F(BAR)-baz"
-
-
-@mark.asyncio
-async def test_it_renders_async_code_using_variables_async(
-    target: PromptTemplateEngine,
-    variables: ContextVariables,
-    context_factory,
-):
-    @kernel_function(name="function")
-    async def my_function_async(cx: KernelContext) -> str:
+    async def my_function(cx: KernelContext) -> str:
         return cx.variables.input
 
-    func = KernelFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function)
     assert func is not None
 
     variables.set("myVar", "BAR")
 
     template = "foo-{{function $myVar}}-baz"
 
-    result = await target.render_async(template, context_factory(variables, func))
+    result = await target.render(template, context_factory(variables, func))
 
     assert result == "foo-BAR-baz"

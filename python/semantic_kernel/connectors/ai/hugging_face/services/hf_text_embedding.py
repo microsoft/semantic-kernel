@@ -46,7 +46,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: List[str]) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

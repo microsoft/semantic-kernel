@@ -279,7 +279,7 @@ class Plan(KernelFunctionBase):
         self._is_semantic = function.is_semantic
         self._request_settings = function.request_settings
 
-    async def run_next_step_async(
+    async def run_next_step(
         self,
         kernel: Kernel,
         variables: ContextVariables,

@@ -171,7 +171,7 @@ class BasicPlanner:
 
         return available_functions_string
 
-    async def create_plan_async(
+    async def create_plan(
         self,
         goal: str,
         kernel: Kernel,
@@ -195,7 +195,7 @@ class BasicPlanner:
         generated_plan = await planner.invoke_async(variables=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
-    async def execute_plan_async(self, plan: Plan, kernel: Kernel) -> str:
+    async def execute_plan(self, plan: Plan, kernel: Kernel) -> str:
         """
         Given a plan, execute each of the functions within the plan
         from start to finish and output the result.
