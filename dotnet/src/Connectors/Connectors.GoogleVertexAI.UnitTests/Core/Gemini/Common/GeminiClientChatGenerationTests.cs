@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
@@ -226,7 +227,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldThrowNotSupportedIfChatHistoryContainSystemMessageAsync()
+    public async Task ShouldThrowKernelExceptionIfChatHistoryContainsOnlySystemMessageAsync()
     {
         // Arrange
         string modelId = "fake-model";
@@ -235,7 +236,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var chatHistory = new ChatHistory("System message");
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(
+        await Assert.ThrowsAsync<KernelException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 
