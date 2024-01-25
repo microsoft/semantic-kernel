@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.orchestration.contextvariables.KernelArgumen
 
 public class FunctionInvokedEventArgs<T> implements HookEvent {
 
-
     private final KernelFunction function;
     private final KernelArguments arguments;
     private final FunctionResult<T> result;

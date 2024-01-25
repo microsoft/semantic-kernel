@@ -145,8 +145,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 @Nullable
                 KernelArguments arguments) {
 
-                FunctionInvokingEventArgs updatedState = kernel.executeHooks(
-                    new FunctionInvokingEventArgs(function, arguments));
+                FunctionInvokingEventArgs updatedState = kernel
+                    .getHookService()
+                    .executeHooks(
+                        new FunctionInvokingEventArgs(function, arguments));
                 KernelArguments updatedArguments = updatedState.getArguments();
 
                 try {
@@ -176,7 +178,9 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                     return r
                         .map(it -> new FunctionResult<>(ContextVariable.of(it)))
                         .map(it -> {
-                            FunctionInvokedEventArgs<T> updatedResult = kernel.executeHooks(
+                            FunctionInvokedEventArgs<T> updatedResult = kernel
+                                .getHookService()
+                                .executeHooks(
                                     new FunctionInvokedEventArgs<>(function, updatedArguments, it));
                             return updatedResult.getResult();
                         });

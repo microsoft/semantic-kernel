@@ -67,7 +67,8 @@ public class Example42_KernelBuilder {
         // using the public constructor that's available for anyone to use directly if desired.
         Kernel kernel = new Kernel(
             new OrderedAIServiceSelector(),
-            new KernelPluginCollection()
+            new KernelPluginCollection(),
+            null
         );
     }
 }

@@ -2,6 +2,9 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.ai.openai.models.ChatCompletionsOptions;
+import com.azure.ai.openai.models.ChatRequestMessage;
+import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
@@ -11,14 +14,18 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
+import com.microsoft.semantickernel.hooks.PreChatCompletionHookEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEventArgs;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Example57_KernelHooks {
@@ -60,6 +67,7 @@ public class Example57_KernelHooks {
         changingResultAsync(kernelBuilder.build());
         beforeInvokeCancellationAsync(kernelBuilder.build());
         afterInvokeCancellationAsync(kernelBuilder.build());
+        chatCompletionHook(kernelBuilder.build());
     }
 
 
@@ -107,13 +115,13 @@ public class Example57_KernelHooks {
             return event;
         };
 
-        kernel.addHook("pre-invoke", preHook);
+        kernel.getHookService().addHook(preHook);
 
         // Demonstrate pattern for removing a handler.
-        kernel.addHook("pre-invoke-removed", removedPreExecutionHandler);
-        kernel.removeHook("pre-invoke-removed");
+        kernel.getHookService().addHook("pre-invoke-removed", removedPreExecutionHandler);
+        kernel.getHookService().removeHook("pre-invoke-removed");
 
-        kernel.addHook("post-invoke", postExecutionHandler);
+        kernel.getHookService().addHook(postExecutionHandler);
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
@@ -169,8 +177,8 @@ public class Example57_KernelHooks {
                 prompt
             );
         };
-        kernel.addHook("pre-render", myRenderingHandler);
-        kernel.addHook("post-render", myRenderedHandler);
+        kernel.getHookService().addHook(myRenderingHandler);
+        kernel.getHookService().addHook(myRenderedHandler);
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
@@ -219,7 +227,7 @@ public class Example57_KernelHooks {
                 )
             );
         };
-        kernel.addHook("post-invoke", hook);
+        kernel.getHookService().addHook(hook);
 
         // Invoke prompt to trigger execution hooks.
         var result = kernel.invokeAsync(
@@ -260,7 +268,7 @@ public class Example57_KernelHooks {
             throw new RuntimeException("Cancelled");
         };
 
-        kernel.addHook("pre-invoke", hook);
+        kernel.getHookService().addHook(hook);
 
         try {
             // Invoke prompt to trigger execution hooks.
@@ -285,20 +293,17 @@ public class Example57_KernelHooks {
         System.out.println("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Initialize prompts
-        int functionInvokingCount = 0;
-        int functionInvokedCount = 0;
-
         var firstFunction = KernelFunctionFromPrompt.create("Write a phrase with Invoke.");
         var secondFunction = KernelFunctionFromPrompt.create("Write a phrase with Cancellation.");
 
         AtomicInteger invokingCounter = new AtomicInteger(0);
-        kernel.addHook("invoking", (FunctionInvokingHook) event -> {
+        kernel.getHookService().addHook((FunctionInvokingHook) event -> {
             invokingCounter.incrementAndGet();
             return event;
         });
 
         AtomicInteger invokedCounter = new AtomicInteger(0);
-        kernel.addHook("invoked", (FunctionInvokedHook) event -> {
+        kernel.getHookService().addHook((FunctionInvokedHook) event -> {
             invokedCounter.incrementAndGet();
             throw new RuntimeException("Cancelled");
         });
@@ -316,6 +321,47 @@ public class Example57_KernelHooks {
             System.out.println("Function Invoked Times: " + invokedCounter.get());
             System.out.println("Function Invoking Times: " + invokedCounter.get());
         }
-
     }
+
+    private static void chatCompletionHook(Kernel kernel) {
+        // Initialize prompt
+        String functionPrompt = "Write a paragraph about hats";
+
+        var writerFunction = KernelFunctionFromPrompt.builder()
+            .withTemplate(functionPrompt)
+            .withName("Writer")
+            .withDefaultExecutionSettings(PromptExecutionSettings
+                .builder()
+                .withMaxTokens(1000)
+                .withTemperature(1)
+                .withTopP(0.5)
+                .build())
+            .build();
+
+        kernel.getHookService().addPreChatCompletionHook(event -> {
+            ChatCompletionsOptions options = event.getOptions();
+            List<ChatRequestMessage> messages = options.getMessages();
+
+            messages = new ArrayList<>(messages);
+            messages.add(
+                new ChatRequestSystemMessage("Use upper case text when responding to the prompt."));
+
+            return new PreChatCompletionHookEvent(
+                PreChatCompletionHook.cloneOptionsWithMessages(options, messages)
+            );
+        });
+
+        try {
+            // Invoke prompt to trigger execution hooks.
+            var result = kernel.invokeAsync(
+                    writerFunction,
+                    KernelArguments.builder().build(),
+                    String.class)
+                .block();
+            System.out.println("Function Result: " + result.getResult());
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+        }
+    }
+
 }

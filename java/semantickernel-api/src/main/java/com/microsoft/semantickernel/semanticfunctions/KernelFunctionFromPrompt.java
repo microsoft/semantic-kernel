@@ -93,6 +93,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         ContextVariableType<T> variableType) {
 
         PromptRenderingEventArgs preRenderingHookResult = kernel
+            .getHookService()
             .executeHooks(new PromptRenderingEventArgs(this, arguments));
 
         return this
@@ -100,14 +101,16 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             .renderAsync(kernel, preRenderingHookResult.getArguments())
             .flatMapMany(prompt -> {
                 PromptRenderedEventArgs promptHookResult = kernel
+                    .getHookService()
                     .executeHooks(new PromptRenderedEventArgs(this, arguments, prompt));
                 prompt = promptHookResult.getPrompt();
                 KernelArguments args = promptHookResult.getArguments();
 
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                FunctionInvokingEventArgs updateArguments = kernel.executeHooks(
-                    new FunctionInvokingEventArgs(this, args));
+                FunctionInvokingEventArgs updateArguments = kernel
+                    .getHookService()
+                    .executeHooks(new FunctionInvokingEventArgs(this, args));
                 args = updateArguments.getArguments();
 
                 AIServiceSelection aiServiceSelection = kernel
@@ -207,11 +210,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
                 return result
                     .map(it -> {
-                        FunctionInvokedEventArgs<T> updatedResult = kernel.executeHooks(
-                            new FunctionInvokedEventArgs<>(
-                                this,
-                                arguments,
-                                it));
+                        FunctionInvokedEventArgs<T> updatedResult = kernel
+                            .getHookService()
+                            .executeHooks(
+                                new FunctionInvokedEventArgs<>(
+                                    this,
+                                    arguments,
+                                    it));
 
                         return updatedResult.getResult();
                     });

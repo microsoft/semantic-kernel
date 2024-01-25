@@ -3,8 +3,7 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.hooks.HookEvent;
-import com.microsoft.semantickernel.hooks.KernelHook;
+import com.microsoft.semantickernel.hooks.HookService;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
@@ -35,17 +34,24 @@ public class Kernel implements Buildable {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
-
-    private final Map<String, KernelHook> hooks = new HashMap<>();
+    private final HookService hookService;
 
     public Kernel(
         AIServiceSelector serviceSelector,
-        @Nullable KernelPluginCollection plugins) {
+        @Nullable KernelPluginCollection plugins,
+        HookService hookService) {
         this.serviceSelector = serviceSelector;
+
         if (plugins != null) {
             this.plugins = plugins;
         } else {
             this.plugins = new KernelPluginCollection();
+        }
+
+        if (hookService != null) {
+            this.hookService = hookService;
+        } else {
+            this.hookService = new HookService();
         }
     }
 
@@ -99,6 +105,10 @@ public class Kernel implements Buildable {
         return plugins;
     }
 
+    public HookService getHookService() {
+        return hookService;
+    }
+
     public <T extends AIService> T getService(Class<T> clazz) {
         return (T) serviceSelector
             .trySelectAIService(
@@ -113,20 +123,6 @@ public class Kernel implements Buildable {
         return new Kernel.Builder();
     }
 
-    public <T extends HookEvent> T executeHooks(T event) {
-        for (KernelHook hook : hooks.values()) {
-            event = hook.dispatch(event);
-        }
-        return event;
-    }
-
-    public void addHook(String hookName, KernelHook hook) {
-        hooks.put(hookName, hook);
-    }
-
-    public KernelHook removeHook(String hookName) {
-        return hooks.remove(hookName);
-    }
 
     public static class Builder implements SemanticKernelBuilder<Kernel> {
 
@@ -166,7 +162,8 @@ public class Kernel implements Buildable {
 
             return new Kernel(
                 serviceSelector,
-                new KernelPluginCollection(plugins));
+                new KernelPluginCollection(plugins),
+                null);
         }
     }
 

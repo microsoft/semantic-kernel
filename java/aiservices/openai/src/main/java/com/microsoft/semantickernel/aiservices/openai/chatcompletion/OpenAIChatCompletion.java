@@ -19,19 +19,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
+import com.microsoft.semantickernel.hooks.PreChatCompletionHookEvent;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -81,7 +81,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
         List<FunctionDefinition> functions = Collections.emptyList();
-        return internalChatMessageContentsAsync(chatRequestMessages, functions,
+        return internalChatMessageContentsAsync(
+            kernel,
+            chatRequestMessages,
+            functions,
             promptExecutionSettings);
 
     }
@@ -91,19 +94,21 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
         ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
         return internalChatMessageContentsAsync(
+            kernel,
             parsedPrompt.getChatRequestMessages(),
             parsedPrompt.getFunctions(),
             promptExecutionSettings);
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
+        Kernel kernel,
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings) {
         ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
             promptExecutionSettings);
         Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(options);
+            internalChatMessageContentsAsync(kernel, options);
 
         return results.flatMap(list -> {
             boolean makeSecondCall = false;
@@ -117,14 +122,20 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 }
             }
             if (makeSecondCall) {
-                return internalChatMessageContentsAsync(options);
+                return internalChatMessageContentsAsync(kernel, options);
             }
             return Mono.just(list);
         });
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
+        Kernel kernel,
         ChatCompletionsOptions options) {
+
+        options = kernel
+            .getHookService()
+            .executeHooks(new PreChatCompletionHookEvent(options))
+            .getOptions();
 
         return client
             .getChatCompletions(getModelId(), options)

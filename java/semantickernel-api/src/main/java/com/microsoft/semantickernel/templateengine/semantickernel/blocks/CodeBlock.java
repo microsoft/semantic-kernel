@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernel
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -123,7 +124,9 @@ public final class CodeBlock extends Block implements CodeRendering {
             arguments = this.enrichFunctionArguments(kernel, fBlock,
                 arguments ==
                     null ? new DefaultKernelArguments()
-                    : new DefaultKernelArguments(arguments, new HashMap<>()));
+                    : new DefaultKernelArguments(
+                        arguments,
+                        new HashMap<>()));
         }
 
         return kernel

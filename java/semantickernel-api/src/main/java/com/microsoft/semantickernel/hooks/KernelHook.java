@@ -1,57 +1,74 @@
 package com.microsoft.semantickernel.hooks;
 
-public interface KernelHook {
+import com.azure.ai.openai.models.ChatCompletionsOptions;
+import com.azure.ai.openai.models.ChatRequestMessage;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-    default <T extends HookEvent> T dispatch(T event) {
-        if (event instanceof FunctionInvokingEventArgs) {
-            return (T) preFunctionInvoke((FunctionInvokingEventArgs) event);
-        } else if (event instanceof FunctionInvokedEventArgs) {
-            return (T) postFunctionInvoke((FunctionInvokedEventArgs) event);
-        } else if (event instanceof PromptRenderingEventArgs) {
-            return (T) preRenderPrompt((PromptRenderingEventArgs) event);
-        } else if (event instanceof PromptRenderedEventArgs) {
-            return (T) postRenderPrompt((PromptRenderedEventArgs) event);
-        } else {
-            return event;
+public interface KernelHook<T extends HookEvent> extends Predicate<HookEvent>, Function<T, T> {
+
+    interface FunctionInvokingHook extends KernelHook<FunctionInvokingEventArgs> {
+
+        default boolean test(HookEvent arguments) {
+            return FunctionInvokingEventArgs.class.isAssignableFrom(arguments.getClass());
         }
     }
 
+    interface FunctionInvokedHook extends KernelHook<FunctionInvokedEventArgs> {
 
-    interface FunctionInvokingHook extends KernelHook {
-
-        FunctionInvokingEventArgs preFunctionInvoke(FunctionInvokingEventArgs arguments);
+        default boolean test(HookEvent arguments) {
+            return FunctionInvokedEventArgs.class.isAssignableFrom(arguments.getClass());
+        }
     }
 
-    default FunctionInvokingEventArgs preFunctionInvoke(FunctionInvokingEventArgs arguments) {
-        return arguments;
+    interface PromptRenderingHook extends KernelHook<PromptRenderingEventArgs> {
+
+        default boolean test(HookEvent arguments) {
+            return PromptRenderingEventArgs.class.isAssignableFrom(arguments.getClass());
+        }
     }
 
-    interface FunctionInvokedHook extends KernelHook {
+    interface PromptRenderedHook extends KernelHook<PromptRenderedEventArgs> {
 
-        FunctionInvokedEventArgs<?> postFunctionInvoke(FunctionInvokedEventArgs<?> arguments);
+        default boolean test(HookEvent arguments) {
+            return PromptRenderedEventArgs.class.isAssignableFrom(arguments.getClass());
+        }
     }
 
-    default FunctionInvokedEventArgs<?> postFunctionInvoke(
-        FunctionInvokedEventArgs<?> arguments) {
-        return arguments;
-    }
+    interface PreChatCompletionHook extends KernelHook<PreChatCompletionHookEvent> {
 
+        default boolean test(HookEvent arguments) {
+            return PreChatCompletionHookEvent.class.isAssignableFrom(arguments.getClass());
+        }
 
-    interface PromptRenderingHook extends KernelHook {
+        static ChatCompletionsOptions cloneOptionsWithMessages(
+            ChatCompletionsOptions options,
+            List<ChatRequestMessage> messages) {
+            ChatCompletionsOptions newOptions = new ChatCompletionsOptions(messages)
+                .setPresencePenalty(options.getPresencePenalty())
+                .setFrequencyPenalty(options.getFrequencyPenalty())
+                .setLogitBias(options.getLogitBias())
+                .setMaxTokens(options.getMaxTokens())
+                .setModel(options.getModel())
+                .setStop(options.getStop())
+                .setTemperature(options.getTemperature())
+                .setTools(options.getTools())
+                .setTopP(options.getTopP())
+                .setUser(options.getUser())
+                .setDataSources(options.getDataSources())
+                .setEnhancements(options.getEnhancements())
+                .setFunctions(options.getFunctions())
+                .setN(options.getN())
+                .setResponseFormat(options.getResponseFormat())
+                .setSeed(options.getSeed())
+                .setStream(options.isStream())
+                .setToolChoice(options.getToolChoice());
 
-        PromptRenderingEventArgs preRenderPrompt(PromptRenderingEventArgs arguments);
-    }
-
-    default PromptRenderingEventArgs preRenderPrompt(PromptRenderingEventArgs arguments) {
-        return arguments;
-    }
-
-    interface PromptRenderedHook extends KernelHook {
-
-        PromptRenderedEventArgs postRenderPrompt(PromptRenderedEventArgs arguments);
-    }
-
-    default PromptRenderedEventArgs postRenderPrompt(PromptRenderedEventArgs arguments) {
-        return arguments;
+            if (options.getFunctionCall() != null) {
+                newOptions = newOptions.setFunctionCall(options.getFunctionCall());
+            }
+            return newOptions;
+        }
     }
 }
