@@ -62,15 +62,13 @@ public class Example57_KernelHooks {
 
         Builder kernelBuilder = Kernel.builder()
             .withAIService(ChatCompletionService.class, openAIChatCompletion);
-/*
+
         getUsageAsync(kernelBuilder.build());
         getRenderedPromptAsync(kernelBuilder.build());
         changingResultAsync(kernelBuilder.build());
         beforeInvokeCancellationAsync(kernelBuilder.build());
         afterInvokeCancellationAsync(kernelBuilder.build());
         chatCompletionHook(kernelBuilder.build());
-
- */
         invocationHook(kernelBuilder.build());
     }
 
