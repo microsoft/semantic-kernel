@@ -8,7 +8,7 @@ from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api 
     AzureCosmosDBStoreApi,
 )
 from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
-    get_mongodb_resources,
+    get_mongodb_search_client,
 )
 from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import (
     MongoStoreApi,
@@ -70,9 +70,10 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            mongodb_client, database = get_mongodb_resources(
-                cosmos_connstr, database_name
+            mongodb_client = get_mongodb_search_client(
+                cosmos_connstr
             )
+            database = mongodb_client(database_name)
             apiStore = MongoStoreApi(
                 collection_name,
                 index_name,
