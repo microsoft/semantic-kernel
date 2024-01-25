@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,22 +13,22 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to templatize prompts as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/prompts/templatizing-prompts
+/// https://learn.microsoft.com/semantic-kernel/prompts/templatizing-prompts
 /// </summary>
-public class Example23_Templates : BaseTest
+public class Templates : BaseTest
 {
-    [Fact(Skip = "Test requires input from stdin and we want to keep calls to Console.ReadLine() for clarity in example")]
+    [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Prompts ========");
+        WriteLine("======== Prompts ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -40,16 +39,16 @@ public class Example23_Templates : BaseTest
 
         // Create a Semantic Kernel template for chat
         var chat = kernel.CreateFunctionFromPrompt(
-@"{{$history}}
-User: {{$request}}
-Assistant: ");
+            @"{{$history}}
+            User: {{$request}}
+            Assistant: ");
 
         // Create choices
         List<string> choices = new() { "ContinueConversation", "EndConversation" };
 
         // Create few-shot examples
-        List<ChatHistory> fewShotExamples = new()
-        {
+        List<ChatHistory> fewShotExamples =
+        [
             new ChatHistory()
             {
                 new ChatMessageContent(AuthorRole.User, "Can you send a very quick approval to the marketing team?"),
@@ -62,7 +61,7 @@ Assistant: ");
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "EndConversation")
             }
-        };
+        ];
 
         // Create handlebars template for intent
         var getIntent = kernel.CreateFunctionFromPrompt(
@@ -96,8 +95,8 @@ Choices: {{choices}}.</message>
         while (true)
         {
             // Get user input
-            Console.Write("User > ");
-            var request = Console.ReadLine();
+            Write("User > ");
+            var request = ReadLine();
 
             // Invoke prompt
             var intent = await kernel.InvokeAsync(
@@ -133,13 +132,13 @@ Choices: {{choices}}.</message>
             {
                 if (chunk.Role.HasValue)
                 {
-                    Console.Write(chunk.Role + " > ");
+                    Write(chunk.Role + " > ");
                 }
 
                 message += chunk;
-                Console.Write(chunk);
+                Write(chunk);
             }
-            Console.WriteLine();
+            WriteLine();
 
             // Append to history
             history.AddUserMessage(request!);
@@ -147,7 +146,10 @@ Choices: {{choices}}.</message>
         }
     }
 
-    public Example23_Templates(ITestOutputHelper output) : base(output)
+    public Templates(ITestOutputHelper output) : base(output)
     {
+        SimulatedInputText = [
+            "Can you send an approval to the marketing team?",
+            "That is all, thanks."];
     }
 }

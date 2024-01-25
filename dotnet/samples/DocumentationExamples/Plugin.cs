@@ -13,23 +13,23 @@ namespace Examples;
 
 /// <summary>
 /// This example shows how to create a plugin class and interact with as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/overview/
+/// https://learn.microsoft.com/semantic-kernel/overview/
 /// This sample uses function calling, so it only works on models newer than 0613.
 /// </summary>
-public class Example02_Plugin : BaseTest
+public class Plugin : BaseTest
 {
-    [Fact(Skip = "Test requires input from stdin and we want to keep calls to Console.ReadLine() for clarity in example")]
+    [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Plugin ========");
+        WriteLine("======== Plugin ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -51,9 +51,9 @@ public class Example02_Plugin : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Start the conversation
-        Console.Write("User > ");
+        Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = ReadLine()) != null)
         {
             // Add user input
             history.AddUserMessage(userInput);
@@ -71,46 +71,47 @@ public class Example02_Plugin : BaseTest
                 kernel: kernel);
 
             // Print the results
-            Console.WriteLine("Assistant > " + result);
+            WriteLine("Assistant > " + result);
 
             // Add the message from the agent to the chat history
             history.AddMessage(result.Role, result.Content ?? string.Empty);
 
             // Get user input again
-            Console.Write("User > ");
+            Write("User > ");
         }
         // </Chat>
     }
 
-    public Example02_Plugin(ITestOutputHelper output) : base(output)
+    public Plugin(ITestOutputHelper output) : base(output)
     {
+        SimulatedInputText = [
+            "Hello",
+            "Can you turn on the lights"];
     }
 }
 
-#pragma warning disable CA1024 // Use properties where appropriate
 // <LightPlugin>
 public class LightPlugin
 {
     public bool IsOn { get; set; } = false;
 
+#pragma warning disable CA1024 // Use properties where appropriate
     [KernelFunction]
     [Description("Gets the state of the light.")]
-    public string GetState() => this.IsOn ? "on" : "off";
+    public string GetState() => IsOn ? "on" : "off";
+#pragma warning restore CA1024 // Use properties where appropriate
 
     [KernelFunction]
     [Description("Changes the state of the light.'")]
     public string ChangeState(bool newState)
     {
         this.IsOn = newState;
-        var state = this.GetState();
+        var state = GetState();
 
         // Print the state to the console
-        Console.ForegroundColor = ConsoleColor.DarkBlue;
         Console.WriteLine($"[Light is now {state}]");
-        Console.ResetColor();
 
         return state;
     }
 }
 // </LightPlugin>
-#pragma warning restore CA1024 // Use properties where appropriate

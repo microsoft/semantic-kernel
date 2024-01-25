@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -13,22 +14,22 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to create native functions for AI to call as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
+/// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class Example37_Planner : BaseTest
+public class Planner : BaseTest
 {
-    [Fact(Skip = "Test requires input from stdin and we want to keep calls to Console.ReadLine() for clarity in example")]
+    [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Planner ========");
+        WriteLine("======== Planner ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -36,6 +37,7 @@ public class Example37_Planner : BaseTest
         // <RunningNativeFunction>
         var builder = Kernel.CreateBuilder()
                             .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        builder.Services.AddLogging(c => c.AddDebug().SetMinimumLevel(LogLevel.Trace));
         builder.Plugins.AddFromType<MathSolver>();
         Kernel kernel = builder.Build();
 
@@ -46,11 +48,13 @@ public class Example37_Planner : BaseTest
         ChatHistory history = new();
 
         // Start the conversation
-        while (true)
+        Write("User > ");
+        string? userInput;
+        while ((userInput = ReadLine()) != null)
         {
             // Get user input
-            Console.Write("User > ");
-            history.AddUserMessage(Console.ReadLine()!);
+            Write("User > ");
+            history.AddUserMessage(ReadLine()!);
 
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
@@ -71,20 +75,23 @@ public class Example37_Planner : BaseTest
             {
                 if (content.Role.HasValue && first)
                 {
-                    Console.Write("Assistant > ");
+                    Write("Assistant > ");
                     first = false;
                 }
-                Console.Write(content.Content);
+                Write(content.Content);
                 fullMessage += content.Content;
             }
-            Console.WriteLine();
+            WriteLine();
 
             // Add the message from the agent to the chat history
             history.AddAssistantMessage(fullMessage);
+
+            // Get user input again
+            Write("User > ");
         }
     }
 
-    public Example37_Planner(ITestOutputHelper output) : base(output)
+    public Planner(ITestOutputHelper output) : base(output)
     {
     }
 }

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,22 +14,22 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to configure prompts as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/prompts/configure-prompts
+/// https://learn.microsoft.com/semantic-kernel/prompts/configure-prompts
 /// </summary>
-public class Example29_ConfiguringPrompts : BaseTest
+public class ConfiguringPrompts : BaseTest
 {
-    [Fact(Skip = "Test requires input from stdin and we want to keep calls to Console.ReadLine() for clarity in example")]
+    [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Configuring Prompts ========");
+        WriteLine("======== Configuring Prompts ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -92,18 +91,17 @@ public class Example29_ConfiguringPrompts : BaseTest
         ChatHistory history = new();
 
         // Start the chat loop
-        while (true)
+        Write("User > ");
+        string? userInput;
+        while ((userInput = ReadLine()) != null)
         {
-            // Get user input
-            Console.Write("User > ");
-            var request = Console.ReadLine();
-
             // Get chat response
             var chatResult = kernel.InvokeStreamingAsync<StreamingChatMessageContent>(
                 chat,
-                new() {
-            { "request", request },
-            { "history", string.Join("\n", history.Select(x => x.Role + ": " + x.Content)) }
+                new()
+                {
+                    { "request", userInput },
+                    { "history", string.Join("\n", history.Select(x => x.Role + ": " + x.Content)) }
                 }
             );
 
@@ -113,20 +111,24 @@ public class Example29_ConfiguringPrompts : BaseTest
             {
                 if (chunk.Role.HasValue)
                 {
-                    Console.Write(chunk.Role + " > ");
+                    Write(chunk.Role + " > ");
                 }
                 message += chunk;
-                Console.Write(chunk);
+                Write(chunk);
             }
-            Console.WriteLine();
+            WriteLine();
 
             // Append to history
-            history.AddUserMessage(request!);
+            history.AddUserMessage(userInput);
             history.AddAssistantMessage(message);
+
+            // Get user input again
+            Write("User > ");
         }
     }
 
-    public Example29_ConfiguringPrompts(ITestOutputHelper output) : base(output)
+    public ConfiguringPrompts(ITestOutputHelper output) : base(output)
     {
+        SimulatedInputText = ["Who were the Vikings?"];
     }
 }

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -10,22 +9,22 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to use prompts as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/prompts/your-first-prompt
+/// https://learn.microsoft.com/semantic-kernel/prompts/your-first-prompt
 /// </summary>
-public class Example19_Prompts : BaseTest
+public class Prompts : BaseTest
 {
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Prompts ========");
+        WriteLine("======== Prompts ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -43,15 +42,15 @@ public class Example19_Prompts : BaseTest
 
         /* Uncomment this code to make this example interactive
         // <InitialPrompt>
-        Console.Write("Your request: ");
-        string request = Console.ReadLine()!;
+        Write("Your request: ");
+        string request = ReadLine()!;
         string prompt = $"What is the intent of this request? {request}";
         // </InitialPrompt>
         */
 
-        Console.WriteLine("0.0 Initial prompt");
+        WriteLine("0.0 Initial prompt");
         // <InvokeInitialPrompt>
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine(await kernel.InvokePromptAsync(prompt));
         // </InvokeInitialPrompt>
 
         // 1.0 Make the prompt more specific
@@ -61,8 +60,8 @@ public class Example19_Prompts : BaseTest
         You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.";
         // </MoreSpecificPrompt>
 
-        Console.WriteLine("1.0 Make the prompt more specific");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("1.0 Make the prompt more specific");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 2.0 Add structure to the output with formatting
         //////////////////////////////////////////////////////////////////////////////////
@@ -73,8 +72,8 @@ public class Example19_Prompts : BaseTest
         Intent: ";
         // </StructuredPrompt>
 
-        Console.WriteLine("2.0 Add structure to the output with formatting");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("2.0 Add structure to the output with formatting");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 2.1 Add structure to the output with formatting (using Markdown and JSON)
         //////////////////////////////////////////////////////////////////////////////////
@@ -107,8 +106,8 @@ The user input is:
 ## Intent";
         // </FormattedPrompt>
 
-        Console.WriteLine("2.1 Add structure to the output with formatting (using Markdown and JSON)");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("2.1 Add structure to the output with formatting (using Markdown and JSON)");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 3.0 Provide examples with few-shot prompting
         //////////////////////////////////////////////////////////////////////////////////
@@ -126,8 +125,8 @@ User Input: {request}
 Intent: ";
         // </FewShotPrompt>
 
-        Console.WriteLine("3.0 Provide examples with few-shot prompting");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("3.0 Provide examples with few-shot prompting");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 4.0 Tell the AI what to do to avoid doing something wrong
         //////////////////////////////////////////////////////////////////////////////////
@@ -146,8 +145,8 @@ User Input: {request}
 Intent: ";
         // </AvoidPrompt>
 
-        Console.WriteLine("4.0 Tell the AI what to do to avoid doing something wrong");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("4.0 Tell the AI what to do to avoid doing something wrong");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 5.0 Provide context to the AI
         //////////////////////////////////////////////////////////////////////////////////
@@ -170,8 +169,8 @@ User Input: {request}
 Intent: ";
         // </ContextPrompt>
 
-        Console.WriteLine("5.0 Provide context to the AI");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("5.0 Provide context to the AI");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 6.0 Using message roles in chat completion prompts
         //////////////////////////////////////////////////////////////////////////////////
@@ -196,8 +195,8 @@ Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.</message
 <message role=""system"">Intent:</message>";
         // </RolePrompt>
 
-        Console.WriteLine("6.0 Using message roles in chat completion prompts");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("6.0 Using message roles in chat completion prompts");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 7.0 Give your AI words of encouragement
         //////////////////////////////////////////////////////////////////////////////////
@@ -223,11 +222,11 @@ Bonus: You'll get $20 if you get this right.</message>
 <message role=""system"">Intent:</message>";
         // </BonusPrompt>
 
-        Console.WriteLine("7.0 Give your AI words of encouragement");
-        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
+        WriteLine("7.0 Give your AI words of encouragement");
+        WriteLine(await kernel.InvokePromptAsync(prompt));
     }
 
-    public Example19_Prompts(ITestOutputHelper output) : base(output)
+    public Prompts(ITestOutputHelper output) : base(output)
     {
     }
 }

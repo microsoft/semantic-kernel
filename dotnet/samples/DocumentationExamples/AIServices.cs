@@ -9,34 +9,34 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to add AI services to a kernel as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/agents/kernel/adding-services
+/// https://learn.microsoft.com/semantic-kernel/agents/kernel/adding-services
 /// </summary>
-public class Example04_AIServices : BaseTest
+public class AIServices : BaseTest
 {
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== AI Services ========");
+        WriteLine("======== AI Services ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string textModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? textModelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || textModelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
 
-        string openAImodelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAItextModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIapiKey = TestConfiguration.OpenAI.ApiKey;
+        string? openAImodelId = TestConfiguration.OpenAI.ChatModelId;
+        string? openAItextModelId = TestConfiguration.OpenAI.ChatModelId;
+        string? openAIapiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAImodelId is null || openAItextModelId is null || openAIapiKey is null)
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
+            WriteLine("OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -70,7 +70,7 @@ public class Example04_AIServices : BaseTest
         // </OpenAITextCompletionKernelCreation>
     }
 
-    public Example04_AIServices(ITestOutputHelper output) : base(output)
+    public AIServices(ITestOutputHelper output) : base(output)
     {
     }
 }

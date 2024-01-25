@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 // <NecessaryPackages>
 using Microsoft.Extensions.DependencyInjection;
@@ -15,22 +14,22 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to interact with the kernel as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/agents/kernel
+/// https://learn.microsoft.com/semantic-kernel/agents/kernel
 /// </summary>
-public class Example12_Kernel : BaseTest
+public class UsingTheKernel : BaseTest
 {
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Kernel ========");
+        WriteLine("======== Kernel ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -41,14 +40,14 @@ public class Example12_Kernel : BaseTest
                             .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
         builder.Services.AddLogging(c => c.AddDebug().SetMinimumLevel(LogLevel.Trace));
         builder.Plugins.AddFromType<TimePlugin>();
-        builder.Plugins.AddFromPromptDirectory("./../../../Plugins//WriterPlugin");
+        builder.Plugins.AddFromPromptDirectory("./../../../Plugins/WriterPlugin");
         Kernel kernel = builder.Build();
         // </KernelCreation>
 
         // Get the current time
         // <InvokeUtcNow>
         var currentTime = await kernel.InvokeAsync("TimePlugin", "UtcNow");
-        Console.WriteLine(currentTime);
+        WriteLine(currentTime);
         // </InvokeUtcNow>
 
         // Write a poem with the WriterPlugin.ShortPoem function using the current time as input
@@ -57,11 +56,11 @@ public class Example12_Kernel : BaseTest
         {
             { "input", currentTime }
         });
-        Console.WriteLine(poemResult);
+        WriteLine(poemResult);
         // </InvokeShortPoem>
     }
 
-    public Example12_Kernel(ITestOutputHelper output) : base(output)
+    public UsingTheKernel(ITestOutputHelper output) : base(output)
     {
     }
 }

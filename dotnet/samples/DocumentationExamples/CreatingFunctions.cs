@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,22 +12,22 @@ namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to create native functions for AI to call as described at
-/// https://learn.microsoft.com/en-us/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
+/// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class Example34_CreatingFunctions : BaseTest
+public class CreatingFunctions : BaseTest
 {
-    [Fact(Skip = "Test requires input from stdin and we want to keep calls to Console.ReadLine() for clarity in example")]
+    [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Creating native functions ========");
+        WriteLine("======== Creating native functions ========");
 
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string modelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
+        string? apiKey = TestConfiguration.AzureOpenAI.ApiKey;
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -45,7 +44,7 @@ public class Example34_CreatingFunctions : BaseTest
             {
                 { "number1", 12 }
             });
-        Console.WriteLine($"The square root of 12 is {answer}.");
+        WriteLine($"The square root of 12 is {answer}.");
         // </RunningNativeFunction>
 
         // Create chat history
@@ -57,11 +56,11 @@ public class Example34_CreatingFunctions : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Start the conversation
-        while (true)
+        Write("User > ");
+        string? userInput;
+        while ((userInput = ReadLine()) != null)
         {
-            // Get user input
-            Console.Write("User > ");
-            history.AddUserMessage(Console.ReadLine()!);
+            history.AddUserMessage(userInput);
 
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
@@ -82,22 +81,26 @@ public class Example34_CreatingFunctions : BaseTest
             {
                 if (content.Role.HasValue && first)
                 {
-                    Console.Write("Assistant > ");
+                    Write("Assistant > ");
                     first = false;
                 }
-                Console.Write(content.Content);
+                Write(content.Content);
                 fullMessage += content.Content;
             }
-            Console.WriteLine();
+            WriteLine();
 
             // Add the message from the agent to the chat history
             history.AddAssistantMessage(fullMessage);
+
+            // Get user input again
+            Write("User > ");
         }
 
         // </Chat>
     }
 
-    public Example34_CreatingFunctions(ITestOutputHelper output) : base(output)
+    public CreatingFunctions(ITestOutputHelper output) : base(output)
     {
+        SimulatedInputText = [ "What is 49 diivided by 37?" ];
     }
 }
