@@ -151,15 +151,31 @@ def test_chat_prompt_template():
     assert chat_prompt_template.messages == []
 
 
-def test_chat_prompt_template_with_system_prompt():
+def test_chat_prompt_template_with_messages():
     prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_execution_settings(
         messages=[{"role": "system", "content": "Custom system prompt."}],
     )
-
     chat_prompt_template = ChatPromptTemplate[OpenAIChatMessage](
         "{{$user_input}}",
         PromptTemplateEngine(),
         prompt_config=prompt_template_config,
+        parse_messages=True,
+    )
+    print(chat_prompt_template.messages)
+    assert len(chat_prompt_template.messages) == 1
+    assert chat_prompt_template.messages[0].role == "system"
+    assert chat_prompt_template.messages[0].content_template.template == "Custom system prompt."
+
+
+def test_chat_prompt_template_with_system_prompt():
+    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_execution_settings(
+        chat_system_prompt="Custom system prompt.",
+    )
+    chat_prompt_template = ChatPromptTemplate[OpenAIChatMessage](
+        "{{$user_input}}",
+        PromptTemplateEngine(),
+        prompt_config=prompt_template_config,
+        parse_chat_system_prompt=True,
     )
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1
