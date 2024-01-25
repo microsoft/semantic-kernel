@@ -309,10 +309,9 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
     /// <summary>
-    /// The configuration for the StepwisePlanner
+    /// The options for the planner
     /// </summary>
     private readonly FunctionCallingStepwisePlannerOptions _options;
-    //private FunctionCallingStepwisePlannerOptions Options { get; }
 
     /// <summary>
     /// The prompt YAML for generating the initial stepwise plan.

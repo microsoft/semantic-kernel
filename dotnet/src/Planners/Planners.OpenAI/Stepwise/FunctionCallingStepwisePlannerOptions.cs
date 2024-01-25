@@ -31,12 +31,12 @@ public sealed class FunctionCallingStepwisePlannerOptions : PlannerOptions
     internal int? MaxPromptTokens => (this.MaxTokens is null) ? null : (int)(this.MaxTokens * (1 - this.MaxTokensRatio));
 
     /// <summary>
-    /// Delegate to get the prompt template string.
+    /// Delegate to get the prompt template YAML for hte initial plan generation phase.
     /// </summary>
     public Func<string>? GetInitialPlanPromptTemplate { get; set; }
 
     /// <summary>
-    /// Delegate to get the prompt template string for the step execution phase.
+    /// Delegate to get the prompt template string (system message) for the step execution phase.
     /// </summary>
     public Func<string>? GetStepPromptTemplate { get; set; }
 

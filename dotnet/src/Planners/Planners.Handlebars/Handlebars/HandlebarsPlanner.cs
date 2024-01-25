@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -74,19 +75,30 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
+        var executionSettings = this._options.ExecutionSettings ?? new PromptExecutionSettings()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.0 },
+                { "top_p", 0.0 },
+                { "presence_penalty", 0.0 },
+                { "frequency_penalty", 0.0 },
+            }
+        };
+
         // Get CreatePlan prompt template
         var functionsManual = await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, null /*logger*/, true, cancellationToken).ConfigureAwait(false);
-        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, functionsManual, /*complexParameterTypes, complexParameterSchemas,*/ cancellationToken).ConfigureAwait(false);
+        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, functionsManual, cancellationToken).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: executionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
         if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
-            var availableFunctions = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var availableFunctions = await kernel.Plugins.GetFunctionsAsync(this._options, null, null /*logger*/, cancellationToken: cancellationToken).ConfigureAwait(false);
             var functionNames = availableFunctions.Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
