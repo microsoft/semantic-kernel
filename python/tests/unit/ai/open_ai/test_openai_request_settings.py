@@ -26,7 +26,7 @@ def test_default_openai_chat_request_settings():
     assert settings.stop is None
     assert settings.number_of_responses == 1
     assert settings.logit_bias == {}
-    assert settings.messages[0]["content"] == "Assistant is a large language model."
+    assert settings.messages is None
 
 
 def test_custom_openai_chat_request_settings():
