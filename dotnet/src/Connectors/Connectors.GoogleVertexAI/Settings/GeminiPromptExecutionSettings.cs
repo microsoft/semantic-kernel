@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
-    /// Default max tokens for a text generation.
+    /// Default max tokens forss a text generation.
     /// </summary>
     public static int DefaultTextMaxTokens { get; } = 256;
 
