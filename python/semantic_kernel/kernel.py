@@ -111,18 +111,25 @@ class Kernel:
     def plugins(self, value: KernelPluginCollection) -> None:
         self._plugins = value
 
-    def add_plugin_to_collection(self, plugin_name: str, functions: List[KernelFunctionBase]) -> None:
+    def add_plugin_to_collection(
+        self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPlugin] = None
+    ) -> None:
         """
-        Adds a plugin to the kernel's collection of plugins
+        Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
+        it uses that instance instead of creating a new DefaultKernelPlugin.
 
         Args:
             plugin_name (str): The name of the plugin
             functions (List[KernelFunctionBase]): The functions to add to the plugin
+            plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
         """
+        if plugin is None:
+            # If no plugin instance is provided, create a new DefaultKernelPlugin
+            plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
+
         if self._plugins.contains(plugin_name):
             self._plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
         else:
-            plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
             self._plugins.add(plugin)
 
     def register_semantic_function(

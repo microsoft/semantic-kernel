@@ -103,7 +103,7 @@ class KernelPluginCollection(KernelBaseModel):
         if not functions or not plugin_name:
             raise ValueError("Functions and plugin_name must not be None or empty")
         if plugin_name not in self.plugins:
-            raise ValueError(f"Plugin with name {plugin_name} does not exist")
+            self.plugins.add(DefaultKernelPlugin(name=plugin_name))
 
         plugin = self.plugins[plugin_name]
         for func in functions:
@@ -141,6 +141,20 @@ class KernelPluginCollection(KernelBaseModel):
         if plugin is None or plugin.name is None:
             return False
         return self.plugins.pop(plugin.name, None) is not None
+
+    def remove_by_name(self, plugin_name: str) -> bool:
+        """
+        Remove a plugin from the collection by name
+
+        Args:
+            plugin_name (str): The name of the plugin to remove from the collection.
+
+        Returns:
+            True if the plugin was removed, False otherwise.
+        """
+        if plugin_name is None:
+            return False
+        return self.plugins.pop(plugin_name, None) is not None
 
     def get_plugin(self, name: str) -> Optional[KernelPlugin]:
         """

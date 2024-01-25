@@ -24,6 +24,15 @@ def test_remove_plugin():
     assert len(collection) == 0
 
 
+def test_remove_plugin_by_name():
+    collection = KernelPluginCollection()
+    expected_plugin_name = "TestPlugin"
+    plugin = DefaultKernelPlugin(name=expected_plugin_name)
+    collection.add(plugin)
+    collection.remove_by_name(expected_plugin_name)
+    assert len(collection) == 0
+
+
 def test_add_range():
     num_plugins = 3
     collection = KernelPluginCollection()
