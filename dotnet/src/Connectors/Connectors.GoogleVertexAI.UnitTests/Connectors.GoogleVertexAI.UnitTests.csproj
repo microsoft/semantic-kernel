@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
-    <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Connectors.GoogleVertexAI.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Connectors.GoogleVertexAI.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <RollForward>LatestMajor</RollForward>
@@ -31,9 +31,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Numerics.Tensors" />
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="System.Numerics.Tensors"/>
+    <PackageReference Include="System.Text.Json"/>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -45,26 +45,29 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
-    <ProjectReference Include="..\Connectors.HuggingFace\Connectors.HuggingFace.csproj"/>
-    <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj"/>
-    <ProjectReference Include="..\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj"/>
+    <ProjectReference Include="..\Connectors.GoogleVertexAI\Connectors.GoogleVertexAI.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HuggingFace\TestData\*">
+    <None Update="TestData\completion_one_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OpenAI\TestData\*">
+    <None Update="TestData\completion_stream_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\chat_one_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\chat_stream_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\embeddings_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\counttokens_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\vertex_embeddings_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
