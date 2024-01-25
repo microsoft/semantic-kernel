@@ -36,10 +36,10 @@ public interface KernelHook<T extends HookEvent> extends Predicate<HookEvent>, F
         }
     }
 
-    interface PreChatCompletionHook extends KernelHook<PreChatCompletionHookEvent> {
+    interface PreChatCompletionHook extends KernelHook<PreChatCompletionEvent> {
 
         default boolean test(HookEvent arguments) {
-            return PreChatCompletionHookEvent.class.isAssignableFrom(arguments.getClass());
+            return PreChatCompletionEvent.class.isAssignableFrom(arguments.getClass());
         }
 
         static ChatCompletionsOptions cloneOptionsWithMessages(

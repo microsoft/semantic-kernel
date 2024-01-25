@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,7 @@ class XMLPromptParser {
         // If one handler does not recognize the element, it should pass it to the next handler.
         // In this way, we can avoid parsing the whole prompt twice and easily extend the parsing logic.
         List<ChatRequestMessage> messages = new ArrayList<>();
-        try (InputStream is = new ByteArrayInputStream(prompt.getBytes())) {
+        try (InputStream is = new ByteArrayInputStream(prompt.getBytes(StandardCharsets.UTF_8))) {
             XMLInputFactory factory = XMLInputFactory.newFactory();
             XMLEventReader reader = factory.createXMLEventReader(is);
             while (reader.hasNext()) {
@@ -87,7 +88,7 @@ class XMLPromptParser {
         //      <parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>...
         // </function>
         List<FunctionDefinition> functionDefinitions = new ArrayList<>();
-        try (InputStream is = new ByteArrayInputStream(prompt.getBytes())) {
+        try (InputStream is = new ByteArrayInputStream(prompt.getBytes(StandardCharsets.UTF_8))) {
             XMLInputFactory factory = XMLInputFactory.newFactory();
             XMLEventReader reader = factory.createXMLEventReader(is);
             FunctionDefinition functionDefinition = null;

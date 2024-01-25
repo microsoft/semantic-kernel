@@ -24,8 +24,8 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
-import com.microsoft.semantickernel.hooks.HookService;
-import com.microsoft.semantickernel.hooks.PreChatCompletionHookEvent;
+import com.microsoft.semantickernel.hooks.Hooks;
+import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -68,7 +68,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     @Override
     public Map<String, ContextVariable<?>> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
@@ -81,20 +81,20 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ChatHistory chatHistory,
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
-        HookService hookService) {
+        Hooks hooks) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
         List<FunctionDefinition> functions = Collections.emptyList();
 
-        if (hookService == null) {
-            hookService = new HookService();
+        if (hooks == null) {
+            hooks = new Hooks();
         }
 
         return internalChatMessageContentsAsync(
             chatRequestMessages,
             functions,
             promptExecutionSettings,
-            hookService);
+            hooks);
     }
 
     @Override
@@ -112,18 +112,18 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
         @Nullable
-        HookService hookService) {
+        Hooks hooks) {
         ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
 
-        if (hookService == null) {
-            hookService = new HookService();
+        if (hooks == null) {
+            hooks = new Hooks();
         }
 
         return internalChatMessageContentsAsync(
             parsedPrompt.getChatRequestMessages(),
             parsedPrompt.getFunctions(),
             promptExecutionSettings,
-            hookService);
+            hooks);
     }
 
     @Override
@@ -137,12 +137,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings,
-        HookService hookService) {
+        Hooks hooks) {
 
         ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
             promptExecutionSettings);
         Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(hookService, options);
+            internalChatMessageContentsAsync(hooks, options);
 
         return results
             .flatMap(list -> {
@@ -158,18 +158,18 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     }
                 }
                 if (makeSecondCall) {
-                    return internalChatMessageContentsAsync(hookService, options);
+                    return internalChatMessageContentsAsync(hooks, options);
                 }
                 return Mono.just(list);
             });
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
-        HookService hookService,
+        Hooks hooks,
         ChatCompletionsOptions options) {
 
-        options = hookService
-            .executeHooks(new PreChatCompletionHookEvent(options))
+        options = hooks
+            .executeHooks(new PreChatCompletionEvent(options))
             .getOptions();
 
         return client

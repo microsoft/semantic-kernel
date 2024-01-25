@@ -12,23 +12,23 @@ import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-public class HookService {
+public class Hooks {
 
     private final Map<String, KernelHook<?>> hooks;
 
-    public HookService() {
+    public Hooks() {
         this.hooks = new HashMap<>();
     }
 
-    public HookService(@Nullable HookService hookService) {
-        if (hookService == null) {
+    public Hooks(@Nullable Hooks hooks) {
+        if (hooks == null) {
             this.hooks = new HashMap<>();
         } else {
-            this.hooks = new HashMap<>(hookService.getHooks());
+            this.hooks = new HashMap<>(hooks.getHooks());
         }
     }
 
-    public HookService(Map<String, KernelHook<?>> hooks) {
+    public Hooks(Map<String, KernelHook<?>> hooks) {
         this.hooks = new HashMap<>(hooks);
     }
 
@@ -47,7 +47,7 @@ public class HookService {
     }
 
     public String addPreChatCompletionHook(
-        Function<PreChatCompletionHookEvent, PreChatCompletionHookEvent> function) {
+        Function<PreChatCompletionEvent, PreChatCompletionEvent> function) {
         return addHook((PreChatCompletionHook) function::apply);
     }
 
@@ -84,11 +84,11 @@ public class HookService {
         return hooks.remove(hookName);
     }
 
-    public HookService append(HookService hooks) {
+    public Hooks append(Hooks hooks) {
         Map<String, KernelHook<?>> newHooks = new HashMap<>(this.hooks);
         newHooks.putAll(this.hooks);
         newHooks.putAll(hooks.getHooks());
 
-        return new HookService(newHooks);
+        return new Hooks(newHooks);
     }
 }

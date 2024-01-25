@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEventArgs;
-import com.microsoft.semantickernel.hooks.HookService;
+import com.microsoft.semantickernel.hooks.Hooks;
 import com.microsoft.semantickernel.hooks.PromptRenderedEventArgs;
 import com.microsoft.semantickernel.hooks.PromptRenderingEventArgs;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
@@ -92,7 +92,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        HookService hooks,
+        Hooks hooks,
         ContextVariableType<T> variableType) {
 
         PromptRenderingEventArgs preRenderingHookResult = hooks
@@ -257,7 +257,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        @Nullable HookService hooks,
+        @Nullable Hooks hooks,
         ContextVariableType<T> variableType) {
         if (hooks == null) {
             hooks = kernel.getHookService();

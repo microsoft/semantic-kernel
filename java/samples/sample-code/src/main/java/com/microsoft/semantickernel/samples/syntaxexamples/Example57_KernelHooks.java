@@ -12,13 +12,13 @@ import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
-import com.microsoft.semantickernel.hooks.HookService;
+import com.microsoft.semantickernel.hooks.Hooks;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
-import com.microsoft.semantickernel.hooks.PreChatCompletionHookEvent;
+import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEventArgs;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -349,7 +349,7 @@ public class Example57_KernelHooks {
             messages.add(
                 new ChatRequestSystemMessage("Use upper case text when responding to the prompt."));
 
-            return new PreChatCompletionHookEvent(
+            return new PreChatCompletionEvent(
                 PreChatCompletionHook.cloneOptionsWithMessages(options, messages)
             );
         });
@@ -387,7 +387,7 @@ public class Example57_KernelHooks {
                 .build())
             .build();
 
-        HookService hooks = new HookService();
+        Hooks hooks = new Hooks();
         hooks.addPreChatCompletionHook(event -> {
             ChatCompletionsOptions options = event.getOptions();
             List<ChatRequestMessage> messages = options.getMessages();
@@ -396,7 +396,7 @@ public class Example57_KernelHooks {
             messages.add(
                 new ChatRequestSystemMessage("Use upper case text when responding to the prompt."));
 
-            return new PreChatCompletionHookEvent(
+            return new PreChatCompletionEvent(
                 PreChatCompletionHook.cloneOptionsWithMessages(options, messages)
             );
         });

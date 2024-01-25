@@ -7,7 +7,7 @@ import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEventArgs;
-import com.microsoft.semantickernel.hooks.HookService;
+import com.microsoft.semantickernel.hooks.Hooks;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -75,7 +75,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        @Nullable HookService hooks,
+        @Nullable Hooks hooks,
         ContextVariableType<T> variableType) {
 
         if (hooks == null) {
@@ -92,7 +92,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             KernelFunction function,
             @Nullable
             KernelArguments arguments,
-            HookService hooks);
+            Hooks hooks);
     }
 
 
@@ -160,7 +160,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 KernelFunction function,
                 @Nullable
                 KernelArguments arguments,
-                HookService hooks) {
+                Hooks hooks) {
 
                 FunctionInvokingEventArgs updatedState = hooks
                     .executeHooks(
