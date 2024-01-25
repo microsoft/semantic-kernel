@@ -2,11 +2,11 @@
 
 import datetime
 
-from semantic_kernel.plugin_definition import sk_function
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.plugin_definition import kernel_function
 
 
-class TimePlugin(SKBaseModel):
+class TimePlugin(KernelBaseModel):
     """
     Description: TimePlugin provides a set of functions
                  to get the current time and date.
@@ -38,7 +38,7 @@ class TimePlugin(SKBaseModel):
         {{time.timeZoneName}}    => PST
     """
 
-    @sk_function(description="Get the current date.")
+    @kernel_function(description="Get the current date.")
     def date(self) -> str:
         """
         Get the current date
@@ -49,7 +49,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%A, %d %B, %Y")
 
-    @sk_function(description="Get the current date.")
+    @kernel_function(description="Get the current date.")
     def today(self) -> str:
         """
         Get the current date
@@ -59,7 +59,7 @@ class TimePlugin(SKBaseModel):
         """
         return self.date()
 
-    @sk_function(description="Get the current date in iso format.")
+    @kernel_function(description="Get the current date in iso format.")
     def iso_date(self) -> str:
         """
         Get the current date in iso format
@@ -70,7 +70,7 @@ class TimePlugin(SKBaseModel):
         today = datetime.date.today()
         return today.isoformat()
 
-    @sk_function(description="Get the current date and time in the local time zone")
+    @kernel_function(description="Get the current date and time in the local time zone")
     def now(self) -> str:
         """
         Get the current date and time in the local time zone"
@@ -81,7 +81,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%A, %B %d, %Y %I:%M %p")
 
-    @sk_function(description="Get the current date and time in UTC", name="utcNow")
+    @kernel_function(description="Get the current date and time in UTC", name="utcNow")
     def utc_now(self) -> str:
         """
         Get the current date and time in UTC
@@ -92,7 +92,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.utcnow()
         return now.strftime("%A, %B %d, %Y %I:%M %p")
 
-    @sk_function(description="Get the current time in the local time zone")
+    @kernel_function(description="Get the current time in the local time zone")
     def time(self) -> str:
         """
         Get the current time in the local time zone
@@ -103,7 +103,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%I:%M:%S %p")
 
-    @sk_function(description="Get the current year")
+    @kernel_function(description="Get the current year")
     def year(self) -> str:
         """
         Get the current year
@@ -114,7 +114,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%Y")
 
-    @sk_function(description="Get the current month")
+    @kernel_function(description="Get the current month")
     def month(self) -> str:
         """
         Get the current month
@@ -125,7 +125,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%B")
 
-    @sk_function(description="Get the current month number")
+    @kernel_function(description="Get the current month number")
     def month_number(self) -> str:
         """
         Get the current month number
@@ -136,7 +136,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%m")
 
-    @sk_function(description="Get the current day")
+    @kernel_function(description="Get the current day")
     def day(self) -> str:
         """
         Get the current day of the month
@@ -147,7 +147,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%d")
 
-    @sk_function(description="Get the current day of the week", name="dayOfWeek")
+    @kernel_function(description="Get the current day of the week", name="dayOfWeek")
     def day_of_week(self) -> str:
         """
         Get the current day of the week
@@ -158,7 +158,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%A")
 
-    @sk_function(description="Get the current hour")
+    @kernel_function(description="Get the current hour")
     def hour(self) -> str:
         """
         Get the current hour
@@ -169,7 +169,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%I %p")
 
-    @sk_function(description="Get the current hour number", name="hourNumber")
+    @kernel_function(description="Get the current hour number", name="hourNumber")
     def hour_number(self) -> str:
         """
         Get the current hour number
@@ -180,7 +180,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%H")
 
-    @sk_function(description="Get the current minute")
+    @kernel_function(description="Get the current minute")
     def minute(self) -> str:
         """
         Get the current minute
@@ -191,7 +191,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @sk_function(description="Get the date of offset from today by a provided number of days")
+    @kernel_function(description="Get the date of offset from today by a provided number of days")
     def days_ago(self, days: str) -> str:
         """
         Get the date a provided number of days in the past
@@ -202,13 +202,13 @@ class TimePlugin(SKBaseModel):
             The date of the offset day.
 
         Example:
-             SKContext["input"] = "3"
+             KernelContext["input"] = "3"
              {{time.days_ago $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today() - datetime.timedelta(days=int(days))
         return d.strftime("%A, %d %B, %Y")
 
-    @sk_function(
+    @kernel_function(
         description="""Get the date of the last day matching the supplied week day name in English.
         Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday,
         16 May, 2023"""
@@ -223,7 +223,7 @@ class TimePlugin(SKBaseModel):
             The date of the matching day.
 
         Example:
-             SKContext["input"] = "Sunday"
+             KernelContext["input"] = "Sunday"
              {{time.date_matching_last_day_name $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today()
@@ -233,7 +233,7 @@ class TimePlugin(SKBaseModel):
                 return d.strftime("%A, %d %B, %Y")
         raise ValueError("day_name is not recognized")
 
-    @sk_function(description="Get the seconds on the current minute")
+    @kernel_function(description="Get the seconds on the current minute")
     def second(self) -> str:
         """
         Get the seconds on the current minute
@@ -244,7 +244,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%S")
 
-    @sk_function(description="Get the current time zone offset", name="timeZoneOffset")
+    @kernel_function(description="Get the current time zone offset", name="timeZoneOffset")
     def time_zone_offset(self) -> str:
         """
         Get the current time zone offset
@@ -255,7 +255,7 @@ class TimePlugin(SKBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%z")
 
-    @sk_function(description="Get the current time zone name", name="timeZoneName")
+    @kernel_function(description="Get the current time zone name", name="timeZoneName")
     def time_zone_name(self) -> str:
         """
         Get the current time zone name

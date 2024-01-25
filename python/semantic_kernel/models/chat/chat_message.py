@@ -3,14 +3,14 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 from pydantic import Field
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
-class ChatMessage(SKBaseModel):
+class ChatMessage(KernelBaseModel):
     """Class to hold chat messages."""
 
     role: Optional[str] = "assistant"
@@ -22,7 +22,7 @@ class ChatMessage(SKBaseModel):
         """Return the content of the message."""
         return self.fixed_content
 
-    async def render_message_async(self, context: "SKContext") -> None:
+    async def render_message_async(self, context: "KernelContext") -> None:
         """Render the message.
         The first time this is called for a given message,
         it will render the message with the context at that time.

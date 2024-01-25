@@ -26,9 +26,9 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
 from semantic_kernel.plugin_definition.plugin_collection_base import (
@@ -110,7 +110,7 @@ class Kernel:
         plugin_name: Optional[str],
         function_name: str,
         function_config: SemanticFunctionConfig,
-    ) -> SKFunctionBase:
+    ) -> KernelFunctionBase:
         if plugin_name is None or plugin_name == "":
             plugin_name = PluginCollection.GLOBAL_PLUGIN
         assert plugin_name is not None  # for type checker
@@ -126,14 +126,14 @@ class Kernel:
     def register_native_function(
         self,
         plugin_name: Optional[str],
-        sk_function: Callable,
-    ) -> SKFunctionBase:
-        if not hasattr(sk_function, "__sk_function__"):
+        kernel_function: Callable,
+    ) -> KernelFunctionBase:
+        if not hasattr(kernel_function, "__kernel_function__"):
             raise KernelException(
                 KernelException.ErrorCodes.InvalidFunctionType,
-                "sk_function argument must be decorated with @sk_function",
+                "kernel_function argument must be decorated with @kernel_function",
             )
-        function_name = sk_function.__sk_function_name__
+        function_name = kernel_function.__kernel_function_name__
 
         if plugin_name is None or plugin_name == "":
             plugin_name = PluginCollection.GLOBAL_PLUGIN
@@ -142,7 +142,7 @@ class Kernel:
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        function = SKFunction.from_native_method(sk_function, plugin_name)
+        function = KernelFunction.from_native_method(kernel_function, plugin_name)
 
         if self.plugins.has_function(plugin_name, function_name):
             raise KernelException(
@@ -158,7 +158,7 @@ class Kernel:
     async def run_stream_async(
         self,
         *functions: Any,
-        input_context: Optional[SKContext] = None,
+        input_context: Optional[KernelContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
     ):
@@ -196,7 +196,7 @@ class Kernel:
                     variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
                 else:
                     variables = ContextVariables()
-                context = SKContext(
+                context = KernelContext(
                     variables,
                     self._memory,
                     self._plugin_collection.read_only_plugin_collection,
@@ -223,11 +223,11 @@ class Kernel:
     async def run_async(
         self,
         *functions: Any,
-        input_context: Optional[SKContext] = None,
+        input_context: Optional[KernelContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
         **kwargs: Dict[str, Any],
-    ) -> SKContext:
+    ) -> KernelContext:
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
             context = input_context
@@ -251,7 +251,7 @@ class Kernel:
                 variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
             else:
                 variables = ContextVariables()
-            context = SKContext(
+            context = KernelContext(
                 variables,
                 self._memory,
                 self._plugin_collection.read_only_plugin_collection,
@@ -260,8 +260,9 @@ class Kernel:
         pipeline_step = 0
         for func in functions:
             while True:
-                assert isinstance(func, SKFunctionBase), (
-                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) " "must be SKFunctionBase instances"
+                assert isinstance(func, KernelFunctionBase), (
+                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
+                    "must be KernelFunctionBase instances"
                 )
 
                 if context.error_occurred:
@@ -333,7 +334,7 @@ class Kernel:
 
         return context
 
-    def func(self, plugin_name: str, function_name: str) -> SKFunctionBase:
+    def func(self, plugin_name: str, function_name: str) -> KernelFunctionBase:
         if self.plugins.has_native_function(plugin_name, function_name):
             return self.plugins.get_native_function(plugin_name, function_name)
 
@@ -368,14 +369,14 @@ class Kernel:
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self, variables: Optional[ContextVariables] = None) -> SKContext:
-        return SKContext(
+    def create_new_context(self, variables: Optional[ContextVariables] = None) -> KernelContext:
+        return KernelContext(
             ContextVariables() if not variables else variables,
             self._memory,
             self.plugins,
         )
 
-    def on_function_invoking(self, function_view: FunctionView, context: SKContext) -> FunctionInvokingEventArgs:
+    def on_function_invoking(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokingEventArgs:
         if self._function_invoking_handlers:
             args = FunctionInvokingEventArgs(function_view, context)
             for handler in self._function_invoking_handlers.values():
@@ -383,7 +384,7 @@ class Kernel:
             return args
         return None
 
-    def on_function_invoked(self, function_view: FunctionView, context: SKContext) -> FunctionInvokedEventArgs:
+    def on_function_invoked(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokedEventArgs:
         if self._function_invoked_handlers:
             args = FunctionInvokedEventArgs(function_view, context)
             for handler in self._function_invoked_handlers.values():
@@ -391,7 +392,7 @@ class Kernel:
             return args
         return None
 
-    def import_plugin(self, plugin_instance: Any, plugin_name: str = "") -> Dict[str, SKFunctionBase]:
+    def import_plugin(self, plugin_instance: Any, plugin_name: str = "") -> Dict[str, KernelFunctionBase]:
         if plugin_name.strip() == "":
             plugin_name = PluginCollection.GLOBAL_PLUGIN
             logger.debug(f"Importing plugin {plugin_name} into the global namespace")
@@ -407,10 +408,10 @@ class Kernel:
         # Read every method from the plugin instance
         for _, candidate in candidates:
             # If the method is a semantic function, register it
-            if not hasattr(candidate, "__sk_function__"):
+            if not hasattr(candidate, "__kernel_function__"):
                 continue
 
-            functions.append(SKFunction.from_native_method(candidate, plugin_name))
+            functions.append(KernelFunction.from_native_method(candidate, plugin_name))
 
         logger.debug(f"Methods imported: {len(functions)}")
 
@@ -627,7 +628,7 @@ class Kernel:
         plugin_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
-    ) -> SKFunctionBase:
+    ) -> KernelFunctionBase:
         function_type = function_config.prompt_template_config.type
         if not function_type == "completion":
             raise AIException(
@@ -635,7 +636,7 @@ class Kernel:
                 f"Function type not supported: {function_type}",
             )
 
-        function = SKFunction.from_semantic_config(plugin_name, function_name, function_config)
+        function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
         function.request_settings.update_from_ai_request_settings(
             function_config.prompt_template_config.execution_settings
         )
@@ -698,7 +699,7 @@ class Kernel:
 
     def import_native_plugin_from_directory(
         self, parent_directory: str, plugin_directory_name: str
-    ) -> Dict[str, SKFunctionBase]:
+    ) -> Dict[str, KernelFunctionBase]:
         MODULE_NAME = "native_function"
 
         validate_plugin_name(plugin_directory_name)
@@ -727,7 +728,7 @@ class Kernel:
 
     def import_semantic_plugin_from_directory(
         self, parent_directory: str, plugin_directory_name: str
-    ) -> Dict[str, SKFunctionBase]:
+    ) -> Dict[str, KernelFunctionBase]:
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
 
@@ -775,7 +776,7 @@ class Kernel:
         plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         **kwargs: Any,
-    ) -> "SKFunctionBase":
+    ) -> "KernelFunctionBase":
         function_name = function_name if function_name is not None else f"f_{str(uuid4()).replace('-', '_')}"
 
         config = PromptTemplateConfig(

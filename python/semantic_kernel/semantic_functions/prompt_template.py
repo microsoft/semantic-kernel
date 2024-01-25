@@ -15,7 +15,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -77,5 +77,5 @@ class PromptTemplate(PromptTemplateBase):
 
         return result
 
-    async def render_async(self, context: "SKContext") -> str:
+    async def render_async(self, context: "KernelContext") -> str:
         return await self.template_engine.render_async(self.template, context)

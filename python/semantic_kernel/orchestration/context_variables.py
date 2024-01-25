@@ -3,10 +3,10 @@ from typing import Dict, Optional
 
 import pydantic as pdt
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class ContextVariables(SKBaseModel):
+class ContextVariables(KernelBaseModel):
     """Class for the context variables, maintains a dict with keys and values for the variables.
     The keys are all converted to lower case, both in setting and in getting.
 
