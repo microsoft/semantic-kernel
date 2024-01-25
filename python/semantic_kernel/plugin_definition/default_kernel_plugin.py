@@ -4,8 +4,6 @@ from typing import Dict
 
 from pydantic import Field, model_validator
 
-# if TYPE_CHECKING:
-#     from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 

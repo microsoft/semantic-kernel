@@ -5,9 +5,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import Field, model_validator
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-
-# if TYPE_CHECKING:
-#     from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.functions_view import FunctionsView

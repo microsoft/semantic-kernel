@@ -147,8 +147,8 @@ class ActionPlanner:
             )
             plan = Plan(description=goal, function=function_ref)
         else:
-            plugin, fun = generated_plan["plan"]["function"]
-            function_ref = self._context.plugins.get_plugin(plugin).get_function(fun)
+            plugin, func = generated_plan["plan"]["function"]
+            function_ref = self._context.plugins.get_plugin(plugin).get_function(func)
             logger.info(
                 f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
                 "              Reference to this function found in context:"

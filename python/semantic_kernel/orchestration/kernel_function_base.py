@@ -15,8 +15,6 @@ from semantic_kernel.plugin_definition.function_view import FunctionView
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
 
-    # from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
-
 
 class KernelFunctionBase(KernelBaseModel):
     @property

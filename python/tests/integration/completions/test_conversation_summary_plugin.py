@@ -43,12 +43,14 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="This test is fails intermittently when run in parallel with other tests")
+@pytest.mark.xfail(reason="This test fails intermittently when run in parallel with other tests")
 async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
     _, chatTranscript = setup_summarize_conversation_using_plugin
 
+    # Defining a new kernel here to avoid using the same kernel as the previous test
+    # which causes failures.
     kernel = sk.Kernel()
 
     if "Python_Integration_Tests" in os.environ:

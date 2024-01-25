@@ -24,10 +24,6 @@ from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
-
-# from semantic_kernel.plugin_definition.kernel_plugin_collection import (
-#     KernelPluginCollection,
-# )
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
