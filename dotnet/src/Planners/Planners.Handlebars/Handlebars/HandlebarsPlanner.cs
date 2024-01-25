@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -76,9 +75,8 @@ public sealed class HandlebarsPlanner
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
         // Get CreatePlan prompt template
-        var availableFunctions = await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, null /*logger*/, true, cancellationToken).ConfigureAwait(false);
-        //var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
-        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, /*complexParameterTypes, complexParameterSchemas,*/ cancellationToken).ConfigureAwait(false);
+        var functionsManual = await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, null /*logger*/, true, cancellationToken).ConfigureAwait(false);
+        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, functionsManual, /*complexParameterTypes, complexParameterSchemas,*/ cancellationToken).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
@@ -86,12 +84,12 @@ public sealed class HandlebarsPlanner
         var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
-        /*if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
-            var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
+            var availableFunctions = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var functionNames = availableFunctions.Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
-        }*/
-        // TODO: bring back this check
+        }
 
         Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
@@ -104,81 +102,6 @@ public sealed class HandlebarsPlanner
 
         return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
-
-    /*List<KernelFunctionMetadata> GetAvailableFunctionsManual(
-        Kernel kernel,
-        out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        out Dictionary<string, string> complexParameterSchemas)
-    {
-        complexParameterTypes = new();
-        complexParameterSchemas = new();
-
-        var availableFunctions = kernel.Plugins.GetFunctionsMetadata()
-            .Where(s => !this._options.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !this._options.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
-                && !s.Name.Contains("Planner_Excluded"))
-            .ToList();
-
-        var functionsMetadata = new List<KernelFunctionMetadata>();
-        foreach (var kernelFunction in availableFunctions)
-        {
-            // Extract any complex parameter types for isolated render in prompt template
-            var parametersMetadata = new List<KernelParameterMetadata>();
-            foreach (var parameter in kernelFunction.Parameters)
-            {
-                var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
-                parametersMetadata.Add(paramToAdd);
-            }
-
-            var returnParameter = kernelFunction.ReturnParameter.ToKernelParameterMetadata(kernelFunction.Name);
-            returnParameter = this.SetComplexTypeDefinition(returnParameter, complexParameterTypes, complexParameterSchemas);
-
-            // Need to override function metadata in case parameter metadata changed (e.g., converted primitive types from schema objects)
-            var functionMetadata = new KernelFunctionMetadata(kernelFunction.Name)
-            {
-                PluginName = kernelFunction.PluginName,
-                Description = kernelFunction.Description,
-                Parameters = parametersMetadata,
-                ReturnParameter = returnParameter.ToKernelReturnParameterMetadata()
-            };
-            functionsMetadata.Add(functionMetadata);
-        }
-
-        return functionsMetadata;
-    }
-
-    // Extract any complex types or schemas for isolated render in prompt template
-    private KernelParameterMetadata SetComplexTypeDefinition(
-        KernelParameterMetadata parameter,
-        HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        Dictionary<string, string> complexParameterSchemas)
-    {
-        // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
-        if (parameter.ParameterType is not null)
-        {
-            // Async return type - need to extract the actual return type and override ParameterType property
-            var type = parameter.ParameterType;
-            if (type.TryGetGenericResultType(out var taskResultType))
-            {
-                parameter = new(parameter) { ParameterType = taskResultType }; // Actual Return Type
-            }
-
-            complexParameterTypes.UnionWith(parameter.ParameterType!.ToHandlebarsParameterTypeMetadata());
-        }
-        else if (parameter.Schema is not null)
-        {
-            // Parse the schema to extract any primitive types and set in ParameterType property instead
-            var parsedParameter = parameter.ParseJsonSchema();
-            if (parsedParameter.Schema is not null)
-            {
-                complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
-            }
-
-            parameter = parsedParameter;
-        }
-
-        return parameter;
-    }*/
 
     private ChatHistory GetChatHistoryFromPrompt(string prompt)
     {
@@ -212,10 +135,7 @@ public sealed class HandlebarsPlanner
 
     private async Task<string> GetHandlebarsTemplateAsync(
         Kernel kernel, string goal,
-        //List<KernelFunctionMetadata> availableFunctions,
         string? availableFunctions,
-        //HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
-        //Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken)
     {
         var createPlanPrompt = this.ReadPrompt("CreatePlanPrompt.handlebars");
@@ -226,8 +146,6 @@ public sealed class HandlebarsPlanner
                 { "nameDelimiter", this._templateFactory.NameDelimiter},
                 { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
                 { "allowLoops", this._options.AllowLoops },
-                //{ "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
-                //{ "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
                 { "lastPlan", this._options.LastPlan },
                 { "lastError", this._options.LastError }
             };
