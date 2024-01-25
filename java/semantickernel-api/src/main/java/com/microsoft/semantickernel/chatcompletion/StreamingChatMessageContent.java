@@ -69,6 +69,6 @@ public class StreamingChatMessageContent extends StreamingKernelContent {
 
     public String getModelId() {
         return modelId;
-    }   
+    }
 }
 

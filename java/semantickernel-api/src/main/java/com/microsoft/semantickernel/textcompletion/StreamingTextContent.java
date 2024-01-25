@@ -1,10 +1,15 @@
 package com.microsoft.semantickernel.textcompletion;
 
-import com.microsoft.semantickernel.orchestration.StreamingContent;
+import com.microsoft.semantickernel.StreamingKernelContent;
 
-public class StreamingTextContent extends StreamingContent<TextContent> {
+public class StreamingTextContent extends StreamingKernelContent<TextContent> {
 
     public StreamingTextContent(TextContent content) {
-        super(content);
+        super(content, 0, null, null);
+    }
+
+    @Override
+    public byte[] toByteArray() {
+        return new byte[0];
     }
 }

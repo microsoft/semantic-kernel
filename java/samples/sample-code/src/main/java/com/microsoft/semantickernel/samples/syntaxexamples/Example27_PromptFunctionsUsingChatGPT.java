@@ -44,7 +44,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         var func = KernelFunctionFactory.createFromPrompt(
@@ -58,7 +58,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
                 ContextVariableTypes.getDefaultVariableTypeForClass(String.class)
             )
             .block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
 
     }
 }

@@ -1,29 +1,30 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.core.exception.HttpResponseException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
+import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.StreamingContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,7 +34,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
     private final PromptTemplate template;
 
-    public KernelFunctionFromPrompt(PromptTemplate template, PromptTemplateConfig promptConfig) {
+    public KernelFunctionFromPrompt(
+        PromptTemplate template,
+        PromptTemplateConfig promptConfig,
+        @Nullable
+        Map<String, PromptExecutionSettings> executionSettings) {
         super(
             new KernelFunctionMetadata(
                 promptConfig.getName(),
@@ -41,13 +46,45 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 promptConfig.getKernelParametersMetadata(),
                 promptConfig.getKernelReturnParameterMetadata()
             ),
-            promptConfig.getExecutionSettings()
+            executionSettings != null ? executionSettings : promptConfig.getExecutionSettings()
         );
         this.template = template;
     }
 
-    @Override
-    public <T> Flux<StreamingContent<T>> invokeStreamingAsync(
+    public static KernelFunction create(
+        PromptTemplateConfig promptConfig
+    ) {
+        return create(
+            promptConfig,
+            null
+        );
+    }
+
+    public static KernelFunction create(
+        PromptTemplateConfig promptConfig,
+        @Nullable
+        PromptTemplateFactory promptTemplateFactory
+    ) {
+        if (promptTemplateFactory == null) {
+            promptTemplateFactory = new KernelPromptTemplateFactory();
+        }
+
+        return create(promptTemplateFactory.tryCreate(promptConfig), promptConfig);
+    }
+
+
+    public static KernelFunction create(
+        PromptTemplate promptTemplate,
+        PromptTemplateConfig promptConfig) {
+        return new KernelFunctionFromPrompt(
+            promptTemplate,
+            promptConfig,
+            null
+        );
+    }
+
+
+    private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType) {
@@ -57,49 +94,98 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             .flatMapMany(prompt -> {
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                AIService client = kernel
+                AIServiceSelection aiServiceSelection = kernel
                     .getServiceSelector()
-                    .getService(TextAIService.class);
+                    .trySelectAIService(
+                        TextAIService.class,
+                        this,
+                        arguments
+                    );
 
+                AIService client = aiServiceSelection.getService();
                 if (client == null) {
                     throw new IllegalStateException(
                         "Failed to initialise aiService, could not find any TextAIService implementations");
                 }
 
-                Flux<StreamingContent<T>> result;
+                Flux<FunctionResult<T>> result;
 
-                PromptExecutionSettings executionSettings;
-                if (arguments != null) {
-                    executionSettings = arguments.getExecutionSettings();
-                } else {
-                    executionSettings = null;
-                }
+                PromptExecutionSettings executionSettings = aiServiceSelection.getSettings();
 
                 if (client instanceof ChatCompletionService) {
                     result = ((ChatCompletionService) client)
-                        .getStreamingChatMessageContentsAsync(
+                        .getChatMessageContentsAsync(
                             prompt,
                             executionSettings,
                             kernel)
-                        .concatMap(streamingChatMessageContent -> {
-                            T value = variableType
-                                .getConverter()
-                                .fromPromptString(
-                                    streamingChatMessageContent.getContent());
-                            return Flux.just(new StreamingContent<>(value));
+                        .flatMapMany(Flux::fromIterable)
+                        .concatMap(chatMessageContent -> {
+                            if (chatMessageContent.getAuthorRole()
+                                == AuthorRole.ASSISTANT) {
+
+                                T value = variableType
+                                    .getConverter()
+                                    .fromObject(chatMessageContent);
+
+                                if (value == null) {
+                                    value = variableType
+                                        .getConverter()
+                                        .fromPromptString(
+                                            chatMessageContent.getContent());
+                                }
+
+                                return Flux.just(
+                                    new FunctionResult<>(
+                                        new ContextVariable<>(variableType, value),
+                                        chatMessageContent.getMetadata()
+                                    )
+                                );
+                            } else if (chatMessageContent.getAuthorRole()
+                                == AuthorRole.TOOL) {
+                                Mono<FunctionResult<String>> toolResult = invokeTool(kernel,
+                                    chatMessageContent.getContent());
+                                return toolResult.flux();
+                            }
+                            return Flux.empty();
+                        })
+                        .map(it -> {
+                            return new FunctionResult<>(
+                                new ContextVariable<>(
+                                    variableType,
+                                    variableType.of(it.getResult()).getValue()
+                                ),
+                                it.getMetadata()
+                            );
                         });
                     return result;
 
                 } else if (client instanceof TextGenerationService) {
                     result = ((TextGenerationService) client)
-                        .getStreamingTextContentsAsync(
+                        .getTextContentsAsync(
                             prompt,
                             executionSettings,
                             kernel)
-                        .concatMap(streamingTextContent -> {
-                            T value = variableType.getConverter().fromPromptString(
-                                streamingTextContent.innerContent.getValue());
-                            return Flux.just(new StreamingContent<>(value));
+                        .flatMapMany(Flux::fromIterable)
+                        .concatMap(textContent -> {
+                            T value = variableType
+                                .getConverter()
+                                .fromObject(textContent);
+
+                            if (value == null) {
+                                value = variableType
+                                    .getConverter()
+                                    .fromPromptString(textContent.getContent());
+                            }
+
+                            return Flux.just(
+                                new FunctionResult<>(
+                                    new ContextVariable<>(
+                                        variableType,
+                                        value
+                                    ),
+                                    textContent.getMetadata()
+                                )
+                            );
                         });
                 } else {
                     return Flux.error(new IllegalStateException("Unknown service type"));
@@ -139,20 +225,64 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     }
 
     @Override
-    public <T> Mono<ContextVariable<T>> invokeAsync(Kernel kernel,
-        @Nullable KernelArguments arguments, ContextVariableType<T> variableType) {
-        return invokeStreamingAsync(kernel, arguments, variableType)
-            .collectList()
-            .map(streamingContents -> {
-                StringBuilder result = streamingContents
-                    .stream()
-                    .reduce(
-                        new StringBuilder(),
-                        (sb, streamingContent) -> sb.append(streamingContent.innerContent),
-                        StringBuilder::append);
-                T x = variableType.getConverter().fromPromptString(result.toString());
-                return new ContextVariable<>(variableType, x);
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> variableType) {
+        return invokeInternalAsync(kernel, arguments, variableType)
+            .take(1)
+            .single();
+    }
+
+    /*
+     * Given a json string, invoke the tool specified in the json string.
+     * At this time, the only tool we have is 'function'.
+     * The json string should be of the form:
+     * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
+     * where 'name' is <plugin name '-' function name>.
+     */
+    private Mono<FunctionResult<String>> invokeTool(Kernel kernel, String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(json);
+            jsonNode = jsonNode.get("function");
+            if (jsonNode != null) {
+                return invokeFunction(kernel, jsonNode);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse json", e);
+        }
+        return Mono.empty();
+    }
+
+    /*
+     * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
+     */
+    private Mono<FunctionResult<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
+        String name = jsonNode.get("name").asText();
+        String[] parts = name.split("-");
+        String pluginName = parts.length > 0 ? parts[0] : "";
+        String fnName = parts.length > 1 ? parts[1] : "";
+        JsonNode parameters = jsonNode.get("parameters");
+        if (parameters != null) {
+            KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
+            if (kernelFunction == null) {
+                return Mono.empty();
+            }
+            ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
+                String.class);
+            Map<String, ContextVariable<?>> variables = new HashMap<>();
+            parameters.fields().forEachRemaining(entry -> {
+                String paramName = entry.getKey();
+                String paramValue = entry.getValue().asText();
+                ContextVariable<String> contextVariable = new ContextVariable<>(variableType,
+                    paramValue);
+                variables.put(paramName, contextVariable);
             });
+            KernelArguments arguments = KernelArguments.builder().withVariables(variables).build();
+            return kernelFunction.invokeAsync(kernel, arguments, variableType);
+        }
+        return Mono.empty();
     }
 
     public static KernelFunction create(
@@ -234,7 +364,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         @Override
         public FromPromptBuilder withExecutionSettings(
             Map<String, PromptExecutionSettings> executionSettings) {
-            this.executionSettings = executionSettings;
+            if (this.executionSettings == null) {
+                this.executionSettings = new HashMap<>();
+            }
+
+            if (executionSettings != null) {
+                this.executionSettings.putAll(executionSettings);
+            }
             return this;
         }
 
@@ -244,7 +380,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             if (this.executionSettings == null) {
                 this.executionSettings = new HashMap<>();
             }
+
             this.executionSettings.put("default", executionSettings);
+
+            if (executionSettings.getServiceId() != null) {
+                this.executionSettings.put(executionSettings.getServiceId(), executionSettings);
+            }
             return this;
         }
 
@@ -301,14 +442,15 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 temp = new KernelPromptTemplateFactory().tryCreate(config);
             }
 
-            return new KernelFunctionFromPrompt(temp, config);
+            return new KernelFunctionFromPrompt(temp, config, executionSettings);
 
         }
 
         public KernelFunction build(PromptTemplateConfig functionModel) {
             return new KernelFunctionFromPrompt(
                 promptTemplate,
-                functionModel
+                functionModel,
+                executionSettings
             );
         }
     }

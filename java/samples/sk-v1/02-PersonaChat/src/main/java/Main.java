@@ -6,13 +6,13 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.util.List;
 
 public class Main {
 
@@ -40,7 +40,7 @@ public class Main {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, gpt35Turbo)
+            .withAIService(ChatCompletionService.class, gpt35Turbo)
             .withPromptTemplate(new HandlebarsPromptTemplate())
             .build();
 
@@ -55,7 +55,8 @@ public class Main {
             // Run the chat function
             // The persona chat function uses the persona variable to set the persona of the chat using a system message
             // See Plugins/ChatPlugin/PersonaChat.prompt.yaml for the full prompt
-            List<String> result = kernel.invokeStreamingAsync(
+            FunctionResult<String> message = kernel
+                .invokeAsync(
                     chatFunction,
                     KernelArguments
                         .builder()
@@ -65,17 +66,11 @@ public class Main {
                         .build(),
                     String.class
                 )
-                .collectList()
                 .block();
 
             System.out.print("Assistant > ");
-            result
-                .forEach(
-                    message -> {
-                        System.out.print(message);
-                        chatHistory.addAssistantMessage(message);
-                    }
-                );
+            System.out.print(message.getResult());
+            chatHistory.addAssistantMessage(message.getResult());
         }
     }
 }

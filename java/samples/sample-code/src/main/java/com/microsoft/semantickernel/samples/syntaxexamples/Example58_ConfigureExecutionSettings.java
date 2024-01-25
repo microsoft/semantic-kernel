@@ -44,10 +44,8 @@ public class Example58_ConfigureExecutionSettings {
             .withOpenAIAsyncClient(client)
             .build();
 
-        System.out.println("======== Using Chat GPT model for text generation ========");
-
         var kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         var prompt = "Hello AI, what can you do for me?";
@@ -67,7 +65,7 @@ public class Example58_ConfigureExecutionSettings {
             String.class
         ).block();
 
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
 
         // Option 2:
         // Load prompt template configuration including the execution settings from a JSON payload
@@ -94,6 +92,6 @@ public class Example58_ConfigureExecutionSettings {
         var func = KernelFunctionFactory.createFromPrompt(promptConfig, null);
 
         result = kernel.invokeAsync(func, null, String.class).block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
     }
 }

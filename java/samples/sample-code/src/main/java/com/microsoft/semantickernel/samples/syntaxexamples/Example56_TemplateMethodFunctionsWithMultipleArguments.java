@@ -47,7 +47,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(ChatCompletionService.class, openAIChatCompletion)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         System.out.println("======== TemplateMethodFunctionsWithMultipleArguments ========");
@@ -85,7 +85,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
         // Show the result
         System.out.println("--- Prompt Function result");
         var result = kernel.invokeAsync(haiku, arguments, String.class).block();
-        System.out.println(result.getValue());
+        System.out.println(result.getResultVariable());
     }
 
 }

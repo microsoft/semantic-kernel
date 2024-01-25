@@ -5,9 +5,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -66,7 +64,7 @@ public class Example07_BingAndGooglePlugins {
 
         var kernel = Kernel.builder()
             .withPlugin(bing)
-            .withDefaultAIService(ChatCompletionService.class, chatCompletionService)
+            .withAIService(ChatCompletionService.class, chatCompletionService)
             .build();
 
         example1Async(kernel, "bing");
@@ -93,7 +91,7 @@ public class Example07_BingAndGooglePlugins {
 
         System.out.println(question);
         System.out.printf("----%s----%n", searchPluginName);
-        System.out.println(result.getValue());
+        System.out.println(result.getResult());
 
         /* OUTPUT:
 
@@ -169,7 +167,7 @@ public class Example07_BingAndGooglePlugins {
 
         var answer = kernel.invokeAsync(oracle, kernelArguments, String.class).block();
 
-        var result = answer.getValue();
+        var result = answer.getResult();
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.contains("bing.search"))
@@ -197,7 +195,7 @@ public class Example07_BingAndGooglePlugins {
         }
 
         System.out.println("---- ANSWER:");
-        System.out.println(answer.getValue());
+        System.out.println(answer.getResult());
 
         /* OUTPUT:
 

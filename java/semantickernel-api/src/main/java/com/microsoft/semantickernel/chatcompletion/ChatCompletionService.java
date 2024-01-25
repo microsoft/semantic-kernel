@@ -10,7 +10,6 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.builders.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface ChatCompletionService extends Buildable, TextAIService {
@@ -21,19 +20,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
         Kernel kernel
     );
 
-    Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings promptExecutionSettings,
-        Kernel kernel
-    );
-
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
-        String prompt,
-        PromptExecutionSettings promptExecutionSettings,
-        Kernel kernel
-    );
-
-    Flux<StreamingChatMessageContent> getStreamingChatMessageContentsAsync(
         String prompt,
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel
@@ -49,6 +36,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
 
         protected OpenAIAsyncClient client;
         protected String modelId;
+        protected String serviceId;
 
 
         /**
@@ -74,6 +62,10 @@ public interface ChatCompletionService extends Buildable, TextAIService {
             return this;
         }
 
+        public Builder withServiceId(String serviceId) {
+            this.serviceId = serviceId;
+            return this;
+        }
     }
 
 }

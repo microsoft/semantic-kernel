@@ -29,7 +29,8 @@ public class OutputVariable {
         try {
             return this.getClass().getClassLoader().loadClass(type);
         } catch (ClassNotFoundException e) {
-            throw new SKException("Could not find return type " + type);
+            throw new SKException("Requested output type could not be found: " + type
+                + ", note this needs to be a fully qualified class name, i.e 'java.lang.String'.");
         }
     }
 }

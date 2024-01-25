@@ -3,6 +3,8 @@ package com.microsoft.semantickernel.orchestration.contextvariables;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.converters.CompletionUsageContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.converters.DateTimeContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.NumberVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.StringVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.VoidVariableContextVariableTypeConverter;
@@ -22,6 +24,8 @@ public class ContextVariableTypes {
             new ChatHistoryVariableContextVariableTypeConverter(),
             new StringVariableContextVariableTypeConverter(),
             new VoidVariableContextVariableTypeConverter(),
+            new DateTimeContextVariableTypeConverter(),
+            new CompletionUsageContextVariableTypeConverter(),
 
             new NumberVariableContextVariableTypeConverter<>(Byte.class, Byte::parseByte),
             new NumberVariableContextVariableTypeConverter<>(byte.class, Byte::parseByte),

@@ -60,4 +60,10 @@ public abstract class DefaultKernelFunction implements KernelFunction {
     public String toManualString(boolean includeOutputs) {
         return null;
     }
+
+    @Override
+    @Nullable
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
+        return executionSettings;
+    }
 }

@@ -14,12 +14,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PromptExecutionSettings {
 
+    public static final String DEFAULT_SERVICE_ID = "default";
     public static final int DEFAULT_MAX_TOKENS = 256;
     public static final double DEFAULT_TEMPERATURE= 1.0;
     public static final double DEFAULT_TOP_P = 1.0;
     public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
-    public static final int DEFAULT_BEST_OF = 1;    
+    public static final int DEFAULT_BEST_OF = 1;
+    public static final int DEFAULT_RESULTS_PER_PROMPT = 1;
 
     private static final String SERVICE_ID = "service_id";
     private static final String MODEL_ID = "model_id";
@@ -31,6 +33,8 @@ public class PromptExecutionSettings {
     private static final String BEST_OF = "best_of";
     private static final String USER = "user";
     private static final String STOP_SEQUENCES = "stop_sequences";
+    private static final String RESULTS_PER_PROMPT = "results_per_prompt";
+    private static final String TOKEN_SELECTION_BIASES = "token_selection_biases";
 
     /// <summary>
     /// Service identifier.
@@ -50,9 +54,15 @@ public class PromptExecutionSettings {
     private final double frequencyPenalty;
     private final int maxTokens;
     private final int bestOf;
+    private final int resultsPerPrompt;
     private final String user;
     private final List<String> stopSequences;
     private final ToolCallBehavior toolCallBehavior;
+
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>s
+    public Map<Integer, Integer> tokenSelectionBiases;
 
     @JsonCreator
     public PromptExecutionSettings(
@@ -63,9 +73,11 @@ public class PromptExecutionSettings {
         @JsonProperty(PRESENCE_PENALTY) double presencePenalty,
         @JsonProperty(FREQUENCY_PENALTY) double frequencyPenalty,
         @JsonProperty(MAX_TOKENS) int maxTokens,
-        @JsonProperty(MODEL_ID) int bestOf,
+        @JsonProperty(RESULTS_PER_PROMPT) int resultsPerPrompt,
+        @JsonProperty(BEST_OF) int bestOf,
         @JsonProperty(USER) String user,
-        @JsonProperty(STOP_SEQUENCES) List<String> stopSequences) {
+        @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
+        @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
             this(
                 serviceId, 
                 modelId, 
@@ -74,9 +86,11 @@ public class PromptExecutionSettings {
                 presencePenalty,
                 frequencyPenalty, 
                 maxTokens, 
+                resultsPerPrompt,
                 bestOf, 
                 user, 
                 stopSequences, 
+                tokenSelectionBiases,
                 null);
     }
 
@@ -88,9 +102,11 @@ public class PromptExecutionSettings {
         double presencePenalty,
         double frequencyPenalty,
         int maxTokens,
+        int resultsPerPrompt,
         int bestOf,
         String user,
         @Nullable List<String> stopSequences,
+        @Nullable Map<Integer, Integer> tokenSelectionBiases,
         @Nullable ToolCallBehavior toolCallBehavior) {
             this.serviceId = serviceId;
             this.modelId = modelId;
@@ -99,9 +115,11 @@ public class PromptExecutionSettings {
             this.presencePenalty = presencePenalty;
             this.frequencyPenalty = frequencyPenalty;
             this.maxTokens = maxTokens;
+            this.resultsPerPrompt = resultsPerPrompt;
             this.bestOf = bestOf;
             this.user = user;
             this.stopSequences = stopSequences != null ? stopSequences : Collections.emptyList();
+            this.tokenSelectionBiases = tokenSelectionBiases != null ? tokenSelectionBiases : Collections.emptyMap();   
             this.toolCallBehavior = toolCallBehavior;    
     }
 
@@ -140,6 +158,11 @@ public class PromptExecutionSettings {
         return maxTokens;
     }
 
+    @JsonProperty(RESULTS_PER_PROMPT)
+    public int getResultsPerPrompt() {
+        return resultsPerPrompt;
+    }
+
     @JsonProperty(BEST_OF)
     public int getBestOf() {
         // TODO: not present in com.azure:azure-ai-openai
@@ -156,6 +179,11 @@ public class PromptExecutionSettings {
         return stopSequences;
     }
     
+    @JsonProperty(TOKEN_SELECTION_BIASES)
+    public Map<Integer, Integer> getTokenSelectionBiases() {
+        return tokenSelectionBiases;
+    }
+
     @JsonIgnore
     @Nullable
     public ToolCallBehavior getToolCallBehavior() {
@@ -165,6 +193,7 @@ public class PromptExecutionSettings {
     public static Builder builder() {
         return new Builder();
     }
+
 
     public static class Builder {
 
@@ -213,6 +242,11 @@ public class PromptExecutionSettings {
             return this;
         }
 
+        public Builder withResultsPerPrompt(int resultsPerPrompt) {
+            settings.put(RESULTS_PER_PROMPT, resultsPerPrompt);
+            return this;
+        }
+
         public Builder withBestOf(int bestOf) {
             settings.put(BEST_OF, bestOf);
             return this;
@@ -231,7 +265,15 @@ public class PromptExecutionSettings {
         @SuppressWarnings("unchecked")
         public Builder withStopSequences(List<String> stopSequences) {
             if (stopSequences != null) {
-                ((List<String>)settings.computeIfAbsent(STOP_SEQUENCES, k -> new ArrayList<String>())).addAll(stopSequences);
+                ((List<String>)settings.computeIfAbsent(STOP_SEQUENCES, k -> new ArrayList<>())).addAll(stopSequences);
+            }
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public Builder withTokenSelectionBiases(Map<Integer, Integer> tokenSelectionBiases) {
+            if (tokenSelectionBiases != null) {
+                ((Map<Integer, Integer>)settings.computeIfAbsent(TOKEN_SELECTION_BIASES, k -> new HashMap<>())).putAll(tokenSelectionBiases);   
             }
             return this;
         }
@@ -246,9 +288,11 @@ public class PromptExecutionSettings {
                 (double)settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
                 (double)settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
                 (int)settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
+                (int)settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
                 (int)settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
                 (String)settings.getOrDefault(USER, ""),
                 (List<String>)settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
+                (Map<Integer, Integer>)settings.getOrDefault(TOKEN_SELECTION_BIASES, Collections.emptyMap()),
                 (ToolCallBehavior)settings.getOrDefault("toolCallBehavior", new ToolCallBehavior())
             );
         }

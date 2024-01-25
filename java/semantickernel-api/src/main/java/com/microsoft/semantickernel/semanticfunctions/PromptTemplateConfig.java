@@ -45,7 +45,7 @@ public class PromptTemplateConfig {
             SEMANTIC_KERNEL_TEMPLATE_FORMAT,
             "",
             Collections.emptyList(),
-            new OutputVariable("out", "string"),
+            new OutputVariable("out", String.class.getName()),
             Collections.emptyMap()
         );
     }
@@ -122,12 +122,12 @@ public class PromptTemplateConfig {
             .collect(Collectors.toList());
     }
 
-    public KernelReturnParameterMetadata getKernelReturnParameterMetadata() {
+    public KernelReturnParameterMetadata<?> getKernelReturnParameterMetadata() {
         if (outputVariable == null) {
-            return new KernelReturnParameterMetadata("", String.class);
+            return new KernelReturnParameterMetadata<>("", String.class);
         }
 
-        return new KernelReturnParameterMetadata(
+        return new KernelReturnParameterMetadata<>(
             outputVariable.getDescription(),
             outputVariable.getType()
         );

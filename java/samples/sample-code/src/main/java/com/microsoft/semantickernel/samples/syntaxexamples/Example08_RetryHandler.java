@@ -5,7 +5,6 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -35,7 +34,7 @@ public class Example08_RetryHandler {
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withDefaultAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
         String question = "How popular is the Polly library?";

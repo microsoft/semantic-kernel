@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration.contextvariables;
 
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -15,6 +16,7 @@ import reactor.util.annotation.NonNull;
 public class DefaultKernelArguments implements KernelArguments, WritableKernelArguments {
 
     private final CaseInsensitiveMap<ContextVariable<?>> variables;
+    private final Map<String, PromptExecutionSettings> executionSettings;
 
     /// <summary>
     /// In the simplest scenario, the data is an input string, stored here.
@@ -28,14 +30,38 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
     DefaultKernelArguments(@NonNull ContextVariable<?> content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
+        this.executionSettings = new HashMap<>();
     }
 
-    public DefaultKernelArguments(Map<String, ContextVariable<?>> variables) {
+    public DefaultKernelArguments(
+        Map<String, ContextVariable<?>> variables,
+        @Nullable
+        PromptExecutionSettings executionSettings) {
         this.variables = new CaseInsensitiveMap<>(variables);
+        this.executionSettings = new HashMap<>();
+        this.executionSettings.put(PromptExecutionSettings.DEFAULT_SERVICE_ID, executionSettings);
     }
+
 
     public DefaultKernelArguments() {
         this.variables = new CaseInsensitiveMap<>();
+        this.executionSettings = new HashMap<>();
+    }
+
+    public DefaultKernelArguments(
+        Map<String, ContextVariable<?>> variables,
+        Map<String, PromptExecutionSettings> executionSettings) {
+        if (variables == null) {
+            this.variables = new CaseInsensitiveMap<>();
+        } else {
+            this.variables = new CaseInsensitiveMap<>(variables);
+        }
+
+        if (executionSettings == null) {
+            this.executionSettings = new HashMap<>();
+        } else {
+            this.executionSettings = new HashMap<>(executionSettings);
+        }
     }
 
     @Override
@@ -93,7 +119,7 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
 
     @Override
     public WritableKernelArguments writableClone() {
-        return new DefaultKernelArguments(variables);
+        return new DefaultKernelArguments(variables, executionSettings);
     }
 
     @Override
@@ -134,8 +160,8 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
 
     @Nullable
     @Override
-    public PromptExecutionSettings getExecutionSettings() {
-        return null;
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
+        return executionSettings;
     }
 
     @Override
@@ -209,21 +235,17 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
         return variables.entrySet();
     }
 
-    public static class WritableBuilder implements WritableKernelArguments.Builder {
-
-        @Override
-        public WritableKernelArguments build(Map<String, ContextVariable<?>> map) {
-            return new DefaultKernelArguments(map);
-        }
-    }
 
     public static class Builder implements KernelArguments.Builder {
 
         private final DefaultKernelArguments variables;
+        private final Map<String, PromptExecutionSettings> executionSettings;
 
         public Builder() {
             variables = new DefaultKernelArguments();
             this.variables.put(MAIN_KEY, ContextVariable.of(""));
+
+            executionSettings = new HashMap<>();
         }
 
         @Override
@@ -257,7 +279,7 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
 
         @Override
         public KernelArguments build() {
-            return new DefaultKernelArguments(variables);
+            return new DefaultKernelArguments(variables, executionSettings);
         }
     }
 }
