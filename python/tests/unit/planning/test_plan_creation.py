@@ -17,7 +17,7 @@ def test_create_empty_plan():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings is None
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
@@ -34,7 +34,7 @@ def test_create_plan_with_name():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings is None
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
@@ -51,7 +51,7 @@ def test_create_plan_with_name_and_description():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings is None
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
@@ -72,7 +72,7 @@ def test_create_plan_with_state_and_parameters():
     assert plan.parameters["test_param"] == "test_param_val"
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings is None
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
@@ -98,7 +98,7 @@ def test_create_plan_with_name_and_function():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is test_function.is_semantic
     assert plan.is_native is test_function.is_native
-    assert plan.request_settings == test_function.request_settings
+    assert plan.prompt_execution_settings == test_function.prompt_execution_settings
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
@@ -127,7 +127,7 @@ def test_create_multistep_plan_with_functions():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings is None
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is True
     assert plan.next_step_index == 0
     assert len(plan._steps) == 2
@@ -158,7 +158,7 @@ def test_create_multistep_plan_with_plans():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings is None
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is True
     assert plan.next_step_index == 0
     assert len(plan._steps) == 2
@@ -186,7 +186,7 @@ def test_add_step_to_plan():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is test_function1.is_semantic
     assert plan.is_native is test_function1.is_native
-    assert plan.request_settings == test_function1.request_settings
+    assert plan.prompt_execution_settings == test_function1.prompt_execution_settings
     assert plan.has_next_step is True
     assert plan.next_step_index == 0
     assert len(plan._steps) == 1

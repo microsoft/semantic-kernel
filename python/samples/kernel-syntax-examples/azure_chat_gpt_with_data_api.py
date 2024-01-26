@@ -4,9 +4,9 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
-    AzureChatRequestSettings,
+    AzureChatPromptExecutionSettings,
     AzureDataSources,
     ExtraBody,
 )
@@ -37,7 +37,7 @@ azure_ai_search_settings["fieldsMapping"] = {
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
 az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
-req_settings = AzureChatRequestSettings(extra_body=extra)
+req_settings = AzureChatPromptExecutionSettings(extra_body=extra)
 prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)
 
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
