@@ -68,10 +68,9 @@ jobs:
           fi
 
       # Sets up the specified JDK version from the matrix
-      - name: Set up JDK ${{ matrix.java-versions }}
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java-versions }}
+          java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft
           cache: maven
 
