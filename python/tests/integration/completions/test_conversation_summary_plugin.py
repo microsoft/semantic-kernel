@@ -23,7 +23,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
     else:
         # Load credentials from .env file
         deployment_name, api_key, endpoint = get_aoai_config
-        deployment_name = "gpt-3.5-turbo-instruct"
+        deployment_name = "gpt-35-turbo-instruct"
 
     kernel.add_text_completion_service(
         "text_completion",
