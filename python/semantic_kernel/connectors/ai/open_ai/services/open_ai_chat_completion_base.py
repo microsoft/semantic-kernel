@@ -40,7 +40,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Create a request settings object."""
         return OpenAIChatRequestSettings
 
-    async def complete_chat_async(
+    async def complete_chat(
         self,
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
@@ -65,7 +65,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_chat_response(response)
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
-    async def complete_chat_stream_async(
+    async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
