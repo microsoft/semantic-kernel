@@ -29,9 +29,10 @@ class KernelPluginCollection(KernelBaseModel):
         Initialize a new instance of the KernelPluginCollection class
 
         Args:
-            plugins (Union[None, KernelPluginCollection, Iterable[KernelPluginBase]]): The plugins to add to the collection.
-                If None, an empty collection is created. If a KernelPluginCollection, the plugins are copied from the
-                other collection. If an iterable of KernelPluginBase, the plugins are added to the collection.
+            plugins (Union[None, KernelPluginCollection, Iterable[KernelPluginBase]]): The plugins to add 
+                to the collection. If None, an empty collection is created. If a KernelPluginCollection, 
+                the plugins are copied from the other collection. If an iterable of KernelPluginBase, 
+                the plugins are added to the collection.
 
         Raises:
             ValueError: If the plugins is not None, a KernelPluginCollection, or an iterable of KernelPluginBase.
