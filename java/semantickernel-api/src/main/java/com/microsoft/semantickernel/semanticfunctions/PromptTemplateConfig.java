@@ -116,8 +116,8 @@ public class PromptTemplateConfig {
             .map(inputVariable -> new KernelParameterMetadata(
                 inputVariable.getName(),
                 inputVariable.getDescription(),
-                inputVariable.getDefaultValue(),
-                inputVariable.isRequired()
+                null,
+                inputVariable.getDefaultValue(), inputVariable.isRequired()
             ))
             .collect(Collectors.toList());
     }

@@ -64,6 +64,7 @@
     </properties>
 
     <modules>
+        <module>connectors/semantickernel-connectors-web-bing</module>
 <!--        <module>connectors/semantickernel-connectors-ai-openai</module>-->
 <!--        <module>connectors/semantickernel-connectors-memory-sqlite</module>-->
 <!--        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>-->
@@ -150,6 +151,11 @@
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-web-bing</artifactId>
+                <version>${project.version}</version>
+            </dependency>            
         </dependencies>
     </dependencyManagement>
 

@@ -1,29 +1,27 @@
-package com.microsoft.semantickernel.plugins.web.bing;
+package com.microsoft.semantickernel.connectors.web.bing;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpHeader;
 import com.azure.core.http.HttpHeaderName;
-import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.implementation.jackson.ObjectMapperShim;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import reactor.core.publisher.Mono;
 
-public class BingConnector {    
+public class BingConnector implements WebSearchEngineConnector {    
 
     private static String BING_SEARCH_URL;
     static { 
@@ -54,7 +52,7 @@ public class BingConnector {
         private final WebPage[] value;
         @JsonCreator
         public WebPages(
-            @JsonProperty("value") WebPage[] value
+            @JsonProperty("value") BingWebPage[] value
         ) {
             this.value = value;
         }
@@ -64,52 +62,52 @@ public class BingConnector {
         }
     }
 
-    public static class WebPage {
-        @JsonProperty("name")
-        private String name;
+    public static class BingWebPage implements WebPage {
+        private final String name;
+        private final String url;
+        private final String snippet;
 
-        @JsonProperty("url")
-        private String url;
-
-        @JsonProperty("snippet")
-        private String snippet;
-
-        public WebPage() {
+        @JsonCreator
+        public BingWebPage(
+            @JsonProperty("name") String name,
+            @JsonProperty("url") String url,
+            @JsonProperty("snippet") String snippet
+        ) {
+            this.name = name;
+            this.url = url;
+            this.snippet = snippet;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getUrl() {
             return url;
         }
 
+        @Override
         public String getSnippet() {
             return snippet;
-        }   
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public void setSnippet(String snippet) {
-            this.snippet = snippet;
         }   
     }
 
     private final String apiKey; // TODO: secure this
     private final HttpClient httpClient;
+
     public BingConnector(String apiKey, HttpClient httpClient) {
         this.apiKey = apiKey;
         this.httpClient = httpClient;
     }
 
-    public Mono<List<String>> searchAsync(String query, int count, int offset) {   
+    public BingConnector(String apiKey) {
+        this(apiKey, HttpClient.createDefault());
+    }
+
+    @Override
+    public Mono<List<WebPage>> searchAsync(String query, int count, int offset) {   
 
         if (count <= 0 || 50 <= count) throw new IllegalArgumentException("count must be between 1 and 50");
         if (offset < 0) throw new IllegalArgumentException("offset must be greater than or equal to 0");
@@ -134,24 +132,23 @@ public class BingConnector {
         return url;
     }
 
-    private static Mono<List<String>> handleResponse(HttpResponse response) {
+    private static Mono<List<WebPage>> handleResponse(HttpResponse response) {
             return response.getBodyAsString()
-                .flatMap(body -> {
-                    if (body == null || body.isEmpty()) return Mono.empty();
+                .map(body -> {
+                    if (body == null || body.isEmpty()) return null;
                     try {
                         ObjectMapper objectMapper = new ObjectMapper()
                             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                             .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
-                        BingSearchResponse bingSearchResponse = objectMapper.readValue(body, BingSearchResponse.class);
-                        List<String> urls = new ArrayList<String>();
-                        for (WebPage webPage : bingSearchResponse.getWebPages().getValue()) {
-                            urls.add(webPage.getUrl());
+
+                            BingSearchResponse bingSearchResponse = objectMapper.readValue(body, BingSearchResponse.class);
+                        if (bingSearchResponse.getWebPages() != null && bingSearchResponse.getWebPages().getValue() != null) {
+                            return Arrays.asList(bingSearchResponse.getWebPages().getValue());
                         }
-                        return Mono.just(urls);
                     } catch (JsonProcessingException e) {
-                        Mono.error(e);
+                       throw new SKException(e.getMessage(), e);
                     }
-                    return Mono.empty();
+                    return null;
                 });
     }
 }

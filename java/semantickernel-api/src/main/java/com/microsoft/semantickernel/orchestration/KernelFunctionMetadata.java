@@ -15,14 +15,14 @@ public class KernelFunctionMetadata {
 
 
     /// <summary>The function's return parameter.</summary>
-    private final KernelReturnParameterMetadata returnParameter;
+    private final KernelReturnParameterMetadata<?> returnParameter;
 
 
     public KernelFunctionMetadata(
         String name,
         String description,
         List<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) {
+        KernelReturnParameterMetadata<?> returnParameter) {
         this.name = name;
         this.description = description;
         this.parameters = parameters;
@@ -41,7 +41,7 @@ public class KernelFunctionMetadata {
         return description;
     }
 
-    public KernelReturnParameterMetadata getReturnParameter() {
+    public KernelReturnParameterMetadata<?> getReturnParameter() {
         return returnParameter;
     }
 }

@@ -7,6 +7,7 @@ import com.azure.ai.openai.models.ChatCompletionsFunctionToolCall;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatCompletionsToolCall;
+import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
 import com.azure.ai.openai.models.ChatRequestAssistantMessage;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
@@ -28,6 +29,7 @@ import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
@@ -251,24 +253,24 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings) {
+            
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
-
-        if (functions != null && !functions.isEmpty()) {
-            // options.setFunctions(functions);
-            options.setTools(
-                functions.stream()
-                    .map(ChatCompletionsFunctionToolDefinition::new)
-                    .collect(Collectors.toList())
-            );
-        }
 
         if (promptExecutionSettings == null) {
             return options;
         }
+            
         if (promptExecutionSettings.getResultsPerPrompt() < 1
                 || promptExecutionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, String.format("Results per prompt must be in range between 1 and %d, inclusive.", MAX_RESULTS_PER_PROMPT));
+        }
+
+        List<ChatCompletionsToolDefinition> toolDefinitions = 
+            chatCompletionsToolDefinitions(promptExecutionSettings.getToolCallBehavior(), functions);
+        if (toolDefinitions != null && !toolDefinitions.isEmpty()) {
+            options.setTools(toolDefinitions);
+            // TODO: options.setToolChoices(toolChoices);
         }
 
         Map<String, Integer> logit = null;
@@ -300,6 +302,30 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .setLogitBias(logit);
 
         return options;
+    }
+
+    private static List<ChatCompletionsToolDefinition> chatCompletionsToolDefinitions(
+        ToolCallBehavior toolCallBehavior,
+        List<FunctionDefinition> functions) {
+
+        if (functions == null || functions.isEmpty()) {
+            return Collections.emptyList();
+        }
+    
+        if (toolCallBehavior == null || !(toolCallBehavior.kernelFunctionsEnabled() || toolCallBehavior.autoInvokeEnabled())) {
+            return Collections.emptyList();
+        }
+        
+        return functions.stream()
+            .filter(function -> {
+                String[] parts = function.getName().split("-");
+                String pluginName = parts.length > 0 ? parts[0] : "";
+                String fnName = parts.length > 1 ? parts[1] : "";
+                return toolCallBehavior.functionEnabled(pluginName, fnName);
+            })
+            .map(ChatCompletionsFunctionToolDefinition::new)
+            .collect(Collectors.toList());
+
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {

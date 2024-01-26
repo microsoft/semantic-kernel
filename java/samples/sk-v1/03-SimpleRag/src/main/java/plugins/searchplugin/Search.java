@@ -4,7 +4,7 @@ package plugins.searchplugin;
 import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.plugins.web.bing.BingConnector;
+import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
 
 import reactor.core.publisher.Mono;
 
@@ -25,7 +25,9 @@ public class Search {
     public Mono<String> searchAsync(
         @KernelFunctionParameter(description="The search query", name="query", type=String.class) String query
     ){
-        return bingConnector.searchAsync(query, 1, 0).map(results -> results.get(0));
+        return bingConnector
+            .searchAsync(query, 1, 0).map(results -> results.get(0))
+            .map(result -> result.getUrl());
     }
 
 }
