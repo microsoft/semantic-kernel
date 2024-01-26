@@ -8,10 +8,10 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPluginBase
 
 # To support Python 3.8, need to use TypeVar since Iterable is not scriptable
-KernelPluginType = TypeVar("KernelPluginType", bound="KernelPlugin")
+KernelPluginType = TypeVar("KernelPluginType", bound="KernelPluginBase")
 
 
 class KernelPluginCollection(KernelBaseModel):
@@ -19,22 +19,22 @@ class KernelPluginCollection(KernelBaseModel):
     The Kernel Plugin Collection class. This class is used to store a collection of plugins.
 
     Attributes:
-        plugins (Dict[str, KernelPlugin]): The plugins in the collection, indexed by their name.
+        plugins (Dict[str, KernelPluginBase]): The plugins in the collection, indexed by their name.
     """
 
-    plugins: Optional[Dict[str, KernelPlugin]] = Field(default_factory=dict)
+    plugins: Optional[Dict[str, KernelPluginBase]] = Field(default_factory=dict)
 
     def __init__(self, plugins: Union[None, "KernelPluginCollection", Iterable[KernelPluginType]] = None):
         """
         Initialize a new instance of the KernelPluginCollection class
 
         Args:
-            plugins (Union[None, KernelPluginCollection, Iterable[KernelPlugin]]): The plugins to add to the collection.
+            plugins (Union[None, KernelPluginCollection, Iterable[KernelPluginBase]]): The plugins to add to the collection.
                 If None, an empty collection is created. If a KernelPluginCollection, the plugins are copied from the
-                other collection. If an iterable of KernelPlugin, the plugins are added to the collection.
+                other collection. If an iterable of KernelPluginBase, the plugins are added to the collection.
 
         Raises:
-            ValueError: If the plugins is not None, a KernelPluginCollection, or an iterable of KernelPlugin.
+            ValueError: If the plugins is not None, a KernelPluginCollection, or an iterable of KernelPluginBase.
         """
         if plugins is None:
             plugins = {}
@@ -50,7 +50,7 @@ class KernelPluginCollection(KernelBaseModel):
         super().__init__(plugins=plugins)
 
     @staticmethod
-    def _process_plugins_iterable(plugins_input: Iterable[KernelPlugin]) -> Dict[str, KernelPlugin]:
+    def _process_plugins_iterable(plugins_input: Iterable[KernelPluginBase]) -> Dict[str, KernelPluginBase]:
         plugins_dict = {}
         for plugin in plugins_input:
             if plugin is None or plugin.name is None:
@@ -60,12 +60,12 @@ class KernelPluginCollection(KernelBaseModel):
             plugins_dict[plugin.name] = plugin
         return plugins_dict
 
-    def add(self, plugin: KernelPlugin) -> None:
+    def add(self, plugin: KernelPluginBase) -> None:
         """
         Add a single plugin to the collection
 
         Args:
-            plugin (KernelPlugin): The plugin to add to the collection.
+            plugin (KernelPluginBase): The plugin to add to the collection.
 
         Raises:
             ValueError: If the plugin or plugin.name is None.
@@ -119,12 +119,12 @@ class KernelPluginCollection(KernelBaseModel):
             else:
                 raise ValueError(f"Function with name '{func.name}' already exists in plugin '{plugin_name}'")
 
-    def add_list_of_plugins(self, plugins: List[KernelPlugin]) -> None:
+    def add_list_of_plugins(self, plugins: List[KernelPluginBase]) -> None:
         """
         Add a list of plugins to the collection
 
         Args:
-            plugins (List[KernelPlugin]): The plugins to add to the collection.
+            plugins (List[KernelPluginBase]): The plugins to add to the collection.
 
         Raises:
             ValueError: If the plugins list is None.
@@ -135,12 +135,12 @@ class KernelPluginCollection(KernelBaseModel):
         for plugin in plugins:
             self.add(plugin)
 
-    def remove(self, plugin: KernelPlugin) -> bool:
+    def remove(self, plugin: KernelPluginBase) -> bool:
         """
         Remove a plugin from the collection
 
         Args:
-            plugin (KernelPlugin): The plugin to remove from the collection.
+            plugin (KernelPluginBase): The plugin to remove from the collection.
 
         Returns:
             True if the plugin was removed, False otherwise.
@@ -163,7 +163,7 @@ class KernelPluginCollection(KernelBaseModel):
             return False
         return self.plugins.pop(plugin_name, None) is not None
 
-    def get_plugin(self, plugin_name: str) -> Optional[KernelPlugin]:
+    def get_plugin(self, plugin_name: str) -> Optional[KernelPluginBase]:
         """
         Get a plugin from the collection
 

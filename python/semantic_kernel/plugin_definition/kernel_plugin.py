@@ -14,9 +14,9 @@ from pydantic import Field, StringConstraints
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class KernelPlugin(KernelBaseModel, ABC):
+class KernelPluginBase(KernelBaseModel, ABC):
     """
-    The KernelPlugin Base Class. All plugins must inherit from this class.
+    The KernelPluginBase Base Class. All plugins must inherit from this class.
 
     Attributes:
 
@@ -40,4 +40,9 @@ class KernelPlugin(KernelBaseModel, ABC):
     @abstractmethod
     def get_function(self, function_name: str):
         """Gets the function in the plugin with the specified name."""
+        pass
+
+    @abstractmethod
+    def __getitem__(self, name):
+        """Define the [] operator for the plugin."""
         pass

@@ -34,7 +34,7 @@ from semantic_kernel.plugin_definition.default_kernel_plugin import (
     DefaultKernelPlugin,
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPluginBase
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
@@ -105,7 +105,7 @@ class Kernel:
         return self._prompt_template_engine
 
     def add_plugin_to_collection(
-        self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPlugin] = None
+        self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPluginBase] = None
     ) -> None:
         """
         Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
@@ -114,7 +114,7 @@ class Kernel:
         Args:
             plugin_name (str): The name of the plugin
             functions (List[KernelFunctionBase]): The functions to add to the plugin
-            plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
+            plugin (Optional[KernelPluginBase]): An optional pre-defined plugin instance
         """
         if plugin is None:
             # If no plugin instance is provided, create a new DefaultKernelPlugin
@@ -431,7 +431,7 @@ class Kernel:
             return args
         return None
 
-    def import_plugin(self, plugin_instance: Any, plugin_name: str) -> KernelPlugin:
+    def import_plugin(self, plugin_instance: Any, plugin_name: str) -> KernelPluginBase:
         """
         Import a plugin into the kernel.
 
@@ -440,7 +440,7 @@ class Kernel:
             plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
 
         Returns:
-            KernelPlugin: The imported plugin of type KernelPlugin.
+            KernelPluginBase: The imported plugin of type KernelPluginBase.
         """
         if not plugin_name.strip():
             logger.warn("Unable to import plugin due to missing plugin_name")

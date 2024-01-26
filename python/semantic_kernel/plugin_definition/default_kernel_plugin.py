@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 from pydantic import Field
 
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPluginBase
 
 
-class DefaultKernelPlugin(KernelPlugin):
+class DefaultKernelPlugin(KernelPluginBase):
     """
     Represents a Kernel Plugin with functions.
 
