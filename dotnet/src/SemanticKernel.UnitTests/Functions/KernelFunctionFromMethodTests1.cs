@@ -14,6 +14,8 @@ using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+
 namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionFromMethodTests1
