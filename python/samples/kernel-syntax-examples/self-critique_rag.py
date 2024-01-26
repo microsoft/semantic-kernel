@@ -20,17 +20,15 @@ COLLECTION_NAME = "generic"
 
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the ACS semantic memory
-    await kernel.memory.save_information_async(COLLECTION_NAME, id="info1", text="My name is Andrea")
-    await kernel.memory.save_information_async(COLLECTION_NAME, id="info2", text="I currently work as a tour guide")
-    await kernel.memory.save_information_async(
-        COLLECTION_NAME, id="info3", text="I've been living in Seattle since 2005"
-    )
-    await kernel.memory.save_information_async(
+    await kernel.memory.save_information(COLLECTION_NAME, id="info1", text="My name is Andrea")
+    await kernel.memory.save_information(COLLECTION_NAME, id="info2", text="I currently work as a tour guide")
+    await kernel.memory.save_information(COLLECTION_NAME, id="info3", text="I've been living in Seattle since 2005")
+    await kernel.memory.save_information(
         COLLECTION_NAME,
         id="info4",
         text="I visited France and Italy five times since 2015",
     )
-    await kernel.memory.save_information_async(COLLECTION_NAME, id="info5", text="My family is from New York")
+    await kernel.memory.save_information(COLLECTION_NAME, id="info5", text="My family is from New York")
 
 
 async def main() -> None:
@@ -99,7 +97,7 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
     chat_func = kernel.create_semantic_function(sk_prompt_rag, max_tokens=1000, temperature=0.5)
     self_critique_func = kernel.create_semantic_function(sk_prompt_rag_sc, max_tokens=4, temperature=0.0)
 
-    answer = await kernel.run_async(
+    answer = await kernel.run(
         chat_func,
         input_vars=ContextVariables(
             variables={
@@ -110,24 +108,24 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
         ),
     )
     print(f"Answer: {str(answer).strip()}")
-    check = await kernel.run_async(self_critique_func, input_context=answer)
+    check = await kernel.run(self_critique_func, input_context=answer)
     print(f"The answer was {str(check).strip()}")
 
     print("-" * 50)
     print("   Let's pretend the answer was wrong...")
     answer.variables.variables["input"] = "Yes, you live in New York City."
     print(f"Answer: {str(answer).strip()}")
-    check = await kernel.run_async(self_critique_func, input_context=answer)
+    check = await kernel.run(self_critique_func, input_context=answer)
     print(f"The answer was {str(check).strip()}")
 
     print("-" * 50)
     print("   Let's pretend the answer is not related...")
     answer.variables.variables["input"] = "Yes, the earth is not flat."
     print(f"Answer: {str(answer).strip()}")
-    check = await kernel.run_async(self_critique_func, input_context=answer)
+    check = await kernel.run(self_critique_func, input_context=answer)
     print(f"The answer was {str(check).strip()}")
 
-    await connector.close_async()
+    await connector.close()
 
 
 if __name__ == "__main__":

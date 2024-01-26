@@ -43,7 +43,7 @@ class TextMemoryPlugin(KernelBaseModel):
         description="The maximum number of relevant memories to recall.",
         default_value=DEFAULT_LIMIT,
     )
-    async def recall_async(self, ask: str, context: "KernelContext") -> str:
+    async def recall(self, ask: str, context: "KernelContext") -> str:
         """
         Recall a fact from the long term memory.
 
@@ -78,7 +78,7 @@ class TextMemoryPlugin(KernelBaseModel):
         if limit is None or str(limit).strip() == "":
             raise ValueError("Limit value not defined for TextMemoryPlugin")
 
-        results = await context.memory.search_async(
+        results = await context.memory.search(
             collection=collection,
             query=ask,
             limit=int(limit),
@@ -104,7 +104,7 @@ class TextMemoryPlugin(KernelBaseModel):
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
-    async def save_async(self, text: str, context: "KernelContext") -> None:
+    async def save(self, text: str, context: "KernelContext") -> None:
         """
         Save a fact to the long term memory.
 
@@ -132,4 +132,4 @@ class TextMemoryPlugin(KernelBaseModel):
         if not key:
             raise ValueError("Memory key not defined for TextMemoryPlugin")
 
-        await context.memory.save_information_async(collection, text=text, id=key)
+        await context.memory.save_information(collection, text=text, id=key)

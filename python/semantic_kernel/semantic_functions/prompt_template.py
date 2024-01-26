@@ -77,5 +77,5 @@ class PromptTemplate(PromptTemplateBase):
 
         return result
 
-    async def render_async(self, context: "KernelContext") -> str:
-        return await self.template_engine.render_async(self.template, context)
+    async def render(self, context: "KernelContext") -> str:
+        return await self.template_engine.render(self.template, context)

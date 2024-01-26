@@ -12,7 +12,7 @@ class TextCompletionClientBase(ABC):
     """Base class for text completion AI services."""
 
     @abstractmethod
-    async def complete_async(
+    async def complete(
         self,
         prompt: str,
         settings: "AIRequestSettings",
@@ -31,7 +31,7 @@ class TextCompletionClientBase(ABC):
         """
 
     @abstractmethod
-    async def complete_stream_async(
+    async def complete_stream(
         self,
         prompt: str,
         settings: "AIRequestSettings",

@@ -103,10 +103,10 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         """Return an KernelFunction."""
 
         @kernel_function(name="function")
-        def my_function_async(cx: KernelContext) -> str:
+        def my_function(cx: KernelContext) -> str:
             return f"F({cx.variables.input})"
 
-        return KernelFunction.from_native_method(my_function_async)
+        return KernelFunction.from_native_method(my_function)
 
     def create_context_variables() -> ContextVariables:
         """Return a context variables object."""

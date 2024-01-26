@@ -26,7 +26,7 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
     # Create the semantic function
     tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
 
-    summary = await retry(lambda: kernel.run_async(tldr_function, input_str=text_to_summarize))
+    summary = await retry(lambda: kernel.run(tldr_function, input_str=text_to_summarize))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
@@ -61,7 +61,7 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
     # Create the semantic function
     tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
 
-    summary = await retry(lambda: kernel.run_async(tldr_function, input_str=text_to_summarize))
+    summary = await retry(lambda: kernel.run(tldr_function, input_str=text_to_summarize))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
@@ -97,7 +97,7 @@ async def test_oai_text_stream_completion_with_plugins(setup_tldr_function_for_o
     tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
 
     result = []
-    async for message in kernel.run_stream_async(tldr_function, input_str=text_to_summarize):
+    async for message in kernel.run_stream(tldr_function, input_str=text_to_summarize):
         result.append(message)
     output = "".join(result).strip()
 

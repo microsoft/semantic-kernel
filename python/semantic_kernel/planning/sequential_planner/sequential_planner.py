@@ -77,13 +77,11 @@ class SequentialPlanner:
             function_config=function_config,
         )
 
-    async def create_plan_async(self, goal: str) -> Plan:
+    async def create_plan(self, goal: str) -> Plan:
         if len(goal) == 0:
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
-        relevant_function_manual = await KernelContextExtension.get_functions_manual_async(
-            self._context, goal, self.config
-        )
+        relevant_function_manual = await KernelContextExtension.get_functions_manual(self._context, goal, self.config)
         self._context.variables.set("available_functions", relevant_function_manual)
 
         self._context.variables.update(goal)

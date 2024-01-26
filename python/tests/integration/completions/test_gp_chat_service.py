@@ -36,7 +36,7 @@ async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models, 
 
     for _ in range(max_retries):
         try:
-            summary = await kernel.run_async(tldr_function, input_str=text_to_summarize)
+            summary = await kernel.run(tldr_function, input_str=text_to_summarize)
             output = str(summary).strip()
             print(f"TLDR using input string: '{output}'")
             assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)

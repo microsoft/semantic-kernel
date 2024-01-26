@@ -127,8 +127,8 @@ class KernelFunction(KernelFunctionBase):
 
             try:
                 if not function_config.has_chat_prompt:
-                    prompt = await function_config.prompt_template.render_async(context)
-                    completion = await client.complete_async(prompt, request_settings)
+                    prompt = await function_config.prompt_template.render(context)
+                    completion = await client.complete(prompt, request_settings)
                     context.variables.update(completion)
                     return context
             except Exception as e:
@@ -139,9 +139,9 @@ class KernelFunction(KernelFunctionBase):
             as_chat_prompt = function_config.prompt_template
             # Similar to non-chat, render prompt (which renders to a
             # dict of <role, content, name> messages)
-            messages = await as_chat_prompt.render_messages_async(context)
+            messages = await as_chat_prompt.render_messages(context)
             try:
-                result = await client.complete_chat_async(messages, request_settings)
+                result = await client.complete_chat(messages, request_settings)
                 if isinstance(result, list):
                     # TODO: handle multiple completions
                     result = result[0]
@@ -176,8 +176,8 @@ class KernelFunction(KernelFunctionBase):
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
                     completion = ""
-                    messages = await chat_prompt.render_messages_async(context)
-                    async for partial_content in client.complete_chat_stream_async(
+                    messages = await chat_prompt.render_messages(context)
+                    async for partial_content in client.complete_chat_stream(
                         messages=messages, settings=request_settings
                     ):
                         if isinstance(partial_content, str):
@@ -196,10 +196,10 @@ class KernelFunction(KernelFunctionBase):
                     chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
                 else:
-                    prompt = await function_config.prompt_template.render_async(context)
+                    prompt = await function_config.prompt_template.render(context)
 
                     completion = ""
-                    async for partial_content in client.complete_stream_async(prompt, request_settings):
+                    async for partial_content in client.complete_stream(prompt, request_settings):
                         completion += partial_content
                         yield partial_content
                     context.variables.update(completion)
@@ -375,16 +375,16 @@ class KernelFunction(KernelFunctionBase):
 
             def run_coroutine():
                 if self.is_semantic:
-                    return self._invoke_semantic_async(context, settings)
+                    return self._invoke_semantic(context, settings)
                 else:
-                    return self._invoke_native_async(context)
+                    return self._invoke_native(context)
 
             return self.run_async_in_executor(run_coroutine)
         else:
             if self.is_semantic:
-                return asyncio.run(self._invoke_semantic_async(context, settings))
+                return asyncio.run(self._invoke_semantic(context, settings))
             else:
-                return asyncio.run(self._invoke_native_async(context))
+                return asyncio.run(self._invoke_native(context))
 
     async def invoke_async(
         self,
@@ -415,21 +415,21 @@ class KernelFunction(KernelFunctionBase):
 
         try:
             if self.is_semantic:
-                return await self._invoke_semantic_async(context, settings, **kwargs)
+                return await self._invoke_semantic(context, settings, **kwargs)
             else:
-                return await self._invoke_native_async(context, **kwargs)
+                return await self._invoke_native(context, **kwargs)
         except Exception as e:
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(self, context: "KernelContext", settings: AIRequestSettings, **kwargs):
+    async def _invoke_semantic(self, context: "KernelContext", settings: AIRequestSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
         new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
-    async def _invoke_native_async(self, context):
+    async def _invoke_native(self, context):
         self._verify_is_native()
 
         self._ensure_context_has_plugins(context)
@@ -462,7 +462,7 @@ class KernelFunction(KernelFunctionBase):
             "Invalid operation, the method requires a native function",
         )
 
-    async def invoke_stream_async(
+    async def invoke_stream(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
@@ -490,10 +490,10 @@ class KernelFunction(KernelFunctionBase):
 
         try:
             if self.is_semantic:
-                async for stream_msg in self._invoke_semantic_stream_async(context, settings):
+                async for stream_msg in self._invoke_semantic_stream(context, settings):
                     yield stream_msg
             else:
-                async for stream_msg in self._invoke_native_stream_async(context):
+                async for stream_msg in self._invoke_native_stream(context):
                     yield stream_msg
         except Exception as e:
             context.fail(str(e), e)
@@ -502,13 +502,13 @@ class KernelFunction(KernelFunctionBase):
                 "Error occurred while invoking stream function",
             )
 
-    async def _invoke_semantic_stream_async(self, context, settings):
+    async def _invoke_semantic_stream(self, context, settings):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
         async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
             yield stream_msg
 
-    async def _invoke_native_stream_async(self, context):
+    async def _invoke_native_stream(self, context):
         self._verify_is_native()
 
         self._ensure_context_has_plugins(context)

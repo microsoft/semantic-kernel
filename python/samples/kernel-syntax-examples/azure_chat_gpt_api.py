@@ -77,13 +77,13 @@ async def chat() -> bool:
 
     stream = True
     if stream:
-        answer = kernel.run_stream_async(chat_function, input_vars=context_vars)
+        answer = kernel.run_stream(chat_function, input_vars=context_vars)
         print("Mosscap:> ", end="")
         async for message in answer:
             print(message, end="")
         print("\n")
         return True
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    answer = await kernel.run(chat_function, input_vars=context_vars)
     print(f"Mosscap:> {answer}")
     return True
 

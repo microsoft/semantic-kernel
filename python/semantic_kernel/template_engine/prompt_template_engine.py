@@ -50,7 +50,7 @@ class PromptTemplateEngine(KernelBaseModel):
 
         return blocks
 
-    async def render_async(self, template_text: str, context: "KernelContext") -> str:
+    async def render(self, template_text: str, context: "KernelContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -62,9 +62,9 @@ class PromptTemplateEngine(KernelBaseModel):
         """
         logger.debug(f"Rendering string template: {template_text}")
         blocks = self.extract_blocks(template_text)
-        return await self.render_blocks_async(blocks, context)
+        return await self.render_blocks(blocks, context)
 
-    async def render_blocks_async(self, blocks: List[Block], context: "KernelContext") -> str:
+    async def render_blocks(self, blocks: List[Block], context: "KernelContext") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -80,7 +80,7 @@ class PromptTemplateEngine(KernelBaseModel):
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(context.variables))
             elif isinstance(block, CodeRenderer):
-                rendered_blocks.append(await block.render_code_async(context))
+                rendered_blocks.append(await block.render_code(context))
             else:
                 error = "unexpected block type, the block doesn't have a rendering " "protocol assigned to it"
                 logger.error(error)
@@ -114,7 +114,7 @@ class PromptTemplateEngine(KernelBaseModel):
 
         return rendered_blocks
 
-    async def render_code_async(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
+    async def render_code(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.
@@ -136,6 +136,6 @@ class PromptTemplateEngine(KernelBaseModel):
                 continue
             if not isinstance(block, CodeRenderer):
                 raise ValueError("CodeBlock must implement CodeRenderer protocol")
-            rendered_blocks.append(TextBlock.from_text(await block.render_code_async(execution_context)))
+            rendered_blocks.append(TextBlock.from_text(await block.render_code(execution_context)))
 
         return rendered_blocks

@@ -28,7 +28,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_async(self, template_text: str, context: "KernelContext") -> str:
+    async def render(self, template_text: str, context: "KernelContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -40,7 +40,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_blocks_async(self, blocks: List[Block], context: "KernelContext") -> str:
+    async def render_blocks(self, blocks: List[Block], context: "KernelContext") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -62,7 +62,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_code_async(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
+    async def render_code(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.

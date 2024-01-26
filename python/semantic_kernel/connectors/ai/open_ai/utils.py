@@ -95,7 +95,7 @@ def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) ->
 async def execute_function_call(kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None) -> str:
     if log:
         logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-    result = await kernel.run_async(
+    result = await kernel.run(
         kernel.func(**function_call.split_name_dict()),
         input_vars=function_call.to_context_variables(),
     )

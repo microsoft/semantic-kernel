@@ -45,7 +45,7 @@ def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
 
 
 @pytest.mark.asyncio
-async def test_google_palm_text_completion_complete_chat_async_call_with_parameters() -> None:
+async def test_google_palm_text_completion_complete_chat_call_with_parameters() -> None:
     mock_response = MagicMock()
     mock_response.last = asyncio.Future()
     mock_response.last.set_result("Example response")
@@ -63,7 +63,7 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
             api_key=api_key,
         )
         settings = GooglePalmChatRequestSettings()
-        response = await gp_chat_completion.complete_chat_async(prompt, settings)
+        response = await gp_chat_completion.complete_chat(prompt, settings)
         assert isinstance(response.result(), str) and len(response.result()) > 0
         print(mock_gp.chat)
         mock_gp.chat.assert_called_once_with(

@@ -9,5 +9,5 @@ if TYPE_CHECKING:
 
 class EmbeddingGeneratorBase(ABC):
     @abstractmethod
-    async def generate_embeddings_async(self, texts: List[str]) -> "ndarray":
+    async def generate_embeddings(self, texts: List[str]) -> "ndarray":
         pass

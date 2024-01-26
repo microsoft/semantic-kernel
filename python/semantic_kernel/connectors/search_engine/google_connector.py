@@ -31,7 +31,7 @@ class GoogleConnector(ConnectorBase):
         if not self._search_engine_id:
             raise ValueError("Google search engine ID cannot be null.")
 
-    async def search_async(self, query: str, num_results: str, offset: str) -> List[str]:
+    async def search(self, query: str, num_results: str, offset: str) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Google Custom search API.
         Returns `num_results` results and ignores the first `offset`.

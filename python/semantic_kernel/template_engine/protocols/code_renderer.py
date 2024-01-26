@@ -11,7 +11,7 @@ class CodeRenderer(Protocol):
     Protocol for dynamic code blocks that need async IO to be rendered.
     """
 
-    async def render_code_async(self, context: KernelContext) -> str:
+    async def render_code(self, context: KernelContext) -> str:
         """
         Render the block using the given context.
 

@@ -69,10 +69,8 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             for message in self.prompt_config.execution_settings.messages:
                 self.add_message(**message)
 
-    async def render_async(self, context: "KernelContext") -> str:
-        raise NotImplementedError(
-            "Can't call render_async on a ChatPromptTemplate.\n" "Use render_messages_async instead."
-        )
+    async def render(self, context: "KernelContext") -> str:
+        raise NotImplementedError("Can't call render on a ChatPromptTemplate.\n" "Use render_messages instead.")
 
     def add_system_message(self, message: str) -> None:
         """Add a system message to the chat template."""
@@ -109,14 +107,14 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             )
         )
 
-    async def render_messages_async(self, context: "KernelContext") -> List[Dict[str, str]]:
+    async def render_messages(self, context: "KernelContext") -> List[Dict[str, str]]:
         """Render the content of the message in the chat template, based on the context."""
         if len(self.messages) == 0 or self.messages[-1].role in [
             "assistant",
             "system",
         ]:
             self.add_user_message(message=self.template)
-        await asyncio.gather(*[message.render_message_async(context) for message in self.messages])
+        await asyncio.gather(*[message.render_message(context) for message in self.messages])
         return [message.as_dict() for message in self.messages]
 
     def dump_messages(self) -> List[Dict[str, str]]:

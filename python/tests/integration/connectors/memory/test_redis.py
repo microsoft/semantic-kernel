@@ -88,7 +88,7 @@ def memory_store(connection_string):
     yield redis_mem_store
 
     # Delete test collection after test
-    asyncio.run(redis_mem_store.delete_collection_async(TEST_COLLECTION_NAME))
+    asyncio.run(redis_mem_store.delete_collection(TEST_COLLECTION_NAME))
 
 
 def test_constructor(memory_store):
@@ -97,64 +97,64 @@ def test_constructor(memory_store):
 
 
 @pytest.mark.asyncio
-async def test_create_and_does_collection_exist_async(memory_store):
+async def test_create_and_does_collection_exist(memory_store):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
-    exists = await memory.does_collection_exist_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
+    exists = await memory.does_collection_exist(TEST_COLLECTION_NAME)
     assert exists
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_async(memory_store):
+async def test_delete_collection(memory_store):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
-    await memory.delete_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
+    await memory.delete_collection(TEST_COLLECTION_NAME)
 
-    exists = await memory.does_collection_exist_async(TEST_COLLECTION_NAME)
+    exists = await memory.does_collection_exist(TEST_COLLECTION_NAME)
     assert not exists
 
     # Delete a non-existent collection with no error
-    await memory.delete_collection_async(TEST_COLLECTION_NAME)
+    await memory.delete_collection(TEST_COLLECTION_NAME)
 
 
 @pytest.mark.asyncio
-async def test_get_collections_async(memory_store):
+async def test_get_collections(memory_store):
     memory = memory_store
 
     collection_names = ["c1", "c2", "c3"]
     for c_n in collection_names:
-        await memory.create_collection_async(c_n)
+        await memory.create_collection(c_n)
 
-    names_from_func = await memory.get_collections_async()
+    names_from_func = await memory.get_collections()
     for c_n in collection_names:
         assert c_n in names_from_func
-        await memory.delete_collection_async(c_n)
+        await memory.delete_collection(c_n)
 
 
 @pytest.mark.asyncio
-async def test_does_collection_exist_async(memory_store):
+async def test_does_collection_exist(memory_store):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
-    exists = await memory.does_collection_exist_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
+    exists = await memory.does_collection_exist(TEST_COLLECTION_NAME)
     assert exists
 
-    await memory.delete_collection_async(TEST_COLLECTION_NAME)
-    exists = await memory.does_collection_exist_async(TEST_COLLECTION_NAME)
+    await memory.delete_collection(TEST_COLLECTION_NAME)
+    exists = await memory.does_collection_exist(TEST_COLLECTION_NAME)
     assert not exists
 
 
 @pytest.mark.asyncio
-async def test_upsert_async_and_get_async(memory_store, memory_record1):
+async def test_upsert_and_get(memory_store, memory_record1):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
 
     # Insert a record
-    await memory.upsert_async(TEST_COLLECTION_NAME, memory_record1)
-    fetch_1 = await memory.get_async(TEST_COLLECTION_NAME, memory_record1._id, True)
+    await memory.upsert(TEST_COLLECTION_NAME, memory_record1)
+    fetch_1 = await memory.get(TEST_COLLECTION_NAME, memory_record1._id, True)
 
     assert fetch_1 is not None, "Could not get record"
     assert fetch_1._id == memory_record1._id
@@ -170,23 +170,23 @@ async def test_upsert_async_and_get_async(memory_store, memory_record1):
     # Update a record
     memory_record1._text = "updated sample text1"
 
-    await memory.upsert_async(TEST_COLLECTION_NAME, memory_record1)
-    fetch_1 = await memory.get_async(TEST_COLLECTION_NAME, memory_record1._id, True)
+    await memory.upsert(TEST_COLLECTION_NAME, memory_record1)
+    fetch_1 = await memory.get(TEST_COLLECTION_NAME, memory_record1._id, True)
 
     assert fetch_1 is not None, "Could not get record"
     assert fetch_1._text == memory_record1._text, "Did not update record"
 
 
 @pytest.mark.asyncio
-async def test_upsert_batch_async_and_get_batch_async(memory_store, memory_record1, memory_record2):
+async def test_upsert_batch_and_get_batch(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
 
     ids = [memory_record1._id, memory_record2._id]
-    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
+    await memory.upsert_batch(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
 
-    fetched = await memory.get_batch_async(TEST_COLLECTION_NAME, ids, True)
+    fetched = await memory.get_batch(TEST_COLLECTION_NAME, ids, True)
 
     assert len(fetched) > 0, "Could not get records"
     for f in fetched:
@@ -194,43 +194,43 @@ async def test_upsert_batch_async_and_get_batch_async(memory_store, memory_recor
 
 
 @pytest.mark.asyncio
-async def test_remove_async(memory_store, memory_record1):
+async def test_remove(memory_store, memory_record1):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
 
-    await memory.upsert_async(TEST_COLLECTION_NAME, memory_record1)
-    await memory.remove_async(TEST_COLLECTION_NAME, memory_record1._id)
-    get_record = await memory.get_async(TEST_COLLECTION_NAME, memory_record1._id, False)
+    await memory.upsert(TEST_COLLECTION_NAME, memory_record1)
+    await memory.remove(TEST_COLLECTION_NAME, memory_record1._id)
+    get_record = await memory.get(TEST_COLLECTION_NAME, memory_record1._id, False)
 
     assert not get_record, "Record was not removed"
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(memory_store, memory_record1, memory_record2):
+async def test_remove_batch(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
 
     ids = [memory_record1._id, memory_record2._id]
-    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
-    await memory.remove_batch_async(TEST_COLLECTION_NAME, ids)
-    get_records = await memory.get_batch_async(TEST_COLLECTION_NAME, ids, False)
+    await memory.upsert_batch(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
+    await memory.remove_batch(TEST_COLLECTION_NAME, ids)
+    get_records = await memory.get_batch(TEST_COLLECTION_NAME, ids, False)
 
     assert len(get_records) == 0, "Records were not removed"
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_match_async(memory_store, memory_record1, memory_record2):
+async def test_get_nearest_match(memory_store, memory_record1, memory_record2):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
 
-    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
+    await memory.upsert_batch(TEST_COLLECTION_NAME, [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.01
 
-    result = await memory.get_nearest_match_async(
+    result = await memory.get_nearest_match(
         TEST_COLLECTION_NAME,
         test_embedding,
         min_relevance_score=0.0,
@@ -250,16 +250,16 @@ async def test_get_nearest_match_async(memory_store, memory_record1, memory_reco
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(memory_store, memory_record1, memory_record2, memory_record3):
+async def test_get_nearest_matches(memory_store, memory_record1, memory_record2, memory_record3):
     memory = memory_store
 
-    await memory.create_collection_async(TEST_COLLECTION_NAME)
+    await memory.create_collection(TEST_COLLECTION_NAME)
 
-    await memory.upsert_batch_async(TEST_COLLECTION_NAME, [memory_record1, memory_record2, memory_record3])
+    await memory.upsert_batch(TEST_COLLECTION_NAME, [memory_record1, memory_record2, memory_record3])
     test_embedding = memory_record2.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.025
 
-    result = await memory.get_nearest_matches_async(
+    result = await memory.get_nearest_matches(
         TEST_COLLECTION_NAME,
         test_embedding,
         limit=2,

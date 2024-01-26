@@ -33,7 +33,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
     conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
     summary = await retry(
-        lambda: kernel.run_async(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
+        lambda: kernel.run(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
     )
 
     output = str(summary).strip().lower()
@@ -63,7 +63,7 @@ async def test_oai_summarize_conversation_using_plugin(
     conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
     summary = await retry(
-        lambda: kernel.run_async(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
+        lambda: kernel.run(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
     )
 
     output = str(summary).strip().lower()

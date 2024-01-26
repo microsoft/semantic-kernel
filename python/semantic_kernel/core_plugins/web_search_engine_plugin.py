@@ -38,7 +38,7 @@ class WebSearchEnginePlugin:
         description="The number of search results to skip",
         default_value="0",
     )
-    async def search_async(self, query: str, context: "KernelContext") -> str:
+    async def search(self, query: str, context: "KernelContext") -> str:
         """
         Returns the search results of the query provided.
         Returns `num_results` results and ignores the first `offset`.
@@ -50,5 +50,5 @@ class WebSearchEnginePlugin:
 
         _num_results = context.variables.get("num_results")
         _offset = context.variables.get("offset")
-        result = await self._connector.search_async(query, _num_results, _offset)
+        result = await self._connector.search(query, _num_results, _offset)
         return str(result)

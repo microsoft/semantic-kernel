@@ -14,7 +14,7 @@ from tests.unit.ai.ollama.utils import MockResponse
 async def test_embedding(mock_post):
     mock_post.return_value = MockResponse(response=[0.1, 0.2, 0.3])
     ollama = OllamaTextEmbedding(ai_model_id="test_model")
-    response = await ollama.generate_embeddings_async(
+    response = await ollama.generate_embeddings(
         ["test_prompt"],
     )
     assert response.all() == array([0.1, 0.2, 0.3]).all()

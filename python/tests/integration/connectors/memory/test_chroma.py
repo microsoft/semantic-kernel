@@ -23,9 +23,9 @@ def setup_chroma():
     persist_directory = "chroma/TEMP/"
     memory = ChromaMemoryStore(persist_directory=persist_directory)
     yield memory
-    collections = asyncio.run(memory.get_collections_async())
+    collections = asyncio.run(memory.get_collections())
     for collection in collections:
-        asyncio.run(memory.delete_collection_async(collection))
+        asyncio.run(memory.delete_collection(collection))
 
 
 @pytest.fixture
@@ -62,61 +62,61 @@ def test_constructor(setup_chroma):
 
 
 @pytest.mark.asyncio
-async def test_create_and_get_collection_async(setup_chroma):
+async def test_create_and_get_collection(setup_chroma):
     memory = setup_chroma
 
-    await memory.create_collection_async("test_collection")
-    result = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    result = await memory.get_collection("test_collection")
     assert result.name == "test_collection"
 
 
 @pytest.mark.asyncio
-async def test_get_collections_async(setup_chroma):
+async def test_get_collections(setup_chroma):
     memory = setup_chroma
 
-    await memory.create_collection_async("test_collection1")
-    await memory.create_collection_async("test_collection2")
-    await memory.create_collection_async("test_collection3")
-    result = await memory.get_collections_async()
+    await memory.create_collection("test_collection1")
+    await memory.create_collection("test_collection2")
+    await memory.create_collection("test_collection3")
+    result = await memory.get_collections()
 
     assert len(result) == 3
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_async(setup_chroma):
+async def test_delete_collection(setup_chroma):
     memory = setup_chroma
 
-    await memory.create_collection_async("test_collection")
-    await memory.delete_collection_async("test_collection")
-    result = await memory.get_collections_async()
+    await memory.create_collection("test_collection")
+    await memory.delete_collection("test_collection")
+    result = await memory.get_collections()
     assert len(result) == 0
 
-    await memory.create_collection_async("test_collection")
-    await memory.delete_collection_async("TEST_COLLECTION")
-    result = await memory.get_collections_async()
+    await memory.create_collection("test_collection")
+    await memory.delete_collection("TEST_COLLECTION")
+    result = await memory.get_collections()
     assert len(result) == 0
 
 
 @pytest.mark.asyncio
-async def test_does_collection_exist_async(setup_chroma):
+async def test_does_collection_exist(setup_chroma):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    result = await memory.does_collection_exist_async("test_collection")
+    await memory.create_collection("test_collection")
+    result = await memory.does_collection_exist("test_collection")
     assert result is True
 
-    result = await memory.does_collection_exist_async("TEST_COLLECTION")
+    result = await memory.does_collection_exist("TEST_COLLECTION")
     assert result is True
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_async(setup_chroma, memory_record1):
+async def test_upsert_and_get(setup_chroma, memory_record1):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_async(collection.name, memory_record1)
+    await memory.upsert(collection.name, memory_record1)
 
-    result = await memory.get_async(collection.name, "test_id1", True)
+    result = await memory.get(collection.name, "test_id1", True)
     assert result._id == "test_id1"
     assert result._text == "sample text1"
     assert result._is_reference is False
@@ -128,14 +128,14 @@ async def test_upsert_and_get_async(setup_chroma, memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_async_with_no_embedding(setup_chroma, memory_record1):
+async def test_upsert_and_get_with_no_embedding(setup_chroma, memory_record1):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_async(collection.name, memory_record1)
+    await memory.upsert(collection.name, memory_record1)
 
-    result = await memory.get_async(collection.name, "test_id1", False)
+    result = await memory.get(collection.name, "test_id1", False)
     assert result._id == "test_id1"
     assert result._text == "sample text1"
     assert result._is_reference is False
@@ -147,14 +147,14 @@ async def test_upsert_and_get_async_with_no_embedding(setup_chroma, memory_recor
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_batch_async(setup_chroma, memory_record1, memory_record2):
+async def test_upsert_and_get_batch(setup_chroma, memory_record1, memory_record2):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
+    await memory.upsert_batch(collection.name, [memory_record1, memory_record2])
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch("test_collection", ["test_id1", "test_id2"], True)
     assert len(result) == 2
     assert result[0]._id == "test_id1"
     assert result[0]._text == "sample text1"
@@ -167,41 +167,41 @@ async def test_upsert_and_get_batch_async(setup_chroma, memory_record1, memory_r
 
 
 @pytest.mark.asyncio
-async def test_remove_async(setup_chroma, memory_record1):
+async def test_remove(setup_chroma, memory_record1):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_async(collection.name, memory_record1)
-    await memory.remove_async(collection.name, "test_id1")
+    await memory.upsert(collection.name, memory_record1)
+    await memory.remove(collection.name, "test_id1")
 
-    # memory.get_async should raise Exception if record is not found
+    # memory.get should raise Exception if record is not found
     with pytest.raises(Exception):
-        await memory.get_async(collection.name, "test_id1", True)
+        await memory.get(collection.name, "test_id1", True)
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(setup_chroma, memory_record1, memory_record2):
+async def test_remove_batch(setup_chroma, memory_record1, memory_record2):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
-    await memory.remove_batch_async(collection.name, ["test_id1", "test_id2"])
+    await memory.upsert_batch(collection.name, [memory_record1, memory_record2])
+    await memory.remove_batch(collection.name, ["test_id1", "test_id2"])
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch("test_collection", ["test_id1", "test_id2"], True)
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(setup_chroma, memory_record1, memory_record2):
+async def test_get_nearest_matches(setup_chroma, memory_record1, memory_record2):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
+    await memory.upsert_batch(collection.name, [memory_record1, memory_record2])
 
-    results = await memory.get_nearest_matches_async("test_collection", np.array([0.5, 0.5]), limit=2)
+    results = await memory.get_nearest_matches("test_collection", np.array([0.5, 0.5]), limit=2)
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
@@ -209,14 +209,14 @@ async def test_get_nearest_matches_async(setup_chroma, memory_record1, memory_re
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_match_async(setup_chroma, memory_record1, memory_record2):
+async def test_get_nearest_match(setup_chroma, memory_record1, memory_record2):
     memory = setup_chroma
-    await memory.create_collection_async("test_collection")
-    collection = await memory.get_collection_async("test_collection")
+    await memory.create_collection("test_collection")
+    collection = await memory.get_collection("test_collection")
 
-    await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
+    await memory.upsert_batch(collection.name, [memory_record1, memory_record2])
 
-    result = await memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5]))
+    result = await memory.get_nearest_match("test_collection", np.array([0.5, 0.5]))
 
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)

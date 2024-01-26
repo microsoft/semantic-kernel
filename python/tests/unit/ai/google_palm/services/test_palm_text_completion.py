@@ -45,7 +45,7 @@ def test_google_palm_text_completion_init_with_empty_api_key() -> None:
 
 
 @pytest.mark.asyncio
-async def test_google_palm_text_completion_complete_async_call_with_parameters() -> None:
+async def test_google_palm_text_completion_complete_call_with_parameters() -> None:
     mock_response = MagicMock()
     mock_response.result = asyncio.Future()
     mock_response.result.set_result("Example response")
@@ -63,7 +63,7 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
             api_key=api_key,
         )
         settings = GooglePalmTextRequestSettings()
-        response = await gp_text_completion.complete_async(prompt, settings)
+        response = await gp_text_completion.complete(prompt, settings)
         assert isinstance(response.result(), str) and len(response.result()) > 0
 
         mock_gp.generate_text.assert_called_once_with(

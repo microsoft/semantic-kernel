@@ -20,7 +20,7 @@ def test_can_be_imported():
 
 
 @pytest.mark.asyncio
-async def test_can_read_async():
+async def test_can_read():
     plugin = FileIOPlugin()
     fp = None
     try:
@@ -28,7 +28,7 @@ async def test_can_read_async():
             fp.write("Hello, world!")
             fp.flush()
 
-            content = await plugin.read_async(fp.name)
+            content = await plugin.read(fp.name)
             assert content == "Hello, world!"
     finally:
         if fp is not None:
@@ -36,7 +36,7 @@ async def test_can_read_async():
 
 
 @pytest.mark.asyncio
-async def test_cannot_read_async():
+async def test_cannot_read():
     plugin = FileIOPlugin()
     filepath = None
     with tempfile.NamedTemporaryFile(mode="w", delete=True) as fp:
@@ -44,7 +44,7 @@ async def test_cannot_read_async():
         filepath = fp.name
 
     with pytest.raises(AssertionError):
-        await plugin.read_async(filepath)
+        await plugin.read(filepath)
 
 
 @pytest.mark.asyncio
@@ -60,7 +60,7 @@ async def test_can_write(context_factory):
 
             context = context_factory(context_variables)
 
-            await plugin.write_async(context)
+            await plugin.write(context)
 
             content = fp.read()
 
@@ -86,7 +86,7 @@ async def test_cannot_write(context_factory):
             context = context_factory(context_variables)
 
             with pytest.raises(PermissionError):
-                await plugin.write_async(context)
+                await plugin.write(context)
 
             os.chmod(fp.name, 0o777)
     finally:

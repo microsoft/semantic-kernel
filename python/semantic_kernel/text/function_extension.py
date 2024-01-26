@@ -6,7 +6,7 @@ from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 
-async def aggregate_chunked_results_async(
+async def aggregate_chunked_results(
     func: KernelFunction, chunked_results: List[str], context: KernelContext
 ) -> KernelContext:
     """

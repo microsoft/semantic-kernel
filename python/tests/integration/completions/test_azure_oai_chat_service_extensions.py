@@ -37,10 +37,10 @@ async def create_memory_store():
     # Create an index and populate it with some data
     collection = f"int-tests-chat-extensions-{randint(1000, 9999)}"
     memory_store = AzureCognitiveSearchMemoryStore(vector_size=4)
-    await memory_store.create_collection_async(collection)
+    await memory_store.create_collection(collection)
     time.sleep(1)
     try:
-        assert await memory_store.does_collection_exist_async(collection)
+        assert await memory_store.does_collection_exist(collection)
         rec = MemoryRecord(
             is_reference=False,
             external_source_name=None,
@@ -53,11 +53,11 @@ async def create_memory_store():
             additional_metadata=None,
             embedding=np.array([0.2, 0.1, 0.2, 0.7]),
         )
-        await memory_store.upsert_async(collection, rec)
+        await memory_store.upsert(collection, rec)
         time.sleep(1)
         return collection, memory_store
     except:
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
         raise
 
 
@@ -121,7 +121,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
         return chat_function, kernel, collection, memory_store
     except:
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
         raise
 
 
@@ -140,7 +140,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
 
     try:
         result = []
-        async for message in kernel.run_stream_async(chat_function, input_str="who are Emily and David?"):
+        async for message in kernel.run_stream(chat_function, input_str="who are Emily and David?"):
             result.append(message)
             print(message, end="")
         output = "".join(result).strip()
@@ -148,7 +148,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
         print(f"Answer using input string: '{output}'")
         assert len(result) > 1
 
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
     except:
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
         raise

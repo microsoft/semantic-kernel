@@ -156,7 +156,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
             default_headers=settings.get("default_headers"),
         )
 
-    async def complete_chat_async(
+    async def complete_chat(
         self,
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,
@@ -183,7 +183,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, ChatCompletionClientBase, OpenAITex
         else:
             return [_parse_message(choice.message) for choice in response.choices]
 
-    async def complete_chat_stream_async(
+    async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
         settings: OpenAIRequestSettings,

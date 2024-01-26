@@ -13,7 +13,7 @@ async def test_text2text_generation_input_str(setup_hf_text_completion_function)
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
 
     # Complete input string and print
-    summary = await kernel.run_async(text2text_function, input_str=simple_input)
+    summary = await kernel.run(text2text_function, input_str=simple_input)
 
     output = str(summary).strip()
     print(f"Completion using input string: '{output}'")
@@ -27,7 +27,7 @@ async def test_text2text_generation_input_vars(setup_hf_text_completion_function
 
     # Complete input as context variable and print
     context_vars = sk.ContextVariables(simple_input)
-    summary = await kernel.run_async(text2text_function, input_vars=context_vars)
+    summary = await kernel.run(text2text_function, input_vars=context_vars)
 
     output = str(summary).strip()
     print(f"Completion using context variables: '{output}'")
@@ -42,7 +42,7 @@ async def test_text2text_generation_input_context(setup_hf_text_completion_funct
     # Complete input context and print
     context = kernel.create_new_context()
     context["input"] = simple_input
-    summary = await kernel.run_async(text2text_function, input_context=context)
+    summary = await kernel.run(text2text_function, input_context=context)
 
     output = str(summary).strip()
     print(f"Completion using input context: '{output}'")
@@ -60,7 +60,7 @@ async def test_text2text_generation_input_context_with_vars(
     context = kernel.create_new_context()
     context["input"] = simple_input
     context_vars = sk.ContextVariables("running and")
-    summary = await kernel.run_async(text2text_function, input_context=context, input_vars=context_vars)
+    summary = await kernel.run(text2text_function, input_context=context, input_vars=context_vars)
 
     output = str(summary).strip()
     print(f"Completion using context and additional variables: '{output}'")
@@ -77,7 +77,7 @@ async def test_text2text_generation_input_context_with_str(
     # Complete input context with additional input string and print
     context = kernel.create_new_context()
     context["input"] = simple_input
-    summary = await kernel.run_async(text2text_function, input_context=context, input_str="running and")
+    summary = await kernel.run(text2text_function, input_context=context, input_str="running and")
 
     output = str(summary).strip()
     print(f"Completion using context and additional string: '{output}'")
@@ -95,7 +95,7 @@ async def test_text2text_generation_input_context_with_vars_and_str(
     context = kernel.create_new_context()
     context["input"] = simple_input
     context_vars = sk.ContextVariables(variables={"input2": "running and"})
-    summary = await kernel.run_async(
+    summary = await kernel.run(
         text2text_function,
         input_context=context,
         input_vars=context_vars,
@@ -135,7 +135,7 @@ async def test_text_generation_with_kwargs():
     context = kernel.create_new_context()
     context["input"] = simple_input
     context_vars = sk.ContextVariables(variables={"input2": "running and"})
-    summary = await kernel.run_async(
+    summary = await kernel.run(
         text2text_function,
         input_context=context,
         input_vars=context_vars,

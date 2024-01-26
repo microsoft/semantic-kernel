@@ -34,7 +34,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         """
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: List[str]) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

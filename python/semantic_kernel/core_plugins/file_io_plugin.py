@@ -30,7 +30,7 @@ class FileIOPlugin(KernelBaseModel):
         name="readAsync",
         input_description="Path of the source file",
     )
-    async def read_async(self, path: str) -> str:
+    async def read(self, path: str) -> str:
         """
         Read a file
 
@@ -55,7 +55,7 @@ class FileIOPlugin(KernelBaseModel):
     )
     @kernel_function_context_parameter(name="path", description="Destination path")
     @kernel_function_context_parameter(name="content", description="File content")
-    async def write_async(self, context: "KernelContext") -> None:
+    async def write(self, context: "KernelContext") -> None:
         """
         Write a file
 

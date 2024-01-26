@@ -22,7 +22,7 @@ class ChatMessage(KernelBaseModel):
         """Return the content of the message."""
         return self.fixed_content
 
-    async def render_message_async(self, context: "KernelContext") -> None:
+    async def render_message(self, context: "KernelContext") -> None:
         """Render the message.
         The first time this is called for a given message,
         it will render the message with the context at that time.
@@ -30,10 +30,10 @@ class ChatMessage(KernelBaseModel):
         """
         if self.fixed_content is None:
             if self.content_template is not None:
-                self.fixed_content = await self.content_template.render_async(context)
+                self.fixed_content = await self.content_template.render(context)
 
     def as_dict(self) -> Dict[str, str]:
         """Return the message as a dict.
-        Make sure to call render_message_async first to embed the context in the content.
+        Make sure to call render_message first to embed the context in the content.
         """
         return self.model_dump(exclude_none=True, by_alias=True, exclude={"content_template"})

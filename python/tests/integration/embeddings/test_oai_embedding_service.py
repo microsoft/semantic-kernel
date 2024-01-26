@@ -19,8 +19,8 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await kernel.memory.save_information_async("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference_async(
+    await kernel.memory.save_information("test", id="info1", text="this is a test")
+    await kernel.memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
@@ -48,8 +48,8 @@ async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await kernel.memory.save_information_async("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference_async(
+    await kernel.memory.save_information("test", id="info1", text="this is a test")
+    await kernel.memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
