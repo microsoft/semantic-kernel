@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 
 namespace Plugins;
 
-public class MathPlugin
+public sealed class MathPlugin
 {
     [KernelFunction, Description("Take the square root of a number")]
     public static double Sqrt(

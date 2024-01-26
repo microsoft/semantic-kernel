@@ -8,9 +8,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Plugins.AzureFunctions.Generator;
 
+/// <summary>
+/// Generates kernel functions
+/// </summary>
 [Generator]
 public class KernelFunctionGenerator : ISourceGenerator
 {
+    /// <summary>
+    /// Generates kernel functions
+    /// </summary>
     public void Execute(GeneratorExecutionContext context)
     {
         var functionDetailsByPlugin = new Dictionary<string, List<FunctionDetails>>();
@@ -32,7 +38,7 @@ public class KernelFunctionGenerator : ISourceGenerator
                     var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
                     if (symbol?.ContainingType.ToString() == "Microsoft.SemanticKernel.KernelExtensions")
                     {
-                        INamedTypeSymbol pluginTypeArgument = null;
+                        INamedTypeSymbol? pluginTypeArgument = null;
                         if (symbol.Name == "AddFromType")
                         {
                             pluginTypeArgument = symbol.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
@@ -50,7 +56,7 @@ public class KernelFunctionGenerator : ISourceGenerator
                         if (pluginTypeArgument != null && configureServicesCall.Expression is MemberAccessExpressionSyntax maes)
                         {
                             var pluginName = pluginTypeArgument.Name;
-                            var functionDetails = ExtractFunctionDetails(context, pluginTypeArgument);
+                            var functionDetails = this.ExtractFunctionDetails(context, pluginTypeArgument);
                             functionDetailsByPlugin[pluginName] = functionDetails;
                         }
                     }
@@ -72,12 +78,12 @@ public class KernelFunctionGenerator : ISourceGenerator
 
         foreach (var member in pluginClass.GetMembers())
         {
-            if (member is IMethodSymbol methodSymbol && methodSymbol.GetAttributes().Any(attr => attr.AttributeClass.Name == "KernelFunctionAttribute"))
+            if (member is IMethodSymbol methodSymbol && methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "KernelFunctionAttribute"))
             {
                 var functionDetails = new FunctionDetails
                 {
                     Name = methodSymbol.Name,
-                    Description = methodSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == "DescriptionAttribute")?.ConstructorArguments.FirstOrDefault().Value.ToString(),
+                    Description = methodSymbol.GetAttributes().FirstOrDefault(a => a?.AttributeClass?.Name == "DescriptionAttribute")?.ConstructorArguments.FirstOrDefault().Value.ToString(),
                     Parameters = new List<ParameterDetails>()
                 };
 
@@ -87,7 +93,7 @@ public class KernelFunctionGenerator : ISourceGenerator
                     {
                         Name = parameter.Name,
                         Type = parameter.Type.ToString(),
-                        Description = parameter.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == "DescriptionAttribute")?.ConstructorArguments.FirstOrDefault().Value.ToString()
+                        Description = parameter.GetAttributes().FirstOrDefault(a => a?.AttributeClass?.Name == "DescriptionAttribute")?.ConstructorArguments.FirstOrDefault().Value.ToString()
                     };
 
                     functionDetails.Parameters.Add(parameterDetails);
@@ -103,7 +109,7 @@ public class KernelFunctionGenerator : ISourceGenerator
     // Generate the source code for a folder of prompts
     private static string GenerateClassSource(string rootNamespace, string pluginName, List<FunctionDetails> functions)
     {
-        StringBuilder functionsCode = new StringBuilder();
+        StringBuilder functionsCode = new();
 
         foreach (var function in functions)
         {
@@ -159,10 +165,9 @@ public class KernelFunctionGenerator : ISourceGenerator
         }}";
     }
 
-
     private static string GenerateModelClassSource(string modelClassName, List<ParameterDetails> parameters)
     {
-        StringBuilder modelClassBuilder = new StringBuilder();
+        StringBuilder modelClassBuilder = new();
 
         modelClassBuilder.AppendLine($"public class {modelClassName}");
         modelClassBuilder.AppendLine("{");
@@ -177,23 +182,31 @@ public class KernelFunctionGenerator : ISourceGenerator
         return modelClassBuilder.ToString();
     }
 
-
+    /// <summary>
+    /// Does nothing
+    /// </summary>
     public void Initialize(GeneratorInitializationContext context)
     {
         // No initialization required
     }
 }
 
+/// <summary>
+/// Function details
+/// </summary>
 public class FunctionDetails
 {
     public string Name { get; set; }
     public string Description { get; set; }
-    public List<ParameterDetails> Parameters { get; set; }
+    public List<ParameterDetails> Parameters { get; set; } = new List<ParameterDetails>();
 }
 
+/// <summary>
+/// Parameter details
+/// </summary>
 public class ParameterDetails
 {
     public string Name { get; set; }
     public string Type { get; set; }
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
 }
