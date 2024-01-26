@@ -9,26 +9,26 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// </summary>
 internal sealed class VertexAIGeminiEndpointProvider : IEndpointProvider
 {
-    private readonly VertexAIConfiguration _configuration;
-
     /// <summary>
     /// Initializes a new instance of the GeminiEndpoints class with the specified API key.
     /// </summary>
     /// <param name="configuration">Vertex AI configuration.</param>
     public VertexAIGeminiEndpointProvider(VertexAIConfiguration configuration)
     {
-        this._configuration = configuration;
+        this.BaseEndpoint = new Uri($"https://{configuration.Location}-aiplatform.googleapis.com/v1/projects/" +
+                                    $"{configuration.ProjectId}/locations/{configuration.Location}/publishers/google/");
+        this.ModelsEndpoint = new Uri(this.BaseEndpoint, "models/");
     }
 
     /// <summary>
     /// Gets the base endpoint for the Gemini API.
     /// </summary>
-    public Uri BaseEndpoint => new($"https://{this._configuration.Location}-aiplatform.googleapis.com/v1/projects/{this._configuration.ProjectId}/locations/{this._configuration.Location}/publishers/google/");
+    public Uri BaseEndpoint { get; }
 
     /// <summary>
     /// Gets the endpoint URI for accessing the models in the Gemini API.
     /// </summary>
-    public Uri ModelsEndpoint => new(this.BaseEndpoint, "models/");
+    public Uri ModelsEndpoint { get; }
 
     /// <inheritdoc />
     public Uri GetTextGenerationEndpoint(string modelId)
