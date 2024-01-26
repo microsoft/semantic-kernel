@@ -22,8 +22,8 @@ class KernelException(Exception):
         InvalidServiceConfiguration = 5
         # Service not found.
         ServiceNotFound = 6
-        # Skill collection not set.
-        SkillCollectionNotSet = 7
+        # Plugin collection not set.
+        PluginCollectionNotSet = 7
         # Represents an error that occurs when invoking a function.
         FunctionInvokeError = 8
         # Ambiguous implementation.

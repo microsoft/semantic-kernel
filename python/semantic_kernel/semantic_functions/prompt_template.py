@@ -3,11 +3,11 @@
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.skill_definition.parameter_view import ParameterView
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
@@ -15,7 +15,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -53,6 +53,8 @@ class PromptTemplate(PromptTemplateBase):
                     name=param.name,
                     description=param.description,
                     default_value=param.default_value,
+                    type_=param.type_,
+                    required=param.required,
                 )
             )
 
@@ -75,5 +77,5 @@ class PromptTemplate(PromptTemplateBase):
 
         return result
 
-    async def render_async(self, context: "SKContext") -> str:
+    async def render_async(self, context: "KernelContext") -> str:
         return await self.template_engine.render_async(self.template, context)
