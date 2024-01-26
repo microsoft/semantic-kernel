@@ -21,7 +21,7 @@ namespace Examples;
 /// </summary>
 public class Example78_LMStudio : BaseTest
 {
-    [Fact]
+    [Fact(Skip = "Manual configuration needed")]
     public async Task Phi2ExampleAsync()
     {
         // Setup Phi-2 as the model in LM Studio UI.
@@ -36,7 +36,7 @@ public class Example78_LMStudio : BaseTest
         this.WriteLine(response);
     }
 
-    [Fact]
+    [Fact(Skip = "Manual configuration needed")]
     public async Task Llama2ExampleAsync()
     {
         // Setup Llama2 as the model in LM Studio UI.
@@ -60,7 +60,7 @@ public class Example78_LMStudio : BaseTest
         this.WriteLine(response);
     }
 
-    [Fact]
+    [Fact(Skip = "Manual configuration needed")]
     public async Task Llama2StreamingExampleAsync()
     {
         // Setup Llama2 as the model in LM Studio UI.
@@ -86,7 +86,7 @@ public class Example78_LMStudio : BaseTest
         };
     }
 
-    [Fact]
+    [Fact(Skip = "Manual configuration needed")]
     public async Task Phi2StreamingExampleAsync()
     {
         var kernel = Kernel.CreateBuilder()
