@@ -2,6 +2,7 @@
 
 import re
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -19,7 +20,7 @@ class KernelPlugin(KernelBaseModel, ABC):
     """
 
     name: str
-    description: str = Field(default="")
+    description: Optional[str] = Field(default=None)
 
     @field_validator("name", mode="after")
     @classmethod

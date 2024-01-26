@@ -3,7 +3,6 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from pydantic_core._pydantic_core import ValidationError
 
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
@@ -17,7 +16,7 @@ if TYPE_CHECKING:
 
 
 def test_throws_for_missing_name():
-    with pytest.raises(ValidationError):
+    with pytest.raises(TypeError):
         DefaultKernelPlugin(description="A unit test plugin")
 
 

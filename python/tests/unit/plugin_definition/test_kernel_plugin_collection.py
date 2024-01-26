@@ -16,6 +16,16 @@ def test_add_plugin():
     assert collection.contains(plugin.name)
 
 
+def test_add_plugin_with_description():
+    expected_description = "Test Description"
+    collection = KernelPluginCollection()
+    plugin = DefaultKernelPlugin(name="TestPlugin", description=expected_description)
+    collection.add(plugin)
+    assert len(collection) == 1
+    assert collection.contains(plugin.name)
+    assert collection[plugin.name].description == expected_description
+
+
 def test_remove_plugin():
     collection = KernelPluginCollection()
     plugin = DefaultKernelPlugin(name="TestPlugin")
@@ -33,18 +43,18 @@ def test_remove_plugin_by_name():
     assert len(collection) == 0
 
 
-def test_add_range():
+def test_add_list_of_plugins():
     num_plugins = 3
     collection = KernelPluginCollection()
     plugins = [DefaultKernelPlugin(name=f"Plugin_{ascii_uppercase[i]}") for i in range(num_plugins)]
-    collection.add_range(plugins)
+    collection.add_list_of_plugins(plugins)
     assert len(collection) == num_plugins
 
 
 def test_clear_collection():
     collection = KernelPluginCollection()
     plugins = [DefaultKernelPlugin(name=f"Plugin_{ascii_uppercase[i]}") for i in range(3)]
-    collection.add_range(plugins)
+    collection.add_list_of_plugins(plugins)
     collection.clear()
     assert len(collection) == 0
 
@@ -52,7 +62,7 @@ def test_clear_collection():
 def test_iterate_collection():
     collection = KernelPluginCollection()
     plugins = [DefaultKernelPlugin(name=f"Plugin_{ascii_uppercase[i]}") for i in range(3)]
-    collection.add_range(plugins)
+    collection.add_list_of_plugins(plugins)
 
     for i, plugin in enumerate(collection.plugins.values()):
         assert plugin.name == f"Plugin_{ascii_uppercase[i]}"

@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict
+from typing import Dict, List, Optional
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
@@ -21,32 +21,29 @@ class DefaultKernelPlugin(KernelPlugin):
             and they will be automatically converted to a dictionary.
     """
 
-    functions: Dict[str, "KernelFunctionBase"] = Field(default_factory=dict)
+    functions: Optional[Dict[str, "KernelFunctionBase"]] = Field(default_factory=dict)
 
-    @model_validator(mode="before")
-    def list_to_dict(cls, values):
+    def __init__(
+        self, name: str, description: Optional[str] = None, functions: Optional[List[KernelFunctionBase]] = None
+    ):
         """
-        A model validator to construct the functions dictionary from the functions list.
+        Initialize a new instance of the DefaultKernelPlugin class
 
         Args:
-            values (Dict[str, Any]): The values to validate.
-
-        Returns:
-            The values, with the functions list converted to a dictionary.
+            name (str): The name of the plugin.
+            description (Optional[str]): The description of the plugin.
+            functions (List[KernelFunctionBase]): The functions in the plugin.
 
         Raises:
             ValueError: If the functions list contains duplicate function names.
         """
-        functions_list = values.get("functions", [])
         functions_dict = {}
-
-        for function in functions_list:
-            if function.name in functions_dict:
-                raise ValueError(f"Duplicate function name detected: {function.name}")
-            functions_dict[function.name] = function
-
-        values["functions"] = functions_dict
-        return values
+        if functions is not None:
+            for function in functions:
+                if function.name in functions_dict:
+                    raise ValueError(f"Duplicate function name detected: {function.name}")
+                functions_dict[function.name] = function
+        super().__init__(name=name, description=description, functions=functions_dict)
 
     def get_function_count(self) -> int:
         """
@@ -108,7 +105,7 @@ class DefaultKernelPlugin(KernelPlugin):
         return self.functions[name]
 
     @classmethod
-    def from_function(cls, function: "KernelFunctionBase") -> "DefaultKernelPlugin":
+    def from_function(cls, function: "KernelFunctionBase", plugin_name: Optional[str] = None) -> "DefaultKernelPlugin":
         """
         Creates a DefaultKernelPlugin from a KernelFunctionBase instance.
 
