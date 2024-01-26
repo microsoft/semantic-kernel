@@ -6,8 +6,6 @@ This project provides starter code to create a OpenAI plugin. It includes the fo
 - A generator that automatically converts prompts into prompt endpoints
 - The ability to add additional native functions as endpoints to the plugin
 
-To learn more about using this starter, see the Semantic Kernel documentation that describes how to [create a OpenAI plugin](https://learn.microsoft.com/en-us/semantic-kernel/agents/chatgpt-plugins).
-
 ## Prerequisites
 
 - [.NET 6](https://dotnet.microsoft.com/download/dotnet/8.0) is required to run this starter.
@@ -20,7 +18,7 @@ To learn more about using this starter, see the Semantic Kernel documentation th
 
 To configure the starter, you need to provide the following information:
 
-- Define the properties of the plugin in the [appsettings.json](./azure-function/appsettings.json) file.
+- Define the properties of the plugin in the appsettings.json file.
 - Enter the API key for your AI endpoint in the [local.settings.json](./azure-function/local.settings.json.example) file.
 
 ### Using appsettings.json

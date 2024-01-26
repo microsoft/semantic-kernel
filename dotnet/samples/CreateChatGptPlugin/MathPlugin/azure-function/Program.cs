@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Plugins.AzureFunctions.Extensions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
@@ -13,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
 using Models;
 using Plugins;
+using Plugins.AzureFunctions.Extensions;
 
 const string DefaultSemanticFunctionsFolder = "Prompts";
 string semanticFunctionsFolder = Environment.GetEnvironmentVariable("SEMANTIC_SKILLS_FOLDER") ?? DefaultSemanticFunctionsFolder;
