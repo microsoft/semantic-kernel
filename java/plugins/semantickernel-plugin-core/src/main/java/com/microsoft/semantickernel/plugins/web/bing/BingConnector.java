@@ -75,6 +75,7 @@ public class BingConnector {
         private String snippet;
 
         public WebPage() {
+
         }
 
         public String getName() {

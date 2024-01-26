@@ -19,6 +19,7 @@ public class Example17_ChatGPT {
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) {
+
         System.out.println("======== Open AI - ChatGPT ========");
 
         OpenAIAsyncClient client;
@@ -67,6 +68,7 @@ public class Example17_ChatGPT {
     }
 
     private static void GPTReply(ChatCompletionService chatGPT, ChatHistory chatHistory) {
+
         var reply = chatGPT.getChatMessageContentsAsync(chatHistory, null, null)
             .block();
 

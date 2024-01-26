@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.util;
 
-import java.util.Locale;
-
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import java.util.Locale;
 
 
 /**
@@ -14,7 +13,8 @@ import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
  */
 public final class LocaleParser {
 
-    private LocaleParser() {}
+    private LocaleParser() {
+    }
 
     /**
      * Parses the locale. If the input is "en-US", it will return a Locale based on the language
@@ -26,12 +26,13 @@ public final class LocaleParser {
      * @param locale the locale in String text.
      * @return
      */
+    @SuppressWarnings("StringSplitter")
     public static final Locale parseLocale(String locale) {
         Locale parsedLocale = null;
 
         if (locale == null
-                || "".equals(locale.trim())
-                || KernelFunctionParameter.NO_DEFAULT_VALUE.equals(locale)) {
+            || "".equals(locale.trim())
+            || KernelFunctionParameter.NO_DEFAULT_VALUE.equals(locale)) {
             return Locale.getDefault();
         } else if (locale.indexOf("-") > -1) {
             parsedLocale = Locale.forLanguageTag(locale);
