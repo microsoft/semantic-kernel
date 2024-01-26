@@ -275,7 +275,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                         arg = ContextVariable.of(value);
                     }
 
-                if (NO_DEFAULT_VALUE.equals(arg.getValue())) {
+                if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
                     if (!annotation.required()) {
                         return null;
                     }
