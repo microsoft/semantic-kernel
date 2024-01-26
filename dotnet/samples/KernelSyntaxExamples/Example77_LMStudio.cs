@@ -13,30 +13,23 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
+/// <summary>
+/// To proceed with this example will be necessary to follow those steps:
+/// 1. Install LMStudio Platform in your environment
+/// 2. Open LM Studio
+/// 3. Search and Download both Phi2 and Llama2 models (preferably the ones that uses 8GB RAM or more)
+/// 4. Start the Rest API Server on http://localhost:1234
+/// 5. Run the examples.
+/// </summary>
 public class Example77_LMStudio : BaseTest
 {
-    private sealed class MyHttpMessageHandler : HttpClientHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (request.RequestUri != null && request.RequestUri.Host.Equals("api.openai.com", StringComparison.OrdinalIgnoreCase))
-            {
-                request.RequestUri = new Uri($"http://localhost:1234{request.RequestUri.PathAndQuery}");
-            }
-
-            return base.SendAsync(request, cancellationToken);
-        }
-    }
-
     [Fact]
-    public async Task RunAsync()
+    public async Task Phi2ExampleAsync()
     {
         // Setup Phi-2 as the model in LM Studio UI.
 
-        using HttpClient client = new(new MyHttpMessageHandler());
-
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion("fake-model-name", "fake-api-key", httpClient: client)
+            .AddLMStudioChatCompletion()
             .Build();
 
         string prompt = "Write a short poem about cats";
@@ -50,10 +43,8 @@ public class Example77_LMStudio : BaseTest
     {
         // Setup Llama2 as the model in LM Studio UI.
 
-        using HttpClient client = new(new MyHttpMessageHandler());
-
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion("fake-model-name", "fake-api-key", httpClient: client)
+            .AddLMStudioChatCompletion()
             .Build();
 
         var prompt = @"Rewrite the text between triple backticks into a business mail. Use a professional tone, be clear and concise.
@@ -71,7 +62,73 @@ public class Example77_LMStudio : BaseTest
         this.WriteLine(response);
     }
 
+    [Fact]
+    public async Task Llama2StreamingExampleAsync()
+    {
+        // Setup Llama2 as the model in LM Studio UI.
+
+        var kernel = Kernel.CreateBuilder()
+            .AddLMStudioChatCompletion()
+            .Build();
+
+        var prompt = @"Rewrite the text between triple backticks into a business mail. Use a professional tone, be clear and concise.
+                   Sign the mail as AI Assistant.
+
+                   Text: ```{{$input}}```";
+
+        var mailFunction = kernel.CreateFunctionFromPrompt(prompt, new OpenAIPromptExecutionSettings
+        {
+            Temperature = 0.7,
+            MaxTokens = 1000,
+        });
+
+        await foreach (var word in kernel.InvokeStreamingAsync(mailFunction, new() { ["input"] = "Tell David that I'm going to finish the business plan by the end of the week." }))
+        {
+            this.WriteLine(word);
+        };
+    }
+
+    [Fact]
+    public async Task Phi2StreamingExampleAsync()
+    {
+        var kernel = Kernel.CreateBuilder()
+            .AddLMStudioChatCompletion()
+            .Build();
+
+        string prompt = "Write a short poem about cats";
+
+        await foreach (string word in kernel.InvokePromptStreamingAsync<string>(prompt))
+        {
+            this.Write(word);
+        };
+    }
+
     public Example77_LMStudio(ITestOutputHelper output) : base(output)
     {
+    }
+
+    public sealed class MyHttpMessageHandler : HttpClientHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri != null && request.RequestUri.Host.Equals("api.openai.com", StringComparison.OrdinalIgnoreCase))
+            {
+                request.RequestUri = new Uri($"http://localhost:1234{request.RequestUri.PathAndQuery}");
+            }
+
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+}
+
+public static class KernelBuilderExtensions
+{
+    public static IKernelBuilder AddLMStudioChatCompletion(this IKernelBuilder builder)
+    {
+        var client = new HttpClient(new Example77_LMStudio.MyHttpMessageHandler());
+
+        // LMStudio by default will ignore the local-api-key and local-model parameters.
+        builder.AddOpenAIChatCompletion("local-model", "local-api-key", httpClient: client);
+        return builder;
     }
 }

@@ -117,8 +117,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
 		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
-		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
 		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
+		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"
@@ -196,6 +196,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{731CC542-8BE9-42D4-967D-99206EC2B310}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama", "src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj", "{5A9107AC-D493-437F-A66E-84E12CB8BB23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -460,6 +462,12 @@ Global
 		{731CC542-8BE9-42D4-967D-99206EC2B310}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{731CC542-8BE9-42D4-967D-99206EC2B310}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{731CC542-8BE9-42D4-967D-99206EC2B310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -528,6 +536,7 @@ Global
 		{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{731CC542-8BE9-42D4-967D-99206EC2B310} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{5A9107AC-D493-437F-A66E-84E12CB8BB23} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
