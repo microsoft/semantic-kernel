@@ -11,15 +11,15 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
-import com.microsoft.semantickernel.hooks.Hooks;
+import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
-import com.microsoft.semantickernel.hooks.PromptRenderedEventArgs;
+import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -174,7 +174,7 @@ public class Example57_KernelHooks {
 
             String prompt = event.getPrompt() + "\nUSE SHORT, CLEAR, COMPLETE SENTENCES.";
 
-            return new PromptRenderedEventArgs(
+            return new PromptRenderedEvent(
                 event.getFunction(),
                 event.getArguments(),
                 prompt
@@ -221,7 +221,7 @@ public class Example57_KernelHooks {
             String result = (String) event.getResult().getResult();
             result = result.replaceAll("[aeiouAEIOU0-9]", "*");
 
-            return new FunctionInvokedEventArgs<>(
+            return new FunctionInvokedEvent<>(
                 event.getFunction(),
                 event.getArguments(),
                 new FunctionResult<>(
@@ -387,8 +387,8 @@ public class Example57_KernelHooks {
                 .build())
             .build();
 
-        Hooks hooks = new Hooks();
-        hooks.addPreChatCompletionHook(event -> {
+        KernelHooks kernelHooks = new KernelHooks();
+        kernelHooks.addPreChatCompletionHook(event -> {
             ChatCompletionsOptions options = event.getOptions();
             List<ChatRequestMessage> messages = options.getMessages();
 
@@ -406,7 +406,7 @@ public class Example57_KernelHooks {
             var result = kernel.invokeAsync(
                     writerFunction,
                     KernelArguments.builder().build(),
-                    hooks,
+                    kernelHooks,
                     String.class)
                 .block();
             System.out.println("Function Result: " + result.getResult());

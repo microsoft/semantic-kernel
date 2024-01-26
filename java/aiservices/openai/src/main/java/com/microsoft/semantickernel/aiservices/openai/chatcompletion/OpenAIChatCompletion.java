@@ -26,7 +26,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.hooks.Hooks;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
@@ -84,20 +84,20 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ChatHistory chatHistory,
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
-        Hooks hooks) {
+        KernelHooks kernelHooks) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
         List<FunctionDefinition> functions = Collections.emptyList();
 
-        if (hooks == null) {
-            hooks = new Hooks();
+        if (kernelHooks == null) {
+            kernelHooks = new KernelHooks();
         }
 
         return internalChatMessageContentsAsync(
             chatRequestMessages,
             functions,
             promptExecutionSettings,
-            hooks);
+            kernelHooks);
     }
 
     @Override
@@ -115,18 +115,18 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
         @Nullable
-        Hooks hooks) {
+        KernelHooks kernelHooks) {
         ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
 
-        if (hooks == null) {
-            hooks = new Hooks();
+        if (kernelHooks == null) {
+            kernelHooks = new KernelHooks();
         }
 
         return internalChatMessageContentsAsync(
             parsedPrompt.getChatRequestMessages(),
             parsedPrompt.getFunctions(),
             promptExecutionSettings,
-            hooks);
+            kernelHooks);
     }
 
     @Override
@@ -140,12 +140,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
         PromptExecutionSettings promptExecutionSettings,
-        Hooks hooks) {
+        KernelHooks kernelHooks) {
 
         ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
             promptExecutionSettings);
         Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(hooks, options);
+            internalChatMessageContentsAsync(kernelHooks, options);
 
         return results
             .flatMap(list -> {
@@ -161,17 +161,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     }
                 }
                 if (makeSecondCall) {
-                    return internalChatMessageContentsAsync(hooks, options);
+                    return internalChatMessageContentsAsync(kernelHooks, options);
                 }
                 return Mono.just(list);
             });
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
-        Hooks hooks,
+        KernelHooks kernelHooks,
         ChatCompletionsOptions options) {
 
-        options = hooks
+        options = kernelHooks
             .executeHooks(new PreChatCompletionEvent(options))
             .getOptions();
 

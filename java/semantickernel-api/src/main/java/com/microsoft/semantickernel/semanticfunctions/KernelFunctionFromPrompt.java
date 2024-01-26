@@ -8,11 +8,11 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.hooks.FunctionInvokedEventArgs;
-import com.microsoft.semantickernel.hooks.FunctionInvokingEventArgs;
-import com.microsoft.semantickernel.hooks.Hooks;
-import com.microsoft.semantickernel.hooks.PromptRenderedEventArgs;
-import com.microsoft.semantickernel.hooks.PromptRenderingEventArgs;
+import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
+import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
+import com.microsoft.semantickernel.hooks.PromptRenderingEvent;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -92,25 +92,25 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        Hooks hooks,
+        KernelHooks kernelHooks,
         ContextVariableType<T> variableType) {
 
-        PromptRenderingEventArgs preRenderingHookResult = hooks
-            .executeHooks(new PromptRenderingEventArgs(this, arguments));
+        PromptRenderingEvent preRenderingHookResult = kernelHooks
+            .executeHooks(new PromptRenderingEvent(this, arguments));
 
         return this
             .template
             .renderAsync(kernel, preRenderingHookResult.getArguments())
             .flatMapMany(prompt -> {
-                PromptRenderedEventArgs promptHookResult = hooks
-                    .executeHooks(new PromptRenderedEventArgs(this, arguments, prompt));
+                PromptRenderedEvent promptHookResult = kernelHooks
+                    .executeHooks(new PromptRenderedEvent(this, arguments, prompt));
                 prompt = promptHookResult.getPrompt();
                 KernelArguments args = promptHookResult.getArguments();
 
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
-                FunctionInvokingEventArgs updateArguments = hooks
-                    .executeHooks(new FunctionInvokingEventArgs(this, args));
+                FunctionInvokingEvent updateArguments = kernelHooks
+                    .executeHooks(new FunctionInvokingEvent(this, args));
                 args = updateArguments.getArguments();
 
                 AIServiceSelection aiServiceSelection = kernel
@@ -137,7 +137,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             prompt,
                             executionSettings,
                             kernel,
-                            hooks)
+                            kernelHooks)
                         .flatMapMany(Flux::fromIterable)
                         .concatMap(chatMessageContent -> {
                             if (chatMessageContent.getAuthorRole()
@@ -211,9 +211,9 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
                 return result
                     .map(it -> {
-                        FunctionInvokedEventArgs<T> updatedResult = hooks
+                        FunctionInvokedEvent<T> updatedResult = kernelHooks
                             .executeHooks(
-                                new FunctionInvokedEventArgs<>(
+                                new FunctionInvokedEvent<>(
                                     this,
                                     arguments,
                                     it));
@@ -257,12 +257,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        @Nullable Hooks hooks,
+        @Nullable KernelHooks kernelHooks,
         ContextVariableType<T> variableType) {
-        if (hooks == null) {
-            hooks = kernel.getHookService();
+        if (kernelHooks == null) {
+            kernelHooks = kernel.getHookService();
         }
-        return invokeInternalAsync(kernel, arguments, hooks, variableType)
+        return invokeInternalAsync(kernel, arguments, kernelHooks, variableType)
             .take(1)
             .single();
     }

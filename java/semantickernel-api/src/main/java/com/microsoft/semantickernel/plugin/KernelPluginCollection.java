@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +26,10 @@ public class KernelPluginCollection implements Iterable<KernelPlugin> {
         plugins.forEach(plugin -> this.plugins.put(plugin.getName(), plugin));
     }
 
-    @Nullable
     public KernelFunction getFunction(String pluginName, String functionName) {
         KernelPlugin plugin = plugins.get(pluginName);
         if (plugin == null) {
-            LOGGER.warn("Failed to find plugin '{}'", pluginName);
-            return null;
+            throw new IllegalArgumentException("Failed to find plugin " + pluginName);
         }
         KernelFunction function = plugin.get(functionName);
 

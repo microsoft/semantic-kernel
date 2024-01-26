@@ -29,8 +29,8 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @Nullable
-    public AIServiceSelection trySelectAIService(
-        Class<? extends AIService> serviceType,
+    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+        Class<T> serviceType,
         @Nullable
         KernelFunction function,
         @Nullable

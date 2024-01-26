@@ -6,39 +6,44 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface KernelHook<T extends HookEvent> extends Predicate<HookEvent>, Function<T, T> {
+public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelHookEvent>, Function<T, T> {
 
-    interface FunctionInvokingHook extends KernelHook<FunctionInvokingEventArgs> {
+    interface FunctionInvokingHook extends KernelHook<FunctionInvokingEvent> {
 
-        default boolean test(HookEvent arguments) {
-            return FunctionInvokingEventArgs.class.isAssignableFrom(arguments.getClass());
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return FunctionInvokingEvent.class.isAssignableFrom(arguments.getClass());
         }
     }
 
-    interface FunctionInvokedHook extends KernelHook<FunctionInvokedEventArgs> {
+    interface FunctionInvokedHook extends KernelHook<FunctionInvokedEvent> {
 
-        default boolean test(HookEvent arguments) {
-            return FunctionInvokedEventArgs.class.isAssignableFrom(arguments.getClass());
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return FunctionInvokedEvent.class.isAssignableFrom(arguments.getClass());
         }
     }
 
-    interface PromptRenderingHook extends KernelHook<PromptRenderingEventArgs> {
+    interface PromptRenderingHook extends KernelHook<PromptRenderingEvent> {
 
-        default boolean test(HookEvent arguments) {
-            return PromptRenderingEventArgs.class.isAssignableFrom(arguments.getClass());
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return PromptRenderingEvent.class.isAssignableFrom(arguments.getClass());
         }
     }
 
-    interface PromptRenderedHook extends KernelHook<PromptRenderedEventArgs> {
+    interface PromptRenderedHook extends KernelHook<PromptRenderedEvent> {
 
-        default boolean test(HookEvent arguments) {
-            return PromptRenderedEventArgs.class.isAssignableFrom(arguments.getClass());
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return PromptRenderedEvent.class.isAssignableFrom(arguments.getClass());
         }
     }
 
     interface PreChatCompletionHook extends KernelHook<PreChatCompletionEvent> {
 
-        default boolean test(HookEvent arguments) {
+        @Override
+        default boolean test(KernelHookEvent arguments) {
             return PreChatCompletionEvent.class.isAssignableFrom(arguments.getClass());
         }
 

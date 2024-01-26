@@ -54,12 +54,15 @@ public class PromptExecutionSettings {
     private final int bestOf;
     private final int resultsPerPrompt;
     private final String user;
+    @Nullable
     private final List<String> stopSequences;
+    @Nullable
     private final ToolCallBehavior toolCallBehavior;
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>s
+    @Nullable
     public Map<Integer, Integer> tokenSelectionBiases;
 
     @JsonCreator
@@ -74,7 +77,9 @@ public class PromptExecutionSettings {
         @JsonProperty(RESULTS_PER_PROMPT) int resultsPerPrompt,
         @JsonProperty(BEST_OF) int bestOf,
         @JsonProperty(USER) String user,
+        @Nullable
         @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
+        @Nullable
         @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
         this(
             serviceId,
@@ -177,19 +182,30 @@ public class PromptExecutionSettings {
     }
 
     @JsonProperty(STOP_SEQUENCES)
+    @Nullable
     public List<String> getStopSequences() {
-        return Collections.unmodifiableList(stopSequences);
+        if (stopSequences != null) {
+            return Collections.unmodifiableList(stopSequences);
+        }
+        return null;
     }
 
     @JsonProperty(TOKEN_SELECTION_BIASES)
+    @Nullable
     public Map<Integer, Integer> getTokenSelectionBiases() {
-        return Collections.unmodifiableMap(tokenSelectionBiases);
+        if (tokenSelectionBiases != null) {
+            return Collections.unmodifiableMap(tokenSelectionBiases);
+        }
+        return null;
     }
 
     @JsonIgnore
     @Nullable
     public ToolCallBehavior getToolCallBehavior() {
-        return new ToolCallBehavior(toolCallBehavior);
+        if (toolCallBehavior != null) {
+            return new ToolCallBehavior(toolCallBehavior);
+        }
+        return null;
     }
 
     public static Builder builder() {

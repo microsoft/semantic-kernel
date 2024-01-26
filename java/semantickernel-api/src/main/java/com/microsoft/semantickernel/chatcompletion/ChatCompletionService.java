@@ -8,7 +8,7 @@ import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.builders.ServiceLoadUtil;
-import com.microsoft.semantickernel.hooks.Hooks;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
 import reactor.core.publisher.Mono;
@@ -31,14 +31,14 @@ public interface ChatCompletionService extends Buildable, TextAIService {
         ChatHistory chatHistory,
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
-        Hooks hooks
+        KernelHooks kernelHooks
     );
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         String prompt,
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
-        Hooks hooks
+        KernelHooks kernelHooks
     );
 
     static Builder builder() {

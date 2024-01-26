@@ -1,19 +1,20 @@
 package com.microsoft.semantickernel.hooks;
 
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 
-public class PromptRenderedEventArgs implements HookEvent {
+public class FunctionInvokedEvent<T> implements KernelHookEvent {
 
     private final KernelFunction function;
     private final KernelArguments arguments;
-    private final String prompt;
+    private final FunctionResult<T> result;
 
-    public PromptRenderedEventArgs(KernelFunction function, KernelArguments arguments,
-        String prompt) {
+    public FunctionInvokedEvent(KernelFunction function, KernelArguments arguments,
+        FunctionResult<T> result) {
         this.function = function;
         this.arguments = arguments;
-        this.prompt = prompt;
+        this.result = result;
     }
 
     public KernelFunction getFunction() {
@@ -24,7 +25,7 @@ public class PromptRenderedEventArgs implements HookEvent {
         return arguments;
     }
 
-    public String getPrompt() {
-        return prompt;
+    public FunctionResult<T> getResult() {
+        return result;
     }
 }

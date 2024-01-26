@@ -2,7 +2,7 @@ package com.microsoft.semantickernel.hooks;
 
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 
-public class PreChatCompletionEvent implements HookEvent {
+public class PreChatCompletionEvent implements KernelHookEvent {
 
     private final ChatCompletionsOptions options;
 

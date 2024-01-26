@@ -105,6 +105,7 @@ public class ContextVariableTypeConverter<T> {
         return null;
     }
 
+    @Nullable
     public T fromObject(Object s) {
         if (s == null) {
             return null;
@@ -119,6 +120,7 @@ public class ContextVariableTypeConverter<T> {
         return toPromptString.apply(t);
     }
 
+    @Nullable
     public T fromPromptString(String t) {
         if (t == null) {
             return null;

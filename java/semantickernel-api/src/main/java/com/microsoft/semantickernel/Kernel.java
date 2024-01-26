@@ -3,7 +3,7 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.hooks.Hooks;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.KernelArgumen
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -36,12 +37,12 @@ public class Kernel implements Buildable {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
-    private final Hooks hooks;
+    private final KernelHooks kernelHooks;
 
     public Kernel(
         AIServiceSelector serviceSelector,
         @Nullable KernelPluginCollection plugins,
-        Hooks hooks) {
+        @Nullable KernelHooks kernelHooks) {
         this.serviceSelector = serviceSelector;
 
         if (plugins != null) {
@@ -50,16 +51,16 @@ public class Kernel implements Buildable {
             this.plugins = new KernelPluginCollection();
         }
 
-        this.hooks = new Hooks(hooks);
+        this.kernelHooks = new KernelHooks(kernelHooks);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
-        @Nullable Hooks hooks,
+        @Nullable KernelHooks kernelHooks,
         ContextVariableType<T> resultType) {
-        hooks = mergeInGlobalHooks(hooks);
-        return function.invokeAsync(this, arguments, hooks, resultType);
+        kernelHooks = mergeInGlobalHooks(kernelHooks);
+        return function.invokeAsync(this, arguments, kernelHooks, resultType);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
@@ -74,11 +75,11 @@ public class Kernel implements Buildable {
         String pluginName,
         String functionName,
         @Nullable KernelArguments arguments,
-        @Nullable Hooks hooks,
+        @Nullable KernelHooks kernelHooks,
         ContextVariableType<T> resultType) {
-        hooks = mergeInGlobalHooks(hooks);
+        kernelHooks = mergeInGlobalHooks(kernelHooks);
         return plugins.getFunction(pluginName, functionName)
-            .invokeAsync(this, arguments, hooks, resultType);
+            .invokeAsync(this, arguments, kernelHooks, resultType);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
@@ -92,10 +93,10 @@ public class Kernel implements Buildable {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction function,
         @Nullable KernelArguments arguments,
-        @Nullable Hooks hooks,
+        @Nullable KernelHooks kernelHooks,
         Class<T> resultType) {
 
-        hooks = mergeInGlobalHooks(hooks);
+        kernelHooks = mergeInGlobalHooks(kernelHooks);
 
         ContextVariableType<T> contextVariable;
 
@@ -110,7 +111,7 @@ public class Kernel implements Buildable {
                 throw e;
             }
         }
-        return function.invokeAsync(this, arguments, hooks, contextVariable);
+        return function.invokeAsync(this, arguments, kernelHooks, contextVariable);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
@@ -120,12 +121,12 @@ public class Kernel implements Buildable {
         return invokeAsync(function, arguments, null, resultType);
     }
 
-    private Hooks mergeInGlobalHooks(@Nullable Hooks hooks) {
-        Hooks allHooks = this.hooks;
-        if (hooks != null) {
-            allHooks = allHooks.append(hooks);
+    private KernelHooks mergeInGlobalHooks(@Nullable KernelHooks kernelHooks) {
+        KernelHooks allKernelHooks = this.kernelHooks;
+        if (kernelHooks != null) {
+            allKernelHooks = allKernelHooks.append(kernelHooks);
         }
-        return allHooks;
+        return allKernelHooks;
     }
 
     public List<KernelFunction> getFunctions() {
@@ -147,18 +148,23 @@ public class Kernel implements Buildable {
 
 
     @SuppressFBWarnings("EI_EXPOSE_REP")
-    public Hooks getHookService() {
-        return hooks;
+    public KernelHooks getHookService() {
+        return kernelHooks;
     }
 
-    public <T extends AIService> T getService(Class<T> clazz) {
-        return (T) serviceSelector
+    public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
+        AIServiceSelection<T> selector = serviceSelector
             .trySelectAIService(
                 clazz,
                 null,
                 null
-            )
-            .getService();
+            );
+
+        if (selector == null) {
+            throw new ServiceNotFoundException("Unable to find service of type " + clazz.getName());
+        }
+
+        return selector.getService();
     }
 
     public static Kernel.Builder builder() {
@@ -170,6 +176,7 @@ public class Kernel implements Buildable {
 
         private final Map<Class<? extends AIService>, AIService> services = new HashMap<>();
         private final List<KernelPlugin> plugins = new ArrayList<>();
+        @Nullable
         private Function<Map<Class<? extends AIService>, AIService>, AIServiceSelector> serviceSelectorProvider;
 
         public <T extends AIService> Builder withAIService(Class<T> clazz, T aiService) {

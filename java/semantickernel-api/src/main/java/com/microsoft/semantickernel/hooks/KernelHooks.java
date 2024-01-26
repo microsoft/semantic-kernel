@@ -12,23 +12,23 @@ import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-public class Hooks {
+public class KernelHooks {
 
     private final Map<String, KernelHook<?>> hooks;
 
-    public Hooks() {
+    public KernelHooks() {
         this.hooks = new HashMap<>();
     }
 
-    public Hooks(@Nullable Hooks hooks) {
-        if (hooks == null) {
+    public KernelHooks(@Nullable KernelHooks kernelHooks) {
+        if (kernelHooks == null) {
             this.hooks = new HashMap<>();
         } else {
-            this.hooks = new HashMap<>(hooks.getHooks());
+            this.hooks = new HashMap<>(kernelHooks.getHooks());
         }
     }
 
-    public Hooks(Map<String, KernelHook<?>> hooks) {
+    public KernelHooks(Map<String, KernelHook<?>> hooks) {
         this.hooks = new HashMap<>(hooks);
     }
 
@@ -37,12 +37,12 @@ public class Hooks {
     }
 
     public String addFunctionInvokingHook(
-        Function<FunctionInvokingEventArgs, FunctionInvokingEventArgs> function) {
+        Function<FunctionInvokingEvent, FunctionInvokingEvent> function) {
         return addHook((FunctionInvokingHook) function::apply);
     }
 
     public String addFunctionInvokedHook(
-        Function<FunctionInvokedEventArgs, FunctionInvokedEventArgs> function) {
+        Function<FunctionInvokedEvent, FunctionInvokedEvent> function) {
         return addHook((FunctionInvokedHook) function::apply);
     }
 
@@ -52,16 +52,16 @@ public class Hooks {
     }
 
     public String addPromptRenderedHook(
-        Function<PromptRenderedEventArgs, PromptRenderedEventArgs> function) {
+        Function<PromptRenderedEvent, PromptRenderedEvent> function) {
         return addHook((PromptRenderedHook) function::apply);
     }
 
     public String addPromptRenderingHook(
-        Function<PromptRenderingEventArgs, PromptRenderingEventArgs> function) {
+        Function<PromptRenderingEvent, PromptRenderingEvent> function) {
         return addHook((PromptRenderingHook) function::apply);
     }
 
-    public <T extends HookEvent> T executeHooks(T event) {
+    public <T extends KernelHookEvent> T executeHooks(T event) {
         for (KernelHook<?> hook : hooks.values()) {
             if (hook.test(event)) {
                 event = ((KernelHook<T>) hook).apply(event);
@@ -71,24 +71,23 @@ public class Hooks {
     }
 
     public String addHook(KernelHook<?> hook) {
-        String id = UUID.randomUUID().toString();
-        addHook(id, hook);
-        return id;
+        return addHook(UUID.randomUUID().toString(), hook);
     }
 
-    public void addHook(String hookName, KernelHook<?> hook) {
+    public String addHook(String hookName, KernelHook<?> hook) {
         hooks.put(hookName, hook);
+        return hookName;
     }
 
-    public KernelHook removeHook(String hookName) {
+    public KernelHook<?> removeHook(String hookName) {
         return hooks.remove(hookName);
     }
 
-    public Hooks append(Hooks hooks) {
+    public KernelHooks append(KernelHooks kernelHooks) {
         Map<String, KernelHook<?>> newHooks = new HashMap<>(this.hooks);
         newHooks.putAll(this.hooks);
-        newHooks.putAll(hooks.getHooks());
+        newHooks.putAll(kernelHooks.getHooks());
 
-        return new Hooks(newHooks);
+        return new KernelHooks(newHooks);
     }
 }

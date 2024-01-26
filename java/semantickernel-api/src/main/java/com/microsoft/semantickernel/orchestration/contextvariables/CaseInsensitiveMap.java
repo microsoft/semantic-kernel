@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 public class CaseInsensitiveMap<T> extends HashMap<String, T> {
 
@@ -53,6 +54,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         return super.containsKey(((String) key).toLowerCase(Locale.ROOT));
     }
 
+    @Nullable
     @Override
     public T get(Object key) {
         if (key == null) {

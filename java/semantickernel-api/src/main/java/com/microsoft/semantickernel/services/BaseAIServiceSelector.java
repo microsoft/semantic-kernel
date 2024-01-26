@@ -20,20 +20,20 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
 
     @Override
     @Nullable
-    public AIServiceSelection trySelectAIService(
-        Class<? extends AIService> serviceType,
-
+    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+        Class<T> serviceType,
         @Nullable
         KernelFunction function,
 
         @Nullable
-        KernelArguments arguments) {
+        KernelArguments arguments
+    ) {
         return trySelectAIService(serviceType, function, arguments, services);
     }
 
     @Nullable
-    public abstract AIServiceSelection trySelectAIService(
-        Class<? extends AIService> serviceType,
+    public abstract <T extends AIService> AIServiceSelection<T> trySelectAIService(
+        Class<T> serviceType,
 
         @Nullable
         KernelFunction function,
