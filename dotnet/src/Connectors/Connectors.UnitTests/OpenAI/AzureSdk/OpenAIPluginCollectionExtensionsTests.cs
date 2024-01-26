@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -67,8 +68,13 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         Assert.Same(function, actualFunction);
 
         Assert.NotNull(actualArguments);
-        Assert.Equal("San Diego", actualArguments["location"]);
-        Assert.Equal("300", actualArguments["max_price"]);
+
+        Assert.True(actualArguments["location"] is JsonElement);
+        Assert.Equal("San Diego", actualArguments["location"]!.ToString());
+
+        Assert.True(actualArguments["max_price"] is JsonElement);
+        Assert.Equal("300", actualArguments["max_price"]!.ToString());
+
         Assert.Null(actualArguments["null_argument"]);
     }
 }
