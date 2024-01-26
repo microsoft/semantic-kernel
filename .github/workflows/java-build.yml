@@ -55,6 +55,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # Need to use JDK 11 to build for JDK 8
+      - name: Set JDK
+        id: set-jdk
+        shell: bash
+        run: |
+          if [[ ${{ matrix.java-versions }} == 8 ]]; then
+            echo "JDK_VERSION=11" >> $GITHUB_OUTPUT
+          else
+            version=${{ matrix.java-versions }}
+            echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
+          fi
+
       # Sets up the specified JDK version from the matrix
       - name: Set up JDK ${{ matrix.java-versions }}
         uses: actions/setup-java@v3
