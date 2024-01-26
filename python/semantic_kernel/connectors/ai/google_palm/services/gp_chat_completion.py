@@ -127,7 +127,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         conversation has not been initiated yet, it is assumed that chat history
         is needed for context. All messages preceding the last message will be
         utilized for context. This also enables Google PaLM to utilize memory
-        and skills, which should be stored in the messages parameter as system
+        and plugins, which should be stored in the messages parameter as system
         messages.
 
         Arguments:

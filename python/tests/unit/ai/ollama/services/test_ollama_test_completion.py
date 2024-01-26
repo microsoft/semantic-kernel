@@ -2,8 +2,12 @@ from unittest.mock import patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.ollama.ollama_request_settings import OllamaTextRequestSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
+from semantic_kernel.connectors.ai.ollama.ollama_request_settings import (
+    OllamaTextRequestSettings,
+)
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import (
+    OllamaTextCompletion,
+)
 from tests.unit.ai.ollama.utils import MockResponse
 
 
