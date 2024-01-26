@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 import logging
 from typing import (
     Any,

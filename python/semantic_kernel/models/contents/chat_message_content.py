@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 from typing import Optional
 
 from semantic_kernel.models.chat.chat_role import ChatRole

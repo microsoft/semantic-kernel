@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 from enum import Enum
 
 

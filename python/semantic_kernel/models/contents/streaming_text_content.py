@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 from typing import Optional
 
 from semantic_kernel.models.contents.streaming_kernel_content import StreamingKernelContent

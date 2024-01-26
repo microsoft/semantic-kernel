@@ -1,6 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-
 from typing import List, Optional
 
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
