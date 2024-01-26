@@ -7,7 +7,7 @@ from pydantic.dataclasses import dataclass
 from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
     OpenAIChatRequestSettings,
 )
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ class AzureDataSources:
 
 
 # @dataclass
-class ExtraBody(SKBaseModel):
+class ExtraBody(KernelBaseModel):
     data_sources: Optional[List[AzureDataSources]] = Field(None, alias="dataSources")
     input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
     output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")

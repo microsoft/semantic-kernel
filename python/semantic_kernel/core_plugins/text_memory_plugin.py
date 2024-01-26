@@ -4,16 +4,16 @@ import logging
 import typing as t
 from typing import ClassVar
 
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class TextMemoryPlugin(SKBaseModel):
+class TextMemoryPlugin(KernelBaseModel):
     COLLECTION_PARAM: ClassVar[str] = "collection"
     RELEVANCE_PARAM: ClassVar[str] = "relevance"
     KEY_PARAM: ClassVar[str] = "key"
@@ -23,32 +23,32 @@ class TextMemoryPlugin(SKBaseModel):
     DEFAULT_LIMIT: ClassVar[int] = "1"
 
     # @staticmethod
-    @sk_function(
+    @kernel_function(
         description="Recall a fact from the long term memory",
         name="recall",
         input_description="The information to retrieve",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to search for information",
         default_value=DEFAULT_COLLECTION,
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=RELEVANCE_PARAM,
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
         default_value=DEFAULT_RELEVANCE,
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=LIMIT_PARAM,
         description="The maximum number of relevant memories to recall.",
         default_value=DEFAULT_LIMIT,
     )
-    async def recall_async(self, ask: str, context: "SKContext") -> str:
+    async def recall_async(self, ask: str, context: "KernelContext") -> str:
         """
         Recall a fact from the long term memory.
 
         Example:
-            sk_context["input"] = "what is the capital of France?"
+            context["input"] = "what is the capital of France?"
             {{memory.recall $input}} => "Paris"
 
         Args:
@@ -90,27 +90,27 @@ class TextMemoryPlugin(SKBaseModel):
 
         return results[0].text if limit == 1 else json.dumps([r.text for r in results])
 
-    @sk_function(
+    @kernel_function(
         description="Save information to semantic memory",
         name="save",
         input_description="The information to save",
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to save the information",
         default_value=DEFAULT_COLLECTION,
     )
-    @sk_function_context_parameter(
+    @kernel_function_context_parameter(
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
-    async def save_async(self, text: str, context: "SKContext") -> None:
+    async def save_async(self, text: str, context: "KernelContext") -> None:
         """
         Save a fact to the long term memory.
 
         Example:
-            sk_context["input"] = "the capital of France is Paris"
-            sk_context[TextMemoryPlugin.KEY_PARAM] = "countryInfo1"
+            context["input"] = "the capital of France is Paris"
+            context[TextMemoryPlugin.KEY_PARAM] = "countryInfo1"
             {{memory.save $input}}
 
         Args:

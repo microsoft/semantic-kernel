@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.plugin_definition.function_view import FunctionView
 
 
-class SKEventArgs:
-    def __init__(self, function_view: FunctionView, context: SKContext):
+class KernelEventArgs:
+    def __init__(self, function_view: FunctionView, context: KernelContext):
         if context is None or function_view is None:
             raise ValueError("function_view and context cannot be None")
 

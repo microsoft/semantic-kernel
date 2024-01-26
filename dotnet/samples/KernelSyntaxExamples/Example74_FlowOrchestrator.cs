@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -60,94 +61,12 @@ provides:
     public Task RunAsync()
     {
         return RunExampleAsync();
-        //return RunInteractiveAsync();
     }
 
-    private static async Task RunInteractiveAsync()
+    private async Task RunExampleAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
-            loggerBuilder
-                .AddConsole()
-                .AddFilter(null, LogLevel.Error));
-        Dictionary<object, string?> plugins = new()
-        {
-            { webSearchEnginePlugin, "WebSearch" },
-            { new TimePlugin(), "Time" }
-        };
-
-        FlowOrchestrator orchestrator = new(
-            GetKernelBuilder(loggerFactory),
-            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false),
-            plugins,
-            config: GetOrchestratorConfig());
-        var sessionId = Guid.NewGuid().ToString();
-
-        Console.WriteLine("*****************************************************");
-        Console.WriteLine("Executing {0}", nameof(RunInteractiveAsync));
-        Stopwatch sw = new();
-        sw.Start();
-        Console.WriteLine("Flow: " + s_flow.Name);
-        Console.WriteLine("Please type the question you'd like to ask");
-        FunctionResult? result = null;
-        string? goal = null;
-        do
-        {
-            Console.WriteLine("User: ");
-            string input = Console.ReadLine() ?? string.Empty;
-
-            if (string.IsNullOrEmpty(input))
-            {
-                Console.WriteLine("No input, exiting");
-                break;
-            }
-
-            if (string.IsNullOrEmpty(goal))
-            {
-                goal = input;
-                s_flow.Steps.First().Goal = input;
-            }
-
-            try
-            {
-                result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
-            }
-            catch (KernelException ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                Console.WriteLine("Please try again.");
-                continue;
-            }
-
-            var responses = result.GetValue<List<string>>()!;
-            foreach (var response in responses)
-            {
-                Console.WriteLine("Assistant: " + response);
-            }
-
-            if (result.IsComplete(s_flow))
-            {
-                Console.WriteLine("\tEmail Address: " + result.Metadata!["email_addresses"]);
-                Console.WriteLine("\tEmail Payload: " + result.Metadata!["email"]);
-
-                Console.WriteLine("Flow completed, exiting");
-                break;
-            }
-        } while (result == null || result.GetValue<List<string>>()?.Count > 0);
-
-        Console.WriteLine("Time Taken: " + sw.Elapsed);
-        Console.WriteLine("*****************************************************");
-    }
-
-    private static async Task RunExampleAsync()
-    {
-        var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        using var loggerFactory = LoggerFactory.Create(loggerBuilder =>
-            loggerBuilder
-                .AddConsole()
-                .AddFilter(null, LogLevel.Error));
 
         Dictionary<object, string?> plugins = new()
         {
@@ -156,23 +75,23 @@ provides:
         };
 
         FlowOrchestrator orchestrator = new(
-            GetKernelBuilder(loggerFactory),
+            GetKernelBuilder(LoggerFactory),
             await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false),
             plugins,
             config: GetOrchestratorConfig());
         var sessionId = Guid.NewGuid().ToString();
 
-        Console.WriteLine("*****************************************************");
-        Console.WriteLine("Executing {0}", nameof(RunExampleAsync));
+        WriteLine("*****************************************************");
+        WriteLine("Executing " + nameof(RunExampleAsync));
         Stopwatch sw = new();
         sw.Start();
-        Console.WriteLine("Flow: " + s_flow.Name);
+        WriteLine("Flow: " + s_flow.Name);
         var question = s_flow.Steps.First().Goal;
         var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question).ConfigureAwait(false);
 
-        Console.WriteLine("Question: " + question);
-        Console.WriteLine("Answer: " + result.Metadata!["answer"]);
-        Console.WriteLine("Assistant: " + result.GetValue<List<string>>()!.Single());
+        WriteLine("Question: " + question);
+        WriteLine("Answer: " + result.Metadata!["answer"]);
+        WriteLine("Assistant: " + result.GetValue<List<string>>()!.Single());
 
         string[] userInputs = new[]
         {
@@ -185,12 +104,12 @@ provides:
 
         foreach (var t in userInputs)
         {
-            Console.WriteLine($"User: {t}");
+            WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
             var responses = result.GetValue<List<string>>()!;
             foreach (var response in responses)
             {
-                Console.WriteLine("Assistant: " + response);
+                WriteLine("Assistant: " + response);
             }
 
             if (result.IsComplete(s_flow))
@@ -199,11 +118,11 @@ provides:
             }
         }
 
-        Console.WriteLine("\tEmail Address: " + result.Metadata!["email_addresses"]);
-        Console.WriteLine("\tEmail Payload: " + result.Metadata!["email"]);
+        WriteLine("\tEmail Address: " + result.Metadata!["email_addresses"]);
+        WriteLine("\tEmail Payload: " + result.Metadata!["email"]);
 
-        Console.WriteLine("Time Taken: " + sw.Elapsed);
-        Console.WriteLine("*****************************************************");
+        WriteLine("Time Taken: " + sw.Elapsed);
+        WriteLine("*****************************************************");
     }
 
     private static FlowOrchestratorConfig GetOrchestratorConfig()
@@ -219,6 +138,7 @@ provides:
     private static IKernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
         var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(loggerFactory);
 
         return builder
             .AddAzureOpenAIChatCompletion(
