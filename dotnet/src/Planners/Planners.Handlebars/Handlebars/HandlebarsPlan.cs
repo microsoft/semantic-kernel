@@ -24,6 +24,8 @@ public sealed class HandlebarsPlan
     /// </summary>
     private readonly string _template;
 
+    private readonly HandlebarsPromptTemplateOptions _promptTemplateOptions;
+
     /// <summary>
     /// Gets the prompt template used to generate the plan.
     /// </summary>
@@ -34,10 +36,12 @@ public sealed class HandlebarsPlan
     /// </summary>
     /// <param name="generatedPlan">A Handlebars template representing the generated plan.</param>
     /// <param name="createPlanPromptTemplate">Prompt template used to generate the plan.</param>
-    public HandlebarsPlan(string generatedPlan, string? createPlanPromptTemplate = null)
+    /// <param name="promptTemplateOptions">Handlebars prompt template options. Should match the options used to generate the plan.</param>
+    public HandlebarsPlan(string generatedPlan, string? createPlanPromptTemplate = null, HandlebarsPromptTemplateOptions? promptTemplateOptions = null)
     {
         this._template = generatedPlan;
         this.Prompt = createPlanPromptTemplate;
+        this._promptTemplateOptions = promptTemplateOptions ?? new();
     }
 
     /// <summary>
@@ -74,7 +78,7 @@ public sealed class HandlebarsPlan
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        var templateFactory = new HandlebarsPromptTemplateFactory(options: HandlebarsPlanner.PromptTemplateOptions);
+        var templateFactory = new HandlebarsPromptTemplateFactory(this._promptTemplateOptions);
         var promptTemplateConfig = new PromptTemplateConfig()
         {
             Template = this._template,

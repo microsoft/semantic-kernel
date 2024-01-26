@@ -74,7 +74,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         CancellationToken cancellationToken = default)
     {
         IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(includeOutputSchema, plannerOptions.NameDelimiter));
         return JsonSerializer.Serialize(manuals);
     }
 

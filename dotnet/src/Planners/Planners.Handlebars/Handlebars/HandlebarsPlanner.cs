@@ -20,26 +20,19 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 public sealed class HandlebarsPlanner
 {
     /// <summary>
-    /// Represents static options for all Handlebars Planner prompt templates.
-    /// </summary>
-    public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
-    {
-        // Options for built-in Handlebars helpers
-        Categories = new Category[] { Category.DateTime },
-        UseCategoryPrefix = false,
-
-        // Custom helpers
-        RegisterCustomHelpers = HandlebarsPromptTemplateExtensions.RegisterCustomCreatePlanHelpers,
-    };
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
     /// <param name="options">Configuration options for Handlebars Planner.</param>
     public HandlebarsPlanner(HandlebarsPlannerOptions? options = default)
     {
-        this._options = options ?? new HandlebarsPlannerOptions();
-        this._templateFactory = new HandlebarsPromptTemplateFactory(options: PromptTemplateOptions);
+        this._plannerOptions = options ?? new HandlebarsPlannerOptions();
+        this._promptTemplateOptions = new HandlebarsPromptTemplateOptions()
+        {
+            Categories = new Category[] { Category.DateTime, Category.Math, Category.String },
+            UseCategoryPrefix = false,
+            PrefixSeparator = this._plannerOptions.NameDelimiter,
+        };
+        this._templateFactory = new HandlebarsPromptTemplateFactory(this._promptTemplateOptions);
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
@@ -64,9 +57,19 @@ public sealed class HandlebarsPlanner
 
     #region private
 
-    private readonly HandlebarsPlannerOptions _options;
-
-    private HandlebarsPromptTemplateFactory _templateFactory { get; }
+    private readonly HandlebarsPlannerOptions _plannerOptions;
+    private readonly HandlebarsPromptTemplateOptions _promptTemplateOptions;
+    private readonly HandlebarsPromptTemplateFactory _templateFactory;
+    private static readonly PromptExecutionSettings s_defaultPromptExecutionSettings = new()
+    {
+        ExtensionData = new Dictionary<string, object>()
+        {
+            { "temperature", 0.0 },
+            { "top_p", 0.0 },
+            { "presence_penalty", 0.0 },
+            { "frequency_penalty", 0.0 },
+        }
+    };
 
     /// <summary>
     /// Error message if kernel does not contain sufficient functions to create a plan.
@@ -75,19 +78,10 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
-        var executionSettings = this._options.ExecutionSettings ?? new PromptExecutionSettings()
-        {
-            ExtensionData = new Dictionary<string, object>()
-            {
-                { "temperature", 0.0 },
-                { "top_p", 0.0 },
-                { "presence_penalty", 0.0 },
-                { "frequency_penalty", 0.0 },
-            }
-        };
+        var executionSettings = this._plannerOptions.ExecutionSettings ?? s_defaultPromptExecutionSettings;
 
         // Get CreatePlan prompt template
-        var functionsManual = await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, null /*logger*/, true, cancellationToken).ConfigureAwait(false);
+        var functionsManual = await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._plannerOptions, null, null /*logger*/, true, cancellationToken).ConfigureAwait(false);
         var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, functionsManual, cancellationToken).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
@@ -98,7 +92,7 @@ public sealed class HandlebarsPlanner
         // Check if plan could not be created due to insufficient functions
         if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
-            var availableFunctions = await kernel.Plugins.GetFunctionsAsync(this._options, null, null /*logger*/, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var availableFunctions = await kernel.Plugins.GetFunctionsAsync(this._plannerOptions, null, null /*logger*/, cancellationToken: cancellationToken).ConfigureAwait(false);
             var functionNames = availableFunctions.Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
@@ -112,7 +106,7 @@ public sealed class HandlebarsPlanner
         var planTemplate = match.Groups[2].Value.Trim();
         planTemplate = MinifyHandlebarsTemplate(planTemplate);
 
-        return new HandlebarsPlan(planTemplate, createPlanPrompt);
+        return new HandlebarsPlan(planTemplate, createPlanPrompt, this._promptTemplateOptions);
     }
 
     private ChatHistory GetChatHistoryFromPrompt(string prompt)
@@ -157,9 +151,9 @@ public sealed class HandlebarsPlanner
                 { "goal", goal },
                 { "nameDelimiter", this._templateFactory.NameDelimiter},
                 { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
-                { "allowLoops", this._options.AllowLoops },
-                { "lastPlan", this._options.LastPlan },
-                { "lastError", this._options.LastError }
+                { "allowLoops", this._plannerOptions.AllowLoops },
+                { "lastPlan", this._plannerOptions.LastPlan },
+                { "lastError", this._plannerOptions.LastError }
             };
 
         var promptTemplateConfig = new PromptTemplateConfig()

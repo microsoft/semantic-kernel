@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
@@ -26,6 +28,14 @@ public sealed class HandlebarsPlannerOptions : PlannerOptions
     /// Gets or sets a value indicating whether loops are allowed in the plan.
     /// </summary>
     public bool AllowLoops { get; set; } = true;
+
+    /// <summary>
+    /// The Handlebars prompt template options to use for the planner.
+    /// </summary>
+    public HandlebarsPromptTemplateOptions? PromptTemplateOptions { get; set; }
+
+    /// <inheritdoc/>
+    public override string NameDelimiter => this.PromptTemplateOptions?.PrefixSeparator ?? "-";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlannerOptions"/> class.

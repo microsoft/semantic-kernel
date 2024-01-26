@@ -43,7 +43,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
         // Assert expected function
         Assert.Contains(
-            $"{expectedPlugin}_{expectedFunction}",
+            $"{expectedPlugin}-{expectedFunction}",
             plan.ToString(),
             StringComparison.CurrentCulture
         );
@@ -62,7 +62,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
         // Assert
         Assert.Contains(
-            $"{expectedPlugin}_{expectedFunction}",
+            $"{expectedPlugin}-{expectedFunction}",
             plan.ToString(),
             StringComparison.CurrentCulture
         );
@@ -71,12 +71,12 @@ public sealed class HandlebarsPlannerTests : IDisposable
     [Theory]
     [InlineData(
         "Are there any in-person courses that are worth 10 credits? If so, tell me the name.",
-        new string[] { "UniversityPluginFake_GetCourses" },
+        new string[] { "UniversityPluginFake-GetCourses" },
         new string[] { "Deep Learning Capstone" },
         new string[] { "Intro to Generative AI", "LLMs and You", "ML for Climate Change" })]
     [InlineData(
         "Show me all online courses about artificial intelligence.",
-        new string[] { "UniversityPluginFake_GetCourses", "artificial intelligence" },
+        new string[] { "UniversityPluginFake-GetCourses", "artificial intelligence" },
         new string[] { "Intro to Generative AI", "LLMs and You" },
         new string[] { "Deep Learning Capstone", "ML for Climate Change" })]
     public async Task CreateAndExecutePlanWithComplexTypeAsync(
