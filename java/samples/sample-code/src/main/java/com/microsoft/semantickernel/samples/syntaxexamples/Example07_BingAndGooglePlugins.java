@@ -135,8 +135,8 @@ public class Example07_BingAndGooglePlugins {
             [EXAMPLE 3]
             Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
             Answer:
-            {{ '{{' }} bing.search ""what\\'s Ferrari stock price?"" {{ '}}' }}.
-            {{ '{{' }} bing.search ""Who is the current number one female tennis player in the world?"" {{ '}}' }}.
+            {{ '{{' }} bing.search "what's Ferrari stock price?" {{ '}}' }}.
+            {{ '{{' }} bing.search "Who is the current number one female tennis player in the world?" {{ '}}' }}.
 
             [END OF EXAMPLES]
 
