@@ -34,7 +34,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     url: HttpUrl = "http://localhost:11434/api/generate"
     session: Optional[aiohttp.ClientSession] = None
 
-    async def complete_async(
+    async def complete(
         self,
         prompt: str,
         request_settings: OllamaTextRequestSettings,
@@ -58,7 +58,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 response.raise_for_status()
                 return await response.text()
 
-    async def complete_stream_async(
+    async def complete_stream(
         self,
         prompt: str,
         request_settings: OllamaTextRequestSettings,

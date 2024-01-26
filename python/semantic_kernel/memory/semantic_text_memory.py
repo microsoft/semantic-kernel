@@ -32,7 +32,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         self._storage = storage
         self._embeddings_generator = embeddings_generator
 
-    async def save_information_async(
+    async def save_information(
         self,
         collection: str,
         text: str,
@@ -52,10 +52,10 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             None -- None.
         """
         # TODO: not the best place to create collection, but will address this behavior together with .NET SK
-        if not await self._storage.does_collection_exist_async(collection_name=collection):
-            await self._storage.create_collection_async(collection_name=collection)
+        if not await self._storage.does_collection_exist(collection_name=collection):
+            await self._storage.create_collection(collection_name=collection)
 
-        embedding = (await self._embeddings_generator.generate_embeddings_async([text]))[0]
+        embedding = (await self._embeddings_generator.generate_embeddings([text]))[0]
         data = MemoryRecord.local_record(
             id=id,
             text=text,
@@ -64,9 +64,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             embedding=embedding,
         )
 
-        await self._storage.upsert_async(collection_name=collection, record=data)
+        await self._storage.upsert(collection_name=collection, record=data)
 
-    async def save_reference_async(
+    async def save_reference(
         self,
         collection: str,
         text: str,
@@ -88,10 +88,10 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             None -- None.
         """
         # TODO: not the best place to create collection, but will address this behavior together with .NET SK
-        if not await self._storage.does_collection_exist_async(collection_name=collection):
-            await self._storage.create_collection_async(collection_name=collection)
+        if not await self._storage.does_collection_exist(collection_name=collection):
+            await self._storage.create_collection(collection_name=collection)
 
-        embedding = (await self._embeddings_generator.generate_embeddings_async([text]))[0]
+        embedding = (await self._embeddings_generator.generate_embeddings([text]))[0]
         data = MemoryRecord.reference_record(
             external_id=external_id,
             source_name=external_source_name,
@@ -100,9 +100,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             embedding=embedding,
         )
 
-        await self._storage.upsert_async(collection_name=collection, record=data)
+        await self._storage.upsert(collection_name=collection, record=data)
 
-    async def get_async(
+    async def get(
         self,
         collection: str,
         key: str,
@@ -116,10 +116,10 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         Returns:
             Optional[MemoryQueryResult] -- The MemoryQueryResult if found, None otherwise.
         """
-        record = await self._storage.get_async(collection_name=collection, key=key)
+        record = await self._storage.get(collection_name=collection, key=key)
         return MemoryQueryResult.from_memory_record(record, 1.0) if record else None
 
-    async def search_async(
+    async def search(
         self,
         collection: str,
         query: str,
@@ -139,8 +139,8 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         Returns:
             List[MemoryQueryResult] -- The list of MemoryQueryResult found.
         """
-        query_embedding = (await self._embeddings_generator.generate_embeddings_async([query]))[0]
-        results = await self._storage.get_nearest_matches_async(
+        query_embedding = (await self._embeddings_generator.generate_embeddings([query]))[0]
+        results = await self._storage.get_nearest_matches(
             collection_name=collection,
             embedding=query_embedding,
             limit=limit,
@@ -150,10 +150,10 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
         return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Get the list of collections in the memory (calls the memory store's get_collections method).
 
         Returns:
             List[str] -- The list of all the memory collection names.
         """
-        return await self._storage.get_collections_async()
+        return await self._storage.get_collections()

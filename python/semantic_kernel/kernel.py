@@ -155,7 +155,7 @@ class Kernel:
 
         return function
 
-    async def run_stream_async(
+    async def run_stream(
         self,
         *functions: Any,
         input_context: Optional[KernelContext] = None,
@@ -167,12 +167,12 @@ class Kernel:
             stream_function = functions[-1]
 
             # run pipeline functions
-            context = await self.run_async(pipeline_functions, input_context, input_vars, input_str)
+            context = await self.run(pipeline_functions, input_context, input_vars, input_str)
 
         elif len(functions) == 1:
             stream_function = functions[0]
 
-            # TODO: Preparing context for function invoke can be refactored as code below are same as run_async
+            # TODO: Preparing context for function invoke can be refactored as code below are same as run
             # if the user passed in a context, prioritize it, but merge with any other inputs
             if input_context is not None:
                 context = input_context
@@ -205,7 +205,7 @@ class Kernel:
             raise ValueError("No functions passed to run")
 
         try:
-            async for stream_message in stream_function.invoke_stream_async(input=None, context=context):
+            async for stream_message in stream_function.invoke_stream(input=None, context=context):
                 yield stream_message
 
         except Exception as ex:
@@ -220,7 +220,7 @@ class Kernel:
                 "Error occurred while invoking stream function",
             )
 
-    async def run_async(
+    async def run(
         self,
         *functions: Any,
         input_context: Optional[KernelContext] = None,
