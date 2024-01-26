@@ -49,7 +49,7 @@ internal abstract class ClientBase
         return body;
     }
 
-    protected async Task<HttpResponseMessage> SendRequestAndGetResponseStreamAsync(
+    protected async Task<HttpResponseMessage> SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
