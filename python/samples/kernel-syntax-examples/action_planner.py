@@ -30,7 +30,7 @@ async def main():
     ask = "What is the sum of 110 and 990?"
 
     # ask the action planner to identify a suitable function from the list of functions available.
-    plan = await planner.create_plan_async(goal=ask)
+    plan = await planner.create_plan(goal=ask)
 
     # ask the action planner to execute the identified function.
     result = await plan.invoke_async()
