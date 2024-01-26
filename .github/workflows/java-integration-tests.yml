@@ -89,9 +89,3 @@ jobs:
         run: ../mvnw -B clean install --file pom.xml
         working-directory: java/samples
         if: ${{ matrix.java-versions >= 17 }}
-
-      # Spring Boot Starter build on JDK 17+
-      - name: Build semantic-kernel spring boot starter
-        run: ../mvnw -B clean install --file pom.xml
-        working-directory: java/semantickernel-spring-starter
-        if: ${{ matrix.java-versions >= 17 }}
