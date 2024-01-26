@@ -53,7 +53,7 @@ def enable_debug_mode():
     builtins.pr = snoop.pp
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def create_kernel():
     kernel = sk.Kernel()
     return kernel

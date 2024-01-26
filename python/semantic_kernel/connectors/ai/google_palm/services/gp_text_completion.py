@@ -2,13 +2,17 @@
 
 import logging
 import sys
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
+
+from semantic_kernel.models.contents.text_content import TextContent
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 import google.generativeai as palm
+from google.generativeai.types import Completion
+from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -43,11 +47,18 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     async def complete(
-        self,
-        prompt: str,
-        request_settings: GooglePalmTextRequestSettings,
-        logger: Optional[Any] = None,
-    ) -> Union[str, List[str]]:
+        self, prompt: str, request_settings: GooglePalmTextRequestSettings, **kwargs
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {GooglePalmTextRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         request_settings.prompt = prompt
         if not request_settings.ai_model_id:
             request_settings.ai_model_id = self.ai_model_id
@@ -66,9 +77,21 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 "Google PaLM service failed to complete the prompt",
                 ex,
             )
-        if request_settings.candidate_count > 1:
-            return [candidate["output"] for candidate in response.candidates]
-        return response.result
+        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+
+    def _create_text_content(self, response: Completion, candidate: TextCompletion) -> TextContent:
+        """Create a text content object from a candidate."""
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=candidate.get("output"),
+            metadata={
+                "filters": response.filters,
+                "safety_feedback": response.safety_feedback,
+                "citation_metadata": candidate.get("citation_metadata"),
+                "safety_ratings": candidate.get("safety_ratings"),
+            },
+        )
 
     async def complete_stream(
         self,

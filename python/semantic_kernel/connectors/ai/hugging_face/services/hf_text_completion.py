@@ -2,7 +2,7 @@
 
 import logging
 from threading import Thread
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, AsyncIterable, Dict, List, Literal, Optional
 
 import torch
 import transformers
@@ -15,6 +15,8 @@ from semantic_kernel.connectors.ai.hugging_face.hf_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.models.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.models.contents.text_content import TextContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -77,25 +79,40 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         prompt: str,
         request_settings: HuggingFaceRequestSettings,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {HuggingFaceRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
             results = self.generator(**request_settings.prepare_settings_dict(prompt=prompt))
-            result_field_name = "summary_text" if self.task == "summarization" else "generated_text"
-            if len(results) == 1:
-                return results[0][result_field_name]
-            return [resp[result_field_name] for resp in results]
-
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
+        if isinstance(results, list):
+            return [self._create_text_content(results, result) for result in results]
+        return [self._create_text_content(results, results)]
+
+    def _create_text_content(self, response: Any, candidate: Dict[str, str]) -> TextContent:
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=candidate["summary_text" if self.task == "summarization" else "generated_text"],
+        )
 
     async def complete_stream(
         self,
         prompt: str,
         request_settings: HuggingFaceRequestSettings,
         **kwargs,
-    ):
+    ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Hugging Face model.
         Note that this method does not support multiple responses.
@@ -105,7 +122,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             request_settings {HuggingFaceRequestSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
@@ -131,7 +148,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             thread.start()
 
             for new_text in streamer:
-                yield new_text
+                yield [
+                    StreamingTextContent(
+                        choice_index=0, inner_content=new_text, text=new_text, ai_model_id=self.ai_model_id
+                    )
+                ]
 
             thread.join()
 
