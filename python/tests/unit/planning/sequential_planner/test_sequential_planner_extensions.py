@@ -29,7 +29,7 @@ async def _async_generator(query_result):
 
 
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_with_no_functions_async():
+async def test_can_call_get_available_functions_with_no_functions():
     variables = ContextVariables()
     plugins = PluginCollection()
 
@@ -46,7 +46,7 @@ async def test_can_call_get_available_functions_with_no_functions_async():
     )
 
     async_enumerable = _async_generator(memory_query_result)
-    memory.search_async.return_value = async_enumerable
+    memory.search.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
     context = KernelContext(variables, memory, plugins.read_only_plugin_collection)
@@ -54,17 +54,15 @@ async def test_can_call_get_available_functions_with_no_functions_async():
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
 
     # Assert
     assert result is not None
-    memory.search_async.assert_not_called()
+    memory.search.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_with_functions_async():
+async def test_can_call_get_available_functions_with_functions():
     variables = ContextVariables()
 
     function_mock = Mock(spec=KernelFunctionBase)
@@ -105,7 +103,7 @@ async def test_can_call_get_available_functions_with_functions_async():
 
     async_enumerable = _async_generator(memory_query_result)
     memory = Mock(spec=SemanticTextMemoryBase)
-    memory.search_async.return_value = async_enumerable
+    memory.search.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
     context = KernelContext.model_construct(variables=variables, memory=memory, plugin_collection=plugins)
@@ -113,9 +111,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -126,9 +122,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     config.included_functions.append(["nativeFunctionName"])
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -138,7 +132,7 @@ async def test_can_call_get_available_functions_with_functions_async():
 
 
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_with_functions_and_relevancy_async():
+async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Arrange
     variables = ContextVariables()
 
@@ -176,7 +170,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
         embedding=None,
     )
     memory = Mock(spec=SemanticTextMemoryBase)
-    memory.search_async.return_value = _async_generator(memory_query_result)
+    memory.search.return_value = _async_generator(memory_query_result)
 
     plugins = Mock(spec=ReadOnlyPluginCollectionBase)
     plugins.get_function.return_value = function_mock
@@ -193,9 +187,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -204,12 +196,10 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
 
     # Arrange update IncludedFunctions
     config.included_functions.append("nativeFunctionName")
-    memory.search_async.return_value = _async_generator(memory_query_result)
+    memory.search.return_value = _async_generator(memory_query_result)
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -219,7 +209,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
 
 
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_async_with_default_relevancy_async():
+async def test_can_call_get_available_functions_with_default_relevancy():
     # Arrange
     variables = ContextVariables()
     plugins = PluginCollection()
@@ -237,7 +227,7 @@ async def test_can_call_get_available_functions_async_with_default_relevancy_asy
     )
     async_enumerable = _async_generator(memory_query_result)
     memory = Mock(spec=SemanticTextMemoryBase)
-    memory.search_async.return_value = async_enumerable
+    memory.search.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
     context = KernelContext.model_construct(variables=variables, memory=memory, plugin_collection=plugins)
@@ -245,10 +235,8 @@ async def test_can_call_get_available_functions_async_with_default_relevancy_asy
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions_async(
-        context, config, semantic_query
-    )
+    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
 
     # Assert
     assert result is not None
-    memory.search_async.assert_called_once()
+    memory.search.assert_called_once()

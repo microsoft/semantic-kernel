@@ -169,7 +169,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
         api_key=api_key,
     )
-    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
+    await azure_chat_completion.complete_chat(messages=messages, settings=complete_request_settings)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         frequency_penalty=complete_request_settings.frequency_penalty,
@@ -208,7 +208,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_chat_async(messages=messages, settings=complete_request_settings)
+    await azure_chat_completion.complete_chat(messages=messages, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -248,7 +248,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_async(prompt, complete_request_settings)
+    await azure_chat_completion.complete(prompt, complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -333,7 +333,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         use_extensions=True,
     )
 
-    await azure_chat_completion.complete_chat_async(messages=messages_in, settings=complete_request_settings)
+    await azure_chat_completion.complete_chat(messages=messages_in, settings=complete_request_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -380,7 +380,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
         extra_body=extra,
     )
 
-    await azure_chat_completion.complete_chat_async(
+    await azure_chat_completion.complete_chat(
         messages=messages,
         settings=complete_request_settings,
     )
@@ -432,7 +432,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         use_extensions=True,
     )
 
-    await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
+    await azure_chat_completion.complete_chat(messages, complete_request_settings)
 
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
 
@@ -507,7 +507,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     )
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
-        await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
+        await azure_chat_completion.complete_chat(messages, complete_request_settings)
 
     content_filter_exc = exc_info.value
     assert content_filter_exc.param == "prompt"
@@ -557,7 +557,7 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
     )
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
-        await azure_chat_completion.complete_chat_async(messages, complete_request_settings)
+        await azure_chat_completion.complete_chat(messages, complete_request_settings)
 
     content_filter_exc = exc_info.value
     assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
