@@ -7,6 +7,7 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>RS1035,CS0612,CS1591,CS8601,CS8602,CS860218</NoWarn>
     <RootNamespace>Plugins.AzureFunctions.Generator</RootNamespace>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
