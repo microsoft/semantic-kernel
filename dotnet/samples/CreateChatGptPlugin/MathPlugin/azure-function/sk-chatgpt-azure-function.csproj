@@ -17,11 +17,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup>
-      <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-      <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>    
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
