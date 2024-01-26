@@ -14,8 +14,6 @@ using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
-
 namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionFromMethodTests1
@@ -1312,7 +1310,9 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(28, actualArgValue.Id);
     }
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class CustomTypeForJsonTests
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
