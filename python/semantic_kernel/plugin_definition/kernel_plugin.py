@@ -1,10 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import re
+import sys
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from pydantic import Field, field_validator
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+from pydantic import Field, StringConstraints
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -19,17 +24,8 @@ class KernelPlugin(KernelBaseModel, ABC):
         description (str): The description of the plugin.
     """
 
-    name: str
+    name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
     description: Optional[str] = Field(default=None)
-
-    @field_validator("name", mode="after")
-    @classmethod
-    def name_must_be_valid(cls, v: str) -> str:
-        """Validates that the name contains only uppercase, lowercase letters, or underscores."""
-        pattern = r"^[A-Za-z_]+$"
-        if not re.match(pattern, v):
-            raise ValueError("Name must contain only uppercase, lowercase letters, or underscores")
-        return v
 
     @abstractmethod
     def get_function_count(self) -> int:

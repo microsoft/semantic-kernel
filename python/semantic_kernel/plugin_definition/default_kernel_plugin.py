@@ -111,8 +111,12 @@ class DefaultKernelPlugin(KernelPlugin):
 
         Args:
             function (KernelFunctionBase): The function to create the plugin from.
+            plugin_name (Optional[str]): The name of the plugin. If not specified,
+                the name of the function will be used.
 
         Returns:
             A DefaultKernelPlugin instance.
         """
-        return cls(name=function.name, description=function.description, functions=[function])
+        if not plugin_name:
+            plugin_name = function.name
+        return cls(name=plugin_name, description=function.description, functions=[function])

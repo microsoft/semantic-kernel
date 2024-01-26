@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Iterable
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 
 from pydantic import Field
 
@@ -10,6 +9,9 @@ from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBas
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+
+# To support Python 3.8, need to use TypeVar since Iterable is not scriptable
+KernelPluginType = TypeVar("KernelPluginType", bound="KernelPlugin")
 
 
 class KernelPluginCollection(KernelBaseModel):
@@ -22,7 +24,7 @@ class KernelPluginCollection(KernelBaseModel):
 
     plugins: Optional[Dict[str, KernelPlugin]] = Field(default_factory=dict)
 
-    def __init__(self, plugins: Union[None, "KernelPluginCollection", Iterable[KernelPlugin]] = None):
+    def __init__(self, plugins: Union[None, "KernelPluginCollection", Iterable[KernelPluginType]] = None):
         """
         Initialize a new instance of the KernelPluginCollection class
 
@@ -90,7 +92,7 @@ class KernelPluginCollection(KernelBaseModel):
         if plugin_name in self.plugins:
             raise ValueError(f"Plugin with name {plugin_name} already exists")
 
-        plugin = DefaultKernelPlugin.from_function(function)
+        plugin = DefaultKernelPlugin.from_function(plugin_name=plugin_name, function=function)
         self.plugins[plugin_name] = plugin
 
     def add_functions_to_plugin(self, functions: List["KernelFunctionBase"], plugin_name: str) -> None:
