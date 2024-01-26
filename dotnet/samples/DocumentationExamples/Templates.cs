@@ -20,7 +20,7 @@ public class Templates : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Prompts ========");
+        WriteLine("======== Templates ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
