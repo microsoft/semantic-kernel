@@ -50,7 +50,7 @@ internal sealed class VertexAIEmbeddingsClient : ClientBase, IEmbeddingsClient
         Verify.NotNullOrEmpty(data);
 
         var endpoint = this.EndpointProvider.GetEmbeddingsEndpoint(this._embeddingModelId);
-        var geminiRequest = this.GetEmbeddingRequest(data);
+        var geminiRequest = GetEmbeddingRequest(data);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -59,7 +59,7 @@ internal sealed class VertexAIEmbeddingsClient : ClientBase, IEmbeddingsClient
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    private VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
+    private static VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
         => VertexAIEmbeddingRequest.FromData(data);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
