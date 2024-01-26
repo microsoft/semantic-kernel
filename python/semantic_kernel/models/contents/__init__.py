@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.models.contents.kernel_content import KernelContent
 from semantic_kernel.models.contents.streaming_chat_message_content import StreamingChatMessageContent

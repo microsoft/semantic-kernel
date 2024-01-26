@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import (
     AzureChatMessageContent,
 )

@@ -1,4 +1,4 @@
-"""Class to hold chat messages."""
+# Copyright (c) Microsoft. All rights reserved.
 from typing import Literal, Optional
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
