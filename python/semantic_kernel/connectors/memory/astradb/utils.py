@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Dict
+from typing import Any, Dict
 
 import aiohttp
 import numpy
@@ -18,11 +18,11 @@ class AsyncSession:
         await self._session.close()
 
 
-def build_payload(record: MemoryRecord) -> dict:
+def build_payload(record: MemoryRecord) -> Dict[str, Any]:
     """
     Builds a metadata payload to be sent to AstraDb from a MemoryRecord.
     """
-    payload: dict = {}
+    payload: Dict[str, Any] = {}
     payload["$vector"] = record.embedding.tolist()
     if record._text:
         payload["text"] = record._text
@@ -33,7 +33,7 @@ def build_payload(record: MemoryRecord) -> dict:
     return payload
 
 
-def parse_payload(document: Dict) -> MemoryRecord:
+def parse_payload(document: Dict[str, Any]) -> MemoryRecord:
     """
     Parses a record from AstraDb into a MemoryRecord.
     """
