@@ -47,11 +47,15 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>aiservices-azureopenai</artifactId>
+            <artifactId>aiservices-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-plugin-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-web-bing</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>

@@ -140,7 +140,7 @@ public class KernelPluginFactory {
                     KernelFunctionParameter.class);
 
                 return new KernelParameterMetadata(annotation.name(), annotation.description(),
-                    annotation.defaultValue(), annotation.required());
+                    null, annotation.defaultValue(), annotation.required());
             }).collect(Collectors.toList());
     }
 

@@ -64,13 +64,14 @@ public class ContextVariableTypes {
                 contextVariableTypeConverter.getType()));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T convert(Object s, Class<T> clazz) {
         if (s instanceof ContextVariable && ((ContextVariable<?>) s).getType().getClazz()
             .isAssignableFrom(clazz)) {
             return ((ContextVariable<T>) s).getValue();
         }
         if (s != null && clazz.isAssignableFrom(s.getClass())) {
-            return (T) s;
+            return clazz.cast(s);
         } else {
             return null;
         }

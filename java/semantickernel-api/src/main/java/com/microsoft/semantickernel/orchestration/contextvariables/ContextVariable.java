@@ -41,13 +41,14 @@ public class ContextVariable<T> {
     }
 
     public ContextVariable<T> cloneVariable() {
-        return new ContextVariable<T>(type, value);
+        return new ContextVariable<>(type, value);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> ContextVariable<T> of(T value) {
         ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(
             (Class<T>) value.getClass());
-        return new ContextVariable<T>(type, value);
+        return new ContextVariable<>(type, value);
     }
 
     public static <T> ContextVariable<T> of(T value, ContextVariableTypeConverter<T> converter) {
