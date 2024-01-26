@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -370,15 +371,23 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             object? Process(object? value)
             {
-                if (!type.IsAssignableFrom(value?.GetType()) && converter is not null)
+                if (!type.IsAssignableFrom(value?.GetType()))
                 {
-                    try
+                    if (converter is not null)
                     {
-                        return converter(value, kernel.Culture);
+                        try
+                        {
+                            return converter(value, kernel.Culture);
+                        }
+                        catch (Exception e) when (!e.IsCriticalException())
+                        {
+                            throw new ArgumentOutOfRangeException(name, value, e.Message);
+                        }
                     }
-                    catch (Exception e) when (!e.IsCriticalException())
+
+                    if (value is not null && TryToDeserializeValue(value, type, out var deserializedValue))
                     {
-                        throw new ArgumentOutOfRangeException(name, value, e.Message);
+                        return deserializedValue;
                     }
                 }
 
@@ -397,6 +406,55 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         };
 
         return (parameterFunc, parameterView);
+    }
+
+    /// <summary>
+    /// Tries to deserialize the given value into an object of the specified target type.
+    /// </summary>
+    /// <param name="value">The value to be deserialized.</param>
+    /// <param name="targetType">The type of the object to deserialize the value into.</param>
+    /// <param name="deserializedValue">The deserialized object if the method succeeds; otherwise, null.</param>
+    /// <returns>true if the value is successfully deserialized; otherwise, false.</returns>
+    private static bool TryToDeserializeValue(object value, Type targetType, out object? deserializedValue)
+    {
+        try
+        {
+            // Handling known 'JSON' types.
+            if (value is JsonDocument document)
+            {
+                deserializedValue = JsonSerializer.Deserialize(document, targetType);
+                return true;
+            }
+
+            if (value is JsonNode node)
+            {
+                deserializedValue = JsonSerializer.Deserialize(node, targetType);
+                return true;
+            }
+
+            if (value is JsonElement element)
+            {
+                deserializedValue = JsonSerializer.Deserialize(element, targetType);
+                return true;
+            }
+
+            // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+            // Since we don't take dependencies on these libraries and don't have access to the types here,
+            // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
+            deserializedValue = JsonSerializer.Deserialize(value.ToString(), targetType);
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            // There is no compatible JsonConverter for targetType or its serializable members.
+        }
+        catch (JsonException)
+        {
+            // The JSON is invalid.
+        }
+
+        deserializedValue = null;
+        return false;
     }
 
     /// <summary>
