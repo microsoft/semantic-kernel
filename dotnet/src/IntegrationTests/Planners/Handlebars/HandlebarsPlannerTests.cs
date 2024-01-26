@@ -68,6 +68,46 @@ public sealed class HandlebarsPlannerTests : IDisposable
         );
     }
 
+    [Theory]
+    [InlineData(
+        "Are there any in-person courses that are worth 10 credits? If so, tell me the name.",
+        new string[] { "UniversityPluginFake_GetCourses" },
+        new string[] { "Deep Learning Capstone" },
+        new string[] { "Intro to Generative AI", "LLMs and You", "ML for Climate Change" })]
+    [InlineData(
+        "Show me all online courses about artificial intelligence.",
+        new string[] { "UniversityPluginFake_GetCourses", "artificial intelligence" },
+        new string[] { "Intro to Generative AI", "LLMs and You" },
+        new string[] { "Deep Learning Capstone", "ML for Climate Change" })]
+    public async Task CreateAndExecutePlanWithComplexTypeAsync(
+        string prompt,
+        string[] planContains,
+        string[] resultContains,
+        string[] resultDoesNotContain)
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<UniversityPluginFake>();
+
+        // Act
+        HandlebarsPlan plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
+        string planResult = await plan.InvokeAsync(kernel);
+
+        // Assert
+        foreach (string str in planContains)
+        {
+            Assert.Contains(str, plan.ToString(), StringComparison.CurrentCulture);
+        }
+        foreach (string str in resultContains)
+        {
+            Assert.Contains(str, planResult, StringComparison.CurrentCulture);
+        }
+        foreach (string str in resultDoesNotContain)
+        {
+            Assert.DoesNotContain(str, planResult, StringComparison.CurrentCulture);
+        }
+    }
+
     private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
