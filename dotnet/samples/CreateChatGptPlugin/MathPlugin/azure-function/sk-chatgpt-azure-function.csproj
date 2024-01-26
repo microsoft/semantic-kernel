@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-      <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+      <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
       <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>    
   </PropertyGroup>
 
