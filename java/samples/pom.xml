@@ -12,6 +12,7 @@
     <modules>
         <module>sample-code</module>
         <module>semantickernel-samples-guice</module>
+        <module>semantickernel-spring-starter</module>
     </modules>
 
     <properties>

@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.starter;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -63,5 +62,4 @@ public class SemanticKernelAutoConfiguration {
                                 .build())
                 .build();
     }
-
 }

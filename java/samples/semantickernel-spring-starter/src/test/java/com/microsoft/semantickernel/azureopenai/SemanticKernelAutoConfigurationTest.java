@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.azureopenai;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,23 +16,22 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 @SpringBootTest(classes = SemanticKernelAutoConfiguration.class)
 public class SemanticKernelAutoConfigurationTest {
 
-    @Autowired
-    Kernel kernel;
+    @Autowired Kernel kernel;
 
     @Test
     public void testSemanticKernelAutoConfig() {
         ApplicationContextRunner runner = new ApplicationContextRunner();
         runner.withPropertyValues(
-            // @formatter:off
-            "client.azureopenai.key=TEST_KEY",
-            "client.azureopenai.endpoint=TEST_ENDPOINT",
-            "client.azureopenai.deploymentname=TEST_DEPLOYMENT_NAME"
-            // @formatter:on
-        );
+                // @formatter:off
+                "client.azureopenai.key=TEST_KEY",
+                "client.azureopenai.endpoint=TEST_ENDPOINT",
+                "client.azureopenai.deploymentname=TEST_DEPLOYMENT_NAME"
+                // @formatter:on
+                );
         runner.withConfiguration(AutoConfigurations.of(SemanticKernelAutoConfiguration.class));
         runner.run(
-            context -> {
-                assertNotNull(kernel);
-            });
+                context -> {
+                    assertNotNull(kernel);
+                });
     }
 }

@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.starter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
