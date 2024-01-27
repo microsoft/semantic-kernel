@@ -3,9 +3,9 @@
 from typing import Dict, List, Optional
 
 from pydantic import Field
+from python.semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPluginBase
 
 
 class DefaultKernelPlugin(KernelPluginBase):
@@ -13,7 +13,8 @@ class DefaultKernelPlugin(KernelPluginBase):
     Represents a Kernel Plugin with functions.
 
     Attributes:
-        name (str): The name of the plugin.
+        name (str): The name of the plugin. The name can be upper/lower
+            case letters and underscores.
         description (str): The description of the plugin.
         functions (Dict[str, KernelFunctionBase]): The functions in the plugin,
             indexed by their name. Although this is a dictionary, the user

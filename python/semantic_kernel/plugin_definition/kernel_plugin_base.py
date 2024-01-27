@@ -20,7 +20,8 @@ class KernelPluginBase(KernelBaseModel, ABC):
 
     Attributes:
 
-        name (str): The name of the plugin.
+        name (str): The name of the plugin. The name can be upper/lower
+            case letters and underscores.
         description (str): The description of the plugin.
     """
 
