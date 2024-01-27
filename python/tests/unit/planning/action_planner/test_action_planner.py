@@ -77,7 +77,7 @@ async def test_plan_creation():
 
     return_context.variables.update(plan_str)
 
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
@@ -117,7 +117,7 @@ def mock_context(plugins_input):
 
         _context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
         _context.variables.update("MOCK FUNCTION CALLED")
-        mock_function.invoke_async.return_value = _context
+        mock_function.invoke.return_value = _context
         mock_functions.append(mock_function)
 
     plugins.get_plugin.get_function.side_effect = lambda plugin_name, function_name: next(
@@ -207,7 +207,7 @@ async def test_invalid_json_throw():
 
     return_context.variables.update(plan_str)
 
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
@@ -241,7 +241,7 @@ async def test_empty_goal_throw():
     return_context = KernelContext.model_construct(
         variables=ContextVariables(), memory=memory, plugin_collection=plugins
     )
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
