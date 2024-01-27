@@ -3,7 +3,6 @@
 from unittest.mock import Mock
 
 import pytest
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
@@ -13,6 +12,7 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_parser impor
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
 def create_mock_function(function_view: FunctionView) -> KernelFunctionBase:

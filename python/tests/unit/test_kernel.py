@@ -3,11 +3,11 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel import Kernel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
 def create_mock_function(name) -> KernelFunctionBase:

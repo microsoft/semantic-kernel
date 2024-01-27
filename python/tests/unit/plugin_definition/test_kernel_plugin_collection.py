@@ -3,8 +3,8 @@
 from string import ascii_uppercase
 
 import pytest
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 

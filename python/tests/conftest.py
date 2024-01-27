@@ -7,13 +7,13 @@ import typing as t
 import warnings
 
 import pytest
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 import semantic_kernel as sk
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 

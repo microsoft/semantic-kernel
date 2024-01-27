@@ -2,7 +2,6 @@ from textwrap import dedent
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
@@ -16,6 +15,7 @@ from semantic_kernel.planning.action_planner.action_planner_config import (
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
