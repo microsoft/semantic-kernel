@@ -119,23 +119,6 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
         """
         return self._objects
 
-    # @property
-    # def plugins(self) -> KernelPluginCollection:
-    #     """
-    #     Read only plugins collection.
-
-    #     Returns:
-    #         KernelPluginCollection -- The plugins collection.
-    #     """
-    #     return self.plugins
-
-    # @plugins.setter
-    # def plugins(self, value: KernelPluginCollection) -> None:
-    #     """
-    #     Set the value of plugins collection
-    #     """
-    #     self.plugins = value
-
     def __setitem__(self, key: str, value: Any) -> None:
         """
         Sets a context variable.
