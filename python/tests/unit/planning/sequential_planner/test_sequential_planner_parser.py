@@ -3,6 +3,7 @@
 from unittest.mock import Mock
 
 import pytest
+from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
@@ -10,7 +11,6 @@ from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
-from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 
@@ -35,7 +35,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
         result = kernel.create_new_context()
         result.variables.update(result_string)
         mock_function.invoke.return_value = result
-        kernel.plugins.add(DefaultKernelPlugin(name=plugin_name, functions=[mock_function]))
+        kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 
     return kernel
 

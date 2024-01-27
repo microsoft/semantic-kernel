@@ -30,11 +30,8 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.default_kernel_plugin import (
-    DefaultKernelPlugin,
-)
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
@@ -105,20 +102,20 @@ class Kernel:
         return self._prompt_template_engine
 
     def add_plugin(
-        self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPluginBase] = None
+        self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPlugin] = None
     ) -> None:
         """
         Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
-        it uses that instance instead of creating a new DefaultKernelPlugin.
+        it uses that instance instead of creating a new KernelPlugin.
 
         Args:
             plugin_name (str): The name of the plugin
             functions (List[KernelFunctionBase]): The functions to add to the plugin
-            plugin (Optional[KernelPluginBase]): An optional pre-defined plugin instance
+            plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
         """
         if plugin is None:
-            # If no plugin instance is provided, create a new DefaultKernelPlugin
-            plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
+            # If no plugin instance is provided, create a new KernelPlugin
+            plugin = KernelPlugin(name=plugin_name, functions=functions)
 
         if plugin_name in self.plugins:
             self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
@@ -431,7 +428,7 @@ class Kernel:
             return args
         return None
 
-    def import_plugin(self, plugin_instance: Any, plugin_name: str) -> KernelPluginBase:
+    def import_plugin(self, plugin_instance: Any, plugin_name: str) -> KernelPlugin:
         """
         Import a plugin into the kernel.
 
@@ -442,7 +439,7 @@ class Kernel:
             plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
 
         Returns:
-            KernelPluginBase: The imported plugin of type KernelPluginBase.
+            KernelPlugin: The imported plugin of type KernelPlugin.
         """
         if not plugin_name.strip():
             logger.warn("Unable to import plugin due to missing plugin_name")
@@ -477,7 +474,7 @@ class Kernel:
         for func in functions:
             func.set_default_plugin_collection(self.plugins)
 
-        plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
+        plugin = KernelPlugin(name=plugin_name, functions=functions)
         # TODO: we shouldn't have to be adding functions to a plugin after the fact
         # This isn't done in dotnet, and needs to be revisited as we move to v1.0
         # This is to support the current state of the code
@@ -755,9 +752,7 @@ class Kernel:
 
         return function
 
-    def import_native_plugin_from_directory(
-        self, parent_directory: str, plugin_directory_name: str
-    ) -> DefaultKernelPlugin:
+    def import_native_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         MODULE_NAME = "native_function"
 
         validate_plugin_name(plugin_directory_name)
@@ -784,9 +779,7 @@ class Kernel:
 
         return {}
 
-    def import_semantic_plugin_from_directory(
-        self, parent_directory: str, plugin_directory_name: str
-    ) -> DefaultKernelPlugin:
+    def import_semantic_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
 
@@ -827,7 +820,7 @@ class Kernel:
             # plugin collection later?
             functions += [self.register_semantic_function(plugin_directory_name, function_name, function_config)]
 
-        plugin = DefaultKernelPlugin(name=plugin_directory_name, functions=functions)
+        plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
 
         return plugin
 

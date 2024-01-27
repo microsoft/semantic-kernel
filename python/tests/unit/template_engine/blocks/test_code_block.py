@@ -1,13 +1,13 @@
 from unittest.mock import Mock
 
 from pytest import mark, raises
+from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
@@ -52,7 +52,7 @@ class TestCodeBlock:
             is_semantic=False,
         )
 
-        dkp = DefaultKernelPlugin(name="test", functions=[function])
+        dkp = KernelPlugin(name="test", functions=[function])
         plugins = KernelPluginCollection()
         plugins.add(dkp)
 
@@ -247,7 +247,7 @@ class TestCodeBlock:
             is_semantic=False,
         )
 
-        dkp = DefaultKernelPlugin(name="test", functions=[function])
+        dkp = KernelPlugin(name="test", functions=[function])
         plugins = KernelPluginCollection()
         plugins.add(dkp)
 
@@ -309,7 +309,7 @@ class TestCodeBlock:
             is_semantic=False,
         )
 
-        dkp = DefaultKernelPlugin(name="test", functions=[function])
+        dkp = KernelPlugin(name="test", functions=[function])
         plugins = KernelPluginCollection()
         plugins.add(dkp)
 
@@ -361,7 +361,7 @@ class TestCodeBlock:
             is_semantic=False,
         )
 
-        dkp = DefaultKernelPlugin(name="test", functions=[function])
+        dkp = KernelPlugin(name="test", functions=[function])
         plugins = KernelPluginCollection()
         plugins.add(dkp)
 

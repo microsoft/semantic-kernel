@@ -1,14 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from typing import Dict, List, Optional
 
-from pydantic import Field
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
+from pydantic import Field, StringConstraints
+
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 
-class DefaultKernelPlugin(KernelPluginBase):
+class KernelPlugin(KernelBaseModel):
     """
     Represents a Kernel Plugin with functions.
 
@@ -17,18 +23,18 @@ class DefaultKernelPlugin(KernelPluginBase):
             case letters and underscores.
         description (str): The description of the plugin.
         functions (Dict[str, KernelFunctionBase]): The functions in the plugin,
-            indexed by their name. Although this is a dictionary, the user
-            should pass a list of KernelFunctionBase instances when initializing,
-            and they will be automatically converted to a dictionary.
+            indexed by their name.
     """
 
+    name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
+    description: Optional[str] = Field(default=None)
     functions: Optional[Dict[str, "KernelFunctionBase"]] = Field(default_factory=dict)
 
     def __init__(
         self, name: str, description: Optional[str] = None, functions: Optional[List[KernelFunctionBase]] = None
     ):
         """
-        Initialize a new instance of the DefaultKernelPlugin class
+        Initialize a new instance of the KernelPlugin class
 
         Args:
             name (str): The name of the plugin.
@@ -68,28 +74,7 @@ class DefaultKernelPlugin(KernelPluginBase):
         """
         return function_name in self.functions.keys()
 
-    def get_function(self, function_name: str):
-        """
-        Gets the function in the plugin with the specified name.
-
-        Args:
-            function_name (str): The name of the function.
-
-        Returns:
-            The function.
-
-        Raises:
-            KeyError: If the plugin does not contain a function with the specified name.
-        """
-        try:
-            return self.functions[function_name]
-        except KeyError:
-            raise KeyError(
-                f"The plugin does not contain a function with the specified name. "
-                f"Plugin name: {self.name}, function name: {function_name}"
-            )
-
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> "KernelFunctionBase":
         """Define the [] operator for the plugin
 
         Args:
@@ -108,9 +93,9 @@ class DefaultKernelPlugin(KernelPluginBase):
     @classmethod
     def from_functions(
         cls, functions: List["KernelFunctionBase"], plugin_name: str, description: Optional[str] = None
-    ) -> "DefaultKernelPlugin":
+    ) -> "KernelPlugin":
         """
-        Creates a DefaultKernelPlugin from a KernelFunctionBase instance.
+        Creates a KernelPlugin from a KernelFunctionBase instance.
 
         Args:
             functions (List[KernelFunctionBase]): The functions to create the plugin from.
@@ -119,6 +104,6 @@ class DefaultKernelPlugin(KernelPluginBase):
             description (Optional[str]): The description of the plugin.
 
         Returns:
-            A DefaultKernelPlugin instance.
+            A KernelPlugin instance.
         """
         return cls(name=plugin_name, description=description, functions=functions)

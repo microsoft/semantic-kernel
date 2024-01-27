@@ -1,17 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from __future__ import annotations
+
 import os
 import typing as t
 import warnings
 
 import pytest
+from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 import semantic_kernel as sk
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 
@@ -92,7 +94,7 @@ def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
     def create_context(context_variables: ContextVariables, *functions: KernelFunction) -> KernelContext:
         """Return a KernelContext object."""
 
-        plugin = DefaultKernelPlugin(name="test_plugin", functions=functions)
+        plugin = KernelPlugin(name="test_plugin", functions=functions)
 
         return KernelContext(
             context_variables,

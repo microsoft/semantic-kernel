@@ -3,9 +3,9 @@
 from typing import TYPE_CHECKING
 
 import pytest
+from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.semantic_functions.semantic_function_config import SemanticFunctionConfig
@@ -17,13 +17,13 @@ if TYPE_CHECKING:
 
 def test_throws_for_missing_name():
     with pytest.raises(TypeError):
-        DefaultKernelPlugin(description="A unit test plugin")
+        KernelPlugin(description="A unit test plugin")
 
 
 def test_default_kernel_plugin_construction_with_no_functions():
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
-    plugin = DefaultKernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
+    plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
 
@@ -52,7 +52,7 @@ def test_default_kernel_plugin_construction_with_native_functions():
 
     native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
-    plugin = DefaultKernelPlugin(
+    plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
     )
     assert plugin.name == expected_plugin_name
@@ -85,7 +85,7 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
 
     native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
-    plugin = DefaultKernelPlugin(
+    plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
     )
     assert plugin.name == expected_plugin_name
@@ -111,7 +111,7 @@ def test_default_kernel_plugin_construction_with_semantic_function():
 
     expected_plugin_description = "A unit test plugin"
 
-    plugin = DefaultKernelPlugin(
+    plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[semantic_function]
     )
 
@@ -157,7 +157,7 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     # Add both types to the default kernel plugin
     expected_plugin_description = "A unit test plugin"
 
-    plugin = DefaultKernelPlugin(
+    plugin = KernelPlugin(
         name=expected_plugin_name,
         description=expected_plugin_description,
         functions=[semantic_function, native_function],
@@ -205,4 +205,4 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     with pytest.raises(ValueError):
-        DefaultKernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])
+        KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])
