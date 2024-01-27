@@ -7,7 +7,7 @@ import typing as t
 import warnings
 
 import pytest
-from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 import semantic_kernel as sk
 from semantic_kernel.memory.null_memory import NullMemory

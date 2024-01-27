@@ -3,7 +3,7 @@
 from unittest.mock import Mock
 
 import pytest
-from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase

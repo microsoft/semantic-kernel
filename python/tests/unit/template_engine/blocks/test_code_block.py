@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 from pytest import mark, raises
-from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables

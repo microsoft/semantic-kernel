@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate

@@ -3,7 +3,7 @@
 from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 
 from pydantic import Field
-from python.semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
