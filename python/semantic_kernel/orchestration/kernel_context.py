@@ -22,7 +22,7 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
     memory: SemanticTextMemoryT
     variables: ContextVariables
     # This field can be used to hold anything that is not a string
-    plugin_collection: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
+    plugins: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
     _objects: Dict[str, Any] = PrivateAttr(default_factory=dict)
     _error_occurred: bool = PrivateAttr(False)
     _last_exception: Optional[Exception] = PrivateAttr(None)
@@ -32,7 +32,7 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
         self,
         variables: ContextVariables,
         memory: SemanticTextMemoryBase,
-        plugin_collection: Union[KernelPluginCollection, None],
+        plugins: Union[KernelPluginCollection, None],
         **kwargs,
         # TODO: cancellation token?
     ) -> None:
@@ -42,15 +42,15 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
         Arguments:
             variables {ContextVariables} -- The context variables.
             memory {SemanticTextMemoryBase} -- The semantic text memory.
-            plugins {KernelPluginCollection} -- The plugin collection.
+            plugins {KernelPluginCollection} -- The kernel plugin collection.
         """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
 
-        if plugin_collection is None:
-            plugin_collection = KernelPluginCollection()
+        if plugins is None:
+            plugins = KernelPluginCollection()
 
-        super().__init__(variables=variables, memory=memory, plugin_collection=plugin_collection)
+        super().__init__(variables=variables, memory=memory, plugins=plugins)
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
@@ -119,22 +119,22 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
         """
         return self._objects
 
-    @property
-    def plugins(self) -> KernelPluginCollection:
-        """
-        Read only plugins collection.
+    # @property
+    # def plugins(self) -> KernelPluginCollection:
+    #     """
+    #     Read only plugins collection.
 
-        Returns:
-            KernelPluginCollection -- The plugins collection.
-        """
-        return self.plugin_collection
+    #     Returns:
+    #         KernelPluginCollection -- The plugins collection.
+    #     """
+    #     return self.plugins
 
-    @plugins.setter
-    def plugins(self, value: KernelPluginCollection) -> None:
-        """
-        Set the value of plugins collection
-        """
-        self.plugin_collection = value
+    # @plugins.setter
+    # def plugins(self, value: KernelPluginCollection) -> None:
+    #     """
+    #     Set the value of plugins collection
+    #     """
+    #     self.plugins = value
 
     def __setitem__(self, key: str, value: Any) -> None:
         """
@@ -171,14 +171,14 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
         Returns:
             KernelFunctionBase -- The function.
         """
-        if self.plugin_collection is None:
+        if self.plugins is None:
             raise ValueError("The plugin collection hasn't been set")
-        assert self.plugin_collection is not None  # for type checker
+        assert self.plugins is not None  # for type checker
 
-        if self.plugin_collection[plugin_name][function_name].is_native:
-            return self.plugin_collection.get_native_function(plugin_name, function_name)
+        if self.plugins[plugin_name][function_name].is_native:
+            return self.plugins.get_native_function(plugin_name, function_name)
 
-        return self.plugin_collection[plugin_name][function_name]
+        return self.plugins[plugin_name][function_name]
 
     def __str__(self) -> str:
         if self._error_occurred:

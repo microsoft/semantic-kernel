@@ -140,7 +140,7 @@ class ActionPlanner:
             plan = Plan(description=goal)
         elif "." in generated_plan["plan"]["function"]:
             plugin, fun = generated_plan["plan"]["function"].split(".")
-            function_ref = self._context.plugins.get_plugin(plugin).get_function(fun)
+            function_ref = self._context.plugins[plugin][fun]
             logger.info(
                 f"ActionPlanner has picked {plugin}.{fun}. Reference to this function"
                 f" found in context: {function_ref}"
@@ -148,7 +148,7 @@ class ActionPlanner:
             plan = Plan(description=goal, function=function_ref)
         else:
             plugin, func = generated_plan["plan"]["function"]
-            function_ref = self._context.plugins.get_plugin(plugin).get_function(func)
+            function_ref = self._context.plugins[plugin][func]
             logger.info(
                 f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
                 "              Reference to this function found in context:"

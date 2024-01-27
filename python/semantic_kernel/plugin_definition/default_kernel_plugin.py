@@ -46,7 +46,7 @@ class DefaultKernelPlugin(KernelPluginBase):
                 functions_dict[function.name] = function
         super().__init__(name=name, description=description, functions=functions_dict)
 
-    def get_function_count(self) -> int:
+    def __len__(self) -> int:
         """
         Gets the number of functions in the plugin.
 
@@ -56,7 +56,7 @@ class DefaultKernelPlugin(KernelPluginBase):
         """
         return len(self.functions)
 
-    def has_function(self, function_name: str) -> bool:
+    def __contains__(self, function_name: str) -> bool:
         """
         Checks if the plugin contains a function with the specified name.
 
@@ -106,18 +106,19 @@ class DefaultKernelPlugin(KernelPluginBase):
         return self.functions[name]
 
     @classmethod
-    def from_function(cls, function: "KernelFunctionBase", plugin_name: Optional[str] = None) -> "DefaultKernelPlugin":
+    def from_functions(
+        cls, functions: List["KernelFunctionBase"], plugin_name: str, description: Optional[str] = None
+    ) -> "DefaultKernelPlugin":
         """
         Creates a DefaultKernelPlugin from a KernelFunctionBase instance.
 
         Args:
-            function (KernelFunctionBase): The function to create the plugin from.
+            functions (List[KernelFunctionBase]): The functions to create the plugin from.
             plugin_name (Optional[str]): The name of the plugin. If not specified,
                 the name of the function will be used.
+            description (Optional[str]): The description of the plugin.
 
         Returns:
             A DefaultKernelPlugin instance.
         """
-        if not plugin_name:
-            plugin_name = function.name
-        return cls(name=plugin_name, description=function.description, functions=[function])
+        return cls(name=plugin_name, description=description, functions=functions)

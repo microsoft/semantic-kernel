@@ -57,8 +57,8 @@ def test_default_kernel_plugin_construction_with_native_functions():
     )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
-    assert plugin.get_function_count() == 1
-    assert plugin.get_function("mock_function") == native_function
+    assert len(plugin.functions) == 1
+    assert plugin["mock_function"] == native_function
 
 
 def test_default_kernel_plugin_exposes_the_native_function_it_contains():
@@ -90,12 +90,12 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
     )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
-    assert plugin.get_function_count() == 1
-    assert plugin.get_function("mock_function") == native_function
+    assert len(plugin.functions) == 1
+    assert plugin["mock_function"] == native_function
 
     for func in [native_function]:
-        assert plugin.has_function(func.name)
-        assert plugin.get_function(func.name) == func
+        assert func.name in plugin
+        assert plugin[func.name] == func
 
 
 def test_default_kernel_plugin_construction_with_semantic_function():
@@ -117,8 +117,8 @@ def test_default_kernel_plugin_construction_with_semantic_function():
 
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
-    assert plugin.get_function_count() == 1
-    assert plugin.get_function("mock_function") == semantic_function
+    assert len(plugin.functions) == 1
+    assert plugin["mock_function"] == semantic_function
 
 
 def test_default_kernel_plugin_construction_with_both_function_types():
@@ -165,11 +165,11 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
-    assert plugin.get_function_count() == 2
+    assert len(plugin.functions) == 2
 
     for func in [semantic_function, native_function]:
-        assert plugin.has_function(func.name)
-        assert plugin.get_function(func.name) == func
+        assert func.name in plugin
+        assert plugin[func.name] == func
 
 
 def test_default_kernel_plugin_construction_with_same_function_names_throws():

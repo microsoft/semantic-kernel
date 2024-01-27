@@ -374,7 +374,7 @@ class KernelFunction(KernelFunctionBase):
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 memory=memory if memory is not None else NullMemory.instance,
-                plugin_collection=self._plugin_collection,
+                plugins=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -449,7 +449,7 @@ class KernelFunction(KernelFunctionBase):
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 memory=memory if memory is not None else NullMemory.instance,
-                plugin_collection=self._plugin_collection,
+                plugins=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables

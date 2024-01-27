@@ -147,7 +147,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             # TODO: Test serialization with different types of memories.
             variables=create_context_variables(),
             memory=NullMemory(),
-            plugin_collection=create_plugin_collection(),
+            plugins=create_plugin_collection(),
         ),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),

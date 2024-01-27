@@ -158,7 +158,7 @@ class Plan(KernelFunctionBase):
             context = KernelContext(
                 variables=self._state,
                 memory=memory or NullMemory(),
-                plugin_collection=KernelPluginCollection(),
+                plugins=KernelPluginCollection(),
             )
 
         if self._function is not None:
@@ -205,7 +205,7 @@ class Plan(KernelFunctionBase):
                     "Plugin collection not found in the context",
                 )
             try:
-                pluginFunction = context.plugins.get_plugin(plan.plugin_name).get_function(plan.name)
+                pluginFunction = context.plugins[plan.plugin_name][plan.name]
                 plan.set_function(pluginFunction)
             except Exception:
                 pass
@@ -260,7 +260,7 @@ class Plan(KernelFunctionBase):
             func_context = KernelContext(
                 variables=variables,
                 memory=context.memory,
-                plugin_collection=context.plugins,
+                plugins=context.plugins,
             )
             result = await step.invoke(context=func_context)
             result_value = result.result

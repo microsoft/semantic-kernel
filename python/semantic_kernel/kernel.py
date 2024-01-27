@@ -65,7 +65,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Kernel:
-    plugins: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
+    plugins: Optional[KernelPluginCollection] = Field(default_factory=KernelPluginCollection)
     # TODO: pydantic-ify these fields
     _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
@@ -104,7 +104,7 @@ class Kernel:
     def prompt_template_engine(self) -> PromptTemplatingEngine:
         return self._prompt_template_engine
 
-    def add_plugin_to_collection(
+    def add_plugin(
         self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPluginBase] = None
     ) -> None:
         """
@@ -120,7 +120,7 @@ class Kernel:
             # If no plugin instance is provided, create a new DefaultKernelPlugin
             plugin = DefaultKernelPlugin(name=plugin_name, functions=functions)
 
-        if self.plugins.contains(plugin_name):
+        if plugin_name in self.plugins:
             self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
         else:
             self.plugins.add(plugin)
@@ -153,7 +153,7 @@ class Kernel:
         validate_function_name(function_name)
 
         function = self._create_semantic_function(plugin_name, function_name, function_config)
-        self.add_plugin_to_collection(plugin_name, [function])
+        self.add_plugin(plugin_name, [function])
 
         return function
 
@@ -186,14 +186,14 @@ class Kernel:
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        if self.plugins.contains(plugin_name=plugin_name) and self.plugins[plugin_name].has_function(function_name):
+        if plugin_name in self.plugins and function_name in self.plugins[plugin_name]:
             raise KernelException(
                 KernelException.ErrorCodes.FunctionOverloadNotSupported,
                 "Overloaded functions are not supported, " "please differentiate function names.",
             )
 
         function = KernelFunction.from_native_method(kernel_function, plugin_name)
-        self.add_plugin_to_collection(plugin_name, [function])
+        self.add_plugin(plugin_name, [function])
 
         return function
 
@@ -241,7 +241,7 @@ class Kernel:
                 context = KernelContext(
                     variables=variables,
                     memory=self._memory,
-                    plugin_collection=self.plugins,
+                    plugins=self.plugins,
                 )
         else:
             raise ValueError("No functions passed to run")
@@ -296,7 +296,7 @@ class Kernel:
             context = KernelContext(
                 variables=variables,
                 memory=self._memory,
-                plugin_collection=self.plugins,
+                plugins=self.plugins,
             )
 
         pipeline_step = 0
@@ -377,7 +377,7 @@ class Kernel:
         return context
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunctionBase:
-        return self.plugins.get_plugin(plugin_name=plugin_name).get_function(function_name=function_name)
+        return self.plugins[plugin_name][function_name]
 
     def use_memory(
         self,
@@ -436,7 +436,9 @@ class Kernel:
         Import a plugin into the kernel.
 
         Args:
-            plugin_instance (Any): The plugin instance.
+            plugin_instance (Any): The plugin instance. This can be a custom class that contains methods
+                with the kernel_function decorator for one or several methods. See `TextMemoryPlugin` as
+                an example.
             plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
 
         Returns:
@@ -452,10 +454,7 @@ class Kernel:
 
         functions = []
 
-        if isinstance(plugin_instance, dict):
-            candidates = plugin_instance.items()
-        else:
-            candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
+        candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
         # Read every method from the plugin instance
         for _, candidate in candidates:
             # If the method is a semantic function, register it
@@ -482,7 +481,7 @@ class Kernel:
         # TODO: we shouldn't have to be adding functions to a plugin after the fact
         # This isn't done in dotnet, and needs to be revisited as we move to v1.0
         # This is to support the current state of the code
-        if self.plugins.contains(plugin_name):
+        if plugin_name in self.plugins:
             self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
         else:
             self.plugins.add(plugin)

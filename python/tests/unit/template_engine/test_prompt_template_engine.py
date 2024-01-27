@@ -33,7 +33,7 @@ def plugins():
 
 @fixture
 def context(variables, plugins):
-    return KernelContext(variables=variables, memory=NullMemory(), plugin_collection=plugins)
+    return KernelContext(variables=variables, memory=NullMemory(), plugins=plugins)
 
 
 def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVariables):

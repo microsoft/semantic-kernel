@@ -22,8 +22,8 @@ async def test_it_can_be_imported():
     assert kernel.import_plugin(plugin, "http")
     assert kernel.plugins["http"] is not None
     assert kernel.plugins["http"].name == "http"
-    assert kernel.plugins["http"].get_function("getAsync") is not None
-    assert kernel.plugins["http"].get_function("postAsync") is not None
+    assert kernel.plugins["http"]["getAsync"] is not None
+    assert kernel.plugins["http"]["postAsync"] is not None
 
 
 @patch("aiohttp.ClientSession.get")

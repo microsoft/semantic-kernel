@@ -13,7 +13,7 @@ def test_add_plugin():
     plugin = DefaultKernelPlugin(name="TestPlugin")
     collection.add(plugin)
     assert len(collection) == 1
-    assert collection.contains(plugin.name)
+    assert plugin.name in collection
 
 
 def test_add_plugin_with_description():
@@ -22,7 +22,7 @@ def test_add_plugin_with_description():
     plugin = DefaultKernelPlugin(name="TestPlugin", description=expected_description)
     collection.add(plugin)
     assert len(collection) == 1
-    assert collection.contains(plugin.name)
+    assert plugin.name in collection
     assert collection[plugin.name].description == expected_description
 
 

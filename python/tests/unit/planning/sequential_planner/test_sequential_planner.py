@@ -52,7 +52,7 @@ async def test_it_can_create_plan(goal):
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+        context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
         context.variables.update("MOCK FUNCTION CALLED")
         mock_function.invoke.return_value = context
         mock_functions.append(mock_function)
@@ -64,10 +64,8 @@ async def test_it_can_create_plan(goal):
     expected_functions = [x[0] for x in input]
     expected_plugins = [x[1] for x in input]
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
-    return_context = KernelContext.model_construct(
-        variables=ContextVariables(), memory=memory, plugin_collection=plugins
-    )
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
     plan_string = """
 <plan>
     <function.SummarizePlugin.Summarize/>
@@ -124,10 +122,10 @@ async def test_invalid_xml_throws():
     return_context = KernelContext.model_construct(
         variables=ContextVariables(plan_string),
         memory=memory,
-        plugin_collection=plugins,
+        plugins=plugins,
     )
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
 
     mock_function_flow_function = Mock(spec=KernelFunctionBase)
     mock_function_flow_function.invoke.return_value = return_context

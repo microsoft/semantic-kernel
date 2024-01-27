@@ -17,7 +17,7 @@ def test_can_be_imported():
     assert kernel.import_plugin(TimePlugin(), "time")
     assert kernel.plugins["time"] is not None
     assert kernel.plugins["time"].name == "time"
-    assert kernel.plugins["time"].get_function("now") is not None
+    assert kernel.plugins["time"]["now"] is not None
 
 
 def test_date():

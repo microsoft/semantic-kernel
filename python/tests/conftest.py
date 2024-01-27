@@ -97,7 +97,7 @@ def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
         return KernelContext(
             context_variables,
             NullMemory(),
-            plugin_collection=KernelPluginCollection(
+            plugins=KernelPluginCollection(
                 plugins=[plugin],
             ),
         )

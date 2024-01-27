@@ -116,12 +116,22 @@ class CodeBlock(Block):
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, f_block: FunctionIdBlock
     ) -> Optional[KernelFunctionBase]:
+        """
+        Get the function from the plugin collection
+
+        Args:
+            plugins: The plugin collection
+            f_block: The function block that contains the function name
+
+        Returns:
+            The function if it exists, None otherwise.
+        """
         if f_block.plugin_name is not None and len(f_block.plugin_name) > 0:
-            return plugins[f_block.plugin_name].get_function(f_block.function_name)
+            return plugins[f_block.plugin_name][f_block.function_name]
         else:
             # We now require a plug-in name, but if one isn't set then we'll try to find the function
             for plugin in plugins:
-                if plugin.has_function(f_block.function_name):
-                    return plugin.get_function(f_block.function_name)
+                if f_block.function_name in plugin:
+                    return plugin[f_block.function_name]
 
         return None

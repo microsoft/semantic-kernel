@@ -1,5 +1,5 @@
 from textwrap import dedent
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -70,10 +70,8 @@ async def test_plan_creation():
 
     plugins.add(plugin=DefaultKernelPlugin(name=function_view.plugin_name, functions=[mock_function]))
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
-    return_context = KernelContext.model_construct(
-        variables=ContextVariables(), memory=memory, plugin_collection=plugins
-    )
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
 
     return_context.variables.update(plan_str)
 
@@ -108,24 +106,27 @@ def mock_context(plugins_input):
     context = Mock(spec=KernelContext)
 
     functionsView = FunctionsView()
-    plugins = Mock(spec=KernelPluginCollection)
-    mock_functions = []
+
+    plugins = MagicMock(spec=KernelPluginCollection)
+
+    mock_plugins = {}
+
     for name, pluginName, description, isSemantic in plugins_input:
         function_view = FunctionView(name, pluginName, description, [], isSemantic, True)
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        _context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
+        if pluginName not in mock_plugins:
+            mock_plugins[pluginName] = {}
+        mock_plugins[pluginName][name] = mock_function
+
+        _context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
         _context.variables.update("MOCK FUNCTION CALLED")
         mock_function.invoke.return_value = _context
-        mock_functions.append(mock_function)
 
-    plugins.get_plugin.get_function.side_effect = lambda plugin_name, function_name: next(
-        (func for func in mock_functions if func.plugin_name == plugin_name and func.name == function_name),
-        None,
-    )
-    plugins.get_functions_view.return_value = functionsView
-    context.plugins.return_value = plugins
+    plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
+
+    context.plugins = plugins
     context.plugins.get_functions_view.return_value = functionsView
 
     return context
@@ -200,10 +201,8 @@ async def test_invalid_json_throw():
     mock_function = create_mock_function(function_view)
     plugins.get_plugin.get_function.return_value = mock_function
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
-    return_context = KernelContext.model_construct(
-        variables=ContextVariables(), memory=memory, plugin_collection=plugins
-    )
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
 
     return_context.variables.update(plan_str)
 
@@ -237,10 +236,8 @@ async def test_empty_goal_throw():
     mock_function = create_mock_function(function_view)
     plugins.get_plugin.get_function.return_value = mock_function
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
-    return_context = KernelContext.model_construct(
-        variables=ContextVariables(), memory=memory, plugin_collection=plugins
-    )
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
     mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function

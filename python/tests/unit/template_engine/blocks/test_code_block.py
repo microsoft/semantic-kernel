@@ -27,7 +27,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=KernelPluginCollection(),
+            plugins=KernelPluginCollection(),
         )
 
         target = CodeBlock(
@@ -60,7 +60,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=plugins,
+            plugins=plugins,
         )
 
         target = CodeBlock(
@@ -150,7 +150,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
@@ -168,7 +168,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
@@ -184,7 +184,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
@@ -199,7 +199,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
@@ -255,7 +255,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            plugin_collection=plugins,
+            plugins=plugins,
         )
 
         # Create a CodeBlock with the FunctionIdBlock and render it with the context
@@ -317,7 +317,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            plugin_collection=plugins,
+            plugins=plugins,
         )
 
         # Create a CodeBlock with the FunctionIdBlock and VarBlock,
@@ -369,7 +369,7 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=plugins,
+            plugins=plugins,
         )
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,

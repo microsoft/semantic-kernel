@@ -71,54 +71,55 @@ class KernelPluginCollection(KernelBaseModel):
         Raises:
             ValueError: If the plugin or plugin.name is None.
         """
-        if plugin is None or plugin.name is None:
-            raise ValueError("Plugin and plugin.name must not be None")
+        if plugin is None:
+            raise ValueError("Plugin must not be None")
         if plugin.name in self.plugins:
             raise ValueError(f"Plugin with name {plugin.name} already exists")
         self.plugins[plugin.name] = plugin
 
-    def add_plugin_from_function(self, plugin_name: str, function: "KernelFunctionBase") -> None:
+    def add_plugin_from_functions(self, plugin_name: str, functions: List["KernelFunctionBase"]) -> None:
         """
         Add a function to a new plugin in the collection
 
         Args:
             plugin_name (str): The name of the plugin to create.
-            function (KernelFunctionBase): The function to add to the plugin.
+            functions (List[KernelFunctionBase]): The functions to add to the plugin.
 
         Raises:
             ValueError: If the function or plugin_name is None or invalid.
         """
-        if not function or not plugin_name:
-            raise ValueError("Function and plugin_name must not be None or empty")
+        if not functions or not plugin_name:
+            raise ValueError("Functions or plugin_name must not be None or empty")
         if plugin_name in self.plugins:
             raise ValueError(f"Plugin with name {plugin_name} already exists")
 
-        plugin = DefaultKernelPlugin.from_function(plugin_name=plugin_name, function=function)
+        plugin = DefaultKernelPlugin.from_functions(plugin_name=plugin_name, functions=functions)
         self.plugins[plugin_name] = plugin
 
     def add_functions_to_plugin(self, functions: List["KernelFunctionBase"], plugin_name: str) -> None:
         """
-        Add a function to a plugin in the collection
+        Add functions to a plugin in the collection
 
         Args:
             functions (List[KernelFunctionBase]): The function to add to the plugin.
             plugin_name (str): The name of the plugin to add the function to.
 
         Raises:
-            ValueError: If the function or plugin_name is None or invalid.
+            ValueError: If the functions or plugin_name is None or invalid.
             ValueError: if the function already exists in the plugin.
         """
         if not functions or not plugin_name:
             raise ValueError("Functions and plugin_name must not be None or empty")
+
         if plugin_name not in self.plugins:
-            self.plugins.add(DefaultKernelPlugin(name=plugin_name))
+            self.plugins.add(DefaultKernelPlugin(name=plugin_name, functions=functions))
+            return
 
         plugin = self.plugins[plugin_name]
         for func in functions:
-            if func.name not in plugin.functions:
-                plugin.functions[func.name] = func
-            else:
+            if func.name in plugin.functions:
                 raise ValueError(f"Function with name '{func.name}' already exists in plugin '{plugin_name}'")
+            plugin.functions[func.name] = func
 
     def add_list_of_plugins(self, plugins: List[KernelPluginBase]) -> None:
         """
@@ -176,6 +177,22 @@ class KernelPluginCollection(KernelBaseModel):
         """
         return self.plugins.get(plugin_name, None)
 
+    def __getitem__(self, name):
+        """Define the [] operator for the collection
+
+        Args:
+            name (str): The name of the plugin to retrieve.
+
+        Returns:
+            The plugin if it exists, None otherwise.
+
+        Raises:
+            KeyError: If the plugin does not exist.
+        """
+        if name not in self.plugins:
+            raise KeyError(f"Plugin {name} not found.")
+        return self.plugins[name]
+
     def get_function(self, plugin_name: str, function_name: str) -> Optional[KernelFunctionBase]:
         """
         Get a function from the collection
@@ -226,24 +243,16 @@ class KernelPluginCollection(KernelBaseModel):
         """Define the length of the collection"""
         return len(self.plugins)
 
-    def contains(self, plugin_name: str) -> bool:
-        """Check if the collection contains a plugin"""
+    def __contains__(self, plugin_name: str) -> bool:
+        """
+        Check if the collection contains a plugin
+
+        Args:
+            plugin_name (str): The name of the plugin to check for.
+
+        Returns:
+            True if the collection contains the plugin, False otherwise.
+        """
         if not plugin_name:
             return False
         return self.plugins.get(plugin_name) is not None
-
-    def __getitem__(self, name):
-        """Define the [] operator for the collection
-
-        Args:
-            name (str): The name of the plugin to retrieve.
-
-        Returns:
-            The plugin if it exists, None otherwise.
-
-        Raises:
-            KeyError: If the plugin does not exist.
-        """
-        if name not in self.plugins:
-            raise KeyError(f"Plugin {name} not found.")
-        return self.plugins[name]

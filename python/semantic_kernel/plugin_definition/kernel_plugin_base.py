@@ -29,13 +29,13 @@ class KernelPluginBase(KernelBaseModel, ABC):
     description: Optional[str] = Field(default=None)
 
     @abstractmethod
-    def get_function_count(self) -> int:
-        """Gets the number of functions in the plugin."""
+    def __len__(self) -> int:
+        """Define the len() operator for the plugin."""
         pass
 
     @abstractmethod
-    def has_function(self, function_name: str) -> bool:
-        """Checks if the plugin contains a function with the specified name."""
+    def __contains__(self, function_name: str) -> bool:
+        """Define the 'in' operator for the plugin."""
         pass
 
     @abstractmethod
