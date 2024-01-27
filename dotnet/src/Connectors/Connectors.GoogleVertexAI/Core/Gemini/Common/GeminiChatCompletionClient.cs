@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -56,7 +57,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        ValidateAndPrepareChatHistory(chatHistory);
+        ValidateAndPrepareChatHistory(ref chatHistory);
 
         var endpoint = this.EndpointProvider.GetChatCompletionEndpoint(this._modelId);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
@@ -74,7 +75,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ValidateAndPrepareChatHistory(chatHistory);
+        ValidateAndPrepareChatHistory(ref chatHistory);
 
         var endpoint = this.EndpointProvider.GetStreamChatCompletionEndpoint(this._modelId);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
@@ -91,31 +92,44 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         }
     }
 
-    private static void ValidateAndPrepareChatHistory(ChatHistory chatHistory)
+    private static void ValidateAndPrepareChatHistory(ref ChatHistory chatHistory)
     {
         Verify.NotNullOrEmpty(chatHistory);
 
-        if (chatHistory.SingleOrDefault(message => message.Role == AuthorRole.System) is { } systemMessage)
+        if (chatHistory.Where(message => message.Role == AuthorRole.System).ToList() is { Count: > 0 } systemMessages)
         {
-            if (chatHistory.Count == 1)
+            if (chatHistory.Count == systemMessages.Count)
             {
-                throw new KernelException("Chat history can't contain only system message.");
+                throw new KernelException("Chat history can't contain only system messages.");
             }
 
-            chatHistory = PrepareChatHistoryWithSystemMessage(chatHistory, systemMessage);
+            chatHistory = PrepareChatHistoryWithSystemMessages(chatHistory, systemMessages);
         }
 
         ValidateChatHistoryMessagesOrder(chatHistory);
     }
 
-    private static ChatHistory PrepareChatHistoryWithSystemMessage(ChatHistory chatHistory, ChatMessageContent systemMessage)
+    private static ChatHistory PrepareChatHistoryWithSystemMessages(ChatHistory chatHistory, IEnumerable<ChatMessageContent> systemMessages)
     {
         // TODO: This solution is needed due to the fact that Gemini API doesn't support system messages. Maybe in the future we will be able to remove it.
         chatHistory = new ChatHistory(chatHistory);
-        chatHistory.Remove(systemMessage);
-        if (!string.IsNullOrWhiteSpace(systemMessage.Content))
+        var systemMessageBuilder = new StringBuilder();
+        string separator = "\n-----\n";
+        foreach (var message in systemMessages)
         {
-            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, systemMessage.Content));
+            chatHistory.Remove(message);
+            if (!string.IsNullOrWhiteSpace(message.Content))
+            {
+                systemMessageBuilder.Append(message.Content);
+                systemMessageBuilder.Append(separator);
+            }
+        }
+
+        if (systemMessageBuilder.Length > 0)
+        {
+            string content = systemMessageBuilder.ToString();
+            content = content.Remove(content.LastIndexOf(separator, StringComparison.Ordinal));
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, content));
             chatHistory.Insert(1, new ChatMessageContent(AuthorRole.Assistant, "OK"));
         }
 
