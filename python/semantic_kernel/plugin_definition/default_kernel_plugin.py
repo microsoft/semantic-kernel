@@ -3,9 +3,9 @@
 from typing import Dict, List, Optional
 
 from pydantic import Field
-from python.semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 
 class DefaultKernelPlugin(KernelPluginBase):

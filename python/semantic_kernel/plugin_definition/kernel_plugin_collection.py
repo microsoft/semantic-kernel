@@ -3,12 +3,12 @@
 from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 
 from pydantic import Field
-from python.semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.default_kernel_plugin import DefaultKernelPlugin
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 # To support Python 3.8, need to use TypeVar since Iterable is not scriptable
 KernelPluginType = TypeVar("KernelPluginType", bound="KernelPluginBase")

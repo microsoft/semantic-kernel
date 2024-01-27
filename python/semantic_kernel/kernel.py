@@ -8,7 +8,6 @@ import os
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from pydantic import Field
-from python.semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -35,6 +34,7 @@ from semantic_kernel.plugin_definition.default_kernel_plugin import (
     DefaultKernelPlugin,
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.kernel_plugin_base import KernelPluginBase
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
 )
