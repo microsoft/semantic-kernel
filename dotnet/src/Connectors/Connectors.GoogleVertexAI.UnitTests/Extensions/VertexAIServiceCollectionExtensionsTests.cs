@@ -9,7 +9,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Extensions;
 
-public sealed class VertexAIServiceCollectionExtensions
+public sealed class VertexAIServiceCollectionExtensionsTests
 {
     [Fact]
     public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServices()
