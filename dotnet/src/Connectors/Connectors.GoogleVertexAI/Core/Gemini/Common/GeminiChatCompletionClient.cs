@@ -120,16 +120,18 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             chatHistory.Remove(message);
             if (!string.IsNullOrWhiteSpace(message.Content))
             {
+                if (systemMessageBuilder.Length > 0)
+                {
+                    systemMessageBuilder.Append(separator);
+                }
+
                 systemMessageBuilder.Append(message.Content);
-                systemMessageBuilder.Append(separator);
             }
         }
 
         if (systemMessageBuilder.Length > 0)
         {
-            string content = systemMessageBuilder.ToString();
-            content = content.Remove(content.LastIndexOf(separator, StringComparison.Ordinal));
-            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, content));
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, systemMessageBuilder.ToString()));
             chatHistory.Insert(1, new ChatMessageContent(AuthorRole.Assistant, "OK"));
         }
 
