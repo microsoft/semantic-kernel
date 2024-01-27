@@ -9,7 +9,6 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from pydantic import Field
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -23,6 +22,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
@@ -71,7 +71,8 @@ class Kernel(KernelBaseModel):
         plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
         prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be used by the kernel
         memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
-        text_completion_services (Dict[str, Callable[["Kernel"], TextCompletionClientBase]]): The text completion services
+        text_completion_services (Dict[str, Callable[["Kernel"], TextCompletionClientBase]]): The text
+            completion services
         chat_services (Dict[str, Callable[["Kernel"], ChatCompletionClientBase]]): The chat services
         text_embedding_generation_services (Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]]): The text embedding
         default_text_completion_service (Optional[str]): The default text completion service
@@ -81,12 +82,15 @@ class Kernel(KernelBaseModel):
         function_invoking_handlers (Dict): The function invoking handlers
         function_invoked_handlers (Dict): The function invoked handlers
     """
+
     plugins: Optional[KernelPluginCollection] = Field(default_factory=KernelPluginCollection)
     prompt_template_engine: Optional[PromptTemplatingEngine] = Field(default_factory=PromptTemplateEngine)
     memory: Optional[SemanticTextMemoryBase] = Field(default_factory=SemanticTextMemory)
     text_completion_services: Dict[str, Callable[["Kernel"], TextCompletionClientBase]] = Field(default_factory=dict)
     chat_services: Dict[str, Callable[["Kernel"], ChatCompletionClientBase]] = Field(default_factory=dict)
-    text_embedding_generation_services: Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]] = Field(default_factory=dict)
+    text_embedding_generation_services: Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]] = Field(
+        default_factory=dict
+    )
     default_text_completion_service: Optional[str] = Field(default=None)
     default_chat_service: Optional[str] = Field(default=None)
     default_text_embedding_generation_service: Optional[str] = Field(default=None)
@@ -106,7 +110,8 @@ class Kernel(KernelBaseModel):
 
         Args:
             plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
-            prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be used by the kernel
+            prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be
+                used by the kernel
             memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
             **kwargs (Any): Additional fields to be passed to the Kernel model
         """
@@ -114,12 +119,7 @@ class Kernel(KernelBaseModel):
         prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
         memory = memory if memory else NullMemory()
 
-        super().__init__(
-            plugins=plugins,
-            prompt_template_engine=prompt_template_engine,
-            memory=memory,
-            **kwargs
-        )
+        super().__init__(plugins=plugins, prompt_template_engine=prompt_template_engine, memory=memory, **kwargs)
 
     def add_plugin(
         self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPlugin] = None
