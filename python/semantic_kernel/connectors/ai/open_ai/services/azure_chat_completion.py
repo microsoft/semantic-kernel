@@ -39,7 +39,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
-from semantic_kernel.sk_pydantic import HttpsUrl
+from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -275,7 +275,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
             default_headers=settings.get("default_headers"),
         )
 
-    async def complete_chat_async(
+    async def complete_chat(
         self,
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,
@@ -311,7 +311,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
                 for choice in response.choices
             ]
 
-    async def complete_chat_stream_async(
+    async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
         settings: AzureChatRequestSettings,

@@ -117,12 +117,10 @@ internal class FlowExecutor : IFlowExecutor
         this._flowStatusProvider = statusProvider;
         this._globalPluginCollection = globalPluginCollection;
 
-        var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckRepeatStep.config.json")!);
-        checkRepeatStepConfig.Template = EmbeddedResource.Read("Plugins.CheckRepeatStep.skprompt.txt")!;
+        var checkRepeatStepConfig = this.ImportPromptTemplateConfig("CheckRepeatStep");
         this._checkRepeatStepFunction = KernelFunctionFactory.CreateFromPrompt(checkRepeatStepConfig);
 
-        var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
-        checkStartStepConfig.Template = EmbeddedResource.Read("Plugins.CheckStartStep.skprompt.txt")!;
+        var checkStartStepConfig = this.ImportPromptTemplateConfig("CheckStartStep");
         this._checkStartStepFunction = KernelFunctionFactory.CreateFromPrompt(checkStartStepConfig);
 
         this._config.ExcludedPlugins.Add(RestrictedPluginName);
@@ -130,6 +128,23 @@ internal class FlowExecutor : IFlowExecutor
 
         this._executeFlowFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteFlowAsync, "ExecuteFlow", "Execute a flow");
         this._executeStepFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteStepAsync, "ExecuteStep", "Execute a flow step");
+    }
+
+    private PromptTemplateConfig ImportPromptTemplateConfig(string functionName)
+    {
+        var config = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read($"Plugins.{functionName}.yaml")!);
+
+        // if AIServiceIds is specified, only include the relevant execution settings
+        if (this._config.AIServiceIds.Count > 0)
+        {
+            var serviceIdsToRemove = config.ExecutionSettings.Keys.Except(this._config.AIServiceIds);
+            foreach (var serviceId in serviceIdsToRemove)
+            {
+                config.ExecutionSettings.Remove(serviceId);
+            }
+        }
+
+        return config;
     }
 
     public async Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments)
@@ -262,12 +277,11 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
                 {
-                    try
+                    if (stepResult.ValueType == typeof(List<string>))
                     {
-                        var stepOutputs = JsonSerializer.Deserialize<string[]>(stepResult.ToString());
-                        outputs.AddRange(stepOutputs!);
+                        outputs.AddRange(stepResult.GetValue<List<string>>()!);
                     }
-                    catch (JsonException)
+                    else
                     {
                         outputs.Add(stepResult.ToString());
                     }
@@ -276,9 +290,15 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     stepState.Status = ExecutionState.Status.Completed;
 
-                    var metadata = stepResult.Metadata!
-                        .Where(kvp => step.Provides.Contains(kvp.Key))
-                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    var metadata = stepResult.Metadata!.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    foreach (var variable in step.Provides)
+                    {
+                        if (!metadata.ContainsKey(variable))
+                        {
+                            metadata[variable] = string.Empty;
+                        }
+                    }
+
                     stepResult = new FunctionResult(stepResult.Function, stepResult.GetValue<object>(), metadata: metadata);
 
                     if (!string.IsNullOrWhiteSpace(exitResponse))
@@ -538,7 +558,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         this._logger.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
-        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
+        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER].");
         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
         return null;
     }
@@ -603,7 +623,15 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger.LogInformation("Thought: {Thought}", actionStep.Thought);
             }
 
-            if (!string.IsNullOrEmpty(actionStep.Action!))
+            if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
+            {
+                if (step.Provides.Count() == 1)
+                {
+                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
+                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
+                }
+            }
+            else if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
                 {
@@ -726,14 +754,6 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
                 this._logger?.LogWarning("Action: No result from action");
-            }
-            else if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
-            {
-                if (step.Provides.Count() == 1)
-                {
-                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
-                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
-                }
             }
             else
             {

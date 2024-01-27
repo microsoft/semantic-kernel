@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.events.sk_events_args import SKEventArgs
+from semantic_kernel.events.kernel_events_args import KernelEventArgs
 
 
-class FunctionInvokingEventArgs(SKEventArgs):
+class FunctionInvokingEventArgs(KernelEventArgs):
     def __init__(self, function_view, context):
         super().__init__(function_view, context)
         self._skip_requested = False

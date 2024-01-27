@@ -30,5 +30,5 @@ else:
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 plugin = kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
 
-result = asyncio.run(kernel.run_async(plugin["Joke"], input_str="time travel to dinosaur age"))
+result = asyncio.run(kernel.run(plugin["Joke"], input_str="time travel to dinosaur age"))
 print(result)

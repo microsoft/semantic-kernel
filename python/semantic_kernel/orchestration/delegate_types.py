@@ -8,10 +8,10 @@ class DelegateTypes(Enum):
     Void = 1
     OutString = 2
     OutTaskString = 3
-    InSKContext = 4
-    InSKContextOutString = 5
-    InSKContextOutTaskString = 6
-    ContextSwitchInSKContextOutTaskSKContext = 7
+    InKernelContext = 4
+    InKernelContextOutString = 5
+    InKernelContextOutTaskString = 6
+    ContextSwitchInKernelContextOutTaskKernelContext = 7
     InString = 8
     InStringOutString = 9
     InStringOutTaskString = 10

@@ -2,10 +2,10 @@ from typing import Any, Dict, Optional
 
 from pydantic import Field
 
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class AIRequestSettings(SKBaseModel):
+class AIRequestSettings(KernelBaseModel):
     """Base class for AI request settings.
 
     Can be used by itself or as a base class for other request settings. The methods are used to create specific request settings objects based on the keys in the extension_data field, this way you can create a generic AIRequestSettings object in your application, which get's mapped into the keys of the request settings that each services returns by using the service.get_request_settings() method.
