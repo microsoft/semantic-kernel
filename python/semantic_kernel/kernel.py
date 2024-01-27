@@ -374,6 +374,10 @@ class Kernel:
         return context
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunctionBase:
+        if plugin_name not in self.plugins:
+            raise ValueError(f"Plugin '{plugin_name}' not found")
+        if function_name not in self.plugins[plugin_name]:
+            raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
         return self.plugins[plugin_name][function_name]
 
     def use_memory(
@@ -428,14 +432,14 @@ class Kernel:
             return args
         return None
 
-    def import_plugin(self, plugin_instance: Any, plugin_name: str) -> KernelPlugin:
+    def import_plugin(self, plugin_instance: Union[Any, Dict[str, Any]], plugin_name: str) -> KernelPlugin:
         """
         Import a plugin into the kernel.
 
         Args:
-            plugin_instance (Any): The plugin instance. This can be a custom class that contains methods
-                with the kernel_function decorator for one or several methods. See `TextMemoryPlugin` as
-                an example.
+            plugin_instance (Any | Dict[str, Any]): The plugin instance. This can be a custom class or a
+                dictionary of classes that contains methods with the kernel_function decorator for one or
+                several methods. See `TextMemoryPlugin` as an example.
             plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
 
         Returns:
@@ -451,7 +455,10 @@ class Kernel:
 
         functions = []
 
-        candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
+        if isinstance(plugin_instance, dict):
+            candidates = plugin_instance.items()
+        else:
+            candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
         # Read every method from the plugin instance
         for _, candidate in candidates:
             # If the method is a semantic function, register it
