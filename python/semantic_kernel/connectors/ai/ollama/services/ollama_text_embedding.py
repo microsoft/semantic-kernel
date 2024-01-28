@@ -22,7 +22,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
     Make sure to have the ollama service running either locally or remotely.
 
     Arguments:
-        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
+        ai_model_id {str} -- defaults to llama2 (the most popular model at https://ollama.ai/library)
         url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
         session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
     """

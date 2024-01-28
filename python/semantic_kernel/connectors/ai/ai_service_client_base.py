@@ -19,7 +19,7 @@ class AIServiceClientBase(SKBaseModel, ABC):
 
     Has a ai_model_id, any other fields have to be defined by the subclasses.
 
-    The ai_model_id can refer to a specific model, like 'gpt-35-turbo' for OpenAI,
+    The ai_model_id can refer to a specific model, like 'gpt-35-turbo' for OpenAI or 'llama2' for Ollama,
     or can just be a string that is used to identify the service.
     """
 

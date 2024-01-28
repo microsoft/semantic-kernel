@@ -27,7 +27,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     Make sure to have the ollama service running either locally or remotely.
 
     Arguments:
-        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
+        ai_model_id {str} -- Ollama model name, defaults to llama2 (the most popular model at https://ollama.ai/library)
         url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/generate
     """
 
@@ -54,7 +54,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         """
         request_settings.prompt = prompt
         request_settings.stream = False
-        if not request_settings.ai_model_id :
+        if not request_settings.ai_model_id:
             request_settings.ai_model_id = self.ai_model_id
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
