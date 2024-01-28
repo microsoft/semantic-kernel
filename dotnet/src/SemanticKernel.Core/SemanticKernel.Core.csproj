@@ -7,7 +7,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NoWarn>$(NoWarn);SKEXP0003,SKEXP0004</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0004</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 

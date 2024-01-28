@@ -5,15 +5,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -139,18 +136,16 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new OperationCanceledException("A prompt filter requested cancellation after prompt rendering.");
         }
 
-        var prompt = await this.EnrichPromptWithMemoryAsync(kernel, result.RenderedPrompt, result.ExecutionSettings).ConfigureAwait(false);
-
         if (result.AIService is IChatCompletionService chatCompletion)
         {
-            var chatContent = await chatCompletion.GetChatMessageContentAsync(prompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
             return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
         }
 
         if (result.AIService is ITextGenerationService textGeneration)
         {
-            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(prompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
             return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
         }
@@ -348,32 +343,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             RenderedEventArgs = renderedEventArgs,
             RenderedContext = renderedContext
         };
-    }
-
-    private async Task<string> EnrichPromptWithMemoryAsync(Kernel kernel, string prompt, PromptExecutionSettings? executionSettings)
-    {
-        var builder = new StringBuilder();
-        var memoryConfig = executionSettings?.MemoryConfig;
-
-        if (memoryConfig is not null)
-        {
-            var memory = memoryConfig.Memory ?? kernel.Services.GetService<ISemanticTextMemory>();
-
-            if (memory is not null)
-            {
-                await foreach (var result in memory.SearchAsync(memoryConfig.CollectionName, prompt, memoryConfig.Limit, memoryConfig.MinRelevanceScore, kernel: kernel))
-                {
-                    if (result is not null && !string.IsNullOrWhiteSpace(result.Metadata.Text))
-                    {
-                        builder.AppendLine(result.Metadata.Text);
-                    }
-                }
-            }
-        }
-
-        builder.AppendLine(prompt);
-
-        return builder.ToString();
     }
 
     /// <summary>Create a random, valid function name.</summary>
