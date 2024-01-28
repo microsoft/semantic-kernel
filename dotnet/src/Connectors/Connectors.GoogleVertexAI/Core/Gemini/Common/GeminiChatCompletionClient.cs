@@ -109,7 +109,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         ValidateChatHistoryMessagesOrder(chatHistory);
     }
 
-    private static ChatHistory PrepareChatHistoryWithSystemMessages(ChatHistory chatHistory, IEnumerable<ChatMessageContent> systemMessages)
+    private static ChatHistory PrepareChatHistoryWithSystemMessages(ChatHistory chatHistory, List<ChatMessageContent> systemMessages)
     {
         // TODO: This solution is needed due to the fact that Gemini API doesn't support system messages. Maybe in the future we will be able to remove it.
         chatHistory = new ChatHistory(chatHistory);
