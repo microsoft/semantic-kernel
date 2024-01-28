@@ -105,13 +105,13 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                 throw new KernelException("Chat history can't contain only system messages.");
             }
 
-            chatHistory = PrepareChatHistoryWithSystemMessages(chatHistory, systemMessages);
+            MergeSystemMessagesToOneUserMessageInChatHistory(chatHistory, systemMessages);
         }
 
         ValidateChatHistoryMessagesOrder(chatHistory);
     }
 
-    private static ChatHistory PrepareChatHistoryWithSystemMessages(ChatHistory chatHistory, List<ChatMessageContent> systemMessages)
+    private static void MergeSystemMessagesToOneUserMessageInChatHistory(ChatHistory chatHistory, List<ChatMessageContent> systemMessages)
     {
         // TODO: This solution is needed due to the fact that Gemini API doesn't support system messages. Maybe in the future we will be able to remove it.
         var systemMessageBuilder = new StringBuilder();
@@ -134,8 +134,6 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, systemMessageBuilder.ToString()));
             chatHistory.Insert(1, new ChatMessageContent(AuthorRole.Assistant, "OK"));
         }
-
-        return chatHistory;
     }
 
     private static void ValidateChatHistoryMessagesOrder(ChatHistory chatHistory)
