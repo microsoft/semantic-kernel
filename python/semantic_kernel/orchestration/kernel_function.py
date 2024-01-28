@@ -22,7 +22,7 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
@@ -34,7 +34,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -42,7 +42,7 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SKFunction(SKFunctionBase):
+class KernelFunction(KernelFunctionBase):
     """
     Semantic Kernel function.
     """
@@ -57,19 +57,19 @@ class SKFunction(SKFunctionBase):
     _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
-    def from_native_method(method, plugin_name="", log=None) -> "SKFunction":
+    def from_native_method(method, plugin_name="", log=None) -> "KernelFunction":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if method is None:
             raise ValueError("Method cannot be `None`")
 
-        assert method.__sk_function__ is not None, "Method is not a SK function"
-        assert method.__sk_function_name__ is not None, "Method name is empty"
+        assert method.__kernel_function__ is not None, "Method is not a Kernel function"
+        assert method.__kernel_function_name__ is not None, "Method name is empty"
 
         parameters = []
-        # sk_function_context_parameters are optionals
-        if hasattr(method, "__sk_function_context_parameters__"):
-            for param in method.__sk_function_context_parameters__:
+        # kernel_function_context_parameters are optionals
+        if hasattr(method, "__kernel_function_context_parameters__"):
+            for param in method.__kernel_function_context_parameters__:
                 assert "name" in param, "Parameter name is empty"
                 assert "description" in param, "Parameter description is empty"
                 assert "default_value" in param, "Parameter default value is empty"
@@ -85,27 +85,27 @@ class SKFunction(SKFunctionBase):
                 )
 
         if (
-            hasattr(method, "__sk_function_input_description__")
-            and method.__sk_function_input_description__ is not None
-            and method.__sk_function_input_description__ != ""
+            hasattr(method, "__kernel_function_input_description__")
+            and method.__kernel_function_input_description__ is not None
+            and method.__kernel_function_input_description__ != ""
         ):
             input_param = ParameterView(
                 name="input",
-                description=method.__sk_function_input_description__,
-                default_value=method.__sk_function_input_default_value__,
+                description=method.__kernel_function_input_description__,
+                default_value=method.__kernel_function_input_default_value__,
                 type="string",
                 required=False,
             )
             parameters = [input_param] + parameters
 
-        return SKFunction(
+        return KernelFunction(
             delegate_type=DelegateInference.infer_delegate_type(method),
             delegate_function=method,
             delegate_stream_function=method,
             parameters=parameters,
-            description=method.__sk_function_description__,
+            description=method.__kernel_function_description__,
             plugin_name=plugin_name,
-            function_name=method.__sk_function_name__,
+            function_name=method.__kernel_function_name__,
             is_semantic=False,
         )
 
@@ -115,20 +115,20 @@ class SKFunction(SKFunctionBase):
         function_name: str,
         function_config: SemanticFunctionConfig,
         log: Optional[Any] = None,
-    ) -> "SKFunction":
+    ) -> "KernelFunction":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context: "SKContext", **kwargs):
+        async def _local_func(client, request_settings, context: "KernelContext", **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
             try:
                 if not function_config.has_chat_prompt:
-                    prompt = await function_config.prompt_template.render_async(context)
-                    completion = await client.complete_async(prompt, request_settings)
+                    prompt = await function_config.prompt_template.render(context)
+                    completion = await client.complete(prompt, request_settings)
                     context.variables.update(completion)
                     return context
             except Exception as e:
@@ -139,9 +139,9 @@ class SKFunction(SKFunctionBase):
             as_chat_prompt = function_config.prompt_template
             # Similar to non-chat, render prompt (which renders to a
             # dict of <role, content, name> messages)
-            messages = await as_chat_prompt.render_messages_async(context)
+            messages = await as_chat_prompt.render_messages(context)
             try:
-                result = await client.complete_chat_async(messages, request_settings)
+                result = await client.complete_chat(messages, request_settings)
                 if isinstance(result, list):
                     # TODO: handle multiple completions
                     result = result[0]
@@ -176,8 +176,8 @@ class SKFunction(SKFunctionBase):
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
                     completion = ""
-                    messages = await chat_prompt.render_messages_async(context)
-                    async for partial_content in client.complete_chat_stream_async(
+                    messages = await chat_prompt.render_messages(context)
+                    async for partial_content in client.complete_chat_stream(
                         messages=messages, settings=request_settings
                     ):
                         if isinstance(partial_content, str):
@@ -196,10 +196,10 @@ class SKFunction(SKFunctionBase):
                     chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
                 else:
-                    prompt = await function_config.prompt_template.render_async(context)
+                    prompt = await function_config.prompt_template.render(context)
 
                     completion = ""
-                    async for partial_content in client.complete_stream_async(prompt, request_settings):
+                    async for partial_content in client.complete_stream(prompt, request_settings):
                         completion += partial_content
                         yield partial_content
                     context.variables.update(completion)
@@ -207,8 +207,8 @@ class SKFunction(SKFunctionBase):
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
 
-        return SKFunction(
-            delegate_type=DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
+        return KernelFunction(
+            delegate_type=DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext,
             delegate_function=_local_func,
             delegate_stream_function=_local_stream_func,
             parameters=function_config.prompt_template.get_parameters(),
@@ -276,32 +276,32 @@ class SKFunction(SKFunctionBase):
         self._ai_request_settings = AIRequestSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "SKFunction":
+    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "KernelFunction":
         self._plugin_collection = plugins
         return self
 
-    def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "SKFunction":
+    def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "KernelFunction":
         if ai_service is None:
             raise ValueError("AI LLM service factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_service = ai_service()
         return self
 
-    def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "SKFunction":
+    def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "KernelFunction":
         if chat_service is None:
             raise ValueError("Chat LLM service factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_service = chat_service()
         return self
 
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "SKFunction":
+    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("AI LLM request settings cannot be `None`")
         self._verify_is_semantic()
         self._ai_request_settings = settings
         return self
 
-    def set_chat_configuration(self, settings: AIRequestSettings) -> "SKFunction":
+    def set_chat_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("Chat LLM request settings cannot be `None`")
         self._verify_is_semantic()
@@ -321,11 +321,11 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         log: Optional[Any] = None,
-    ) -> "SKContext":
+    ) -> "KernelContext":
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         return self.invoke(
@@ -340,18 +340,18 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         log: Optional[Any] = None,
-    ) -> "SKContext":
-        from semantic_kernel.orchestration.sk_context import SKContext
+    ) -> "KernelContext":
+        from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
@@ -375,30 +375,30 @@ class SKFunction(SKFunctionBase):
 
             def run_coroutine():
                 if self.is_semantic:
-                    return self._invoke_semantic_async(context, settings)
+                    return self._invoke_semantic(context, settings)
                 else:
-                    return self._invoke_native_async(context)
+                    return self._invoke_native(context)
 
             return self.run_async_in_executor(run_coroutine)
         else:
             if self.is_semantic:
-                return asyncio.run(self._invoke_semantic_async(context, settings))
+                return asyncio.run(self._invoke_semantic(context, settings))
             else:
-                return asyncio.run(self._invoke_native_async(context))
+                return asyncio.run(self._invoke_native(context))
 
     async def invoke_async(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
         **kwargs: Dict[str, Any],
-    ) -> "SKContext":
-        from semantic_kernel.orchestration.sk_context import SKContext
+    ) -> "KernelContext":
+        from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
@@ -415,21 +415,21 @@ class SKFunction(SKFunctionBase):
 
         try:
             if self.is_semantic:
-                return await self._invoke_semantic_async(context, settings, **kwargs)
+                return await self._invoke_semantic(context, settings, **kwargs)
             else:
-                return await self._invoke_native_async(context, **kwargs)
+                return await self._invoke_native(context, **kwargs)
         except Exception as e:
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(self, context: "SKContext", settings: AIRequestSettings, **kwargs):
+    async def _invoke_semantic(self, context: "KernelContext", settings: AIRequestSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
         new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
-    async def _invoke_native_async(self, context):
+    async def _invoke_native(self, context):
         self._verify_is_native()
 
         self._ensure_context_has_plugins(context)
@@ -462,18 +462,18 @@ class SKFunction(SKFunctionBase):
             "Invalid operation, the method requires a native function",
         )
 
-    async def invoke_stream_async(
+    async def invoke_stream(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional["SKContext"] = None,
+        context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[AIRequestSettings] = None,
     ):
-        from semantic_kernel.orchestration.sk_context import SKContext
+        from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
                 plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
@@ -490,10 +490,10 @@ class SKFunction(SKFunctionBase):
 
         try:
             if self.is_semantic:
-                async for stream_msg in self._invoke_semantic_stream_async(context, settings):
+                async for stream_msg in self._invoke_semantic_stream(context, settings):
                     yield stream_msg
             else:
-                async for stream_msg in self._invoke_native_stream_async(context):
+                async for stream_msg in self._invoke_native_stream(context):
                     yield stream_msg
         except Exception as e:
             context.fail(str(e), e)
@@ -502,13 +502,13 @@ class SKFunction(SKFunctionBase):
                 "Error occurred while invoking stream function",
             )
 
-    async def _invoke_semantic_stream_async(self, context, settings):
+    async def _invoke_semantic_stream(self, context, settings):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
         async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
             yield stream_msg
 
-    async def _invoke_native_stream_async(self, context):
+    async def _invoke_native_stream(self, context):
         self._verify_is_native()
 
         self._ensure_context_has_plugins(context)

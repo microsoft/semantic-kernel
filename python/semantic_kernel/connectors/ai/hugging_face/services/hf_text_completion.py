@@ -72,7 +72,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
-    async def complete_async(
+    async def complete(
         self,
         prompt: str,
         request_settings: HuggingFaceRequestSettings,
@@ -90,7 +90,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
 
-    async def complete_stream_async(
+    async def complete_stream(
         self,
         prompt: str,
         request_settings: HuggingFaceRequestSettings,
@@ -113,7 +113,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
-                    If you need multiple responses, please use the complete_async method.",
+                    If you need multiple responses, please use the complete method.",
             )
         try:
             tokenizer = transformers.AutoTokenizer.from_pretrained(self.ai_model_id)

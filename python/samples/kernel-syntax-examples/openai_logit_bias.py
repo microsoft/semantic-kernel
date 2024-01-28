@@ -82,13 +82,13 @@ async def chat_request_example(kernel, api_key, org_id):
     messages = [{"role": "user", "content": user_mssg}]
 
     chat_messages.append(("user", user_mssg))
-    answer = await openai_chat_completion.complete_chat_async(messages=messages, settings=settings)
+    answer = await openai_chat_completion.complete_chat(messages=messages, settings=settings)
     chat_messages.append(("assistant", str(answer[0])))
 
     user_mssg = "What are his best all-time stats?"
     messages = [{"role": "user", "content": user_mssg}]
     chat_messages.append(("user", user_mssg))
-    answer = await openai_chat_completion.complete_chat_async(messages=messages, settings=settings)
+    answer = await openai_chat_completion.complete_chat(messages=messages, settings=settings)
     chat_messages.append(("assistant", str(answer[0])))
 
     context_vars = sk.ContextVariables()
@@ -154,7 +154,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
     settings = _config_ban_tokens(settings, keys)
 
     user_mssg = "The best pie flavor to have in autumn is"
-    answer = await openai_text_completion.complete_async(user_mssg, settings)
+    answer = await openai_text_completion.complete(user_mssg, settings)
 
     context_vars = sk.ContextVariables()
     context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer}\n"

@@ -6,6 +6,8 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Events;
 
+#pragma warning disable CS0618 // Events are deprecated
+
 public class FunctionInvokedEventArgsTests
 {
     [Fact]

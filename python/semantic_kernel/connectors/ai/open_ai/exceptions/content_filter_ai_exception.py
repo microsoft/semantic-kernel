@@ -75,7 +75,9 @@ class ContentFilterAIException(AIException):
         self._param = inner_exception.param
 
         inner_error = inner_exception.body.get("innererror", {})
-        self._content_filter_code = ContentFilterCodes(inner_error.get("code", ""))
+        self._content_filter_code = ContentFilterCodes(
+            inner_error.get("code", ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION.value)
+        )
         self._content_filter_result = dict(
             [
                 key,

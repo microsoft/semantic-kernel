@@ -19,10 +19,10 @@ def test_settings():
 
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
-async def test_complete_async(mock_post):
+async def test_complete(mock_post):
     mock_post.return_value = MockResponse(response="test_response")
     ollama = OllamaTextCompletion(ai_model_id="test_model")
-    response = await ollama.complete_async(
+    response = await ollama.complete(
         "test_prompt",
         OllamaTextRequestSettings(ai_model_id="test-model", options={"test": "test"}),
     )
@@ -31,10 +31,10 @@ async def test_complete_async(mock_post):
 
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
-async def test_complete_stream_async(mock_post):
+async def test_complete_stream(mock_post):
     mock_post.return_value = MockResponse(response={"response": "test_response"})
     ollama = OllamaTextCompletion(ai_model_id="test_model")
-    response = ollama.complete_stream_async(
+    response = ollama.complete_stream(
         "test_prompt",
         OllamaTextRequestSettings(ai_model_id="test_model", options={"test": "test"}),
     )
