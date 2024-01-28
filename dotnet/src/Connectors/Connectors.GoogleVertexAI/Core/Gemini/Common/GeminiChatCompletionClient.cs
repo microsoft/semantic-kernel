@@ -96,6 +96,8 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     {
         Verify.NotNullOrEmpty(chatHistory);
 
+        chatHistory = new ChatHistory(chatHistory);
+
         if (chatHistory.Where(message => message.Role == AuthorRole.System).ToList() is { Count: > 0 } systemMessages)
         {
             if (chatHistory.Count == systemMessages.Count)
@@ -112,9 +114,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     private static ChatHistory PrepareChatHistoryWithSystemMessages(ChatHistory chatHistory, List<ChatMessageContent> systemMessages)
     {
         // TODO: This solution is needed due to the fact that Gemini API doesn't support system messages. Maybe in the future we will be able to remove it.
-        chatHistory = new ChatHistory(chatHistory);
         var systemMessageBuilder = new StringBuilder();
-        string separator = "\n-----\n";
         foreach (var message in systemMessages)
         {
             chatHistory.Remove(message);
@@ -122,7 +122,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             {
                 if (systemMessageBuilder.Length > 0)
                 {
-                    systemMessageBuilder.Append(separator);
+                    systemMessageBuilder.Append("\n-----\n");
                 }
 
                 systemMessageBuilder.Append(message.Content);
