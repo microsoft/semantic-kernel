@@ -8,9 +8,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class PromptExecutionSettings(KernelBaseModel):
     """Base class for prompt execution settings.
 
-    Can be used by itself or as a base class for other prompt execution settings. The methods are used to create 
-    specific prompt execution settings objects based on the keys in the extension_data field, this way you can 
-    create a generic PromptExecutionSettings object in your application, which get's mapped into the keys of the 
+    Can be used by itself or as a base class for other prompt execution settings. The methods are used to create
+    specific prompt execution settings objects based on the keys in the extension_data field, this way you can
+    create a generic PromptExecutionSettings object in your application, which get's mapped into the keys of the
     prompt execution settings that each services returns by using the service.get_prompt_execution_settings() method.
 
     Parameters:
@@ -20,8 +20,8 @@ class PromptExecutionSettings(KernelBaseModel):
             these are attempted to parse into the keys of the specific prompt execution settings.
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
-        update_from_ai_prompt_execution_settings: Update the keys from another prompt execution settings object.
-        from_ai_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings object.
+        update_from_prompt_execution_settings: Update the keys from another prompt execution settings object.
+        from_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings object.
     """  # noqa: E501
 
     service_id: Optional[str] = Field(None, min_length=1)

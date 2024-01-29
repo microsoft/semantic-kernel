@@ -658,7 +658,7 @@ class Kernel:
             req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
 
             function.set_chat_configuration(
-                req_settings_type.from_ai_prompt_execution_settings(
+                req_settings_type.from_prompt_execution_settings(
                     function_config.prompt_template_config.execution_settings
                 )
             )
@@ -684,7 +684,7 @@ class Kernel:
             req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
 
             function.set_ai_configuration(
-                req_settings_type.from_ai_prompt_execution_settings(
+                req_settings_type.from_prompt_execution_settings(
                     function_config.prompt_template_config.execution_settings
                 )
             )
