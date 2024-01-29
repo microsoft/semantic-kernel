@@ -1294,6 +1294,23 @@ public sealed class KernelFunctionFromMethodTests1
     }
 
     [Fact]
+    public async Task ItCanDeserializeValueThatHasTheSameShapeAsTargetTypeAsync()
+    {
+        // Arrange
+        var anonymousType = new { id = 28 }; // This anonymous type has the same shape as CustomTypeForJsonTests nested class.
+        CustomTypeForJsonTests? actualArgValue = null;
+
+        var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
+
+        // Act
+        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = anonymousType });
+
+        // Assert
+        Assert.NotNull(actualArgValue);
+        Assert.Equal(28, actualArgValue.Id);
+    }
+
+    [Fact]
     public async Task ItCanDeserializeThirdPartyJsonPrimitivesAsync()
     {
         // Arrange
