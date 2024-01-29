@@ -141,8 +141,8 @@ class KernelFunction(KernelFunctionBase):
 
             if not function_config.has_chat_prompt:
                 try:
-                    prompt = await function_config.prompt_template.render_async(context)
-                    results = await client.complete_async(prompt, request_settings)
+                    prompt = await function_config.prompt_template.render(context)
+                    results = await client.complete(prompt, request_settings)
                     context.objects["results"] = results
                     context.variables.update(str(results[0]))
                 except Exception as e:
@@ -155,8 +155,8 @@ class KernelFunction(KernelFunctionBase):
                 chat_prompt = function_config.prompt_template
                 # Similar to non-chat, render prompt (which renders to a
                 # dict of <role, content, name> messages)
-                messages = await chat_prompt.render_messages_async(context)
-                results = await client.complete_chat_async(messages, request_settings)
+                messages = await chat_prompt.render_messages(context)
+                results = await client.complete_chat(messages, request_settings)
                 context.objects["results"] = results
                 context.variables.update(str(results[0]))
                 # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
@@ -173,8 +173,8 @@ class KernelFunction(KernelFunctionBase):
 
             if not function_config.has_chat_prompt:
                 try:
-                    prompt = await function_config.prompt_template.render_async(context)
-                    result = client.complete_stream_async(prompt, request_settings)
+                    prompt = await function_config.prompt_template.render(context)
+                    result = client.complete_stream(prompt, request_settings)
                     async for chunk in result:
                         yield chunk
                 except Exception as e:
@@ -185,8 +185,8 @@ class KernelFunction(KernelFunctionBase):
                 chat_prompt = function_config.prompt_template
                 # Similar to non-chat, render prompt (which renders to a
                 # list of <role, content> messages)
-                messages = await chat_prompt.render_messages_async(context)
-                result = client.complete_chat_stream_async(messages=messages, settings=request_settings)
+                messages = await chat_prompt.render_messages(context)
+                result = client.complete_chat_stream(messages=messages, settings=request_settings)
                 # context.objects["response_object"] = result
                 # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
                 async for chunk in result:

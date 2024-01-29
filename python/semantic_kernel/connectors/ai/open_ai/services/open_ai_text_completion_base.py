@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Union
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
+from openai.types.chat.chat_completion import Choice as ChatCompletionChoice
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
@@ -55,15 +57,19 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         return [self._create_text_content(response, choice, metadata) for choice in response.choices]
 
     def _create_text_content(
-        self, response: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
+        self,
+        response: Completion,
+        choice: Union[CompletionChoice, ChatCompletionChoice],
+        response_metadata: Dict[str, Any],
     ) -> "TextContent":
         """Create a text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
+        text = choice.text if isinstance(choice, CompletionChoice) else choice.message.content
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
-            text=choice.text,
+            text=text,
             metadata=choice_metadata,
         )
 
@@ -104,17 +110,18 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             yield [self._create_streaming_text_content(chunk, choice, chunk_metadata) for choice in chunk.choices]
 
     def _create_streaming_text_content(
-        self, chunk: Completion, choice: CompletionChoice, response_metadata: Dict[str, Any]
+        self, chunk: Completion, choice: Union[CompletionChoice, ChatCompletionChunk], response_metadata: Dict[str, Any]
     ) -> "StreamingTextContent":
         """Create a streaming text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
+        text = choice.text if isinstance(choice, CompletionChoice) else choice.delta.content
         return StreamingTextContent(
             choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=choice_metadata,
-            text=choice.text,
+            text=text,
         )
 
     def _get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
