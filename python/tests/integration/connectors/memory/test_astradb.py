@@ -9,9 +9,10 @@ import pytest
 import semantic_kernel as sk
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-astradb_installed: bool 
+astradb_installed: bool
 try:
     from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
+
     astradb_installed = True
 except ImportError:
     astradb_installed = False
