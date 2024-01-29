@@ -15,7 +15,7 @@ public class FunctionResultMetadata {
     private final CaseInsensitiveMap<ContextVariable<?>> metadata;
 
     public FunctionResultMetadata(CaseInsensitiveMap<ContextVariable<?>> metadata) {
-        this.metadata = metadata;
+        this.metadata = new CaseInsensitiveMap<>(metadata);
     }
 
     public static FunctionResultMetadata build(

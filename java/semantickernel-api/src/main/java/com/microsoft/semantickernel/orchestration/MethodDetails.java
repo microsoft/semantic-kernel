@@ -1,8 +1,10 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MethodDetails {
@@ -22,7 +24,7 @@ public class MethodDetails {
         this.name = name;
         this.description = description;
         this.function = function;
-        this.parameters = parameters;
+        this.parameters = new ArrayList<>(parameters);
         this.returnParameter = returnParameter;
     }
 
@@ -39,7 +41,7 @@ public class MethodDetails {
     }
 
     public List<KernelParameterMetadata> getParameters() {
-        return parameters;
+        return Collections.unmodifiableList(parameters);
     }
 
     public KernelReturnParameterMetadata getReturnParameter() {

@@ -51,7 +51,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
     @Override
     public Map<String, ContextVariable<?>> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override

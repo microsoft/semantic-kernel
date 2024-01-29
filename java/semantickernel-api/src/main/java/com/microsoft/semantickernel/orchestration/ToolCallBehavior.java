@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Defines the behavior of a tool call. Currently, the only tool available is function calling. 
+ * Defines the behavior of a tool call. Currently, the only tool available is function calling.
  */
 public class ToolCallBehavior {
 
@@ -46,6 +46,12 @@ public class ToolCallBehavior {
     public ToolCallBehavior() {
     }
 
+    public ToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+        flags.putAll(toolCallBehavior.flags);
+        functionSettings.putAll(toolCallBehavior.functionSettings);
+        settings.putAll(toolCallBehavior.settings);
+    }
+
     public ToolCallBehavior kernelFunctions(boolean enable) {
         setFlag("kernelFunctions", enable);
         return this;
@@ -61,7 +67,7 @@ public class ToolCallBehavior {
             String key = FunctionCallBehavior.getKey(function);
             functionSettings.compute(
                 key,
-                (k,v) -> {
+                (k, v) -> {
                     if (v == null) {
                         return new FunctionCallBehavior(function, require, false);
                     } else {
@@ -78,7 +84,7 @@ public class ToolCallBehavior {
             String key = FunctionCallBehavior.getKey(function);
             functionSettings.compute(
                 key,
-                (k,v) -> {
+                (k, v) -> {
                     if (v == null) {
                         return new FunctionCallBehavior(function, false, enable);
                     } else {
@@ -93,7 +99,7 @@ public class ToolCallBehavior {
     public ToolCallBehavior maximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
         setSetting("maximumAutoInvokeAttempts", maximumAutoInvokeAttempts);
         return this;
-    }   
+    }
 
     public boolean kernelFunctionsEnabled() {
         return getFlag("kernelFunctions");
@@ -127,7 +133,7 @@ public class ToolCallBehavior {
     }
 
     public boolean functionEnabled(String pluginName, String functionName) {
- 
+
         String key = FunctionCallBehavior.getKey(pluginName, functionName);
         if (functionSettings.containsKey(key)) {
             return functionSettings.get(key).enabled();

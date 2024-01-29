@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -64,6 +65,10 @@ public abstract class DefaultKernelFunction implements KernelFunction {
     @Override
     @Nullable
     public Map<String, PromptExecutionSettings> getExecutionSettings() {
-        return executionSettings;
+        if (executionSettings != null) {
+            return Collections.unmodifiableMap(executionSettings);
+        } else {
+            return null;
+        }
     }
 }

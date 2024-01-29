@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
@@ -81,6 +82,12 @@ public interface KernelFunction extends Buildable {
         @Nullable KernelArguments arguments,
         ContextVariableType<T> variableType);
 
+    <T> Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelArguments arguments,
+        KernelHooks kernelHooks,
+        ContextVariableType<T> variableType);
+
     @Nullable
     Map<String, PromptExecutionSettings> getExecutionSettings();
 
@@ -91,8 +98,6 @@ public interface KernelFunction extends Buildable {
         FromPromptBuilder withInputParameters(List<InputVariable> inputVariables);
 
         FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
-
-        FromPromptBuilder withPluginName(String name);
 
         FromPromptBuilder withExecutionSettings(
             Map<String, PromptExecutionSettings> executionSettings);

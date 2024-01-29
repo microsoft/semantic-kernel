@@ -49,7 +49,7 @@ public interface KernelArguments extends Buildable, Map<String, ContextVariable<
      * @return content of the variable
      */
     @Nullable
-    <T extends ContextVariable<?>> T get(String key);
+    ContextVariable<?> get(String key);
 
     /**
      * Return the variable with the given name

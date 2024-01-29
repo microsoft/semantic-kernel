@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel.plugin;
 
-public class KernelParameterMetadata {
+public class KernelParameterMetadata<T> {
 
     /// <summary>The name of the parameter.</summary>
     private final String name;
@@ -8,18 +8,18 @@ public class KernelParameterMetadata {
     private final String description;
     private final String defaultValue;
     private final boolean isRequired;
-    private final Class<?> parameterType;
+    private final Class<T> parameterType;
 
     public KernelParameterMetadata(
         String name,
         String description,
-        Class<?> parameterType,
+        Class<T> parameterType,
         String defaultValue, boolean isRequired) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
         this.isRequired = isRequired;
-        this.parameterType = String.class;
+        this.parameterType = parameterType;
     }
 
     public String getName() {

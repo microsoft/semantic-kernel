@@ -29,8 +29,8 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @Nullable
-    public AIServiceSelection trySelectAIService(
-        Class<? extends AIService> serviceType,
+    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+        Class<T> serviceType,
         @Nullable
         KernelFunction function,
         @Nullable
@@ -108,10 +108,9 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         PromptExecutionSettings settings;
 
         if (executionSettings.containsKey(PromptExecutionSettings.DEFAULT_SERVICE_ID)) {
-            executionSettings.get(PromptExecutionSettings.DEFAULT_SERVICE_ID);
             settings = executionSettings.get(PromptExecutionSettings.DEFAULT_SERVICE_ID);
         } else {
-            settings = executionSettings.values().stream().findFirst().orElseGet(null);
+            settings = executionSettings.values().stream().findFirst().orElseGet(() -> null);
         }
 
         if (service != null) {

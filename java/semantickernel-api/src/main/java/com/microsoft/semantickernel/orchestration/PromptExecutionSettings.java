@@ -1,22 +1,20 @@
 package com.microsoft.semantickernel.orchestration;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PromptExecutionSettings {
 
     public static final String DEFAULT_SERVICE_ID = "default";
     public static final int DEFAULT_MAX_TOKENS = 256;
-    public static final double DEFAULT_TEMPERATURE= 1.0;
+    public static final double DEFAULT_TEMPERATURE = 1.0;
     public static final double DEFAULT_TOP_P = 1.0;
     public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
@@ -56,12 +54,15 @@ public class PromptExecutionSettings {
     private final int bestOf;
     private final int resultsPerPrompt;
     private final String user;
+    @Nullable
     private final List<String> stopSequences;
+    @Nullable
     private final ToolCallBehavior toolCallBehavior;
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>s
+    @Nullable
     public Map<Integer, Integer> tokenSelectionBiases;
 
     @JsonCreator
@@ -76,22 +77,24 @@ public class PromptExecutionSettings {
         @JsonProperty(RESULTS_PER_PROMPT) int resultsPerPrompt,
         @JsonProperty(BEST_OF) int bestOf,
         @JsonProperty(USER) String user,
+        @Nullable
         @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
+        @Nullable
         @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
-            this(
-                serviceId, 
-                modelId, 
-                temperature, 
-                topP, 
-                presencePenalty,
-                frequencyPenalty, 
-                maxTokens, 
-                resultsPerPrompt,
-                bestOf, 
-                user, 
-                stopSequences, 
-                tokenSelectionBiases,
-                null);
+        this(
+            serviceId,
+            modelId,
+            temperature,
+            topP,
+            presencePenalty,
+            frequencyPenalty,
+            maxTokens,
+            resultsPerPrompt,
+            bestOf,
+            user,
+            stopSequences,
+            tokenSelectionBiases,
+            null);
     }
 
     public PromptExecutionSettings(
@@ -108,19 +111,23 @@ public class PromptExecutionSettings {
         @Nullable List<String> stopSequences,
         @Nullable Map<Integer, Integer> tokenSelectionBiases,
         @Nullable ToolCallBehavior toolCallBehavior) {
-            this.serviceId = serviceId;
-            this.modelId = modelId;
-            this.temperature = temperature;
-            this.topP = topP;
-            this.presencePenalty = presencePenalty;
-            this.frequencyPenalty = frequencyPenalty;
-            this.maxTokens = maxTokens;
-            this.resultsPerPrompt = resultsPerPrompt;
-            this.bestOf = bestOf;
-            this.user = user;
-            this.stopSequences = stopSequences != null ? stopSequences : Collections.emptyList();
-            this.tokenSelectionBiases = tokenSelectionBiases != null ? tokenSelectionBiases : Collections.emptyMap();   
-            this.toolCallBehavior = toolCallBehavior;    
+        this.serviceId = serviceId;
+        this.modelId = modelId;
+        this.temperature = temperature;
+        this.topP = topP;
+        this.presencePenalty = presencePenalty;
+        this.frequencyPenalty = frequencyPenalty;
+        this.maxTokens = maxTokens;
+        this.resultsPerPrompt = resultsPerPrompt;
+        this.bestOf = bestOf;
+        this.user = user;
+        this.stopSequences =
+            stopSequences != null ? new ArrayList<>(stopSequences) : Collections.emptyList();
+        this.tokenSelectionBiases =
+            tokenSelectionBiases != null ? new HashMap<>(tokenSelectionBiases)
+                : Collections.emptyMap();
+        this.toolCallBehavior =
+            toolCallBehavior != null ? new ToolCallBehavior(toolCallBehavior) : null;
     }
 
     @JsonProperty(SERVICE_ID)
@@ -143,7 +150,7 @@ public class PromptExecutionSettings {
         return topP;
     }
 
-    @JsonProperty(PRESENCE_PENALTY) 
+    @JsonProperty(PRESENCE_PENALTY)
     public double getPresencePenalty() {
         return presencePenalty;
     }
@@ -175,19 +182,30 @@ public class PromptExecutionSettings {
     }
 
     @JsonProperty(STOP_SEQUENCES)
+    @Nullable
     public List<String> getStopSequences() {
-        return stopSequences;
+        if (stopSequences != null) {
+            return Collections.unmodifiableList(stopSequences);
+        }
+        return null;
     }
-    
+
     @JsonProperty(TOKEN_SELECTION_BIASES)
+    @Nullable
     public Map<Integer, Integer> getTokenSelectionBiases() {
-        return tokenSelectionBiases;
+        if (tokenSelectionBiases != null) {
+            return Collections.unmodifiableMap(tokenSelectionBiases);
+        }
+        return null;
     }
 
     @JsonIgnore
     @Nullable
     public ToolCallBehavior getToolCallBehavior() {
-        return toolCallBehavior;
+        if (toolCallBehavior != null) {
+            return new ToolCallBehavior(toolCallBehavior);
+        }
+        return null;
     }
 
     public static Builder builder() {
@@ -265,7 +283,8 @@ public class PromptExecutionSettings {
         @SuppressWarnings("unchecked")
         public Builder withStopSequences(List<String> stopSequences) {
             if (stopSequences != null) {
-                ((List<String>)settings.computeIfAbsent(STOP_SEQUENCES, k -> new ArrayList<>())).addAll(stopSequences);
+                ((List<String>) settings.computeIfAbsent(STOP_SEQUENCES,
+                    k -> new ArrayList<>())).addAll(stopSequences);
             }
             return this;
         }
@@ -273,7 +292,8 @@ public class PromptExecutionSettings {
         @SuppressWarnings("unchecked")
         public Builder withTokenSelectionBiases(Map<Integer, Integer> tokenSelectionBiases) {
             if (tokenSelectionBiases != null) {
-                ((Map<Integer, Integer>)settings.computeIfAbsent(TOKEN_SELECTION_BIASES, k -> new HashMap<>())).putAll(tokenSelectionBiases);   
+                ((Map<Integer, Integer>) settings.computeIfAbsent(TOKEN_SELECTION_BIASES,
+                    k -> new HashMap<>())).putAll(tokenSelectionBiases);
             }
             return this;
         }
@@ -281,19 +301,20 @@ public class PromptExecutionSettings {
         @SuppressWarnings("unchecked")
         public PromptExecutionSettings build() {
             return new PromptExecutionSettings(
-                (String)settings.getOrDefault(SERVICE_ID, ""),
-                (String)settings.getOrDefault(MODEL_ID, ""),
-                (double)settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
-                (double)settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
-                (double)settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
-                (double)settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
-                (int)settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
-                (int)settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
-                (int)settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
-                (String)settings.getOrDefault(USER, ""),
-                (List<String>)settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
-                (Map<Integer, Integer>)settings.getOrDefault(TOKEN_SELECTION_BIASES, Collections.emptyMap()),
-                (ToolCallBehavior)settings.getOrDefault("toolCallBehavior", new ToolCallBehavior())
+                (String) settings.getOrDefault(SERVICE_ID, ""),
+                (String) settings.getOrDefault(MODEL_ID, ""),
+                (double) settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
+                (double) settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
+                (double) settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
+                (double) settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
+                (int) settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
+                (int) settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
+                (int) settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
+                (String) settings.getOrDefault(USER, ""),
+                (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
+                (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
+                    Collections.emptyMap()),
+                (ToolCallBehavior) settings.getOrDefault("toolCallBehavior", new ToolCallBehavior())
             );
         }
     }

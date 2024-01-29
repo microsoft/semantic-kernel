@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -50,6 +51,7 @@ public interface AIService {
     /// <summary>
     /// Gets the specified attribute.
     /// </summary>
+    @Nullable
     static String getAttribute(AIService service, String key)
     {
         if (service.getAttributes() != null) {

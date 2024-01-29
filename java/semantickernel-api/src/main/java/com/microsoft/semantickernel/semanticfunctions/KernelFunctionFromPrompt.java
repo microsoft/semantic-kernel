@@ -8,17 +8,23 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
+import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
+import com.microsoft.semantickernel.hooks.PromptRenderingEvent;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,23 +89,36 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         );
     }
 
-
     private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
+        KernelHooks kernelHooks,
         ContextVariableType<T> variableType) {
+
+        PromptRenderingEvent preRenderingHookResult = kernelHooks
+            .executeHooks(new PromptRenderingEvent(this, arguments));
+
         return this
             .template
-            .renderAsync(kernel, arguments)
+            .renderAsync(kernel, preRenderingHookResult.getArguments())
             .flatMapMany(prompt -> {
+                PromptRenderedEvent promptHookResult = kernelHooks
+                    .executeHooks(new PromptRenderedEvent(this, arguments, prompt));
+                prompt = promptHookResult.getPrompt();
+                KernelArguments args = promptHookResult.getArguments();
+
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
+
+                FunctionInvokingEvent updateArguments = kernelHooks
+                    .executeHooks(new FunctionInvokingEvent(this, args));
+                args = updateArguments.getArguments();
 
                 AIServiceSelection aiServiceSelection = kernel
                     .getServiceSelector()
                     .trySelectAIService(
                         TextAIService.class,
                         this,
-                        arguments
+                        args
                     );
 
                 AIService client = aiServiceSelection.getService();
@@ -117,7 +136,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                         .getChatMessageContentsAsync(
                             prompt,
                             executionSettings,
-                            kernel)
+                            kernel,
+                            kernelHooks)
                         .flatMapMany(Flux::fromIterable)
                         .concatMap(chatMessageContent -> {
                             if (chatMessageContent.getAuthorRole()
@@ -157,8 +177,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                                 it.getMetadata()
                             );
                         });
-                    return result;
-
                 } else if (client instanceof TextGenerationService) {
                     result = ((TextGenerationService) client)
                         .getTextContentsAsync(
@@ -190,7 +208,18 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 } else {
                     return Flux.error(new IllegalStateException("Unknown service type"));
                 }
-                return result;
+
+                return result
+                    .map(it -> {
+                        FunctionInvokedEvent<T> updatedResult = kernelHooks
+                            .executeHooks(
+                                new FunctionInvokedEvent<>(
+                                    this,
+                                    arguments,
+                                    it));
+
+                        return updatedResult.getResult();
+                    });
             })
             .doOnError(
                 ex -> {
@@ -228,11 +257,24 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
+        @Nullable KernelHooks kernelHooks,
         ContextVariableType<T> variableType) {
-        return invokeInternalAsync(kernel, arguments, variableType)
+        if (kernelHooks == null) {
+            kernelHooks = kernel.getHookService();
+        }
+        return invokeInternalAsync(kernel, arguments, kernelHooks, variableType)
             .take(1)
             .single();
     }
+
+    @Override
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelArguments arguments,
+        ContextVariableType<T> variableType) {
+        return invokeAsync(kernel, arguments, null, variableType);
+    }
+
 
     /*
      * Given a json string, invoke the tool specified in the json string.
@@ -327,12 +369,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         private PromptTemplate promptTemplate;
         private String name;
-        private String pluginName;
         private Map<String, PromptExecutionSettings> executionSettings;
         private String description;
         private List<InputVariable> inputVariables;
         private String template;
-        private String templateFormat;
+        private String templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         private OutputVariable outputVariable;
         private PromptTemplateFactory promptTemplateFactory;
 
@@ -345,19 +386,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         @Override
         public FromPromptBuilder withInputParameters(List<InputVariable> inputVariables) {
-            this.inputVariables = inputVariables;
+            this.inputVariables = new ArrayList<>(inputVariables);
             return this;
         }
 
         @Override
         public FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate) {
             this.promptTemplate = promptTemplate;
-            return this;
-        }
-
-        @Override
-        public FromPromptBuilder withPluginName(String name) {
-            this.pluginName = name;
             return this;
         }
 
@@ -381,7 +416,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 this.executionSettings = new HashMap<>();
             }
 
-            this.executionSettings.put("default", executionSettings);
+            this.executionSettings.put(PromptExecutionSettings.DEFAULT_SERVICE_ID,
+                executionSettings);
 
             if (executionSettings.getServiceId() != null) {
                 this.executionSettings.put(executionSettings.getServiceId(), executionSettings);

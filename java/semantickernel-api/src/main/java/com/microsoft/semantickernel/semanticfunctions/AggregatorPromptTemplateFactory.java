@@ -2,12 +2,13 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import reactor.util.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AggregatorPromptTemplateFactory implements PromptTemplateFactory {
     private final List<PromptTemplateFactory> templateFactories;
     public AggregatorPromptTemplateFactory(List<PromptTemplateFactory> templateFactories) {
-        this.templateFactories = templateFactories;
+        this.templateFactories = new ArrayList<>(templateFactories);
     }
     @Override
     public PromptTemplate tryCreate(@NonNull PromptTemplateConfig templateConfig) {

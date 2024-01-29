@@ -26,8 +26,8 @@ public interface AIServiceSelector {
      * @return
      */
     @Nullable
-    AIServiceSelection trySelectAIService(
-        Class<? extends AIService> serviceType,
+    <T extends AIService> AIServiceSelection<T> trySelectAIService(
+        Class<T> serviceType,
         @Nullable
         KernelFunction function,
 

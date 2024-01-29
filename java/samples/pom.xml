@@ -87,39 +87,25 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <version>1.23</version>
+                <executions>
+                    <execution>
+                        <id>android</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
-    <!-- <dependencies>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-ai-openai</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-planners</artifactId>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies> -->
 
     <profiles>
         <profile>
@@ -140,28 +126,16 @@
                             <target>${maven.compiler.release}</target>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
-                            <compilerArgs>
-                                <arg>-XDcompilePolicy=simple</arg>
+                        </configuration>
+                    </plugin>
 
-                                <!-- Remove exclusions when more project is stable -->
-                                <arg>-Xplugin:ErrorProne
-                                    -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
-                                    -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF
-                                    -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
-                                </arg>
-                            </compilerArgs>
-                            <annotationProcessorPaths>
-                                <path>
-                                    <groupId>com.google.errorprone</groupId>
-                                    <artifactId>error_prone_core</artifactId>
-                                    <version>${google.errorprone.core.version}</version>
-                                </path>
-                                <path>
-                                    <groupId>com.uber.nullaway</groupId>
-                                    <artifactId>nullaway</artifactId>
-                                    <version>${com.uber.nullaway.version}</version>
-                                </path>
-                            </annotationProcessorPaths>
+                    <!-- Ignore linting on samples -->
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                        <version>${maven.spotbugs-plugin.version}</version>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>

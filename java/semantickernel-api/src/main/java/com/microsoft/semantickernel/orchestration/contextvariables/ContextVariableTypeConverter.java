@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -75,7 +76,7 @@ public class ContextVariableTypeConverter<T> {
         this.fromObject = fromObject;
         this.toPromptString = toPromptString;
         this.fromPromptString = fromPromptString;
-        this.toObjects = toObjects;
+        this.toObjects = new ArrayList<>(toObjects);
     }
 
     
@@ -104,6 +105,7 @@ public class ContextVariableTypeConverter<T> {
         return null;
     }
 
+    @Nullable
     public T fromObject(Object s) {
         if (s == null) {
             return null;
@@ -118,6 +120,7 @@ public class ContextVariableTypeConverter<T> {
         return toPromptString.apply(t);
     }
 
+    @Nullable
     public T fromPromptString(String t) {
         if (t == null) {
             return null;

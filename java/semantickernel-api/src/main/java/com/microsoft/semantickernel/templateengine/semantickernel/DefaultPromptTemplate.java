@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,16 +29,11 @@ import reactor.core.publisher.Mono;
 /// </summary>
 public class DefaultPromptTemplate implements PromptTemplate {
 
-    @Nullable
-    private PromptTemplateConfig promptTemplate;
-
-    public DefaultPromptTemplate() {
-        this(null);
-    }
+    private final PromptTemplateConfig promptTemplate;
 
     public DefaultPromptTemplate(
-        @Nullable PromptTemplateConfig promptTemplate) {
-        this.promptTemplate = promptTemplate;
+        @Nonnull PromptTemplateConfig promptTemplate) {
+        this.promptTemplate = new PromptTemplateConfig(promptTemplate);
     }
 
     /// <summary>

@@ -2,6 +2,8 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class KernelFunctionMetadata {
@@ -25,7 +27,7 @@ public class KernelFunctionMetadata {
         KernelReturnParameterMetadata<?> returnParameter) {
         this.name = name;
         this.description = description;
-        this.parameters = parameters;
+        this.parameters = new ArrayList<>(parameters);
         this.returnParameter = returnParameter;
     }
 
@@ -34,7 +36,7 @@ public class KernelFunctionMetadata {
     }
 
     public List<KernelParameterMetadata> getParameters() {
-        return parameters;
+        return Collections.unmodifiableList(parameters);
     }
 
     public String getDescription() {

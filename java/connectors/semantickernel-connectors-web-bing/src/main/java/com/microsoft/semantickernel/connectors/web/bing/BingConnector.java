@@ -21,7 +21,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 
 import reactor.core.publisher.Mono;
 
-public class BingConnector implements WebSearchEngineConnector {    
+public class BingConnector implements WebSearchEngineConnector {
 
     private static String BING_SEARCH_URL;
     static { 
@@ -91,7 +91,7 @@ public class BingConnector implements WebSearchEngineConnector {
         @Override
         public String getSnippet() {
             return snippet;
-        }   
+        }
     }
 
     private final String apiKey; // TODO: secure this
@@ -107,7 +107,7 @@ public class BingConnector implements WebSearchEngineConnector {
     }
 
     @Override
-    public Mono<List<WebPage>> searchAsync(String query, int count, int offset) {   
+    public Mono<List<WebPage>> searchAsync(String query, int count, int offset) {
 
         if (count <= 0 || 50 <= count) throw new IllegalArgumentException("count must be between 1 and 50");
         if (offset < 0) throw new IllegalArgumentException("offset must be greater than or equal to 0");

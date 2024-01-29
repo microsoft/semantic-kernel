@@ -39,17 +39,6 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-connectors-web-bing</artifactId>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-ai-openai</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
-        </dependency>
-        -->
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -66,18 +55,6 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <version>2.20.0</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-planners</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-gpt3-tokenizer</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

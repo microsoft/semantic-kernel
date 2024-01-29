@@ -7,32 +7,37 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 /**
  * The result of an AI service selection.
  */
-public class AIServiceSelection {
+public class AIServiceSelection<T extends AIService> {
 
-    private final AIService service;
+    private final T service;
     private final PromptExecutionSettings settings;
 
     /**
      * Creates a new AI service selection.
-     * @param service The selected AI service.
-     * @param settings The settings associated with the selected service. This may be null even if a service is selected..
+     *
+     * @param service  The selected AI service.
+     * @param settings The settings associated with the selected service. This may be null even if a
+     *                 service is selected..
      */
-    public AIServiceSelection(AIService service, PromptExecutionSettings settings) {
+    public AIServiceSelection(T service, PromptExecutionSettings settings) {
         this.service = service;
         this.settings = settings;
     }
 
     /**
      * Gets the selected AI service.
+     *
      * @return The selected AI service.
      */
-    public AIService getService() {
+    public T getService() {
         return service;
     }
 
     /**
      * Gets the settings associated with the selected service.
-     * @return The settings associated with the selected service. This may be null even if a service is selected.
+     *
+     * @return The settings associated with the selected service. This may be null even if a service
+     * is selected.
      */
     public PromptExecutionSettings getSettings() {
         return settings;

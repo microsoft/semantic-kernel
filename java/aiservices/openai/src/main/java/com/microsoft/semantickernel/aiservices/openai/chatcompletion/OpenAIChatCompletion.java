@@ -26,6 +26,9 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -33,7 +36,6 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -69,7 +71,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     @Override
     public Map<String, ContextVariable<?>> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
@@ -78,55 +80,100 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(ChatHistory chatHistory,
-        @Nullable PromptExecutionSettings promptExecutionSettings, @Nullable Kernel kernel) {
+    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings promptExecutionSettings,
+        Kernel kernel,
+        KernelHooks kernelHooks) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
         List<FunctionDefinition> functions = Collections.emptyList();
-        return internalChatMessageContentsAsync(chatRequestMessages, functions,
-            promptExecutionSettings);
 
+        if (kernelHooks == null) {
+            kernelHooks = new KernelHooks();
+        }
+
+        return internalChatMessageContentsAsync(
+            chatRequestMessages,
+            functions,
+            promptExecutionSettings,
+            kernelHooks);
+    }
+
+    @Override
+    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        @Nullable PromptExecutionSettings promptExecutionSettings,
+        @Nullable Kernel kernel) {
+        return getChatMessageContentsAsync(chatHistory, promptExecutionSettings, kernel, null);
+    }
+
+
+    @Override
+    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+        String prompt,
+        PromptExecutionSettings promptExecutionSettings,
+        Kernel kernel,
+        @Nullable
+        KernelHooks kernelHooks) {
+        ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
+
+        if (kernelHooks == null) {
+            kernelHooks = new KernelHooks();
+        }
+
+        return internalChatMessageContentsAsync(
+            parsedPrompt.getChatRequestMessages(),
+            parsedPrompt.getFunctions(),
+            promptExecutionSettings,
+            kernelHooks);
     }
 
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
         PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
-        ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
-        return internalChatMessageContentsAsync(
-            parsedPrompt.getChatRequestMessages(),
-            parsedPrompt.getFunctions(),
-            promptExecutionSettings);
+        return getChatMessageContentsAsync(prompt, promptExecutionSettings, kernel, null);
     }
+
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
         List<FunctionDefinition> functions,
-        PromptExecutionSettings promptExecutionSettings) {
+        PromptExecutionSettings promptExecutionSettings,
+        KernelHooks kernelHooks) {
+
         ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
             promptExecutionSettings);
         Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(options);
+            internalChatMessageContentsAsync(kernelHooks, options);
 
-        return results.flatMap(list -> {
-            boolean makeSecondCall = false;
-            for (ChatMessageContent messageContent : list) {
-                if (messageContent.getAuthorRole() == AuthorRole.TOOL) {
-                    makeSecondCall = true;
-                    String content = messageContent.getContent();
-                    String id = messageContent.getModelId();
-                    ChatRequestToolMessage toolMessage = new ChatRequestToolMessage(content, id);
-                    chatRequestMessages.add(toolMessage);
+        return results
+            .flatMap(list -> {
+                boolean makeSecondCall = false;
+                for (ChatMessageContent messageContent : list) {
+                    if (messageContent.getAuthorRole() == AuthorRole.TOOL) {
+                        makeSecondCall = true;
+                        String content = messageContent.getContent();
+                        String id = messageContent.getModelId();
+                        ChatRequestToolMessage toolMessage = new ChatRequestToolMessage(content,
+                            id);
+                        chatRequestMessages.add(toolMessage);
+                    }
                 }
-            }
-            if (makeSecondCall) {
-                return internalChatMessageContentsAsync(options);
-            }
-            return Mono.just(list);
-        });
+                if (makeSecondCall) {
+                    return internalChatMessageContentsAsync(kernelHooks, options);
+                }
+                return Mono.just(list);
+            });
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
+        KernelHooks kernelHooks,
         ChatCompletionsOptions options) {
+
+        options = kernelHooks
+            .executeHooks(new PreChatCompletionEvent(options))
+            .getOptions();
 
         return client
             .getChatCompletions(getModelId(), options)

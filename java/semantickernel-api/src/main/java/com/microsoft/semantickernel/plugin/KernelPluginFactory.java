@@ -1,6 +1,5 @@
 package com.microsoft.semantickernel.plugin;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -22,7 +21,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -219,11 +217,13 @@ public class KernelPluginFactory {
 
         return new Builder().withName(config.getName()).withDescription(config.getDescription())
             .withExecutionSettings(config.getExecutionSettings())
-            .withInputParameters(config.getInputVariables()).withPromptTemplate(promptTemplate)
-            .withPluginName(pluginDirectoryName).withTemplate(template)
+            .withInputParameters(config.getInputVariables()
+            ).withPromptTemplate(promptTemplate)
+            .withTemplate(template)
             .withTemplateFormat(config.getTemplateFormat())
             .withOutputVariable(config.getOutputVariable())
-            .withPromptTemplateFactory(promptTemplateFactory).build();
+            .withPromptTemplateFactory(promptTemplateFactory)
+            .build();
     }
 
     public static KernelPlugin importPluginFromResourcesDirectory(String parentDirectory,
