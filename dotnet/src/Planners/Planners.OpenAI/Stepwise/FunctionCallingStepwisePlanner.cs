@@ -331,7 +331,7 @@ public sealed class FunctionCallingStepwisePlanner
     /// <summary>
     /// The user message to add to the chat history for each step of the plan.
     /// </summary>
-    private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.";
+    private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction-SendFinalAnswer function to communicate this back to the user.";
 
     // Context variable keys
     private const string AvailableFunctionsKey = "available_functions";
