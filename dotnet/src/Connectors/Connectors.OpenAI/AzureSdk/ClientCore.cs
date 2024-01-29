@@ -783,7 +783,8 @@ internal abstract class ClientCore
                 break;
 
             case JsonElement formatElement:
-                // If the response format is a JsonElement, extract the value as a string and process it accordingly.
+                // This is a workaround for the issue caused by ResponseFormat being defined as object?
+                // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
                     string formatString = formatElement.GetString();
