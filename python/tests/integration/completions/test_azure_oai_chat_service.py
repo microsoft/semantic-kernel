@@ -6,6 +6,7 @@ import pytest
 from openai import AsyncAzureOpenAI
 from test_utils import retry
 
+import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
@@ -82,3 +83,40 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
     assert len(output) < 100
+
+
+def test_azure_e2e_chat_completion_with_sync_invoke(setup_tldr_function_for_oai_models, get_aoai_config):
+    kernel, _, _ = setup_tldr_function_for_oai_models
+    _, api_key, endpoint = get_aoai_config
+
+    if "Python_Integration_Tests" in os.environ:
+        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
+    else:
+        deployment_name = "gpt-35-turbo"
+
+    print("* Service: Azure OpenAI Chat Completion")
+    print(f"* Endpoint: {endpoint}")
+    print(f"* Deployment: {deployment_name}")
+
+    # Configure LLM service
+    kernel.add_chat_service(
+        "chat_completion",
+        sk_oai.AzureChatCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
+    )
+
+    prompt_config = sk.PromptTemplateConfig()
+    prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+
+    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+    chat_function = kernel.register_semantic_function("testfn", "testfn", function_config)
+
+    texts = ["Tell me about the stars", "Tell me about the ocean.", "Tell me about the forest."]
+
+    for i in range(3):
+        text = f"Explain the following in one sentence: {texts[i]}."
+        context = kernel.create_new_context()
+        context["user_input"] = text
+        print(f"User input: {text}")
+        result = chat_function.invoke(context=context)
+        assert result.result is not None
+        assert len(result.result) > 0

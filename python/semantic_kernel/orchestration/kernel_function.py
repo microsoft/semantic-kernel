@@ -345,6 +345,28 @@ class KernelFunction(KernelFunctionBase):
         settings: Optional[AIRequestSettings] = None,
         log: Optional[Any] = None,
     ) -> "KernelContext":
+        """
+        Invoke the KernelFunction synchronously. As the underlying functions are async,
+        this method is managed by asyncio and will block the current thread until the
+        function completes.
+
+        If running from a Jupyter notebook, which already has an event loop running,
+        the caller will need to await this synchronous call to get the function result.
+
+        Arguments:
+            input {Optional[str]} -- Input text to the function
+            variables {ContextVariables} -- Context variables to pass to the function
+            context {Optional[KernelContext]} -- KernelContext to pass to the function
+            memory {Optional[SemanticTextMemoryBase]} -- Memory to pass to the function
+            settings {Optional[AIRequestSettings]} -- AIRequestSettings to pass to the function
+            log {Optional[Any]} -- Deprecated
+
+        Returns:
+            KernelContext -- The result of the function
+
+        Raises:
+            KernelException: If an error occurs during the function invocation
+        """
         from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if log:
@@ -367,24 +389,49 @@ class KernelFunction(KernelFunctionBase):
             context.variables.update(input)
 
         try:
-            loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
+            loop = asyncio.get_event_loop()
         except RuntimeError:
-            loop = None
+            # Create a new event loop if one isn't already present
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-        if loop and loop.is_running():
-
-            def run_coroutine():
-                if self.is_semantic:
-                    return self._invoke_semantic(context, settings)
-                else:
-                    return self._invoke_native(context)
-
-            return self.run_async_in_executor(run_coroutine)
+        if loop.is_running():
+            # Schedule the coroutine on the existing event loop
+            # If we get here, it's because there's already an event loop running
+            # We can't block and  wait for the result, so we need to schedule it
+            # and then return it.
+            # The caller of this task should await the result
+            task = asyncio.create_task(
+                self.invoke_async(
+                    input=input,
+                    variables=variables,
+                    context=context,
+                    memory=memory,
+                    settings=settings,
+                    log=log,
+                )
+            )
+            return task
         else:
-            if self.is_semantic:
-                return asyncio.run(self._invoke_semantic(context, settings))
-            else:
-                return asyncio.run(self._invoke_native(context))
+            # Start a new event loop for the call
+            try:
+                return loop.run_until_complete(
+                    self.invoke_async(
+                        input=input,
+                        variables=variables,
+                        context=context,
+                        memory=memory,
+                        settings=settings,
+                        log=log,
+                    )
+                )
+            except Exception as e:
+                logger.error(f"An error occurred during the function invocation: {e}")
+                raise KernelException(
+                    KernelException.ErrorCodes.FunctionInvokeError,
+                    "An error occurred while invoking the function",
+                    inner_exception=e,
+                )
 
     async def invoke_async(
         self,
@@ -417,7 +464,7 @@ class KernelFunction(KernelFunctionBase):
             if self.is_semantic:
                 return await self._invoke_semantic(context, settings, **kwargs)
             else:
-                return await self._invoke_native(context, **kwargs)
+                return await self._invoke_native(context)
         except Exception as e:
             context.fail(str(e), e)
             return context
