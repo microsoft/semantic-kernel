@@ -2,10 +2,10 @@ from typing import Any, Dict
 
 from transformers import GenerationConfig
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-class HuggingFaceRequestSettings(AIRequestSettings):
+class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
     do_sample: bool = True
     max_new_tokens: int = 256
     num_return_sequences: int = 1

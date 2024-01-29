@@ -2,7 +2,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from pydantic import Field, model_validator
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 # TODO: replace back with google types once pydantic issue is fixed.
 MessageOptions = Union[str, Dict[str, Any], List[Tuple[str, str]]]
@@ -14,7 +14,7 @@ MessagePromptOptions = Union[MessagePromptOption, Iterable[MessagePromptOption]]
 ExampleOptions = Union[Dict[str, Any], Iterable[Dict[str, Any]]]
 
 
-class GooglePalmRequestSettings(AIRequestSettings):
+class GooglePalmPromptExecutionSettings(PromptExecutionSettings):
     ai_model_id: Optional[str] = Field(None, serialization_alias="model")
     temperature: float = Field(0.0, ge=0.0, le=1.0)
     top_p: float = 1.0
@@ -24,12 +24,12 @@ class GooglePalmRequestSettings(AIRequestSettings):
     prompt: Optional[MessagePromptOptions] = None
 
 
-class GooglePalmTextRequestSettings(GooglePalmRequestSettings):
+class GooglePalmTextPromptExecutionSettings(GooglePalmPromptExecutionSettings):
     max_output_tokens: int = Field(256, gt=0)
     stop_sequences: Optional[Union[str, Iterable[str]]] = None
 
 
-class GooglePalmChatRequestSettings(GooglePalmRequestSettings):
+class GooglePalmChatPromptExecutionSettings(GooglePalmPromptExecutionSettings):
     messages: Optional[MessagesOptions] = None
     examples: Optional[ExampleOptions] = None
     context: Optional[str] = None

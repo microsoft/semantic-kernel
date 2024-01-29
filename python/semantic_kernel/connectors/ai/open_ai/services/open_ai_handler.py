@@ -11,18 +11,18 @@ from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIEmbeddingRequestSettings,
-    OpenAIRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIEmbeddingPromptExecutionSettings,
+    OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
 
     async def _send_request(
         self,
-        request_settings: OpenAIRequestSettings,
+        prompt_execution_settings: OpenAIPromptExecutionSettings,
     ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion],]:
         """
         Completes the given prompt. Returns a single string completion.
@@ -47,7 +47,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         Arguments:
             prompt {str} -- The prompt to complete.
             messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
-            request_settings {OpenAIRequestSettings} -- The request settings.
+            prompt_execution_settings {OpenAIPromptExecutionSettings} -- The request settings.
             stream {bool} -- Whether to stream the response.
 
         Returns:
@@ -55,9 +55,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         """
         try:
             response = await (
-                self.client.chat.completions.create(**request_settings.prepare_settings_dict())
+                self.client.chat.completions.create(**prompt_execution_settings.prepare_settings_dict())
                 if self.ai_model_type == OpenAIModelTypes.CHAT
-                else self.client.completions.create(**request_settings.prepare_settings_dict())
+                else self.client.completions.create(**prompt_execution_settings.prepare_settings_dict())
             )
             self.store_usage(response)
             return response
@@ -80,7 +80,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(self, settings: OpenAIEmbeddingRequestSettings) -> List[ndarray]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> List[ndarray]:
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
@@ -102,6 +102,6 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             if hasattr(response.usage, "completion_tokens"):
                 self.completion_tokens += response.usage.completion_tokens
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Return the class with the applicable request settings."""
-        return OpenAIRequestSettings
+        return OpenAIPromptExecutionSettings

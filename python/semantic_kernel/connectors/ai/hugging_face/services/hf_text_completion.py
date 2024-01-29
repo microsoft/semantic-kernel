@@ -9,8 +9,8 @@ import transformers
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.hugging_face.hf_request_settings import (
-    HuggingFaceRequestSettings,
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
+    HuggingFacePromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -75,13 +75,13 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete(
         self,
         prompt: str,
-        request_settings: HuggingFaceRequestSettings,
+        prompt_execution_settings: HuggingFacePromptExecutionSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
-            results = self.generator(**request_settings.prepare_settings_dict(prompt=prompt))
+            results = self.generator(**prompt_execution_settings.prepare_settings_dict(prompt=prompt))
             result_field_name = "summary_text" if self.task == "summarization" else "generated_text"
             if len(results) == 1:
                 return results[0][result_field_name]
@@ -93,7 +93,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_stream(
         self,
         prompt: str,
-        request_settings: HuggingFaceRequestSettings,
+        prompt_execution_settings: HuggingFacePromptExecutionSettings,
         **kwargs,
     ):
         """
@@ -102,14 +102,14 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {HuggingFaceRequestSettings} -- Request settings.
+            prompt_execution_settings {HuggingFacePromptExecutionSettings} -- Request settings.
 
         Yields:
             str -- Completion result.
         """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        if request_settings.num_return_sequences > 1:
+        if prompt_execution_settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
@@ -120,10 +120,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {prompt}
             kwargs = {
-                "num_return_sequences": request_settings.num_return_sequences,
-                "generation_config": request_settings.get_generation_config(),
+                "num_return_sequences": prompt_execution_settings.num_return_sequences,
+                "generation_config": prompt_execution_settings.get_generation_config(),
                 "streamer": streamer,
-                "do_sample": request_settings.do_sample,
+                "do_sample": prompt_execution_settings.do_sample,
             }
 
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159

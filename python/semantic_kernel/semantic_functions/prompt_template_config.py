@@ -4,18 +4,20 @@ from typing import Generic, List, TypeVar
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
 
-AIRequestSettingsT = TypeVar("AIRequestSettingsT", bound=AIRequestSettings)
+PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
 
 
-class PromptTemplateConfig(KernelBaseModel, Generic[AIRequestSettingsT]):
+class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
     schema_: int = Field(default=1, alias="schema")
     type: str = "completion"
     description: str = ""
-    execution_settings: AIRequestSettingsT = Field(default_factory=AIRequestSettings)  # todo: this should be a dict
+    execution_settings: PromptExecutionSettingsT = Field(
+        default_factory=PromptExecutionSettings
+    )  # todo: this should be a dict
     default_services: List[str] = Field(default_factory=list)
     parameters: List[ParameterView] = Field(default_factory=list)
 
@@ -56,7 +58,7 @@ class PromptTemplateConfig(KernelBaseModel, Generic[AIRequestSettingsT]):
     def from_execution_settings(cls, **kwargs) -> "PromptTemplateConfig":
         concrete_class = cls.model_fields["execution_settings"].annotation
         if isinstance(concrete_class, TypeVar):
-            concrete_class = AIRequestSettings
+            concrete_class = PromptExecutionSettings
         return PromptTemplateConfig(execution_settings=concrete_class(extension_data=kwargs))
 
     @classmethod
@@ -73,7 +75,7 @@ class PromptTemplateConfig(KernelBaseModel, Generic[AIRequestSettingsT]):
             # Determine the concrete type
             concrete_type = cls.model_fields["execution_settings"].annotation
             if isinstance(concrete_type, TypeVar):
-                concrete_type = AIRequestSettings
+                concrete_type = PromptExecutionSettings
 
             # Initialize the concrete type with the service_id and remaining settings
             config["execution_settings"] = concrete_type(service_id=service_id, extension_data=settings)

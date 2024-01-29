@@ -6,8 +6,8 @@ from typing import Tuple
 from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
 
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
-    AzureChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
 )
 
 
@@ -16,12 +16,12 @@ class AzureChatWithDataStreamResponse:
 
     _tool_message: str
     _assistant_message: AsyncStream[ChatCompletionChunk]
-    _settings: "AzureChatRequestSettings"
+    _settings: "AzureChatPromptExecutionSettings"
 
     def __init__(
         self,
         assistant_message: AsyncStream[ChatCompletionChunk],
-        settings: "AzureChatRequestSettings",
+        settings: "AzureChatPromptExecutionSettings",
     ):
         self._assistant_message = assistant_message
         self._tool_message = ""

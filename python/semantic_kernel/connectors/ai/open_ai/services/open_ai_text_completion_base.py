@@ -6,17 +6,17 @@ from typing import TYPE_CHECKING, AsyncGenerator, List, Union
 from openai.types.completion import Completion
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAITextRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-        OpenAIRequestSettings,
+    from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+        OpenAIPromptExecutionSettings,
     )
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -26,25 +26,25 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete(
         self,
         prompt: str,
-        settings: "OpenAIRequestSettings",
+        settings: "OpenAIPromptExecutionSettings",
         **kwargs,
     ) -> Union[str, List[str]]:
         """Executes a completion request and returns the result.
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAIRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAIPromptExecutionSettings} -- The settings to use for the completion request.
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
         """
-        if isinstance(settings, OpenAITextRequestSettings):
+        if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
         else:
             settings.messages = [{"role": "user", "content": prompt}]
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(prompt_execution_settings=settings)
 
         if isinstance(response, Completion):
             if len(response.choices) == 1:
@@ -57,7 +57,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete_stream(
         self,
         prompt: str,
-        settings: "OpenAIRequestSettings",
+        settings: "OpenAIPromptExecutionSettings",
         **kwargs,
     ) -> AsyncGenerator[Union[str, List[str]], None]:
         """
@@ -66,7 +66,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAIRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAIPromptExecutionSettings} -- The settings to use for the completion request.
 
         Returns:
             Union[str, List[str]] -- The completion result(s).
@@ -80,7 +80,7 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
                 settings.messages.append({"role": "user", "content": prompt})
         settings.ai_model_id = self.ai_model_id
         settings.stream = True
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(prompt_execution_settings=settings)
 
         async for partial in response:
             if len(partial.choices) == 0:
@@ -107,6 +107,6 @@ class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
                     if text.strip():  # Exclude empty or whitespace-only text
                         yield text
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
-        return OpenAITextRequestSettings
+        return OpenAITextPromptExecutionSettings

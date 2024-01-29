@@ -14,15 +14,15 @@ from google.generativeai.types import ChatResponse
 from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.google_palm.gp_request_settings import (
-    GooglePalmChatRequestSettings,
-    GooglePalmRequestSettings,
+from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
+    GooglePalmChatPromptExecutionSettings,
+    GooglePalmPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -63,7 +63,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     async def complete_chat(
         self,
         messages: List[Tuple[str, str]],
-        settings: GooglePalmRequestSettings,
+        settings: GooglePalmPromptExecutionSettings,
     ) -> Union[str, List[str]]:
         settings.messages = messages
         if not settings.ai_model_id:
@@ -82,14 +82,14 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     async def complete_chat_stream(
         self,
         messages: List[Tuple[str, str]],
-        settings: GooglePalmRequestSettings,
+        settings: GooglePalmPromptExecutionSettings,
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def complete(
         self,
         prompt: str,
-        settings: GooglePalmRequestSettings,
+        settings: GooglePalmPromptExecutionSettings,
         **kwargs,
     ) -> Union[str, List[str]]:
         if kwargs.get("logger"):
@@ -111,7 +111,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     async def complete_stream(
         self,
         prompt: str,
-        settings: GooglePalmRequestSettings,
+        settings: GooglePalmPromptExecutionSettings,
         **kwargs,
     ):
         if kwargs.get("logger"):
@@ -120,7 +120,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def _send_chat_request(
         self,
-        settings: GooglePalmRequestSettings,
+        settings: GooglePalmPromptExecutionSettings,
     ):
         """
         Completes the given user message. If len(messages) > 1, and a
@@ -132,7 +132,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
         Arguments:
             messages {str} -- The message (from a user) to respond to.
-            settings {GooglePalmRequestSettings} -- The request settings.
+            settings {GooglePalmPromptExecutionSettings} -- The request settings.
             context {str} -- Text that should be provided to the model first,
             to ground the response. If a system message is provided, it will be
             used as context.
@@ -194,6 +194,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             )
         return response
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
-        return GooglePalmChatRequestSettings
+        return GooglePalmChatPromptExecutionSettings

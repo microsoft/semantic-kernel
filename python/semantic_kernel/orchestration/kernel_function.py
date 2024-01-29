@@ -8,10 +8,10 @@ from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -53,7 +53,7 @@ class KernelFunction(KernelFunctionBase):
     _function: Callable[..., Any]
     _plugin_collection: Optional[ReadOnlyPluginCollectionBase]
     _ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]
-    _ai_request_settings: AIRequestSettings
+    _ai_prompt_execution_settings: PromptExecutionSettings
     _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
@@ -121,14 +121,14 @@ class KernelFunction(KernelFunctionBase):
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context: "KernelContext", **kwargs):
+        async def _local_func(client, prompt_execution_settings, context: "KernelContext", **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
             try:
                 if not function_config.has_chat_prompt:
                     prompt = await function_config.prompt_template.render(context)
-                    completion = await client.complete(prompt, request_settings)
+                    completion = await client.complete(prompt, prompt_execution_settings)
                     context.variables.update(completion)
                     return context
             except Exception as e:
@@ -141,7 +141,7 @@ class KernelFunction(KernelFunctionBase):
             # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages(context)
             try:
-                result = await client.complete_chat(messages, request_settings)
+                result = await client.complete_chat(messages, prompt_execution_settings)
                 if isinstance(result, list):
                     # TODO: handle multiple completions
                     result = result[0]
@@ -165,7 +165,7 @@ class KernelFunction(KernelFunctionBase):
             finally:
                 return context
 
-        async def _local_stream_func(client, request_settings, context):
+        async def _local_stream_func(client, prompt_execution_settings, context):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -178,7 +178,7 @@ class KernelFunction(KernelFunctionBase):
                     completion = ""
                     messages = await chat_prompt.render_messages(context)
                     async for partial_content in client.complete_chat_stream(
-                        messages=messages, settings=request_settings
+                        messages=messages, settings=prompt_execution_settings
                     ):
                         if isinstance(partial_content, str):
                             completion += partial_content
@@ -199,7 +199,7 @@ class KernelFunction(KernelFunctionBase):
                     prompt = await function_config.prompt_template.render(context)
 
                     completion = ""
-                    async for partial_content in client.complete_stream(prompt, request_settings):
+                    async for partial_content in client.complete_stream(prompt, prompt_execution_settings):
                         completion += partial_content
                         yield partial_content
                     context.variables.update(completion)
@@ -244,8 +244,8 @@ class KernelFunction(KernelFunctionBase):
         return not self._is_semantic
 
     @property
-    def request_settings(self) -> AIRequestSettings:
-        return self._ai_request_settings
+    def prompt_execution_settings(self) -> PromptExecutionSettings:
+        return self._ai_prompt_execution_settings
 
     def __init__(
         self,
@@ -273,7 +273,7 @@ class KernelFunction(KernelFunctionBase):
         self._stream_function = delegate_stream_function
         self._plugin_collection = None
         self._ai_service = None
-        self._ai_request_settings = AIRequestSettings()
+        self._ai_prompt_execution_settings = PromptExecutionSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
     def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "KernelFunction":
@@ -294,18 +294,18 @@ class KernelFunction(KernelFunctionBase):
         self._ai_service = chat_service()
         return self
 
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
+    def set_ai_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("AI LLM request settings cannot be `None`")
         self._verify_is_semantic()
-        self._ai_request_settings = settings
+        self._ai_prompt_execution_settings = settings
         return self
 
-    def set_chat_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
+    def set_chat_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("Chat LLM request settings cannot be `None`")
         self._verify_is_semantic()
-        self._ai_request_settings = settings
+        self._ai_prompt_execution_settings = settings
         return self
 
     def describe(self) -> FunctionView:
@@ -323,7 +323,7 @@ class KernelFunction(KernelFunctionBase):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         log: Optional[Any] = None,
     ) -> "KernelContext":
         if log:
@@ -342,7 +342,7 @@ class KernelFunction(KernelFunctionBase):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         log: Optional[Any] = None,
     ) -> "KernelContext":
         from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -392,7 +392,7 @@ class KernelFunction(KernelFunctionBase):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         **kwargs: Dict[str, Any],
     ) -> "KernelContext":
         from semantic_kernel.orchestration.kernel_context import KernelContext
@@ -422,10 +422,10 @@ class KernelFunction(KernelFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic(self, context: "KernelContext", settings: AIRequestSettings, **kwargs):
+    async def _invoke_semantic(self, context: "KernelContext", settings: PromptExecutionSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
-        new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
+        new_context = await self._function(self._ai_service, settings or self._ai_prompt_execution_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
@@ -468,7 +468,7 @@ class KernelFunction(KernelFunctionBase):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
     ):
         from semantic_kernel.orchestration.kernel_context import KernelContext
 
@@ -505,7 +505,9 @@ class KernelFunction(KernelFunctionBase):
     async def _invoke_semantic_stream(self, context, settings):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
-        async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
+        async for stream_msg in self._stream_function(
+            self._ai_service, settings or self._ai_prompt_execution_settings, context
+        ):
             yield stream_msg
 
     async def _invoke_native_stream(self, context):

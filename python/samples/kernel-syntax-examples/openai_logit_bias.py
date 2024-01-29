@@ -5,10 +5,10 @@ from typing import Any, Dict
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -21,7 +21,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 """
 
 
-def _config_ban_tokens(settings: AIRequestSettings, keys: Dict[Any, Any]):
+def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list
@@ -65,7 +65,7 @@ async def chat_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_request_settings_from_service(ChatCompletionClientBase, "chat_service")
+    settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat_service")
     settings = _config_ban_tokens(settings, keys)
 
     prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
@@ -150,7 +150,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_request_settings_from_service(TextCompletionClientBase, "text_service")
+    settings = kernel.get_prompt_execution_settings_from_service(TextCompletionClientBase, "text_service")
     settings = _config_ban_tokens(settings, keys)
 
     user_mssg = "The best pie flavor to have in autumn is"
