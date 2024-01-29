@@ -781,6 +781,24 @@ internal abstract class ClientCore
                         break;
                 }
                 break;
+
+            case JsonElement formatElement:
+                // If the response format is a JsonElement, extract the value as a string and process it accordingly.
+                if (formatElement.ValueKind == JsonValueKind.String)
+                {
+                    string formatString = formatElement.GetString();
+                    switch (formatString)
+                    {
+                        case "json_object":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                            break;
+
+                        case "text":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                            break;
+                    }
+                }
+                break;
         }
 
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
