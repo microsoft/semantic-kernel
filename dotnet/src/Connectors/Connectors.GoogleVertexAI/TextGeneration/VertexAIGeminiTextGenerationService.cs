@@ -37,8 +37,8 @@ public sealed class VertexAIGeminiTextGenerationService : GeminiTextGenerationSe
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
-            endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            httpRequestFactory: new VertexAIHttpRequestFactory(apiKey),
+            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiTextGenerationService))));
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

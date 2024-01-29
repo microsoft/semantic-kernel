@@ -2,15 +2,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Moq;
+using SemanticKernel.UnitTests.Fakes;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.VertexAI;
 
+[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
 public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -27,12 +31,42 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldCallGetEndpointAsync()
+    {
+        // Arrange
+        var endpointProviderMock = new Mock<IEndpointProvider>();
+        endpointProviderMock.Setup(x => x.GetEmbeddingsEndpoint(It.IsAny<string>()))
+            .Returns(new Uri("https://fake-endpoint.com/"));
+        var sut = this.CreateEmbeddingsClient(endpointProvider: endpointProviderMock.Object);
+
+        // Act
+        await sut.GenerateEmbeddingsAsync(["text1", "text2"]);
+
+        // Assert
+        endpointProviderMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task ShouldCallCreatePostRequestAsync()
+    {
+        // Arrange
+        var rquestFactoryMock = new Mock<IHttpRequestFactory>();
+        rquestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
+            .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
+        var sut = this.CreateEmbeddingsClient(httpRequestFactory: rquestFactoryMock.Object);
+
+        // Act
+        await sut.GenerateEmbeddingsAsync(["text1", "text2"]);
+
+        // Assert
+        rquestFactoryMock.VerifyAll();
+    }
+
+    [Fact]
     public async Task ShouldReturnValidEmbeddingsResponseAsync()
     {
         // Arrange
-        string modelId = "fake-model-id";
-        string apiKey = "fake-api-key";
-        var client = this.CreateEmbeddingsClient(modelId, apiKey);
+        var client = this.CreateEmbeddingsClient();
         var dataToEmbed = new List<string>()
         {
             "Write a story about a magic backpack.",
@@ -51,13 +85,17 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             values => Assert.Equal(testDataResponse.Predictions[1].Embeddings.Values, values));
     }
 
-    private VertexAIEmbeddingsClient CreateEmbeddingsClient(string modelId, string apiKey)
+    private VertexAIEmbeddingsClient CreateEmbeddingsClient(
+        string modelId = "fake-model",
+        string apiKey = "fake-api-key",
+        IEndpointProvider? endpointProvider = null,
+        IHttpRequestFactory? httpRequestFactory = null)
     {
         var client = new VertexAIEmbeddingsClient(
             httpClient: this._httpClient,
             embeddingModelId: modelId,
-            httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
-            endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration("fake-loc", "fake-proj")));
+            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
+            endpointProvider: endpointProvider ?? new FakeEndpointProvider());
         return client;
     }
 

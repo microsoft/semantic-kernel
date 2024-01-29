@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Provides a collection of endpoints for the Gemini API.
 /// </summary>
-internal sealed class GoogleAIGeminiEndpointProvider : IEndpointProvider
+internal sealed class GoogleAIEndpointProvider : IEndpointProvider
 {
     private readonly string _apiKey;
 
@@ -15,7 +15,7 @@ internal sealed class GoogleAIGeminiEndpointProvider : IEndpointProvider
     /// Initializes a new instance of the GeminiEndpoints class with the specified API key.
     /// </summary>
     /// <param name="apiKey">The API key to use for authentication.</param>
-    public GoogleAIGeminiEndpointProvider(string apiKey)
+    public GoogleAIEndpointProvider(string apiKey)
     {
         this._apiKey = apiKey;
     }
@@ -31,20 +31,20 @@ internal sealed class GoogleAIGeminiEndpointProvider : IEndpointProvider
     public static Uri ModelsEndpoint { get; } = new(BaseEndpoint, "models/");
 
     /// <inheritdoc />
-    public Uri GetTextGenerationEndpoint(string modelId)
+    public Uri GetGeminiTextGenerationEndpoint(string modelId)
         => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:generateContent?key={this._apiKey}");
 
     /// <inheritdoc />
-    public Uri GetStreamTextGenerationEndpoint(string modelId)
+    public Uri GetGeminiStreamTextGenerationEndpoint(string modelId)
         => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent?key={this._apiKey}");
 
     /// <inheritdoc />
-    public Uri GetChatCompletionEndpoint(string modelId)
-        => this.GetTextGenerationEndpoint(modelId);
+    public Uri GetGeminiChatCompletionEndpoint(string modelId)
+        => this.GetGeminiTextGenerationEndpoint(modelId);
 
     /// <inheritdoc />
-    public Uri GetStreamChatCompletionEndpoint(string modelId)
-        => this.GetStreamTextGenerationEndpoint(modelId);
+    public Uri GetGeminiStreamChatCompletionEndpoint(string modelId)
+        => this.GetGeminiStreamTextGenerationEndpoint(modelId);
 
     /// <inheritdoc />
     public Uri GetEmbeddingsEndpoint(string modelId)

@@ -28,14 +28,14 @@ public sealed class GoogleAIGeminiTextGenerationService : GeminiTextGenerationSe
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.TextGenerationClient = new GeminiTextGenerationClient(
+        this.TextGenerationClient = new GeminiTextGenerationClient(new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
-            endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey),
-            logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService)));
+            httpRequestFactory: new GoogleAIHttpRequestFactory(),
+            endpointProvider: new GoogleAIEndpointProvider(apiKey),
+            logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService))));
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 

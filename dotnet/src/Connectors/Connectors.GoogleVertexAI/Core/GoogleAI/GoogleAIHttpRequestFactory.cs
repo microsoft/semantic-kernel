@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-internal sealed class GoogleAIGeminiHttpRequestFactory : IHttpRequestFactory
+internal sealed class GoogleAIHttpRequestFactory : IHttpRequestFactory
 {
     public HttpRequestMessage CreatePost(object requestData, Uri endpoint)
     {
