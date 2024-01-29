@@ -76,10 +76,10 @@ async def chat() -> bool:
         return False
 
     # Non streaming
-    # answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    # answer = await kernel.run(chat_function, input_vars=context_vars)
     # print(f"Assistant:> {answer}")
 
-    answer = kernel.run_stream_async(chat_function, input_vars=context_vars)
+    answer = kernel.run_stream(chat_function, input_vars=context_vars)
     print("Assistant:> ", end="")
     async for message in answer:
         print(message, end="")

@@ -142,7 +142,7 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create) -> None:
         api_version=api_version,
     )
 
-    await azure_text_embedding.generate_embeddings_async(texts)
+    await azure_text_embedding.generate_embeddings(texts)
 
     mock_create.assert_awaited_once_with(
         input=texts,
@@ -166,7 +166,7 @@ async def test_azure_text_embedding_calls_with_batches(mock_create) -> None:
         api_version=api_version,
     )
 
-    await azure_text_embedding.generate_embeddings_async(texts, batch_size=3)
+    await azure_text_embedding.generate_embeddings(texts, batch_size=3)
 
     mock_create.assert_has_awaits(
         [

@@ -16,5 +16,5 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    async def render_async(self, context: "KernelContext") -> str:
+    async def render(self, context: "KernelContext") -> str:
         pass

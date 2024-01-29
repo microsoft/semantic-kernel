@@ -41,7 +41,7 @@ class ConversationSummaryPlugin:
         name="SummarizeConversation",
         input_description="A long conversation transcript.",
     )
-    async def summarize_conversation_async(self, input: str, context: "KernelContext") -> "KernelContext":
+    async def summarize_conversation(self, input: str, context: "KernelContext") -> "KernelContext":
         """
         Given a long conversation transcript, summarize the conversation.
 
@@ -51,10 +51,10 @@ class ConversationSummaryPlugin:
         """
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import (
-            aggregate_chunked_results_async,
+            aggregate_chunked_results,
         )
 
         lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
         paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)
 
-        return await aggregate_chunked_results_async(self._summarizeConversationFunction, paragraphs, context)
+        return await aggregate_chunked_results(self._summarizeConversationFunction, paragraphs, context)
