@@ -783,7 +783,7 @@ internal abstract class ClientCore
                 break;
 
             case JsonElement formatElement:
-                // This is a workaround for the issue caused by ResponseFormat being defined as object?
+                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
                 // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
