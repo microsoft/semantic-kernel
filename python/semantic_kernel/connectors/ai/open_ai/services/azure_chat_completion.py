@@ -287,7 +287,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.message.role),
+            role=ChatRole(choice.message.role) if choice.message.role is not None else None,
             content=choice.message.content,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
@@ -308,9 +308,9 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.delta.role),
+            role=ChatRole(choice.delta.role) if choice.delta.role is not None else None,
             content=choice.delta.content,
-            finish_reason=FinishReason(choice.finish_reason),
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
             tool_message=self._get_tool_message_from_chat_choice(choice),
@@ -371,5 +371,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         else:
             content = choice.delta
         if content.model_extra is not None and "context" in content.model_extra:
-            return content.model_extra["context"].get("messages", {}).get("content", None)
+            if "messages" in content.model_extra["context"]:
+                for message in content.model_extra["context"]["messages"]:
+                    if "tool" in message["role"]:
+                        return message["content"]
         return None
