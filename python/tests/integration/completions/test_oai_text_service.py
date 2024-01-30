@@ -18,7 +18,7 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
     print("* Endpoint: OpenAI")
     print("* Model: gpt-3.5-turbo-instruct")
 
-    kernel.add_chat_service(
+    kernel.add_text_completion_service(
         "text-completion",
         sk_oai.OpenAITextCompletion(ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id),
     )
@@ -50,7 +50,7 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
         organization=org_id,
     )
 
-    kernel.add_chat_service(
+    kernel.add_text_completion_service(
         "text-completion",
         sk_oai.OpenAITextCompletion(
             ai_model_id="gpt-3.5-turbo-instruct",

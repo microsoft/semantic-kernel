@@ -33,7 +33,7 @@ class GooglePalmChatRequestSettings(GooglePalmRequestSettings):
     messages: Optional[MessagesOptions] = None
     examples: Optional[ExampleOptions] = None
     context: Optional[str] = None
-    token_selection_biases: Dict[int, int] = {}
+    token_selection_biases: Dict[int, int] = None
 
     @model_validator(mode="after")
     def validate_input(self):
