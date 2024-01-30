@@ -32,11 +32,10 @@ public sealed class VertexAIGeminiTextGenerationService : GeminiTextGenerationSe
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-#pragma warning disable CA2000
-        httpClient = HttpClientProvider.GetHttpClient(httpClient);
-#pragma warning restore CA2000
         this.TextGenerationClient = new GeminiTextGenerationClient(new VertexAIGeminiChatCompletionClient(
-            httpClient: httpClient,
+#pragma warning disable CA2000
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+#pragma warning restore CA2000
             modelId: model,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
             endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),

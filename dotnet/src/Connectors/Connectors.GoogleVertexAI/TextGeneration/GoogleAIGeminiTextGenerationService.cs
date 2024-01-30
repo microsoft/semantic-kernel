@@ -28,11 +28,10 @@ public sealed class GoogleAIGeminiTextGenerationService : GeminiTextGenerationSe
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-#pragma warning disable CA2000
-        httpClient = HttpClientProvider.GetHttpClient(httpClient);
-#pragma warning restore CA2000
         this.TextGenerationClient = new GeminiTextGenerationClient(
-            httpClient: httpClient,
+#pragma warning disable CA2000
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+#pragma warning restore CA2000
             modelId: model,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
             endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey),

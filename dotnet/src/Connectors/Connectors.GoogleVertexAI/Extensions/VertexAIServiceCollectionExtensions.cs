@@ -21,7 +21,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
-    /// <param name="location">The region to process the request</param>
+    /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
@@ -58,7 +58,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="services">The service collection to add the Gemini Text Generation service to.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
-    /// <param name="location">The region to process the request</param>
+    /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
@@ -92,7 +92,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
-    /// <param name="location">The region to process the request</param>
+    /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
@@ -137,7 +137,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="services">The service collection to add the Gemini Text Generation service to.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
-    /// <param name="location">The region to process the request</param>
+    /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
