@@ -93,7 +93,7 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
     result = None
     async for message in kernel.run_stream(tldr_function, input_str=text_to_summarize):
         result = message[0] if not result else result + message[0]
-    output = "".join(result).strip()
+    output = str(result)
 
     print(f"TLDR using input string: '{output}'")
     assert len(result) > 1
