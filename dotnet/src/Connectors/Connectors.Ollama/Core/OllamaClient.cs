@@ -63,27 +63,6 @@ internal abstract class OllamaClient : IOllamaClient
         return response;
     }
 
-    protected static T DeserializeResponse<T>(string body)
-    {
-        try
-        {
-            T? geminiResponse = JsonSerializer.Deserialize<T>(body);
-            if (geminiResponse is null)
-            {
-                throw new JsonException("Response is null");
-            }
-
-            return geminiResponse;
-        }
-        catch (JsonException exc)
-        {
-            throw new KernelException("Unexpected response from model", exc)
-            {
-                Data = { { "ResponseData", body } },
-            };
-        }
-    }
-
     public Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
