@@ -150,7 +150,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             TextContent -- The created text content.
         """
-        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.get("filters")}
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters}
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
