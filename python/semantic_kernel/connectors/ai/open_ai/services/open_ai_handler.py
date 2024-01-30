@@ -38,7 +38,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
 
     async def _send_request(
         self,
-        settings: OpenAIPromptExecutionSettings,
+        request_settings: OpenAIPromptExecutionSettings,
     ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion]]:
         """
         Completes the given prompt. Returns a single string completion.
@@ -47,7 +47,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         Arguments:
             prompt {str} -- The prompt to complete.
             messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
-            settings {OpenAIPromptExecutionSettings} -- The request settings.
+            request_settings {OpenAIPromptExecutionSettings} -- The request settings.
             stream {bool} -- Whether to stream the response.
 
         Returns:
@@ -55,9 +55,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
         """
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
-                response = await self.client.chat.completions.create(**settings.prepare_settings_dict())
+                response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
             else:
-                response = await self.client.completions.create(**settings.prepare_settings_dict())
+                response = await self.client.completions.create(**request_settings.prepare_settings_dict())
             self.store_usage(response)
             return response
         except BadRequestError as ex:

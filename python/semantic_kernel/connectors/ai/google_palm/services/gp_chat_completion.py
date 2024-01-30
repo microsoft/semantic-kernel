@@ -127,7 +127,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
 
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
