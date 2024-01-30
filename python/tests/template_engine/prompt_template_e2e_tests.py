@@ -48,7 +48,7 @@ class TestPromptTemplateEngine:
         self.target = PromptTemplateEngine()
 
     @mark.asyncio
-    async def test_it_supports_variables_async(self):
+    async def test_it_supports_variables(self):
         # Arrange
         input = "template tests"
         winner = "SK"
@@ -60,14 +60,14 @@ class TestPromptTemplateEngine:
         context["winner"] = winner
 
         # Act
-        result = await self.target.render_async(template, context)
+        result = await self.target.render(template, context)
 
         # Assert
         expected = template.replace("{{$input}}", input).replace("{{  $winner }}", winner)
         assert expected == result
 
     @mark.asyncio
-    async def test_it_supports_values_async(self):
+    async def test_it_supports_values(self):
         # Arrange
         template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!"
         expected = "And the winner\n of template\ntests \nis: SK!"
@@ -76,13 +76,13 @@ class TestPromptTemplateEngine:
         context = kernel.create_new_context()
 
         # Act
-        result = await self.target.render_async(template, context)
+        result = await self.target.render(template, context)
 
         # Assert
         assert expected == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_variables_to_functions_async(self):
+    async def test_it_allows_to_pass_variables_to_functions(self):
         # Arrange
         template = "== {{my.check123 $call}} =="
         kernel = Kernel()
@@ -91,13 +91,13 @@ class TestPromptTemplateEngine:
         context["call"] = "123"
 
         # Act
-        result = await self.target.render_async(template, context)
+        result = await self.target.render(template, context)
 
         # Assert
         assert "== 123 ok ==" == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_values_to_functions_async(self):
+    async def test_it_allows_to_pass_values_to_functions(self):
         # Arrange
         template = "== {{my.check123 '234'}} =="
         kernel = Kernel()
@@ -105,13 +105,13 @@ class TestPromptTemplateEngine:
         context = kernel.create_new_context()
 
         # Act
-        result = await self.target.render_async(template, context)
+        result = await self.target.render(template, context)
 
         # Assert
         assert "== 234 != 123 ==" == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_escaped_values1_to_functions_async(self):
+    async def test_it_allows_to_pass_escaped_values1_to_functions(self):
         # Arrange
         template = "== {{my.check123 'a\\'b'}} =="
         kernel = Kernel()
@@ -119,13 +119,13 @@ class TestPromptTemplateEngine:
         context = kernel.create_new_context()
 
         # Act
-        result = await self.target.render_async(template, context)
+        result = await self.target.render(template, context)
 
         # Assert
         assert "== a'b != 123 ==" == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_escaped_values2_to_functions_async(self):
+    async def test_it_allows_to_pass_escaped_values2_to_functions(self):
         # Arrange
         template = '== {{my.check123 "a\\"b"}} =='
         kernel = Kernel()
@@ -133,14 +133,14 @@ class TestPromptTemplateEngine:
         context = kernel.create_new_context()
 
         # Act
-        result = await self.target.render_async(template, context)
+        result = await self.target.render(template, context)
 
         # Assert
         assert '== a"b != 123 ==' == result
 
     @mark.asyncio
     @mark.parametrize("template,expected_result", [(t, r) for t, r in _get_template_language_tests()])
-    async def test_it_handle_edge_cases_async(self, template: str, expected_result: str):
+    async def test_it_handle_edge_cases(self, template: str, expected_result: str):
         # Arrange
         kernel = Kernel()
         kernel.import_plugin(MyPlugin())
@@ -149,9 +149,9 @@ class TestPromptTemplateEngine:
         # Act
         if expected_result.startswith("ERROR"):
             with raises(ValueError):
-                await self.target.render_async(template, context)
+                await self.target.render(template, context)
         else:
-            result = await self.target.render_async(template, context)
+            result = await self.target.render(template, context)
 
             # Assert
             assert expected_result == result

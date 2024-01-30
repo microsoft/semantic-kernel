@@ -42,7 +42,7 @@ def test_throw_without_completion_service():
 
 
 @pytest.mark.asyncio
-async def test_plan_creation_async():
+async def test_plan_creation():
     goal = "Translate Happy birthday to German."
     plan_str = dedent(
         """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
@@ -81,7 +81,7 @@ async def test_plan_creation_async():
     kernel.create_new_context.return_value = context
 
     planner = ActionPlanner(kernel)
-    plan = await planner.create_plan_async(goal)
+    plan = await planner.create_plan(goal)
 
     assert plan is not None
     assert plan.description == mock_function.description
@@ -179,7 +179,7 @@ def test_exclude_functions(plugins_input, mock_context):
 
 
 @pytest.mark.asyncio
-async def test_invalid_json_throw_async():
+async def test_invalid_json_throw():
     goal = "Translate Happy birthday to German."
     plan_str = '{"":{""function"": ""WriterPlugin.Translate""}}'
 
@@ -213,11 +213,11 @@ async def test_invalid_json_throw_async():
     planner = ActionPlanner(kernel)
 
     with pytest.raises(PlanningException):
-        await planner.create_plan_async(goal)
+        await planner.create_plan(goal)
 
 
 @pytest.mark.asyncio
-async def test_empty_goal_throw_async():
+async def test_empty_goal_throw():
     goal = ""
 
     kernel = Mock(spec=Kernel)
@@ -247,4 +247,4 @@ async def test_empty_goal_throw_async():
     planner = ActionPlanner(kernel)
 
     with pytest.raises(PlanningException):
-        await planner.create_plan_async(goal)
+        await planner.create_plan(goal)
