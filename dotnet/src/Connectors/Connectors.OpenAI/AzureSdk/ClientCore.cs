@@ -787,16 +787,19 @@ internal abstract class ClientCore
                 // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
-                    string formatString = formatElement.GetString();
-                    switch (formatString)
+                    string? formatString = formatElement.GetString();
+                    if (formatString != null)
                     {
-                        case "json_object":
-                            options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
-                            break;
+                        switch (formatString)
+                        {
+                            case "json_object":
+                                options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                                break;
 
-                        case "text":
-                            options.ResponseFormat = ChatCompletionsResponseFormat.Text;
-                            break;
+                            case "text":
+                                options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                                break;
+                        }
                     }
                 }
                 break;
