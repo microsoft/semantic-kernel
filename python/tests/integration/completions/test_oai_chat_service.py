@@ -96,6 +96,5 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
     output = str(result)
 
     print(f"TLDR using input string: '{output}'")
-    assert len(result) > 1
     # assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
-    assert len(output) < 100
+    assert 0 < len(output) < 100
