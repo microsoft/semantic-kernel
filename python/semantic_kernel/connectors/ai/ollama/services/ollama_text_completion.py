@@ -45,7 +45,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIPromptExecutionSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
             Returns:

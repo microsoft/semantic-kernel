@@ -22,7 +22,7 @@ class ChatCompletionClientBase(ABC):
         Arguments:
             messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {AIPromptExecutionSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Returns:
@@ -43,7 +43,7 @@ class ChatCompletionClientBase(ABC):
         Arguments:
             messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {AIPromptExecutionSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Yields:

@@ -108,7 +108,7 @@ class KernelFunctionBase(KernelBaseModel):
             variables {ContextVariables} -- The custom input
             context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {AIPromptExecutionSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -132,7 +132,7 @@ class KernelFunctionBase(KernelBaseModel):
             variables {ContextVariables} -- The custom input
             context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {AIPromptExecutionSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -178,7 +178,7 @@ class KernelFunctionBase(KernelBaseModel):
         Sets the AI completion settings used with LLM requests
 
         Arguments:
-            settings {AIPromptExecutionSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
 
         Returns:
             KernelFunctionBase -- The function instance

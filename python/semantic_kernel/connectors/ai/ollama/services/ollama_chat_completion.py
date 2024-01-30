@@ -50,7 +50,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Arguments:
             messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {AIPromptExecutionSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Returns:
@@ -104,7 +104,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIPromptExecutionSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
             Returns:
