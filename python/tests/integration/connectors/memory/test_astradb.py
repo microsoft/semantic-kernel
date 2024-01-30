@@ -7,15 +7,16 @@ import numpy as np
 import pytest
 
 import semantic_kernel as sk
+from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 astradb_installed: bool
 try:
-    from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
-
-    astradb_installed = True
-except ImportError:
+    if os.environ["ASTRADB_INTEGRATION_TEST"]:
+        astradb_installed = True
+except KeyError:
     astradb_installed = False
+
 
 pytestmark = pytest.mark.skipif(not astradb_installed, reason="astradb is not installed")
 
