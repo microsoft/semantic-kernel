@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -105,33 +104,25 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                 throw new KernelException("Chat history can't contain only system messages.");
             }
 
-            MergeSystemMessagesToOneUserMessageInChatHistory(chatHistory, systemMessages);
+            if (systemMessages.Count > 1)
+            {
+                throw new KernelException("Chat history can't contain more than one system message. " +
+                                          "Only the first system message will be processed but will be converted to the user message before sending to the Gemini api.");
+            }
+
+            ConvertSystemMessageToUserMessageInChatHistory(chatHistory, systemMessages[0]);
         }
 
         ValidateChatHistoryMessagesOrder(chatHistory);
     }
 
-    private static void MergeSystemMessagesToOneUserMessageInChatHistory(ChatHistory chatHistory, List<ChatMessageContent> systemMessages)
+    private static void ConvertSystemMessageToUserMessageInChatHistory(ChatHistory chatHistory, ChatMessageContent systemMessage)
     {
         // TODO: This solution is needed due to the fact that Gemini API doesn't support system messages. Maybe in the future we will be able to remove it.
-        var systemMessageBuilder = new StringBuilder();
-        foreach (var message in systemMessages)
+        chatHistory.Remove(systemMessage);
+        if (!string.IsNullOrWhiteSpace(systemMessage.Content))
         {
-            chatHistory.Remove(message);
-            if (!string.IsNullOrWhiteSpace(message.Content))
-            {
-                if (systemMessageBuilder.Length > 0)
-                {
-                    systemMessageBuilder.Append("\n-----\n");
-                }
-
-                systemMessageBuilder.Append(message.Content);
-            }
-        }
-
-        if (systemMessageBuilder.Length > 0)
-        {
-            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, systemMessageBuilder.ToString()));
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, systemMessage.Content));
             chatHistory.Insert(1, new ChatMessageContent(AuthorRole.Assistant, "OK"));
         }
     }

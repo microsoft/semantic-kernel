@@ -242,16 +242,14 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldPassMergedSystemMessagesToRequestAsync()
+    public async Task ShouldPassConvertedSystemMessageToUserMessageToRequestAsync()
     {
         // Arrange
         string modelId = "fake-model";
         string apiKey = "fake-api-key";
         var client = this.CreateChatCompletionClient(modelId, apiKey);
-        string[] systemMessages = ["System message", "System message 2", "System message 3"];
-        var chatHistory = new ChatHistory("System message");
-        chatHistory.AddSystemMessage("System message 2");
-        chatHistory.AddSystemMessage("System message 3");
+        string message = "System message";
+        var chatHistory = new ChatHistory(message);
         chatHistory.AddUserMessage("Hello");
 
         // Act
@@ -263,9 +261,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         var systemMessage = request.Contents[0].Parts[0].Text;
         var messageRole = request.Contents[0].Role;
         Assert.Equal(AuthorRole.User, messageRole);
-        Assert.Contains(systemMessages[0], systemMessage, StringComparison.Ordinal);
-        Assert.Contains(systemMessages[1], systemMessage, StringComparison.Ordinal);
-        Assert.Contains(systemMessages[2], systemMessage, StringComparison.Ordinal);
+        Assert.Equal(message, systemMessage);
     }
 
     [Theory]
