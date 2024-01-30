@@ -787,7 +787,7 @@ internal abstract class ClientCore
                 // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
-                    string? formatString = formatElement.GetString();
+                    string formatString = formatElement.GetString() ?? "";
                     if (formatString != null)
                     {
                         switch (formatString)
