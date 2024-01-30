@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 
 from dotenv import load_dotenv
 
@@ -10,6 +11,8 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
+
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
@@ -60,10 +63,12 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 
 async def chat() -> bool:
     context_vars = sk.ContextVariables()
-
     try:
         user_input = input("User:> ")
-        context_vars["user_input"] = user_input
+        if user_input == "":
+            context_vars["user_input"] = "what is openai?"
+        else:
+            context_vars["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -75,12 +80,12 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = True
+    stream = False
     if stream:
         answer = kernel.run_stream(chat_function, input_vars=context_vars)
         print("Mosscap:> ", end="")
         async for message in answer:
-            print(message, end="")
+            print(str(message[0]), end="")
         print("\n")
         return True
     answer = await kernel.run(chat_function, input_vars=context_vars)

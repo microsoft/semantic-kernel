@@ -2,13 +2,17 @@
 
 import logging
 import sys
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
+
+from semantic_kernel.models.contents.text_content import TextContent
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 import google.generativeai as palm
+from google.generativeai.types import Completion
+from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -43,14 +47,21 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     async def complete(
-        self,
-        prompt: str,
-        prompt_execution_settings: GooglePalmTextPromptExecutionSettings,
-        logger: Optional[Any] = None,
-    ) -> Union[str, List[str]]:
-        prompt_execution_settings.prompt = prompt
-        if not prompt_execution_settings.ai_model_id:
-            prompt_execution_settings.ai_model_id = self.ai_model_id
+        self, prompt: str, settings: GooglePalmTextPromptExecutionSettings, **kwargs
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {GooglePalmTextPromptExecutionSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
+        settings.prompt = prompt
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         try:
             palm.configure(api_key=self.api_key)
         except Exception as ex:
@@ -59,21 +70,33 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                 ex,
             )
         try:
-            response = palm.generate_text(**prompt_execution_settings.prepare_settings_dict())
+            response = palm.generate_text(**settings.prepare_settings_dict())
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
                 "Google PaLM service failed to complete the prompt",
                 ex,
             )
-        if prompt_execution_settings.candidate_count > 1:
-            return [candidate["output"] for candidate in response.candidates]
-        return response.result
+        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+
+    def _create_text_content(self, response: Completion, candidate: TextCompletion) -> TextContent:
+        """Create a text content object from a candidate."""
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=candidate.get("output"),
+            metadata={
+                "filters": response.filters,
+                "safety_feedback": response.safety_feedback,
+                "citation_metadata": candidate.get("citation_metadata"),
+                "safety_ratings": candidate.get("safety_ratings"),
+            },
+        )
 
     async def complete_stream(
         self,
         prompt: str,
-        prompt_execution_settings: GooglePalmTextPromptExecutionSettings,
+        settings: GooglePalmTextPromptExecutionSettings,
         logger: Optional[Any] = None,
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
