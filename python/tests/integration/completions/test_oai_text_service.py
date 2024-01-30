@@ -16,11 +16,11 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
 
     print("* Service: OpenAI Text Completion")
     print("* Endpoint: OpenAI")
-    print("* Model: text-davinci-003")
+    print("* Model: gpt-3.5-turbo-instruct")
 
     kernel.add_chat_service(
-        "davinci-003",
-        sk_oai.OpenAITextCompletion(ai_model_id="text-davinci-003", api_key=api_key, org_id=org_id),
+        "text-completion",
+        sk_oai.OpenAITextCompletion(ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id),
     )
 
     # Create the semantic function
@@ -43,7 +43,7 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
 
     print("* Service: OpenAI Text Completion")
     print("* Endpoint: OpenAI")
-    print("* Model: text-davinci-003")
+    print("* Model: gpt-3.5-turbo-instruct")
 
     client = AsyncOpenAI(
         api_key=api_key,
@@ -51,9 +51,9 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
     )
 
     kernel.add_chat_service(
-        "text-davinci-003",
+        "text-completion",
         sk_oai.OpenAITextCompletion(
-            ai_model_id="text-davinci-003",
+            ai_model_id="gpt-3.5-turbo-instruct",
             async_client=client,
         ),
     )
@@ -77,7 +77,7 @@ async def test_oai_text_stream_completion_with_plugins(setup_tldr_function_for_o
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAI__DeploymentName"]
     else:
-        deployment_name = "text-davinci-003"
+        deployment_name = "gpt-3.5-turbo-instruct"
 
     print("* Service: Azure OpenAI Text Completion")
     print(f"* Endpoint: {endpoint}")
