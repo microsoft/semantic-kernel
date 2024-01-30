@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
@@ -40,6 +41,19 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
+    """Stores specific results in the context and chat prompt."""
+    if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
+        chat_prompt.add_message(role="tool", message=results[0].tool_message)
+    chat_prompt.add_message(
+        "assistant",
+        message=results[0].content,
+        function_call=results[0].function_call if hasattr(results[0], "function_call") else None,
+        tool_calls=results[0].tool_calls if hasattr(results[0], "tool_calls") else None,
+    )
+    return chat_prompt
 
 
 class KernelFunction(KernelFunctionBase):
@@ -125,40 +139,28 @@ class KernelFunction(KernelFunctionBase):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if not function_config.has_chat_prompt:
+            if not function_config.has_chat_prompt:
+                try:
                     prompt = await function_config.prompt_template.render(context)
-                    completion = await client.complete(prompt, request_settings)
-                    context.variables.update(completion)
+                    results = await client.complete(prompt, request_settings)
+                    context.objects["results"] = results
+                    context.variables.update(str(results[0]))
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
+                finally:
                     return context
-            except Exception as e:
-                # TODO: "critical exceptions"
-                context.fail(str(e), e)
-                return context
 
-            as_chat_prompt = function_config.prompt_template
-            # Similar to non-chat, render prompt (which renders to a
-            # dict of <role, content, name> messages)
-            messages = await as_chat_prompt.render_messages(context)
             try:
-                result = await client.complete_chat(messages, request_settings)
-                if isinstance(result, list):
-                    # TODO: handle multiple completions
-                    result = result[0]
-                if isinstance(result, tuple):
-                    completion, tool_message, function_call = result
-                else:
-                    completion = result
-                    tool_message = None
-                    function_call = None
-                if tool_message:
-                    context.objects["tool_message"] = tool_message
-                    as_chat_prompt.add_message(role="tool", message=tool_message)
-                as_chat_prompt.add_message("assistant", message=completion, function_call=function_call)
-                if completion is not None:
-                    context.variables.update(completion)
-                if function_call is not None:
-                    context.objects["function_call"] = function_call
+                chat_prompt = function_config.prompt_template
+                # Similar to non-chat, render prompt (which renders to a
+                # dict of <role, content, name> messages)
+                messages = await chat_prompt.render_messages(context)
+                results = await client.complete_chat(messages, request_settings)
+                context.objects["results"] = results
+                context.variables.update(str(results[0]))
+                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
+                chat_prompt = store_results(chat_prompt, results)
             except Exception as exc:
                 # TODO: "critical exceptions"
                 context.fail(str(exc), exc)
@@ -169,42 +171,30 @@ class KernelFunction(KernelFunctionBase):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if function_config.has_chat_prompt:
-                    chat_prompt = function_config.prompt_template
-
-                    # Similar to non-chat, render prompt (which renders to a
-                    # list of <role, content> messages)
-                    completion = ""
-                    messages = await chat_prompt.render_messages(context)
-                    async for partial_content in client.complete_chat_stream(
-                        messages=messages, settings=request_settings
-                    ):
-                        if isinstance(partial_content, str):
-                            completion += partial_content
-                            yield partial_content
-                        else:
-                            tool_message = await partial_content.get_tool_message()
-                            if tool_message:
-                                chat_prompt.add_message(role="tool", message=tool_message)
-                                context.objects["tool_message"] = tool_message
-                            # Get the completion
-                            async for part in partial_content:
-                                completion += part
-                                yield part
-                    # Use the full completion to update the chat_prompt_template and context
-                    chat_prompt.add_assistant_message(completion)
-                    context.variables.update(completion)
-                else:
+            if not function_config.has_chat_prompt:
+                try:
                     prompt = await function_config.prompt_template.render(context)
+                    result = client.complete_stream(prompt, request_settings)
+                    async for chunk in result:
+                        yield chunk
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
 
-                    completion = ""
-                    async for partial_content in client.complete_stream(prompt, request_settings):
-                        completion += partial_content
-                        yield partial_content
-                    context.variables.update(completion)
+            try:
+                chat_prompt = function_config.prompt_template
+                # Similar to non-chat, render prompt (which renders to a
+                # list of <role, content> messages)
+                messages = await chat_prompt.render_messages(context)
+                result = client.complete_chat_stream(messages=messages, settings=request_settings)
+                # context.objects["response_object"] = result
+                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
+                async for chunk in result:
+                    yield chunk
+                # context, chat_prompt = store_results(context, result, chat_prompt)
             except Exception as e:
                 # TODO: "critical exceptions"
+                logger.error(f"Error occurred while invoking stream function: {str(e)}")
                 context.fail(str(e), e)
 
         return KernelFunction(
@@ -496,6 +486,7 @@ class KernelFunction(KernelFunctionBase):
                 async for stream_msg in self._invoke_native_stream(context):
                     yield stream_msg
         except Exception as e:
+            logger.error(f"Error occurred while invoking stream function: {str(e)}")
             context.fail(str(e), e)
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,

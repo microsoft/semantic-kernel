@@ -39,7 +39,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIRequestSettings,
-    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion],]:
+    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion]]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -54,11 +54,10 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
         """
         try:
-            response = await (
-                self.client.chat.completions.create(**request_settings.prepare_settings_dict())
-                if self.ai_model_type == OpenAIModelTypes.CHAT
-                else self.client.completions.create(**request_settings.prepare_settings_dict())
-            )
+            if self.ai_model_type == OpenAIModelTypes.CHAT:
+                response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
+            else:
+                response = await self.client.completions.create(**request_settings.prepare_settings_dict())
             self.store_usage(response)
             return response
         except BadRequestError as ex:

@@ -15,13 +15,17 @@ from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_s
     AzureDataSources,
     ExtraBody,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
-    AzureCognitiveSearchMemoryStore,
-)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    azure_cognitive_search_installed = True
+    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
+        AzureCognitiveSearchMemoryStore,
+    )
+
+    if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
+        azure_cognitive_search_installed = True
+    else:
+        azure_cognitive_search_installed = False
 except ImportError:
     azure_cognitive_search_installed = False
 
@@ -47,9 +51,9 @@ async def create_memory_store():
             id=None,
             description="Emily and David's story.",
             text="Emily and David, two passionate scientists, met during a research expedition to Antarctica. \
-                    Bonded by their love for the natural world and shared curiosity, they uncovered a \
-                    groundbreaking phenomenon in glaciology that could potentially reshape our understanding \
-                    of climate change.",
+Bonded by their love for the natural world and shared curiosity, they uncovered a \
+groundbreaking phenomenon in glaciology that could potentially reshape our understanding \
+of climate change.",
             additional_metadata=None,
             embedding=np.array([0.2, 0.1, 0.2, 0.7]),
         )
@@ -91,6 +95,12 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
                         indexName=collection,
                         endpoint=search_endpoint,
                         key=search_api_key,
+                        queryType="simple",
+                        fieldsMapping={
+                            "titleField": "Description",
+                            "contentFields": ["Text"],
+                        },
+                        topNDocuments=1,
                     ),
                 )
             ]
@@ -115,7 +125,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         )
         prompt_config.default_services = ["chat-gpt-extensions"]
 
-        prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+        prompt_template = sk.ChatPromptTemplate("{{$input}}", kernel.prompt_template_engine, prompt_config)
 
         function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
         chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
@@ -126,7 +136,7 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Azure OpenAI Chat Completion with extensions is not working")
+@pytestmark
 async def test_azure_e2e_chat_completion_with_extensions(
     create_with_data_chat_function,
 ):
@@ -139,14 +149,22 @@ async def test_azure_e2e_chat_completion_with_extensions(
     ) = await create_with_data_chat_function
 
     try:
-        result = []
+        result = None
         async for message in kernel.run_stream(chat_function, input_str="who are Emily and David?"):
-            result.append(message)
+            result = message[0] if not result else result + message[0]
             print(message, end="")
-        output = "".join(result).strip()
 
-        print(f"Answer using input string: '{output}'")
-        assert len(result) > 1
+        print(f"Answer using input string: '{result}'")
+        print(f"Tool message: {result.tool_message}")
+        assert result.tool_message is not None
+        assert "two passionate scientists" in result.tool_message
+        assert len(result.content) > 1
+
+        context = await kernel.run(chat_function, input_str="who are Emily and David?")
+        print(f"Answer using input string: '{context}'")
+        assert context.objects["results"][0].tool_message is not None
+        assert "two passionate scientists" in context.objects["results"][0].tool_message
+        assert len(context.result) > 1
 
         await memory_store.delete_collection(collection)
     except:

@@ -26,7 +26,7 @@ async def test_complete(mock_post):
         "test_prompt",
         OllamaTextRequestSettings(ai_model_id="test-model", options={"test": "test"}),
     )
-    assert response == "test_response"
+    assert response[0].text == "test_response"
 
 
 @pytest.mark.asyncio
@@ -40,7 +40,7 @@ async def test_complete_stream(mock_post):
     )
     async for line in response:
         if line:
-            assert line == "test_response"
+            assert line[0].text == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/generate",
         json={

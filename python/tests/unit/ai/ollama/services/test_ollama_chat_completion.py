@@ -26,7 +26,7 @@ async def test_complete_chat(mock_post):
         [{"role": "user", "content": "test_prompt"}],
         OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
     )
-    assert response == "test_response"
+    assert response[0].content == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/chat",
         json={
@@ -47,7 +47,7 @@ async def test_complete(mock_post):
         "test_prompt",
         OllamaChatRequestSettings(ai_model_id="test-model", options={"test": "test"}),
     )
-    assert response == "test_response"
+    assert response[0].text == "test_response"
 
 
 @pytest.mark.asyncio
@@ -61,7 +61,7 @@ async def test_complete_chat_stream(mock_post):
     )
     async for line in response:
         if line:
-            assert line == "test_response"
+            assert line[0].content == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/chat",
         json={
@@ -84,7 +84,7 @@ async def test_complete_stream(mock_post):
     )
     async for line in response:
         if line:
-            assert line == "test_response"
+            assert line[0].text == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/chat",
         json={
