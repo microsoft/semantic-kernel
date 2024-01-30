@@ -69,7 +69,8 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
     ):
         ai_model_id = "test_model_id"
         api_key = "test_api_key"
-        prompt = [("user", "hello world")]
+        prompt = [{"role": "user", "content": "hello world"}]
+        rewritten_prompt = [{"author": "user", "content": "hello world"}]
         gp_chat_completion = GooglePalmChatCompletion(
             ai_model_id=ai_model_id,
             api_key=api_key,
@@ -85,6 +86,5 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             top_p=settings.top_p,
             top_k=settings.top_k,
             candidate_count=settings.candidate_count,
-            messages=prompt,
-            token_selection_biases={},
+            messages=rewritten_prompt,
         )
