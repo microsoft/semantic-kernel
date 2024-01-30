@@ -3,9 +3,8 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -62,34 +61,39 @@ public interface KernelFunction extends Buildable {
 
     KernelFunctionMetadata getMetadata();
 
-    @Deprecated
-    default Class<?> getType() {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
     /**
-     * Invokes the <see cref="KernelFunction"/>.
+     * Invokes this KernelFunction.
      *
-     * @param kernel    The <see cref="Kernel"/> containing services, plugins, and other state for
+     * @param kernel    The Kernel containing services, plugins, and other state for
      *                  use throughout the operation.
-     * @param arguments The arguments to pass to the function's invocation, including any
-     *                  {@link PromptExecutionSettings}.
+     * @param arguments The arguments to pass to the function's invocation
+     * @param variableType The type of the {@link ContextVariable} returned in the {@link FunctionResult}
      * @param <T>       The type of the context variable
      * @return The result of the function's execution.
+     * @see FunctionResult#getResultVariable()
      */
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
+        @Nullable KernelFunctionArguments arguments,
         ContextVariableType<T> variableType);
 
+    /**
+     * Invokes this KernelFunction. The {@link InvocationContext} encapsulates the function arguments 
+     * and return type of the function. It also allows for customization of the behavior of
+     * the invocation of the function, including the ability to pass in {@link KernelHooks} and
+     * {@link PromptExecutionSettings}.
+     *
+     * @param kernel    The Kernel containing services, plugins, and other state for
+     *                  use throughout the operation.
+     * @param invocationContext The arguments to pass to the function's invocation
+     * @param <T>       The type of the context variable
+     * @return The result of the function's execution.
+     * @see FunctionResult#getResultVariable()
+     */        
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
-        KernelHooks kernelHooks,
-        ContextVariableType<T> variableType);
+        InvocationContext invocationContext);
 
-    @Nullable
-    Map<String, PromptExecutionSettings> getExecutionSettings();
 
     interface FromPromptBuilder {
 
@@ -98,12 +102,6 @@ public interface KernelFunction extends Buildable {
         FromPromptBuilder withInputParameters(List<InputVariable> inputVariables);
 
         FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
-
-        FromPromptBuilder withExecutionSettings(
-            Map<String, PromptExecutionSettings> executionSettings);
-
-        FromPromptBuilder withDefaultExecutionSettings(
-            PromptExecutionSettings executionSettings);
 
         FromPromptBuilder withDescription(String description);
 
