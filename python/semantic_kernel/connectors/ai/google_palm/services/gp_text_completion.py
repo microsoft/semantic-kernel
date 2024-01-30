@@ -42,7 +42,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
-    async def complete_async(
+    async def complete(
         self,
         prompt: str,
         request_settings: GooglePalmTextRequestSettings,
@@ -70,7 +70,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             return [candidate["output"] for candidate in response.candidates]
         return response.result
 
-    async def complete_stream_async(
+    async def complete_stream(
         self,
         prompt: str,
         request_settings: GooglePalmTextRequestSettings,

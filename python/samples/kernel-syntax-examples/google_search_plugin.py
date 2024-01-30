@@ -38,10 +38,10 @@ async def main():
 
     # The search query
     prompt = "Who is Leonardo DiCaprio's current girlfriend?"
-    search_async = web_plugin["searchAsync"]
+    search = web_plugin["searchAsync"]
 
     # By default, only one search result is provided
-    result = await search_async.invoke_async(prompt)
+    result = await search.invoke_async(prompt)
     print(result)
 
     """
