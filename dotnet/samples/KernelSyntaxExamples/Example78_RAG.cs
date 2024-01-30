@@ -18,6 +18,20 @@ namespace Examples;
 
 public class Example78_RAG : BaseTest
 {
+    [Fact]
+    public async Task RAGWithCustomPluginAsync()
+    {
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        kernel.ImportPluginFromType<CustomPlugin>();
+
+        var result = await kernel.InvokePromptAsync("{{search 'budget by year'}} What is my budget for 2024?");
+
+        WriteLine(result);
+    }
+
     /// <summary>
     /// Shows how to use RAG pattern with <see cref="TextMemoryPlugin"/>.
     /// </summary>
@@ -74,4 +88,18 @@ public class Example78_RAG : BaseTest
     public Example78_RAG(ITestOutputHelper output) : base(output)
     {
     }
+
+    #region Custom Plugin
+
+    private sealed class CustomPlugin
+    {
+        [KernelFunction]
+        public async Task<string> SearchAsync(string query)
+        {
+            // Here will be a call to vector DB, return example result for demo purposes
+            return "Year Budget 2020 100,000 2021 120,000 2022 150,000 2023 200,000 2024 364,000";
+        }
+    }
+
+    #endregion
 }
