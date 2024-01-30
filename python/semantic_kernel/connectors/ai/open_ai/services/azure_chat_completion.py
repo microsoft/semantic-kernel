@@ -285,7 +285,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIPromptExecutionSettings} -- The settings to use for the chat completion request.
+            settings {AzureChatPromptExecutionSettings} -- The settings to use for the chat completion request.
             logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
@@ -321,7 +321,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIPromptExecutionSettings} -- The settings to use for the chat completion request.
+            settings {AzureChatPromptExecutionSettings} -- The settings to use for the chat completion request.
             logger {Optional[Logger]} -- The logger instance to use. (Optional)
 
         Returns:
