@@ -9,13 +9,11 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
-    await kernel.memory.save_information_async("aboutMe", id="info1", text="My name is Andrea")
-    await kernel.memory.save_information_async("aboutMe", id="info2", text="I currently work as a tour guide")
-    await kernel.memory.save_information_async("aboutMe", id="info3", text="I've been living in Seattle since 2005")
-    await kernel.memory.save_information_async(
-        "aboutMe", id="info4", text="I visited France and Italy five times since 2015"
-    )
-    await kernel.memory.save_information_async("aboutMe", id="info5", text="My family is from New York")
+    await kernel.memory.save_information("aboutMe", id="info1", text="My name is Andrea")
+    await kernel.memory.save_information("aboutMe", id="info2", text="I currently work as a tour guide")
+    await kernel.memory.save_information("aboutMe", id="info3", text="I've been living in Seattle since 2005")
+    await kernel.memory.save_information("aboutMe", id="info4", text="I visited France and Italy five times since 2015")
+    await kernel.memory.save_information("aboutMe", id="info5", text="My family is from New York")
 
 
 async def search_memory_examples(kernel: sk.Kernel) -> None:
@@ -29,13 +27,13 @@ async def search_memory_examples(kernel: sk.Kernel) -> None:
 
     for question in questions:
         print(f"Question: {question}")
-        result = await kernel.memory.search_async("aboutMe", question)
+        result = await kernel.memory.search("aboutMe", question)
         print(f"Answer: {result[0].text}\n")
 
 
 async def setup_chat_with_memory(
     kernel: sk.Kernel,
-) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
+) -> Tuple[sk.KernelFunctionBase, sk.KernelContext]:
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
@@ -70,7 +68,7 @@ async def setup_chat_with_memory(
     return chat_func, context
 
 
-async def chat(kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext) -> bool:
+async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunctionBase, context: sk.KernelContext) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input
@@ -85,7 +83,7 @@ async def chat(kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKCo
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_async(chat_func, input_vars=context.variables)
+    answer = await kernel.run(chat_func, input_vars=context.variables)
     context["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
 
     print(f"ChatBot:> {answer}")

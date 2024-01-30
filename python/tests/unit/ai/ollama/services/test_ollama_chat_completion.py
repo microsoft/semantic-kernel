@@ -19,10 +19,10 @@ def test_settings():
 
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
-async def test_complete_chat_async(mock_post):
+async def test_complete_chat(mock_post):
     mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
     ollama = OllamaChatCompletion(ai_model_id="test_model")
-    response = await ollama.complete_chat_async(
+    response = await ollama.complete_chat(
         [{"role": "user", "content": "test_prompt"}],
         OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
     )
@@ -40,10 +40,10 @@ async def test_complete_chat_async(mock_post):
 
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
-async def test_complete_async(mock_post):
+async def test_complete(mock_post):
     mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
     ollama = OllamaChatCompletion(ai_model_id="test_model")
-    response = await ollama.complete_async(
+    response = await ollama.complete(
         "test_prompt",
         OllamaChatRequestSettings(ai_model_id="test-model", options={"test": "test"}),
     )
@@ -52,10 +52,10 @@ async def test_complete_async(mock_post):
 
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
-async def test_complete_chat_stream_async(mock_post):
+async def test_complete_chat_stream(mock_post):
     mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
     ollama = OllamaChatCompletion(ai_model_id="test_model")
-    response = ollama.complete_chat_stream_async(
+    response = ollama.complete_chat_stream(
         [{"role": "user", "content": "test_prompt"}],
         OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
     )
@@ -75,10 +75,10 @@ async def test_complete_chat_stream_async(mock_post):
 
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
-async def test_complete_stream_async(mock_post):
+async def test_complete_stream(mock_post):
     mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
     ollama = OllamaChatCompletion(ai_model_id="test_model")
-    response = ollama.complete_stream_async(
+    response = ollama.complete_stream(
         "test_prompt",
         OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
     )

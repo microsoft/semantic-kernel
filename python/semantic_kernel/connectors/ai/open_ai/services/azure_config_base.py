@@ -17,7 +17,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
 from semantic_kernel.connectors.telemetry import APP_INFO
-from semantic_kernel.sk_pydantic import HttpsUrl
+from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
 
