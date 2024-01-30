@@ -1,50 +1,48 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-
 import logging
 from typing import (
     Any,
-    AsyncGenerator,
     Dict,
     List,
     Mapping,
     Optional,
-    Tuple,
     Union,
     overload,
 )
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
+from openai.types.chat.chat_completion import ChatCompletion, Choice
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
-    AzureChatWithDataStreamResponse,
+from semantic_kernel.connectors.ai.open_ai.contents import (
+    AzureChatMessageContent,
+    AzureStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
     AzureChatRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.models.chat.chat_role import ChatRole
+from semantic_kernel.models.chat.finish_reason import FinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
+class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
     """Azure Chat completion class."""
 
     @overload
@@ -275,82 +273,106 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
             default_headers=settings.get("default_headers"),
         )
 
-    async def complete_chat(
-        self,
-        messages: List[Dict[str, str]],
-        settings: AzureChatRequestSettings,
-        logger: Optional[Any] = None,
-    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
-        """Executes a chat completion request and returns the result.
-
-        Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
-
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
-        """
-        settings.messages = messages
-        settings.stream = False
-        if settings.ai_model_id is None:
-            settings.ai_model_id = self.ai_model_id
-        response = await self._send_request(request_settings=settings)
-
-        if len(response.choices) == 1:
-            return _parse_message(
-                response.choices[0].message,
-                with_data=settings.extra_body is not None,
-            )
-        else:
-            return [
-                _parse_message(
-                    choice.message,
-                    with_data=settings.extra_body is not None,
-                )
-                for choice in response.choices
-            ]
-
-    async def complete_chat_stream(
-        self,
-        messages: List[Dict[str, str]],
-        settings: AzureChatRequestSettings,
-        logger: Optional[Any] = None,
-    ) -> Union[AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse]:
-        """Executes a chat completion request and returns the result.
-
-        Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
-
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
-        """
-        settings.messages = messages
-        settings.stream = True
-        if settings.ai_model_id is None:
-            settings.ai_model_id = self.ai_model_id
-        response = await self._send_request(request_settings=settings)
-        if settings.extra_body is not None:
-            yield AzureChatWithDataStreamResponse(response, settings)
-        else:
-            # parse the completion text(s) and yield them
-            async for chunk in response:
-                if len(chunk.choices) == 0:
-                    continue
-                # if multiple responses are requested, keep track of them
-                if settings.number_of_responses > 1:
-                    completions = [""] * settings.number_of_responses
-                    for choice in chunk.choices:
-                        text, index = _parse_choices(choice)
-                        completions[index] = text
-                    yield completions
-                # if only one response is requested, yield it
-                else:
-                    text, index = _parse_choices(chunk.choices[0])
-                    yield text
-
     def get_request_settings_class(self) -> "AIRequestSettings":
         """Create a request settings object."""
         return AzureChatRequestSettings
+
+    def _create_chat_message_content(
+        self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
+    ) -> AzureChatMessageContent:
+        """Create a Azure chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
+        metadata.update(response_metadata)
+        return AzureChatMessageContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            role=ChatRole(choice.message.role) if choice.message.role is not None else None,
+            content=choice.message.content,
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
+            tool_message=self._get_tool_message_from_chat_choice(choice),
+        )
+
+    def _create_streaming_chat_message_content(
+        self,
+        chunk: ChatCompletionChunk,
+        choice: ChunkChoice,
+        chunk_metadata: Dict[str, Any],
+    ):
+        """Create a Azure streaming chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
+        metadata.update(chunk_metadata)
+        return AzureStreamingChatMessageContent(
+            choice_index=choice.index,
+            inner_content=chunk,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            role=ChatRole(choice.delta.role) if choice.delta.role is not None else None,
+            content=choice.delta.content,
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
+            tool_message=self._get_tool_message_from_chat_choice(choice),
+        )
+
+    def _get_update_storage_fields(self) -> Dict[str, Dict[int, Any]]:
+        """Get the fields to store the updates."""
+        out_messages = {}
+        tool_messages_by_index = {}
+        tool_call_ids_by_index = {}
+        function_call_by_index = {}
+        return {
+            "out_messages": out_messages,
+            "tool_call_ids_by_index": tool_call_ids_by_index,
+            "function_call_by_index": function_call_by_index,
+            "tool_messages_by_index": tool_messages_by_index,
+        }
+
+    def _update_storages(
+        self, contents: List[AzureStreamingChatMessageContent], update_storage: Dict[str, Dict[int, Any]]
+    ):
+        """Handle updates to the messages, tool_calls and function_calls.
+
+        This will be used for auto-invoking tools.
+        """
+        out_messages = update_storage["out_messages"]
+        tool_call_ids_by_index = update_storage["tool_call_ids_by_index"]
+        function_call_by_index = update_storage["function_call_by_index"]
+        tool_messages_by_index = update_storage["tool_messages_by_index"]
+
+        for index, content in enumerate(contents):
+            if content.content is not None:
+                if index not in out_messages:
+                    out_messages[index] = content.content
+                else:
+                    out_messages[index] += content.content
+            if content.tool_calls is not None:
+                if index not in tool_call_ids_by_index:
+                    tool_call_ids_by_index[index] = content.tool_calls
+                else:
+                    for tc_index, tool_call in enumerate(content.tool_calls):
+                        tool_call_ids_by_index[index][tc_index] += tool_call
+            if content.function_call is not None:
+                if index not in function_call_by_index:
+                    function_call_by_index[index] = content.function_call
+                else:
+                    function_call_by_index[index] += content.function_call
+            if content.tool_message is not None:
+                if index not in tool_messages_by_index:
+                    tool_messages_by_index[index] = content.tool_message
+                else:
+                    tool_messages_by_index[index] += content.tool_message
+
+    def _get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
+        """Get the tool message from a choice."""
+        if isinstance(choice, Choice):
+            content = choice.message
+        else:
+            content = choice.delta
+        if content.model_extra is not None and "context" in content.model_extra:
+            if "messages" in content.model_extra["context"]:
+                for message in content.model_extra["context"]["messages"]:
+                    if "tool" in message["role"]:
+                        return message["content"]
+        return None

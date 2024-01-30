@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-import asyncio
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -7,6 +6,9 @@ import pytest
 from pydantic import ValidationError
 
 if sys.version_info >= (3, 9):
+    from google.generativeai.types import Completion
+    from google.generativeai.types.text_types import TextCompletion
+
     from semantic_kernel.connectors.ai.google_palm import (
         GooglePalmTextRequestSettings,
     )
@@ -46,11 +48,12 @@ def test_google_palm_text_completion_init_with_empty_api_key() -> None:
 
 @pytest.mark.asyncio
 async def test_google_palm_text_completion_complete_call_with_parameters() -> None:
-    mock_response = MagicMock()
-    mock_response.result = asyncio.Future()
-    mock_response.result.set_result("Example response")
+    gp_completion = Completion()
+    gp_completion.candidates = [TextCompletion(output="Example response")]
+    gp_completion.filters = None
+    gp_completion.safety_feedback = None
     mock_gp = MagicMock()
-    mock_gp.generate_text.return_value = mock_response
+    mock_gp.generate_text.return_value = gp_completion
     with patch(
         "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.palm",
         new=mock_gp,
@@ -64,7 +67,7 @@ async def test_google_palm_text_completion_complete_call_with_parameters() -> No
         )
         settings = GooglePalmTextRequestSettings()
         response = await gp_text_completion.complete(prompt, settings)
-        assert isinstance(response.result(), str) and len(response.result()) > 0
+        assert isinstance(response[0].text, str) and len(response) > 0
 
         mock_gp.generate_text.assert_called_once_with(
             model=ai_model_id,

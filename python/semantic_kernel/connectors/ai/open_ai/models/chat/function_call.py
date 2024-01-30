@@ -1,6 +1,6 @@
 """Class to hold chat messages."""
 import json
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -9,9 +9,20 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 class FunctionCall(KernelBaseModel):
     """Class to hold a function call response."""
 
-    name: str
-    arguments: str
-    id: str
+    name: Optional[str] = None
+    arguments: Optional[str] = None
+    # TODO: check if needed
+    id: Optional[str] = None
+
+    def __add__(self, other: Optional["FunctionCall"]) -> "FunctionCall":
+        """Add two function calls together, combines the arguments, ignores the name."""
+        if not other:
+            return self
+        return FunctionCall(
+            name=self.name or other.name,
+            arguments=(self.arguments or "") + (other.arguments or ""),
+            id=self.id or other.id,
+        )
 
     def parse_arguments(self) -> Dict[str, str]:
         """Parse the arguments into a dictionary."""

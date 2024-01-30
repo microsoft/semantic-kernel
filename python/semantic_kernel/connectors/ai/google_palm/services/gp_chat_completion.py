@@ -2,7 +2,10 @@
 
 import logging
 import sys
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
+
+from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.models.contents.text_content import TextContent
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -10,7 +13,7 @@ else:
     from typing_extensions import Annotated
 
 import google.generativeai as palm
-from google.generativeai.types import ChatResponse
+from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -62,22 +65,49 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         settings: GooglePalmRequestSettings,
-    ) -> Union[str, List[str]]:
-        settings.messages = messages
+    ) -> List[ChatMessageContent]:
+        """
+        This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+
+        Arguments:
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+                set of messages, from system, user, assistant and function.
+            settings {GooglePalmRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
+        """
+        settings.messages = [{"author": message["role"], "content": message["content"]} for message in messages]
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
+        return [
+            self._create_chat_message_content(response, candidate, index)
+            for index, candidate in enumerate(response.candidates)
+        ]
 
-        if settings.candidate_count > 1:
-            return [
-                candidate["output"] if candidate["output"] is not None else "I don't know."
-                for candidate in response.candidates
-            ]
-        if response.last is None:
-            return "I don't know."  # PaLM returns None if it doesn't know
-        return response.last
+    def _create_chat_message_content(
+        self, response: ChatResponse, candidate: MessageDict, index: int
+    ) -> ChatMessageContent:
+        """Create a chat message content object from a response.
+
+        Arguments:
+            response {ChatResponse} -- The response to create the content from.
+
+        Returns:
+            ChatMessageContent -- The created chat message content.
+        """
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters}
+        return ChatMessageContent(
+            choice_index=index,
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            role=candidate.get("author"),
+            content=candidate.get("content"),
+        )
 
     async def complete_chat_stream(
         self,
@@ -91,22 +121,42 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         prompt: str,
         settings: GooglePalmRequestSettings,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {AIRequestSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        settings.messages = [("user", prompt)]
+        settings.messages = [{"author": "user", "content": prompt}]
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
 
-        if settings.candidate_count > 1:
-            return [
-                candidate["output"] if candidate["output"] is not None else "I don't know."
-                for candidate in response.candidates
-            ]
-        if response.last is None:
-            return "I don't know."  # PaLM returns None if it doesn't know
-        return response.last
+        return [self._create_text_content(response, candidate) for candidate in response.candidates]
+
+    def _create_text_content(self, response: ChatResponse, candidate: MessageDict) -> TextContent:
+        """Create a text content object from a response.
+
+        Arguments:
+            response {ChatResponse} -- The response to create the content from.
+
+        Returns:
+            TextContent -- The created text content.
+        """
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters}
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            text=candidate.get("content"),
+        )
 
     async def complete_stream(
         self,
@@ -155,7 +205,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         if settings is None:
             raise ValueError("The request settings cannot be `None`")
 
-        if settings.messages[-1][0] != "user":
+        if settings.messages[-1]["author"] != "user":
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
                 "The last message must be from the user",
@@ -167,23 +217,12 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
             )
-        if (
-            self._message_history is None and settings.context is None
-        ):  # If the conversation hasn't started yet and no context is provided
-            context = ""
-            if len(settings.messages) > 1:  # Check if we need context from messages
-                for index, (role, message) in enumerate(settings.messages):
-                    if index < len(settings.messages) - 1:
-                        if role == "system":
-                            context += message + "\n"
-                        else:
-                            context += role + ": " + message + "\n"
         try:
             if self._message_history is None:
                 response = palm.chat(**settings.prepare_settings_dict())  # Start a new conversation
             else:
                 response = self._message_history.reply(  # Continue the conversation
-                    settings.messages[-1][1],
+                    settings.messages[-1]["content"],
                 )
             self._message_history = response  # Store response object for future use
         except Exception as ex:

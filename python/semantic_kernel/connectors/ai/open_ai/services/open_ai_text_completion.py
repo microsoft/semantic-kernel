@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from typing import Any, Dict, Mapping, Optional, overload
 
@@ -124,7 +125,8 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         Arguments:
             settings: A dictionary of settings for the service.
         """
-
+        if "default_headers" in settings and isinstance(settings["default_headers"], str):
+            settings["default_headers"] = json.loads(settings["default_headers"])
         return OpenAITextCompletion(
             ai_model_id=settings["ai_model_id"],
             api_key=settings["api_key"],
