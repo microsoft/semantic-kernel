@@ -38,8 +38,8 @@ async def main() -> None:
 
     config = dotenv_values(".env")
 
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
+    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_AISEARCH_URL"]
+    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_AISEARCH_API_KEY"]
     AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
     AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
     vector_size = 1536
@@ -70,7 +70,7 @@ async def main() -> None:
     kernel.register_memory_store(memory_store=connector)
 
     print("Populating memory...")
-    await populate_memory(kernel)
+    # await populate_memory(kernel)
 
     sk_prompt_rag = """
 Assistant can have a conversation with you about any topic.
