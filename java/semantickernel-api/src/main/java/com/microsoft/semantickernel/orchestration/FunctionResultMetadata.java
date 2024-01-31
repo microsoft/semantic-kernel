@@ -4,6 +4,7 @@ import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.time.OffsetDateTime;
+import javax.annotation.Nullable;
 
 public class FunctionResultMetadata {
 
@@ -13,6 +14,10 @@ public class FunctionResultMetadata {
 
 
     private final CaseInsensitiveMap<ContextVariable<?>> metadata;
+
+    public FunctionResultMetadata() {
+        this.metadata = new CaseInsensitiveMap<>();
+    }
 
     public FunctionResultMetadata(CaseInsensitiveMap<ContextVariable<?>> metadata) {
         this.metadata = new CaseInsensitiveMap<>(metadata);
@@ -39,15 +44,30 @@ public class FunctionResultMetadata {
         return new CaseInsensitiveMap<>(metadata);
     }
 
+    @Nullable
     public String getId() {
-        return metadata.get(ID).getValue(String.class);
+        ContextVariable<?> id = metadata.get(ID);
+        if (id == null) {
+            return null;
+        }
+        return id.getValue(String.class);
     }
 
+    @Nullable
     public CompletionsUsage getUsage() {
-        return metadata.get(USAGE).getValue(CompletionsUsage.class);
+        ContextVariable<?> usage = metadata.get(USAGE);
+        if (usage == null) {
+            return null;
+        }
+        return usage.getValue(CompletionsUsage.class);
     }
 
+    @Nullable
     public OffsetDateTime getCreatedAt() {
-        return metadata.get(CREATED_AT).getValue(OffsetDateTime.class);
+        ContextVariable<?> createdAt = metadata.get(CREATED_AT);
+        if (createdAt == null) {
+            return null;
+        }
+        return createdAt.getValue(OffsetDateTime.class);
     }
 }

@@ -5,11 +5,14 @@ import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.contextvariables.NullContextVariable;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -98,20 +101,41 @@ public class Kernel implements Buildable {
 
         kernelHooks = mergeInGlobalHooks(kernelHooks);
 
-        ContextVariableType<T> contextVariable;
+        ContextVariableType<?> contextVariable = getContextVariableType(function, resultType);
+
+        return function
+            .invokeAsync(this, arguments, kernelHooks, contextVariable)
+            .map(it -> {
+                return new FunctionResult<>(
+                    ContextVariable.convert(it.getResult(), resultType),
+                    it.getMetadata()
+                );
+            })
+            .defaultIfEmpty(
+                new FunctionResult<>(
+                    new NullContextVariable<>(resultType),
+                    new FunctionResultMetadata()));
+    }
+
+    @Nullable
+    private static <T> ContextVariableType<?> getContextVariableType(
+        KernelFunction function,
+        Class<T> resultType) {
+
+        Class functionReturnType = function.getMetadata().getReturnParameter().getParameterType();
 
         try {
-            contextVariable = ContextVariableTypes.getDefaultVariableTypeForClass(resultType);
+            return ContextVariableTypes.getDefaultVariableTypeForClass(
+                functionReturnType);
         } catch (Exception e) {
-            if (resultType.isAssignableFrom(
-                function.getMetadata().getReturnParameter().getParameterType())) {
-                contextVariable = new ContextVariableType<>(new NoopConverter<>(resultType),
-                    resultType);
+            if (functionReturnType.isAssignableFrom(resultType)) {
+                return new ContextVariableType<>(
+                    new NoopConverter<>(functionReturnType),
+                    functionReturnType);
             } else {
-                throw e;
+                return null;
             }
         }
-        return function.invokeAsync(this, arguments, kernelHooks, contextVariable);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(

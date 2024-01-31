@@ -26,6 +26,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
@@ -56,9 +57,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
     private final OpenAIAsyncClient client;
     private final Map<String, ContextVariable<?>> attributes;
+
+    @Nullable
     private final String serviceId;
 
-    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId, String serviceId) {
+    public OpenAIChatCompletion(
+        OpenAIAsyncClient client,
+        String modelId,
+        @Nullable
+        String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
         this.attributes = new HashMap<>();
@@ -75,6 +82,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     @Override
+    @Nullable
     public String getServiceId() {
         return serviceId;
     }
@@ -82,8 +90,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
+        @Nullable
         PromptExecutionSettings promptExecutionSettings,
+        @Nullable
         Kernel kernel,
+        @Nullable
         KernelHooks kernelHooks) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
@@ -112,6 +123,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         String prompt,
+        @Nullable
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
         @Nullable
@@ -138,7 +150,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
+        @Nullable
         List<FunctionDefinition> functions,
+        @Nullable
         PromptExecutionSettings promptExecutionSettings,
         KernelHooks kernelHooks) {
 
@@ -242,7 +256,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
      * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
      * where 'name' is <plugin name '-' function name>.
      */
-    private Mono<StreamingChatMessageContent> invokeTool(Kernel kernel, String json) {
+    @SuppressWarnings("UnusedMethod")
+    private Mono<StreamingChatMessageContent<?>> invokeTool(Kernel kernel, String json) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(json);
@@ -254,8 +269,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 if (result != null) {
                     return result.map(contextVariable -> {
                         String content = contextVariable.getResult();
-                        return new StreamingChatMessageContent(AuthorRole.TOOL, content).setModelId(
-                            id);
+                        if (content == null) {
+                            throw new SKException("Function result must not be null");
+                        }
+                        return new StreamingChatMessageContent<>(AuthorRole.TOOL, content, id);
                     });
                 }
             }
@@ -268,6 +285,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     /*
      * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
      */
+    @SuppressWarnings("StringSplitter")
     private Mono<FunctionResult<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
         String name = jsonNode.get("name").asText();
         String[] parts = name.split("-");
@@ -298,23 +316,28 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static ChatCompletionsOptions getCompletionsOptions(
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
+        @Nullable
         List<FunctionDefinition> functions,
+        @Nullable
         PromptExecutionSettings promptExecutionSettings) {
-            
+
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
 
         if (promptExecutionSettings == null) {
             return options;
         }
-            
+
         if (promptExecutionSettings.getResultsPerPrompt() < 1
-                || promptExecutionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
-            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, String.format("Results per prompt must be in range between 1 and %d, inclusive.", MAX_RESULTS_PER_PROMPT));
+            || promptExecutionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                String.format("Results per prompt must be in range between 1 and %d, inclusive.",
+                    MAX_RESULTS_PER_PROMPT));
         }
 
-        List<ChatCompletionsToolDefinition> toolDefinitions = 
-            chatCompletionsToolDefinitions(promptExecutionSettings.getToolCallBehavior(), functions);
+        List<ChatCompletionsToolDefinition> toolDefinitions =
+            chatCompletionsToolDefinitions(promptExecutionSettings.getToolCallBehavior(),
+                functions);
         if (toolDefinitions != null && !toolDefinitions.isEmpty()) {
             options.setTools(toolDefinitions);
             // TODO: options.setToolChoices(toolChoices);
@@ -351,18 +374,22 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         return options;
     }
 
+    @SuppressWarnings("StringSplitter")
     private static List<ChatCompletionsToolDefinition> chatCompletionsToolDefinitions(
+        @Nullable
         ToolCallBehavior toolCallBehavior,
+        @Nullable
         List<FunctionDefinition> functions) {
 
         if (functions == null || functions.isEmpty()) {
             return Collections.emptyList();
         }
-    
-        if (toolCallBehavior == null || !(toolCallBehavior.kernelFunctionsEnabled() || toolCallBehavior.autoInvokeEnabled())) {
+
+        if (toolCallBehavior == null || !(toolCallBehavior.kernelFunctionsEnabled()
+            || toolCallBehavior.autoInvokeEnabled())) {
             return Collections.emptyList();
         }
-        
+
         return functions.stream()
             .filter(function -> {
                 String[] parts = function.getName().split("-");
@@ -384,6 +411,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .map(message -> {
                 AuthorRole authorRole = message.getAuthorRole();
                 String content = message.getContent();
+                if (content == null) {
+                    throw new SKException("ChatMessageContent content must not be null");
+                }
                 return getChatRequestMessage(authorRole, content);
             })
             .collect(Collectors.toList());
@@ -405,7 +435,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 return new ChatRequestToolMessage(content, null);
             default:
                 LOGGER.debug("Unexpected author role: " + authorRole);
-                return null;
+                throw new SKException("Unexpected author role: " + authorRole);
         }
 
     }
@@ -459,7 +489,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static class ToolContentBuffer implements
         ContentBuffer<ChatCompletionsFunctionToolCall> {
 
+        @Nullable
         private String id = null;
+
+        @Nullable
         private String name = null;
         private List<String> arguments = new ArrayList<>();
 
@@ -575,6 +608,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         @Override
         public OpenAIChatCompletion build() {
+
+            if (this.client == null) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI client must be provided");
+            }
+
+            if (this.modelId == null || modelId.isEmpty()) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI model id must be provided");
+            }
+
             return new OpenAIChatCompletion(client, modelId, serviceId);
         }
     }

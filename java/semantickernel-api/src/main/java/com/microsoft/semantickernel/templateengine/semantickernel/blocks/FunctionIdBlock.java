@@ -31,7 +31,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(KernelArguments variables) {
+    public String render(@Nullable KernelArguments variables) {
         return this.getContent();
     }
 

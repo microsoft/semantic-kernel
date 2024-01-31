@@ -8,6 +8,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
@@ -18,7 +19,8 @@ import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
@@ -115,10 +117,14 @@ public class Example09_FunctionTypes {
             .build();
 
         // Different ways to invoke a function (not limited to these examples)
-        kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null, String.class).block();
-        kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null, String.class).block();
+        FunctionResult<?> result = kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null,
+            String.class).block();
+        System.out.println(result.getResult());
+        result = kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null, String.class)
+            .block();
+        System.out.println(result.getResult());
 
-        kernel
+        result = kernel
             .invokeAsync(
                 plugin.get("InputDateTimeWithStringResult"),
                 KernelArguments
@@ -132,10 +138,13 @@ public class Example09_FunctionTypes {
                     .build(),
                 String.class
             ).block();
+        System.out.println(result.getResult());
 
-        kernel.invokeAsync(plugin.get("NoInputTaskWithStringResult"), null, String.class).block();
+        result = kernel.invokeAsync(plugin.get("NoInputTaskWithStringResult"), null, String.class)
+            .block();
+        System.out.println(result.getResult());
 
-        kernel.invokeAsync(plugin.get("MultipleInputsWithVoidResult"),
+        result = kernel.invokeAsync(plugin.get("MultipleInputsWithVoidResult"),
                 KernelArguments
                     .builder()
                     .withVariable("x", "x string")
@@ -144,8 +153,9 @@ public class Example09_FunctionTypes {
                     .build(),
                 String.class)
             .block();
+        System.out.println(result.getResult());
 
-        kernel
+        result = kernel
             .invokeAsync(plugin.get("ComplexInputWithStringResult"),
                 KernelArguments
                     .builder()
@@ -164,8 +174,9 @@ public class Example09_FunctionTypes {
                     .build(),
                 String.class)
             .block();
+        System.out.println(result.getResult());
 
-        kernel
+        result = kernel
             .invokeAsync(plugin.get("InputStringTaskWithStringResult"),
                 KernelArguments
                     .builder()
@@ -173,8 +184,9 @@ public class Example09_FunctionTypes {
                     .build(),
                 String.class)
             .block();
+        System.out.println(result.getResult());
 
-        kernel
+        result = kernel
             .invokeAsync(plugin.get("InputStringTaskWithVoidResult"),
                 KernelArguments
                     .builder()
@@ -182,24 +194,80 @@ public class Example09_FunctionTypes {
                     .build(),
                 Void.class)
             .block();
+        System.out.println(result.getResult());
 
-        kernel
+        result = kernel
             .invokeAsync(plugin.get("noInputComplexReturnTypeAsync"),
                 null,
                 Temporal.class)
             .block();
+        System.out.println(result.getResult());
 
-        kernel
+        result = kernel
             .invokeAsync(plugin.get("noInputComplexReturnType"),
                 null,
                 Temporal.class)
             .block();
+        System.out.println(result.getResult());
 
-        kernel
+        // Possibilities for return type combinations:
+        // | Method return type | Declared Function Return Type | Invocation Return type |
+        // |--------------------|-------------------------------|------------------------|
+        // | T                  | T                             | T                      |
+        // | T                  | T                             | V converted from T     |
+
+        // | T                  | U extends T                   | T                      |
+        // | T                  | U extends T                   | U                      |
+        // | T                  | U extends T                   | V converted from U     |
+
+        result = kernel
+            .invokeAsync(plugin.get("conversionScenarioA"),
+                null,
+                OffsetDateTime.class)
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel
+            .invokeAsync(plugin.get("conversionScenarioA"),
+                null,
+                Instant.class)
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel
+            .invokeAsync(plugin.get("conversionScenarioB"),
+                null,
+                OffsetDateTime.class)
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel
+            .invokeAsync(plugin.get("conversionScenarioB"),
+                null,
+                Temporal.class)
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel
+            .invokeAsync(plugin.get("conversionScenarioB"),
+                null,
+                Instant.class)
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel
+            .invokeAsync(plugin.get("noInputComplexReturnType"),
+                null,
+                String.class)
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel
             .invokeAsync(plugin.get("withDefaultValue"),
                 null,
                 String.class)
             .block();
+        System.out.println(result.getResult());
 
         /*
         TODO: support FunctionResult
@@ -254,7 +322,10 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a void task function with no input
         /// </summary>
-        @DefineKernelFunction(name = "NoInputTaskWithVoidResult")
+        @DefineKernelFunction(
+            name = "NoInputTaskWithVoidResult",
+            returnType = "java.lang.Void"
+        )
         public Mono<Void> NoInputTaskWithVoidResult() {
             return Mono.fromRunnable(
                 () -> System.out.println("Running this.NoInputTaskWithVoidResult) -> No input"));
@@ -263,7 +334,9 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a function with a DateTime input and a string result
         /// </summary>
-        @DefineKernelFunction(name = "InputDateTimeWithStringResult")
+        @DefineKernelFunction(
+            name = "InputDateTimeWithStringResult",
+            returnType = "java.lang.String")
         public String InputDateTimeWithStringResult(
             @KernelFunctionParameter(
                 name = "currentDate",
@@ -281,7 +354,9 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a Task function with no input and a string result
         /// </summary>
-        @DefineKernelFunction(name = "NoInputTaskWithStringResult")
+        @DefineKernelFunction(
+            name = "NoInputTaskWithStringResult",
+            returnType = "java.lang.String")
         public Mono<String> NoInputTaskWithStringResult() {
             return Mono.fromCallable(() -> {
                 var result = "string result";
@@ -341,7 +416,10 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example using an async task function echoing the input
         /// </summary>
-        @DefineKernelFunction(name = "InputStringTaskWithStringResult")
+        @DefineKernelFunction(
+            name = "InputStringTaskWithStringResult",
+            returnType = "java.lang.String"
+        )
         public Mono<String> InputStringTaskWithStringResult(
 
             @KernelFunctionParameter(
@@ -360,7 +438,10 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example using an async void task with string input
         /// </summary>
-        @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
+        @DefineKernelFunction(
+            name = "InputStringTaskWithVoidResult",
+            returnType = "java.lang.Void"
+        )
         public Mono<Void> InputStringTaskWithVoidResult(
             @KernelFunctionParameter(
                 name = "x"
@@ -377,9 +458,9 @@ public class Example09_FunctionTypes {
             name = "noInputComplexReturnTypeAsync",
             returnType = "java.time.temporal.Temporal"
         )
-        public Mono<LocalDateTime> noInputComplexReturnTypeAsync() {
+        public Mono<OffsetDateTime> noInputComplexReturnTypeAsync() {
             return Mono.just(
-                LocalDateTime.now()
+                OffsetDateTime.now()
             );
         }
 
@@ -387,8 +468,8 @@ public class Example09_FunctionTypes {
             name = "noInputComplexReturnType",
             returnType = "java.time.temporal.Temporal"
         )
-        public LocalDateTime noInputComplexReturnType() {
-            return LocalDateTime.now();
+        public OffsetDateTime noInputComplexReturnType() {
+            return OffsetDateTime.now();
         }
 
         @DefineKernelFunction(
@@ -404,6 +485,27 @@ public class Example09_FunctionTypes {
             int x
         ) {
             return Integer.toString(x);
+        }
+
+        // Possibilities for return type combinations:
+        // | Method return type | Declared Function Return Type |
+        // |--------------------|-------------------------------|
+        // | T                  | T                             |
+        // | T                  | U extends T                   |
+        @DefineKernelFunction(
+            name = "conversionScenarioA",
+            returnType = "java.time.OffsetDateTime"
+        )
+        public OffsetDateTime conversionScenarioA() {
+            return OffsetDateTime.now();
+        }
+
+        @DefineKernelFunction(
+            name = "conversionScenarioB",
+            returnType = "java.time.temporal.Temporal"
+        )
+        public OffsetDateTime conversionScenarioB() {
+            return OffsetDateTime.now();
         }
 
         /*

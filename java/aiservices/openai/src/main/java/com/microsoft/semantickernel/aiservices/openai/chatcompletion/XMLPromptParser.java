@@ -144,7 +144,9 @@ class XMLPromptParser {
                         //        },
                         //    },
                         //}
-                        assert functionDefinition != null;
+                        if (functionDefinition == null) {
+                            throw new SKException("Failed to parse function definition");
+                        }
                         if (!parameters.isEmpty()) {
                             StringBuilder sb = new StringBuilder(
                                 "{\"type\": \"object\", \"properties\": {");
@@ -207,11 +209,11 @@ class XMLPromptParser {
         String role,
         String content) {
         try {
-            AuthorRole authorRole = AuthorRole.valueOf(role.toUpperCase());
+            AuthorRole authorRole = AuthorRole.valueOf(role.toUpperCase(Locale.ROOT));
             return OpenAIChatCompletion.getChatRequestMessage(authorRole, content);
         } catch (IllegalArgumentException e) {
             LOGGER.debug("Unknown author role: " + role);
-            return null;
+            throw new SKException("Unknown author role: " + role);
         }
     }
 }

@@ -29,8 +29,6 @@ public interface WritableKernelArguments extends KernelArguments {
      */
     KernelArguments update(ContextVariable<?> content);
 
-    KernelArguments update(String content);
-
     /**
      * Updates the variables merging or overwriting in the new values.
      *

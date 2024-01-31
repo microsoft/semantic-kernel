@@ -90,11 +90,6 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
         return setVariable(MAIN_KEY, content);
     }
 
-    @Override
-    public KernelArguments update(String content) {
-        return null;
-    }
-
     public DefaultKernelArguments update(@NonNull DefaultKernelArguments newData) {
         return update(newData, true);
     }
@@ -198,6 +193,7 @@ public class DefaultKernelArguments implements KernelArguments, WritableKernelAr
     }
 
     @Override
+    @Nullable
     public ContextVariable<?> get(Object key) {
         return variables.get(key);
     }

@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.converters.Ch
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.CompletionUsageContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.DateTimeContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.converters.InstantContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.NumberVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.StringVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.VoidVariableContextVariableTypeConverter;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class ContextVariableTypes {
 
@@ -24,7 +26,9 @@ public class ContextVariableTypes {
             new ChatHistoryVariableContextVariableTypeConverter(),
             new StringVariableContextVariableTypeConverter(),
             new VoidVariableContextVariableTypeConverter(),
+            new ContextVariableTypeConverter<>(void.class, s -> null, s -> null, s -> null),
             new DateTimeContextVariableTypeConverter(),
+            new InstantContextVariableTypeConverter(),
             new CompletionUsageContextVariableTypeConverter(),
 
             new NumberVariableContextVariableTypeConverter<>(Byte.class, Byte::parseByte),
@@ -64,8 +68,9 @@ public class ContextVariableTypes {
                 contextVariableTypeConverter.getType()));
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
-    public static <T> T convert(Object s, Class<T> clazz) {
+    public static <T> T convert(@Nullable Object s, Class<T> clazz) {
         if (s instanceof ContextVariable && ((ContextVariable<?>) s).getType().getClazz()
             .isAssignableFrom(clazz)) {
             return ((ContextVariable<T>) s).getValue();
@@ -92,10 +97,29 @@ public class ContextVariableTypes {
         return (ContextVariableType<T>) variableTypes
             .values()
             .stream()
-            .filter(c -> c.getClazz().isAssignableFrom(aClass))
+            .filter(c -> {
+                return c.getClazz().isAssignableFrom(aClass);
+            })
             .findFirst()
             .orElseThrow(
                 () -> new RuntimeException("Unknown context variable type: " + aClass.getName()));
+    }
 
+    public <T> ContextVariableType<T> getVariableTypeForSuperClass(Class<T> aClass) {
+        ContextVariableType<?> contextVariableType = variableTypes.get(aClass);
+
+        if (contextVariableType != null) {
+            return (ContextVariableType<T>) contextVariableType;
+        }
+
+        return (ContextVariableType<T>) variableTypes
+            .values()
+            .stream()
+            .filter(c -> {
+                return aClass.isAssignableFrom(c.getClazz());
+            })
+            .findFirst()
+            .orElseThrow(
+                () -> new RuntimeException("Unknown context variable type: " + aClass.getName()));
     }
 }

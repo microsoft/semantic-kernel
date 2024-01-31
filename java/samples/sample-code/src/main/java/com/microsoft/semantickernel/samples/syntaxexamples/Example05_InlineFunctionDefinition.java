@@ -85,7 +85,7 @@ public class Example05_InlineFunctionDefinition {
                     .build(),
                 String.class)
             .block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
 
         result = kernel.invokeAsync(excuseFunction,
                 KernelArguments.builder()
@@ -93,7 +93,7 @@ public class Example05_InlineFunctionDefinition {
                     .build(),
                 String.class)
             .block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
 
         var fixedFunction = KernelFunctionFactory.createFromPrompt(
             "Translate this date " + DateTimeFormatter
@@ -112,7 +112,7 @@ public class Example05_InlineFunctionDefinition {
         FunctionResult<String> fixedFunctionResult = kernel
             .invokeAsync(fixedFunction, null, String.class)
             .block();
-        System.out.println(fixedFunctionResult.getResultVariable());
+        System.out.println(fixedFunctionResult.getResult());
 
     }
 }

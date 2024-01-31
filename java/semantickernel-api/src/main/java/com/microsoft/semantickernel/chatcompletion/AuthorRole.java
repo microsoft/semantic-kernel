@@ -16,18 +16,9 @@ public enum AuthorRole {
         return role;
     }
 
-    public AuthorRole fromString(String role) {
-        for (AuthorRole authorRole : AuthorRole.values()) {
-            if (authorRole.role.equalsIgnoreCase(role)) {
-                return authorRole;
-            }
-        }
-        return null;
-    }
-
     private final String role;
 
-    private AuthorRole(String role) {
+    AuthorRole(String role) {
         this.role = role;
     }
 }

@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import javax.annotation.Nullable;
 
 public final class TextBlock extends Block implements TextRendering {
 
@@ -15,7 +16,7 @@ public final class TextBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(KernelArguments variables) {
+    public String render(@Nullable KernelArguments variables) {
         return super.getContent();
     }
 

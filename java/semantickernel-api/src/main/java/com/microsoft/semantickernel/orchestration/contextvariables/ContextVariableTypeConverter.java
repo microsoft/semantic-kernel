@@ -79,10 +79,14 @@ public class ContextVariableTypeConverter<T> {
         this.toObjects = new ArrayList<>(toObjects);
     }
 
-    
+
     @Nullable
     @SuppressWarnings("unchecked")
-    public <U> U toObject(Object t, Class<U> clazz) {
+    public <U> U toObject(@Nullable Object t, Class<U> clazz) {
+        if (t == null) {
+            return null;
+        }
+
         Optional<Converter<T, ?>> converter = toObjects
             .stream()
             .filter(c -> c.getTargetType().equals(clazz))
@@ -106,14 +110,14 @@ public class ContextVariableTypeConverter<T> {
     }
 
     @Nullable
-    public T fromObject(Object s) {
+    public T fromObject(@Nullable Object s) {
         if (s == null) {
             return null;
         }
         return fromObject.apply(s);
     }
 
-    public String toPromptString(T t) {
+    public String toPromptString(@Nullable T t) {
         if (t == null) {
             return "";
         }
@@ -121,7 +125,7 @@ public class ContextVariableTypeConverter<T> {
     }
 
     @Nullable
-    public T fromPromptString(String t) {
+    public T fromPromptString(@Nullable String t) {
         if (t == null) {
             return null;
         }

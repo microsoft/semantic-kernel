@@ -5,15 +5,20 @@ import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensiti
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class KernelPlugin implements Iterable<KernelFunction> {
 
     private final String name;
+    @Nullable
     private final String description;
 
     private final CaseInsensitiveMap<KernelFunction> functions;
 
-    public KernelPlugin(String name, String description,
+    public KernelPlugin(
+        String name,
+        @Nullable
+        String description,
         Map<String, KernelFunction> plugins) {
         this.name = name;
         this.description = description;
@@ -23,10 +28,15 @@ public class KernelPlugin implements Iterable<KernelFunction> {
         }
     }
 
+    public void addFunction(KernelFunction function) {
+        functions.put(function.getName(), function);
+    }
+
     public Map<String, KernelFunction> getFunctions() {
         return Collections.unmodifiableMap(functions);
     }
 
+    @Nullable
     public KernelFunction get(String functionName) {
         return functions.get(functionName);
     }
@@ -40,6 +50,7 @@ public class KernelPlugin implements Iterable<KernelFunction> {
         return name;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }

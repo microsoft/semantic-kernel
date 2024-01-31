@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import javax.annotation.Nullable;
 
 /**
  * The result of an AI service selection.
@@ -10,6 +11,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 public class AIServiceSelection<T extends AIService> {
 
     private final T service;
+    @Nullable
     private final PromptExecutionSettings settings;
 
     /**
@@ -19,7 +21,7 @@ public class AIServiceSelection<T extends AIService> {
      * @param settings The settings associated with the selected service. This may be null even if a
      *                 service is selected..
      */
-    public AIServiceSelection(T service, PromptExecutionSettings settings) {
+    public AIServiceSelection(T service, @Nullable PromptExecutionSettings settings) {
         this.service = service;
         this.settings = settings;
     }
@@ -39,6 +41,7 @@ public class AIServiceSelection<T extends AIService> {
      * @return The settings associated with the selected service. This may be null even if a service
      * is selected.
      */
+    @Nullable
     public PromptExecutionSettings getSettings() {
         return settings;
     }

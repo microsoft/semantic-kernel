@@ -1,8 +1,10 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 
 public class DateTimeContextVariableTypeConverter extends
     ContextVariableTypeConverter<OffsetDateTime> {
@@ -21,6 +23,14 @@ public class DateTimeContextVariableTypeConverter extends
             Object::toString,
             o -> {
                 return ZonedDateTime.parse(o).toOffsetDateTime();
-            });
+            },
+            Arrays.asList(
+                new DefaultConverter<OffsetDateTime, Instant>(OffsetDateTime.class, Instant.class) {
+                    @Override
+                    public Instant toObject(OffsetDateTime offsetDateTime) {
+                        return offsetDateTime.toInstant();
+                    }
+                }
+            ));
     }
 }

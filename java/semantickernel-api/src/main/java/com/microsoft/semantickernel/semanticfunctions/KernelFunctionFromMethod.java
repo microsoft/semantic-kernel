@@ -16,20 +16,18 @@ import com.microsoft.semantickernel.orchestration.MethodDetails;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,8 +47,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
         String functionName,
+        @Nullable
         String description,
-        List<KernelParameterMetadata> parameters,
+        @Nullable
+        List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<?> returnParameter) {
         super(
             new KernelFunctionMetadata(
@@ -68,8 +68,12 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        ContextVariableType<T> variableType) {
-        return function.invoke(kernel, this, arguments, kernel.getHookService());
+        @Nullable ContextVariableType<T> variableType) {
+        return invokeAsync(
+            kernel,
+            arguments,
+            kernel.getHookService(),
+            variableType);
     }
 
     @Override
@@ -77,13 +81,41 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         Kernel kernel,
         @Nullable KernelArguments arguments,
         @Nullable KernelHooks kernelHooks,
-        ContextVariableType<T> variableType) {
+        @Nullable ContextVariableType<T> variableType) {
 
         if (kernelHooks == null) {
             kernelHooks = kernel.getHookService();
         }
 
-        return function.invoke(kernel, this, arguments, kernelHooks);
+        return function
+            .invoke(kernel, this, arguments, kernelHooks)
+            .map(it -> convertVariableToReturnType(variableType, it));
+    }
+
+    private <T> FunctionResult convertVariableToReturnType(
+        @Nullable ContextVariableType<T> variableType,
+        FunctionResult<Object> it) {
+        if (variableType != null) {
+            return new FunctionResult<>(
+                variableType.of(it.getResult()),
+                it.getMetadata());
+        } else {
+            Object result = it.getResult();
+            if (result != null && getMetadata().getReturnParameter().getParameterType()
+                .isAssignableFrom(result.getClass())) {
+                return new FunctionResult<>(
+                    new ContextVariable<>(
+                        new ContextVariableType<>(
+                            new NoopConverter(
+                                getMetadata().getReturnParameter().getParameterType()),
+                            getMetadata().getReturnParameter().getParameterType()
+                        ),
+                        it.getResult())
+                );
+            }
+            throw new RuntimeException("Unable to convert result to type: "
+                + getMetadata().getReturnParameter().getParameterType().getName());
+        }
     }
 
     public interface ImplementationFunc {
@@ -100,9 +132,13 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     public static KernelFunction create(
         Method method,
         Object target,
+        @Nullable
         String functionName,
+        @Nullable
         String description,
-        List<KernelParameterMetadata> parameters,
+        @Nullable
+        List<KernelParameterMetadata<?>> parameters,
+        @Nullable
         KernelReturnParameterMetadata<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
@@ -129,6 +165,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
 
     private static MethodDetails getMethodDetails(
+        @Nullable
         String functionName,
         Method method,
         Object target) {
@@ -142,12 +179,19 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             returnDescription = annotation.returnDescription();
         }
 
+        if (functionName == null) {
+            functionName = method.getName();
+        }
+
         return new MethodDetails(
             functionName,
             description,
             getFunction(method, target),
             getParameters(method),
-            new KernelReturnParameterMetadata<>(returnDescription, method.getReturnType())
+            new KernelReturnParameterMetadata<>(
+                returnDescription,
+                method.getReturnType()
+            )
         );
     }
 
@@ -193,11 +237,30 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                         });
 
                     return r
-                        .map(it -> new FunctionResult<>(ContextVariable.of(it)))
+                        .map(it -> {
+                            return new FunctionResult(
+                                new ContextVariable(
+                                    new ContextVariableType(
+                                        new NoopConverter(
+                                            function
+                                                .getMetadata()
+                                                .getReturnParameter()
+                                                .getParameterType()
+                                        ),
+                                        function
+                                            .getMetadata()
+                                            .getReturnParameter()
+                                            .getParameterType()
+                                    ),
+                                    it));
+                        })
                         .map(it -> {
                             FunctionInvokedEvent<T> updatedResult = kernelHooks
                                 .executeHooks(
-                                    new FunctionInvokedEvent<>(function, updatedArguments, it));
+                                    new FunctionInvokedEvent<>(
+                                        function,
+                                        updatedArguments,
+                                        it));
                             return updatedResult.getResult();
                         });
                 } catch (Exception e) {
@@ -239,6 +302,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                     .subscribeOn(Schedulers.boundedElastic()));
     }
 
+    @Nullable
     private static Function<Parameter, Object> getParameters(
         Method method,
         @Nullable
@@ -253,6 +317,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         };
     }
 
+    @Nullable
     private static Object getArgumentValue(
         Method method,
         @Nullable KernelArguments context,
@@ -265,15 +330,16 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             KernelFunctionParameter annotation =
                 parameter.getAnnotation(KernelFunctionParameter.class);
             if (annotation != null) {
-                    // Convert from the defaultValue, which is a String to the argument type
-                    // Expectation here is that the fromPromptString method will be able to handle a null or empty string
-                    Class<?> type = annotation.type();
-                    ContextVariableType<?> cvType = ContextVariableTypes.getDefaultVariableTypeForClass(type);
-                    if (cvType != null) {
-                        String defaultValue = annotation.defaultValue();
-                        Object value = cvType.getConverter().fromPromptString(defaultValue);
-                        arg = ContextVariable.of(value);
-                    }
+                // Convert from the defaultValue, which is a String to the argument type
+                // Expectation here is that the fromPromptString method will be able to handle a null or empty string
+                Class<?> type = annotation.type();
+                ContextVariableType<?> cvType = ContextVariableTypes.getDefaultVariableTypeForClass(
+                    type);
+                if (cvType != null) {
+                    String defaultValue = annotation.defaultValue();
+                    Object value = cvType.getConverter().fromPromptString(defaultValue);
+                    arg = ContextVariable.untypedOf(value, cvType.getConverter());
+                }
 
                 if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
                     if (!annotation.required()) {
@@ -331,19 +397,22 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         Object value = arg;
 
-        if (parameter.getType().isAssignableFrom(arg.getValue().getClass())) {
-            return arg.getValue();
-        }
+        if (arg != null) {
 
-        if (isPrimative(arg.getValue().getClass(), parameter.getType())) {
-            return arg.getValue();
-        }
+            if (parameter.getType().isAssignableFrom(arg.getType().getClazz())) {
+                return arg.getValue();
+            }
 
-        ContextVariableTypeConverter<?> c = arg.getType().getConverter();
+            if (isPrimative(arg.getType().getClazz(), parameter.getType())) {
+                return arg.getValue();
+            }
 
-        Object converted = c.toObject(arg.getValue(), parameter.getType());
-        if (converted != null) {
-            return converted;
+            ContextVariableTypeConverter<?> c = arg.getType().getConverter();
+
+            Object converted = c.toObject(arg.getValue(), parameter.getType());
+            if (converted != null) {
+                return converted;
+            }
         }
 
         // Well-known types only
@@ -366,6 +435,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         return value;
     }
 
+    @SuppressWarnings("OperatorPrecedence")
     private static boolean isPrimative(Class<?> argType, Class<?> param) {
         return (argType == Byte.class || argType == byte.class) && (param == Byte.class
             || param == byte.class) ||
@@ -415,81 +485,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             + " was invoked with a required context variable missing and no default value.";
     }
 
-    private static Set<Parameter> determineInputArgs(Method method) {
-        // Something is bound to the input if either:
-        // - it is annotated with @SKFunctionInputAttribute
-        // - SKFunctionParameters annotation has a name of "input"
-        // - the arg name is "input"
-        // - there is only 1 string argument to the function
-
-        // Get all parameters annotated with SKFunctionInputAttribute
-        List<Parameter> annotated =
-            Arrays.stream(method.getParameters())
-                .filter(it -> it.isAnnotationPresent(KernelFunctionParameter.class))
-                .collect(Collectors.toList());
-
-        if (annotated.size() > 1) {
-            LOGGER.warn(
-                "Multiple arguments of "
-                    + method.getName()
-                    + " have the @SKFunctionInputAttribute annotation. This is likely an"
-                    + " error.");
-        }
-
-        // Get all parameters annotated with SKFunctionParameters with a name of "input"
-        List<Parameter> annotatedWithName =
-            Arrays.stream(method.getParameters())
-                .filter(it -> it.isAnnotationPresent(KernelFunctionParameter.class))
-                .filter(it -> it.getName().equals("input"))
-                .collect(Collectors.toList());
-
-        if (annotatedWithName.size() > 1) {
-            LOGGER.warn(
-                "Multiple arguments of "
-                    + method.getName()
-                    + " have the name input. This is likely an error.");
-        }
-
-        // Get all parameters named "input", this will frequently fail as compilers strip out
-        // argument names
-        List<Parameter> calledInput =
-            Arrays.stream(method.getParameters())
-                .filter(it -> getGetVariableName(it).equals("input"))
-                .collect(Collectors.toList());
-
-        // Get parameter if there is only 1 string, and it has not been annotated with
-        // SKFunctionParameters
-        List<Parameter> soloString =
-            Arrays.stream(method.getParameters())
-                .filter(it -> it.getType().equals(String.class))
-                .filter(
-                    it ->
-                        !(it.isAnnotationPresent(KernelFunctionParameter.class)
-                            && !it.getAnnotation(KernelFunctionParameter.class)
-                            .name()
-                            .isEmpty()))
-                .collect(Collectors.toList());
-        if (soloString.size() > 1) {
-            soloString.clear();
-        }
-
-        Set<Parameter> params = new HashSet<>();
-        params.addAll(annotated);
-        params.addAll(annotatedWithName);
-        params.addAll(calledInput);
-        params.addAll(soloString);
-
-        if (params.size() > 1) {
-            LOGGER.warn(
-                "Multiple arguments of "
-                    + method.getName()
-                    + " are bound to the input variable. This is likely an error.");
-        }
-
-        return params;
-    }
-
-    private static List<KernelParameterMetadata> getParameters(Method method) {
+    private static List<KernelParameterMetadata<?>> getParameters(Method method) {
         return
             Arrays.stream(method
                     .getParameters())
@@ -497,7 +493,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 .collect(Collectors.toList());
     }
 
-    private static KernelParameterMetadata toKernelParameterMetadata(Parameter parameter) {
+    private static KernelParameterMetadata<?> toKernelParameterMetadata(Parameter parameter) {
         KernelFunctionParameter annotation = parameter.getAnnotation(
             KernelFunctionParameter.class);
 
@@ -505,19 +501,22 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         String description = null;
         String defaultValue = null;
         boolean isRequired = true;
+        Class<?> type = parameter.getType();
 
         if (annotation != null) {
             name = annotation.name();
             description = annotation.description();
             defaultValue = annotation.defaultValue();
             isRequired = annotation.required();
+            type = annotation.type();
         }
 
-        return new KernelParameterMetadata(
+        return new KernelParameterMetadata<>(
             name,
             description,
-            null,
-            defaultValue, isRequired
+            type,
+            defaultValue,
+            isRequired
         );
     }
 }

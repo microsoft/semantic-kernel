@@ -7,10 +7,12 @@ import javax.annotation.Nullable;
 
 public class TemplateException extends SKException {
 
-    @Nonnull private final ErrorCodes errorCode;
+    @Nonnull
+    private final ErrorCodes errorCode;
 
     /**
-     * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+     * Initializes a new instance of the {@code TemplateException} class with a provided error
+     * code.
      *
      * @param error The error code.
      */
@@ -19,26 +21,28 @@ public class TemplateException extends SKException {
     }
 
     /**
-     * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+     * Initializes a new instance of the {@code TemplateException} class with a provided error
+     * code.
      *
      * @param errorCode The error code.
-     * @param message The exception message.
+     * @param message   The exception message.
      */
     public TemplateException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
         this(errorCode, message, null);
     }
 
     /**
-     * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+     * Initializes a new instance of the {@code TemplateException} class with a provided error
+     * code.
      *
-     * @param errorCode The error code.
-     * @param message The exception message.
+     * @param errorCode      The error code.
+     * @param message        The exception message.
      * @param innerException The exception that is the cause of the current exception.
      */
     public TemplateException(
-            @Nonnull ErrorCodes errorCode,
-            @Nullable String message,
-            @Nullable Throwable innerException) {
+        @Nonnull ErrorCodes errorCode,
+        @Nullable String message,
+        @Nullable Throwable innerException) {
         super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
@@ -53,19 +57,6 @@ public class TemplateException extends SKException {
     //spotless:on
     public ErrorCodes getErrorCode() {
         return errorCode;
-    }
-
-    // spotless:off
-
-    /**
-     * <p>
-     * Translate the error code into a default message.
-     * </p>
-     */
-    //spotless:on
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
     // spotless:off
