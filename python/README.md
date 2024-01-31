@@ -52,7 +52,8 @@ does not conflict with the First or Second Law.
 Give me the TLDR in exactly 5 words.""")
 
 # Run your prompt
-print(prompt()) # => Robots must not harm humans.
+# Note: functions are run asynchronously
+print(await prompt()) # => Robots must not harm humans.
 ```
 
 # **Semantic functions** are Prompts with input parameters

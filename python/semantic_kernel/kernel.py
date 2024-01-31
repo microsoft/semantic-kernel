@@ -292,7 +292,7 @@ class Kernel:
                         logger.info(f"{skip_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
                         break
 
-                    context = await func.invoke_async(input=None, context=context, **kwargs)
+                    context = await func.invoke(input=None, context=context, **kwargs)
 
                     if context.error_occurred:
                         logger.error(
