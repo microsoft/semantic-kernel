@@ -4,16 +4,16 @@ from typing import Any, Dict, List, Optional
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIEmbeddingRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
@@ -26,13 +26,13 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
             texts {List[str]} -- The texts to generate embeddings for.
             batch_size {Optional[int]} -- The batch size to use for the request.
             kwargs {Dict[str, Any]} -- Additional arguments to pass to the request,
-                see OpenAIEmbeddingRequestSettings for the details.
+                see OpenAIEmbeddingPromptExecutionSettings for the details.
 
         Returns:
             ndarray -- The embeddings for the text.
 
         """
-        settings = OpenAIEmbeddingRequestSettings(
+        settings = OpenAIEmbeddingPromptExecutionSettings(
             ai_model_id=self.ai_model_id,
             **kwargs,
         )
@@ -47,5 +47,5 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
             raw_embeddings.extend(raw_embedding)
         return array(raw_embeddings)
 
-    def get_request_settings_class(self) -> AIRequestSettings:
-        return OpenAIEmbeddingRequestSettings
+    def get_prompt_execution_settings_class(self) -> PromptExecutionSettings:
+        return OpenAIEmbeddingPromptExecutionSettings

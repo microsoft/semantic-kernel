@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import Field, SerializeAsAny
 from pydantic.dataclasses import dataclass
 
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -81,7 +81,7 @@ class ExtraBody(KernelBaseModel):
         return getattr(self, item)
 
 
-class AzureChatRequestSettings(OpenAIChatRequestSettings):
+class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
     response_format: Optional[str] = None

@@ -10,7 +10,7 @@ if sys.version_info >= (3, 9):
     from google.generativeai.types.text_types import TextCompletion
 
     from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmTextRequestSettings,
+        GooglePalmTextPromptExecutionSettings,
     )
     from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
         GooglePalmTextCompletion,
@@ -65,7 +65,7 @@ async def test_google_palm_text_completion_complete_call_with_parameters() -> No
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
-        settings = GooglePalmTextRequestSettings()
+        settings = GooglePalmTextPromptExecutionSettings()
         response = await gp_text_completion.complete(prompt, settings)
         assert isinstance(response[0].text, str) and len(response) > 0
 

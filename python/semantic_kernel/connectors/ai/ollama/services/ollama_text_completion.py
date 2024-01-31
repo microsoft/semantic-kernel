@@ -7,10 +7,9 @@ from typing import AsyncIterable, List, Optional
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.ollama.ollama_request_settings import (
-    OllamaTextRequestSettings,
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaTextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import (
@@ -39,7 +38,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete(
         self,
         prompt: str,
-        settings: OllamaTextRequestSettings,
+        settings: OllamaTextPromptExecutionSettings,
         **kwargs,
     ) -> List[TextContent]:
         """
@@ -47,7 +46,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {OllamaTextRequestSettings} -- Settings for the request.
+            settings {OllamaTextPromptExecutionSettings} -- Settings for the request.
 
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
@@ -63,7 +62,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete_stream(
         self,
         prompt: str,
-        settings: OllamaTextRequestSettings,
+        settings: OllamaTextPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
@@ -73,7 +72,7 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {OllamaTextRequestSettings} -- Request settings.
+            settings {OllamaTextPromptExecutionSettings} -- Request settings.
 
         Yields:
             List[StreamingTextContent] -- Completion result.
@@ -95,6 +94,6 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
                     if body.get("done"):
                         break
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "OllamaTextPromptExecutionSettings":
         """Get the request settings class."""
-        return OllamaTextRequestSettings
+        return OllamaTextPromptExecutionSettings
