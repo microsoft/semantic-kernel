@@ -46,7 +46,7 @@ In this case, it's impossible to insert a record to database immediately, so HTT
 
 ### MemoryRecord as storage schema
 
-`IMemoryStore` interface uses `MemoryRecord` class as storage schema in vector DB. This means that `MemoryRecord` properties should be aligned to all possible connectors. As soon as developers will use this schema in their databases, any changes to schema may break the application, which is not flexible approach.
+`IMemoryStore` interface uses `MemoryRecord` class as storage schema in vector DB. This means that `MemoryRecord` properties should be aligned to all possible connectors. As soon as developers will use this schema in their databases, any changes to schema may break the application, which is not a flexible approach.
 
 `MemoryRecord` contains property `ReadOnlyMemory<float> Embedding` for embeddings and `MemoryRecordMetadata Metadata` for embeddings metadata. `MemoryRecordMetadata` contains properties like:
 
