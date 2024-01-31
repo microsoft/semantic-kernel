@@ -325,7 +325,7 @@ class KernelFunction(KernelFunctionBase):
             variables {ContextVariables} -- The variables for the function
             context {Optional[KernelContext]} -- The context for the function
             memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
-            settings {Optional[AIRequestSettings]} -- The settings for the function
+            settings {Optional[PromptExecutionSettings]} -- The settings for the function
             log {Optional[Any]} -- A logger to use for logging. (Optional)
 
         Returns:
@@ -361,7 +361,7 @@ class KernelFunction(KernelFunctionBase):
             variables {ContextVariables} -- The variables for the function
             context {Optional[KernelContext]} -- The context for the function
             memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
-            settings {Optional[AIRequestSettings]} -- The settings for the function
+            settings {Optional[PromptExecutionSettings]} -- The settings for the function
             kwargs {Dict[str, Any]} -- Additional keyword arguments
 
         Returns:

@@ -145,7 +145,7 @@ class Plan(KernelFunctionBase):
         Args:
             input (str, optional): The input to the plan. Defaults to None.
             context (KernelContext, optional): The context to use. Defaults to None.
-            settings (AIRequestSettings, optional): The AI request settings to use. Defaults to None.
+            settings (PromptExecutionSettings, optional): The AI request settings to use. Defaults to None.
             memory (SemanticTextMemoryBase, optional): The memory to use. Defaults to None.
             **kwargs: Additional keyword arguments.
 
