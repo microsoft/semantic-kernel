@@ -22,8 +22,10 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import Func
 from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
+    OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.models.chat.chat_role import ChatRole
 from semantic_kernel.models.chat.finish_reason import FinishReason
 
@@ -33,14 +35,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """OpenAI Chat completion class."""
 
-    def get_request_settings_class(self) -> "OpenAIChatPromptExecutionSettings":
+    def get_request_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
     async def complete_chat(
         self,
         messages: List[Dict[str, str]],
-        settings: OpenAIChatPromptExecutionSettings,
+        settings: OpenAIPromptExecutionSettings,
         **kwargs,
     ) -> List[OpenAIChatMessageContent]:
         """Executes a chat completion request and returns the result.
@@ -65,7 +67,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
-        settings: OpenAIChatPromptExecutionSettings,
+        settings: OpenAIPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
         """Executes a streaming chat completion request and returns the result.

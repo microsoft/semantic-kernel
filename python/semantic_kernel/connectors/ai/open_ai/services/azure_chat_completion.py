@@ -34,6 +34,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.models.chat.chat_role import ChatRole
 from semantic_kernel.models.chat.finish_reason import FinishReason
@@ -272,7 +273,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             default_headers=settings.get("default_headers"),
         )
 
-    def get_request_settings_class(self) -> "AzureChatPromptExecutionSettings":
+    def get_request_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return AzureChatPromptExecutionSettings
 

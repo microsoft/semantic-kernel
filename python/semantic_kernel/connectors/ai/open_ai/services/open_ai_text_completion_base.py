@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, AsyncIterable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Union
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
@@ -15,20 +15,26 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.models.contents import StreamingTextContent, TextContent
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+        OpenAIPromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
-    def get_request_settings_class(self) -> "OpenAITextPromptExecutionSettings":
+    def get_request_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return OpenAITextPromptExecutionSettings
 
     async def complete(
         self,
         prompt: str,
-        settings: "OpenAITextPromptExecutionSettings",
+        settings: "OpenAIPromptExecutionSettings",
         **kwargs,
     ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
@@ -70,7 +76,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     async def complete_stream(
         self,
         prompt: str,
-        settings: "OpenAITextPromptExecutionSettings",
+        settings: "OpenAIPromptExecutionSettings",
         **kwargs,
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
