@@ -28,9 +28,9 @@ public class ContextVariable<T> {
         return of(t);
     }
 
-    public static <T> ContextVariable<T> untypedOf(
+    public static ContextVariable<?> untypedOf(
         @Nullable Object value,
-        Class<T> clazz) {
+        Class<?> clazz) {
         ContextVariableType<?> type = ContextVariableTypes.getDefaultVariableTypeForClass(clazz);
         return new ContextVariable(type, value);
     }
@@ -78,7 +78,7 @@ public class ContextVariable<T> {
             }
         }
 
-        ContextVariableType<T> requestedResultTypeVariable = null;
+        ContextVariableType<T> requestedResultTypeVariable;
 
         try {
             requestedResultTypeVariable = contextVariableTypes.getVariableTypeForClass(
@@ -86,6 +86,7 @@ public class ContextVariable<T> {
         } catch (Exception e) {
             throw new SKException("Unable to find variable type for " + requestedResultType, e);
         }
+
         ContextVariableType<U> typeOfActualReturnedType;
 
         try {
@@ -106,8 +107,8 @@ public class ContextVariable<T> {
                     .of(converted);
             }
 
-            // Try using from prompt string
             if (requestedResultType.isAssignableFrom(String.class)) {
+                // Try using toPromptString
                 String str = typeOfActualReturnedType.getConverter()
                     .toPromptString(typeOfActualReturnedType.getClazz().cast(it));
 
@@ -123,8 +124,8 @@ public class ContextVariable<T> {
                 return requestedResultTypeVariable.of(result);
             }
 
-            // Try using from prompt string
             if (requestedResultType.equals(String.class)) {
+                // Try using from prompt string
                 return requestedResultTypeVariable.of(
                     requestedResultTypeVariable.getConverter().fromPromptString((String) it));
             }

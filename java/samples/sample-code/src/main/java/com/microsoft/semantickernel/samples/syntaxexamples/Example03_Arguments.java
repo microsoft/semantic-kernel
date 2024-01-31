@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
  */
 public class Example03_Arguments {
 
-    public static class StaticTextSkill {
+    public static class StaticTextPlugin {
 
         @DefineKernelFunction(
             description = "Change all string chars to uppercase.",
@@ -48,7 +48,7 @@ public class Example03_Arguments {
 
         // Load native skill
         KernelPlugin functionCollection =
-            KernelPluginFactory.createFromObject(new StaticTextSkill(), "text");
+            KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
 
         KernelArguments arguments = KernelArguments.builder()
             .withInput("Today is: ")
@@ -62,6 +62,6 @@ public class Example03_Arguments {
                 String.class)
             .block();
 
-        System.out.println(resultValue.getResultVariable().getValue());
+        System.out.println(resultValue.getResult());
     }
 }

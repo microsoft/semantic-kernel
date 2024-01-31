@@ -608,12 +608,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         @Override
         public OpenAIChatCompletion build() {
-            if (client == null) {
-                throw new IllegalArgumentException("client must not be null");
+
+            if (this.client == null) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI client must be provided");
             }
-            if (modelId == null || modelId.isEmpty()) {
-                throw new IllegalArgumentException("modelId must not be null or empty");
+
+            if (this.modelId == null || modelId.isEmpty()) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI model id must be provided");
             }
+
             return new OpenAIChatCompletion(client, modelId, serviceId);
         }
     }
