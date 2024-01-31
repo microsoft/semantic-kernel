@@ -2,17 +2,17 @@ from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-class OllamaRequestSettings(AIRequestSettings):
+class OllamaPromptExecutionSettings(PromptExecutionSettings):
     ai_model_id: str = Field("", alias="model")
     format: Optional[Literal["json"]] = None
     options: Optional[Dict[str, Any]] = None
     stream: bool = False
 
 
-class OllamaTextRequestSettings(OllamaRequestSettings):
+class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):
     prompt: Optional[str] = None
     context: Optional[str] = None
     system: Optional[str] = None
@@ -20,5 +20,5 @@ class OllamaTextRequestSettings(OllamaRequestSettings):
     raw: bool = False
 
 
-class OllamaChatRequestSettings(OllamaRequestSettings):
+class OllamaChatPromptExecutionSettings(OllamaPromptExecutionSettings):
     messages: Optional[List[Dict[str, str]]] = None

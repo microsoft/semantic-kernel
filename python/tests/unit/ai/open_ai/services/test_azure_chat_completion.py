@@ -24,9 +24,9 @@ from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exceptio
     ContentFilterCodes,
     ContentFilterResultSeverity,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
-    AzureChatRequestSettings,
+    AzureChatPromptExecutionSettings,
     AzureDataSources,
     ExtraBody,
 )
@@ -161,7 +161,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     messages = [{"role": "user", "content": "hello world"}]
-    complete_request_settings = AzureChatRequestSettings(service_id="test_service_id")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -169,17 +169,17 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
         api_key=api_key,
     )
-    await azure_chat_completion.complete_chat(messages=messages, settings=complete_request_settings)
+    await azure_chat_completion.complete_chat(messages=messages, settings=complete_prompt_execution_settings)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        frequency_penalty=complete_request_settings.frequency_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias={},
-        max_tokens=complete_request_settings.max_tokens,
-        n=complete_request_settings.number_of_responses,
-        presence_penalty=complete_request_settings.presence_penalty,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        n=complete_prompt_execution_settings.number_of_responses,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
         stream=False,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
         messages=messages,
     )
 
@@ -196,10 +196,10 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = AzureChatRequestSettings()
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     token_bias = {"1": -100}
-    complete_request_settings.logit_bias = token_bias
+    complete_prompt_execution_settings.logit_bias = token_bias
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -208,18 +208,18 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_chat(messages=messages, settings=complete_request_settings)
+    await azure_chat_completion.complete_chat(messages=messages, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
-        n=complete_request_settings.number_of_responses,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
+        n=complete_prompt_execution_settings.number_of_responses,
         stream=False,
-        max_tokens=complete_request_settings.max_tokens,
-        presence_penalty=complete_request_settings.presence_penalty,
-        frequency_penalty=complete_request_settings.frequency_penalty,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias=token_bias,
     )
 
@@ -236,10 +236,10 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
 
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = AzureChatRequestSettings()
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     stop = ["!"]
-    complete_request_settings.stop = stop
+    complete_prompt_execution_settings.stop = stop
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -248,19 +248,19 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete(prompt, complete_request_settings)
+    await azure_chat_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
-        n=complete_request_settings.number_of_responses,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
+        n=complete_prompt_execution_settings.number_of_responses,
         stream=False,
-        stop=complete_request_settings.stop,
-        max_tokens=complete_request_settings.max_tokens,
-        presence_penalty=complete_request_settings.presence_penalty,
-        frequency_penalty=complete_request_settings.frequency_penalty,
+        stop=complete_prompt_execution_settings.stop,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias={},
     )
 
@@ -323,7 +323,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         ]
     }
 
-    complete_request_settings = AzureChatRequestSettings(extra_body=expected_data_settings)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -333,19 +333,19 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         use_extensions=True,
     )
 
-    await azure_chat_completion.complete_chat(messages=messages_in, settings=complete_request_settings)
+    await azure_chat_completion.complete_chat(messages=messages_in, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages_out,
-        temperature=complete_request_settings.temperature,
-        frequency_penalty=complete_request_settings.frequency_penalty,
-        presence_penalty=complete_request_settings.presence_penalty,
+        temperature=complete_prompt_execution_settings.temperature,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
         logit_bias={},
-        top_p=complete_request_settings.top_p,
-        n=complete_request_settings.number_of_responses,
+        top_p=complete_prompt_execution_settings.top_p,
+        n=complete_prompt_execution_settings.number_of_responses,
         stream=False,
-        max_tokens=complete_request_settings.max_tokens,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
         extra_body=expected_data_settings,
     )
 
@@ -374,7 +374,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     )
 
     functions = [{"name": "test-function", "description": "test-description"}]
-    complete_request_settings = AzureChatRequestSettings(
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
         function_call="test-function",
         functions=functions,
         extra_body=extra,
@@ -382,7 +382,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 
     await azure_chat_completion.complete_chat(
         messages=messages,
-        settings=complete_request_settings,
+        settings=complete_prompt_execution_settings,
     )
 
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
@@ -390,17 +390,17 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
-        n=complete_request_settings.number_of_responses,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
+        n=complete_prompt_execution_settings.number_of_responses,
         stream=False,
-        max_tokens=complete_request_settings.max_tokens,
-        presence_penalty=complete_request_settings.presence_penalty,
-        frequency_penalty=complete_request_settings.frequency_penalty,
-        logit_bias=complete_request_settings.logit_bias,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
+        logit_bias=complete_prompt_execution_settings.logit_bias,
         extra_body=expected_data_settings,
         functions=functions,
-        function_call=complete_request_settings.function_call,
+        function_call=complete_prompt_execution_settings.function_call,
     )
 
 
@@ -414,15 +414,15 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     messages = [{"role": "user", "content": "hello world"}]
-    complete_request_settings = AzureChatRequestSettings()
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     stop = ["!"]
-    complete_request_settings.stop = stop
+    complete_prompt_execution_settings.stop = stop
 
     ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
     extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
 
-    complete_request_settings.extra_body = extra
+    complete_prompt_execution_settings.extra_body = extra
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -432,21 +432,21 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         use_extensions=True,
     )
 
-    await azure_chat_completion.complete_chat(messages, complete_request_settings)
+    await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)
 
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         messages=messages,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
-        n=complete_request_settings.number_of_responses,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
+        n=complete_prompt_execution_settings.number_of_responses,
         stream=False,
-        stop=complete_request_settings.stop,
-        max_tokens=complete_request_settings.max_tokens,
-        presence_penalty=complete_request_settings.presence_penalty,
-        frequency_penalty=complete_request_settings.frequency_penalty,
+        stop=complete_prompt_execution_settings.stop,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias={},
         extra_body=expected_data_settings,
     )
@@ -476,7 +476,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     api_version = "2023-03-15-preview"
     prompt = "some prompt that would trigger the content filtering"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = AzureChatRequestSettings()
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     mock_create.side_effect = openai.BadRequestError(
         CONTENT_FILTERED_ERROR_FULL_MESSAGE,
@@ -507,7 +507,7 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     )
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
-        await azure_chat_completion.complete_chat(messages, complete_request_settings)
+        await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)
 
     content_filter_exc = exc_info.value
     assert content_filter_exc.param == "prompt"
@@ -527,7 +527,7 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
     api_version = "2023-03-15-preview"
     prompt = "some prompt that would trigger the content filtering"
     messages = [{"role": "user", "content": prompt}]
-    complete_request_settings = AzureChatRequestSettings()
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     mock_create.side_effect = openai.BadRequestError(
         CONTENT_FILTERED_ERROR_FULL_MESSAGE,
@@ -557,7 +557,7 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
     )
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
-        await azure_chat_completion.complete_chat(messages, complete_request_settings)
+        await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)
 
     content_filter_exc = exc_info.value
     assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION

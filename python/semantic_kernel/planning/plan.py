@@ -9,7 +9,7 @@ from typing import Any, Callable, ClassVar, List, Optional, Union
 from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai import AIRequestSettings
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -42,7 +42,7 @@ class Plan(KernelFunctionBase):
     _plugin_name: str = PrivateAttr()
     _description: str = PrivateAttr()
     _is_semantic: bool = PrivateAttr()
-    _request_settings: AIRequestSettings = PrivateAttr()
+    _prompt_execution_settings: PromptExecutionSettings = PrivateAttr()
     DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
     @property
@@ -81,8 +81,8 @@ class Plan(KernelFunctionBase):
             return not self._is_semantic
 
     @property
-    def request_settings(self) -> AIRequestSettings:
-        return self._request_settings
+    def prompt_execution_settings(self) -> PromptExecutionSettings:
+        return self._prompt_execution_settings
 
     @property
     def has_next_step(self) -> bool:
@@ -116,7 +116,7 @@ class Plan(KernelFunctionBase):
         self._has_next_step = len(self._steps) > 0
         self._is_semantic = None
         self._function = None if function is None else function
-        self._request_settings = None
+        self._prompt_execution_settings = None
 
         if function is not None:
             self.set_function(function)
@@ -135,7 +135,7 @@ class Plan(KernelFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[KernelContext] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
         # TODO: cancellation_token: CancellationToken,
@@ -176,7 +176,7 @@ class Plan(KernelFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[KernelContext] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
     ) -> KernelContext:
@@ -224,7 +224,7 @@ class Plan(KernelFunctionBase):
 
     def set_ai_configuration(
         self,
-        settings: AIRequestSettings,
+        settings: PromptExecutionSettings,
     ) -> KernelFunctionBase:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
@@ -287,7 +287,7 @@ class Plan(KernelFunctionBase):
         self._plugin_name = function.plugin_name
         self._description = function.description
         self._is_semantic = function.is_semantic
-        self._request_settings = function.request_settings
+        self._prompt_execution_settings = function.prompt_execution_settings
 
     async def run_next_step(
         self,

@@ -3,21 +3,21 @@
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
-    AzureChatRequestSettings,
+    AzureChatPromptExecutionSettings,
     AzureDataSources,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIChatRequestSettings,
-    OpenAITextRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+    OpenAITextPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-def test_default_openai_chat_request_settings():
-    settings = OpenAIChatRequestSettings()
+def test_default_openai_chat_prompt_execution_settings():
+    settings = OpenAIChatPromptExecutionSettings()
     assert settings.temperature == 0.0
     assert settings.top_p == 1.0
     assert settings.presence_penalty == 0.0
@@ -29,8 +29,8 @@ def test_default_openai_chat_request_settings():
     assert settings.messages is None
 
 
-def test_custom_openai_chat_request_settings():
-    settings = OpenAIChatRequestSettings(
+def test_custom_openai_chat_prompt_execution_settings():
+    settings = OpenAIChatPromptExecutionSettings(
         temperature=0.5,
         top_p=0.5,
         presence_penalty=0.5,
@@ -52,9 +52,9 @@ def test_custom_openai_chat_request_settings():
     assert settings.messages == [{"role": "system", "content": "Hello"}]
 
 
-def test_openai_chat_request_settings_from_default_completion_config():
-    settings = AIRequestSettings(service_id="test_service")
-    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
+def test_openai_chat_prompt_execution_settings_from_default_completion_config():
+    settings = PromptExecutionSettings(service_id="test_service")
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature == 0.0
     assert chat_settings.top_p == 1.0
@@ -66,27 +66,27 @@ def test_openai_chat_request_settings_from_default_completion_config():
     assert chat_settings.logit_bias == {}
 
 
-def test_openai_chat_request_settings_from_openai_request_settings():
-    chat_settings = OpenAIChatRequestSettings(service_id="test_service", temperature=1.0)
-    new_settings = OpenAIChatRequestSettings(service_id="test_2", temperature=0.0)
-    chat_settings.update_from_ai_request_settings(new_settings)
+def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
+    chat_settings = OpenAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
+    new_settings = OpenAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
+    chat_settings.update_from_prompt_execution_settings(new_settings)
     assert chat_settings.service_id == "test_2"
     assert chat_settings.temperature == 0.0
 
 
-def test_openai_text_request_settings_validation():
+def test_openai_text_prompt_execution_settings_validation():
     with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
-        OpenAITextRequestSettings(best_of=1, number_of_responses=2)
+        OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=2)
 
 
-def test_openai_text_request_settings_validation_manual():
-    text_oai = OpenAITextRequestSettings(best_of=1, number_of_responses=1)
+def test_openai_text_prompt_execution_settings_validation_manual():
+    text_oai = OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=1)
     with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
         text_oai.number_of_responses = 2
 
 
-def test_openai_chat_request_settings_from_custom_completion_config():
-    settings = AIRequestSettings(
+def test_openai_chat_prompt_execution_settings_from_custom_completion_config():
+    settings = PromptExecutionSettings(
         service_id="test_service",
         extension_data={
             "temperature": 0.5,
@@ -101,7 +101,7 @@ def test_openai_chat_request_settings_from_custom_completion_config():
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -112,8 +112,8 @@ def test_openai_chat_request_settings_from_custom_completion_config():
     assert chat_settings.logit_bias == {"1": 1}
 
 
-def test_openai_chat_request_settings_from_custom_completion_config_with_none():
-    settings = AIRequestSettings(
+def test_openai_chat_prompt_execution_settings_from_custom_completion_config_with_none():
+    settings = PromptExecutionSettings(
         service_id="test_service",
         extension_data={
             "temperature": 0.5,
@@ -128,7 +128,7 @@ def test_openai_chat_request_settings_from_custom_completion_config_with_none():
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -140,8 +140,8 @@ def test_openai_chat_request_settings_from_custom_completion_config_with_none():
     assert chat_settings.functions is None
 
 
-def test_openai_chat_request_settings_from_custom_completion_config_with_functions():
-    settings = AIRequestSettings(
+def test_openai_chat_prompt_execution_settings_from_custom_completion_config_with_functions():
+    settings = PromptExecutionSettings(
         service_id="test_service",
         extension_data={
             "temperature": 0.5,
@@ -157,7 +157,7 @@ def test_openai_chat_request_settings_from_custom_completion_config_with_functio
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatRequestSettings.from_ai_request_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -170,7 +170,7 @@ def test_openai_chat_request_settings_from_custom_completion_config_with_functio
 
 
 def test_create_options():
-    settings = OpenAIChatRequestSettings(
+    settings = OpenAIChatPromptExecutionSettings(
         temperature=0.5,
         top_p=0.5,
         presence_penalty=0.5,
@@ -198,12 +198,12 @@ def test_create_options_azure_data():
     az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
     az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
     extra = ExtraBody(dataSources=[az_data])
-    settings = AzureChatRequestSettings(extra_body=extra)
+    settings = AzureChatPromptExecutionSettings(extra_body=extra)
     options = settings.prepare_settings_dict()
     assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
 
 
-def test_azure_open_ai_chat_request_settings_with_cosmosdb_data_sources():  # noqa: E501
+def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources():  # noqa: E501
     input_dict = {
         "messages": [{"role": "system", "content": "Hello"}],
         "extra_body": {
@@ -228,11 +228,11 @@ def test_azure_open_ai_chat_request_settings_with_cosmosdb_data_sources():  # no
             ]
         },
     }
-    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
 
 
-def test_azure_open_ai_chat_request_settings_with_aisearch_data_sources():  # noqa: E501
+def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources():  # noqa: E501
     input_dict = {
         "messages": [{"role": "system", "content": "Hello"}],
         "extra_body": {
@@ -257,5 +257,5 @@ def test_azure_open_ai_chat_request_settings_with_aisearch_data_sources():  # no
             ]
         },
     }
-    settings = AzureChatRequestSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"

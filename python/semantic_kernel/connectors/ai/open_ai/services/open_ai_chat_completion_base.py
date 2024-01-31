@@ -14,18 +14,18 @@ from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIChatRequestSettings,
-    OpenAIRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+    OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.models.chat.chat_role import ChatRole
 from semantic_kernel.models.chat.finish_reason import FinishReason
 
@@ -35,22 +35,22 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """OpenAI Chat completion class."""
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
-        return OpenAIChatRequestSettings
+        return OpenAIChatPromptExecutionSettings
 
     async def complete_chat(
         self,
         messages: List[Dict[str, str]],
-        settings: OpenAIRequestSettings,
+        settings: OpenAIPromptExecutionSettings,
         **kwargs,
     ) -> List[OpenAIChatMessageContent]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
             messages {List[Dict[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIChatRequestSettings | AzureChatRequestSettings} -- The settings to use for the
-                chat completion request.
+            settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
+                for the chat completion request.
 
         Returns:
             List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
@@ -67,15 +67,15 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
-        settings: OpenAIRequestSettings,
+        settings: OpenAIPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
         """Executes a streaming chat completion request and returns the result.
 
         Arguments:
             messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIChatRequestSettings | AzureChatRequestSettings} -- The settings to use for the
-                chat completion request.
+            settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
+                for the chat completion request.
 
         Yields:
             List[OpenAIStreamingChatMessageContent | AzureStreamingChatMessageContent] -- A stream of

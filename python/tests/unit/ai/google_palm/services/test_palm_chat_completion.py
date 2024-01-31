@@ -11,7 +11,7 @@ if sys.version_info >= (3, 9):
     from google.generativeai.types import ChatResponse, MessageDict
 
     from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmChatRequestSettings,
+        GooglePalmChatPromptExecutionSettings,
     )
     from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
         GooglePalmChatCompletion,
@@ -75,7 +75,7 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
-        settings = GooglePalmChatRequestSettings()
+        settings = GooglePalmChatPromptExecutionSettings()
         response = await gp_chat_completion.complete_chat(prompt, settings)
 
         assert isinstance(response[0].content, str) and len(response) > 0

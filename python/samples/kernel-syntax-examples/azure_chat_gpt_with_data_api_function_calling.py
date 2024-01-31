@@ -6,9 +6,9 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
-    AzureChatRequestSettings,
+    AzureChatPromptExecutionSettings,
     AzureDataSources,
     ExtraBody,
 )
@@ -31,7 +31,7 @@ azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
 az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
-req_settings = AzureChatRequestSettings(extra_body=extra)
+req_settings = AzureChatPromptExecutionSettings(extra_body=extra)
 
 # For example, AI Search index may contain the following document:
 

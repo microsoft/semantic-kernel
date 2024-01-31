@@ -7,13 +7,12 @@ from typing import AsyncIterable, Dict, List, Optional
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.ollama.ollama_request_settings import (
-    OllamaChatRequestSettings,
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import (
@@ -45,7 +44,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     async def complete_chat(
         self,
         messages: List[Dict[str, str]],
-        request_settings: OllamaChatRequestSettings,
+        settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> List[ChatMessageContent]:
         """
@@ -54,16 +53,16 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Arguments:
             messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        request_settings.messages = messages
-        request_settings.stream = False
+        settings.messages = messages
+        settings.stream = False
         async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 response_object = await response.json()
                 return [
@@ -78,7 +77,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     async def complete_chat_stream(
         self,
         messages: List[Dict[str, str]],
-        settings: OllamaChatRequestSettings,
+        settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[StreamingChatMessageContent]]:
         """
@@ -87,7 +86,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {OllamaChatRequestSettings} -- Request settings.
+            settings {OllamaChatPromptExecutionSettings} -- Request settings.
 
         Yields:
             List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
@@ -115,7 +114,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     async def complete(
         self,
         prompt: str,
-        request_settings: OllamaChatRequestSettings,
+        settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> List[TextContent]:
         """
@@ -123,16 +122,16 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {OllamaChatPromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
         Returns:
             List["TextContent"] -- The completion result(s).
         """
-        request_settings.messages = [{"role": "user", "content": prompt}]
-        request_settings.stream = False
+        settings.messages = [{"role": "user", "content": prompt}]
+        settings.stream = False
         async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=request_settings.prepare_settings_dict()) as response:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 response_object = await response.json()
                 return [
@@ -146,7 +145,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
     async def complete_stream(
         self,
         prompt: str,
-        settings: OllamaChatRequestSettings,
+        settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
@@ -155,7 +154,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {OllamaChatRequestSettings} -- Request settings.
+            settings {OllamaChatPromptExecutionSettings} -- Request settings.
 
         Yields:
             List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
@@ -181,6 +180,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
                     if body.get("done"):
                         break
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "OllamaChatPromptExecutionSettings":
         """Get the request settings class."""
-        return OllamaChatRequestSettings
+        return OllamaChatPromptExecutionSettings

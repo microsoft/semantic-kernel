@@ -9,8 +9,8 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAITextRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
@@ -133,7 +133,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    complete_request_settings = OpenAITextRequestSettings()
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
     azure_text_completion = AzureTextCompletion(
         deployment_name=deployment_name,
         endpoint=endpoint,
@@ -141,18 +141,18 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
     )
 
-    await azure_text_completion.complete(prompt, complete_request_settings)
+    await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        frequency_penalty=complete_request_settings.frequency_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias={},
-        max_tokens=complete_request_settings.max_tokens,
-        n=complete_request_settings.number_of_responses,
-        presence_penalty=complete_request_settings.presence_penalty,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        n=complete_prompt_execution_settings.number_of_responses,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
         stream=False,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
         prompt=prompt,
         echo=False,
     )
@@ -169,10 +169,10 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    complete_request_settings = OpenAITextRequestSettings()
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
 
     token_bias = {"200": 100}
-    complete_request_settings.logit_bias = token_bias
+    complete_prompt_execution_settings.logit_bias = token_bias
 
     azure_text_completion = AzureTextCompletion(
         deployment_name=deployment_name,
@@ -181,18 +181,18 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
         api_version=api_version,
     )
 
-    await azure_text_completion.complete(prompt, complete_request_settings)
+    await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        frequency_penalty=complete_request_settings.frequency_penalty,
-        logit_bias=complete_request_settings.logit_bias,
-        max_tokens=complete_request_settings.max_tokens,
-        n=complete_request_settings.number_of_responses,
-        presence_penalty=complete_request_settings.presence_penalty,
+        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
+        logit_bias=complete_prompt_execution_settings.logit_bias,
+        max_tokens=complete_prompt_execution_settings.max_tokens,
+        n=complete_prompt_execution_settings.number_of_responses,
+        presence_penalty=complete_prompt_execution_settings.presence_penalty,
         stream=False,
-        temperature=complete_request_settings.temperature,
-        top_p=complete_request_settings.top_p,
+        temperature=complete_prompt_execution_settings.temperature,
+        top_p=complete_prompt_execution_settings.top_p,
         prompt=prompt,
         echo=False,
     )

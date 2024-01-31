@@ -3,12 +3,12 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import Field, field_validator, model_validator
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger = logging.getLogger(__name__)
 
 
-class OpenAIRequestSettings(AIRequestSettings):
+class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     """Common request settings for (Azure) OpenAI services."""
 
     ai_model_id: Optional[str] = Field(None, serialization_alias="model")
@@ -25,7 +25,7 @@ class OpenAIRequestSettings(AIRequestSettings):
     user: Optional[str] = None
 
 
-class OpenAITextRequestSettings(OpenAIRequestSettings):
+class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the completions endpoint."""
 
     prompt: Optional[str] = None
@@ -35,7 +35,7 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
     suffix: Optional[str] = None
 
     @model_validator(mode="after")
-    def check_best_of_and_n(self) -> "OpenAITextRequestSettings":
+    def check_best_of_and_n(self) -> "OpenAITextPromptExecutionSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
         if self.best_of is not None and self.best_of < self.number_of_responses:
             raise ValueError(
@@ -50,7 +50,7 @@ class OpenAITextRequestSettings(OpenAIRequestSettings):
         return self
 
 
-class OpenAIChatRequestSettings(OpenAIRequestSettings):
+class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
     response_format: Optional[Dict[Literal["type"], Literal["text", "json_object"]]] = None
@@ -70,7 +70,7 @@ class OpenAIChatRequestSettings(OpenAIRequestSettings):
         return v
 
 
-class OpenAIEmbeddingRequestSettings(AIRequestSettings):
+class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     input: Optional[Union[str, List[str], List[int], List[List[int]]]] = None
     ai_model_id: Optional[str] = Field(None, serialization_alias="model")
     encoding_format: Optional[Literal["float", "base64"]] = None
