@@ -1,6 +1,7 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.azure.core.exception.HttpResponseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.AIService;
@@ -8,6 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -15,15 +17,17 @@ import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderingEvent;
 import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,12 +93,27 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         );
     }
 
+    @SuppressWarnings("unchecked")
     private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
-        KernelHooks kernelHooks,
-        ContextVariableType<T> variableType) {
+        InvocationContext invocationContext) {
 
+        // variableType must be effectively final for lambda
+        final ContextVariableType<T> variableType;
+        try {
+            // unchecked
+            variableType = (ContextVariableType<T>)invocationContext.getFunctionReturnType();
+        } catch (ClassCastException e) {
+            throw new SKException("FunctionResult type is not compatible with the ContextVariableType", e);
+        }
+
+        // must be effectively final for lambda
+        KernelHooks kernelHooks = invocationContext.getKernelHooks() != null 
+            ? invocationContext.getKernelHooks() 
+            : kernel.getGlobalKernelHooks();
+        assert kernelHooks != null : "getGlobalKernelHooks() should never return null";
+
+        KernelFunctionArguments arguments = invocationContext.getKernelFunctionArguments();
         PromptRenderingEvent preRenderingHookResult = kernelHooks
             .executeHooks(new PromptRenderingEvent(this, arguments));
 
@@ -105,7 +124,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 PromptRenderedEvent promptHookResult = kernelHooks
                     .executeHooks(new PromptRenderedEvent(this, arguments, prompt));
                 prompt = promptHookResult.getPrompt();
-                KernelArguments args = promptHookResult.getArguments();
+                KernelFunctionArguments args = promptHookResult.getArguments();
 
                 LOGGER.info("RENDERED PROMPT: \n{}", prompt);
 
@@ -113,7 +132,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                     .executeHooks(new FunctionInvokingEvent(this, args));
                 args = updateArguments.getArguments();
 
-                AIServiceSelection aiServiceSelection = kernel
+                AIServiceSelection<?> aiServiceSelection = kernel
                     .getServiceSelector()
                     .trySelectAIService(
                         TextAIService.class,
@@ -121,7 +140,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                         args
                     );
 
-                AIService client = aiServiceSelection.getService();
+                AIService client = aiServiceSelection != null ? aiServiceSelection.getService() : null;
                 if (client == null) {
                     throw new IllegalStateException(
                         "Failed to initialise aiService, could not find any TextAIService implementations");
@@ -129,7 +148,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
                 Flux<FunctionResult<T>> result;
 
-                PromptExecutionSettings executionSettings = aiServiceSelection.getSettings();
+                // settings from prompt or use default
+                PromptExecutionSettings executionSettings = aiServiceSelection != null ? aiServiceSelection.getSettings() : PromptExecutionSettings.builder().build();
 
                 if (client instanceof ChatCompletionService) {
                     result = ((ChatCompletionService) client)
@@ -254,25 +274,26 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
-        @Nullable KernelHooks kernelHooks,
-        ContextVariableType<T> variableType) {
-        if (kernelHooks == null) {
-            kernelHooks = kernel.getHookService();
-        }
-        return invokeInternalAsync(kernel, arguments, kernelHooks, variableType)
-            .take(1)
-            .single();
+        InvocationContext invocationContext) {
+
+        // two calls so compiler isn't confused about invokeInternalAsync return type
+        Flux<FunctionResult<T>> result = invokeInternalAsync(kernel, invocationContext);
+        return result.take(1).single();
     }
 
     @Override
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
+        @Nullable KernelFunctionArguments arguments,
         ContextVariableType<T> variableType) {
-        return invokeAsync(kernel, arguments, null, variableType);
+            InvocationContext invocationContext = InvocationContext.builder()
+                .withKernelFunctionArguments(arguments)
+                .withFunctionReturnType(variableType)
+                .build();
+            return invokeAsync(kernel, invocationContext);
     }
 
 
@@ -291,8 +312,10 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             if (jsonNode != null) {
                 return invokeFunction(kernel, jsonNode);
             }
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             LOGGER.error("Failed to parse json", e);
+        } catch (Exception e) {
+            LOGGER.error("Failed to invoke tool", e);
         }
         return Mono.empty();
     }
@@ -321,7 +344,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                     paramValue);
                 variables.put(paramName, contextVariable);
             });
-            KernelArguments arguments = KernelArguments.builder().withVariables(variables).build();
+            KernelFunctionArguments arguments = KernelFunctionArguments.builder().withVariables(variables).build();
             return kernelFunction.invokeAsync(kernel, arguments, variableType);
         }
         return Mono.empty();

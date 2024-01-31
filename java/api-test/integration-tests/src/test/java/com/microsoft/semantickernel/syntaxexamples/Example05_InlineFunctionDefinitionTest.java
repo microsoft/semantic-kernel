@@ -9,8 +9,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
@@ -68,7 +68,7 @@ public class Example05_InlineFunctionDefinitionTest {
         WireMockUtil.mockCompletionResponse("I missed the F1 final race", "a-response");
 
         var result = kernel.invokeAsync(excuseFunction,
-                KernelArguments.builder()
+                KernelFunctionArguments.builder()
                     .withInput("I missed the F1 final race")
                     .build(),
                 String.class)
@@ -79,7 +79,7 @@ public class Example05_InlineFunctionDefinitionTest {
         WireMockUtil.mockCompletionResponse("sorry I forgot your birthday", "a-response-2");
 
         result = kernel.invokeAsync(excuseFunction,
-                KernelArguments.builder()
+                KernelFunctionArguments.builder()
                     .withInput("sorry I forgot your birthday")
                     .build(),
                 String.class)

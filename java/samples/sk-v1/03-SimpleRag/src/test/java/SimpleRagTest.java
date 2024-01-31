@@ -4,9 +4,9 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
@@ -86,7 +86,7 @@ public class SimpleRagTest {
             FunctionResult<String> result = kernel
                 .invokeAsync(
                     chatFunction,
-                    KernelArguments.builder()
+                    KernelFunctionArguments.builder()
                         .withVariable("messages", chatHistory)
                         .withVariable("persona",
                             "You are a snarky (yet helpful) teenage assistant. Make sure to use hip slang in every response.")

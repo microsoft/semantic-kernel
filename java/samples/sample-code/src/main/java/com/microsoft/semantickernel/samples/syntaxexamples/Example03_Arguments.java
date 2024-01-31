@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import java.util.Locale;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import java.util.Locale;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -45,11 +47,10 @@ public class Example03_Arguments {
         KernelPlugin functionCollection =
             KernelPluginFactory.createFromObject(new StaticTextSkill(), "text");
 
-        KernelArguments arguments = KernelArguments.builder()
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
             .withInput("Today is: ")
-            .build()
-            .writableClone()
-            .setVariable("day", "Monday");
+            .withVariable("day", "Monday")
+            .build();
 
         FunctionResult<String> resultValue = kernel.invokeAsync(
                 functionCollection.get("AppendDay"),

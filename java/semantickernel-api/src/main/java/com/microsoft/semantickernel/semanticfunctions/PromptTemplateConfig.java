@@ -131,13 +131,13 @@ public class PromptTemplateConfig {
         );
     }
 
-    public List<KernelParameterMetadata> getKernelParametersMetadata() {
+    public List<KernelParameterMetadata<?>> getKernelParametersMetadata() {
         if (inputVariables == null) {
             return Collections.emptyList();
         }
         return inputVariables
             .stream()
-            .map(inputVariable -> new KernelParameterMetadata(
+            .map(inputVariable -> new KernelParameterMetadata<>(
                 inputVariable.getName(),
                 inputVariable.getDescription(),
                 null,

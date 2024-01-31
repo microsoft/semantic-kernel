@@ -13,7 +13,7 @@ public class KernelFunctionMetadata {
     /// <summary>The description of the function.</summary>
     private final String description;
     /// <summary>The function's parameters.</summary>
-    private final List<KernelParameterMetadata> parameters;
+    private final List<KernelParameterMetadata<?>> parameters;
 
 
     /// <summary>The function's return parameter.</summary>
@@ -23,7 +23,7 @@ public class KernelFunctionMetadata {
     public KernelFunctionMetadata(
         String name,
         String description,
-        List<KernelParameterMetadata> parameters,
+        List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<?> returnParameter) {
         this.name = name;
         this.description = description;
@@ -35,7 +35,7 @@ public class KernelFunctionMetadata {
         return name;
     }
 
-    public List<KernelParameterMetadata> getParameters() {
+    public List<KernelParameterMetadata<?>> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 

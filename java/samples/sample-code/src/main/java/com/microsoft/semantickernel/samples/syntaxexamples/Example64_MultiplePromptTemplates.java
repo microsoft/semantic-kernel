@@ -7,7 +7,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.AggregatorPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -77,7 +77,7 @@ public class Example64_MultiplePromptTemplates {
             .withPromptTemplateFactory(templateFactory)
             .build();
 
-        var arguments = KernelArguments.builder()
+        var arguments = KernelFunctionArguments.builder()
             .withVariable("name", "Bob")
             .build();
 

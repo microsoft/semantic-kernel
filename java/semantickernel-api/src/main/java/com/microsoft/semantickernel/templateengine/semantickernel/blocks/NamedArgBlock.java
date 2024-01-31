@@ -3,7 +3,8 @@ package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 import static com.microsoft.semantickernel.templateengine.semantickernel.blocks.BlockTypes.NamedArg;
 
 import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     @Nullable
     @Override
-    public String render(KernelArguments variables) {
+    public String render(KernelFunctionArguments variables) {
         return getContent();
     }
 
@@ -88,7 +89,7 @@ public class NamedArgBlock extends Block implements TextRendering {
         return name;
     }
 
-    public String getValue(KernelArguments arguments) {
+    public String getValue(KernelFunctionArguments arguments) {
         boolean valueIsValidValBlock = this.valBlock != null && this.valBlock.isValid();
         if (valueIsValidValBlock) {
             return this.valBlock.render(arguments);

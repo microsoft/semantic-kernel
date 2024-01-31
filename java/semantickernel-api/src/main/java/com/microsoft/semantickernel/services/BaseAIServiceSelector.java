@@ -2,7 +2,8 @@ package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
         KernelFunction function,
 
         @Nullable
-        KernelArguments arguments
+        KernelFunctionArguments arguments
     ) {
         return trySelectAIService(serviceType, function, arguments, services);
     }
@@ -39,6 +40,6 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
         KernelFunction function,
 
         @Nullable
-        KernelArguments arguments,
+        KernelFunctionArguments arguments,
         Map<Class<? extends AIService>, AIService> services);
 }

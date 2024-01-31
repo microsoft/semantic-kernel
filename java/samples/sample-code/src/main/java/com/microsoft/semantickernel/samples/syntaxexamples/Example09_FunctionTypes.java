@@ -8,10 +8,10 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
@@ -121,7 +121,7 @@ public class Example09_FunctionTypes {
         kernel
             .invokeAsync(
                 plugin.get("InputDateTimeWithStringResult"),
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable("currentDate",
                         ContextVariable.of(
@@ -136,7 +136,7 @@ public class Example09_FunctionTypes {
         kernel.invokeAsync(plugin.get("NoInputTaskWithStringResult"), null, String.class).block();
 
         kernel.invokeAsync(plugin.get("MultipleInputsWithVoidResult"),
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable("x", "x string")
                     .withVariable("y", 100)
@@ -147,7 +147,7 @@ public class Example09_FunctionTypes {
 
         kernel
             .invokeAsync(plugin.get("ComplexInputWithStringResult"),
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable(
                         "complexObject",
@@ -167,7 +167,7 @@ public class Example09_FunctionTypes {
 
         kernel
             .invokeAsync(plugin.get("InputStringTaskWithStringResult"),
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable("echoInput", "return this")
                     .build(),
@@ -176,7 +176,7 @@ public class Example09_FunctionTypes {
 
         kernel
             .invokeAsync(plugin.get("InputStringTaskWithVoidResult"),
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable("x", "x input")
                     .build(),

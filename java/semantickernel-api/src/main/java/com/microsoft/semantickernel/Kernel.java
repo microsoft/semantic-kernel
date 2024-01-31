@@ -39,12 +39,12 @@ public class Kernel implements Buildable {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
-    private final KernelHooks kernelHooks;
+    private final KernelHooks globalKernelHooks;
 
     public Kernel(
         AIServiceSelector serviceSelector,
         @Nullable KernelPluginCollection plugins,
-        @Nullable KernelHooks kernelHooks) {
+        @Nullable KernelHooks globalKernelHooks) {
         this.serviceSelector = serviceSelector;
 
         if (plugins != null) {
@@ -53,7 +53,7 @@ public class Kernel implements Buildable {
             this.plugins = new KernelPluginCollection();
         }
 
-        this.kernelHooks = new KernelHooks(kernelHooks);
+        this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
@@ -137,8 +137,8 @@ public class Kernel implements Buildable {
 
 
     @SuppressFBWarnings("EI_EXPOSE_REP")
-    public KernelHooks getHookService() {
-        return kernelHooks;
+    public KernelHooks getGlobalKernelHooks() {
+        return globalKernelHooks;
     }
 
     public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
@@ -158,7 +158,7 @@ public class Kernel implements Buildable {
 
     // Add the global hooks to the invocation context hooks.
     private KernelHooks mergeInGlobalHooks(@Nullable KernelHooks invocationContextHooks) {
-        KernelHooks globalKernelHooks = this.kernelHooks;
+        KernelHooks globalKernelHooks = this.globalKernelHooks;
         if (globalKernelHooks == null) {
             return null;
         }

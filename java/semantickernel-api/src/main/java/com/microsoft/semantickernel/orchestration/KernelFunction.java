@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
@@ -94,6 +95,8 @@ public interface KernelFunction extends Buildable {
         Kernel kernel,
         InvocationContext invocationContext);
 
+    @Nullable
+    Map<String, PromptExecutionSettings> getExecutionSettings();
 
     interface FromPromptBuilder {
 
@@ -103,6 +106,12 @@ public interface KernelFunction extends Buildable {
 
         FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
 
+        FromPromptBuilder withExecutionSettings(
+            Map<String, PromptExecutionSettings> executionSettings);
+
+        FromPromptBuilder withDefaultExecutionSettings(
+            PromptExecutionSettings executionSettings);
+            
         FromPromptBuilder withDescription(String description);
 
         FromPromptBuilder withTemplate(String template);

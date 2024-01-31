@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
+import java.util.Objects;
+
+import com.microsoft.semantickernel.exceptions.SKException;
+
 public class ContextVariable<T> {
 
     private final ContextVariableType<T> type;
@@ -16,10 +20,10 @@ public class ContextVariable<T> {
     }
 
     public <U> U getValue(Class<U> clazz) {
-        if (clazz.isAssignableFrom(value.getClass())) {
-            return (U) value;
-        } else {
-            throw new RuntimeException("Cannot cast " + value.getClass() + " to " + clazz);
+        try {
+            return clazz.cast(value);
+        } catch (ClassCastException e) {
+            throw new SKException("Cannot convert value to " + clazz, e);
         }
     }
 
@@ -46,12 +50,20 @@ public class ContextVariable<T> {
 
     @SuppressWarnings("unchecked")
     public static <T> ContextVariable<T> of(T value) {
+        Objects.requireNonNull(value, "value cannot be null");
+
+        if (value instanceof ContextVariable) {
+            return (ContextVariable<T>) value;
+        }
+
         ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(
             (Class<T>) value.getClass());
         return new ContextVariable<>(type, value);
     }
 
     public static <T> ContextVariable<T> of(T value, ContextVariableTypeConverter<T> converter) {
+        Objects.requireNonNull(value, "value cannot be null");
+        Objects.requireNonNull(converter, "converter cannot be null");
         ContextVariableType<T> type = new ContextVariableType<>(converter, converter.getType());
         return new ContextVariable<>(type, value);
     }

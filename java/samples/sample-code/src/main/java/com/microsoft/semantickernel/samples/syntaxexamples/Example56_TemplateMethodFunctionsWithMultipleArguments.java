@@ -7,10 +7,10 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.plugins.text.TextPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -52,7 +52,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
 
         System.out.println("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
-        var arguments = KernelArguments.builder()
+        var arguments = KernelFunctionArguments.builder()
             .withVariable("word2", " Potter")
             .build();
 

@@ -31,12 +31,13 @@ import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -279,7 +280,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return Mono.empty();
         }
 
-        KernelArguments arguments = null;
+        KernelFunctionArguments arguments = null;
         if (parameters != null) {
             Map<String, ContextVariable<?>> variables = new HashMap<>();
             parameters.fields().forEachRemaining(entry -> {
@@ -288,7 +289,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 ContextVariable<?> contextVariable = ContextVariable.of(paramValue);
                 variables.put(paramName, contextVariable);
             });
-            arguments = KernelArguments.builder().withVariables(variables).build();
+            arguments = KernelFunctionArguments.builder().withVariables(variables).build();
         }
         ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
             String.class);

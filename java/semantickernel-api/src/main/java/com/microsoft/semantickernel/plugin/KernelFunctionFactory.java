@@ -1,18 +1,20 @@
 package com.microsoft.semantickernel.plugin;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 public class KernelFunctionFactory {
 
@@ -30,7 +32,7 @@ public class KernelFunctionFactory {
         Method method,
         @Nullable String functionName,
         @Nullable String description,
-        List<KernelParameterMetadata> parameters,
+        List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<?> returnParameter) {
         return createFromMethod(
             method,
@@ -58,7 +60,7 @@ public class KernelFunctionFactory {
         @Nullable Object target,
         @Nullable String functionName,
         @Nullable String description,
-        @Nullable List<KernelParameterMetadata> parameters,
+        @Nullable List<KernelParameterMetadata<?>> parameters,
         @Nullable KernelReturnParameterMetadata<?> returnParameter) {
         return KernelFunctionFromMethod.create(method, target, functionName, description,
             parameters, returnParameter);

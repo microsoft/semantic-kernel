@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
@@ -95,7 +96,7 @@ public class ContextVariableTypes {
             .filter(c -> c.getClazz().isAssignableFrom(aClass))
             .findFirst()
             .orElseThrow(
-                () -> new RuntimeException("Unknown context variable type: " + aClass.getName()));
+                () -> new SKException("Unknown context variable type: " + aClass.getName()));
 
     }
 }

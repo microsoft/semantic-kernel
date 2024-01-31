@@ -1,28 +1,5 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
-import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
-
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
-import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
-import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
-import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
-import com.microsoft.semantickernel.orchestration.MethodDetails;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -34,9 +11,36 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
+import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.DefaultKernelFunction;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
+import com.microsoft.semantickernel.orchestration.MethodDetails;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
+
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -50,7 +54,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         ImplementationFunc implementationFunc,
         String functionName,
         String description,
-        List<KernelParameterMetadata> parameters,
+        List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<?> returnParameter) {
         super(
             new KernelFunctionMetadata(
@@ -67,23 +71,20 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     @Override
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
+        @Nullable KernelFunctionArguments arguments,
         ContextVariableType<T> variableType) {
-        return function.invoke(kernel, this, arguments, kernel.getHookService());
+        InvocationContext invocationContext = InvocationContext.builder()
+            .withKernelFunctionArguments(arguments)
+            .withFunctionReturnType(variableType)
+            .build();
+        return invokeAsync(kernel, invocationContext);
     }
 
     @Override
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
-        @Nullable KernelHooks kernelHooks,
-        ContextVariableType<T> variableType) {
-
-        if (kernelHooks == null) {
-            kernelHooks = kernel.getHookService();
-        }
-
-        return function.invoke(kernel, this, arguments, kernelHooks);
+        InvocationContext invocationContext) {
+        return function.invoke(kernel, this, invocationContext);
     }
 
     public interface ImplementationFunc {
@@ -91,9 +92,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         <T> Mono<FunctionResult<T>> invoke(
             Kernel kernel,
             KernelFunction function,
-            @Nullable
-            KernelArguments arguments,
-            KernelHooks kernelHooks);
+            InvocationContext invocationContext);
     }
 
 
@@ -102,7 +101,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         Object target,
         String functionName,
         String description,
-        List<KernelParameterMetadata> parameters,
+        List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
@@ -152,6 +151,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     }
 
 
+    @SuppressWarnings("unchecked")
     private static ImplementationFunc getFunction(Method method, Object instance) {
 
         return new ImplementationFunc() {
@@ -159,14 +159,29 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             public <T> Mono<FunctionResult<T>> invoke(
                 Kernel kernel,
                 KernelFunction function,
-                @Nullable
-                KernelArguments arguments,
-                KernelHooks kernelHooks) {
+                InvocationContext invocationContext) {
 
-                FunctionInvokingEvent updatedState = kernelHooks
+        // variableType must be effectively final for lambda
+        final ContextVariableType<T> variableType;
+        try {
+            // unchecked
+            variableType = (ContextVariableType<T>)invocationContext.getFunctionReturnType();
+        } catch (ClassCastException e) {
+            throw new SKException("FunctionResult type is not compatible with the ContextVariableType", e);
+        }
+
+        // must be effectively final for lambda
+        KernelHooks kernelHooks = invocationContext.getKernelHooks() != null 
+            ? invocationContext.getKernelHooks() 
+            : kernel.getGlobalKernelHooks();
+        assert kernelHooks != null : "getGlobalKernelHooks() should never return null";
+
+        KernelFunctionArguments arguments = invocationContext.getKernelFunctionArguments();
+
+        FunctionInvokingEvent updatedState = kernelHooks
                     .executeHooks(
                         new FunctionInvokingEvent(function, arguments));
-                KernelArguments updatedArguments = updatedState.getArguments();
+        KernelFunctionArguments updatedArguments = updatedState.getArguments();
 
                 try {
                     List<Object> args =
@@ -242,10 +257,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
     private static Function<Parameter, Object> getParameters(
         Method method,
         @Nullable
-        KernelArguments context,
+        KernelFunctionArguments context,
         Kernel kernel) {
         return parameter -> {
-            if (KernelArguments.class.isAssignableFrom(parameter.getType())) {
+            if (KernelFunctionArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
             } else {
                 return getArgumentValue(method, context, parameter, kernel);
@@ -255,7 +270,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
     private static Object getArgumentValue(
         Method method,
-        @Nullable KernelArguments context,
+        @Nullable KernelFunctionArguments context,
         Parameter parameter,
         Kernel kernel) {
         String variableName = getGetVariableName(parameter);
@@ -489,7 +504,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
         return params;
     }
 
-    private static List<KernelParameterMetadata> getParameters(Method method) {
+    private static List<KernelParameterMetadata<?>> getParameters(Method method) {
         return
             Arrays.stream(method
                     .getParameters())
@@ -497,7 +512,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 .collect(Collectors.toList());
     }
 
-    private static KernelParameterMetadata toKernelParameterMetadata(Parameter parameter) {
+    private static KernelParameterMetadata<?> toKernelParameterMetadata(Parameter parameter) {
         KernelFunctionParameter annotation = parameter.getAnnotation(
             KernelFunctionParameter.class);
 
@@ -513,7 +528,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
             isRequired = annotation.required();
         }
 
-        return new KernelParameterMetadata(
+        return new KernelParameterMetadata<>(
             name,
             description,
             null,

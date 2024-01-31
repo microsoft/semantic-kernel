@@ -8,8 +8,8 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugins.web.WebSearchEnginePlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -82,7 +82,7 @@ public class Example07_BingAndGooglePlugins {
 
         // Run
         var question = "What's the largest building in the world?";
-        var kernelArguments = KernelArguments.builder()
+        var kernelArguments = KernelFunctionArguments.builder()
             .withVariable("query", question)
             .build();
         
@@ -160,7 +160,7 @@ public class Example07_BingAndGooglePlugins {
             .withDefaultExecutionSettings(promptExecutionSettings)
             .build();
 
-        var kernelArguments = KernelArguments.builder()
+        var kernelArguments = KernelFunctionArguments.builder()
             .withVariable("question", question)
             .withVariable("externalInformation", "")
             .build();
@@ -181,7 +181,7 @@ public class Example07_BingAndGooglePlugins {
             System.out.println("Information found:");
             System.out.println(information);
 
-            kernelArguments = KernelArguments.builder()
+            kernelArguments = KernelFunctionArguments.builder()
                 .withVariable("question", question)
                 .withVariable("externalInformation", information)
                 .build();

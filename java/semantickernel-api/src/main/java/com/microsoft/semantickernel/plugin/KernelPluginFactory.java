@@ -1,5 +1,24 @@
 package com.microsoft.semantickernel.plugin;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -13,22 +32,6 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class KernelPluginFactory {
 
@@ -52,7 +55,7 @@ public class KernelPluginFactory {
             .map(method -> {
                 DefineKernelFunction annotation = method.getAnnotation(DefineKernelFunction.class);
                 Class<?> returnType = getReturnType(annotation, method);
-                KernelReturnParameterMetadata kernelReturnParameterMetadata = new KernelReturnParameterMetadata(
+                KernelReturnParameterMetadata<?> kernelReturnParameterMetadata = new KernelReturnParameterMetadata<>(
                     annotation.returnDescription(),
                     returnType);
 
@@ -132,14 +135,14 @@ public class KernelPluginFactory {
     }
 
 
-    private static List<KernelParameterMetadata> getParameters(Method method) {
+    private static List<KernelParameterMetadata<?>> getParameters(Method method) {
         return Arrays.stream(method.getParameters())
             .filter(parameter -> parameter.isAnnotationPresent(KernelFunctionParameter.class))
             .map(parameter -> {
                 KernelFunctionParameter annotation = parameter.getAnnotation(
                     KernelFunctionParameter.class);
 
-                return new KernelParameterMetadata(annotation.name(), annotation.description(),
+                return new KernelParameterMetadata<>(annotation.name(), annotation.description(),
                     null, annotation.defaultValue(), annotation.required());
             }).collect(Collectors.toList());
     }

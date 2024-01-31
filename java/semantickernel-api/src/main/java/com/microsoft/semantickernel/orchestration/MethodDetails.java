@@ -1,26 +1,27 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
 
 public class MethodDetails {
 
     private final String name;
     private final String description;
     private final ImplementationFunc function;
-    private final List<KernelParameterMetadata> parameters;
-    private final KernelReturnParameterMetadata returnParameter;
+    private final List<KernelParameterMetadata<?>> parameters;
+    private final KernelReturnParameterMetadata<?> returnParameter;
 
     public MethodDetails(
         String name,
         String description,
         ImplementationFunc function,
-        List<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) {
+        List<KernelParameterMetadata<?>> parameters,
+        KernelReturnParameterMetadata<?> returnParameter) {
         this.name = name;
         this.description = description;
         this.function = function;
@@ -40,11 +41,11 @@ public class MethodDetails {
         return function;
     }
 
-    public List<KernelParameterMetadata> getParameters() {
+    public List<KernelParameterMetadata<?>> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
-    public KernelReturnParameterMetadata getReturnParameter() {
+    public KernelReturnParameterMetadata<?> getReturnParameter() {
         return returnParameter;
     }
 }

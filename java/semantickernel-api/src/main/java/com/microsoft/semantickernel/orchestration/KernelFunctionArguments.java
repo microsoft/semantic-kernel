@@ -169,7 +169,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
         return variables.entrySet();
     }
     
-    static Builder builder() {
+    public static Builder builder() {
         return new KernelFunctionArguments.Builder();
     }
 
@@ -192,8 +192,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @return {$code this} Builder for fluent coding
          */
         public <T> Builder withInput(ContextVariable<T> content) {
-            variables.put(MAIN_KEY, content);
-            return this;
+            return withVariable(MAIN_KEY, content);
         }
 
         /**
@@ -226,10 +225,9 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @return {$code this} Builder for fluent coding
          */
         public <T> Builder withVariable(String key, ContextVariable<T> value) {
-            variables.put(key, ContextVariable.of(value));
+            variables.put(key, value);
             return this;
         }
-
 
         /**
          * Set variable
@@ -240,8 +238,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @throws SKException if the value cannot be converted to a ContextVariable
          */
         public Builder withVariable(String key, Object value) {
-            variables.put(key, ContextVariable.of(value));
-            return this;
+            return withVariable(key, ContextVariable.of(value));
         }
 
         @Override

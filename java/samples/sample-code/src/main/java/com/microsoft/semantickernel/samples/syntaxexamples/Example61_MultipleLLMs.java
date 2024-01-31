@@ -7,8 +7,8 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
@@ -72,7 +72,7 @@ public class Example61_MultipleLLMs {
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelArguments arguments = KernelArguments.builder().build();
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
         KernelFunction func = KernelFunctionFromPrompt
             .builder()
@@ -104,7 +104,7 @@ public class Example61_MultipleLLMs {
                         .build()
                 )
                 .build(),
-            KernelArguments.builder().build(),
+            KernelFunctionArguments.builder().build(),
             String.class
         ).block();
 
@@ -137,7 +137,7 @@ public class Example61_MultipleLLMs {
 
         var result = kernel.invokeAsync(
                 function,
-                KernelArguments.builder().build(),
+                KernelFunctionArguments.builder().build(),
                 String.class)
             .block();
 

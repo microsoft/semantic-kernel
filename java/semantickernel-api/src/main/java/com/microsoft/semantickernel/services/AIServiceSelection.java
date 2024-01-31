@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 
 /**
  * The result of an AI service selection.
+ * @param <T> The type of AI service.
  */
 public class AIServiceSelection<T extends AIService> {
 

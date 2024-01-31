@@ -4,7 +4,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
@@ -128,7 +128,7 @@ public class ConversationSummaryPlugin {
             .concatMap(paragraph -> {
                 // The first parameter is the input text.
                 return func.invokeAsync(kernel,
-                    new DefaultKernelArguments.Builder()
+                    new KernelFunctionArguments.Builder()
                         .withInput(paragraph)
                         .build(),
                     ContextVariableTypes.getDefaultVariableTypeForClass(String.class));

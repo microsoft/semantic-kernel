@@ -2,7 +2,7 @@
 
 package com.microsoft.semantickernel.syntaxexamples;
 
-import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.plugins.text.TextPlugin;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
