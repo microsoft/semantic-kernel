@@ -216,7 +216,7 @@ public class Example09_FunctionTypes {
         // | T                  | T                             | T                      |
         // | T                  | T                             | V converted from T     |
 
-        // | T                  | U extends T                   | T                      | This effectively requires a downcast...should we support this?
+        // | T                  | U extends T                   | T                      |
         // | T                  | U extends T                   | U                      |
         // | T                  | U extends T                   | V converted from U     |
 
@@ -234,15 +234,12 @@ public class Example09_FunctionTypes {
             .block();
         System.out.println(result.getResult());
 
-        // Potentially unsupported scenario as it requires a downcast
-        /*
-        x = kernel
+        result = kernel
             .invokeAsync(plugin.get("conversionScenarioB"),
                 null,
                 OffsetDateTime.class)
             .block();
-        System.out.println(x.getResult());
-         */
+        System.out.println(result.getResult());
 
         result = kernel
             .invokeAsync(plugin.get("conversionScenarioB"),
