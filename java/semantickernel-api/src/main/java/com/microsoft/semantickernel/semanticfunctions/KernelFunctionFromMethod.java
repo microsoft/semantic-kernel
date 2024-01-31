@@ -89,29 +89,33 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         return function
             .invoke(kernel, this, arguments, kernelHooks)
-            .map(it -> {
-                if (variableType != null) {
-                    return new FunctionResult<>(
-                        variableType.of(it.getResult()),
-                        it.getMetadata());
-                } else {
-                    Object result = it.getResult();
-                    if (result != null && getMetadata().getReturnParameter().getParameterType()
-                        .isAssignableFrom(result.getClass())) {
-                        return new FunctionResult<>(
-                            new ContextVariable<>(
-                                new ContextVariableType<>(
-                                    new NoopConverter(
-                                        getMetadata().getReturnParameter().getParameterType()),
-                                    getMetadata().getReturnParameter().getParameterType()
-                                ),
-                                it.getResult())
-                        );
-                    }
-                    throw new RuntimeException("Unable to convert result to type: "
-                        + getMetadata().getReturnParameter().getParameterType().getName());
-                }
-            });
+            .map(it -> convertVariableToReturnType(variableType, it));
+    }
+
+    private <T> FunctionResult convertVariableToReturnType(
+        @Nullable ContextVariableType<T> variableType,
+        FunctionResult<Object> it) {
+        if (variableType != null) {
+            return new FunctionResult<>(
+                variableType.of(it.getResult()),
+                it.getMetadata());
+        } else {
+            Object result = it.getResult();
+            if (result != null && getMetadata().getReturnParameter().getParameterType()
+                .isAssignableFrom(result.getClass())) {
+                return new FunctionResult<>(
+                    new ContextVariable<>(
+                        new ContextVariableType<>(
+                            new NoopConverter(
+                                getMetadata().getReturnParameter().getParameterType()),
+                            getMetadata().getReturnParameter().getParameterType()
+                        ),
+                        it.getResult())
+                );
+            }
+            throw new RuntimeException("Unable to convert result to type: "
+                + getMetadata().getReturnParameter().getParameterType().getName());
+        }
     }
 
     public interface ImplementationFunc {

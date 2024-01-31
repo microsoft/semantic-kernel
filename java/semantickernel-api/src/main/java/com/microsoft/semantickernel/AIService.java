@@ -59,6 +59,7 @@ public interface AIService {
         return getAttribute(this, API_VERSION_KEY);
     }
 
+    @Nullable
     String getServiceId();
 
     /// <summary>

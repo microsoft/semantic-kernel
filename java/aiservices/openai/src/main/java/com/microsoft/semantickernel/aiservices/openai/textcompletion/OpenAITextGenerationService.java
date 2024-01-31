@@ -25,6 +25,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
     private final OpenAIAsyncClient client;
     private final Map<String, ContextVariable<?>> attributes;
+    @Nullable
     private final String serviceId;
 
     /// <summary>
@@ -39,6 +40,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
     public OpenAITextGenerationService(
         OpenAIAsyncClient client,
         String modelId,
+        @Nullable
         String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
@@ -56,13 +58,16 @@ public class OpenAITextGenerationService implements TextGenerationService {
     }
 
     @Override
+    @Nullable
     public String getServiceId() {
         return serviceId;
     }
 
     @Override
-    public Mono<List<TextContent>> getTextContentsAsync(String prompt,
-        @Nullable PromptExecutionSettings executionSettings, @Nullable Kernel kernel) {
+    public Mono<List<TextContent>> getTextContentsAsync(
+        String prompt,
+        @Nullable PromptExecutionSettings executionSettings,
+        @Nullable Kernel kernel) {
         return this.internalCompleteTextAsync(prompt, executionSettings);
     }
 
@@ -79,6 +84,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
     protected Mono<List<TextContent>> internalCompleteTextAsync(
         String text,
+        @Nullable
         PromptExecutionSettings requestSettings) {
 
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
@@ -119,7 +125,9 @@ public class OpenAITextGenerationService implements TextGenerationService {
     }
 
     private CompletionsOptions getCompletionsOptions(
-        String text, PromptExecutionSettings requestSettings) {
+        String text,
+        @Nullable
+        PromptExecutionSettings requestSettings) {
         if (requestSettings == null) {
             return new CompletionsOptions(Collections.singletonList(text))
                 .setMaxTokens(PromptExecutionSettings.DEFAULT_MAX_TOKENS);
@@ -146,12 +154,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
                 .setUser(requestSettings.getUser())
                 .setBestOf(requestSettings.getBestOf())
                 .setLogitBias(new HashMap<>());
-/*
-        if (requestSettings instanceof ChatRequestSettings) {
-            options = options.setStop(requestSettings.getStopSequences());
-        }
-
- */
         return options;
     }
 
