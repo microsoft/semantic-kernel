@@ -16,14 +16,13 @@ from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.contents import (
     AzureChatMessageContent,
     AzureStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
-    AzureChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
@@ -35,6 +34,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.models.chat.chat_role import ChatRole
 from semantic_kernel.models.chat.finish_reason import FinishReason
@@ -273,9 +273,9 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             default_headers=settings.get("default_headers"),
         )
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
-        return AzureChatRequestSettings
+        return AzureChatPromptExecutionSettings
 
     def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]

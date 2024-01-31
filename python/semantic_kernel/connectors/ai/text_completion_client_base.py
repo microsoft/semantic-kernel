@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.models.contents import StreamingTextContent, TextContent
 
 
@@ -16,7 +16,7 @@ class TextCompletionClientBase(ABC):
     async def complete(
         self,
         prompt: str,
-        settings: "AIRequestSettings",
+        settings: "PromptExecutionSettings",
         logger: Optional[Any] = None,
     ) -> List["TextContent"]:
         """
@@ -24,7 +24,7 @@ class TextCompletionClientBase(ABC):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
             Returns:
@@ -35,7 +35,7 @@ class TextCompletionClientBase(ABC):
     async def complete_stream(
         self,
         prompt: str,
-        settings: "AIRequestSettings",
+        settings: "PromptExecutionSettings",
         logger: Optional[Any] = None,
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
@@ -43,7 +43,7 @@ class TextCompletionClientBase(ABC):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
         Yields:

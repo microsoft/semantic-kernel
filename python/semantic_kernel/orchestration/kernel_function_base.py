@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -77,7 +77,7 @@ class KernelFunctionBase(KernelBaseModel):
 
     @property
     @abstractmethod
-    def request_settings(self) -> AIRequestSettings:
+    def prompt_execution_settings(self) -> PromptExecutionSettings:
         """AI service settings"""
         pass
 
@@ -99,7 +99,7 @@ class KernelFunctionBase(KernelBaseModel):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
     ) -> "KernelContext":
         """
         Invokes the function with an explicit string input
@@ -108,7 +108,7 @@ class KernelFunctionBase(KernelBaseModel):
             variables {ContextVariables} -- The custom input
             context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {AIRequestSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -122,7 +122,7 @@ class KernelFunctionBase(KernelBaseModel):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         **kwargs: Dict[str, Any],
     ) -> "KernelContext":
         """
@@ -132,7 +132,7 @@ class KernelFunctionBase(KernelBaseModel):
             variables {ContextVariables} -- The custom input
             context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {AIRequestSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -173,12 +173,12 @@ class KernelFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunctionBase":
+    def set_ai_configuration(self, settings: PromptExecutionSettings) -> "KernelFunctionBase":
         """
         Sets the AI completion settings used with LLM requests
 
         Arguments:
-            settings {AIRequestSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
 
         Returns:
             KernelFunctionBase -- The function instance
