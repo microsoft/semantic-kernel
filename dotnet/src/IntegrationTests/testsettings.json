@@ -18,7 +18,7 @@
   },
   "AzureOpenAIEmbeddings": {
     "ServiceId": "azure-text-embedding-ada-002",
-    "DeploymentName": "text-embedding-ada-002",
+    "DeploymentName": "ada-002",
     "Endpoint": "",
     "ApiKey": ""
   },

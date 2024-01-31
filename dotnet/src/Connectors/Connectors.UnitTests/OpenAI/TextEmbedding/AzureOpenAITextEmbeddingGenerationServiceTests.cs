@@ -106,7 +106,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => service.GenerateEmbeddingsAsync(["test"]));
-        Assert.Equal("Text embedding not found", exception.Message);
+        Assert.Equal("Expected 1 text embedding(s), but received 0", exception.Message);
     }
 
     [Fact]
