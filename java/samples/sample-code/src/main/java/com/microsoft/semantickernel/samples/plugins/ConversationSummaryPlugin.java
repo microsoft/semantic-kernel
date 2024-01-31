@@ -130,14 +130,15 @@ public class ConversationSummaryPlugin {
         return Flux.fromIterable(paragraphs)
             .concatMap(paragraph -> {
                 // The first parameter is the input text.
-                return func.invokeAsync(kernel,
-                    new DefaultKernelArguments.Builder()
-                        .withInput(paragraph)
-                        .build(),
-                    ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
+                return func
+                    .invokeAsync(kernel,
+                        new DefaultKernelArguments.Builder()
+                            .withInput(paragraph)
+                            .build(),
+                        ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
             })
             .reduce("", (acc, next) -> {
-                return acc + "\n" + next.getResultVariable();
+                return acc + "\n" + next.getResultVariable().getValue();
             });
     }
 }

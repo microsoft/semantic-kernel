@@ -242,9 +242,14 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                                 new ContextVariable(
                                     new ContextVariableType(
                                         new NoopConverter(
-                                            function.getMetadata().getReturnParameter()
-                                                .getParameterType()),
-                                        function.getMetadata().getReturnParameter()
+                                            function
+                                                .getMetadata()
+                                                .getReturnParameter()
+                                                .getParameterType()
+                                        ),
+                                        function
+                                            .getMetadata()
+                                            .getReturnParameter()
                                             .getParameterType()
                                     ),
                                     it));

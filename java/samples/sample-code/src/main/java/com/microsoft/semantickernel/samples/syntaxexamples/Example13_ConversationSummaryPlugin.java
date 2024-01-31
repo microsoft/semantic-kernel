@@ -203,7 +203,7 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        Mono<FunctionResult<String>> summary = kernel
+        FunctionResult<String> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
@@ -212,10 +212,10 @@ public class Example13_ConversationSummaryPlugin {
                     .withInput(ChatTranscript)
                     .build(),
                 String.class
-            );
+            ).block();
 
         System.out.println("Generated Summary (This may take some time):");
-        System.out.println(summary.block().getResultVariable().getValue());
+        System.out.println(summary.getResultVariable().getValue());
     }
 
     private static Kernel initializeKernel() {
