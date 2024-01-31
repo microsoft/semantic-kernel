@@ -35,7 +35,7 @@ class TestCodeBlock:
         )
 
         with raises(ValueError):
-            await target.render_code_async(context)
+            await target.render_code(context)
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
@@ -66,7 +66,7 @@ class TestCodeBlock:
         )
 
         with raises(ValueError):
-            await target.render_code_async(context)
+            await target.render_code(context)
 
     def test_it_has_the_correct_type(self):
         assert (
@@ -154,7 +154,7 @@ class TestCodeBlock:
         code_block = CodeBlock(
             content="$varName",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "foo"
 
@@ -173,7 +173,7 @@ class TestCodeBlock:
             tokens=[VarBlock(content="$varName")],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "bar"
 
@@ -188,7 +188,7 @@ class TestCodeBlock:
         code_block = CodeBlock(
             content="'ciao'",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "ciao"
 
@@ -204,7 +204,7 @@ class TestCodeBlock:
             tokens=[ValBlock(content="'arrivederci'")],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "arrivederci"
 
@@ -261,7 +261,7 @@ class TestCodeBlock:
             tokens=[func_id],
             content="",
         )
-        await code_block.render_code_async(context)
+        await code_block.render_code(context)
 
         # Check that the canary values match the original context variables
         assert canary["input"] == "zero"
@@ -324,7 +324,7 @@ class TestCodeBlock:
             tokens=[func_id, var_block],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         # Check that the result matches the custom variable value
         assert result == VAR_VALUE
@@ -376,7 +376,7 @@ class TestCodeBlock:
             tokens=[func_id, val_block],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         # Check that the result matches the value
         assert result == VALUE

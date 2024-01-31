@@ -17,6 +17,10 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
         """Add a function response message to the chat template."""
         self.messages.append(OpenAIChatMessage(role="function", name=name, fixed_content=str(content)))
 
+    def add_tool_call_response_message(self, tool_call_id: str, content: Any) -> None:
+        """Add a tool call response message to the chat template."""
+        self.messages.append(OpenAIChatMessage(role="tool", tool_call_id=tool_call_id, fixed_content=str(content)))
+
     def add_message(self, role: str, message: Optional[str] = None, **kwargs: Any) -> None:
         """Add a message to the chat template.
 
@@ -45,6 +49,34 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
                 return
             logger.warning("function_call is only used with role: assistant, ignoring")
             function_call = None
+        tool_calls = kwargs.get("tool_calls")
+        if tool_calls is not None:
+            if role == "assistant":
+                self.messages.append(
+                    OpenAIChatMessage(
+                        role=role,
+                        fixed_content=message,
+                        name=name,
+                        tool_calls=tool_calls,
+                    )
+                )
+                return
+            self._log.warning("tool_calls is only used with role: assistant, ignoring")
+            tool_calls = None
+        tool_call_id = kwargs.get("tool_call_id")
+        if tool_call_id is not None:
+            if role == "tool":
+                self.messages.append(
+                    OpenAIChatMessage(
+                        role=role,
+                        fixed_content=message,
+                        name=name,
+                        tool_call_id=tool_call_id,
+                    )
+                )
+                return
+            self._log.warning("tool_call_id is only used with role: tool, ignoring")
+            tool_call_id = None
         self.messages.append(
             OpenAIChatMessage(
                 role=role,

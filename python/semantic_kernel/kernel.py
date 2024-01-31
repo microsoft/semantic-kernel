@@ -9,13 +9,13 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -155,7 +155,7 @@ class Kernel:
 
         return function
 
-    async def run_stream_async(
+    async def run_stream(
         self,
         *functions: Any,
         input_context: Optional[KernelContext] = None,
@@ -167,12 +167,12 @@ class Kernel:
             stream_function = functions[-1]
 
             # run pipeline functions
-            context = await self.run_async(pipeline_functions, input_context, input_vars, input_str)
+            context = await self.run(pipeline_functions, input_context, input_vars, input_str)
 
         elif len(functions) == 1:
             stream_function = functions[0]
 
-            # TODO: Preparing context for function invoke can be refactored as code below are same as run_async
+            # TODO: Preparing context for function invoke can be refactored as code below are same as run
             # if the user passed in a context, prioritize it, but merge with any other inputs
             if input_context is not None:
                 context = input_context
@@ -205,7 +205,7 @@ class Kernel:
             raise ValueError("No functions passed to run")
 
         try:
-            async for stream_message in stream_function.invoke_stream_async(input=None, context=context):
+            async for stream_message in stream_function.invoke_stream(input=None, context=context):
                 yield stream_message
 
         except Exception as ex:
@@ -220,7 +220,7 @@ class Kernel:
                 "Error occurred while invoking stream function",
             )
 
-    async def run_async(
+    async def run(
         self,
         *functions: Any,
         input_context: Optional[KernelContext] = None,
@@ -431,11 +431,13 @@ class Kernel:
 
         return plugin
 
-    def get_request_settings_from_service(self, type: Type[T], service_id: Optional[str] = None) -> AIRequestSettings:
+    def get_prompt_execution_settings_from_service(
+        self, type: Type[T], service_id: Optional[str] = None
+    ) -> PromptExecutionSettings:
         """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_ai_service(type, service_id)
         service_instance = service.__closure__[0].cell_contents
-        req_settings_type = service_instance.get_request_settings_class()
+        req_settings_type = service_instance.get_prompt_execution_settings_class()
         return req_settings_type(
             service_id=service_id,
             extension_data={"ai_model_id": service_instance.ai_model_id},
@@ -637,7 +639,7 @@ class Kernel:
             )
 
         function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
-        function.request_settings.update_from_ai_request_settings(
+        function.prompt_execution_settings.update_from_prompt_execution_settings(
             function_config.prompt_template_config.execution_settings
         )
 
@@ -653,10 +655,12 @@ class Kernel:
                 if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
-            req_settings_type = service.__closure__[0].cell_contents.get_request_settings_class()
+            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
 
             function.set_chat_configuration(
-                req_settings_type.from_ai_request_settings(function_config.prompt_template_config.execution_settings)
+                req_settings_type.from_prompt_execution_settings(
+                    function_config.prompt_template_config.execution_settings
+                )
             )
 
             if service is None:
@@ -677,10 +681,12 @@ class Kernel:
                 if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
-            req_settings_type = service.__closure__[0].cell_contents.get_request_settings_class()
+            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
 
             function.set_ai_configuration(
-                req_settings_type.from_ai_request_settings(function_config.prompt_template_config.execution_settings)
+                req_settings_type.from_prompt_execution_settings(
+                    function_config.prompt_template_config.execution_settings
+                )
             )
 
             if service is None:
@@ -782,7 +788,7 @@ class Kernel:
         config = PromptTemplateConfig(
             description=(description if description is not None else "Generic function, unknown purpose"),
             type="completion",
-            execution_settings=AIRequestSettings(extension_data=kwargs),
+            execution_settings=PromptExecutionSettings(extension_data=kwargs),
         )
 
         validate_function_name(function_name)

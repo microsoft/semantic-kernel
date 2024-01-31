@@ -26,8 +26,8 @@ async def main():
     web_plugin = kernel.import_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 
     prompt = "Who is Leonardo DiCaprio's current girlfriend?"
-    search_async = web_plugin["searchAsync"]
-    result = await search_async.invoke_async(prompt)
+    search = web_plugin["searchAsync"]
+    result = await search.invoke_async(prompt)
     print(result)
 
     """

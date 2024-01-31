@@ -13,7 +13,7 @@ class SequentialPlannerConfig:
         included_functions: List[str] = None,
         max_tokens: int = 1024,
         allow_missing_functions: bool = False,
-        get_available_functions_async: Callable = None,
+        get_available_functions: Callable = None,
         get_plugin_function: Callable = None,
     ):
         self.relevancy_threshold: float = relevancy_threshold
@@ -23,5 +23,5 @@ class SequentialPlannerConfig:
         self.included_functions: List[str] = included_functions or []
         self.max_tokens: int = max_tokens
         self.allow_missing_functions: bool = allow_missing_functions
-        self.get_available_functions_async = get_available_functions_async
+        self.get_available_functions = get_available_functions
         self.get_plugin_function = get_plugin_function
