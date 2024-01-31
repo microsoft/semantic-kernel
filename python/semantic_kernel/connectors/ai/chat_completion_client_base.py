@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.models.chat.chat_message import ChatMessage
     from semantic_kernel.models.contents import ChatMessageContent, StreamingChatMessageContent
 
@@ -14,7 +14,7 @@ class ChatCompletionClientBase(ABC):
     async def complete_chat(
         self,
         messages: List["ChatMessage"],
-        settings: "AIRequestSettings",
+        settings: "PromptExecutionSettings",
         logger: Optional[Any] = None,
     ) -> List["ChatMessageContent"]:
         """
@@ -23,7 +23,7 @@ class ChatCompletionClientBase(ABC):
         Arguments:
             messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Returns:
@@ -35,7 +35,7 @@ class ChatCompletionClientBase(ABC):
     async def complete_chat_stream(
         self,
         messages: List["ChatMessage"],
-        settings: "AIRequestSettings",
+        settings: "PromptExecutionSettings",
         logger: Optional[Any] = None,
     ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
@@ -44,7 +44,7 @@ class ChatCompletionClientBase(ABC):
         Arguments:
             messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {AIRequestSettings} -- Settings for the request.
+            settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Yields:

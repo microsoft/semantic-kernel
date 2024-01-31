@@ -9,44 +9,44 @@ from openai.types.chat.chat_completion import Choice as ChatCompletionChoice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAITextRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.models.contents import StreamingTextContent, TextContent
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-        OpenAIRequestSettings,
+    from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+        OpenAIPromptExecutionSettings,
     )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
-        return OpenAITextRequestSettings
+        return OpenAITextPromptExecutionSettings
 
     async def complete(
         self,
         prompt: str,
-        settings: "OpenAIRequestSettings",
+        settings: "OpenAIPromptExecutionSettings",
         **kwargs,
     ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAITextRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
 
         Returns:
             List["TextContent"] -- The completion result(s).
         """
-        if isinstance(settings, OpenAITextRequestSettings):
+        if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
         else:
             settings.messages = [{"role": "user", "content": prompt}]
@@ -76,7 +76,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     async def complete_stream(
         self,
         prompt: str,
-        settings: "OpenAIRequestSettings",
+        settings: "OpenAIPromptExecutionSettings",
         **kwargs,
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
@@ -85,7 +85,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
         Arguments:
             prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAITextRequestSettings} -- The settings to use for the completion request.
+            settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
 
         Yields:
             List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.

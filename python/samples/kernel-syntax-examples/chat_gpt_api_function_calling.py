@@ -55,7 +55,7 @@ kernel.import_plugin(MathPlugin(), plugin_name="math")
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig(
-    execution_settings=sk_oai.AzureChatRequestSettings(
+    execution_settings=sk_oai.AzureChatPromptExecutionSettings(
         service_id="chat-gpt",
         ai_model_id=deployment_name,
         max_tokens=2000,
