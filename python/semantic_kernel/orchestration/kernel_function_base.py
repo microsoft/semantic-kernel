@@ -93,30 +93,7 @@ class KernelFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def invoke(
-        self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[PromptExecutionSettings] = None,
-    ) -> "KernelContext":
-        """
-        Invokes the function with an explicit string input
-        Keyword Arguments:
-            input {str} -- The explicit string input (default: {None})
-            variables {ContextVariables} -- The custom input
-            context {KernelContext} -- The context to use
-            memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {PromptExecutionSettings} -- LLM completion settings
-        Returns:
-            KernelContext -- The updated context, potentially a new one if
-            context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    async def invoke_async(
+    async def invoke(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
