@@ -88,7 +88,7 @@ class ActionPlanner:
 
         self._context.variables.update(goal)
 
-        generated_plan_raw = await self._planner_function.invoke_async(context=self._context)
+        generated_plan_raw = await self._planner_function.invoke(context=self._context)
         generated_plan_raw_str = str(generated_plan_raw)
 
         if not generated_plan_raw or not generated_plan_raw_str:
