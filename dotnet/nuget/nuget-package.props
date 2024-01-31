@@ -10,7 +10,7 @@
     <IsPackable>true</IsPackable>
 
     <!-- Package validation. Baseline Version should be lower than current version. -->
-    <PackageValidationBaselineVersion>1.2.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>1.3.0</PackageValidationBaselineVersion>
     <!-- Validate assembly attributes only for Publish builds -->
     <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
     <!-- Do not validate reference assemblies -->
