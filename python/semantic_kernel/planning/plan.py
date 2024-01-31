@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 import re
 import threading
@@ -9,7 +8,7 @@ from typing import Any, Callable, ClassVar, List, Optional, Union
 from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai import AIRequestSettings
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -42,7 +41,7 @@ class Plan(KernelFunctionBase):
     _plugin_name: str = PrivateAttr()
     _description: str = PrivateAttr()
     _is_semantic: bool = PrivateAttr()
-    _request_settings: AIRequestSettings = PrivateAttr()
+    _prompt_execution_settings: PromptExecutionSettings = PrivateAttr()
     DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
     @property
@@ -81,8 +80,8 @@ class Plan(KernelFunctionBase):
             return not self._is_semantic
 
     @property
-    def request_settings(self) -> AIRequestSettings:
-        return self._request_settings
+    def prompt_execution_settings(self) -> PromptExecutionSettings:
+        return self._prompt_execution_settings
 
     @property
     def has_next_step(self) -> bool:
@@ -116,7 +115,7 @@ class Plan(KernelFunctionBase):
         self._has_next_step = len(self._steps) > 0
         self._is_semantic = None
         self._function = None if function is None else function
-        self._request_settings = None
+        self._prompt_execution_settings = None
 
         if function is not None:
             self.set_function(function)
@@ -131,15 +130,28 @@ class Plan(KernelFunctionBase):
         plan.set_function(function)
         return plan
 
-    async def invoke_async(
+    async def invoke(
         self,
         input: Optional[str] = None,
         context: Optional[KernelContext] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
         # TODO: cancellation_token: CancellationToken,
     ) -> KernelContext:
+        """
+        Invoke the plan asynchronously.
+
+        Args:
+            input (str, optional): The input to the plan. Defaults to None.
+            context (KernelContext, optional): The context to use. Defaults to None.
+            settings (PromptExecutionSettings, optional): The AI request settings to use. Defaults to None.
+            memory (SemanticTextMemoryBase, optional): The memory to use. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            KernelContext: The updated context.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
@@ -153,7 +165,7 @@ class Plan(KernelFunctionBase):
             )
 
         if self._function is not None:
-            result = await self._function.invoke_async(context=context, settings=settings)
+            result = await self._function.invoke(context=context, settings=settings)
             if result.error_occurred:
                 logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
@@ -172,59 +184,9 @@ class Plan(KernelFunctionBase):
 
         return context
 
-    def invoke(
-        self,
-        input: Optional[str] = None,
-        context: Optional[KernelContext] = None,
-        settings: Optional[AIRequestSettings] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        **kwargs,
-    ) -> KernelContext:
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        if input is not None and input != "":
-            self._state.update(input)
-
-        if context is None:
-            context = KernelContext(
-                variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
-                memory=memory or NullMemory(),
-            )
-
-        if self._function is not None:
-            result = self._function.invoke(context=context, settings=settings)
-            if result.error_occurred:
-                logger.error(
-                    result.last_exception,
-                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self.plugin_name, self.name, context.last_error_description
-                    ),
-                )
-                return result
-            context.variables.update(result.result)
-        else:
-            # loop through steps until completion
-            while self.has_next_step:
-                # Check if there is an event loop
-                try:
-                    loop = asyncio.get_running_loop()
-                except RuntimeError:
-                    loop = None
-                function_context = context
-                self.add_variables_to_context(self._state, function_context)
-
-                # Handle "asyncio.run() cannot be called from a running event loop"
-                if loop and loop.is_running():
-                    self._runThread(self.invoke_next_step(function_context))
-                else:
-                    asyncio.run(self.invoke_next_step(function_context))
-                self.update_context_with_outputs(context)
-        return context
-
     def set_ai_configuration(
         self,
-        settings: AIRequestSettings,
+        settings: PromptExecutionSettings,
     ) -> KernelFunctionBase:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
@@ -287,7 +249,7 @@ class Plan(KernelFunctionBase):
         self._plugin_name = function.plugin_name
         self._description = function.description
         self._is_semantic = function.is_semantic
-        self._request_settings = function.request_settings
+        self._prompt_execution_settings = function.prompt_execution_settings
 
     async def run_next_step(
         self,
@@ -310,7 +272,7 @@ class Plan(KernelFunctionBase):
                 memory=context.memory,
                 plugin_collection=context.plugins,
             )
-            result = await step.invoke_async(context=func_context)
+            result = await step.invoke(context=func_context)
             result_value = result.result
 
             if result.error_occurred:

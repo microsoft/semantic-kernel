@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.ollama.ollama_request_settings import (
-    OllamaChatRequestSettings,
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
     OllamaChatCompletion,
@@ -13,8 +13,8 @@ from tests.unit.ai.ollama.utils import MockResponse
 
 def test_settings():
     ollama = OllamaChatCompletion(ai_model_id="test_model")
-    settings = ollama.get_request_settings_class()
-    assert settings == OllamaChatRequestSettings
+    settings = ollama.get_prompt_execution_settings_class()
+    assert settings == OllamaChatPromptExecutionSettings
 
 
 @pytest.mark.asyncio
@@ -24,9 +24,9 @@ async def test_complete_chat(mock_post):
     ollama = OllamaChatCompletion(ai_model_id="test_model")
     response = await ollama.complete_chat(
         [{"role": "user", "content": "test_prompt"}],
-        OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
+        OllamaChatPromptExecutionSettings(ai_model_id="test_model", options={"test": "test"}),
     )
-    assert response == "test_response"
+    assert response[0].content == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/chat",
         json={
@@ -45,9 +45,9 @@ async def test_complete(mock_post):
     ollama = OllamaChatCompletion(ai_model_id="test_model")
     response = await ollama.complete(
         "test_prompt",
-        OllamaChatRequestSettings(ai_model_id="test-model", options={"test": "test"}),
+        OllamaChatPromptExecutionSettings(ai_model_id="test-model", options={"test": "test"}),
     )
-    assert response == "test_response"
+    assert response[0].text == "test_response"
 
 
 @pytest.mark.asyncio
@@ -57,11 +57,11 @@ async def test_complete_chat_stream(mock_post):
     ollama = OllamaChatCompletion(ai_model_id="test_model")
     response = ollama.complete_chat_stream(
         [{"role": "user", "content": "test_prompt"}],
-        OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
+        OllamaChatPromptExecutionSettings(ai_model_id="test_model", options={"test": "test"}),
     )
     async for line in response:
         if line:
-            assert line == "test_response"
+            assert line[0].content == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/chat",
         json={
@@ -80,11 +80,11 @@ async def test_complete_stream(mock_post):
     ollama = OllamaChatCompletion(ai_model_id="test_model")
     response = ollama.complete_stream(
         "test_prompt",
-        OllamaChatRequestSettings(ai_model_id="test_model", options={"test": "test"}),
+        OllamaChatPromptExecutionSettings(ai_model_id="test_model", options={"test": "test"}),
     )
     async for line in response:
         if line:
-            assert line == "test_response"
+            assert line[0].text == "test_response"
     mock_post.assert_called_once_with(
         "http://localhost:11434/api/chat",
         json={
