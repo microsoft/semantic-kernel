@@ -38,7 +38,8 @@ public class OpenAITextGenerationService implements TextGenerationService {
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAITextGenerationService(
         OpenAIAsyncClient client,
-        String modelId, String serviceId) {
+        String modelId,
+        String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
         attributes = new HashMap<>();
@@ -127,8 +128,10 @@ public class OpenAITextGenerationService implements TextGenerationService {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
         if (requestSettings.getResultsPerPrompt() < 1
-                || requestSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
-            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, String.format("Results per prompt must be in range between 1 and %d, inclusive.", MAX_RESULTS_PER_PROMPT));
+            || requestSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                String.format("Results per prompt must be in range between 1 and %d, inclusive.",
+                    MAX_RESULTS_PER_PROMPT));
         }
 
         CompletionsOptions options =
@@ -157,7 +160,18 @@ public class OpenAITextGenerationService implements TextGenerationService {
      */
     public static class Builder extends TextGenerationService.Builder {
 
+        @Override
         public TextGenerationService build() {
+
+            if (this.client == null) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI client must be provided");
+            }
+            if (this.modelId == null) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI model id must be provided");
+            }
+
             return new OpenAITextGenerationService(
                 this.client,
                 this.modelId,

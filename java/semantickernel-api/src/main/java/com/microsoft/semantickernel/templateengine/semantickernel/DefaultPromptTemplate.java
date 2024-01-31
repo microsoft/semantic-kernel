@@ -63,10 +63,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
     /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
     /// not already contained there but that are referenced in the prompt template.
     /// </summary>
+    @SuppressWarnings("NullAway")
     private void addMissingInputVariables(List<Block> blocks) {
-        if (promptTemplate == null) {
-            return;
-        }
         // Add all of the existing input variables to our known set. We'll avoid adding any
         // dynamically discovered input variables with the same name.
         Set<String> seen = new HashSet<>();
@@ -84,7 +82,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
             if (block.getType() == BlockTypes.Variable) {
                 name = ((VarBlock) block).getName();
             } else if (block.getType() == BlockTypes.NamedArg) {
-                name = ((NamedArgBlock) block).getVarBlock().getName();
+                VarBlock blockName = ((NamedArgBlock) block).getVarBlock();
+                name = blockName == null ? null : blockName.getName();
             }
 
             if (!Verify.isNullOrEmpty(name) && !seen.contains(name)) {

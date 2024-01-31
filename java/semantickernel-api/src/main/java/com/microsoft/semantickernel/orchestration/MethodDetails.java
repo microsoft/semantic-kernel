@@ -6,21 +6,24 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.I
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 
 public class MethodDetails {
 
     private final String name;
+    @Nullable
     private final String description;
     private final ImplementationFunc function;
-    private final List<KernelParameterMetadata> parameters;
-    private final KernelReturnParameterMetadata returnParameter;
+    private final List<KernelParameterMetadata<?>> parameters;
+    private final KernelReturnParameterMetadata<?> returnParameter;
 
     public MethodDetails(
         String name,
+        @Nullable
         String description,
         ImplementationFunc function,
-        List<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) {
+        List<KernelParameterMetadata<?>> parameters,
+        KernelReturnParameterMetadata<?> returnParameter) {
         this.name = name;
         this.description = description;
         this.function = function;
@@ -32,6 +35,7 @@ public class MethodDetails {
         return name;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
@@ -40,11 +44,11 @@ public class MethodDetails {
         return function;
     }
 
-    public List<KernelParameterMetadata> getParameters() {
+    public List<KernelParameterMetadata<?>> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
-    public KernelReturnParameterMetadata getReturnParameter() {
+    public KernelReturnParameterMetadata<?> getReturnParameter() {
         return returnParameter;
     }
 }

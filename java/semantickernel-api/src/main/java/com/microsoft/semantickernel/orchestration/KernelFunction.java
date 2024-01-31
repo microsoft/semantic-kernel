@@ -34,15 +34,10 @@ public interface KernelFunction extends Buildable {
     String getName();
 
     /**
-     * The function to create a fully qualified name for
-     *
-     * @return A fully qualified name for a function
-     */
-    String toFullyQualifiedName();
-
-    /**
      * @return A description of the function
      */
+
+    @Nullable
     String getDescription();
 
     /**
@@ -80,41 +75,46 @@ public interface KernelFunction extends Buildable {
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
-        ContextVariableType<T> variableType);
+        @Nullable ContextVariableType<T> variableType);
 
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelArguments arguments,
         KernelHooks kernelHooks,
-        ContextVariableType<T> variableType);
+        @Nullable ContextVariableType<T> variableType);
 
     @Nullable
     Map<String, PromptExecutionSettings> getExecutionSettings();
 
     interface FromPromptBuilder {
 
-        FromPromptBuilder withName(String name);
+        FromPromptBuilder withName(@Nullable String name);
 
-        FromPromptBuilder withInputParameters(List<InputVariable> inputVariables);
+        FromPromptBuilder withInputParameters(
+            @Nullable List<InputVariable> inputVariables);
 
-        FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
+        FromPromptBuilder withPromptTemplate(
+            @Nullable PromptTemplate promptTemplate);
 
         FromPromptBuilder withExecutionSettings(
+            @Nullable
             Map<String, PromptExecutionSettings> executionSettings);
 
         FromPromptBuilder withDefaultExecutionSettings(
+            @Nullable
             PromptExecutionSettings executionSettings);
 
-        FromPromptBuilder withDescription(String description);
+        FromPromptBuilder withDescription(@Nullable String description);
 
-        FromPromptBuilder withTemplate(String template);
+        FromPromptBuilder withTemplate(@Nullable String template);
 
         KernelFunction build();
 
         FromPromptBuilder withTemplateFormat(String templateFormat);
 
-        FromPromptBuilder withOutputVariable(OutputVariable outputVariable);
+        FromPromptBuilder withOutputVariable(@Nullable OutputVariable outputVariable);
 
-        FromPromptBuilder withPromptTemplateFactory(PromptTemplateFactory promptTemplateFactory);
+        FromPromptBuilder withPromptTemplateFactory(
+            @Nullable PromptTemplateFactory promptTemplateFactory);
     }
 }

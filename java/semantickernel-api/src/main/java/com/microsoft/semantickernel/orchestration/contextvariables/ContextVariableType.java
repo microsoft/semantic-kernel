@@ -1,5 +1,7 @@
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
+import javax.annotation.Nullable;
+
 public class ContextVariableType<T> {
 
     private final ContextVariableTypeConverter<T> contextVariableTypeConverter;
@@ -26,10 +28,15 @@ public class ContextVariableType<T> {
      * @param it The object to convert.
      * @return A context variable of this type.
      */
-    public ContextVariable<T> of(Object it) {
-        if (getClazz().isAssignableFrom(it.getClass())) {
-            return ContextVariable.of((T) it, getConverter());
+    public ContextVariable<T> of(@Nullable Object it) {
+        if (it == null) {
+            return ContextVariable.of(clazz, clazz.cast(null));
         }
-        return ContextVariable.of(getConverter().fromObject(it));
+
+        if (clazz.isAssignableFrom(it.getClass())) {
+            return ContextVariable.of(clazz.cast(it), getConverter());
+        }
+        ContextVariableTypeConverter<T> converter = getConverter();
+        return ContextVariable.of(converter.getType(), converter.fromObject(it));
     }
 }

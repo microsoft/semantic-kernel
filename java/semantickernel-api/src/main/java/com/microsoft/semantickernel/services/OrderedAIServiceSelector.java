@@ -29,6 +29,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @Nullable
+    @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable
@@ -38,9 +39,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         Map<Class<? extends AIService>, AIService> services) {
 
         // Allow the execution settings from the kernel arguments to take precedence
-        Map<String, PromptExecutionSettings> executionSettings = null;
-
-        executionSettings = settingsFromArguments(arguments, executionSettings);
+        Map<String, PromptExecutionSettings> executionSettings = settingsFromArguments(arguments);
         executionSettings = settingsFromFunctionSettings(function, executionSettings);
 
         if (executionSettings == null || executionSettings.isEmpty()) {
@@ -105,12 +104,14 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         }
 
         AIService service = getAnyService(serviceType);
-        PromptExecutionSettings settings;
+        PromptExecutionSettings settings = null;
 
-        if (executionSettings.containsKey(PromptExecutionSettings.DEFAULT_SERVICE_ID)) {
-            settings = executionSettings.get(PromptExecutionSettings.DEFAULT_SERVICE_ID);
-        } else {
-            settings = executionSettings.values().stream().findFirst().orElseGet(() -> null);
+        if (executionSettings != null && !executionSettings.isEmpty()) {
+            if (executionSettings.containsKey(PromptExecutionSettings.DEFAULT_SERVICE_ID)) {
+                settings = executionSettings.get(PromptExecutionSettings.DEFAULT_SERVICE_ID);
+            } else {
+                settings = executionSettings.values().stream().findFirst().orElseGet(() -> null);
+            }
         }
 
         if (service != null) {
@@ -125,6 +126,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
         @Nullable
         KernelFunction function,
+        @Nullable
         Map<String, PromptExecutionSettings> executionSettings) {
         if (executionSettings == null || executionSettings.isEmpty()) {
             if (function != null) {
@@ -136,12 +138,12 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
     @Nullable
     private static Map<String, PromptExecutionSettings> settingsFromArguments(
-        @Nullable KernelArguments arguments,
-        Map<String, PromptExecutionSettings> executionSettings) {
+        @Nullable
+        KernelArguments arguments) {
         if (arguments != null) {
-            executionSettings = arguments.getExecutionSettings();
+            return arguments.getExecutionSettings();
         }
-        return executionSettings;
+        return null;
     }
 
     private AIService getServiceByModelId(String modelId) {
@@ -189,6 +191,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         return service;
     }
 
+    @Nullable
     AIService getAnyService(Class<? extends AIService> serviceType) {
         List<AIService> services = getServices(serviceType);
         if (services.isEmpty()) {

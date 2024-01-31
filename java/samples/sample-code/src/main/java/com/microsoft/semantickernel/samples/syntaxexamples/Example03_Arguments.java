@@ -18,9 +18,11 @@ import reactor.core.publisher.Mono;
 public class Example03_Arguments {
 
     public static class StaticTextSkill {
+
         @DefineKernelFunction(
             description = "Change all string chars to uppercase.",
-            name = "Uppercase")
+            name = "Uppercase",
+            returnType = "java.lang.String")
         public static Mono<String> uppercase(
             @KernelFunctionParameter(
                 description = "Text to uppercase",
@@ -29,7 +31,10 @@ public class Example03_Arguments {
             return Mono.just(text.toUpperCase(Locale.ROOT));
         }
 
-        @DefineKernelFunction(description = "Append the day variable", name = "appendDay")
+        @DefineKernelFunction(
+            description = "Append the day variable",
+            name = "appendDay",
+            returnType = "java.lang.String")
         public Mono<String> appendDay(
             @KernelFunctionParameter(description = "Text to append to", name = "input")
             String input,
@@ -57,6 +62,6 @@ public class Example03_Arguments {
                 String.class)
             .block();
 
-        System.out.println(resultValue.getResultVariable());
+        System.out.println(resultValue.getResultVariable().getValue());
     }
 }

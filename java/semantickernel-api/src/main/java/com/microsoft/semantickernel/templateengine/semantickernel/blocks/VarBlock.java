@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.orchestration.contextvariables.KernelArgumen
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
 
 public final class VarBlock extends Block implements TextRendering {
 
@@ -23,7 +24,7 @@ public final class VarBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(KernelArguments variables) {
+    public String render(@Nullable KernelArguments variables) {
         if (variables == null) {
             return "";
         }

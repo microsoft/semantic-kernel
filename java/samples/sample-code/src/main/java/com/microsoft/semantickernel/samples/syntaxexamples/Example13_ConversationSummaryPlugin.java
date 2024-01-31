@@ -170,7 +170,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Action Items:");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResultVariable().getValue());
     }
 
     private static void getConversationTopicsAsync() {
@@ -191,7 +191,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Topics:");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResultVariable().getValue());
     }
 
 
@@ -215,7 +215,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Summary (This may take some time):");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResultVariable().getValue());
     }
 
     private static Kernel initializeKernel() {

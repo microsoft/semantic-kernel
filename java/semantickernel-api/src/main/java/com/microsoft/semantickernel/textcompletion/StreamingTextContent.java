@@ -8,8 +8,4 @@ public class StreamingTextContent extends StreamingKernelContent<TextContent> {
         super(content, 0, null, null);
     }
 
-    @Override
-    public byte[] toByteArray() {
-        return new byte[0];
-    }
 }

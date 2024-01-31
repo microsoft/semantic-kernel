@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -42,22 +43,27 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
 
     @Override
-    public Mono<String> renderAsync(Kernel kernel,
+    public Mono<String> renderAsync(
+        Kernel kernel,
         @Nullable KernelArguments arguments) {
         HandleBarsPromptTemplateHandler handler =
             new HandleBarsPromptTemplateHandler(kernel, promptTemplate.getTemplate());
 
+        if (arguments == null) {
+            arguments = new DefaultKernelArguments();
+        }
         return handler.render(arguments);
     }
 
     private static class MessageResolver implements ValueResolver {
 
         @Override
+        @SuppressWarnings("NullAway")
         public Object resolve(Object context, String name) {
             if (context instanceof ChatMessageContent) {
-                if ("role".equals(name.toLowerCase())) {
+                if ("role".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getAuthorRole().name();
-                } else if ("content".equals(name.toLowerCase())) {
+                } else if ("content".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getContent();
                 }
             }
@@ -67,7 +73,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @Override
         public Object resolve(Object context) {
             if (context instanceof ChatMessageContent) {
-                return ((ChatMessageContent) context).getContent();
+                String result = ((ChatMessageContent) context).getContent();
+                return result != null ? result : UNRESOLVED;
             }
             return UNRESOLVED;
         }
@@ -93,9 +100,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             }
             if (context instanceof KernelFunction) {
                 KernelFunction function = (KernelFunction) context;
-                if ("pluginname".equals(name.toLowerCase())) {
+                if ("pluginname".equalsIgnoreCase(name)) {
                     return function.getSkillName();
-                } else if ("name".equals(name.toLowerCase())) {
+                } else if ("name".equalsIgnoreCase(name)) {
                     return function.getName();
                 }
             }
@@ -120,19 +127,26 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         @Override
         public Object resolve(Object context, String name) {
+            Object value = null;
             if (context instanceof KernelArguments) {
-                return ((KernelArguments) context).get(name).getValue();
+                ContextVariable<?> variable = ((KernelArguments) context).get(name);
+                value = variable != null ? variable.getValue() : null;
             }
             if (context instanceof ContextVariable) {
-                return ((ContextVariable<?>) context).getValue();
+                value = ((ContextVariable<?>) context).getValue();
             }
-            return UNRESOLVED;
+            if (value == null) {
+                return UNRESOLVED;
+            } else {
+                return value;
+            }
         }
 
         @Override
         public Object resolve(Object context) {
             if (context instanceof ContextVariable) {
-                return ((ContextVariable<?>) context).getValue();
+                Object result = ((ContextVariable<?>) context).getValue();
+                return result != null ? result : UNRESOLVED;
             }
             return UNRESOLVED;
         }
@@ -182,7 +196,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 String.format(
                     "<function pluginName=\"%s\" name=\"%s\" description=\"%s\">",
                     pluginName, functionName, description));
-            List<KernelParameterMetadata> parameters = function.getMetadata().getParameters();
+            List<KernelParameterMetadata<?>> parameters = function.getMetadata().getParameters();
             parameters.forEach(p -> {
                 sb.append(String.format(
                     "<parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>",

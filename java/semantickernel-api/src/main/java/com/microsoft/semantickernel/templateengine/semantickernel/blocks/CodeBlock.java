@@ -3,19 +3,18 @@ package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
-import java.util.ArrayList;
+import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -81,7 +80,7 @@ public final class CodeBlock extends Block implements CodeRendering {
     @Override
     public Mono<String> renderCodeAsync(Kernel kernel, @Nullable KernelArguments arguments) {
         if (!this.isValid()) {
-            throw new TemplateException(TemplateException.ErrorCodes.SYNTAX_ERROR);
+            throw new TemplateException(ErrorCodes.SYNTAX_ERROR);
         }
 
         // this.Log.LogTrace("Rendering code: `{0}`", this.Content);
@@ -149,7 +148,9 @@ public final class CodeBlock extends Block implements CodeRendering {
     /// <param name="arguments">The prompt rendering arguments.</param>
     /// <returns>The function arguments.</returns>
     /// <exception cref="KernelException">Occurs when any argument other than the first is not a named argument.</exception>
-    private KernelArguments enrichFunctionArguments(Kernel kernel, FunctionIdBlock fBlock,
+    private KernelArguments enrichFunctionArguments(
+        Kernel kernel,
+        FunctionIdBlock fBlock,
         KernelArguments arguments) {
         Block firstArg = this.tokens.get(1);
 
@@ -158,14 +159,14 @@ public final class CodeBlock extends Block implements CodeRendering {
             .getFunction(fBlock.getPluginName(), fBlock.getFunctionName()).getMetadata();
 
         // Check if the function has parameters to be set
-        if (functionMetadata.getParameters().size() == 0) {
+        if (functionMetadata.getParameters().isEmpty()) {
             throw new IllegalArgumentException(
                 "Function " + fBlock.getPluginName() + "." + fBlock.getFunctionName()
                     + " does not take any arguments but it is being called in the template with {this._tokens.Count - 1} arguments.");
         }
 
         String firstPositionalParameterName = null;
-        Object firstPositionalInputValue = null;
+        Object firstPositionalInputValue;
         int namedArgsStartIndex = 1;
 
         if (firstArg.getType() != BlockTypes.NamedArg) {
@@ -174,6 +175,12 @@ public final class CodeBlock extends Block implements CodeRendering {
 
             firstPositionalInputValue = ((TextRendering) tokens.get(1)).render(arguments);
             // Type check is avoided and marshalling is done by the function itself
+
+            if (firstPositionalInputValue == null) {
+                throw new SKException(
+                    "Unexpected null value for first positional argument: " + tokens.get(1)
+                        .getContent());
+            }
 
             // Keep previous trust information when updating the input
             arguments.put(firstPositionalParameterName,
@@ -191,8 +198,7 @@ public final class CodeBlock extends Block implements CodeRendering {
 
             // Check if the positional parameter clashes with a named parameter
             if (firstPositionalParameterName != null &&
-                firstPositionalParameterName.toLowerCase(Locale.ROOT)
-                    .equals(arg.getName().toLowerCase(Locale.ROOT))) {
+                firstPositionalParameterName.equalsIgnoreCase(arg.getName())) {
                 throw new SKException(
                     "Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }

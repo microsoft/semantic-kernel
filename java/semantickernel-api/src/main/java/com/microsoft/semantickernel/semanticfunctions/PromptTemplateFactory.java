@@ -1,5 +1,7 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import javax.annotation.Nullable;
+
 public interface PromptTemplateFactory {
 
     PromptTemplate tryCreate(PromptTemplateConfig templateConfig);
@@ -10,7 +12,7 @@ public interface PromptTemplateFactory {
 
     class UnknownTemplateFormatException extends IllegalArgumentException {
 
-        public UnknownTemplateFormatException(String templateFormat) {
+        public UnknownTemplateFormatException(@Nullable String templateFormat) {
             super("Unknown template format: " + templateFormat);
         }
     }
