@@ -33,7 +33,7 @@ async def main():
     plan = await planner.create_plan(goal=ask)
 
     # ask the action planner to execute the identified function.
-    result = await plan.invoke_async()
+    result = await plan.invoke()
     print(result)
     """
     Output:
