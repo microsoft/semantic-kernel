@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from functools import wraps
 
 
 def kernel_function(
@@ -18,6 +19,7 @@ def kernel_function(
         input_default_value -- The default value of the input
     """
 
+    @wraps
     def decorator(func):
         func.__kernel_function__ = True
         func.__kernel_function_description__ = description or ""

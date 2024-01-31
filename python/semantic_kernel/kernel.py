@@ -28,6 +28,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.function_result import FunctionResult
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
@@ -218,54 +219,59 @@ class Kernel(KernelBaseModel):
     async def run_stream(
         self,
         *functions: Any,
-        input_context: Optional[KernelContext] = None,
-        input_vars: Optional[ContextVariables] = None,
-        input_str: Optional[str] = None,
+        settings: Optional[AIRequestSettings] = None,
+        **kwargs: Dict[str, Any],
+        # input_context: Optional[KernelContext] = None,
+        # input_vars: Optional[ContextVariables] = None,
+        # input_str: Optional[str] = None,
     ):
         if len(functions) > 1:
             pipeline_functions = functions[:-1]
             stream_function = functions[-1]
 
             # run pipeline functions
-            context = await self.run(pipeline_functions, input_context, input_vars, input_str)
+            results = await self.run(pipeline_functions, settings, **kwargs)
 
         elif len(functions) == 1:
             stream_function = functions[0]
 
             # TODO: Preparing context for function invoke can be refactored as code below are same as run
             # if the user passed in a context, prioritize it, but merge with any other inputs
-            if input_context is not None:
-                context = input_context
-                if input_vars is not None:
-                    context.variables = input_vars.merge_or_overwrite(new_vars=context.variables, overwrite=False)
+            # if input_context is not None:
+            #     context = input_context
+            #     if input_vars is not None:
+            #         context.variables = input_vars.merge_or_overwrite(new_vars=context.variables, overwrite=False)
 
-                if input_str is not None:
-                    context.variables = ContextVariables(input_str).merge_or_overwrite(
-                        new_vars=context.variables, overwrite=False
-                    )
+            #     if input_str is not None:
+            #         context.variables = ContextVariables(input_str).merge_or_overwrite(
+            #             new_vars=context.variables, overwrite=False
+            #         )
 
             # if the user did not pass in a context, prioritize an input string,
             # and merge that with input context variables
-            else:
-                if input_str is not None and input_vars is None:
-                    variables = ContextVariables(input_str)
-                elif input_str is None and input_vars is not None:
-                    variables = input_vars
-                elif input_str is not None and input_vars is not None:
-                    variables = ContextVariables(input_str)
-                    variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
-                else:
-                    variables = ContextVariables()
-                context = KernelContext(
-                    variables=variables,
-                    memory=self.memory,
-                    plugins=self.plugins,
-                )
+            # else:
+            #     if input_str is not None and input_vars is None:
+            #         variables = ContextVariables(input_str)
+            #     elif input_str is None and input_vars is not None:
+            #         variables = input_vars
+            #     elif input_str is not None and input_vars is not None:
+            #         variables = ContextVariables(input_str)
+            #         variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
+            #     else:
+            #         variables = ContextVariables()
+            #     context = KernelContext(
+            #         variables,
+            #         self._memory,
+            #         self._plugin_collection.read_only_plugin_collection,
+            #     )
         else:
             raise ValueError("No functions passed to run")
 
         try:
-            async for stream_message in stream_function.invoke_stream(input=None, context=context):
+            if results:
+                for result in results:
+                    kwargs[result.function.name] = result.value
+            async for stream_message in stream_function.invoke_stream(settings, **kwargs):
                 yield stream_message
 
         except Exception as ex:
@@ -283,40 +289,41 @@ class Kernel(KernelBaseModel):
     async def run(
         self,
         *functions: Any,
-        input_context: Optional[KernelContext] = None,
-        input_vars: Optional[ContextVariables] = None,
-        input_str: Optional[str] = None,
+        settings: Optional[AIRequestSettings] = None,
+        # input_context: Optional[KernelContext] = None,
+        # input_vars: Optional[ContextVariables] = None,
+        # input_str: Optional[str] = None,
         **kwargs: Dict[str, Any],
-    ) -> KernelContext:
+    ) -> List[FunctionResult]:
         # if the user passed in a context, prioritize it, but merge with any other inputs
-        if input_context is not None:
-            context = input_context
-            if input_vars is not None:
-                context.variables = input_vars.merge_or_overwrite(new_vars=context.variables, overwrite=False)
+        # if input_context is not None:
+        #     context = input_context
+        #     if input_vars is not None:
+        #         context.variables = input_vars.merge_or_overwrite(new_vars=context.variables, overwrite=False)
 
-            if input_str is not None:
-                context.variables = ContextVariables(input_str).merge_or_overwrite(
-                    new_vars=context.variables, overwrite=False
-                )
+        #     if input_str is not None:
+        #         context.variables = ContextVariables(input_str).merge_or_overwrite(
+        #             new_vars=context.variables, overwrite=False
+        #         )
 
         # if the user did not pass in a context, prioritize an input string,
         # and merge that with input context variables
-        else:
-            if input_str is not None and input_vars is None:
-                variables = ContextVariables(input_str)
-            elif input_str is None and input_vars is not None:
-                variables = input_vars
-            elif input_str is not None and input_vars is not None:
-                variables = ContextVariables(input_str)
-                variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
-            else:
-                variables = ContextVariables()
-            context = KernelContext(
-                variables=variables,
-                memory=self.memory,
-                plugins=self.plugins,
-            )
-
+        # else:
+        #     if input_str is not None and input_vars is None:
+        #         variables = ContextVariables(input_str)
+        #     elif input_str is None and input_vars is not None:
+        #         variables = input_vars
+        #     elif input_str is not None and input_vars is not None:
+        #         variables = ContextVariables(input_str)
+        #         variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
+        #     else:
+        #         variables = ContextVariables()
+        #     context = KernelContext(
+        #         variables,
+        #         self._memory,
+        #         self._plugin_collection.read_only_plugin_collection,
+        #     )
+        results = []
         pipeline_step = 0
         for func in functions:
             while True:
@@ -324,24 +331,24 @@ class Kernel(KernelBaseModel):
                     "All func arguments to Kernel.run*(inputs, func1, func2, ...) " "must be KernelFunction instances"
                 )
 
-                if context.error_occurred:
-                    logger.error(
-                        f"Something went wrong in pipeline step {pipeline_step}. "
-                        f"Error description: '{context.last_error_description}'"
-                    )
-                    return context
+                # if context.error_occurred:
+                #     logger.error(
+                #         f"Something went wrong in pipeline step {pipeline_step}. "
+                #         f"Error description: '{context.last_error_description}'"
+                #     )
+                #     return context
 
                 try:
                     function_details = func.describe()
 
-                    function_invoking_args = self.on_function_invoking(function_details, context)
+                    function_invoking_args = self.on_function_invoking(function_details)
                     if (
                         isinstance(function_invoking_args, FunctionInvokingEventArgs)
                         and function_invoking_args.is_cancel_requested
                     ):
                         cancel_message = "Execution was cancelled on function invoking event of pipeline step"
                         logger.info(f"{cancel_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
-                        return context
+                        return
 
                     if (
                         isinstance(function_invoking_args, FunctionInvokingEventArgs)
@@ -351,17 +358,17 @@ class Kernel(KernelBaseModel):
                         logger.info(f"{skip_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
                         break
 
-                    context = await func.invoke(input=None, context=context, **kwargs)
+                    result = await func.invoke(settings=settings, **kwargs)
+                    results.append(result)
+                    # if context.error_occurred:
+                    #     logger.error(
+                    #         f"Something went wrong in pipeline step {pipeline_step}. "
+                    #         f"During function invocation: '{func.plugin_name}.{func.name}'. "
+                    #         f"Error description: '{context.last_error_description}'"
+                    #     )
+                    #     return context
 
-                    if context.error_occurred:
-                        logger.error(
-                            f"Something went wrong in pipeline step {pipeline_step}. "
-                            f"During function invocation: '{func.plugin_name}.{func.name}'. "
-                            f"Error description: '{context.last_error_description}'"
-                        )
-                        return context
-
-                    function_invoked_args = self.on_function_invoked(function_details, context)
+                    function_invoked_args = self.on_function_invoked(function_details)
 
                     if (
                         isinstance(function_invoked_args, FunctionInvokedEventArgs)
@@ -369,7 +376,7 @@ class Kernel(KernelBaseModel):
                     ):
                         cancel_message = "Execution was cancelled on function invoked event of pipeline step"
                         logger.info(f"{cancel_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
-                        return context
+                        return
                     if (
                         isinstance(function_invoked_args, FunctionInvokedEventArgs)
                         and function_invoked_args.is_repeat_requested
@@ -386,12 +393,12 @@ class Kernel(KernelBaseModel):
                         f"During function invocation: '{func.plugin_name}.{func.name}'. "
                         f"Error description: '{str(ex)}'"
                     )
-                    context.fail(str(ex), ex)
-                    return context
+                    # context.fail(str(ex), ex)
+                    # return context
 
             pipeline_step += 1
 
-        return context
+        return results
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunction:
         if plugin_name not in self.plugins:

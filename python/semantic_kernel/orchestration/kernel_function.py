@@ -5,7 +5,7 @@ import logging
 import platform
 import sys
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import Field, StringConstraints
 
@@ -14,6 +14,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -24,12 +25,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
+from semantic_kernel.orchestration.function_result import FunctionResult
+from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
@@ -38,7 +40,6 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
     from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 # TODO: is this needed anymore after sync code removal?
@@ -151,8 +152,8 @@ class KernelFunction(KernelBaseModel):
         if method is None:
             raise ValueError("Method cannot be `None`")
 
-        assert method.__kernel_function__ is not None, "Method is not a Kernel function"
-        assert method.__kernel_function_name__ is not None, "Method name is empty"
+        if not hasattr(method, "__kernel_function__") or method.__kernel_function__ is None:
+            raise ValueError("Method is not a Kernel function")
 
         parameters = []
         # kernel_function_context_parameters are optionals
@@ -217,68 +218,47 @@ class KernelFunction(KernelBaseModel):
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, prompt_execution_settings, context: "KernelContext", **kwargs):
+        async def _local_func(
+            self, client: AIServiceClientBase, request_settings: AIRequestSettings, **kwargs
+        ) -> "FunctionResult":
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
-
-            if not function_config.has_chat_prompt:
-                try:
-                    prompt = await function_config.prompt_template.render(context)
-                    results = await client.complete(prompt, prompt_execution_settings)
-                    context.objects["results"] = results
-                    context.variables.update(str(results[0]))
-                except Exception as e:
-                    # TODO: "critical exceptions"
-                    context.fail(str(e), e)
-                finally:
-                    return context
-
             try:
-                chat_prompt = function_config.prompt_template
-                # Similar to non-chat, render prompt (which renders to a
-                # dict of <role, content, name> messages)
-                messages = await chat_prompt.render_messages(context)
-                results = await client.complete_chat(messages, prompt_execution_settings)
-                context.objects["results"] = results
-                if results[0].content is not None:
-                    context.variables.update(str(results[0]))
-                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
-                chat_prompt = store_results(chat_prompt, results)
-            except Exception as exc:
-                # TODO: "critical exceptions"
-                context.fail(str(exc), exc)
-            finally:
-                return context
-
-        async def _local_stream_func(client, prompt_execution_settings, context):
-            if client is None:
-                raise ValueError("AI LLM service cannot be `None`")
-
-            if not function_config.has_chat_prompt:
-                try:
-                    prompt = await function_config.prompt_template.render(context)
-                    result = client.complete_stream(prompt, prompt_execution_settings)
-                    async for chunk in result:
-                        yield chunk
-                except Exception as e:
-                    # TODO: "critical exceptions"
-                    context.fail(str(e), e)
-
-            try:
-                chat_prompt = function_config.prompt_template
-                # Similar to non-chat, render prompt (which renders to a
-                # list of <role, content> messages)
-                messages = await chat_prompt.render_messages(context)
-                result = client.complete_chat_stream(messages=messages, settings=prompt_execution_settings)
-                # context.objects["response_object"] = result
-                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
-                async for chunk in result:
-                    yield chunk
-                # context, chat_prompt = store_results(context, result, chat_prompt)
+                if not function_config.has_chat_prompt:
+                    prompt = await function_config.prompt_template.render(**kwargs)
+                    completion = await client.complete(prompt, request_settings)
+                    return FunctionResult(function=self, value=completion)
             except Exception as e:
-                # TODO: "critical exceptions"
-                logger.error(f"Error occurred while invoking stream function: {str(e)}")
-                context.fail(str(e), e)
+                logger.error(f"Error occurred while invoking function {self.function.name}: {e}")
+                raise e
+
+            messages = await function_config.prompt_template.render_messages(**kwargs)
+            try:
+                result = await client.complete_chat(messages, request_settings)
+                return FunctionResult(function=self, value=result)
+            except Exception as exc:
+                logger.error(f"Error occurred while invoking function {self.function.name}: {exc}")
+                raise exc
+
+        async def _local_stream_func(self, client: AIServiceClientBase, request_settings: AIRequestSettings, **kwargs):
+            if client is None:
+                raise ValueError("AI LLM service cannot be `None`")
+
+            try:
+                if function_config.has_chat_prompt:
+                    messages = await function_config.prompt_template.render_messages(**kwargs)
+                    async for partial_content in client.complete_chat_stream(
+                        messages=messages, settings=request_settings
+                    ):
+                        yield partial_content
+                else:
+                    prompt = await function_config.prompt_template.render(**kwargs)
+                    async for partial_content in client.complete_stream(prompt, request_settings):
+                        yield partial_content
+
+            except Exception as e:
+                logger.error(f"Error occurred while invoking function {self.function.name}: {e}")
+                raise e
 
         return KernelFunction(
             delegate_type=DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext,
@@ -335,12 +315,7 @@ class KernelFunction(KernelBaseModel):
 
     async def __call__(
         self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[PromptExecutionSettings] = None,
-        log: Optional[Any] = None,
+        arguments: "KernelArguments",
     ) -> "KernelContext":
         """
         Override the call operator to allow calling the function directly
@@ -360,82 +335,30 @@ class KernelFunction(KernelBaseModel):
         Raises:
             KernelException -- If the function is not semantic
         """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        return await self.invoke(
-            input=input,
-            variables=variables,
-            context=context,
-            memory=memory,
-            settings=settings,
-        )
+        return await self.invoke(arguments)
 
     async def invoke(
         self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[PromptExecutionSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
         **kwargs: Dict[str, Any],
-    ) -> "KernelContext":
-        """
-        Invoke the function asynchronously
-
-        Arguments:
-            input {Optional[str]} -- The input to the function
-            variables {ContextVariables} -- The variables for the function
-            context {Optional[KernelContext]} -- The context for the function
-            memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
-            settings {Optional[PromptExecutionSettings]} -- The settings for the function
-            kwargs {Dict[str, Any]} -- Additional keyword arguments
-
-        Returns:
-            KernelContext -- The context for the function
-
-        Raises:
-            KernelException -- If there is a problem invoking the function
-        """
-        from semantic_kernel.orchestration.kernel_context import KernelContext
-
-        if context is None:
-            context = KernelContext(
-                variables=ContextVariables("") if variables is None else variables,
-                memory=memory if memory is not None else NullMemory.instance,
-                plugins=self.plugins,
-            )
-        else:
-            # If context is passed, we need to merge the variables
-            if variables is not None:
-                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-            if memory is not None:
-                context.memory = memory
-
-        if input is not None:
-            context.variables.update(input)
-
+    ) -> "FunctionResult":
         try:
             if self.is_semantic:
-                return await self._invoke_semantic(context, settings, **kwargs)
+                return await self._invoke_semantic(settings, **kwargs)
             else:
-                return await self._invoke_native(context, **kwargs)
+                return await self._invoke_native(settings, **kwargs)
         except Exception as e:
-            context.fail(str(e), e)
-            return context
+            logger.error(f"Error occurred while invoking function {self.name}: {e}")
+            raise e
 
-    async def _invoke_semantic(self, context: "KernelContext", settings: PromptExecutionSettings, **kwargs):
+    async def _invoke_semantic(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
         self._verify_is_semantic()
-        self._ensure_context_has_plugins(context)
-        new_context = await self.function(self.ai_service, settings or self.prompt_execution_settings, context)
-        context.variables.merge_or_overwrite(new_context.variables)
-        return context
+        return await self._function(self._ai_service, settings or self._ai_request_settings, **kwargs)
 
-    async def _invoke_native(self, context):
+    async def _invoke_native(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
         self._verify_is_native()
 
-        self._ensure_context_has_plugins(context)
-
-        delegate = DelegateHandlers.get_handler(self.delegate_type)
+        delegate = DelegateHandlers.get_handler(self._delegate_type)
         # for python3.9 compatibility (staticmethod is not callable)
         if not hasattr(delegate, "__call__"):
             delegate = delegate.__func__
@@ -465,11 +388,12 @@ class KernelFunction(KernelBaseModel):
 
     async def invoke_stream(
         self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[PromptExecutionSettings] = None,
+        settings: Optional[AIRequestSettings] = None,
+        **kwargs: Dict[str, Any],
+        # input: Optional[str] = None,
+        # variables: ContextVariables = None,
+        # context: Optional["KernelContext"] = None,
+        # memory: Optional[SemanticTextMemoryBase] = None,
     ):
         from semantic_kernel.orchestration.kernel_context import KernelContext
 
@@ -504,7 +428,7 @@ class KernelFunction(KernelBaseModel):
                 "Error occurred while invoking stream function",
             )
 
-    async def _invoke_semantic_stream(self, context, settings):
+    async def _invoke_semantic_stream(self, settings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
         async for stream_msg in self.stream_function(
@@ -512,7 +436,7 @@ class KernelFunction(KernelBaseModel):
         ):
             yield stream_msg
 
-    async def _invoke_native_stream(self, context):
+    async def _invoke_native_stream(self, settings, **kwargs):
         self._verify_is_native()
 
         self._ensure_context_has_plugins(context)
