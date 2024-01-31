@@ -273,7 +273,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             default_headers=settings.get("default_headers"),
         )
 
-    def get_request_settings_class(self) -> "PromptExecutionSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return AzureChatPromptExecutionSettings
 

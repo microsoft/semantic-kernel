@@ -35,7 +35,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """OpenAI Chat completion class."""
 
-    def get_request_settings_class(self) -> "PromptExecutionSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
