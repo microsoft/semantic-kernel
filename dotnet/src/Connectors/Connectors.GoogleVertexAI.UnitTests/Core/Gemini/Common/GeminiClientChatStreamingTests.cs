@@ -271,7 +271,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallGetStreamingChatEndpointWhenStreamingChatMessagesAsync()
+    public async Task ShouldCallGetStreamingChatEndpointAsync()
     {
         // Arrange
         var endpointProviderMock = new Mock<IEndpointProvider>();
@@ -287,7 +287,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallCreatePostRequestWhenStreamingChatMessagesAsync()
+    public async Task ShouldCallCreatePostRequestAsync()
     {
         // Arrange
         var rquestFactoryMock = new Mock<IHttpRequestFactory>();
