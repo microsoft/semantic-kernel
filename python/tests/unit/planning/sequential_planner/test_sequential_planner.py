@@ -53,7 +53,7 @@ async def test_it_can_create_plan(goal):
 
         context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
         context.variables.update("MOCK FUNCTION CALLED")
-        mock_function.invoke_async.return_value = context
+        mock_function.invoke.return_value = context
         mock_functions.append(mock_function)
 
     plugins.get_function.side_effect = lambda plugin_name, function_name: next(
@@ -80,7 +80,7 @@ async def test_it_can_create_plan(goal):
     return_context.variables.update(plan_string)
 
     mock_function_flow_function = Mock(spec=KernelFunctionBase)
-    mock_function_flow_function.invoke_async.return_value = return_context
+    mock_function_flow_function.invoke.return_value = return_context
 
     kernel.plugins = plugins
     kernel.create_new_context.return_value = context
@@ -131,7 +131,7 @@ async def test_invalid_xml_throws():
     context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
 
     mock_function_flow_function = Mock(spec=KernelFunctionBase)
-    mock_function_flow_function.invoke_async.return_value = return_context
+    mock_function_flow_function.invoke.return_value = return_context
 
     kernel.plugins = plugins
     kernel.create_new_context.return_value = context

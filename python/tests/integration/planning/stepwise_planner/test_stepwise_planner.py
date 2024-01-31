@@ -163,7 +163,7 @@ async def test_can_execute_stepwise_plan(
 
     # Act
     plan = planner.create_plan(prompt)
-    result = await plan.invoke_async()
+    result = await plan.invoke()
 
     steps_taken_string = result.variables["steps_taken"]
     assert steps_taken_string is not None

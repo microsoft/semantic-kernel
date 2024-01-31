@@ -27,7 +27,7 @@ async def main():
 
     prompt = "Who is Leonardo DiCaprio's current girlfriend?"
     search = web_plugin["searchAsync"]
-    result = await search.invoke_async(prompt)
+    result = await search.invoke(prompt)
     print(result)
 
     """
@@ -48,7 +48,7 @@ async def main():
     context = kernel.create_new_context()
     context["num_results"] = "10"
     context["offset"] = "0"
-    result = await qna.invoke_async(context=context)
+    result = await qna.invoke(context=context)
     print(result)
 
     """

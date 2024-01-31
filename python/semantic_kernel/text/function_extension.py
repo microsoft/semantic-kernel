@@ -15,7 +15,7 @@ async def aggregate_chunked_results(
     results = []
     for chunk in chunked_results:
         context.variables.update(chunk)
-        context = await func.invoke_async(context=context)
+        context = await func.invoke(context=context)
 
         results.append(str(context.variables))
 

@@ -19,6 +19,6 @@ if __name__ == "__main__":
     )
     result = asyncio.run(
         # Call the function defined in openapi.yaml
-        openapi_plugin["helloWorld"].invoke_async(variables=context_variables)
+        openapi_plugin["helloWorld"].invoke(variables=context_variables)
     )
     print(result)

@@ -130,7 +130,7 @@ class StepwisePlanner:
 
                 context.variables.set("agent_scratch_pad", scratch_pad)
 
-                llm_response = await self._system_step_function.invoke_async(context=context)
+                llm_response = await self._system_step_function.invoke(context=context)
 
                 if llm_response.error_occurred:
                     raise PlanningException(
@@ -313,7 +313,7 @@ class StepwisePlanner:
             function = self._kernel.func(target_function.plugin_name, target_function.name)
             action_context = self.create_action_context(action_variables)
 
-            result = await function.invoke_async(context=action_context)
+            result = await function.invoke(context=action_context)
 
             if result.error_occurred:
                 logger.error(f"Error occurred: {result.last_exception}")
