@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -30,7 +31,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     [Theory]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -39,7 +40,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         // Act
-        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, goal);
 
         // Assert expected function
         Assert.Contains(
@@ -51,16 +52,61 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     [RetryTheory]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelChapter", "WriterPlugin")]
-    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin)
+    public async Task CreatePlanWithDefaultsAsync(string goal, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
         // Act
-        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, goal);
 
         // Assert
+        Assert.Contains(
+            $"{expectedPlugin}-{expectedFunction}",
+            plan.ToString(),
+            StringComparison.CurrentCulture
+        );
+    }
+
+    [Theory]
+    [InlineData(true, "List each property of the default Qux object.", "## Complex types", @"### Qux:
+{
+  ""type"": ""Object"",
+  ""properties"": {
+    ""Bar"": {
+      ""type"": ""String"",
+    },
+    ""Baz"": {
+      ""type"": ""Int32"",
+    },
+  }
+}", "GetDefaultQux", "Foo")]
+    public async Task CreatePlanWithComplexTypesDefinitionsAsync(bool useChatModel, string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
+    {
+        // Arrange
+        bool useEmbeddings = false;
+        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        kernel.ImportPluginFromObject(new Foo());
+
+        // Act
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, goal);
+
+        // Assert expected section header for Complex Types in prompt
+        Assert.Contains(
+            expectedSectionHeader,
+            plan.Prompt,
+            StringComparison.CurrentCulture
+        );
+
+        // Assert expected complex parameter type in prompt
+        Assert.Contains(
+            expectedTypeHeader,
+            plan.Prompt,
+            StringComparison.CurrentCulture
+        );
+
+        // Assert expected function in plan
         Assert.Contains(
             $"{expectedPlugin}-{expectedFunction}",
             plan.ToString(),
@@ -109,6 +155,24 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
+    private sealed class Foo
+    {
+        public sealed class Qux
+        {
+            public string Bar { get; set; } = string.Empty;
+            public int Baz { get; set; }
+
+            public Qux(string bar, int baz)
+            {
+                this.Bar = bar;
+                this.Baz = baz;
+            }
+        }
+
+        [KernelFunction, Description("Returns default Qux object.")]
+        public Qux GetDefaultQux() => new("bar", 42);
+    }
 
     public void Dispose()
     {

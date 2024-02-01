@@ -136,7 +136,7 @@ internal static class KernelSystemHelpers
                 return arg switch
                 {
                     bool booleanArg => booleanArg,
-                    _ => arg is null
+                    _ => arg is not null
                 };
             });
         });
