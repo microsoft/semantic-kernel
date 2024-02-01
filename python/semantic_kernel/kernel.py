@@ -5,6 +5,7 @@ import importlib
 import inspect
 import logging
 import os
+from copy import copy
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from pydantic import Field
@@ -215,17 +216,22 @@ class Kernel(KernelBaseModel):
 
         return function
 
-    async def run_stream(self, functions: List[KernelFunction], arguments: KernelArguments):
-        stream_function = functions[-1]
-        if len(functions) > 1:
-            pipeline_functions = functions[:-1]
-            # run pipeline functions
-            results = await self.run(pipeline_functions, arguments)
-        else:
-            raise ValueError("No functions passed to run")
-        if not results:
+    async def run_stream(self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments):
+        if isinstance(functions, KernelFunction):
+            stream_function = functions
             results = []
-        pipeline_step = len(functions) - 1
+            pipeline_step = 0
+        else:
+            stream_function = functions[-1]
+            if len(functions) > 1:
+                pipeline_functions = functions[:-1]
+                # run pipeline functions
+                results = await self.run(pipeline_functions, arguments)
+            else:
+                raise ValueError("No functions passed to run")
+            if not results:
+                results = []
+            pipeline_step = len(functions) - 1
         while True:
             function_invoking_args = self.on_function_invoking(stream_function.describe(), arguments)
             if function_invoking_args.is_cancel_requested:
@@ -250,15 +256,27 @@ class Kernel(KernelBaseModel):
                 async for stream_message in stream_function.invoke_stream(self, arguments):
                     function_result.append(stream_message)
                     yield stream_message
-            except Exception as exception:
+            except Exception as exc:
                 logger.error(
                     "Something went wrong in stream function. During function invocation:"
                     f" '{stream_function.plugin_name}.{stream_function.name}'. Error"
-                    f" description: '{str(exception)}'"
+                    f" description: '{str(exc)}'"
                 )
+                exception = exc
             # TODO: process function_result list to FunctionResult
+            output_function_result = []
+            for result in function_result:
+                for index, choice in enumerate(result):
+                    if len(output_function_result) <= index:
+                        output_function_result.append(copy(choice))
+                    else:
+                        output_function_result[index] += choice
+            func_result = FunctionResult(function=stream_function.describe(), value=output_function_result)
             function_invoked_args = self.on_function_invoked(
-                stream_function.describe(), arguments, function_result, exception
+                stream_function.describe(),
+                arguments,
+                func_result,
+                exception,
             )
             results.append(function_invoked_args.function_result)
             if function_invoked_args.exception:
@@ -287,12 +305,15 @@ class Kernel(KernelBaseModel):
 
     async def run(
         self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments
-    ) -> Optional[List[FunctionResult]]:
+    ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """Execute one or more functions"""
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
             functions = [functions]
+            number_of_steps = 1
+        else:
+            number_of_steps = len(functions)
         for func in functions:
             # While loop is used to repeat the function invocation, if requested
             while True:
@@ -315,60 +336,13 @@ class Kernel(KernelBaseModel):
                 function_result = None
                 exception = None
                 try:
-                    function_details = func.describe()
-
-                    function_invoking_args = self.on_function_invoking(function_details)
-                    if (
-                        isinstance(function_invoking_args, FunctionInvokingEventArgs)
-                        and function_invoking_args.is_cancel_requested
-                    ):
-                        cancel_message = "Execution was cancelled on function invoking event of pipeline step"
-                        logger.info(f"{cancel_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
-                        return
-
-                    if (
-                        isinstance(function_invoking_args, FunctionInvokingEventArgs)
-                        and function_invoking_args.is_skip_requested
-                    ):
-                        skip_message = "Execution was skipped on function invoking event of pipeline step"
-                        logger.info(f"{skip_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
-                        break
-
-                    result = await func.invoke(settings=settings, **kwargs)
-                    results.append(result)
-                    # if context.error_occurred:
-                    #     logger.error(
-                    #         f"Something went wrong in pipeline step {pipeline_step}. "
-                    #         f"During function invocation: '{func.plugin_name}.{func.name}'. "
-                    #         f"Error description: '{context.last_error_description}'"
-                    #     )
-                    #     return context
-
-                    function_invoked_args = self.on_function_invoked(function_details)
-
-                    if (
-                        isinstance(function_invoked_args, FunctionInvokedEventArgs)
-                        and function_invoked_args.is_cancel_requested
-                    ):
-                        cancel_message = "Execution was cancelled on function invoked event of pipeline step"
-                        logger.info(f"{cancel_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
-                        return
-                    if (
-                        isinstance(function_invoked_args, FunctionInvokedEventArgs)
-                        and function_invoked_args.is_repeat_requested
-                    ):
-                        repeat_message = "Execution was repeated on function invoked event of pipeline step"
-                        logger.info(f"{repeat_message} {pipeline_step}: {func.plugin_name}.{func.name}.")
-                        continue
-                    else:
-                        break
-
-                except Exception:
+                    function_result = await func.invoke(self, arguments)
+                except Exception as exc:
                     logger.error(
-                        f"Something went wrong in pipeline step {pipeline_step}. "
-                        f"During function invocation: '{func.plugin_name}.{func.name}'. "
-                        f"Error description: '{str(exception)}'"
+                        "Something went wrong in function invocation. During function invocation:"
+                        f" '{func.plugin_name}.{func.name}'. Error description: '{str(exc)}'"
                     )
+                    exception = exc
 
                 # this allows a hook to alter the results before adding.
                 function_invoked_args = self.on_function_invoked(func.describe(), arguments, function_result, exception)
@@ -395,10 +369,11 @@ class Kernel(KernelBaseModel):
                         f"Execution was repeated on function invoked event of pipeline step {pipeline_step}: {func.plugin_name}.{func.name}."
                     )
                     continue
+                break
 
             pipeline_step += 1
 
-        return results
+        return results if number_of_steps > 1 else results[0]
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunction:
         if plugin_name not in self.plugins:

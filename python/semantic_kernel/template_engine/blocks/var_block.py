@@ -11,6 +11,7 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 
 if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
     from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -71,7 +72,7 @@ class VarBlock(Block):
 
         return True, ""
 
-    def render(self, arguments: Optional["KernelArguments"] = None) -> str:
+    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         if arguments is None:
             return ""
 

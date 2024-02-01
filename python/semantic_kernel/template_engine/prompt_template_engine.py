@@ -12,6 +12,7 @@ from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
     from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ class PromptTemplateEngine(KernelBaseModel):
 
         return blocks
 
-    async def render(self, template_text: str, arguments: "KernelArguments") -> str:
+    async def render(self, template_text: str, kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -61,9 +62,9 @@ class PromptTemplateEngine(KernelBaseModel):
         """
         logger.debug(f"Rendering string template: {template_text}")
         blocks = self.extract_blocks(template_text)
-        return await self.render_blocks(blocks, arguments)
+        return await self.render_blocks(blocks, kernel, arguments)
 
-    async def render_blocks(self, blocks: List[Block], arguments: "KernelArguments") -> str:
+    async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -77,9 +78,9 @@ class PromptTemplateEngine(KernelBaseModel):
         rendered_blocks = []
         for block in blocks:
             if isinstance(block, TextRenderer):
-                rendered_blocks.append(block.render(arguments))
+                rendered_blocks.append(block.render(kernel, arguments))
             elif isinstance(block, CodeRenderer):
-                rendered_blocks.append(await block.render_code(arguments))
+                rendered_blocks.append(await block.render_code(kernel, arguments))
             else:
                 error = "unexpected block type, the block doesn't have a rendering " "protocol assigned to it"
                 logger.error(error)
@@ -88,7 +89,9 @@ class PromptTemplateEngine(KernelBaseModel):
         logger.debug(f"Rendered prompt: {''.join(rendered_blocks)}")
         return "".join(rendered_blocks)
 
-    def render_variables(self, blocks: List[Block], arguments: Optional["KernelArguments"] = None) -> List[Block]:
+    def render_variables(
+        self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
+    ) -> List[Block]:
         """
         Given a list of blocks, render the Variable Blocks, replacing
         placeholders with the actual value in memory.
@@ -109,11 +112,11 @@ class PromptTemplateEngine(KernelBaseModel):
                 continue
             if not isinstance(block, TextRenderer):
                 raise ValueError("TextBlock must implement TextRenderer protocol")
-            rendered_blocks.append(TextBlock.from_text(block.render(arguments)))
+            rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
 
         return rendered_blocks
 
-    async def render_code(self, blocks: List[Block], arguments: "KernelArguments") -> List[Block]:
+    async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.
@@ -135,6 +138,6 @@ class PromptTemplateEngine(KernelBaseModel):
                 continue
             if not isinstance(block, CodeRenderer):
                 raise ValueError("CodeBlock must implement CodeRenderer protocol")
-            rendered_blocks.append(TextBlock.from_text(await block.render_code(arguments)))
+            rendered_blocks.append(TextBlock.from_text(await block.render_code(kernel, arguments)))
 
         return rendered_blocks

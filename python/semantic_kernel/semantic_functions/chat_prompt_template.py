@@ -16,6 +16,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
     from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 
 ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
@@ -107,14 +108,14 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             )
         )
 
-    async def render_messages(self, arguments: "KernelArguments") -> List[Dict[str, str]]:
+    async def render_messages(self, kernel: "Kernel", arguments: "KernelArguments") -> List[Dict[str, str]]:
         """Render the content of the message in the chat template, based on the context."""
         if len(self.messages) == 0 or self.messages[-1].role in [
             "assistant",
             "system",
         ]:
             self.add_user_message(message=self.template)
-        await asyncio.gather(*[message.render_message(arguments) for message in self.messages])
+        await asyncio.gather(*[message.render_message(kernel, arguments) for message in self.messages])
         # Don't resend the assistant + tool_calls message as it will error
         return [
             message.as_dict()

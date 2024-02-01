@@ -37,7 +37,7 @@ class FunctionInvokedEventArgs(KernelEventArgs):
         repeat: Sets the is_repeat_requested flag to True.
     """
 
-    function_result: FunctionResult
+    function_result: Optional[FunctionResult] = None
     exception: Optional[Exception] = None
     is_repeat_requested: bool = Field(default=False, init_var=False)
 

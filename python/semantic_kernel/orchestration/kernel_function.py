@@ -25,8 +25,6 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.models.contents.streaming_kernel_content import StreamingKernelContent
-from semantic_kernel.orchestration.delegate_inference import DelegateInference
-from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.function_result import FunctionResult
 from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 from semantic_kernel.plugin_definition.function_view import FunctionView
@@ -88,7 +86,6 @@ class KernelFunction(KernelBaseModel):
     is_semantic: bool = Field(...)
     stream_function: Optional[Callable[..., Any]] = Field(default=None)
     parameters: List[ParameterView] = Field(...)
-    delegate_type: DelegateTypes = Field(...)
     function: Callable[..., Any] = Field(...)
     plugins: Optional["KernelPluginCollection"] = Field(default=None)
     ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]] = Field(default=None)
@@ -97,8 +94,7 @@ class KernelFunction(KernelBaseModel):
 
     def __init__(
         self,
-        delegate_type: DelegateTypes,
-        delegate_function: Callable[..., Any],
+        function: Callable[..., Any],
         parameters: List[ParameterView],
         description: str,
         plugin_name: str,
@@ -124,8 +120,7 @@ class KernelFunction(KernelBaseModel):
         chat_prompt_template = kwargs.pop("chat_prompt_template", None)
 
         super().__init__(
-            delegate_type=delegate_type,
-            function=delegate_function,
+            function=function,
             parameters=parameters,
             description=description,
             plugin_name=plugin_name,
@@ -133,7 +128,6 @@ class KernelFunction(KernelBaseModel):
             is_semantic=is_semantic,
             stream_function=delegate_stream_function,
             chat_prompt_template=chat_prompt_template,
-            **kwargs,
         )
 
     @staticmethod
@@ -187,7 +181,7 @@ class KernelFunction(KernelBaseModel):
             parameters = [input_param] + parameters
 
         return KernelFunction(
-            delegate_type=DelegateInference.infer_delegate_type(method),
+            # delegate_type=DelegateInference.infer_delegate_type(method),
             delegate_function=method,
             delegate_stream_function=method,
             parameters=parameters,
@@ -218,7 +212,8 @@ class KernelFunction(KernelBaseModel):
             raise ValueError("Function configuration cannot be `None`")
 
         async def _local_func(
-            self,
+            function: FunctionView,
+            kernel: "Kernel",
             client: Union[TextCompletionClientBase, ChatCompletionClientBase],
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
@@ -227,45 +222,49 @@ class KernelFunction(KernelBaseModel):
                 raise ValueError("AI LLM service cannot be `None`")
             try:
                 if not function_config.has_chat_prompt:
-                    prompt = await function_config.prompt_template.render(arguments)
+                    prompt = await function_config.prompt_template.render(kernel, arguments)
                     completion = await client.complete(prompt, request_settings)
-                    return FunctionResult(function=self, value=completion)
+                    return FunctionResult(function=function, value=completion)
             except Exception as e:
-                logger.error(f"Error occurred while invoking function {self.function.name}: {e}")
+                logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e
 
-            messages = await function_config.prompt_template.render_messages(arguments)
+            messages = await function_config.prompt_template.render_messages(kernel, arguments)
             try:
                 result = await client.complete_chat(messages, request_settings)
-                return FunctionResult(function=self, value=result)
+                return FunctionResult(function=function, value=result)
             except Exception as exc:
-                logger.error(f"Error occurred while invoking function {self.function.name}: {exc}")
+                logger.error(f"Error occurred while invoking function {function.name}: {exc}")
                 raise exc
 
         async def _local_stream_func(
-            self, client: AIServiceClientBase, request_settings: PromptExecutionSettings, **kwargs
+            function: FunctionView,
+            kernel: "Kernel",
+            client: AIServiceClientBase,
+            request_settings: PromptExecutionSettings,
+            arguments: KernelArguments,
         ):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
             try:
                 if function_config.has_chat_prompt:
-                    messages = await function_config.prompt_template.render_messages(**kwargs)
+                    messages = await function_config.prompt_template.render_messages(kernel, arguments)
                     async for partial_content in client.complete_chat_stream(
                         messages=messages, settings=request_settings
                     ):
                         yield partial_content
                 else:
-                    prompt = await function_config.prompt_template.render(**kwargs)
+                    prompt = await function_config.prompt_template.render(kernel, arguments)
                     async for partial_content in client.complete_stream(prompt, request_settings):
                         yield partial_content
 
             except Exception as e:
-                logger.error(f"Error occurred while invoking function {self.function.name}: {e}")
+                logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e
 
         return KernelFunction(
-            delegate_type=DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext,
+            # delegate_type=DelegateTypes.ContextSwitchInKernelContextOutTaskKernelContext,
             delegate_function=_local_func,
             delegate_stream_function=_local_stream_func,
             parameters=function_config.prompt_template.get_parameters(),
@@ -283,28 +282,26 @@ class KernelFunction(KernelBaseModel):
     def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "KernelFunction":
         if ai_service is None:
             raise ValueError("AI LLM service factory cannot be `None`")
-        self._verify_is_semantic()
         self.ai_service = ai_service()
         return self
 
     def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "KernelFunction":
         if chat_service is None:
             raise ValueError("Chat LLM service factory cannot be `None`")
-        self._verify_is_semantic()
         self.ai_service = chat_service()
         return self
 
     def set_ai_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("AI LLM request settings cannot be `None`")
-        self._verify_is_semantic()
+        # self._verify_is_semantic()
         self.prompt_execution_settings = settings
         return self
 
     def set_chat_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("Chat LLM request settings cannot be `None`")
-        self._verify_is_semantic()
+        # self._verify_is_semantic()
         self.prompt_execution_settings = settings
         return self
 
@@ -370,7 +367,27 @@ class KernelFunction(KernelBaseModel):
         kernel: "Kernel",
         arguments: KernelArguments,
     ) -> "FunctionResult":
-        return await self._function(kernel, self._ai_service, arguments.execution_settings[self._ai_service], arguments)
+        # TODO: replace with service selector
+        if self.is_native:
+            return await self._function(arguments=arguments)
+        if arguments.execution_settings and len(arguments.execution_settings) > 1:
+            exec_settings = (
+                arguments.execution_settings[self._ai_service.ai_model_id]
+                if self._ai_service.ai_model_id in arguments.execution_settings
+                else self._ai_prompt_execution_settings
+            )
+        elif arguments.execution_settings and len(arguments.execution_settings) == 1:
+            exec_settings = list(arguments.execution_settings.values())[0]
+        else:
+            exec_settings = self._ai_prompt_execution_settings
+
+        return await self._function(
+            function=self.describe(),
+            kernel=kernel,
+            client=self._ai_service,
+            request_settings=exec_settings,
+            arguments=arguments,
+        )
         # try:
         #     if self.is_semantic:
         #         return await self._invoke_semantic(settings, **kwargs)
@@ -443,8 +460,25 @@ class KernelFunction(KernelBaseModel):
             KernelContext -- The context for the function
         """
         # try:
+        if self.is_native:
+            async for message in self._function(arguments=arguments):
+                yield message
+        if arguments.execution_settings and len(arguments.execution_settings) > 1:
+            exec_settings = (
+                arguments.execution_settings[self._ai_service.ai_model_id]
+                if self._ai_service.ai_model_id in arguments.execution_settings
+                else self._ai_prompt_execution_settings
+            )
+        elif arguments.execution_settings and len(arguments.execution_settings) == 1:
+            exec_settings = list(arguments.execution_settings.values())[0]
+        else:
+            exec_settings = self._ai_prompt_execution_settings
         async for stream_msg in self._stream_function(
-            self._ai_service, arguments.execution_settings[self._ai_service], arguments
+            function=self.describe(),
+            kernel=kernel,
+            client=self._ai_service,
+            request_settings=exec_settings,
+            arguments=arguments,
         ):
             yield stream_msg
         #     if self.is_semantic:

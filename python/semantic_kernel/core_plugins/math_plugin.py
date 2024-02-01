@@ -1,11 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
-import typing as t
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
-
-if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 class MathPlugin(KernelBaseModel):
@@ -25,12 +21,13 @@ class MathPlugin(KernelBaseModel):
         input_description="The value to add",
     )
     @kernel_function_context_parameter(
-        name="Amount",
+        name="amount",
         description="Amount to add",
         type="number",
         required=True,
     )
-    def add(self, initial_value_text: str, context: "KernelContext") -> str:
+    @staticmethod
+    def add(input: int, amount: int) -> int:
         """
         Returns the Addition result of initial and amount values provided.
 
@@ -38,7 +35,7 @@ class MathPlugin(KernelBaseModel):
         :param context: Contains the context to get the numbers from
         :return: The resulting sum as a string
         """
-        return MathPlugin.add_or_subtract(initial_value_text, context, add=True)
+        return MathPlugin.add_or_subtract(input, amount, add=True)
 
     @kernel_function(
         description="Subtracts value to a value",
@@ -46,12 +43,13 @@ class MathPlugin(KernelBaseModel):
         input_description="The value to subtract",
     )
     @kernel_function_context_parameter(
-        name="Amount",
+        name="amount",
         description="Amount to subtract",
         type="number",
         required=True,
     )
-    def subtract(self, initial_value_text: str, context: "KernelContext") -> str:
+    @staticmethod
+    def subtract(input: int, amount: int) -> int:
         """
         Returns the difference of numbers provided.
 
@@ -59,10 +57,10 @@ class MathPlugin(KernelBaseModel):
         :param context: Contains the context to get the numbers from
         :return: The resulting subtraction as a string
         """
-        return MathPlugin.add_or_subtract(initial_value_text, context, add=False)
+        return MathPlugin.add_or_subtract(input, amount, add=False)
 
     @staticmethod
-    def add_or_subtract(initial_value_text: str, context: "KernelContext", add: bool) -> str:
+    def add_or_subtract(input: int, amount: int, add: bool) -> int:
         """
         Helper function to perform addition or subtraction based on the add flag.
 
@@ -71,19 +69,4 @@ class MathPlugin(KernelBaseModel):
         :param add: If True, performs addition, otherwise performs subtraction
         :return: The resulting sum or subtraction as a string
         """
-        try:
-            initial_value = int(initial_value_text)
-        except ValueError:
-            raise ValueError(f"Initial value provided is not in numeric format: {initial_value_text}")
-
-        context_amount = context["Amount"]
-        if context_amount is not None:
-            try:
-                amount = int(context_amount)
-            except ValueError:
-                raise ValueError("Context amount provided is not in numeric format:" f" {context_amount}")
-
-            result = initial_value + amount if add else initial_value - amount
-            return str(result)
-        else:
-            raise ValueError("Context amount should not be None.")
+        return input + amount if add else input - amount

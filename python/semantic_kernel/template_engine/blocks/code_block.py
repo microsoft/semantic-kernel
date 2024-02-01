@@ -4,6 +4,8 @@ import logging
 from copy import copy
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
+from pydantic import Field
+
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
@@ -19,7 +21,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class CodeBlock(Block):
-    tokens: List[Block]
+    tokens: List[Block] = Field(default_factory=list)
     validated: bool = False
 
     def __init__(
@@ -95,7 +97,10 @@ class CodeBlock(Block):
         if len(self.tokens) > 1:
             logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
             input_value = self.tokens[1].render(kernel, arguments_clone)
-            arguments_clone[self.tokens[1]] = input_value
+            arg_name = self.tokens[1].content
+            if arg_name and arg_name.startswith("$"):
+                arg_name = arg_name[1:]
+            arguments_clone[arg_name] = input_value
 
         result = await function.invoke(kernel, arguments_clone)
         return str(result)

@@ -7,6 +7,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 
 if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
     from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 
 
@@ -22,7 +23,7 @@ class ChatMessage(KernelBaseModel):
         """Return the content of the message."""
         return self.fixed_content
 
-    async def render_message(self, arguments: "KernelArguments") -> None:
+    async def render_message(self, kernel: "Kernel", arguments: "KernelArguments") -> None:
         """Render the message.
         The first time this is called for a given message,
         it will render the message with the context at that time.
@@ -30,7 +31,7 @@ class ChatMessage(KernelBaseModel):
         """
         if self.fixed_content is None:
             if self.content_template is not None:
-                self.fixed_content = await self.content_template.render(arguments)
+                self.fixed_content = await self.content_template.render(kernel, arguments)
 
     def as_dict(self) -> Dict[str, str]:
         """Return the message as a dict.

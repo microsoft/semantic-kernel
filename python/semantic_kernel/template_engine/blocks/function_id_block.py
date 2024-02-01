@@ -17,8 +17,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class FunctionIdBlock(Block):
-    plugin_name: str = Field(init_var=False)
-    function_name: str = Field(init_var=False)
+    plugin_name: str = Field("", init_var=False)
+    function_name: str = Field("", init_var=False)
 
     def __init__(self, content: Optional[str] = None):
         super().__init__(content=content and content.strip())
