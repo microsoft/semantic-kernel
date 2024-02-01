@@ -70,7 +70,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true, "Get the properties of Qux.", "## Complex types", @"### Qux:
+    [InlineData(true, "List each property of the default Qux object.", "## Complex types", @"### Qux:
 {
   ""type"": ""Object"",
   ""properties"": {
@@ -81,7 +81,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
       ""type"": ""Int32"",
     },
   }
-}", "ReturnComplexType", "Foo")]
+}", "GetDefaultQux", "Foo")]
     public async Task CreatePlanWithComplexTypesDefinitionsAsync(bool useChatModel, string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
     {
         // Arrange
@@ -170,8 +170,8 @@ public sealed class HandlebarsPlannerTests : IDisposable
             }
         }
 
-        [KernelFunction, Description("Return Qux")]
-        public Qux ReturnComplexType() => new("bar", 42);
+        [KernelFunction, Description("Returns default Qux object.")]
+        public Qux GetDefaultQux() => new("bar", 42);
     }
 
     public void Dispose()
