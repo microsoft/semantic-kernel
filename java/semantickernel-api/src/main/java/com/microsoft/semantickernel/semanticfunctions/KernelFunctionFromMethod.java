@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -173,14 +172,18 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
                 KernelFunction function,
                 InvocationContext invocationContext) {
 
-        // variableType must be effectively final for lambda
-        final ContextVariableType<T> variableType;
-        try {
-            // unchecked
-            variableType = (ContextVariableType<T>)invocationContext.getFunctionReturnType();
-        } catch (ClassCastException e) {
-            throw new SKException("FunctionResult type is not compatible with the ContextVariableType", e);
+        if (invocationContext == null) {
+            invocationContext = InvocationContext.builder().build();
         }
+
+        // variableType must be effectively final for lambda
+        // final ContextVariableType<T> variableType;
+        // try {
+        //     // unchecked
+        //     variableType = (ContextVariableType<T>)invocationContext.getFunctionReturnType();
+        // } catch (ClassCastException e) {
+        //     throw new SKException("FunctionResult type is not compatible with the ContextVariableType", e);
+        // }
 
         // must be effectively final for lambda
         KernelHooks kernelHooks = invocationContext.getKernelHooks() != null 
@@ -190,10 +193,10 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
         KernelFunctionArguments arguments = invocationContext.getKernelFunctionArguments();
 
-        FunctionInvokingEvent updatedState = kernelHooks
+        FunctionInvokingEvent updatedState =  kernelHooks
                     .executeHooks(
                         new FunctionInvokingEvent(function, arguments));
-        KernelFunctionArguments updatedArguments = updatedState.getArguments();
+        KernelFunctionArguments updatedArguments = updatedState != null ? updatedState.getArguments() : arguments;
 
                 try {
                     List<Object> args =
@@ -203,7 +206,7 @@ public class KernelFunctionFromMethod extends DefaultKernelFunction {
 
                     Mono<?> mono;
                     if (method.getReturnType().isAssignableFrom(Mono.class)) {
-                        mono = (Mono) method.invoke(instance, args.toArray());
+                        mono = (Mono<?>) method.invoke(instance, args.toArray());
                     } else {
                         mono = invokeAsyncFunction(method, instance, args);
                     }

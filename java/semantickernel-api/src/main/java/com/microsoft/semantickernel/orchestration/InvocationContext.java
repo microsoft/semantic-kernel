@@ -1,17 +1,17 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-
-import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * Context passed to a Kernel or KernelFunction invoke
  */
@@ -29,12 +29,13 @@ public class InvocationContext implements Buildable {
         KernelHooks hooks,
         @Nullable
         PromptExecutionSettings promptExecutionSettings) {
-        this.arguments = arguments;
+        this.arguments = arguments != null ? new KernelFunctionArguments(arguments) : new KernelFunctionArguments();
         this.functionReturnType = functionReturnType;
-        this.hooks = hooks;
+        this.hooks = hooks != null ? new KernelHooks(hooks) : new KernelHooks();
         this.promptExecutionSettings = promptExecutionSettings;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KernelFunctionArguments getKernelFunctionArguments() {
         return arguments;
     }
@@ -43,12 +44,13 @@ public class InvocationContext implements Buildable {
         return functionReturnType;
     }
 
-    @CheckForNull
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    @Nullable
     public KernelHooks getKernelHooks() {
         return hooks;
     }
 
-    @CheckForNull
+    @Nullable
     public PromptExecutionSettings getPromptExecutionSettings() {
         return promptExecutionSettings;
     }
@@ -66,6 +68,7 @@ public class InvocationContext implements Buildable {
         private KernelHooks hooks;
         private PromptExecutionSettings promptExecutionSettings;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withKernelFunctionArguments(KernelFunctionArguments arguments) {
             this.arguments = arguments;
             return this;
@@ -82,6 +85,7 @@ public class InvocationContext implements Buildable {
             return withFunctionReturnType(contextVariable);
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withKernelHooks(KernelHooks hooks) {
             this.hooks = hooks;
             return this;

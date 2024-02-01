@@ -178,14 +178,14 @@ public class Kernel implements Buildable {
 
         KernelHooks kernelHooks = this.globalKernelHooks;
         if (kernelHooks != null) {
-            mergedHooks.append(kernelHooks);
+            mergedHooks = mergedHooks.append(kernelHooks);
         }
 
-        if (invocationContextHooks == null) {
-            mergedHooks.append(invocationContextHooks);
+        if (invocationContextHooks != null) {
+            mergedHooks = mergedHooks.append(invocationContextHooks);
         }
 
-        return invocationContextHooks;
+        return mergedHooks;
     }
 
     // InvocationContext is immutable but it's members are not, so we need to create a new

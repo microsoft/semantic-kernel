@@ -108,7 +108,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     @SuppressWarnings("unchecked")
     private <T> Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
-        InvocationContext invocationContext) {
+        @Nullable InvocationContext invocationContext) {
+
+        if (invocationContext == null) {
+            invocationContext = InvocationContext.builder().build();
+        }
 
         // variableType must be effectively final for lambda
         final ContextVariableType<T> variableType;
@@ -161,7 +165,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                 Flux<FunctionResult<T>> result;
 
                 // settings from prompt or use default
-                PromptExecutionSettings executionSettings = aiServiceSelection != null ? aiServiceSelection.getSettings() : PromptExecutionSettings.builder().build();
+                PromptExecutionSettings executionSettings = aiServiceSelection.getSettings();
 
                 if (client instanceof ChatCompletionService) {
                     result = ((ChatCompletionService) client)
@@ -291,7 +295,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable
@@ -306,13 +309,12 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
-        @Nullable
-        ContextVariableType<T> variableType) {
-            InvocationContext invocationContext = InvocationContext.builder()
-                .withKernelFunctionArguments(arguments)
-                .withFunctionReturnType(variableType)
-                .build();
-            return invokeAsync(kernel, invocationContext);
+        @Nullable ContextVariableType<T> variableType) {
+        InvocationContext invocationContext = InvocationContext.builder()
+            .withKernelFunctionArguments(arguments)
+            .withFunctionReturnType(variableType)
+            .build();
+        return invokeAsync(kernel, invocationContext);
     }
 
 
