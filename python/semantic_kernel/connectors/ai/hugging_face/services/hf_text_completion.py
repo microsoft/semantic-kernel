@@ -85,7 +85,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {HuggingFaceRequestSettings} -- Settings for the request.
+            settings {HuggingFacePromptExecutionSettings} -- Settings for the request.
 
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.

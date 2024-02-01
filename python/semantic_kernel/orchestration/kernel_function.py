@@ -4,7 +4,6 @@ import asyncio
 import logging
 import platform
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -37,6 +36,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
 
+# TODO: is this needed anymore after sync code removal?
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -307,7 +307,7 @@ class KernelFunction(KernelFunctionBase):
             parameters=self._parameters,
         )
 
-    def __call__(
+    async def __call__(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
@@ -316,9 +316,27 @@ class KernelFunction(KernelFunctionBase):
         settings: Optional[PromptExecutionSettings] = None,
         log: Optional[Any] = None,
     ) -> "KernelContext":
+        """
+        Override the call operator to allow calling the function directly
+        This operator is run asynchronously.
+
+        Arguments:
+            input {Optional[str]} -- The input to the function
+            variables {ContextVariables} -- The variables for the function
+            context {Optional[KernelContext]} -- The context for the function
+            memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
+            settings {Optional[PromptExecutionSettings]} -- The settings for the function
+            log {Optional[Any]} -- A logger to use for logging. (Optional)
+
+        Returns:
+            KernelContext -- The context for the function
+
+        Raises:
+            KernelException -- If the function is not semantic
+        """
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        return self.invoke(
+        return await self.invoke(
             input=input,
             variables=variables,
             context=context,
@@ -326,57 +344,7 @@ class KernelFunction(KernelFunctionBase):
             settings=settings,
         )
 
-    def invoke(
-        self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[PromptExecutionSettings] = None,
-        log: Optional[Any] = None,
-    ) -> "KernelContext":
-        from semantic_kernel.orchestration.kernel_context import KernelContext
-
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
-        if context is None:
-            context = KernelContext(
-                variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
-                memory=memory if memory is not None else NullMemory.instance,
-            )
-        else:
-            # If context is passed, we need to merge the variables
-            if variables is not None:
-                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-            if memory is not None:
-                context.memory = memory
-
-        if input is not None:
-            context.variables.update(input)
-
-        try:
-            loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
-        except RuntimeError:
-            loop = None
-
-        if loop and loop.is_running():
-
-            def run_coroutine():
-                if self.is_semantic:
-                    return self._invoke_semantic(context, settings)
-                else:
-                    return self._invoke_native(context)
-
-            return self.run_async_in_executor(run_coroutine)
-        else:
-            if self.is_semantic:
-                return asyncio.run(self._invoke_semantic(context, settings))
-            else:
-                return asyncio.run(self._invoke_native(context))
-
-    async def invoke_async(
+    async def invoke(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
@@ -385,6 +353,23 @@ class KernelFunction(KernelFunctionBase):
         settings: Optional[PromptExecutionSettings] = None,
         **kwargs: Dict[str, Any],
     ) -> "KernelContext":
+        """
+        Invoke the function asynchronously
+
+        Arguments:
+            input {Optional[str]} -- The input to the function
+            variables {ContextVariables} -- The variables for the function
+            context {Optional[KernelContext]} -- The context for the function
+            memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
+            settings {Optional[PromptExecutionSettings]} -- The settings for the function
+            kwargs {Dict[str, Any]} -- Additional keyword arguments
+
+        Returns:
+            KernelContext -- The context for the function
+
+        Raises:
+            KernelException -- If there is a problem invoking the function
+        """
         from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
@@ -526,30 +511,3 @@ class KernelFunction(KernelFunctionBase):
 
     def _trace_function_type_Call(self, type: Enum) -> None:
         logger.debug(f"Executing function type {type}: {type.name}")
-
-    """
-    Async code wrapper to allow running async code inside external
-    event loops such as Jupyter notebooks.
-    """
-
-    def run_async_in_executor(self, coroutine_func: Callable[[], Any]) -> Any:
-        """
-        A unified method for async execution for more efficient and safer thread management
-
-        Arguments:
-            coroutine_func {Callable[[], Any]} -- The coroutine to run
-
-        Returns:
-            Any -- The result of the coroutine
-        """
-
-        def run_async_in_thread():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(coroutine_func())
-            loop.close()
-            return result
-
-        with ThreadPoolExecutor() as executor:
-            future = executor.submit(run_async_in_thread)
-            return future.result()
