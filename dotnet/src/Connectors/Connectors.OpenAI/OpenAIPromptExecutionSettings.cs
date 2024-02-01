@@ -81,7 +81,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
-    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/>.
+    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
     /// </remarks>
     [Experimental("SKEXP0013")]
     [JsonPropertyName("response_format")]
