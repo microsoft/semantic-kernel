@@ -101,7 +101,7 @@ public sealed class OpenAIFunction
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
-    public static string NameSeparator => "_";
+    public static string NameSeparator { get; set; } = "-";
 
     /// <summary>Gets the name of the plugin with which the function is associated, if any.</summary>
     public string? PluginName { get; }

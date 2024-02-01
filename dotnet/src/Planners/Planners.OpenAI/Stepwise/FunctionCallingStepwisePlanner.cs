@@ -31,6 +31,10 @@ public sealed class FunctionCallingStepwisePlanner
         this._generatePlanYaml = this._options.GetInitialPlanPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
         this._stepPrompt = this._options.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
         this._options.ExcludedPlugins.Add(StepwisePlannerPluginName);
+
+        // Ensure the delimiter used in OpenAI function descriptions matches
+        // the one set in the planner options.
+        OpenAIFunction.NameSeparator = this._options.NameDelimiter;
     }
 
     /// <summary>

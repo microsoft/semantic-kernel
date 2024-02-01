@@ -388,7 +388,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
 
         Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
@@ -555,7 +555,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
 
         Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
