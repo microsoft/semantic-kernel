@@ -1,15 +1,17 @@
 package com.microsoft.semantickernel.samples.plugins;
 
+import java.util.List;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.text.TextChunker;
-import java.util.List;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -69,7 +71,8 @@ public class ConversationSummaryPlugin {
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     @DefineKernelFunction(
         description = "Given a long conversation transcript, summarize the conversation.",
-        name = "SummarizeConversation"
+        name = "SummarizeConversation",
+        returnType = "java.lang.String"
     )
     public Mono<String> SummarizeConversationAsync(
         @KernelFunctionParameter(
@@ -88,7 +91,8 @@ public class ConversationSummaryPlugin {
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     @DefineKernelFunction(
         description = "Given a long conversation transcript, identify action items.",
-        name = "GetConversationActionItems"
+        name = "GetConversationActionItems",
+        returnType = "java.lang.String"
     )
     public Mono<String> GetConversationActionItemsAsync(
         @KernelFunctionParameter(
@@ -107,7 +111,8 @@ public class ConversationSummaryPlugin {
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     @DefineKernelFunction(
         description = "Given a long conversation transcript, identify topics worth remembering.",
-        name = "GetConversationTopics"
+        name = "GetConversationTopics",
+        returnType = "java.lang.String"
     )
 
     public Mono<String> GetConversationTopicsAsync(
@@ -134,7 +139,7 @@ public class ConversationSummaryPlugin {
                     ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
             })
             .reduce("", (acc, next) -> {
-                return acc + "\n" + next.getResultVariable();
+                return acc + "\n" + next.getResult();
             });
     }
 }

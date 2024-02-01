@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -10,9 +15,7 @@ import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -34,15 +37,10 @@ public interface KernelFunction extends Buildable {
     String getName();
 
     /**
-     * The function to create a fully qualified name for
-     *
-     * @return A fully qualified name for a function
-     */
-    String toFullyQualifiedName();
-
-    /**
      * @return A description of the function
      */
+
+    @Nullable
     String getDescription();
 
     /**
@@ -76,7 +74,7 @@ public interface KernelFunction extends Buildable {
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
-        ContextVariableType<T> variableType);
+        @Nullable ContextVariableType<T> variableType);
 
     /**
      * Invokes this KernelFunction. The {@link InvocationContext} encapsulates the function arguments 
@@ -93,35 +91,40 @@ public interface KernelFunction extends Buildable {
      */        
     <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        InvocationContext invocationContext);
+        @Nullable InvocationContext invocationContext);
 
     @Nullable
     Map<String, PromptExecutionSettings> getExecutionSettings();
 
     interface FromPromptBuilder {
 
-        FromPromptBuilder withName(String name);
+        FromPromptBuilder withName(@Nullable String name);
 
-        FromPromptBuilder withInputParameters(List<InputVariable> inputVariables);
+        FromPromptBuilder withInputParameters(
+            @Nullable List<InputVariable> inputVariables);
 
-        FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate);
+        FromPromptBuilder withPromptTemplate(
+            @Nullable PromptTemplate promptTemplate);
 
         FromPromptBuilder withExecutionSettings(
+            @Nullable
             Map<String, PromptExecutionSettings> executionSettings);
 
         FromPromptBuilder withDefaultExecutionSettings(
+            @Nullable
             PromptExecutionSettings executionSettings);
-            
-        FromPromptBuilder withDescription(String description);
 
-        FromPromptBuilder withTemplate(String template);
+        FromPromptBuilder withDescription(@Nullable String description);
+
+        FromPromptBuilder withTemplate(@Nullable String template);
 
         KernelFunction build();
 
         FromPromptBuilder withTemplateFormat(String templateFormat);
 
-        FromPromptBuilder withOutputVariable(OutputVariable outputVariable);
+        FromPromptBuilder withOutputVariable(@Nullable OutputVariable outputVariable);
 
-        FromPromptBuilder withPromptTemplateFactory(PromptTemplateFactory promptTemplateFactory);
+        FromPromptBuilder withPromptTemplateFactory(
+            @Nullable PromptTemplateFactory promptTemplateFactory);
     }
 }

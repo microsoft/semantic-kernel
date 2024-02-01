@@ -25,8 +25,8 @@ public class Example69_MutableKernelPlugin {
         System.out.println("======== Example69_MutableKernelPlugin ========");
 
         KernelPlugin plugin = new KernelPlugin("Plugin", "Mutable plugin", null);
-        plugin.getFunctions().put("dateFunction", KernelFunctionFactory.createFromMethod(
-            Time.class.getMethod("date"), new Time(), "date", null, null, null));
+        plugin.addFunction(KernelFunctionFactory.createFromMethod(
+            Time.class.getMethod("date"), new Time(), "dateFunction", null, null, null));
 
         Kernel kernel = Kernel.builder().build();
         kernel.getPlugins().add(plugin);

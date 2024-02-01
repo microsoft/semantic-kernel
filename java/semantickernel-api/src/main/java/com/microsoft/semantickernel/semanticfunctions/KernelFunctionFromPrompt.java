@@ -1,5 +1,16 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.azure.core.exception.HttpResponseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,13 +39,6 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -51,7 +55,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         Map<String, PromptExecutionSettings> executionSettings) {
         super(
             new KernelFunctionMetadata(
-                promptConfig.getName(),
+                getName(promptConfig),
                 promptConfig.getDescription(),
                 promptConfig.getKernelParametersMetadata(),
                 promptConfig.getKernelReturnParameterMetadata()
@@ -59,6 +63,14 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
             executionSettings != null ? executionSettings : promptConfig.getExecutionSettings()
         );
         this.template = template;
+    }
+
+    private static String getName(PromptTemplateConfig promptConfig) {
+        if (promptConfig.getName() == null) {
+            return UUID.randomUUID().toString();
+        } else {
+            return promptConfig.getName();
+        }
     }
 
     public static KernelFunction create(
@@ -141,7 +153,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                     );
 
                 AIService client = aiServiceSelection != null ? aiServiceSelection.getService() : null;
-                if (client == null) {
+                if (aiServiceSelection == null) {
                     throw new IllegalStateException(
                         "Failed to initialise aiService, could not find any TextAIService implementations");
                 }
@@ -182,8 +194,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                                 );
                             } else if (chatMessageContent.getAuthorRole()
                                 == AuthorRole.TOOL) {
+                                String content = chatMessageContent.getContent();
+                                if (content == null || content.isEmpty()) {
+                                    return Flux.error(new IllegalStateException(
+                                        "Tool message content is empty"));
+                                }
                                 Mono<FunctionResult<String>> toolResult = invokeTool(kernel,
-                                    chatMessageContent.getContent());
+                                    content);
                                 return toolResult.flux();
                             }
                             return Flux.empty();
@@ -258,8 +275,8 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                     if (ex instanceof HttpResponseException
                         && ((HttpResponseException) ex).getResponse().getStatusCode()
                         == 400
-                        && ex.getMessage()
-                        .contains("parameters are not available" + " on")) {
+                        && ex.getMessage() != null
+                        && ex.getMessage().contains("parameters are not available" + " on")) {
                         LOGGER.warn(
                             "This error indicates that you have attempted"
                                 + " to use a chat completion model in a"
@@ -277,6 +294,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     @SuppressWarnings("unchecked")
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
+        @Nullable
         InvocationContext invocationContext) {
 
         // two calls so compiler isn't confused about invokeInternalAsync return type
@@ -288,6 +306,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     public <T> Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
+        @Nullable
         ContextVariableType<T> variableType) {
             InvocationContext invocationContext = InvocationContext.builder()
                 .withKernelFunctionArguments(arguments)
@@ -323,6 +342,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
     /*
      * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
      */
+    @SuppressWarnings("StringSplitter")
     private Mono<FunctionResult<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
         String name = jsonNode.get("name").asText();
         String[] parts = name.split("-");
@@ -330,22 +350,25 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         String fnName = parts.length > 1 ? parts[1] : "";
         JsonNode parameters = jsonNode.get("parameters");
         if (parameters != null) {
-            KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
-            if (kernelFunction == null) {
-                return Mono.empty();
+            try {
+                KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
+
+                ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
+                    String.class);
+                Map<String, ContextVariable<?>> variables = new HashMap<>();
+                parameters.fields().forEachRemaining(entry -> {
+                    String paramName = entry.getKey();
+                    String paramValue = entry.getValue().asText();
+                    ContextVariable<String> contextVariable = new ContextVariable<>(variableType,
+                        paramValue);
+                    variables.put(paramName, contextVariable);
+                });
+                KernelFunctionArguments arguments = KernelFunctionArguments.builder().withVariables(variables)
+                    .build();
+                return kernelFunction.invokeAsync(kernel, arguments, variableType);
+            } catch (Exception e) {
+                return Mono.error(e);
             }
-            ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
-                String.class);
-            Map<String, ContextVariable<?>> variables = new HashMap<>();
-            parameters.fields().forEachRemaining(entry -> {
-                String paramName = entry.getKey();
-                String paramValue = entry.getValue().asText();
-                ContextVariable<String> contextVariable = new ContextVariable<>(variableType,
-                    paramValue);
-                variables.put(paramName, contextVariable);
-            });
-            KernelFunctionArguments arguments = KernelFunctionArguments.builder().withVariables(variables).build();
-            return kernelFunction.invokeAsync(kernel, arguments, variableType);
         }
         return Mono.empty();
     }
@@ -374,6 +397,14 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         @Nullable String templateFormat,
         @Nullable PromptTemplateFactory promptTemplateFactory) {
 
+        if (templateFormat == null) {
+            templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+        }
+
+        if (functionName == null) {
+            functionName = UUID.randomUUID().toString();
+        }
+
         return new KernelFunctionFromPrompt.Builder()
             .withName(functionName)
             .withDescription(description)
@@ -390,37 +421,50 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
     public static final class Builder implements FromPromptBuilder {
 
+        @Nullable
         private PromptTemplate promptTemplate;
+        @Nullable
         private String name;
-        private Map<String, PromptExecutionSettings> executionSettings;
+        @Nullable
+        private Map<String, PromptExecutionSettings> executionSettings = null;
+        @Nullable
         private String description;
+        @Nullable
         private List<InputVariable> inputVariables;
+        @Nullable
         private String template;
         private String templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+        @Nullable
         private OutputVariable outputVariable;
+        @Nullable
         private PromptTemplateFactory promptTemplateFactory;
 
 
         @Override
-        public FromPromptBuilder withName(String name) {
+        public FromPromptBuilder withName(@Nullable String name) {
             this.name = name;
             return this;
         }
 
         @Override
-        public FromPromptBuilder withInputParameters(List<InputVariable> inputVariables) {
-            this.inputVariables = new ArrayList<>(inputVariables);
+        public FromPromptBuilder withInputParameters(@Nullable List<InputVariable> inputVariables) {
+            if (inputVariables != null) {
+                this.inputVariables = new ArrayList<>(inputVariables);
+            } else {
+                this.inputVariables = null;
+            }
             return this;
         }
 
         @Override
-        public FromPromptBuilder withPromptTemplate(PromptTemplate promptTemplate) {
+        public FromPromptBuilder withPromptTemplate(@Nullable PromptTemplate promptTemplate) {
             this.promptTemplate = promptTemplate;
             return this;
         }
 
         @Override
         public FromPromptBuilder withExecutionSettings(
+            @Nullable
             Map<String, PromptExecutionSettings> executionSettings) {
             if (this.executionSettings == null) {
                 this.executionSettings = new HashMap<>();
@@ -434,7 +478,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         @Override
         public FromPromptBuilder withDefaultExecutionSettings(
-            PromptExecutionSettings executionSettings) {
+            @Nullable PromptExecutionSettings executionSettings) {
+            if (executionSettings == null) {
+                return this;
+            }
+
             if (this.executionSettings == null) {
                 this.executionSettings = new HashMap<>();
             }
@@ -449,13 +497,13 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         @Override
-        public FromPromptBuilder withDescription(String description) {
+        public FromPromptBuilder withDescription(@Nullable String description) {
             this.description = description;
             return this;
         }
 
         @Override
-        public FromPromptBuilder withTemplate(String template) {
+        public FromPromptBuilder withTemplate(@Nullable String template) {
             this.template = template;
             return this;
         }
@@ -468,13 +516,14 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         @Override
-        public FromPromptBuilder withOutputVariable(OutputVariable outputVariable) {
+        public FromPromptBuilder withOutputVariable(@Nullable OutputVariable outputVariable) {
             this.outputVariable = outputVariable;
             return this;
         }
 
         @Override
         public FromPromptBuilder withPromptTemplateFactory(
+            @Nullable
             PromptTemplateFactory promptTemplateFactory) {
             this.promptTemplateFactory = promptTemplateFactory;
             return this;
@@ -482,6 +531,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
 
         @Override
         public KernelFunction build() {
+
+            if (template == null) {
+                throw new IllegalStateException("Template must be provided");
+            }
+
             PromptTemplateConfig config = new PromptTemplateConfig(
                 name,
                 template,
@@ -506,6 +560,11 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         }
 
         public KernelFunction build(PromptTemplateConfig functionModel) {
+
+            if (promptTemplate == null) {
+                throw new IllegalStateException("Template must be provided");
+            }
+
             return new KernelFunctionFromPrompt(
                 promptTemplate,
                 functionModel,

@@ -45,22 +45,27 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
 
     @Override
-    public Mono<String> renderAsync(Kernel kernel,
+    public Mono<String> renderAsync(
+        Kernel kernel,
         @Nullable KernelFunctionArguments arguments) {
         HandleBarsPromptTemplateHandler handler =
             new HandleBarsPromptTemplateHandler(kernel, promptTemplate.getTemplate());
 
+        if (arguments == null) {
+            arguments = new KernelFunctionArguments();
+        }
         return handler.render(arguments);
     }
 
     private static class MessageResolver implements ValueResolver {
 
         @Override
+        @SuppressWarnings("NullAway")
         public Object resolve(Object context, String name) {
             if (context instanceof ChatMessageContent) {
-                if ("role".equals(name.toLowerCase())) {
+                if ("role".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getAuthorRole().name();
-                } else if ("content".equals(name.toLowerCase())) {
+                } else if ("content".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getContent();
                 }
             }
@@ -70,7 +75,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @Override
         public Object resolve(Object context) {
             if (context instanceof ChatMessageContent) {
-                return ((ChatMessageContent) context).getContent();
+                String result = ((ChatMessageContent) context).getContent();
+                return result != null ? result : UNRESOLVED;
             }
             return UNRESOLVED;
         }
@@ -96,9 +102,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             }
             if (context instanceof KernelFunction) {
                 KernelFunction function = (KernelFunction) context;
-                if ("pluginname".equals(name.toLowerCase())) {
+                if ("pluginname".equalsIgnoreCase(name)) {
                     return function.getSkillName();
-                } else if ("name".equals(name.toLowerCase())) {
+                } else if ("name".equalsIgnoreCase(name)) {
                     return function.getName();
                 }
             }
@@ -123,19 +129,26 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         @Override
         public Object resolve(Object context, String name) {
+            Object value = null;
             if (context instanceof KernelFunctionArguments) {
-                return ((KernelFunctionArguments) context).get(name).getValue();
+                ContextVariable<?> variable = ((KernelFunctionArguments) context).get(name);
+                value = variable != null ? variable.getValue() : null;
             }
             if (context instanceof ContextVariable) {
-                return ((ContextVariable<?>) context).getValue();
+                value = ((ContextVariable<?>) context).getValue();
             }
-            return UNRESOLVED;
+            if (value == null) {
+                return UNRESOLVED;
+            } else {
+                return value;
+            }
         }
 
         @Override
         public Object resolve(Object context) {
             if (context instanceof ContextVariable) {
-                return ((ContextVariable<?>) context).getValue();
+                Object result = ((ContextVariable<?>) context).getValue();
+                return result != null ? result : UNRESOLVED;
             }
             return UNRESOLVED;
         }

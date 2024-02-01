@@ -78,7 +78,7 @@ public class Example62_CustomAIServiceSelector {
             .build();
 
         var result = kernel.invokeAsync(func, arguments, String.class).block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
     }
 
     // A dumb AIServiceSelector that just returns the first service and execution settings it finds

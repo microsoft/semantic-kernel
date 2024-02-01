@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.builders.ServiceLoadUtil;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 public interface ChatCompletionService extends Buildable, TextAIService {
@@ -36,8 +37,10 @@ public interface ChatCompletionService extends Buildable, TextAIService {
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         String prompt,
+        @Nullable
         PromptExecutionSettings promptExecutionSettings,
         Kernel kernel,
+        @Nullable
         KernelHooks kernelHooks
     );
 
@@ -49,8 +52,13 @@ public interface ChatCompletionService extends Buildable, TextAIService {
 
     abstract class Builder implements SemanticKernelBuilder<ChatCompletionService> {
 
+        @Nullable
         protected OpenAIAsyncClient client;
+
+        @Nullable
         protected String modelId;
+
+        @Nullable
         protected String serviceId;
 
 

@@ -1,22 +1,26 @@
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import static com.microsoft.semantickernel.templateengine.semantickernel.blocks.BlockTypes.NamedArg;
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.microsoft.semantickernel.templateengine.semantickernel.blocks.BlockTypes.NamedArg;
 
 public class NamedArgBlock extends Block implements TextRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NamedArgBlock.class);
 
+    @Nullable
     private final String name;
+    @Nullable
     private final String value;
     private final VarBlock argNameAsVarBlock;
+    @Nullable
     private final VarBlock varBlock;
+    @Nullable
     private final ValBlock valBlock;
 
     public NamedArgBlock(String content, String name, String value) {
@@ -35,20 +39,47 @@ public class NamedArgBlock extends Block implements TextRendering {
         }
     }
 
-    public NamedArgBlock(String content) {
+    protected NamedArgBlock(
+        String content,
+        @Nullable
+        String name,
+        @Nullable
+        String value,
+        VarBlock argNameAsVarBlock,
+        @Nullable
+        VarBlock varBlock,
+        @Nullable
+        ValBlock valBlock) {
         super(content, NamedArg);
+        this.name = name;
+        this.value = value;
+        this.argNameAsVarBlock = argNameAsVarBlock;
+        this.varBlock = varBlock;
+        this.valBlock = valBlock;
+    }
 
-        this.name = tryGetName(content);
-        this.value = tryGetValue(content);
-        this.argNameAsVarBlock = new VarBlock(Symbols.VarPrefix + name);
+    public static NamedArgBlock from(String content) {
+
+        String name = tryGetName(content);
+        String value = tryGetValue(content);
+        VarBlock argNameAsVarBlock = new VarBlock(Symbols.VarPrefix + name);
+
+        if (value == null) {
+            throw new IllegalArgumentException("Unable to extract value from: " + content);
+        }
+
+        VarBlock varBlock;
+        ValBlock valBlock;
 
         if (value.startsWith(String.valueOf(Symbols.VarPrefix))) {
-            this.varBlock = new VarBlock(value);
+            varBlock = new VarBlock(value);
             valBlock = null;
         } else {
-            this.valBlock = new ValBlock(value);
+            valBlock = new ValBlock(value);
             varBlock = null;
         }
+
+        return new NamedArgBlock(content, name, value, argNameAsVarBlock, varBlock, valBlock);
     }
 
     @Override
@@ -73,9 +104,8 @@ public class NamedArgBlock extends Block implements TextRendering {
         return this.argNameAsVarBlock.isValid();
     }
 
-    @Nullable
     @Override
-    public String render(KernelFunctionArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         return getContent();
     }
 
@@ -85,10 +115,12 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     }
 
+    @Nullable
     public String getName() {
         return name;
     }
 
+    @SuppressWarnings("NullAway")
     public String getValue(KernelFunctionArguments arguments) {
         boolean valueIsValidValBlock = this.valBlock != null && this.valBlock.isValid();
         if (valueIsValidValBlock) {
@@ -121,6 +153,7 @@ public class NamedArgBlock extends Block implements TextRendering {
         return splitAndGetPart(text, 1);
     }
 
+    @SuppressWarnings("StringSplitter")
     @Nullable
     private static String splitAndGetPart(String text, int x) {
         if (Verify.isNullOrEmpty(text)) {

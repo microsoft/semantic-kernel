@@ -24,7 +24,7 @@ public abstract class StreamingKernelContent<T> {
     /// The model ID used to generate the content.
     /// </summary>
     @Nullable
-    private final String modelId;
+    private String modelId;
 
     /// <summary>
     /// The metadata associated with the content.
@@ -32,18 +32,14 @@ public abstract class StreamingKernelContent<T> {
     @Nullable
     private final Map<String, ContextVariable<?>> metadata;
 
-    protected StreamingKernelContent(@Nullable T innerContent, int choiceIndex,
-        @Nullable String modelId, @Nullable Map<String, ContextVariable<?>> metadata) {
+    protected StreamingKernelContent(
+        @Nullable T innerContent,
+        int choiceIndex,
+        @Nullable String modelId,
+        @Nullable Map<String, ContextVariable<?>> metadata) {
         this.innerContent = innerContent;
         this.choiceIndex = choiceIndex;
         this.modelId = modelId;
         this.metadata = metadata;
-    }
-
-
-    public abstract byte[] toByteArray();
-
-    public Object getInnerContent() {
-        return innerContent;
     }
 }

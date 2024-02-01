@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.Todo;
 import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -43,23 +44,19 @@ public abstract class DefaultKernelFunction implements KernelFunction {
     }
 
     @Override
-    public String toFullyQualifiedName() {
-        return null;
-    }
-
-    @Override
+    @Nullable
     public String getDescription() {
-        return null;
+        return metadata.getDescription();
     }
 
     @Override
     public String toEmbeddingString() {
-        return null;
+        throw new Todo();
     }
 
     @Override
     public String toManualString(boolean includeOutputs) {
-        return null;
+        throw new Todo();
     }
 
     @Override

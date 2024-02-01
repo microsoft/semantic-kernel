@@ -1,6 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -19,15 +31,6 @@ import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /**
@@ -67,22 +70,34 @@ public class Kernel implements Buildable {
         KernelFunction function,
         @Nullable KernelFunctionArguments arguments,
         Class<T> resultType) {
-            
-        ContextVariableType<T> functionResultType;
+
+        ContextVariableType<T> functionResultType = getContextVariableType(function, resultType);
+        return invokeAsync(function, arguments, functionResultType);
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    private static <T> ContextVariableType<T> getContextVariableType(
+        KernelFunction function,
+        Class<T> resultType) {
+
+        Class<?> functionReturnType = function.getMetadata().getReturnParameter().getParameterType();
 
         try {
-            functionResultType = ContextVariableTypes.getDefaultVariableTypeForClass(resultType);
+            // unchecked cast   
+            return (ContextVariableType<T>) ContextVariableTypes.getDefaultVariableTypeForClass(
+                functionReturnType);
         } catch (Exception e) {
-            if (resultType.isAssignableFrom(
-                function.getMetadata().getReturnParameter().getParameterType())) {
-                    functionResultType = new ContextVariableType<>(new NoopConverter<>(resultType),
-                    resultType);
+            if (functionReturnType.isAssignableFrom(resultType)) {
+                return new ContextVariableType<>(
+                        // unchecked cast
+                        new NoopConverter<>((Class<T>) functionReturnType),
+                        // unchecked cast
+                        (Class<T>) functionReturnType);
             } else {
-                throw e;
+                return null;
             }
         }
-            
-        return invokeAsync(function, arguments, functionResultType);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
@@ -158,16 +173,18 @@ public class Kernel implements Buildable {
 
     // Add the global hooks to the invocation context hooks.
     private KernelHooks mergeInGlobalHooks(@Nullable KernelHooks invocationContextHooks) {
-        KernelHooks globalKernelHooks = this.globalKernelHooks;
-        if (globalKernelHooks == null) {
-            return null;
+
+        KernelHooks mergedHooks = new KernelHooks();
+
+        KernelHooks kernelHooks = this.globalKernelHooks;
+        if (kernelHooks != null) {
+            mergedHooks.append(kernelHooks);
         }
 
         if (invocationContextHooks == null) {
-            invocationContextHooks = new KernelHooks();
+            mergedHooks.append(invocationContextHooks);
         }
 
-        invocationContextHooks.append(globalKernelHooks);
         return invocationContextHooks;
     }
 

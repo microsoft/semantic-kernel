@@ -32,6 +32,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @Nullable
+    @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable
@@ -108,7 +109,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         AIService service = getAnyService(serviceType);
         PromptExecutionSettings settings = null;
 
-        if (executionSettings != null) {
+        if (executionSettings != null && !executionSettings.isEmpty()) {
             if (executionSettings.containsKey(PromptExecutionSettings.DEFAULT_SERVICE_ID)) {
                 settings = executionSettings.get(PromptExecutionSettings.DEFAULT_SERVICE_ID);
             } else {
@@ -190,6 +191,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         return service;
     }
 
+    @Nullable
     AIService getAnyService(Class<? extends AIService> serviceType) {
         List<AIService> services = getServices(serviceType);
         if (services.isEmpty()) {

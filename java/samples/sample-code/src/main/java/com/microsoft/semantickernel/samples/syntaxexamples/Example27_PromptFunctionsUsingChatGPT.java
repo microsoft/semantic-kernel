@@ -58,7 +58,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
                 ContextVariableTypes.getDefaultVariableTypeForClass(String.class)
             )
             .block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
 
     }
 }

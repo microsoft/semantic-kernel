@@ -85,7 +85,7 @@ public class Example61_MultipleLLMs {
             .build();
 
         var result = kernel.invokeAsync(func, arguments, String.class).block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
     }
 
 
@@ -108,7 +108,7 @@ public class Example61_MultipleLLMs {
             String.class
         ).block();
 
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
     }
 
 
@@ -141,7 +141,7 @@ public class Example61_MultipleLLMs {
                 String.class)
             .block();
 
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
     }
 
 }

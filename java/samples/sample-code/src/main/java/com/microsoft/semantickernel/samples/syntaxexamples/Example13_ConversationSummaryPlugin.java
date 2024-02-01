@@ -171,7 +171,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Action Items:");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResult());
     }
 
     private static void getConversationTopicsAsync() {
@@ -192,7 +192,7 @@ public class Example13_ConversationSummaryPlugin {
             );
 
         System.out.println("Generated Topics:");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResult());
     }
 
 
@@ -204,7 +204,7 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        Mono<FunctionResult<String>> summary = kernel
+        FunctionResult<String> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
@@ -213,10 +213,10 @@ public class Example13_ConversationSummaryPlugin {
                     .withInput(chatTranscript)
                     .build(),
                 String.class
-            );
+            ).block();
 
         System.out.println("Generated Summary (This may take some time):");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.getResult());
     }
 
     private static Kernel initializeKernel() {

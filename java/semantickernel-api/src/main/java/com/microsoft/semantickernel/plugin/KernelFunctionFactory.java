@@ -18,30 +18,6 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 
 public class KernelFunctionFactory {
 
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
-    /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
-    /// <param name="functionName">Optional function name. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="description">Optional description of the method. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
-    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static KernelFunction createFromMethod(
-        Method method,
-        @Nullable String functionName,
-        @Nullable String description,
-        List<KernelParameterMetadata<?>> parameters,
-        KernelReturnParameterMetadata<?> returnParameter) {
-        return createFromMethod(
-            method,
-            null,
-            functionName,
-            description,
-            parameters,
-            returnParameter);
-    }
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -57,7 +33,7 @@ public class KernelFunctionFactory {
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static KernelFunction createFromMethod(
         Method method,
-        @Nullable Object target,
+        Object target,
         @Nullable String functionName,
         @Nullable String description,
         @Nullable List<KernelParameterMetadata<?>> parameters,
@@ -89,8 +65,8 @@ public class KernelFunctionFactory {
      * @param templateFormat        The template format of {@code promptTemplate}. This must be
      *                              provided if {@code promptTemplateFactory} is not null.
      * @param promptTemplateFactory The {@link PromptTemplateFactory} to use when interpreting the
-     *                              {@code promptTemplate} into a {@link IPromptTemplate}. If null,
-     *                              a default factory will be used.
+     *                              {@code promptTemplate} into a {@link PromptTemplate}. If null, a
+     *                              default factory will be used.
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
     public static KernelFunction createFromPrompt(
@@ -131,9 +107,12 @@ public class KernelFunctionFactory {
     }
 
     private static Map<String, PromptExecutionSettings> createSettingsDictionary(
+        @Nullable
         PromptExecutionSettings executionSettings) {
         HashMap<String, PromptExecutionSettings> map = new HashMap<>();
-        map.put("default", executionSettings);
+        if (executionSettings != null) {
+            map.put("default", executionSettings);
+        }
         return map;
     }
 }

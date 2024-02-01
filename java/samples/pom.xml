@@ -126,6 +126,10 @@
                             <target>${maven.compiler.release}</target>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
+                            <compilerArgs>
+                                <arg></arg>
+                                <compilerArg></compilerArg>
+                            </compilerArgs>
                         </configuration>
                     </plugin>
 

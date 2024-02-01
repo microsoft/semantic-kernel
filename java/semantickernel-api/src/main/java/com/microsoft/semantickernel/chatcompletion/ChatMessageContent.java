@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 public class ChatMessageContent extends KernelContent<ChatMessageContent> {
 
     private AuthorRole authorRole;
+    @Nullable
     private String content;
     @Nullable
     private List<KernelContent> items;
@@ -52,13 +53,14 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
 
     public ChatMessageContent(
         AuthorRole authorRole,
-        List<KernelContent> items,
+        List<KernelContent<?>> items,
         String modelId,
         String innerContent,
         Charset encoding,
         FunctionResultMetadata metadata
     ) {
         super(innerContent, modelId, metadata);
+        this.content = null;
         this.authorRole = authorRole;
         this.encoding = encoding != null ? encoding : StandardCharsets.UTF_8;
         this.items = new ArrayList<>(items);
@@ -72,11 +74,13 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
         this.authorRole = authorRole;
     }
 
+    @Nullable
+    @Override
     public String getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(@Nullable String content) {
         this.content = content;
     }
 

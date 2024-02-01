@@ -85,7 +85,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
         // Show the result
         System.out.println("--- Prompt Function result");
         var result = kernel.invokeAsync(haiku, arguments, String.class).block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
     }
 
 }

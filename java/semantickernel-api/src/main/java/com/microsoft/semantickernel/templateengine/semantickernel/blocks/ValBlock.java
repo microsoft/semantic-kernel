@@ -34,7 +34,7 @@ public final class ValBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(KernelFunctionArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         return value;
     }
 

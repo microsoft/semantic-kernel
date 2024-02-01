@@ -29,7 +29,7 @@ public class Example05_InlineFunctionDefinitionTest {
             .endpoint("http://localhost:" + wmRuntimeInfo.getHttpPort())
             .buildAsyncClient();
 
-        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
+        TextGenerationService textGenerationService = TextGenerationService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId("text-davinci-003")
             .build();
@@ -55,6 +55,7 @@ public class Example05_InlineFunctionDefinitionTest {
             """.stripIndent();
 
         var excuseFunction = new KernelFunctionFromPrompt.Builder()
+            .withName("Excuse")
             .withTemplate(promptTemplate)
             .withDefaultExecutionSettings(
                 new PromptExecutionSettings.Builder()
