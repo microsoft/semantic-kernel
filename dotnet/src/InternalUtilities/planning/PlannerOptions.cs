@@ -36,10 +36,4 @@ public abstract class PlannerOptions
     /// This configuration will be ignored if GetAvailableFunctionsAsync is set.
     /// </remarks>
     public SemanticMemoryConfig SemanticMemoryConfig { get; set; } = new();
-
-    /// <summary>
-    /// Name delimiter used to separate plugin name from function name. This should be a character or string
-    /// that is not found in any plugin or function names used by the planner.
-    /// </summary>
-    public virtual string NameDelimiter { get; set; } = "-";
 }

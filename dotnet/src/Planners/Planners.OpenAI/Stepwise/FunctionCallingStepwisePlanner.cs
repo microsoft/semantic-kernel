@@ -31,10 +31,6 @@ public sealed class FunctionCallingStepwisePlanner
         this._generatePlanYaml = this._options.GetInitialPlanPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
         this._stepPrompt = this._options.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
         this._options.ExcludedPlugins.Add(StepwisePlannerPluginName);
-
-        // Ensure the delimiter used in OpenAI function descriptions matches
-        // the one set in the planner options.
-        OpenAIFunction.NameSeparator = this._options.NameDelimiter;
     }
 
     /// <summary>
@@ -178,7 +174,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     private async Task<string> GetFunctionsManualAsync(Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        return await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, logger, false, cancellationToken).ConfigureAwait(false);
+        return await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, logger, false, OpenAIFunction.NameSeparator, cancellationToken).ConfigureAwait(false);
     }
 
     // Create and invoke a kernel function to generate the initial plan
@@ -188,7 +184,7 @@ public sealed class FunctionCallingStepwisePlanner
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
         var generatePlanArgs = new KernelArguments
         {
-            [NameDelimiterKey] = this._options.NameDelimiter,
+            [NameDelimiterKey] = OpenAIFunction.NameSeparator,
             [AvailableFunctionsKey] = functionsManual,
             [GoalKey] = question
         };

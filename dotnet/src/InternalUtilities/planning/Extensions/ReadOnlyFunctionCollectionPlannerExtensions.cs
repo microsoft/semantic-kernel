@@ -63,6 +63,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="includeOutputSchema">Indicates if the output or return type of the function should be included in the schema.</param>
+    /// <param name="nameDelimiter">The delimiter to use between the plugin name and the function name.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetJsonSchemaFunctionsManualAsync(
@@ -71,6 +72,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         string? semanticQuery = null,
         ILogger? logger = null,
         bool includeOutputSchema = true,
+        string nameDelimiter = "-",
         CancellationToken cancellationToken = default)
     {
         IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
