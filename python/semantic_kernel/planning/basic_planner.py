@@ -212,7 +212,7 @@ class BasicPlanner:
 
         for subtask in subtasks:
             plugin_name, function_name = subtask["function"].split(".")
-            kernel_function = kernel.plugins.get_function(plugin_name, function_name)
+            kernel_function = kernel.plugins[plugin_name][function_name]
 
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)

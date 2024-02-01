@@ -14,9 +14,6 @@ from semantic_kernel.plugin_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
-    from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-        ReadOnlyPluginCollectionBase,
-    )
 
 
 class KernelFunctionBase(KernelBaseModel):
@@ -113,24 +110,6 @@ class KernelFunctionBase(KernelBaseModel):
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    def set_default_plugin_collection(
-        self,
-        plugins: "ReadOnlyPluginCollectionBase",
-    ) -> "KernelFunctionBase":
-        """
-        Sets the plugin collection to use when the function is
-        invoked without a context or with a context that doesn't have
-        a plugin collection
-
-        Arguments:
-            plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
-
-        Returns:
-            KernelFunctionBase -- The function instance
         """
         pass
 

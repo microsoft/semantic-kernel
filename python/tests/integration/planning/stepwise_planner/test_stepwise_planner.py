@@ -23,7 +23,7 @@ class TempWebSearchEnginePlugin:
     """
     TODO: replace this class with semantic_kernel.core_plugins.web_search_engine_plugin.WebSearchEnginePlugin
 
-    SKFunction.describe() does not contains info for arguments.
+    KernelFunction.describe() does not contains info for arguments.
 
     so that `query: str` is not shown in the function description,
     BUT this argument must be passed to planner to work appropriately.
