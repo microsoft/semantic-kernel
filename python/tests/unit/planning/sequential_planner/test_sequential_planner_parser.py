@@ -12,6 +12,7 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_parser impor
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
 def create_mock_function(function_view: FunctionView) -> KernelFunctionBase:
@@ -34,7 +35,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
         result = kernel.create_new_context()
         result.variables.update(result_string)
         mock_function.invoke.return_value = result
-        kernel._plugin_collection.add_semantic_function(mock_function)
+        kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 
     return kernel
 
@@ -51,21 +52,21 @@ def test_can_call_to_plan_from_xml():
         ("Translate", "WriterPlugin", "Translate to french", True, "Bonjour!"),
         (
             "GetEmailAddressAsync",
-            "email",
+            "get_email",
             "Get email address",
             False,
             "johndoe@email.com",
         ),
-        ("SendEmailAsync", "email", "Send email", False, "Email sent."),
+        ("SendEmailAsync", "send_email", "Send email", False, "Email sent."),
     ]
     kernel = create_kernel_and_functions_mock(functions)
 
     plan_string = """<plan>
     <function.SummarizePlugin.Summarize/>
     <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
+    <function.get_email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
         appendToResult="PLAN_RESULT"/>
-    <function.email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.send_email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
@@ -86,12 +87,12 @@ def test_can_call_to_plan_from_xml():
     assert plan._steps[1].parameters["language"] == "French"
     assert "TRANSLATED_SUMMARY" in plan._steps[1]._outputs
 
-    assert plan._steps[2].plugin_name == "email"
+    assert plan._steps[2].plugin_name == "get_email"
     assert plan._steps[2].name == "GetEmailAddressAsync"
     assert plan._steps[2].parameters["input"] == "John Doe"
     assert "EMAIL_ADDRESS" in plan._steps[2]._outputs
 
-    assert plan._steps[3].plugin_name == "email"
+    assert plan._steps[3].plugin_name == "send_email"
     assert plan._steps[3].name == "SendEmailAsync"
     assert "$TRANSLATED_SUMMARY" in plan._steps[3].parameters["input"]
     assert "$EMAIL_ADDRESS" in plan._steps[3].parameters["email_address"]

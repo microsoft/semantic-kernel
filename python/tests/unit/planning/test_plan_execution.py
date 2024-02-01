@@ -29,8 +29,8 @@ async def test_invoke_plan_constructed_with_function():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -48,8 +48,8 @@ async def test_invoke_plan_constructed_with_function_async():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -67,8 +67,8 @@ async def test_invoke_empty_plan_with_added_function_step():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -87,8 +87,8 @@ async def test_invoke_empty_plan_with_added_function_step_async():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -107,8 +107,8 @@ async def test_invoke_empty_plan_with_added_plan_step():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -128,8 +128,8 @@ async def test_invoke_empty_plan_with_added_plan_step_async():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
 
     # setup context
     context = kernel.create_new_context()
@@ -149,9 +149,9 @@ async def test_invoke_multi_step_plan():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
-    test_function2 = plugin_config_dict["trim_end"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
+    test_function2 = plugin["trim_end"]
 
     # setup context
     context = kernel.create_new_context()
@@ -172,9 +172,9 @@ async def test_invoke_multi_step_plan_async():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "text")
-    test_function = plugin_config_dict["uppercase"]
-    test_function2 = plugin_config_dict["trim_end"]
+    plugin = kernel.import_plugin(plugin, "text")
+    test_function = plugin["uppercase"]
+    test_function2 = plugin["trim_end"]
 
     # setup context
     context = kernel.create_new_context()
@@ -195,9 +195,9 @@ async def test_invoke_multi_step_plan_async_with_variables():
 
     # import test (text) plugin
     plugin = MathPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "math")
-    test_function = plugin_config_dict["Add"]
-    test_function2 = plugin_config_dict["Subtract"]
+    plugin = kernel.import_plugin(plugin, "math")
+    test_function = plugin["Add"]
+    test_function2 = plugin["Subtract"]
 
     plan = Plan(name="test")
 
