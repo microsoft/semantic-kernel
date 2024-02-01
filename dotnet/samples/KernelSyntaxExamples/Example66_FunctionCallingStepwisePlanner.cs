@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -52,7 +51,7 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
                 modelId: "gpt-3.5-turbo-1106")
             .Build();
 
-        kernel.ImportPluginFromType<EmailPlugin>();
+        kernel.ImportPluginFromType<Plugins.EmailPlugin>();
         kernel.ImportPluginFromType<MathPlugin>();
         kernel.ImportPluginFromType<TimePlugin>();
 
