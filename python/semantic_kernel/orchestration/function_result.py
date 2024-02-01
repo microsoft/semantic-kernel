@@ -1,11 +1,14 @@
 import logging
-from typing import Any, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Mapping, Optional
 
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.models.contents.kernel_content import KernelContent
-from semantic_kernel.orchestration.kernel_function import KernelFunction
+
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.kernel_function import KernelFunction
+
 
 logger = logging.getLogger(__name__)
 

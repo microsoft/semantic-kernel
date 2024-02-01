@@ -27,9 +27,8 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.function_result import FunctionResult
-from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_arguments import KernelArguments
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
@@ -216,128 +215,105 @@ class Kernel(KernelBaseModel):
 
         return function
 
-    async def run_stream(
-        self,
-        *functions: Any,
-        settings: Optional[AIRequestSettings] = None,
-        **kwargs: Dict[str, Any],
-        # input_context: Optional[KernelContext] = None,
-        # input_vars: Optional[ContextVariables] = None,
-        # input_str: Optional[str] = None,
-    ):
+    async def run_stream(self, functions: List[KernelFunction], arguments: KernelArguments):
+        stream_function = functions[-1]
         if len(functions) > 1:
             pipeline_functions = functions[:-1]
-            stream_function = functions[-1]
-
             # run pipeline functions
-            results = await self.run(pipeline_functions, settings, **kwargs)
-
-        elif len(functions) == 1:
-            stream_function = functions[0]
-
-            # TODO: Preparing context for function invoke can be refactored as code below are same as run
-            # if the user passed in a context, prioritize it, but merge with any other inputs
-            # if input_context is not None:
-            #     context = input_context
-            #     if input_vars is not None:
-            #         context.variables = input_vars.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-
-            #     if input_str is not None:
-            #         context.variables = ContextVariables(input_str).merge_or_overwrite(
-            #             new_vars=context.variables, overwrite=False
-            #         )
-
-            # if the user did not pass in a context, prioritize an input string,
-            # and merge that with input context variables
-            # else:
-            #     if input_str is not None and input_vars is None:
-            #         variables = ContextVariables(input_str)
-            #     elif input_str is None and input_vars is not None:
-            #         variables = input_vars
-            #     elif input_str is not None and input_vars is not None:
-            #         variables = ContextVariables(input_str)
-            #         variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
-            #     else:
-            #         variables = ContextVariables()
-            #     context = KernelContext(
-            #         variables,
-            #         self._memory,
-            #         self._plugin_collection.read_only_plugin_collection,
-            #     )
+            results = await self.run(pipeline_functions, arguments)
         else:
             raise ValueError("No functions passed to run")
-
-        try:
-            if results:
-                for result in results:
-                    kwargs[result.function.name] = result.value
-            async for stream_message in stream_function.invoke_stream(settings, **kwargs):
-                yield stream_message
-
-        except Exception as ex:
-            # TODO: "critical exceptions"
-            logger.error(
-                "Something went wrong in stream function. During function invocation:"
-                f" '{stream_function.plugin_name}.{stream_function.name}'. Error"
-                f" description: '{str(ex)}'"
+        if not results:
+            results = []
+        pipeline_step = len(functions) - 1
+        while True:
+            function_invoking_args = self.on_function_invoking(stream_function.describe(), arguments)
+            if function_invoking_args.is_cancel_requested:
+                logger.info(
+                    f"Execution was cancelled on function invoking event of pipeline step {pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                )
+                return
+            if function_invoking_args.updated_arguments:
+                logger.info(
+                    f"Arguments updated by function_invoking_handler in pipeline step: {pipeline_step}, new arguments: {function_invoking_args.arguments}"
+                )
+                arguments = function_invoking_args.arguments
+            if function_invoking_args.is_skip_requested:
+                logger.info(
+                    f"Execution was skipped on function invoking event of pipeline step {pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                )
+                return
+                # TODO: decide how to put results into kernelarguments, might need to be done as part of the invoked_handler
+            function_result = []
+            exception = None
+            try:
+                async for stream_message in stream_function.invoke_stream(self, arguments):
+                    function_result.append(stream_message)
+                    yield stream_message
+            except Exception as exception:
+                logger.error(
+                    "Something went wrong in stream function. During function invocation:"
+                    f" '{stream_function.plugin_name}.{stream_function.name}'. Error"
+                    f" description: '{str(exception)}'"
+                )
+            # TODO: process function_result list to FunctionResult
+            function_invoked_args = self.on_function_invoked(
+                stream_function.describe(), arguments, function_result, exception
             )
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionInvokeError,
-                "Error occurred while invoking stream function",
-            )
+            results.append(function_invoked_args.function_result)
+            if function_invoked_args.exception:
+                raise KernelException(
+                    KernelException.ErrorCodes.FunctionInvokeError,
+                    "Error occurred while invoking stream function",
+                    function_invoked_args.exception,
+                ) from function_invoked_args.exception
+
+            if function_invoked_args.is_cancel_requested:
+                logger.info(
+                    f"Execution was cancelled on function invoked event of pipeline step {pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                )
+                return
+            if function_invoked_args.updated_arguments:
+                logger.info(
+                    f"Arguments updated by function_invoked_handler in pipeline step: {pipeline_step}, new arguments: {function_invoked_args.arguments}"
+                )
+                arguments = function_invoked_args.arguments
+            if function_invoked_args.is_repeat_requested:
+                logger.info(
+                    f"Execution was repeated on function invoked event of pipeline step {pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                )
+                continue
+            break
 
     async def run(
-        self,
-        *functions: Any,
-        settings: Optional[AIRequestSettings] = None,
-        # input_context: Optional[KernelContext] = None,
-        # input_vars: Optional[ContextVariables] = None,
-        # input_str: Optional[str] = None,
-        **kwargs: Dict[str, Any],
-    ) -> List[FunctionResult]:
-        # if the user passed in a context, prioritize it, but merge with any other inputs
-        # if input_context is not None:
-        #     context = input_context
-        #     if input_vars is not None:
-        #         context.variables = input_vars.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-
-        #     if input_str is not None:
-        #         context.variables = ContextVariables(input_str).merge_or_overwrite(
-        #             new_vars=context.variables, overwrite=False
-        #         )
-
-        # if the user did not pass in a context, prioritize an input string,
-        # and merge that with input context variables
-        # else:
-        #     if input_str is not None and input_vars is None:
-        #         variables = ContextVariables(input_str)
-        #     elif input_str is None and input_vars is not None:
-        #         variables = input_vars
-        #     elif input_str is not None and input_vars is not None:
-        #         variables = ContextVariables(input_str)
-        #         variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
-        #     else:
-        #         variables = ContextVariables()
-        #     context = KernelContext(
-        #         variables,
-        #         self._memory,
-        #         self._plugin_collection.read_only_plugin_collection,
-        #     )
+        self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments
+    ) -> Optional[List[FunctionResult]]:
+        """Execute one or more functions"""
         results = []
         pipeline_step = 0
+        if not isinstance(functions, list):
+            functions = [functions]
         for func in functions:
+            # While loop is used to repeat the function invocation, if requested
             while True:
-                assert isinstance(func, KernelFunction), (
-                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) " "must be KernelFunction instances"
-                )
-
-                # if context.error_occurred:
-                #     logger.error(
-                #         f"Something went wrong in pipeline step {pipeline_step}. "
-                #         f"Error description: '{context.last_error_description}'"
-                #     )
-                #     return context
-
+                function_invoking_args = self.on_function_invoking(func.describe(), arguments)
+                if function_invoking_args.is_cancel_requested:
+                    logger.info(
+                        f"Execution was cancelled on function invoking event of pipeline step {pipeline_step}: {func.plugin_name}.{func.name}."
+                    )
+                    return results if results else None
+                if function_invoking_args.updated_arguments:
+                    logger.info(
+                        f"Arguments updated by function_invoking_handler in pipeline step: {pipeline_step}, new arguments: {function_invoking_args.arguments}"
+                    )
+                    arguments = function_invoking_args.arguments
+                if function_invoking_args.is_skip_requested:
+                    logger.info(
+                        f"Execution was skipped on function invoking event of pipeline step {pipeline_step}: {func.plugin_name}.{func.name}."
+                    )
+                    break
+                function_result = None
+                exception = None
                 try:
                     function_details = func.describe()
 
@@ -387,14 +363,38 @@ class Kernel(KernelBaseModel):
                     else:
                         break
 
-                except Exception as ex:
+                except Exception:
                     logger.error(
                         f"Something went wrong in pipeline step {pipeline_step}. "
                         f"During function invocation: '{func.plugin_name}.{func.name}'. "
-                        f"Error description: '{str(ex)}'"
+                        f"Error description: '{str(exception)}'"
                     )
-                    # context.fail(str(ex), ex)
-                    # return context
+
+                # this allows a hook to alter the results before adding.
+                function_invoked_args = self.on_function_invoked(func.describe(), arguments, function_result, exception)
+                results.append(function_invoked_args.function_result)
+
+                if function_invoked_args.exception:
+                    raise KernelException(
+                        KernelException.ErrorCodes.FunctionInvokeError,
+                        f"Error occurred while invoking function: '{func.plugin_name}.{func.name}'",
+                        function_invoked_args.exception,
+                    ) from function_invoked_args.exception
+                if function_invoked_args.is_cancel_requested:
+                    logger.info(
+                        f"Execution was cancelled on function invoked event of pipeline step {pipeline_step}: {func.plugin_name}.{func.name}."
+                    )
+                    return results if results else None
+                if function_invoked_args.updated_arguments:
+                    logger.info(
+                        f"Arguments updated by function_invoked_handler in pipeline step: {pipeline_step}, new arguments: {function_invoked_args.arguments}"
+                    )
+                    arguments = function_invoked_args.arguments
+                if function_invoked_args.is_repeat_requested:
+                    logger.info(
+                        f"Execution was repeated on function invoked event of pipeline step {pipeline_step}: {func.plugin_name}.{func.name}."
+                    )
+                    continue
 
             pipeline_step += 1
 
@@ -436,28 +436,37 @@ class Kernel(KernelBaseModel):
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self, variables: Optional[ContextVariables] = None) -> KernelContext:
-        return KernelContext(
-            ContextVariables() if not variables else variables,
-            self.memory,
-            self.plugins,
-        )
+    # def create_new_context(self, variables: Optional[ContextVariables] = None) -> KernelContext:
+    #     return KernelContext(
+    #         ContextVariables() if not variables else variables,
+    #         self._memory,
+    #         self.plugins,
+    #     )
 
-    def on_function_invoking(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokingEventArgs:
+    def on_function_invoking(
+        self, function_view: FunctionView, arguments: KernelArguments
+    ) -> FunctionInvokingEventArgs:
+        args = FunctionInvokingEventArgs(function_view=function_view, arguments=arguments)
         if self.function_invoking_handlers:
-            args = FunctionInvokingEventArgs(function_view, context)
             for handler in self.function_invoking_handlers.values():
                 handler(self, args)
-            return args
-        return None
+        return args
 
-    def on_function_invoked(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokedEventArgs:
+    def on_function_invoked(
+        self,
+        function_view: FunctionView,
+        arguments: KernelArguments,
+        function_result: Optional[FunctionResult] = None,
+        exception: Optional[Exception] = None,
+    ) -> FunctionInvokedEventArgs:
+        # TODO: include logic that uses function_result
+        args = FunctionInvokedEventArgs(
+            function_view=function_view, arguments=arguments, function_result=function_result, exception=exception
+        )
         if self.function_invoked_handlers:
-            args = FunctionInvokedEventArgs(function_view, context)
             for handler in self.function_invoked_handlers.values():
                 handler(self, args)
-            return args
-        return None
+        return args
 
     def import_plugin(self, plugin_instance: Union[Any, Dict[str, Any]], plugin_name: str) -> KernelPlugin:
         """
@@ -879,10 +888,14 @@ class Kernel(KernelBaseModel):
 
         return self.register_semantic_function(plugin_name, function_name, function_config)
 
-    def add_function_invoking_handler(self, handler: Callable) -> None:
+    def add_function_invoking_handler(
+        self, handler: Callable[[FunctionView, KernelArguments], FunctionInvokingEventArgs]
+    ) -> None:
         self.function_invoking_handlers[id(handler)] = handler
 
-    def add_function_invoked_handler(self, handler: Callable) -> None:
+    def add_function_invoked_handler(
+        self, handler: Callable[[FunctionView, KernelArguments, FunctionResult], FunctionInvokedEventArgs]
+    ) -> None:
         self.function_invoked_handlers[id(handler)] = handler
 
     def remove_function_invoking_handler(self, handler: Callable) -> None:

@@ -5,7 +5,7 @@ import logging
 import platform
 import sys
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
 from pydantic import Field, StringConstraints
 
@@ -22,12 +22,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
+from semantic_kernel.models.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.function_result import FunctionResult
@@ -40,11 +37,13 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
     from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 # TODO: is this needed anymore after sync code removal?
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -219,20 +218,23 @@ class KernelFunction(KernelBaseModel):
             raise ValueError("Function configuration cannot be `None`")
 
         async def _local_func(
-            self, client: AIServiceClientBase, request_settings: AIRequestSettings, **kwargs
+            self,
+            client: Union[TextCompletionClientBase, ChatCompletionClientBase],
+            request_settings: PromptExecutionSettings,
+            arguments: KernelArguments,
         ) -> "FunctionResult":
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
             try:
                 if not function_config.has_chat_prompt:
-                    prompt = await function_config.prompt_template.render(**kwargs)
+                    prompt = await function_config.prompt_template.render(arguments)
                     completion = await client.complete(prompt, request_settings)
                     return FunctionResult(function=self, value=completion)
             except Exception as e:
                 logger.error(f"Error occurred while invoking function {self.function.name}: {e}")
                 raise e
 
-            messages = await function_config.prompt_template.render_messages(**kwargs)
+            messages = await function_config.prompt_template.render_messages(arguments)
             try:
                 result = await client.complete_chat(messages, request_settings)
                 return FunctionResult(function=self, value=result)
@@ -240,7 +242,9 @@ class KernelFunction(KernelBaseModel):
                 logger.error(f"Error occurred while invoking function {self.function.name}: {exc}")
                 raise exc
 
-        async def _local_stream_func(self, client: AIServiceClientBase, request_settings: AIRequestSettings, **kwargs):
+        async def _local_stream_func(
+            self, client: AIServiceClientBase, request_settings: PromptExecutionSettings, **kwargs
+        ):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -315,149 +319,176 @@ class KernelFunction(KernelBaseModel):
 
     async def __call__(
         self,
-        arguments: "KernelArguments",
-    ) -> "KernelContext":
-        """
-        Override the call operator to allow calling the function directly
-        This operator is run asynchronously.
+        kernel: "Kernel",
+        arguments: KernelArguments,
+    ) -> "FunctionResult":
+        return await self.invoke(kernel, arguments)
 
-        Arguments:
-            input {Optional[str]} -- The input to the function
-            variables {ContextVariables} -- The variables for the function
-            context {Optional[KernelContext]} -- The context for the function
-            memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
-            settings {Optional[PromptExecutionSettings]} -- The settings for the function
-            log {Optional[Any]} -- A logger to use for logging. (Optional)
+    # def invoke(
+    #     self,
+    #     settings: Optional[AIRequestSettings] = None,
+    #     **kwargs: Dict[str, Any],
+    # ) -> "FunctionResult":
+    #     # if context is None:
+    #     #     context = KernelContext(
+    #     #         variables=ContextVariables("") if variables is None else variables,
+    #     #         plugin_collection=self._plugin_collection,
+    #     #         memory=memory if memory is not None else NullMemory.instance,
+    #     #     )
+    #     # else:
+    #     #     # If context is passed, we need to merge the variables
+    #     #     if variables is not None:
+    #     #         context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
+    #     #     if memory is not None:
+    #     #         context.memory = memory
 
-        Returns:
-            KernelContext -- The context for the function
+    #     # if input is not None:
+    #     #     context.variables.update(input)
 
-        Raises:
-            KernelException -- If the function is not semantic
-        """
-        return await self.invoke(arguments)
+    #     try:
+    #         loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
+    #     except RuntimeError:
+    #         loop = None
+
+    #     if loop and loop.is_running():
+
+    #         def run_coroutine():
+    #             if self.is_semantic:
+    #                 return self._invoke_semantic(context, settings)
+    #             else:
+    #                 return self._invoke_native(context)
+
+    #         return self.run_async_in_executor(run_coroutine)
+    #     else:
+    #         if self.is_semantic:
+    #             return asyncio.run(self._invoke_semantic(context, settings))
+    #         else:
+    #             return asyncio.run(self._invoke_native(context))
 
     async def invoke(
         self,
-        settings: Optional[AIRequestSettings] = None,
-        **kwargs: Dict[str, Any],
+        kernel: "Kernel",
+        arguments: KernelArguments,
     ) -> "FunctionResult":
-        try:
-            if self.is_semantic:
-                return await self._invoke_semantic(settings, **kwargs)
-            else:
-                return await self._invoke_native(settings, **kwargs)
-        except Exception as e:
-            logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            raise e
+        return await self._function(kernel, self._ai_service, arguments.execution_settings[self._ai_service], arguments)
+        # try:
+        #     if self.is_semantic:
+        #         return await self._invoke_semantic(settings, **kwargs)
+        #     else:
+        #         return await self._invoke_native(settings, **kwargs)
+        # except Exception as e:
+        #     logger.error(f"Error occurred while invoking function {self.name}: {e}")
+        #     raise e
 
-    async def _invoke_semantic(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
-        self._verify_is_semantic()
-        return await self._function(self._ai_service, settings or self._ai_request_settings, **kwargs)
+    # async def _invoke_semantic(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
+    #     self._verify_is_semantic()
+    #     return await self._function(self._ai_service, settings or self._ai_request_settings, **kwargs)
 
-    async def _invoke_native(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
-        self._verify_is_native()
+    # async def _invoke_native(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
+    #     self._verify_is_native()
 
-        delegate = DelegateHandlers.get_handler(self._delegate_type)
-        # for python3.9 compatibility (staticmethod is not callable)
-        if not hasattr(delegate, "__call__"):
-            delegate = delegate.__func__
-        new_context = await delegate(self.function, context)
+    #     delegate = DelegateHandlers.get_handler(self._delegate_type)
+    #     # for python3.9 compatibility (staticmethod is not callable)
+    #     if not hasattr(delegate, "__call__"):
+    #         delegate = delegate.__func__
+    #     new_context = await delegate(self._function, context)
 
-        return new_context
+    # return new_context
 
-    def _verify_is_semantic(self) -> None:
-        if self.is_semantic:
-            return
+    # def _verify_is_semantic(self) -> None:
+    #     if self._is_semantic:
+    #         return
 
-        logger.error("The function is not semantic")
-        raise KernelException(
-            KernelException.ErrorCodes.InvalidFunctionType,
-            "Invalid operation, the method requires a semantic function",
-        )
+    #     logger.error("The function is not semantic")
+    #     raise KernelException(
+    #         KernelException.ErrorCodes.InvalidFunctionType,
+    #         "Invalid operation, the method requires a semantic function",
+    #     )
 
-    def _verify_is_native(self) -> None:
-        if not self.is_semantic:
-            return
+    # def _verify_is_native(self) -> None:
+    #     if not self._is_semantic:
+    #         return
 
-        logger.error("The function is not native")
-        raise KernelException(
-            KernelException.ErrorCodes.InvalidFunctionType,
-            "Invalid operation, the method requires a native function",
-        )
+    #     logger.error("The function is not native")
+    #     raise KernelException(
+    #         KernelException.ErrorCodes.InvalidFunctionType,
+    #         "Invalid operation, the method requires a native function",
+    #     )
 
     async def invoke_stream(
         self,
-        settings: Optional[AIRequestSettings] = None,
-        **kwargs: Dict[str, Any],
+        kernel: "Kernel",
+        arguments: KernelArguments,
         # input: Optional[str] = None,
         # variables: ContextVariables = None,
         # context: Optional["KernelContext"] = None,
         # memory: Optional[SemanticTextMemoryBase] = None,
-    ):
-        from semantic_kernel.orchestration.kernel_context import KernelContext
+    ) -> AsyncIterable[List[Union[StreamingKernelContent, Any]]]:
+        # from semantic_kernel.orchestration.kernel_context import KernelContext
 
-        if context is None:
-            context = KernelContext(
-                variables=ContextVariables("") if variables is None else variables,
-                memory=memory if memory is not None else NullMemory.instance,
-                plugins=self.plugins,
-            )
-        else:
-            # If context is passed, we need to merge the variables
-            if variables is not None:
-                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-            if memory is not None:
-                context._memory = memory
-
-        if input is not None:
-            context.variables.update(input)
-
-        try:
-            if self.is_semantic:
-                async for stream_msg in self._invoke_semantic_stream(context, settings):
-                    yield stream_msg
-            else:
-                async for stream_msg in self._invoke_native_stream(context):
-                    yield stream_msg
-        except Exception as e:
-            logger.error(f"Error occurred while invoking stream function: {str(e)}")
-            context.fail(str(e), e)
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionInvokeError,
-                "Error occurred while invoking stream function",
-            )
-
-    async def _invoke_semantic_stream(self, settings, **kwargs):
-        self._verify_is_semantic()
-        self._ensure_context_has_plugins(context)
-        async for stream_msg in self.stream_function(
-            self.ai_service, settings or self.prompt_execution_settings, context
+        # if context is None:
+        #     context = KernelContext(
+        #         variables=ContextVariables("") if variables is None else variables,
+        #         plugin_collection=self._plugin_collection,
+        #         memory=memory if memory is not None else NullMemory.instance,
+        #     )
+        # else:
+        #     # If context is passed, we need to merge the variables
+        #     if variables is not None:
+        #         context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
+        #     if memory is not None:
+        #         context._memory = memory
+        """
+        Returns:
+            KernelContext -- The context for the function
+        """
+        # try:
+        async for stream_msg in self._stream_function(
+            self._ai_service, arguments.execution_settings[self._ai_service], arguments
         ):
             yield stream_msg
+        #     if self.is_semantic:
+        #         async for stream_msg in self._invoke_semantic_stream(context, settings):
+        #             yield stream_msg
+        #     else:
+        #         async for stream_msg in self._invoke_native_stream(context):
+        #             yield stream_msg
+        # except Exception as e:
+        #     logger.error(f"Error occurred while invoking stream function: {str(e)}")
+        #     context.fail(str(e), e)
+        #     raise KernelException(
+        #         KernelException.ErrorCodes.FunctionInvokeError,
+        #         "Error occurred while invoking stream function",
+        #     )
 
-    async def _invoke_native_stream(self, settings, **kwargs):
-        self._verify_is_native()
+    # async def _invoke_semantic_stream(self, arguments: KernelArguments):
+    #     self._verify_is_semantic()
+    #     # TODO: add kernel to function call for plugins
+    #     async for stream_msg in self._stream_function(
+    #         self._ai_service, arguments.execution_settings[self._ai_service] or self._ai_request_settings, arguments
+    #     ):
+    #         yield stream_msg
 
-        self._ensure_context_has_plugins(context)
+    # async def _invoke_native_stream(self, settings, **kwargs):
+    #     self._verify_is_native()
 
-        delegate = DelegateHandlers.get_handler(self._delegate_type)
-        # for python3.9 compatibility (staticmethod is not callable)
-        if not hasattr(delegate, "__call__"):
-            delegate = delegate.__func__
+    #     delegate = DelegateHandlers.get_handler(self._delegate_type)
+    #     # for python3.9 compatibility (staticmethod is not callable)
+    #     if not hasattr(delegate, "__call__"):
+    #         delegate = delegate.__func__
 
-        completion = ""
-        async for partial in delegate(self.function, context):
-            completion += partial
-            yield partial
+    #     completion = ""
+    #     async for partial in delegate(self._function, context):
+    #         completion += partial
+    #         yield partial
 
-        context.variables.update(completion)
+    #     context.variables.update(completion)
 
-    def _ensure_context_has_plugins(self, context) -> None:
-        if context.plugins is not None:
-            return
+    # def _ensure_context_has_plugins(self, context) -> None:
+    #     if context.plugins is not None:
+    #         return
 
-        context.plugins = self.plugins
+    #     context.plugins = self._plugin_collection
 
     def _trace_function_type_Call(self, type: Enum) -> None:
         logger.debug(f"Executing function type {type}: {type.name}")
