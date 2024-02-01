@@ -84,9 +84,9 @@ def test_create_plan_with_name_and_function():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin(plugin, "math")
 
-    test_function = plugin_config_dict["Add"]
+    test_function = plugin["Add"]
 
     plan = Plan(name="test", function=test_function)
     assert plan is not None
@@ -110,10 +110,10 @@ def test_create_multistep_plan_with_functions():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin(plugin, "math")
 
-    test_function1 = plugin_config_dict["Add"]
-    test_function2 = plugin_config_dict["Subtract"]
+    test_function1 = plugin["Add"]
+    test_function2 = plugin["Subtract"]
 
     plan = Plan(name="multistep_test")
     plan.add_steps([test_function1, test_function2])
@@ -139,10 +139,10 @@ def test_create_multistep_plan_with_plans():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin(plugin, "math")
 
-    test_function1 = plugin_config_dict["Add"]
-    test_function2 = plugin_config_dict["Subtract"]
+    test_function1 = plugin["Add"]
+    test_function2 = plugin["Subtract"]
 
     plan = Plan(name="multistep_test")
     plan_step1 = Plan(name="step1", function=test_function1)
@@ -170,10 +170,10 @@ def test_add_step_to_plan():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin_config_dict = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin(plugin, "math")
 
-    test_function1 = plugin_config_dict["Add"]
-    test_function2 = plugin_config_dict["Subtract"]
+    test_function1 = plugin["Add"]
+    test_function2 = plugin["Subtract"]
 
     plan = Plan(name="multistep_test", function=test_function1)
     plan.add_steps([test_function2])

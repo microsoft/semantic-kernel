@@ -15,8 +15,10 @@ def test_can_be_instantiated():
 def test_can_be_imported():
     kernel = Kernel()
     assert kernel.import_plugin(MathPlugin(), "math")
-    assert kernel.plugins.has_native_function("math", "add")
-    assert kernel.plugins.has_native_function("math", "subtract")
+    assert kernel.plugins["math"] is not None
+    assert kernel.plugins["math"].name == "math"
+    assert kernel.plugins["math"]["Add"] is not None
+    assert kernel.plugins["math"]["Subtract"] is not None
 
 
 @pytest.mark.parametrize(

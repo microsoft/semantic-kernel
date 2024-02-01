@@ -143,7 +143,7 @@ class TestPromptTemplateEngine:
     async def test_it_handle_edge_cases(self, template: str, expected_result: str):
         # Arrange
         kernel = Kernel()
-        kernel.import_plugin(MyPlugin())
+        kernel.import_plugin(MyPlugin(), "my_plugin")
         context = kernel.create_new_context()
 
         # Act

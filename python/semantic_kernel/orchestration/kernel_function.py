@@ -25,9 +25,6 @@ from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
@@ -35,6 +32,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 # TODO: is this needed anymore after sync code removal?
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
@@ -65,7 +63,7 @@ class KernelFunction(KernelFunctionBase):
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
-    _plugin_collection: Optional[ReadOnlyPluginCollectionBase]
+    _plugin_collection: Optional["KernelPluginCollection"]
     _ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]
     _ai_prompt_execution_settings: PromptExecutionSettings
     _chat_prompt_template: ChatPromptTemplate
@@ -266,7 +264,7 @@ class KernelFunction(KernelFunctionBase):
         self._ai_prompt_execution_settings = PromptExecutionSettings()
         self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
-    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "KernelFunction":
+    def set_default_plugin_collection(self, plugins: "KernelPluginCollection") -> "KernelFunction":
         self._plugin_collection = plugins
         return self
 
@@ -375,8 +373,8 @@ class KernelFunction(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugins=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -450,8 +448,8 @@ class KernelFunction(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugins=self._plugin_collection,
             )
         else:
             # If context is passed, we need to merge the variables

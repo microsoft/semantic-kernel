@@ -33,3 +33,25 @@ class FunctionView(KernelBaseModel):
             is_semantic=is_semantic,
             is_asynchronous=is_asynchronous,
         )
+
+    def __eq__(self, other):
+        """
+        Compare to another FunctionView instance.
+
+        Args:
+            other (FunctionView): The other FunctionView instance.
+
+        Returns:
+            True if the two instances are equal, False otherwise.
+        """
+        if not isinstance(other, FunctionView):
+            return False
+
+        return (
+            self.name == other.name
+            and self.plugin_name == other.plugin_name
+            and self.description == other.description
+            and self.parameters == other.parameters
+            and self.is_semantic == other.is_semantic
+            and self.is_asynchronous == other.is_asynchronous
+        )

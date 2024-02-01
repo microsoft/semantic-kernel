@@ -20,8 +20,10 @@ async def test_it_can_be_imported():
     kernel = Kernel()
     plugin = HttpPlugin()
     assert kernel.import_plugin(plugin, "http")
-    assert kernel.plugins.has_native_function("http", "getAsync")
-    assert kernel.plugins.has_native_function("http", "postAsync")
+    assert kernel.plugins["http"] is not None
+    assert kernel.plugins["http"].name == "http"
+    assert kernel.plugins["http"]["getAsync"] is not None
+    assert kernel.plugins["http"]["postAsync"] is not None
 
 
 @patch("aiohttp.ClientSession.get")
