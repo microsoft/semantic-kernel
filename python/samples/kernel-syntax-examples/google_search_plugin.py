@@ -41,7 +41,7 @@ async def main():
     search = web_plugin["searchAsync"]
 
     # By default, only one search result is provided
-    result = await search.invoke_async(prompt)
+    result = await search.invoke(prompt)
     print(result)
 
     """
@@ -70,7 +70,7 @@ async def main():
     context["num_results"] = "10"
     context["offset"] = "0"
 
-    result = await qna.invoke_async(context=context)
+    result = await qna.invoke(context=context)
     print(result)
 
     """

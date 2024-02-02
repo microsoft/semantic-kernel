@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -14,9 +14,6 @@ from semantic_kernel.plugin_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
-    from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-        ReadOnlyPluginCollectionBase,
-    )
 
 
 class KernelFunctionBase(KernelBaseModel):
@@ -77,7 +74,7 @@ class KernelFunctionBase(KernelBaseModel):
 
     @property
     @abstractmethod
-    def request_settings(self) -> AIRequestSettings:
+    def prompt_execution_settings(self) -> PromptExecutionSettings:
         """AI service settings"""
         pass
 
@@ -93,36 +90,13 @@ class KernelFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def invoke(
+    async def invoke(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
-    ) -> "KernelContext":
-        """
-        Invokes the function with an explicit string input
-        Keyword Arguments:
-            input {str} -- The explicit string input (default: {None})
-            variables {ContextVariables} -- The custom input
-            context {KernelContext} -- The context to use
-            memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {AIRequestSettings} -- LLM completion settings
-        Returns:
-            KernelContext -- The updated context, potentially a new one if
-            context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    async def invoke_async(
-        self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         **kwargs: Dict[str, Any],
     ) -> "KernelContext":
         """
@@ -132,28 +106,10 @@ class KernelFunctionBase(KernelBaseModel):
             variables {ContextVariables} -- The custom input
             context {KernelContext} -- The context to use
             memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {AIRequestSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    def set_default_plugin_collection(
-        self,
-        plugins: "ReadOnlyPluginCollectionBase",
-    ) -> "KernelFunctionBase":
-        """
-        Sets the plugin collection to use when the function is
-        invoked without a context or with a context that doesn't have
-        a plugin collection
-
-        Arguments:
-            plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
-
-        Returns:
-            KernelFunctionBase -- The function instance
         """
         pass
 
@@ -173,12 +129,12 @@ class KernelFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunctionBase":
+    def set_ai_configuration(self, settings: PromptExecutionSettings) -> "KernelFunctionBase":
         """
         Sets the AI completion settings used with LLM requests
 
         Arguments:
-            settings {AIRequestSettings} -- LLM completion settings
+            settings {PromptExecutionSettings} -- LLM completion settings
 
         Returns:
             KernelFunctionBase -- The function instance
