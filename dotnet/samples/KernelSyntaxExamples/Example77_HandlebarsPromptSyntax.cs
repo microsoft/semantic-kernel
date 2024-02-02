@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Examples;
 using Microsoft.SemanticKernel;
@@ -17,14 +16,12 @@ namespace KernelSyntaxExamples;
 //  - array - not working at the moment - to accumulate the results of the loop in an array
 //  - conditionals (works)
 //  - concatenation (works)
-
 // In order to create a Prompt Function that fully benefits from the Handlebars syntax power.
 // The example also shows how to use the HandlebarsPlanner to generate a plan (and persist it) which was used to generate the initial Handlebar template.
 // The example also shows how to create two prompt functions and a plugin to group them together.
 public class Example77_HandlebarsPromptSyntax : BaseTest
 {
     [Fact]
-
     public async Task RunAsync()
     {
         this.WriteLine("======== LLMPrompts ========");
@@ -43,7 +40,6 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
-
 
         KernelFunction kernelFunctionGenerateProductNames =
             KernelFunctionFactory.CreateFromPrompt(
@@ -145,7 +141,6 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         //string retrievedPlan = await File.ReadAllTextAsync(planName);
         //plan = new HandlebarsPlan(serializedPlan);
 
-
         //////////////////////////////////////////////////////////////////////////////////////////////////////
         /// One of the generated plans of the code above:
         // Plan: {{!-- Step 1: Save the input company description to a variable --}}
@@ -168,7 +163,6 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         //  {{set "index" (Add @index 1)}}
         //  {{json (concat "PRODUCT " index ": " this)}}
         //{{/each}}       
-
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////
         // We will use one of the generated HandlebarsTemplate plan by the above code, with some modifications,
@@ -215,12 +209,11 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         /// did not work:
         /// {{set ""outputDescription"" (concat ""PRODUCT "" (Add @index 1) "": "" compellingDescription)}}
         /// Reason: helper add not found
-        /// Also the array thing doesn't seem to work 
+        /// Also the array thing doesn't seem to work
         ///     {{set ""finalDescriptions"" (array)}}
         /// what fails on the each loop, when I use it I set generateEngagingDescriptions and make the prompt function output
-        /// JSON to iterate through it. Technically it is the proper syntax but somehow it fails. some returns from the LLM are 
+        /// JSON to iterate through it. Technically it is the proper syntax but somehow it fails. some returns from the LLM are
         /// absolute hallucinations :/P
-
         var HandlebarsSPromptFunction = kernel.CreateFunctionFromPrompt(
             new()
             {
