@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -107,6 +108,24 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
     }
 
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
+    {
+        CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
+
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<WeatherPlugin>();
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await kernel.InvokePromptAsync("Convert 42.8 degrees Fahrenheit to Celsius.", new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("5.9", result.GetValue<string>(), StringComparison.InvariantCulture);
+    }
+
     private Kernel InitializeKernel()
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
@@ -168,6 +187,13 @@ public sealed class OpenAIToolsTests : IDisposable
             }
 
             throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
+        }
+
+        [KernelFunction, Description("Convert temperature from Fahrenheit to Celsius.")]
+        public Task<double> ConvertTemperatureAsync(double temperatureInFahrenheit)
+        {
+            double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
+            return Task.FromResult(temperatureInCelsius);
         }
     }
 
