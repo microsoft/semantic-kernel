@@ -1,18 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Resources;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace GettingStarted;
 
 // This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
-public static class Step3_Yaml_Prompt
+public class Step3_Yaml_Prompt : BaseTest
 {
     /// <summary>
     /// Show how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
         Kernel kernel = Kernel.CreateBuilder()
@@ -26,7 +31,7 @@ public static class Step3_Yaml_Prompt
         var function = kernel.CreateFunctionFromPromptYaml(generateStoryYaml);
 
         // Invoke the prompt function and display the result
-        Console.WriteLine(await kernel.InvokeAsync(function, arguments: new()
+        WriteLine(await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Dog" },
                 { "length", "3" },
@@ -37,10 +42,14 @@ public static class Step3_Yaml_Prompt
         function = kernel.CreateFunctionFromPromptYaml(generateStoryHandlebarsYaml, new HandlebarsPromptTemplateFactory());
 
         // Invoke the prompt function and display the result
-        Console.WriteLine(await kernel.InvokeAsync(function, arguments: new()
+        WriteLine(await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Cat" },
                 { "length", "3" },
             }));
+    }
+
+    public Step3_Yaml_Prompt(ITestOutputHelper output) : base(output)
+    {
     }
 }
