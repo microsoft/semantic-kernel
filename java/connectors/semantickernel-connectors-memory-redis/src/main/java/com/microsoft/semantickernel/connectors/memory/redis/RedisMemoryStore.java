@@ -222,7 +222,7 @@ public class RedisMemoryStore implements MemoryStore {
 
         Map<String, String> map = this.client.hgetAll(String.format("%s:%s",
                 collectionName, key).toLowerCase(Locale.ROOT));
-        if (map == null) {
+        if (map == null || map.isEmpty()) {
             return Mono.empty();
         }
         MemoryRecord record = RedisMemoryRecord.mapToRecord(map, withEmbedding);
