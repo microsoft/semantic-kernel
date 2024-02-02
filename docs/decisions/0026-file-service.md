@@ -56,6 +56,37 @@ Defining a generalized file service interface provides an extensibility point fo
 
 ## More Information
 
+### Signature of BinaryContent
+
+#### `Microsoft.SemanticKernel.Abstractions`
+
+```csharp
+namespace Microsoft.SemanticKernel;
+
+/// <summary>
+/// Represents binary content.
+/// </summary>
+public sealed class BinaryContent : KernelContent
+{
+    private readonly Func<Stream> _streamProvider;
+
+    public BinaryContent(
+        Func<Stream> streamProvider,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this._streamProvider = streamProvider;
+    }
+
+    /// <summary>
+    /// The content stream
+    /// </summary>
+    public Stream GetStream() => this._streamProvider.Invoke();
+}
+```
+
 ### Signatures for Option 2:
 
 #### `Microsoft.SemanticKernel.Abstractions`
@@ -70,7 +101,7 @@ public abstract class FileService : IAIService
 
     public abstract Task<IEnumerable<FileReference>> GetFilesAsync(CancellationToken cancellationToken = default);
 
-    public abstract Task<Stream> GetFileContentAsync(
+    public abstract Task<BinaryContent> GetFileContentAsync(
         string id,
         CancellationToken cancellationToken = default);
 
@@ -104,7 +135,7 @@ public abstract class FileUploadRequest
 {
     string FileName { get; }
  
-    Stream GetContent();
+    BinaryContent GetContent();
 }
 
 public class FileReference
@@ -159,7 +190,7 @@ public sealed class OpenAIFileService
 
     public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default) { }
 
-    public async Task<Stream> GetFileContentAsync(
+    public async Task<BinaryContent> GetFileContentAsync(
         string id,
         CancellationToken cancellationToken = default) { }
 
@@ -178,7 +209,7 @@ public sealed class OpenAIFileUploadRequest
  
     public OpenAIFilePurpose Purpose { get; }
 
-    public Stream GetContent();
+    public BinaryContent GetContent();
 }
 
 public sealed class OpenAIFileReference
