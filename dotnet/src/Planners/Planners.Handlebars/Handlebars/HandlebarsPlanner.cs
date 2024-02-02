@@ -215,7 +215,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken)
     {
-        var createPlanPrompt = this.ReadPrompt("CreatePlanPrompt.handlebars");
+        var createPlanPrompt = this.ConstructHandlebarsPrompt("CreatePlanPrompt");
         var arguments = new KernelArguments()
             {
                 { "functions", availableFunctions},

@@ -1,0 +1,25 @@
+{{#*inline "UserGoal"}}
+{{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
+
+## Goal
+{{goal~}}
+{{/message}}
+
+{{! Retry logic}}
+{{~#if lastError}}
+
+{{#message role="system"}}## Previous attempt
+This previous plan failed to achieve the goal:
+```handlebars
+{{lastPlan}}
+```
+
+The error was:
+```
+{{lastError}}
+```
+
+Try again to achieve the goal while fixing the error.
+{{/message}}
+{{/if}}
+{{/inline}}
