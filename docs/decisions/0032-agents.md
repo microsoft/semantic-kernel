@@ -27,8 +27,7 @@ This ADR outlines a high-level design for SK agents, with the primary goal of ge
 - SK should provide sufficient abstraction and building blocks for the most frequent types of agent collaboration. It should be easy to add new blocks as new collaboration methods emerge.
 - SK should provide building blocks to modify agents' input and output to cover various customization scenarios.
 - SK agents' input and output should be represented by the same data type, making it easy to pass the output of one agent as input to another.
-- SK agents should leverage SK plugins and utilize function-calling capabilities.
-- SK agents should be stateless in order to collaborate on many conversations.
+- SK agents should leverage all SK tools DI, plugins, function-calling, etc.
 - SK agents API should be as simple as possible so that other libraries can build their agents on top of it if needed.
 
 ## Agents Overview
@@ -50,7 +49,7 @@ What is agent? An agent is a class that has the following attributes and abiliti
 ## Unified Interface And Data Contract
 To enable collaboration and customization scenarios, further details of which will be provided below, agents should have a unified interface. They should inherit from the same abstract Agent class and have one data type - AgentMessage, for both input and output data contracts. This will enable a very powerful and extensible model, allowing the addition of any agent to any chat/collaboration, regardless of its implementation, and enabling a seamless chat conversation where the agent's output message is added to the chat without any conversion, and the chat is sent as input for the next agent without any conversion as well.
 
-For example, the scenario where two agents need to communicate together can configured like this:
+For example, the scenario where two agents need to communicate together can be configured like this:
 ```C#
 class AgentTurnBasedChat(Agent[] agents)
 {
@@ -179,7 +178,7 @@ var result = await chat.StartConversationAsync(new[] { new AgentMessage(role: "u
 
 ```
 
-### Agents As plugins
+### Agents As Plugins
 This type of collaboration more closely resembles a delegation method of communication, as the agents are not collaborating in a chat but rather "delegating" by having one agent call the others as functions.
 ```C#
  Agent designer = new ChatCompletionAgent(name: "Peter", instructions: "You're a UI/UX designer ....", ...);
