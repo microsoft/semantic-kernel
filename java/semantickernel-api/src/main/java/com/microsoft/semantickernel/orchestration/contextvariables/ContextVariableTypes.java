@@ -8,6 +8,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
@@ -84,7 +86,6 @@ public class ContextVariableTypes {
             return null;
         }
     }
-
 
     public static <T> ContextVariableType<T> getDefaultVariableTypeForClass(Class<T> aClass) {
         return DEFAULT_TYPES.getVariableTypeForClass(aClass);

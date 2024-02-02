@@ -234,9 +234,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 Iterator<KernelPlugin> plugins = ((KernelPluginCollection) context).iterator();
                 while (plugins.hasNext()) {
                     KernelPlugin plugin = plugins.next();
-                    Iterator<KernelFunction> functions = plugin.iterator();
+                    Iterator<KernelFunction<?>> functions = plugin.iterator();
                     while (functions.hasNext()) {
-                        KernelFunction function = functions.next();
+                        KernelFunction<?> function = functions.next();
                         sb.append(options.fn(function));
                     }
                 }

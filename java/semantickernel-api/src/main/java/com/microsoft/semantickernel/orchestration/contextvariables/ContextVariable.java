@@ -31,6 +31,7 @@ public class ContextVariable<T> {
         return of(t);
     }
 
+    @SuppressWarnings("rawtypes")
     public static ContextVariable<?> untypedOf(
         @Nullable Object value,
         Class<?> clazz) {

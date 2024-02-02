@@ -1,16 +1,18 @@
 package com.microsoft.semantickernel.hooks;
 
-import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
-import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
-import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
-import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
-import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
+import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
 
 public class KernelHooks {
 
@@ -21,17 +23,21 @@ public class KernelHooks {
     }
 
     public KernelHooks(@Nullable KernelHooks kernelHooks) {
-        if (kernelHooks == null) {
-            this.hooks = new HashMap<>();
-        } else {
-            this.hooks = new HashMap<>(kernelHooks.getHooks());
+        this();
+        if (kernelHooks != null) {
+            this.hooks.putAll(kernelHooks.getHooks());
         }
     }
 
     public KernelHooks(Map<String, KernelHook<?>> hooks) {
-        this.hooks = new HashMap<>(hooks);
+        this();
+        this.hooks.putAll(hooks);
     }
 
+    public UnmodifiableKernelHooks unmodifiableClone() {
+        return new UnmodifiableKernelHooks(this);
+    }
+    
     private Map<String, KernelHook<?>> getHooks() {
         return Collections.unmodifiableMap(hooks);
     }
@@ -42,7 +48,7 @@ public class KernelHooks {
     }
 
     public String addFunctionInvokedHook(
-        Function<FunctionInvokedEvent, FunctionInvokedEvent> function) {
+        Function<FunctionInvokedEvent<?>, FunctionInvokedEvent<?>> function) {
         return addHook((FunctionInvokedHook) function::apply);
     }
 
@@ -61,9 +67,11 @@ public class KernelHooks {
         return addHook((PromptRenderingHook) function::apply);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends KernelHookEvent> T executeHooks(T event) {
         for (KernelHook<?> hook : hooks.values()) {
             if (hook.test(event)) {
+                // unchecked cast
                 event = ((KernelHook<T>) hook).apply(event);
             }
         }
@@ -83,11 +91,70 @@ public class KernelHooks {
         return hooks.remove(hookName);
     }
 
-    public KernelHooks append(KernelHooks kernelHooks) {
-        Map<String, KernelHook<?>> newHooks = new HashMap<>(this.hooks);
-        newHooks.putAll(this.hooks);
-        newHooks.putAll(kernelHooks.getHooks());
+    public KernelHooks append(@Nullable KernelHooks kernelHooks) {
+        if (kernelHooks == null) {
+            return this;
+        }
+        hooks.putAll(kernelHooks.getHooks());
 
-        return new KernelHooks(newHooks);
+        return this;
     }
+
+    public boolean isEmpty() {
+        return hooks.isEmpty();
+    }
+
+    public static class UnmodifiableKernelHooks extends KernelHooks {
+            
+        private UnmodifiableKernelHooks(KernelHooks kernelHooks) {
+            super(kernelHooks);
+        }
+
+        @Override
+        public String addFunctionInvokingHook(Function<FunctionInvokingEvent, FunctionInvokingEvent> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addFunctionInvokedHook(Function<FunctionInvokedEvent<?>, FunctionInvokedEvent<?>> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addPreChatCompletionHook(Function<PreChatCompletionEvent, PreChatCompletionEvent> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addPromptRenderedHook(Function<PromptRenderedEvent, PromptRenderedEvent> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addPromptRenderingHook(Function<PromptRenderingEvent, PromptRenderingEvent> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addHook(KernelHook<?> hook) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addHook(String hookName, KernelHook<?> hook) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public KernelHooks append(@Nullable KernelHooks kernelHooks) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public KernelHook<?> removeHook(String hookName) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+    }
+
+
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -15,14 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -60,80 +60,78 @@ public class Kernel implements Buildable {
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction function,
-        @Nullable KernelFunctionArguments arguments,
-        ContextVariableType<T> resultType) {
-        return function.invokeAsync(this, arguments, resultType);
+        KernelFunction<T> function,
+        @Nullable KernelFunctionArguments arguments) {
+        return invokeAsync(function, arguments, null);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction function,
+        KernelFunction<T> function,
         @Nullable KernelFunctionArguments arguments,
-        Class<T> resultType) {
-
-        ContextVariableType<T> functionResultType = getContextVariableType(function, resultType);
-        return invokeAsync(function, arguments, functionResultType);
+        @Nullable ContextVariableType<T> variableType) {
+        return invokeAsync(function, arguments, variableType, null);
     }
 
-    @Nullable
-    @SuppressWarnings("unchecked")
-    private static <T> ContextVariableType<T> getContextVariableType(
-        KernelFunction function,
-        Class<T> resultType) {
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        KernelFunction<T> function,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext) {
+       
+        Objects.requireNonNull(function, "function");
 
-        Class<?> functionReturnType = function.getMetadata().getReturnParameter().getParameterType();
+        // Ever other invokeAsync call should end up here... 
 
-        try {
-            // unchecked cast   
-            return (ContextVariableType<T>) ContextVariableTypes.getDefaultVariableTypeForClass(
-                functionReturnType);
-        } catch (Exception e) {
-            if (functionReturnType.isAssignableFrom(resultType)) {
-                return new ContextVariableType<>(
-                        // unchecked cast
-                        new NoopConverter<>((Class<T>) functionReturnType),
-                        // unchecked cast
-                        (Class<T>) functionReturnType);
-            } else {
-                return null;
+        // If there are hooks added to the global kernel hooks, create a new invocation context
+        // with the global hooks and the invocation context hooks merged together.
+        KernelHooks hooks = new KernelHooks(getGlobalKernelHooks());
+        if (!hooks.isEmpty()) {
+            if (invocationContext != null) {
+                hooks.append(invocationContext.getKernelHooks());
             }
+
+            InvocationContext.Builder builder = InvocationContext.builder()
+                .withKernelHooks(hooks);
+            
+            if (invocationContext != null) {
+                builder = builder
+                    .withPromptExecutionSettings(invocationContext.getPromptExecutionSettings())
+                    .withToolCallBehavior(invocationContext.getToolCallBehavior());
+            } 
+                
+            invocationContext = builder.build();
         }
+
+        return function.invokeAsync(this, arguments, variableType, invocationContext);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction function,
-        InvocationContext invocationContext) {
-        InvocationContext updatedInvocationContext = updateInvocationContext(invocationContext);
-        return function.invokeAsync(this, updatedInvocationContext);
+        String pluginName,
+        String functionName,
+        @Nullable KernelFunctionArguments arguments) {
+        return invokeAsync(pluginName, functionName, arguments, null);
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
         String pluginName,
         String functionName,
         @Nullable KernelFunctionArguments arguments,
-        ContextVariableType<T> resultType) {
-        return plugins.getFunction(pluginName, functionName)
-            .invokeAsync(this, arguments, resultType);
-    }
+        @Nullable ContextVariableType<T> resultType) {
+            return invokeAsync(pluginName, functionName, arguments, resultType, null);
+        }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
         String pluginName,
         String functionName,
         @Nullable KernelFunctionArguments arguments,
-        Class<T> resultType) {
-        return invokeAsync(plugins.getFunction(pluginName, functionName), arguments, resultType);
-    }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        InvocationContext invocationContext) {
-        InvocationContext updatedInvocationContext = updateInvocationContext(invocationContext);
-        return plugins.getFunction(pluginName, functionName)
-            .invokeAsync(this, updatedInvocationContext);
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext) {
+        KernelFunction function = plugins.getFunction(pluginName, functionName);
+        return invokeAsync(function, arguments, variableType, invocationContext);
      }
 
-    public List<KernelFunction> getFunctions() {
+
+    public List<KernelFunction<?>> getFunctions() {
         return plugins.getPlugins()
             .stream()
             .map(KernelPlugin::getFunctions)
@@ -171,6 +169,7 @@ public class Kernel implements Buildable {
         return selector.getService();
     }
 
+    /*
     // Add the global hooks to the invocation context hooks.
     private KernelHooks mergeInGlobalHooks(@Nullable KernelHooks invocationContextHooks) {
 
@@ -210,6 +209,31 @@ public class Kernel implements Buildable {
             invocationContext.getPromptExecutionSettings());
     }
 
+    @Nullable
+    @SuppressWarnings("unchecked")
+    static <T> ContextVariableType<T> getContextVariableType(
+        KernelFunction function,
+        Class<? extends T> resultType) {
+
+        Class<?> functionReturnType = function.getMetadata().getReturnParameter().getParameterType();
+
+        try {
+            // unchecked cast   
+            return (ContextVariableType<T>) ContextVariableTypes.getDefaultVariableTypeForClass(
+                functionReturnType);
+        } catch (Exception e) {
+            if (functionReturnType.isAssignableFrom(resultType)) {
+                return new ContextVariableType<>(
+                        // unchecked cast
+                        new NoopConverter<>((Class<T>) functionReturnType),
+                        // unchecked cast
+                        (Class<T>) functionReturnType);
+            } else {
+                return null;
+            }
+        }
+    }    
+ */
 
     public static Kernel.Builder builder() {
         return new Kernel.Builder();

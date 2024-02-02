@@ -31,7 +31,7 @@ public class KernelFunctionFactory {
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static KernelFunction createFromMethod(
+    public static <T> KernelFunction<T> createFromMethod(
         Method method,
         Object target,
         @Nullable String functionName,
@@ -49,7 +49,7 @@ public class KernelFunctionFactory {
      * @param promptTemplate Prompt template for the function.
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
-    public static KernelFunction createFromPrompt(String promptTemplate) {
+    public static <T> KernelFunction<T> createFromPrompt(String promptTemplate) {
         return createFromPrompt(promptTemplate, null, null, null, null, null);
     }
 
@@ -69,7 +69,7 @@ public class KernelFunctionFactory {
      *                              default factory will be used.
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
-    public static KernelFunction createFromPrompt(
+    public static <T> KernelFunction<T> createFromPrompt(
         String promptTemplate,
         @Nullable PromptExecutionSettings executionSettings,
         @Nullable String functionName,
@@ -85,7 +85,7 @@ public class KernelFunctionFactory {
             promptTemplateFactory);
     }
 
-    public static KernelFunction createFromPrompt(
+    public static <T> KernelFunction<T> createFromPrompt(
         PromptTemplateConfig promptConfig,
         @Nullable PromptTemplateFactory promptTemplateFactory) {
 
@@ -97,10 +97,10 @@ public class KernelFunctionFactory {
             promptConfig);
     }
 
-    public static KernelFunction create(
+    public static <T> KernelFunction<T> create(
         PromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig) {
-        return new KernelFunctionFromPrompt(
+        return new KernelFunctionFromPrompt<>(
             promptTemplate,
             promptConfig,
             null);

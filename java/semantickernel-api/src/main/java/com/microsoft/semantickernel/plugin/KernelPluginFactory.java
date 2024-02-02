@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class KernelPluginFactory {
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static KernelPlugin createFromObject(Object target, String pluginName) {
-        List<KernelFunction> methods = Arrays.stream(target.getClass().getMethods())
+        List<KernelFunction<?>> methods = Arrays.stream(target.getClass().getMethods())
             .filter(method -> method.isAnnotationPresent(DefineKernelFunction.class))
             .map(method -> {
                 DefineKernelFunction annotation = method.getAnnotation(DefineKernelFunction.class);
@@ -67,7 +68,7 @@ public class KernelPluginFactory {
                         annotation.description(),
                         getParameters(method),
                         kernelReturnParameterMetadata);
-            }).collect(Collectors.toList());
+            }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
         return createFromFunctions(pluginName, methods);
     }
@@ -113,7 +114,7 @@ public class KernelPluginFactory {
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin createFromFunctions(
         String pluginName,
-        @Nullable List<KernelFunction> functions) {
+        @Nullable List<KernelFunction<?>> functions) {
         return createFromFunctions(pluginName, null, functions);
     }
 
@@ -126,10 +127,10 @@ public class KernelPluginFactory {
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin createFromFunctions(String pluginName, @Nullable String description,
-        @Nullable List<KernelFunction> functions) {
-        Map<String, KernelFunction> funcs = new HashMap<>();
+        @Nullable List<KernelFunction<?>> functions) {
+        Map<String, KernelFunction<?>> funcs = new HashMap<>();
         if (functions != null) {
-            funcs = functions.stream().collect(Collectors.toMap(KernelFunction::getName, f -> f));
+            funcs = functions.stream().collect(Collectors.toMap(KernelFunction<?>::getName, f -> f));
         }
         return new KernelPlugin(pluginName, description, funcs);
     }
@@ -166,7 +167,7 @@ public class KernelPluginFactory {
             throw new SKException("No Plugins found in directory " + pluginDir.getAbsolutePath());
         }
 
-        Map<String, KernelFunction> plugins = new CaseInsensitiveMap<>();
+        Map<String, KernelFunction<?>> plugins = new CaseInsensitiveMap<>();
 
         for (File dir : files) {
             try {
@@ -183,7 +184,7 @@ public class KernelPluginFactory {
                     // configuration, unable to parse {configPath}");
                 }
 
-                KernelFunction plugin = getKernelFunction(promptTemplateFactory, configPath,
+                KernelFunction<?> plugin = getKernelFunction(promptTemplateFactory, configPath,
                     promptPath);
 
                 plugins.put(dir.getName(), plugin);
@@ -199,7 +200,7 @@ public class KernelPluginFactory {
         );
     }
 
-    private static KernelFunction getKernelFunction(
+    private static KernelFunction<?> getKernelFunction(
         PromptTemplateFactory promptTemplateFactory,
         File configPath,
         File promptPath)
@@ -214,7 +215,8 @@ public class KernelPluginFactory {
         return getKernelFunction(promptTemplateFactory, config, template);
     }
 
-    private static KernelFunction getKernelFunction(
+    @SuppressWarnings("unchecked")
+    private static <T> KernelFunction<T> getKernelFunction(
         PromptTemplateFactory promptTemplateFactory,
         PromptTemplateConfig config,
         String template) {
@@ -226,7 +228,7 @@ public class KernelPluginFactory {
             promptTemplate = new KernelPromptTemplateFactory().tryCreate(config);
         }
 
-        return new KernelFunctionFromPrompt.Builder()
+        return (KernelFunction<T>) new KernelFunctionFromPrompt.Builder<>()
             .withName(config.getName())
             .withDescription(config.getDescription())
             .withExecutionSettings(config.getExecutionSettings())
@@ -258,10 +260,10 @@ public class KernelPluginFactory {
                 + pluginDirectoryName);
             return null;
         }
-        KernelFunction function = getKernelFunction(promptTemplateFactory,
+        KernelFunction<?> function = getKernelFunction(promptTemplateFactory,
             promptTemplateConfig, template);
 
-        HashMap<String, KernelFunction> plugins = new HashMap<>();
+        HashMap<String, KernelFunction<?>> plugins = new HashMap<>();
 
         plugins.put(functionName, function);
 

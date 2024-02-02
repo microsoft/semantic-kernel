@@ -2,51 +2,35 @@ package com.microsoft.semantickernel.orchestration;
 
 import javax.annotation.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Context passed to a Kernel or KernelFunction invoke
  */
 public class InvocationContext implements Buildable {
 
-    private final KernelFunctionArguments arguments;
-    private final ContextVariableType<?> functionReturnType;
-    private final KernelHooks hooks;
+    private final UnmodifiableKernelHooks hooks;
     private final PromptExecutionSettings promptExecutionSettings;
+    private final UnmodifiableToolCallBehavior toolCallBehavior;
 
     public InvocationContext(
-        KernelFunctionArguments arguments,
-        ContextVariableType<?> functionReturnType,
-        @Nullable
-        KernelHooks hooks,
-        @Nullable
-        PromptExecutionSettings promptExecutionSettings) {
-        this.arguments = arguments != null ? new KernelFunctionArguments(arguments) : new KernelFunctionArguments();
-        this.functionReturnType = functionReturnType;
-        this.hooks = hooks != null ? new KernelHooks(hooks) : new KernelHooks();
+        @Nullable KernelHooks hooks,
+        @Nullable PromptExecutionSettings promptExecutionSettings,
+        @Nullable ToolCallBehavior toolCallBehavior) {
+        this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
+        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
-    public KernelFunctionArguments getKernelFunctionArguments() {
-        return arguments;
-    }
-
-    public ContextVariableType<?> getFunctionReturnType() {
-        return functionReturnType;
-    }
-
-    @SuppressFBWarnings("EI_EXPOSE_REP")
+    @SuppressFBWarnings(value="EI_EXPOSE_REP", justification="returns UnmodifiableKernelHooks")
     @Nullable
-    public KernelHooks getKernelHooks() {
+    public UnmodifiableKernelHooks getKernelHooks() {
         return hooks;
     }
 
@@ -55,39 +39,44 @@ public class InvocationContext implements Buildable {
         return promptExecutionSettings;
     }
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP", justification="returns UnmodifiableToolCallBehavior")
+    @Nullable
+    public UnmodifiableToolCallBehavior getToolCallBehavior() {
+        return toolCallBehavior;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
+    private static UnmodifiableToolCallBehavior unmodifiableClone(ToolCallBehavior toolCallBehavior) {
+        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
+            return (UnmodifiableToolCallBehavior) toolCallBehavior;
+        } else if (toolCallBehavior != null) {
+            return toolCallBehavior.unmodifiableClone();
+        } else {
+            return null;
+        }
+    }
+
+    private static UnmodifiableKernelHooks unmodifiableClone(KernelHooks kernelHooks) {
+        if (kernelHooks instanceof UnmodifiableKernelHooks) {
+            return (UnmodifiableKernelHooks) kernelHooks;
+        } else if (kernelHooks != null) {
+            return kernelHooks.unmodifiableClone();
+        } else {
+            return null;
+        }
+    }
+
     public static class Builder implements SemanticKernelBuilder<InvocationContext> {
 
-        private static Logger LOGGER = LoggerFactory.getLogger(Builder.class);
-
-        private KernelFunctionArguments arguments;
-        private ContextVariableType<?> functionReturnType;
-        private KernelHooks hooks;
+        private UnmodifiableKernelHooks hooks;
         private PromptExecutionSettings promptExecutionSettings;
+        private UnmodifiableToolCallBehavior toolCallBehavior;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
-        public Builder withKernelFunctionArguments(KernelFunctionArguments arguments) {
-            this.arguments = arguments;
-            return this;
-        }
-
-        public Builder withFunctionReturnType(ContextVariableType<?> functionReturnType) {
-            this.functionReturnType = functionReturnType;
-            return this;
-        }
-
-        public Builder withFunctionReturnType(Class<?> functionReturnType) {  
-            // TODO: javadoc @throws SKException if no default variable type is found
-            ContextVariableType<?> contextVariable = ContextVariableTypes.getDefaultVariableTypeForClass(functionReturnType);
-            return withFunctionReturnType(contextVariable);
-        }
-
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withKernelHooks(KernelHooks hooks) {
-            this.hooks = hooks;
+            this.hooks = unmodifiableClone(hooks);
             return this;
         }
 
@@ -96,17 +85,14 @@ public class InvocationContext implements Buildable {
             return this;
         }
 
+        public Builder withToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+            this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+            return this;
+        }
+
         @Override
         public InvocationContext build() {
-            if (arguments == null) {
-                LOGGER.warn("InvocationContext created without arguments. Defaulting to empty arguments.");
-                arguments = new KernelFunctionArguments();
-            }
-            if (functionReturnType == null) {
-                LOGGER.warn("InvocationContext created without functionReturnType. Defaulting to String.");
-                functionReturnType = ContextVariableTypes.getDefaultVariableTypeForClass(String.class);
-            }
-            return new InvocationContext(arguments, functionReturnType, hooks, promptExecutionSettings);
+            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior);
         }
     }
     
