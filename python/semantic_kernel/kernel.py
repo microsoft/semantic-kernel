@@ -22,6 +22,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
@@ -61,45 +62,64 @@ T = TypeVar("T")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Kernel:
+class Kernel(KernelBaseModel):
+    """
+    The Kernel class is the main entry point for the Semantic Kernel. It provides the ability to run
+    semantic/native functions, and manage plugins, memory, and AI services.
+
+    Attributes:
+        plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
+        prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be used by the kernel
+        memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
+        text_completion_services (Dict[str, Callable[["Kernel"], TextCompletionClientBase]]): The text
+            completion services
+        chat_services (Dict[str, Callable[["Kernel"], ChatCompletionClientBase]]): The chat services
+        text_embedding_generation_services (Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]]): The text embedding
+        default_text_completion_service (Optional[str]): The default text completion service
+        default_chat_service (Optional[str]): The default chat service
+        default_text_embedding_generation_service (Optional[str]): The default text embedding generation service
+        retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
+        function_invoking_handlers (Dict): The function invoking handlers
+        function_invoked_handlers (Dict): The function invoked handlers
+    """
+
     plugins: Optional[KernelPluginCollection] = Field(default_factory=KernelPluginCollection)
-    # TODO: pydantic-ify these fields
-    _prompt_template_engine: PromptTemplatingEngine
-    _memory: SemanticTextMemoryBase
+    prompt_template_engine: Optional[PromptTemplatingEngine] = Field(default_factory=PromptTemplateEngine)
+    memory: Optional[SemanticTextMemoryBase] = Field(default_factory=SemanticTextMemory)
+    text_completion_services: Dict[str, Callable[["Kernel"], TextCompletionClientBase]] = Field(default_factory=dict)
+    chat_services: Dict[str, Callable[["Kernel"], ChatCompletionClientBase]] = Field(default_factory=dict)
+    text_embedding_generation_services: Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]] = Field(
+        default_factory=dict
+    )
+    default_text_completion_service: Optional[str] = Field(default=None)
+    default_chat_service: Optional[str] = Field(default=None)
+    default_text_embedding_generation_service: Optional[str] = Field(default=None)
+    retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
+    function_invoking_handlers: Dict = Field(default_factory=dict)
+    function_invoked_handlers: Dict = Field(default_factory=dict)
 
     def __init__(
         self,
         plugins: Optional[KernelPluginCollection] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Any] = None,
+        **kwargs: Any,
     ) -> None:
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        self.plugins = plugins if plugins else KernelPluginCollection()
-        self._prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
-        self._memory = memory if memory else NullMemory()
+        """
+        Initialize a new instance of the Kernel class.
 
-        self._text_completion_services: Dict[str, Callable[["Kernel"], TextCompletionClientBase]] = {}
-        self._chat_services: Dict[str, Callable[["Kernel"], ChatCompletionClientBase]] = {}
-        self._text_embedding_generation_services: Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]] = {}
+        Args:
+            plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
+            prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be
+                used by the kernel
+            memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
+            **kwargs (Any): Additional fields to be passed to the Kernel model
+        """
+        plugins = plugins if plugins else KernelPluginCollection()
+        prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
+        memory = memory if memory else NullMemory()
 
-        self._default_text_completion_service: Optional[str] = None
-        self._default_chat_service: Optional[str] = None
-        self._default_text_embedding_generation_service: Optional[str] = None
-
-        self._retry_mechanism: RetryMechanismBase = PassThroughWithoutRetry()
-
-        self._function_invoking_handlers = {}
-        self._function_invoked_handlers = {}
-
-    @property
-    def memory(self) -> SemanticTextMemoryBase:
-        return self._memory
-
-    @property
-    def prompt_template_engine(self) -> PromptTemplatingEngine:
-        return self._prompt_template_engine
+        super().__init__(plugins=plugins, prompt_template_engine=prompt_template_engine, memory=memory, **kwargs)
 
     def add_plugin(
         self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPlugin] = None
@@ -237,7 +257,7 @@ class Kernel:
                     variables = ContextVariables()
                 context = KernelContext(
                     variables=variables,
-                    memory=self._memory,
+                    memory=self.memory,
                     plugins=self.plugins,
                 )
         else:
@@ -292,7 +312,7 @@ class Kernel:
                 variables = ContextVariables()
             context = KernelContext(
                 variables=variables,
-                memory=self._memory,
+                memory=self.memory,
                 plugins=self.plugins,
             )
 
@@ -404,7 +424,7 @@ class Kernel:
         self.register_memory(SemanticTextMemory(storage, embeddings_generator))
 
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
-        self._memory = memory
+        self.memory = memory
 
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
@@ -412,22 +432,22 @@ class Kernel:
     def create_new_context(self, variables: Optional[ContextVariables] = None) -> KernelContext:
         return KernelContext(
             ContextVariables() if not variables else variables,
-            self._memory,
+            self.memory,
             self.plugins,
         )
 
     def on_function_invoking(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokingEventArgs:
-        if self._function_invoking_handlers:
+        if self.function_invoking_handlers:
             args = FunctionInvokingEventArgs(function_view, context)
-            for handler in self._function_invoking_handlers.values():
+            for handler in self.function_invoking_handlers.values():
                 handler(self, args)
             return args
         return None
 
     def on_function_invoked(self, function_view: FunctionView, context: KernelContext) -> FunctionInvokedEventArgs:
-        if self._function_invoked_handlers:
+        if self.function_invoked_handlers:
             args = FunctionInvokedEventArgs(function_view, context)
-            for handler in self._function_invoked_handlers.values():
+            for handler in self.function_invoked_handlers.values():
                 handler(self, args)
             return args
         return None
@@ -507,14 +527,14 @@ class Kernel:
     def get_ai_service(self, type: Type[T], service_id: Optional[str] = None) -> Callable[["Kernel"], T]:
         matching_type = {}
         if type == TextCompletionClientBase:
-            service_id = service_id or self._default_text_completion_service
-            matching_type = self._text_completion_services
+            service_id = service_id or self.default_text_completion_service
+            matching_type = self.text_completion_services
         elif type == ChatCompletionClientBase:
-            service_id = service_id or self._default_chat_service
-            matching_type = self._chat_services
+            service_id = service_id or self.default_chat_service
+            matching_type = self.chat_services
         elif type == EmbeddingGeneratorBase:
-            service_id = service_id or self._default_text_embedding_generation_service
-            matching_type = self._text_embedding_generation_services
+            service_id = service_id or self.default_text_embedding_generation_service
+            matching_type = self.text_embedding_generation_services
         else:
             raise ValueError(f"Unknown AI service type: {type.__name__}")
 
@@ -524,13 +544,13 @@ class Kernel:
         return matching_type[service_id]
 
     def all_text_completion_services(self) -> List[str]:
-        return list(self._text_completion_services.keys())
+        return list(self.text_completion_services.keys())
 
     def all_chat_services(self) -> List[str]:
-        return list(self._chat_services.keys())
+        return list(self.chat_services.keys())
 
     def all_text_embedding_generation_services(self) -> List[str]:
-        return list(self._text_embedding_generation_services.keys())
+        return list(self.text_embedding_generation_services.keys())
 
     def add_text_completion_service(
         self,
@@ -540,12 +560,12 @@ class Kernel:
     ) -> "Kernel":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self._text_completion_services:
+        if not overwrite and service_id in self.text_completion_services:
             raise ValueError(f"Text service with service_id '{service_id}' already exists")
 
-        self._text_completion_services[service_id] = service if isinstance(service, Callable) else lambda _: service
-        if self._default_text_completion_service is None:
-            self._default_text_completion_service = service_id
+        self.text_completion_services[service_id] = service if isinstance(service, Callable) else lambda _: service
+        if self.default_text_completion_service is None:
+            self.default_text_completion_service = service_id
 
         return self
 
@@ -557,12 +577,12 @@ class Kernel:
     ) -> "Kernel":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self._chat_services:
+        if not overwrite and service_id in self.chat_services:
             raise ValueError(f"Chat service with service_id '{service_id}' already exists")
 
-        self._chat_services[service_id] = service if isinstance(service, Callable) else lambda _: service
-        if self._default_chat_service is None:
-            self._default_chat_service = service_id
+        self.chat_services[service_id] = service if isinstance(service, Callable) else lambda _: service
+        if self.default_chat_service is None:
+            self.default_chat_service = service_id
 
         if isinstance(service, TextCompletionClientBase):
             self.add_text_completion_service(service_id, service)
@@ -577,112 +597,112 @@ class Kernel:
     ) -> "Kernel":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self._text_embedding_generation_services:
+        if not overwrite and service_id in self.text_embedding_generation_services:
             raise ValueError(f"Embedding service with service_id '{service_id}' already exists")
 
-        self._text_embedding_generation_services[service_id] = (
+        self.text_embedding_generation_services[service_id] = (
             service if isinstance(service, Callable) else lambda _: service
         )
-        if self._default_text_embedding_generation_service is None:
-            self._default_text_embedding_generation_service = service_id
+        if self.default_text_embedding_generation_service is None:
+            self.default_text_embedding_generation_service = service_id
 
         return self
 
     def set_default_text_completion_service(self, service_id: str) -> "Kernel":
-        if service_id not in self._text_completion_services:
+        if service_id not in self.text_completion_services:
             raise ValueError(f"AI service with service_id '{service_id}' does not exist")
 
-        self._default_text_completion_service = service_id
+        self.default_text_completion_service = service_id
         return self
 
     def set_default_chat_service(self, service_id: str) -> "Kernel":
-        if service_id not in self._chat_services:
+        if service_id not in self.chat_services:
             raise ValueError(f"AI service with service_id '{service_id}' does not exist")
 
-        self._default_chat_service = service_id
+        self.default_chat_service = service_id
         return self
 
     def set_default_text_embedding_generation_service(self, service_id: str) -> "Kernel":
-        if service_id not in self._text_embedding_generation_services:
+        if service_id not in self.text_embedding_generation_services:
             raise ValueError(f"AI service with service_id '{service_id}' does not exist")
 
-        self._default_text_embedding_generation_service = service_id
+        self.default_text_embedding_generation_service = service_id
         return self
 
     def get_text_completion_service_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self._text_completion_services:
-            if self._default_text_completion_service is None:
+        if service_id is None or service_id not in self.text_completion_services:
+            if self.default_text_completion_service is None:
                 raise ValueError("No default text service is set")
-            return self._default_text_completion_service
+            return self.default_text_completion_service
 
         return service_id
 
     def get_chat_service_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self._chat_services:
-            if self._default_chat_service is None:
+        if service_id is None or service_id not in self.chat_services:
+            if self.default_chat_service is None:
                 raise ValueError("No default chat service is set")
-            return self._default_chat_service
+            return self.default_chat_service
 
         return service_id
 
     def get_text_embedding_generation_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self._text_embedding_generation_services:
-            if self._default_text_embedding_generation_service is None:
+        if service_id is None or service_id not in self.text_embedding_generation_services:
+            if self.default_text_embedding_generation_service is None:
                 raise ValueError("No default embedding service is set")
-            return self._default_text_embedding_generation_service
+            return self.default_text_embedding_generation_service
 
         return service_id
 
     def remove_text_completion_service(self, service_id: str) -> "Kernel":
-        if service_id not in self._text_completion_services:
+        if service_id not in self.text_completion_services:
             raise ValueError(f"AI service with service_id '{service_id}' does not exist")
 
-        del self._text_completion_services[service_id]
-        if self._default_text_completion_service == service_id:
-            self._default_text_completion_service = next(iter(self._text_completion_services), None)
+        del self.text_completion_services[service_id]
+        if self.default_text_completion_service == service_id:
+            self.default_text_completion_service = next(iter(self.text_completion_services), None)
         return self
 
     def remove_chat_service(self, service_id: str) -> "Kernel":
-        if service_id not in self._chat_services:
+        if service_id not in self.chat_services:
             raise ValueError(f"AI service with service_id '{service_id}' does not exist")
 
-        del self._chat_services[service_id]
-        if self._default_chat_service == service_id:
-            self._default_chat_service = next(iter(self._chat_services), None)
+        del self.chat_services[service_id]
+        if self.default_chat_service == service_id:
+            self.default_chat_service = next(iter(self.chat_services), None)
         return self
 
     def remove_text_embedding_generation_service(self, service_id: str) -> "Kernel":
-        if service_id not in self._text_embedding_generation_services:
+        if service_id not in self.text_embedding_generation_services:
             raise ValueError(f"AI service with service_id '{service_id}' does not exist")
 
-        del self._text_embedding_generation_services[service_id]
-        if self._default_text_embedding_generation_service == service_id:
-            self._default_text_embedding_generation_service = next(iter(self._text_embedding_generation_services), None)
+        del self.text_embedding_generation_services[service_id]
+        if self.default_text_embedding_generation_service == service_id:
+            self.default_text_embedding_generation_service = next(iter(self.text_embedding_generation_services), None)
         return self
 
     def clear_all_text_completion_services(self) -> "Kernel":
-        self._text_completion_services = {}
-        self._default_text_completion_service = None
+        self.text_completion_services = {}
+        self.default_text_completion_service = None
         return self
 
     def clear_all_chat_services(self) -> "Kernel":
-        self._chat_services = {}
-        self._default_chat_service = None
+        self.chat_services = {}
+        self.default_chat_service = None
         return self
 
     def clear_all_text_embedding_generation_services(self) -> "Kernel":
-        self._text_embedding_generation_services = {}
-        self._default_text_embedding_generation_service = None
+        self.text_embedding_generation_services = {}
+        self.default_text_embedding_generation_service = None
         return self
 
     def clear_all_services(self) -> "Kernel":
-        self._text_completion_services = {}
-        self._chat_services = {}
-        self._text_embedding_generation_services = {}
+        self.text_completion_services = {}
+        self.chat_services = {}
+        self.text_embedding_generation_services = {}
 
-        self._default_text_completion_service = None
-        self._default_chat_service = None
-        self._default_text_embedding_generation_service = None
+        self.default_text_completion_service = None
+        self.default_chat_service = None
+        self.default_text_embedding_generation_service = None
 
         return self
 
@@ -821,10 +841,6 @@ class Kernel:
             # Prepare lambda wrapping AI logic
             function_config = SemanticFunctionConfig(config, template)
 
-            # TODO: this is an example of where plugins are added to the collection in the kernel
-            # as part of the register_semantic_function, seems weird to have it hidden?
-            # should the register function simply register the function and then we can add to the
-            # plugin collection later?
             functions += [self.register_semantic_function(plugin_directory_name, function_name, function_config)]
 
         plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
@@ -857,15 +873,15 @@ class Kernel:
         return self.register_semantic_function(plugin_name, function_name, function_config)
 
     def add_function_invoking_handler(self, handler: Callable) -> None:
-        self._function_invoking_handlers[id(handler)] = handler
+        self.function_invoking_handlers[id(handler)] = handler
 
     def add_function_invoked_handler(self, handler: Callable) -> None:
-        self._function_invoked_handlers[id(handler)] = handler
+        self.function_invoked_handlers[id(handler)] = handler
 
     def remove_function_invoking_handler(self, handler: Callable) -> None:
-        if id(handler) in self._function_invoking_handlers:
-            del self._function_invoking_handlers[id(handler)]
+        if id(handler) in self.function_invoking_handlers:
+            del self.function_invoking_handlers[id(handler)]
 
     def remove_function_invoked_handler(self, handler: Callable) -> None:
-        if id(handler) in self._function_invoked_handlers:
-            del self._function_invoked_handlers[id(handler)]
+        if id(handler) in self.function_invoked_handlers:
+            del self.function_invoked_handlers[id(handler)]
