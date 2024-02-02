@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -91,7 +93,9 @@ async def test_run_async_handles_post_invocation(pipeline_count):
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    mock_function.invoke = AsyncMock(side_effect=lambda input, context: context)
+    mock_function.invoke = AsyncMock(
+        side_effect=lambda function, kernel, arguments: FunctionResult(function, value="test")
+    )
     invoked = 0
 
     def invoked_handler(sender, e):
@@ -102,7 +106,7 @@ async def test_run_async_handles_post_invocation(pipeline_count):
     functions = [mock_function] * pipeline_count
 
     # Act
-    _ = await kernel.run(*functions)
+    _ = await kernel.invoke(functions, KernelArguments())
 
     # Assert
     assert invoked == pipeline_count
