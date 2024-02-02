@@ -419,32 +419,20 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     {
         try
         {
-            // Handling known 'JSON' types.
-            if (value is JsonDocument document)
+            deserializedValue = value switch
             {
-                deserializedValue = JsonSerializer.Deserialize(document, targetType);
-                return true;
-            }
+                JsonDocument document => document.Deserialize(targetType),
+                JsonNode node => node.Deserialize(targetType),
+                JsonElement element => element.Deserialize(targetType),
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+                // Since we don't take dependencies on these libraries and don't have access to the types here,
+                // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
+                // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
+                // For instance, the JObject for { "id": 28 } JSON is serialized into the string  "{ "Id": [] }", and the deserialization fails with the
+                // following exception - "The JSON value could not be converted to System.Int32. Path: $.Id | LineNumber: 0 | BytePositionInLine: 7."
+                _ => JsonSerializer.Deserialize(value.ToString(), targetType)
+            };
 
-            if (value is JsonNode node)
-            {
-                deserializedValue = JsonSerializer.Deserialize(node, targetType);
-                return true;
-            }
-
-            if (value is JsonElement element)
-            {
-                deserializedValue = JsonSerializer.Deserialize(element, targetType);
-                return true;
-            }
-
-            // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
-            // Since we don't take dependencies on these libraries and don't have access to the types here,
-            // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
-            // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
-            // For instance, the JObject for { "id": 28 } JSON is serialized into the string  "{ "Id": [] }", and the deserialization fails with the
-            // following exception - "The JSON value could not be converted to System.Int32. Path: $.Id | LineNumber: 0 | BytePositionInLine: 7."
-            deserializedValue = JsonSerializer.Deserialize(value.ToString(), targetType);
             return true;
         }
         catch (NotSupportedException)
