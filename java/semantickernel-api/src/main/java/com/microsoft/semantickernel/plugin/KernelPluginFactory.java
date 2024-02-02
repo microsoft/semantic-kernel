@@ -201,14 +201,20 @@ public class KernelPluginFactory {
         File configPath,
         File promptPath)
         throws IOException {
-        PromptTemplateConfig config = new ObjectMapper().readValue(configPath,
-            PromptTemplateConfig.class);
+        try {
+            PromptTemplateConfig config = new ObjectMapper().readValue(configPath,
+                PromptTemplateConfig.class);
 
-        // Load prompt template
-        String template = new String(Files.readAllBytes(promptPath.toPath()),
-            Charset.defaultCharset());
+            // Load prompt template
+            String template = new String(Files.readAllBytes(promptPath.toPath()),
+                Charset.defaultCharset());
 
-        return getKernelFunction(promptTemplateFactory, config, template);
+            return getKernelFunction(promptTemplateFactory, config, template);
+        } catch (Exception e) {
+            LOGGER.error("Failed to read file " + configPath.getAbsolutePath(), e);
+
+            throw new SKException("Failed to read function " + configPath.getAbsolutePath(), e);
+        }
     }
 
     private static KernelFunction getKernelFunction(

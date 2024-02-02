@@ -4,10 +4,9 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
@@ -19,14 +18,32 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@WireMockTest
+
+/*
+Run this test with the following JVM arguments:
+    -Djavax.net.ssl.trustStore=scripts/client.truststore
+    -Djavax.net.ssl.trustStorePassword=password
+ */
 public class Example05_InlineFunctionDefinitionTest {
 
+    @RegisterExtension
+    static WireMockExtension wm1 = WireMockExtension.newInstance()
+        .options(WireMockConfiguration.wireMockConfig()
+            .httpsPort(8443)
+            .trustStorePath("scripts/client.truststore")
+            .trustStorePassword("password")
+            .trustStoreType("jks")
+            .keystorePath("scripts/server.keystore")
+            .keystorePassword("password")
+            .keystoreType("jks"))
+        .build();
+
     @Test
-    public void main(WireMockRuntimeInfo wmRuntimeInfo) {
+    public void main() {
         final OpenAIAsyncClient client = new OpenAIClientBuilder()
-            .endpoint("http://localhost:" + wmRuntimeInfo.getHttpPort())
+            .endpoint("https://localhost:8443")
             .buildAsyncClient();
 
         TextGenerationService textGenerationService = TextGenerationService.builder()

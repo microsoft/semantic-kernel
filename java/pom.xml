@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,7 +36,7 @@
         <maven.enforcer-plugin.version>3.3.0</maven.enforcer-plugin.version>
         <maven.exec-plugin.version>3.1.0</maven.exec-plugin.version>
         <maven.install-plugin.version>3.1.1</maven.install-plugin.version>
-        <maven.jacoco-plugin.version>0.8.10</maven.jacoco-plugin.version>
+        <maven.jacoco-plugin.version>0.8.11</maven.jacoco-plugin.version>
         <maven.jar-plugin.version>3.3.0</maven.jar-plugin.version>
         <maven.javadoc-plugin.version>3.5.0</maven.javadoc-plugin.version>
         <maven.jxr-plugin.version>3.3.0</maven.jxr-plugin.version>
@@ -65,21 +66,21 @@
 
     <modules>
         <module>connectors/semantickernel-connectors-web-bing</module>
-<!--        <module>connectors/semantickernel-connectors-ai-openai</module>-->
-<!--        <module>connectors/semantickernel-connectors-memory-sqlite</module>-->
-<!--        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>-->
-<!--        <module>connectors/semantickernel-connectors-memory-jdbc</module>-->
-<!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
-<!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
+        <!--        <module>connectors/semantickernel-connectors-ai-openai</module>-->
+        <!--        <module>connectors/semantickernel-connectors-memory-sqlite</module>-->
+        <!--        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>-->
+        <!--        <module>connectors/semantickernel-connectors-memory-jdbc</module>-->
+        <!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
+        <!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
 
-<!--        <module>aiservices/huggingface</module>-->
-<!--        <module>aiservices/ollama</module>-->
+        <!--        <module>aiservices/huggingface</module>-->
+        <!--        <module>aiservices/ollama</module>-->
         <module>aiservices/openai</module>
 
-<!--        <module>misc/semantickernel-gpt3-tokenizer</module>-->
-<!--        <module>misc/semantickernel-settings-loader</module>-->
+        <!--        <module>misc/semantickernel-gpt3-tokenizer</module>-->
+        <!--        <module>misc/semantickernel-settings-loader</module>-->
 
-<!--        <module>plugins/semantickernel-planners</module>-->
+        <!--        <module>plugins/semantickernel-planners</module>-->
         <module>plugins/semantickernel-plugin-core</module>
 
         <module>semantickernel-bom</module>
@@ -182,12 +183,6 @@
                             <version>${spotbugs.version}</version>
                         </dependency>
                     </dependencies>
-                    <!--
-                        TODO: Enable this once we have a good set of exclusions
-                        <configuration>
-                            <excludeFilterFile>spotbugs-excludes.xml</excludeFilterFile>
-                        </configuration>
-                    -->
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -711,7 +706,6 @@
                         <artifactId>spotbugs-maven-plugin</artifactId>
                         <version>${maven.spotbugs-plugin.version}</version>
                         <configuration>
-                            <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
                             <effort>Max</effort>
                             <!-- Lower when more project is stable -->
                             <threshold>Normal</threshold>

@@ -19,12 +19,10 @@ import javax.annotation.Nullable;
 
 public class Example62_CustomAIServiceSelector {
 
-
-    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
-        System.getenv("USE_AZURE_CLIENT"));
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if USE_AZURE_CLIENT is true
+    // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
 
     public static void main(String[] args) {
@@ -32,11 +30,12 @@ public class Example62_CustomAIServiceSelector {
 
         OpenAIAsyncClient client;
 
-        if (USE_AZURE_CLIENT) {
+        if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(CLIENT_KEY))
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
+
         } else {
             client = new OpenAIClientBuilder()
                 .credential(new KeyCredential(CLIENT_KEY))

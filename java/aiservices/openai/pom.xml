@@ -40,7 +40,9 @@
             <groupId>javax.xml.stream</groupId>
             <artifactId>stax-api</artifactId>
             <version>1.0-2</version>
+            <scope>provided</scope>
         </dependency>
+
     </dependencies>
 
 </project>

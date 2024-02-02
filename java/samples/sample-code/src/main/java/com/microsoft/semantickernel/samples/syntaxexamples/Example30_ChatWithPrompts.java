@@ -82,7 +82,7 @@ public class Example30_ChatWithPrompts {
             .builder()
             .withVariable("selectedText", selectedText)
             .withVariable("startTime", DateTimeFormatter.ofPattern("hh:mm:ss a zz").format(
-                ZonedDateTime.now(ZoneId.systemDefault())))
+                ZonedDateTime.of(2000, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault())))
             .withVariable("userMessage", "extract locations as a bullet point list")
             .build();
 
@@ -118,10 +118,9 @@ public class Example30_ChatWithPrompts {
         // Finally, get the response from AI
         var answer = chatCompletion
             .getChatMessageContentsAsync(chatHistory, null, kernel)
-            .block()
-            .stream()
-            .findFirst()
-            .get();
-        System.out.println("------------------------------------\n" + answer);
+            .block();
+        System.out.println(
+            "------------------------------------\n" + answer.stream().findFirst().get()
+                .getContent());
     }
 }
