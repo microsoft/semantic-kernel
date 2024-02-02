@@ -16,7 +16,7 @@ async def test_summarize_input_str(setup_summarize_function):
     ) = setup_summarize_function
 
     # Summarize input string and print
-    summary = await kernel.run_async(summarize_function, input_str=text_to_summarize)
+    summary = await kernel.run(summarize_function, input_str=text_to_summarize)
 
     output = str(summary).strip()
     print(f"Summary using input string: '{output}'")
@@ -35,7 +35,7 @@ async def test_summarize_input_vars(setup_summarize_function):
 
     # Summarize input as context variable and print
     context_vars = sk.ContextVariables(text_to_summarize)
-    summary = await kernel.run_async(summarize_function, input_vars=context_vars)
+    summary = await kernel.run(summarize_function, input_vars=context_vars)
 
     output = str(summary).strip()
     print(f"Summary using context variables: '{output}'")
@@ -55,7 +55,7 @@ async def test_summarize_input_context(setup_summarize_function):
     # Summarize input context and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(summarize_function, input_context=context)
+    summary = await kernel.run(summarize_function, input_context=context)
 
     output = str(summary).strip()
     print(f"Summary using input context: '{output}'")
@@ -76,7 +76,7 @@ async def test_summarize_input_context_with_vars(setup_summarize_function):
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
     context_vars = sk.ContextVariables(additional_text)
-    summary = await kernel.run_async(summarize_function, input_context=context, input_vars=context_vars)
+    summary = await kernel.run(summarize_function, input_context=context, input_vars=context_vars)
 
     output = str(summary).strip()
     print(f"Summary using context and additional variables: '{output}'")
@@ -96,7 +96,7 @@ async def test_summarize_input_context_with_str(setup_summarize_function):
     # Summarize input context with additional input string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(summarize_function, input_context=context, input_str=additional_text)
+    summary = await kernel.run(summarize_function, input_context=context, input_str=additional_text)
 
     output = str(summary).strip()
     print(f"Summary using context and additional string: '{output}'")
@@ -117,7 +117,7 @@ async def test_summarize_input_context_with_vars_and_str(setup_summarize_functio
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
     context_vars = sk.ContextVariables(variables={"input2": additional_text})
-    summary = await kernel.run_async(
+    summary = await kernel.run(
         summarize_function,
         input_context=context,
         input_vars=context_vars,

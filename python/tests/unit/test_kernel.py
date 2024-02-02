@@ -27,7 +27,7 @@ async def test_run_async_handles_pre_invocation(pipeline_count):
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function.invoke = AsyncMock(side_effect=lambda input, context: context)
     kernel._plugin_collection.add_semantic_function(mock_function)
 
     invoked = 0
@@ -40,11 +40,11 @@ async def test_run_async_handles_pre_invocation(pipeline_count):
     functions = [mock_function] * pipeline_count
 
     # Act
-    _ = await kernel.run_async(*functions)
+    _ = await kernel.run(*functions)
 
     # Assert
     assert invoked == pipeline_count
-    assert mock_function.invoke_async.call_count == pipeline_count
+    assert mock_function.invoke.call_count == pipeline_count
 
 
 @pytest.mark.asyncio
@@ -53,9 +53,9 @@ async def test_run_async_pre_invocation_skip_dont_trigger_invoked_handler():
     kernel = Kernel()
 
     mock_function1 = create_mock_function(name="SkipMe")
-    mock_function1.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function1.invoke = AsyncMock(side_effect=lambda input, context: context)
     mock_function2 = create_mock_function(name="DontSkipMe")
-    mock_function2.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function2.invoke = AsyncMock(side_effect=lambda input, context: context)
     invoked = 0
     invoking = 0
     invoked_function_name = ""
@@ -75,7 +75,7 @@ async def test_run_async_pre_invocation_skip_dont_trigger_invoked_handler():
     kernel.add_function_invoked_handler(invoked_handler)
 
     # Act
-    _ = await kernel.run_async(mock_function1, mock_function2)
+    _ = await kernel.run(mock_function1, mock_function2)
 
     # Assert
     assert invoking == 2
@@ -90,7 +90,7 @@ async def test_run_async_handles_post_invocation(pipeline_count):
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function.invoke = AsyncMock(side_effect=lambda input, context: context)
     invoked = 0
 
     def invoked_handler(sender, e):
@@ -101,12 +101,12 @@ async def test_run_async_handles_post_invocation(pipeline_count):
     functions = [mock_function] * pipeline_count
 
     # Act
-    _ = await kernel.run_async(*functions)
+    _ = await kernel.run(*functions)
 
     # Assert
     assert invoked == pipeline_count
-    mock_function.invoke_async.assert_called()
-    assert mock_function.invoke_async.call_count == pipeline_count
+    mock_function.invoke.assert_called()
+    assert mock_function.invoke.call_count == pipeline_count
 
 
 @pytest.mark.asyncio
@@ -115,7 +115,7 @@ async def test_run_async_post_invocation_repeat_is_working():
     kernel = Kernel()
 
     mock_function = create_mock_function(name="RepeatMe")
-    mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function.invoke = AsyncMock(side_effect=lambda input, context: context)
 
     invoked = 0
     repeat_times = 0
@@ -131,7 +131,7 @@ async def test_run_async_post_invocation_repeat_is_working():
     kernel.add_function_invoked_handler(invoked_handler)
 
     # Act
-    _ = await kernel.run_async(mock_function)
+    _ = await kernel.run(mock_function)
 
     # Assert
     assert invoked == 4
@@ -144,7 +144,7 @@ async def test_run_async_change_variable_invoking_handler():
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function.invoke = AsyncMock(side_effect=lambda input, context: context)
 
     original_input = "Importance"
     new_input = "Problems"
@@ -156,7 +156,7 @@ async def test_run_async_change_variable_invoking_handler():
     kernel.add_function_invoking_handler(invoking_handler)
 
     # Act
-    context = await kernel.run_async(mock_function, input_str=original_input)
+    context = await kernel.run(mock_function, input_str=original_input)
 
     # Assert
     assert context.result == new_input
@@ -170,7 +170,7 @@ async def test_run_async_change_variable_invoked_handler():
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+    mock_function.invoke = AsyncMock(side_effect=lambda input, context: context)
 
     original_input = "Importance"
     new_input = "Problems"
@@ -182,7 +182,7 @@ async def test_run_async_change_variable_invoked_handler():
     kernel.add_function_invoked_handler(invoked_handler)
 
     # Act
-    context = await kernel.run_async(mock_function, input_str=original_input)
+    context = await kernel.run(mock_function, input_str=original_input)
 
     # Assert
     assert context.result == new_input

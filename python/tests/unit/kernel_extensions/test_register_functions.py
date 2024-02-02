@@ -19,14 +19,16 @@ def decorated_native_function(arg1: str) -> str:
     return "test"
 
 
-def test_register_valid_native_function():
+@pytest.mark.asyncio
+async def test_register_valid_native_function():
     kernel = Kernel()
 
     registered_func = kernel.register_native_function("TestPlugin", decorated_native_function)
 
     assert isinstance(registered_func, KernelFunctionBase)
     assert kernel.plugins.get_native_function("TestPlugin", "getLightStatus") == registered_func
-    assert registered_func.invoke("testtest").result == "test"
+    func_result = await registered_func.invoke("testtest")
+    assert func_result.result == "test"
 
 
 def test_register_undecorated_native_function():

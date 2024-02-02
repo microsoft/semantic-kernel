@@ -40,9 +40,9 @@ class TempWebSearchEnginePlugin:
         name="query",
         description="The search query",
     )
-    async def search_async(self, query: str, context: KernelContext) -> str:
+    async def search(self, query: str, context: KernelContext) -> str:
         query = query or context.variables.get("query")
-        result = await self._connector.search_async(query, num_results=5, offset=0)
+        result = await self._connector.search(query, num_results=5, offset=0)
         return str(result)
 
 
@@ -163,7 +163,7 @@ async def test_can_execute_stepwise_plan(
 
     # Act
     plan = planner.create_plan(prompt)
-    result = await plan.invoke_async()
+    result = await plan.invoke()
 
     steps_taken_string = result.variables["steps_taken"]
     assert steps_taken_string is not None

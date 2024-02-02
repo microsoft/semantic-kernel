@@ -42,7 +42,7 @@ def test_throw_without_completion_service():
 
 
 @pytest.mark.asyncio
-async def test_plan_creation_async():
+async def test_plan_creation():
     goal = "Translate Happy birthday to German."
     plan_str = dedent(
         """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
@@ -75,13 +75,13 @@ async def test_plan_creation_async():
 
     return_context.variables.update(plan_str)
 
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
 
     planner = ActionPlanner(kernel)
-    plan = await planner.create_plan_async(goal)
+    plan = await planner.create_plan(goal)
 
     assert plan is not None
     assert plan.description == mock_function.description
@@ -115,7 +115,7 @@ def mock_context(plugins_input):
 
         _context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugin_collection=plugins)
         _context.variables.update("MOCK FUNCTION CALLED")
-        mock_function.invoke_async.return_value = _context
+        mock_function.invoke.return_value = _context
         mock_functions.append(mock_function)
 
     plugins.get_function.side_effect = lambda plugin_name, function_name: next(
@@ -179,7 +179,7 @@ def test_exclude_functions(plugins_input, mock_context):
 
 
 @pytest.mark.asyncio
-async def test_invalid_json_throw_async():
+async def test_invalid_json_throw():
     goal = "Translate Happy birthday to German."
     plan_str = '{"":{""function"": ""WriterPlugin.Translate""}}'
 
@@ -205,7 +205,7 @@ async def test_invalid_json_throw_async():
 
     return_context.variables.update(plan_str)
 
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
@@ -213,11 +213,11 @@ async def test_invalid_json_throw_async():
     planner = ActionPlanner(kernel)
 
     with pytest.raises(PlanningException):
-        await planner.create_plan_async(goal)
+        await planner.create_plan(goal)
 
 
 @pytest.mark.asyncio
-async def test_empty_goal_throw_async():
+async def test_empty_goal_throw():
     goal = ""
 
     kernel = Mock(spec=Kernel)
@@ -239,7 +239,7 @@ async def test_empty_goal_throw_async():
     return_context = KernelContext.model_construct(
         variables=ContextVariables(), memory=memory, plugin_collection=plugins
     )
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
@@ -247,4 +247,4 @@ async def test_empty_goal_throw_async():
     planner = ActionPlanner(kernel)
 
     with pytest.raises(PlanningException):
-        await planner.create_plan_async(goal)
+        await planner.create_plan(goal)

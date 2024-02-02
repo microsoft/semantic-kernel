@@ -68,7 +68,7 @@ class CodeBlock(Block):
 
         return True, ""
 
-    async def render_code_async(self, context):
+    async def render_code(self, context):
         if not self._validated:
             is_valid, error = self.is_valid()
             if not is_valid:
@@ -80,11 +80,11 @@ class CodeBlock(Block):
             return self._tokens[0].render(context.variables)
 
         if self._tokens[0].type == BlockTypes.FUNCTION_ID:
-            return await self._render_function_call_async(self._tokens[0], context)
+            return await self._render_function_call(self._tokens[0], context)
 
         raise ValueError(f"Unexpected first token type: {self._tokens[0].type}")
 
-    async def _render_function_call_async(self, f_block: FunctionIdBlock, context):
+    async def _render_function_call(self, f_block: FunctionIdBlock, context):
         if not context.plugins:
             raise ValueError("Plugin collection not set")
 
@@ -102,7 +102,7 @@ class CodeBlock(Block):
             input_value = self._tokens[1].render(variables_clone)
             variables_clone.update(input_value)
 
-        result = await function.invoke_async(variables=variables_clone, memory=context.memory)
+        result = await function.invoke(variables=variables_clone, memory=context.memory)
 
         if result.error_occurred:
             error_msg = (

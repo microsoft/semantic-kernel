@@ -120,7 +120,7 @@ class StepwisePlanner:
     @kernel_function(name="ExecutePlan", description="Execute a plan")
     @kernel_function_context_parameter(name="question", description="The question to answer")
     @kernel_function_context_parameter(name="function_descriptions", description="List of tool descriptions")
-    async def execute_plan_async(self, context: KernelContext) -> KernelContext:
+    async def execute_plan(self, context: KernelContext) -> KernelContext:
         question = context["question"]
 
         steps_taken: List[SystemStep] = []
@@ -130,7 +130,7 @@ class StepwisePlanner:
 
                 context.variables.set("agent_scratch_pad", scratch_pad)
 
-                llm_response = await self._system_step_function.invoke_async(context=context)
+                llm_response = await self._system_step_function.invoke(context=context)
 
                 if llm_response.error_occurred:
                     raise PlanningException(
@@ -167,7 +167,7 @@ class StepwisePlanner:
 
                     try:
                         await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
-                        result = await self.invoke_action_async(next_step.action, next_step.action_variables)
+                        result = await self.invoke_action(next_step.action, next_step.action_variables)
 
                         if is_null_or_empty(result):
                             next_step.observation = "Got no result from action"
@@ -296,7 +296,7 @@ class StepwisePlanner:
 
         return scratch_pad
 
-    async def invoke_action_async(self, action_name: str, action_variables: Dict[str, str]) -> str:
+    async def invoke_action(self, action_name: str, action_variables: Dict[str, str]) -> str:
         available_functions = self.get_available_functions()
         target_function = next(
             (f for f in available_functions if self.to_fully_qualified_name(f) == action_name),
@@ -313,7 +313,7 @@ class StepwisePlanner:
             function = self._kernel.func(target_function.plugin_name, target_function.name)
             action_context = self.create_action_context(action_variables)
 
-            result = await function.invoke_async(context=action_context)
+            result = await function.invoke(context=action_context)
 
             if result.error_occurred:
                 logger.error(f"Error occurred: {result.last_exception}")

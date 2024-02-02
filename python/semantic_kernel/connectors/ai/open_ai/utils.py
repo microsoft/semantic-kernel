@@ -95,7 +95,7 @@ def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) ->
 async def execute_function_call(kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None) -> str:
     if log:
         logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-    result = await kernel.run_async(
+    result = await kernel.run(
         kernel.func(**function_call.split_name_dict()),
         input_vars=function_call.to_context_variables(),
     )
@@ -138,7 +138,7 @@ async def chat_completion_with_function_call(
             current_call_count: the current number of function calls executed.
 
     returns:
-        the context with the result of the chat completion, just like a regular invoke_async/run_async.
+        the context with the result of the chat completion, just like a regular invoke/run_async.
     """
     if log:
         logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
@@ -154,7 +154,7 @@ async def chat_completion_with_function_call(
     settings = chat_function._chat_prompt_template.prompt_config.execution_settings
     if current_call_count >= max_function_calls:
         settings.functions = []
-    context = await chat_function.invoke_async(
+    context = await chat_function.invoke(
         context=context,
         # when the maximum number of function calls is reached, execute the chat function without Functions.
         settings=settings,
