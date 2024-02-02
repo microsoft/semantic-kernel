@@ -438,17 +438,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 return true;
             }
 
-            if (value is string jsonAsString)
-            {
-                deserializedValue = JsonSerializer.Deserialize(jsonAsString, targetType);
-                return true;
-            }
-        }
-        catch (NotSupportedException) { } // There is no compatible JsonConverter for targetType or its serializable members.
-        catch (JsonException) { } // The JSON is invalid.
-
-        try
-        {
             // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
             // Since we don't take dependencies on these libraries and don't have access to the types here,
             // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
@@ -458,22 +447,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             deserializedValue = JsonSerializer.Deserialize(value.ToString(), targetType);
             return true;
         }
-        catch (NotSupportedException) { } // There is no compatible JsonConverter for targetType or its serializable members.
-        catch (JsonException) { } // The JSON is invalid.
-
-        try
+        catch (NotSupportedException)
         {
-            // The last attempt to deserialize the value to a target type involves first serializing the value to a string.
-            // This approach is useful because some types may return the type name when calling the 'ToString' method, which is not valid JSON.
-            // Therefore, serializing them using the 'JsonSerializer.Serialize' method might produce a valid JSON string.
-            // Additionally, this method supports the Duck Typing feature, which might be useful as well.
-            // For example, an instance of an anonymous type declared like this - new { Id = 28 } and passed as a function argument will be deserialized into
-            // an instance of an existing class like this - class MyType { public string Id { get; set; } } used as a type for the method parameter.
-            deserializedValue = JsonSerializer.Deserialize(JsonSerializer.Serialize(value), targetType);
-            return true;
+            // There is no compatible JsonConverter for targetType or its serializable members.
         }
-        catch (NotSupportedException) { } // There is no compatible JsonConverter for targetType or its serializable members.
-        catch (JsonException) { } // The JSON is invalid.
+        catch (JsonException)
+        {
+            // The JSON is invalid.
+        }
 
         deserializedValue = null;
         return false;
