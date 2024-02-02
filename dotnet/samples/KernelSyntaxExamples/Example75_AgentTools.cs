@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,30 +28,16 @@ public sealed class Example75_AgentTools : BaseTest
     // Track agents for clean-up
     private readonly List<IAgent> _agents = new();
 
-    /// <summary>
-    /// Show how to utilize code_interpreter and retrieval tools.
-    /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task RunCodeInterpreterToolAsync()
     {
-        this.WriteLine("======== Example75_AgentTools ========");
+        this.WriteLine("======== Example75_AgentTools:CodeInterpreterTool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
-
-        // Run agent with 'code_interpreter' tool
-        await RunCodeInterpreterToolAsync();
-
-        // Run agent with 'retrieval' tool
-        await RunRetrievalToolAsync();
-    }
-
-    private async Task RunCodeInterpreterToolAsync()
-    {
-        this.WriteLine("======== Run:CodeInterpreterTool ========");
 
         var builder =
             new AgentBuilder()
@@ -77,33 +66,41 @@ public sealed class Example75_AgentTools : BaseTest
         }
     }
 
-    private async Task RunRetrievalToolAsync()
+    [Fact]
+    public async Task RunRetrievalToolAsync()
     {
-        this.WriteLine("======== Run:RunRetrievalTool ========");
+        this.WriteLine("======== Example75_AgentTools:RunRetrievalTool ========");
 
-        // REQUIRED:
-        //
-        // Use `curl` to upload document prior to running example and assign the
-        // identifier to `fileId`.
-        //
-        // Powershell:
-        // curl https://api.openai.com/v1/files `
-        // -H "Authorization: Bearer $Env:OPENAI_APIKEY" `
-        // -F purpose="assistants" `
-        // -F file="@Resources/travelinfo.txt"
+        if (TestConfiguration.OpenAI.ApiKey == null)
+        {
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
+            return;
+        }
 
-        var fileId = "<see comment>";
+        var kernel = Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build();
+        var fileService = kernel.GetRequiredService<OpenAIFileService>();
+        using var stream = EmbeddedResource.ReadStream("travelinfo.txt")!;
+        var result =
+            await fileService.UploadContentAsync(
+                new OpenAIFileUploadRequest(
+                    new BinaryContent(() => Task.FromResult(stream)),
+                    "travelinfo.txt",
+                    OpenAIFilePurpose.Assistants));
+
+        var fileId = result.Id;
 
         var defaultAgent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .BuildAsync();
+            Track(
+                await new AgentBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .BuildAsync());
 
         var retrievalAgent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .WithRetrieval(fileId)
-                .BuildAsync();
+            Track(
+                await new AgentBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .WithRetrieval(fileId)
+                    .BuildAsync());
 
         try
         {
@@ -116,7 +113,7 @@ public sealed class Example75_AgentTools : BaseTest
         }
         finally
         {
-            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileService.DeleteFileAsync(fileId)));
         }
     }
 

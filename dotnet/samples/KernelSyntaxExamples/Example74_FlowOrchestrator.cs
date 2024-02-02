@@ -58,12 +58,7 @@ provides:
 ");
 
     [Fact(Skip = "Can take more than 1 minute")]
-    public Task RunAsync()
-    {
-        return RunExampleAsync();
-    }
-
-    private async Task RunExampleAsync()
+    public async Task RunAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
@@ -82,7 +77,7 @@ provides:
         var sessionId = Guid.NewGuid().ToString();
 
         WriteLine("*****************************************************");
-        WriteLine("Executing " + nameof(RunExampleAsync));
+        WriteLine("Executing " + nameof(RunAsync));
         Stopwatch sw = new();
         sw.Start();
         WriteLine("Flow: " + s_flow.Name);
