@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Dict, Optional
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
+from semantic_kernel.prompt_template.prompt_template import PromptTemplate
 
 if TYPE_CHECKING:
-    from semantic_kernel.kernel import Kernel
     from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 
 class ChatMessage(KernelBaseModel):

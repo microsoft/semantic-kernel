@@ -36,10 +36,10 @@ class KernelFunctionMetadata(KernelBaseModel):
 
     def __eq__(self, other):
         """
-        Compare to another FunctionView instance.
+        Compare to another KernelFunctionMetadata instance.
 
         Args:
-            other (FunctionView): The other FunctionView instance.
+            other (KernelFunctionMetadata): The other KernelFunctionMetadata instance.
 
         Returns:
             True if the two instances are equal, False otherwise.

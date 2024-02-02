@@ -13,7 +13,7 @@ class KernelParameterMetadata(KernelBaseModel):
     name: str
     description: str
     default_value: Any
-    type_: Optional[str] = Field(default="string", alias="type")
+    type_: Optional[str] = Field(default="str", alias="type")
     required: Optional[bool] = False
 
     @field_validator("name")

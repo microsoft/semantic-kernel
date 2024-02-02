@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
 
 

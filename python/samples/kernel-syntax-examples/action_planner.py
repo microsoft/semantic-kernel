@@ -10,7 +10,7 @@ from semantic_kernel.core_plugins import (
     TextPlugin,
     TimePlugin,
 )
-from semantic_kernel.planning import ActionPlanner
+from semantic_kernel.planners import ActionPlanner
 
 
 async def main():

@@ -4,14 +4,14 @@ from unittest.mock import Mock
 
 from pytest import fixture, mark
 
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition import kernel_function
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
+from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.plugin_definition import kernel_function
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 

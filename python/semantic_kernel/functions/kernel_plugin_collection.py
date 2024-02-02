@@ -5,6 +5,7 @@ from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 from pydantic import Field
 
 from semantic_kernel.functions.functions_view import FunctionsView
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 

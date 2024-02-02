@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+import sys
+from typing import AsyncIterable, Optional
 
-from typing import Annotated, AsyncIterable, Optional
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
 from semantic_kernel.plugin_definition import kernel_function
 

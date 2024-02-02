@@ -2,22 +2,23 @@
 
 from typing import List
 
-from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.kernel import Kernel
 
 
 async def aggregate_chunked_results(
-    func: KernelFunction, chunked_results: List[str], context: KernelContext
-) -> KernelContext:
+    func: KernelFunction, chunked_results: List[str], kernel: Kernel, arguments: KernelArguments
+) -> KernelArguments:
     """
     Aggregate the results from the chunked results.
     """
     results = []
     for chunk in chunked_results:
-        context.variables.update(chunk)
-        context = await func.invoke(context=context)
+        arguments["input"] = chunk
+        result = await func.invoke(kernel, arguments)
 
-        results.append(str(context.variables))
+        results.append(str(result))
 
-    context.variables.update("\n".join(results))
-    return context
+    arguments["input"] = "\n".join(results)
+    return arguments

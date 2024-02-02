@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def kernel_function_context_parameter(
     *, name: str, description: str, default_value: str = "", type: str = "string", required: bool = False
 ):
@@ -19,7 +20,9 @@ def kernel_function_context_parameter(
     """
 
     def decorator(func):
-        logger.warning("This class has been depricated, use the 'kernel_function' decorator and Annotated parameters instead."
+        logger.warning(
+            "This class has been depricated, use the 'kernel_function' decorator and Annotated parameters instead."
+        )
         return func
 
     return decorator

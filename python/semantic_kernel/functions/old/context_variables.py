@@ -29,7 +29,8 @@
 #         """
 #         Initialize the ContextVariables instance with an optional content string.
 
-#         The value of the content variable has precedence over the value of the 'input' key in the variables dictionary.
+#         The value of the content variable has precedence over the value o
+# f the 'input' key in the variables dictionary.
 #         If the 'input' key is not in the variables dictionary.
 
 #         :param content: The content string to be stored as the main variable,

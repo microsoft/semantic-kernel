@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel import core_plugins, memory
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.prompt_template.prompt_template import PromptTemplate
@@ -46,6 +47,7 @@ __all__ = [
     "PromptTemplate",
     "ChatPromptTemplate",
     "SemanticFunctionConfig",
+    "KernelArguments",
     "memory",
     "core_plugins",
     "setup_logging",

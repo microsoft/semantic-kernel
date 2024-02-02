@@ -29,7 +29,10 @@ def kernel_function(
         for param in func_sig.parameters.values():
             if param.name != "self":
                 func.__kernel_function_context_parameters__.append(_parse_parameter(param))
-        return_description, return_type, return_required, streaming = _parse_annotation(func_sig.return_annotation)
+        if not func_sig.return_annotation:
+            return_description, return_type, return_required, streaming = "", "None", False, False
+        else:
+            return_description, return_type, return_required, streaming = _parse_annotation(func_sig.return_annotation)
         func.__kernel_function_streaming__ = streaming
         func.__kernel_function_return_type__ = return_type
         func.__kernel_function_return_description__ = return_description
@@ -51,6 +54,8 @@ def _parse_parameter(param: Parameter):
 
 
 def _parse_annotation(annotation) -> Tuple[str, str, bool, bool]:
+    if isinstance(annotation, str):
+        return "", annotation, True, False
     if annotation.__name__ == "Annotated":
         description = annotation.__metadata__[0]
         type_annotation = annotation.__args__[0]

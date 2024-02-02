@@ -70,7 +70,7 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
             for message in self.prompt_config.execution_settings.messages:
                 self.add_message(**message)
 
-    async def render(self, arguments: "KernelArguments") -> str:
+    async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         raise NotImplementedError("Can't call render on a ChatPromptTemplate.\n" "Use render_messages instead.")
 
     def add_system_message(self, message: str) -> None:

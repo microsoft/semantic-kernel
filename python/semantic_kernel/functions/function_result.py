@@ -3,8 +3,8 @@ from typing import Any, Mapping, Optional
 
 from pydantic import Field
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
