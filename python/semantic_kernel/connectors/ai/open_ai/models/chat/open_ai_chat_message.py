@@ -11,4 +11,7 @@ class OpenAIChatMessage(ChatMessage):
     """Class to hold openai chat messages, which might include name and function_call fields."""
 
     name: Optional[str] = None
+    # TODO: handle tool_calls
     function_call: Optional[FunctionCall] = None
+    tool_calls: Optional[dict] = None
+    tool_call_id: Optional[str] = None

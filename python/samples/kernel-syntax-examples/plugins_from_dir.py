@@ -8,7 +8,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 kernel = sk.Kernel()
 
-useAzureOpenAI = True
+useAzureOpenAI = False
 model = "gpt-35-turbo-instruct" if useAzureOpenAI else "gpt-3.5-turbo-instruct"
 service_id = model
 
@@ -23,7 +23,7 @@ else:
     api_key, org_id = sk.openai_settings_from_dot_env()
     kernel.add_text_completion_service(
         service_id,
-        sk_oai.OpenAITextCompletion(deployment_name=model, api_key=api_key, org_id=org_id),
+        sk_oai.OpenAITextCompletion(ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
 # note: using plugins from the samples folder
