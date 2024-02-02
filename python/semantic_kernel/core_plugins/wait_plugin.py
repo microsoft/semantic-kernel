@@ -2,11 +2,11 @@
 
 import asyncio
 
-from semantic_kernel.plugin_definition import sk_function
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.plugin_definition import kernel_function
 
 
-class WaitPlugin(SKBaseModel):
+class WaitPlugin(KernelBaseModel):
     """
     WaitPlugin provides a set of functions to wait for a certain amount of time.
 
@@ -17,7 +17,7 @@ class WaitPlugin(SKBaseModel):
         {{wait.seconds 5}} => Wait for 5 seconds
     """
 
-    @sk_function(description="Wait for a certain number of seconds.")
+    @kernel_function(description="Wait for a certain number of seconds.")
     async def wait(self, seconds_text: str) -> None:
         try:
             seconds = max(float(seconds_text), 0)

@@ -133,7 +133,9 @@ public abstract class KernelFunction
             cancellationToken.ThrowIfCancellationRequested();
 
             // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
 
             // Invoke pre-invocation filter. If it requests cancellation, throw.
             var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
@@ -152,7 +154,9 @@ public abstract class KernelFunction
             functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+#pragma warning restore CS0618 // Events are deprecated
 
             // Invoke the post-invocation filter. If it requests cancellation, throw.
             var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
@@ -273,7 +277,9 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
                 var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
 
                 // Invoke pre-invocation filter. If it requests cancellation, throw.
                 var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);

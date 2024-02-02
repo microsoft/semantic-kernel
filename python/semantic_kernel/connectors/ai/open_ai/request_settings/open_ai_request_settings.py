@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_CHAT_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +58,7 @@ class OpenAIChatRequestSettings(OpenAIRequestSettings):
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
-    messages: Optional[List[Dict[str, Any]]] = [{"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}]
+    messages: Optional[List[Dict[str, Any]]] = None
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod

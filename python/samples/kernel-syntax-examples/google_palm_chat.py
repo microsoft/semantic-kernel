@@ -17,11 +17,11 @@ async def chat_request_example(api_key):
     chat_messages = list()
     user_mssg = "I'm planning a vacation. Which are some must-visit places in Europe?"
     chat_messages.append(("user", user_mssg))
-    answer = await palm_chat_completion.complete_chat_async(chat_messages, settings)
+    answer = await palm_chat_completion.complete_chat(chat_messages, settings)
     chat_messages.append(("assistant", str(answer)))
     user_mssg = "Where should I go in France?"
     chat_messages.append(("user", user_mssg))
-    answer = await palm_chat_completion.complete_chat_async(chat_messages, settings)
+    answer = await palm_chat_completion.complete_chat(chat_messages, settings)
     chat_messages.append(("assistant", str(answer)))
 
     context_vars = sk.ContextVariables()

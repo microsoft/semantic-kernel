@@ -56,7 +56,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    answer = await kernel.run(chat_function, input_vars=context_vars)
     print(f"Blackbeard:> {answer}")
     return True
 
