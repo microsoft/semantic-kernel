@@ -56,37 +56,37 @@ Defining a generalized file service interface provides an extensibility point fo
 
 ## More Information
 
-Signatures for *Option 2*, but can adapt to any option.
+### Signatures for Option 2:
 
 #### `Microsoft.SemanticKernel.Abstractions`
 ```csharp
 namespace Microsoft.SemanticKernel.Files;
 
-public interface IFileService : IAIService
+public abstract class FileService : IAIService
 {
-    Task<FileReference> GetFileAsync(
+    public abstract Task<FileReference> GetFileAsync(
         string id,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<FileReference>> GetFilesAsync(CancellationToken cancellationToken = default);
+    public abstract Task<IEnumerable<FileReference>> GetFilesAsync(CancellationToken cancellationToken = default);
 
-    Task<Stream> GetFileContentAsync(
+    public abstract Task<Stream> GetFileContentAsync(
         string id,
         CancellationToken cancellationToken = default);
 
-    Task DeleteFileAsync(
+    public abstract Task DeleteFileAsync(
         string id,
         CancellationToken cancellationToken = default);
 
-    Task<FileReference> UploadContentAsync(
-        IFileUploadRequest request,
+    public abstract Task<FileReference> UploadContentAsync(
+        FileUploadRequest request,
         CancellationToken cancellationToken = default);
 }
 
 
-public interface IFileService<TFile, TRequest> : IFileService
+public abstract class FileService<TFile, TRequest> : FileService
     where TFile : FileReference
-    where TRequest : IFileUploadRequest
+    where TRequest : FileUploadRequest
 {
     new Task<TFile> GetFileAsync(
         string id,
@@ -100,7 +100,7 @@ public interface IFileService<TFile, TRequest> : IFileService
         CancellationToken cancellationToken = default);
 }
 
-public interface IFileUploadRequest
+public abstract class FileUploadRequest
 {
     string FileName { get; }
  
@@ -123,21 +123,75 @@ public class FileReference
 ```csharp
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-public sealed class OpenAIFileService : IFileService<OpenAIFileReference, OpenAIFileUploadRequest>
+public sealed class OpenAIFileService : FileService<OpenAIFileReference, OpenAIFileUploadRequest>
 {
     ...
 }
 
-public sealed class OpenAIFileUploadRequest : IFileUploadRequest
+public sealed class OpenAIFileUploadRequest : FileUploadRequest
 {
     public OpenAIFilePurpose Purpose { get; }
-
-    ...
 }
 
 public sealed class OpenAIFileReference : FileReference
 {
     public OpenAIFilePurpose Purpose { get; set; }
+}
+
+public enum OpenAIFilePurpose
+{
+    Assistants,
+    Finetuning,
+}
+```
+
+### Signatures for Option 3:
+
+#### `Microsoft.SemanticKernel.Connectors.OpenAI`
+```csharp
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+public sealed class OpenAIFileService
+{
+    public async Task<OpenAIFileReference> GetFileAsync(
+        string id,
+        CancellationToken cancellationToken = default) { }
+
+    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default) { }
+
+    public async Task<Stream> GetFileContentAsync(
+        string id,
+        CancellationToken cancellationToken = default) { }
+
+    public async Task DeleteFileAsync(
+        string id,
+        CancellationToken cancellationToken = default) { }
+
+    public async Task<OpenAIFileReference> UploadContentAsync(
+        OpenAIFileUploadRequest request,
+        CancellationToken cancellationToken = default) { }
+}
+
+public sealed class OpenAIFileUploadRequest
+{
+    public string FileName { get; }
+ 
+    public OpenAIFilePurpose Purpose { get; }
+
+    public Stream GetContent();
+}
+
+public sealed class OpenAIFileReference
+{
+    public string Id { get; set; }
+
+    public DateTime CreatedTimestamp { get; set; }
+
+    public string FileName { get; set; }
+    
+    public OpenAIFilePurpose Purpose { get; set; }
+
+    public int SizeInBytes { get; set; }
 }
 
 public enum OpenAIFilePurpose
