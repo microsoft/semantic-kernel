@@ -30,7 +30,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
     url: HttpUrl = "http://localhost:11434/api/embeddings"
     session: Optional[aiohttp.ClientSession] = None
 
-    async def generate_embeddings_async(self, texts: List[str], **kwargs) -> ndarray:
+    async def generate_embeddings(self, texts: List[str], **kwargs) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

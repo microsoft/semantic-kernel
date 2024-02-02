@@ -30,7 +30,7 @@ def create_mock_function(function_view: FunctionView):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("goal", ["Write a poem or joke and send it in an e-mail to Kai."])
-async def test_it_can_create_plan_async(goal):
+async def test_it_can_create_plan(goal):
     # Arrange
     kernel = Mock(spec=Kernel)
 
@@ -89,7 +89,7 @@ async def test_it_can_create_plan_async(goal):
     planner = SequentialPlanner(kernel)
 
     # Act
-    plan = await planner.create_plan_async(goal)
+    plan = await planner.create_plan(goal)
 
     # Assert
     assert plan.description == goal
@@ -101,18 +101,18 @@ async def test_it_can_create_plan_async(goal):
 
 
 @pytest.mark.asyncio
-async def test_empty_goal_throws_async():
+async def test_empty_goal_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
     planner = SequentialPlanner(kernel)
 
     # Act & Assert
     with pytest.raises(PlanningException):
-        await planner.create_plan_async("")
+        await planner.create_plan("")
 
 
 @pytest.mark.asyncio
-async def test_invalid_xml_throws_async():
+async def test_invalid_xml_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
     memory = Mock(spec=SemanticTextMemoryBase)
@@ -141,4 +141,4 @@ async def test_invalid_xml_throws_async():
 
     # Act & Assert
     with pytest.raises(PlanningException):
-        await planner.create_plan_async("goal")
+        await planner.create_plan("goal")

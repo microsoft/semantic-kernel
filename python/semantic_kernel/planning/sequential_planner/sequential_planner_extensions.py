@@ -45,24 +45,24 @@ class SequentialPlannerKernelContextExtension:
     PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED = "Planning.KernelFunctionsAreRemembered"
 
     @staticmethod
-    async def get_functions_manual_async(
+    async def get_functions_manual(
         context: KernelContext,
         semantic_query: str = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
         config = config or SequentialPlannerConfig()
 
-        if config.get_available_functions_async is None:
-            functions = await SequentialPlannerKernelContextExtension.get_available_functions_async(
+        if config.get_available_functions is None:
+            functions = await SequentialPlannerKernelContextExtension.get_available_functions(
                 context, config, semantic_query
             )
         else:
-            functions = await config.get_available_functions_async(config, semantic_query)
+            functions = await config.get_available_functions(config, semantic_query)
 
         return "\n\n".join([SequentialPlannerFunctionViewExtension.to_manual_string(func) for func in functions])
 
     @staticmethod
-    async def get_available_functions_async(
+    async def get_available_functions(
         context: KernelContext,
         config: SequentialPlannerConfig,
         semantic_query: str = None,
@@ -97,10 +97,10 @@ class SequentialPlannerKernelContextExtension:
             return available_functions
 
         # Remember functions in memory so that they can be searched.
-        await SequentialPlannerKernelContextExtension.remember_functions_async(context, available_functions)
+        await SequentialPlannerKernelContextExtension.remember_functions(context, available_functions)
 
         # Search for functions that match the semantic query.
-        memories = await context.memory.search_async(
+        memories = await context.memory.search(
             SequentialPlannerKernelContextExtension.PLANNER_MEMORY_COLLECTION_NAME,
             semantic_query,
             config.max_relevant_functions,
@@ -108,7 +108,7 @@ class SequentialPlannerKernelContextExtension:
         )
 
         # Add functions that were found in the search results.
-        relevant_functions = await SequentialPlannerKernelContextExtension.get_relevant_functions_async(
+        relevant_functions = await SequentialPlannerKernelContextExtension.get_relevant_functions(
             context, available_functions, memories
         )
 
@@ -122,7 +122,7 @@ class SequentialPlannerKernelContextExtension:
         return sorted(relevant_functions, key=lambda x: (x.plugin_name, x.name))
 
     @staticmethod
-    async def get_relevant_functions_async(
+    async def get_relevant_functions(
         context: KernelContext,
         available_functions: List[FunctionView],
         memories: AsyncIterable[MemoryQueryResult],
@@ -150,7 +150,7 @@ class SequentialPlannerKernelContextExtension:
         return relevant_functions
 
     @staticmethod
-    async def remember_functions_async(context: KernelContext, available_functions: List[FunctionView]):
+    async def remember_functions(context: KernelContext, available_functions: List[FunctionView]):
         # Check if the functions have already been saved to memory.
         if SequentialPlannerKernelContextExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED in context.variables:
             return
@@ -162,7 +162,7 @@ class SequentialPlannerKernelContextExtension:
             text_to_embed = SequentialPlannerFunctionViewExtension.to_embedding_string(function)
 
             # It'd be nice if there were a saveIfNotExists method on the memory interface
-            memory_entry = await context.memory.get_async(
+            memory_entry = await context.memory.get(
                 collection=SequentialPlannerKernelContextExtension.PLANNER_MEMORY_COLLECTION_NAME,
                 key=key,
                 with_embedding=False,
@@ -171,7 +171,7 @@ class SequentialPlannerKernelContextExtension:
                 # TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 # As folks may want to tune their functions to be more or less relevant.
                 # Memory now supports these such strategies.
-                await context.memory.save_information_async(
+                await context.memory.save_information(
                     collection=SequentialPlannerKernelContextExtension.PLANNER_MEMORY_COLLECTION_NAME,
                     text=text_to_embed,
                     id=key,

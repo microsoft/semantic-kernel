@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class ChatCompletionClientBase(ABC):
     @abstractmethod
-    async def complete_chat_async(
+    async def complete_chat(
         self,
         messages: List["ChatMessage"],
         settings: "AIRequestSettings",
@@ -31,7 +31,7 @@ class ChatCompletionClientBase(ABC):
         pass
 
     @abstractmethod
-    async def complete_chat_stream_async(
+    async def complete_chat_stream(
         self,
         messages: List["ChatMessage"],
         settings: "AIRequestSettings",
