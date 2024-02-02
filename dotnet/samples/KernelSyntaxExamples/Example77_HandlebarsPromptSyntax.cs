@@ -70,7 +70,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 "Think of marketing terms and use positive words but do not lie and oversell. " +
                 "Be original and do not make a too long description or use more than 2 paragraphs for it." +
                 "Also, the product description should be catchy and easy to remember. " +
-                "Output the description folled by the development approach preceeded by Development approach: " +
+                "Output the description followed by the development approach preceded by Development approach: " +
                 "The product name and description: {{$input}}",
                 functionName: "GenerateProductCompellingDescription",
                 description: "Generate a compelling product description for a product name and initial description.");
@@ -88,7 +88,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
 
         string companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel techonlogies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
             "Also it is able to self plan and execute complex tasks and use the power of AI agents which" +
-            "enables to divide-and-conquer complex problems between different entitites that specialize in " +
+            "enables to divide-and-conquer complex problems between different entities that specialize in " +
             "concrete tasks like for example project management, coding and creating tests as well as other" +
             " agents can be responsible for executing the tests and assessing the code delivered and iterate" +
             " - this means creating feedback loops until the quality levels are met. The company is thinking of using AI Agent programming on coding, writing and project planning, and anything where AI Agents" +
