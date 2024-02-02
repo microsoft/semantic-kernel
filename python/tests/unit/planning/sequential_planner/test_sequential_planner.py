@@ -34,6 +34,7 @@ def create_mock_function(function_view: FunctionView):
 async def test_it_can_create_plan(goal):
     # Arrange
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
 
     memory = Mock(spec=SemanticTextMemoryBase)
 
@@ -101,6 +102,7 @@ async def test_it_can_create_plan(goal):
 async def test_empty_goal_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     planner = SequentialPlanner(kernel)
 
     # Act & Assert
@@ -112,6 +114,7 @@ async def test_empty_goal_throws():
 async def test_invalid_xml_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = Mock(spec=KernelPluginCollection)
 
