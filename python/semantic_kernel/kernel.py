@@ -6,7 +6,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from pydantic import Field
 
@@ -21,6 +21,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -216,7 +217,21 @@ class Kernel(KernelBaseModel):
 
         return function
 
-    async def run_stream(self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments):
+    async def invoke_stream(
+        self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments
+    ) -> AsyncIterable["StreamingKernelContent"]:
+        """Execute one or more stream functions.
+
+        This will execute the functions in the order they are provided, if a list of functions is provided.
+        When multiple functions are provided only the last one is streamed, the rest is executed as a pipeline.
+
+        Arguments:
+            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
+            arguments (KernelArguments): The arguments to pass to the function(s)
+
+        Yields:
+            StreamingKernelContent: The content of the stream of the last function provided.
+        """
         if isinstance(functions, KernelFunction):
             stream_function = functions
             results = []
@@ -310,10 +325,21 @@ class Kernel(KernelBaseModel):
                 continue
             break
 
-    async def run(
+    async def invoke(
         self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
-        """Execute one or more functions"""
+        """Execute one or more functions.
+
+        When multiple functions are passed the FunctionResult of each is put into a list.
+
+        Arguments:
+            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
+            arguments (KernelArguments): The arguments to pass to the function(s)
+
+        Returns:
+            Optional[Union[FunctionResult, List[FunctionResult]]]: The result of the function(s)
+
+        """
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
@@ -423,13 +449,6 @@ class Kernel(KernelBaseModel):
 
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
-
-    # def create_new_context(self, variables: Optional[ContextVariables] = None) -> KernelContext:
-    #     return KernelContext(
-    #         ContextVariables() if not variables else variables,
-    #         self._memory,
-    #         self.plugins,
-    #     )
 
     def on_function_invoking(
         self, function_view: KernelFunctionMetadata, arguments: KernelArguments
