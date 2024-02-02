@@ -17,7 +17,7 @@ public sealed class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class.
     /// </summary>
-    /// <param name="streamProvider">The asyncronous stream provider</param>
+    /// <param name="streamProvider">The asynchronous stream provider</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
