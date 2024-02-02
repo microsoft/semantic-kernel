@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 import re
 import threading
@@ -20,11 +19,8 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -131,7 +127,7 @@ class Plan(KernelFunctionBase):
         plan.set_function(function)
         return plan
 
-    async def invoke_async(
+    async def invoke(
         self,
         input: Optional[str] = None,
         context: Optional[KernelContext] = None,
@@ -140,6 +136,19 @@ class Plan(KernelFunctionBase):
         **kwargs,
         # TODO: cancellation_token: CancellationToken,
     ) -> KernelContext:
+        """
+        Invoke the plan asynchronously.
+
+        Args:
+            input (str, optional): The input to the plan. Defaults to None.
+            context (KernelContext, optional): The context to use. Defaults to None.
+            settings (PromptExecutionSettings, optional): The AI request settings to use. Defaults to None.
+            memory (SemanticTextMemoryBase, optional): The memory to use. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            KernelContext: The updated context.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
@@ -148,12 +157,12 @@ class Plan(KernelFunctionBase):
         if context is None:
             context = KernelContext(
                 variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
+                plugins=KernelPluginCollection(),
             )
 
         if self._function is not None:
-            result = await self._function.invoke_async(context=context, settings=settings)
+            result = await self._function.invoke(context=context, settings=settings)
             if result.error_occurred:
                 logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
@@ -172,56 +181,6 @@ class Plan(KernelFunctionBase):
 
         return context
 
-    def invoke(
-        self,
-        input: Optional[str] = None,
-        context: Optional[KernelContext] = None,
-        settings: Optional[PromptExecutionSettings] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        **kwargs,
-    ) -> KernelContext:
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        if input is not None and input != "":
-            self._state.update(input)
-
-        if context is None:
-            context = KernelContext(
-                variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
-                memory=memory or NullMemory(),
-            )
-
-        if self._function is not None:
-            result = self._function.invoke(context=context, settings=settings)
-            if result.error_occurred:
-                logger.error(
-                    result.last_exception,
-                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self.plugin_name, self.name, context.last_error_description
-                    ),
-                )
-                return result
-            context.variables.update(result.result)
-        else:
-            # loop through steps until completion
-            while self.has_next_step:
-                # Check if there is an event loop
-                try:
-                    loop = asyncio.get_running_loop()
-                except RuntimeError:
-                    loop = None
-                function_context = context
-                self.add_variables_to_context(self._state, function_context)
-
-                # Handle "asyncio.run() cannot be called from a running event loop"
-                if loop and loop.is_running():
-                    self._runThread(self.invoke_next_step(function_context))
-                else:
-                    asyncio.run(self.invoke_next_step(function_context))
-                self.update_context_with_outputs(context)
-        return context
-
     def set_ai_configuration(
         self,
         settings: PromptExecutionSettings,
@@ -232,13 +191,6 @@ class Plan(KernelFunctionBase):
     def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> KernelFunctionBase:
         if self._function is not None:
             self._function.set_ai_service(service)
-
-    def set_default_plugin_collection(
-        self,
-        plugins: ReadOnlyPluginCollectionBase,
-    ) -> KernelFunctionBase:
-        if self._function is not None:
-            self._function.set_default_plugin_collection(plugins)
 
     def describe(self) -> Optional[FunctionView]:
         if self._function is not None:
@@ -253,7 +205,7 @@ class Plan(KernelFunctionBase):
                     "Plugin collection not found in the context",
                 )
             try:
-                pluginFunction = context.plugins.get_function(plan.plugin_name, plan.name)
+                pluginFunction = context.plugins[plan.plugin_name][plan.name]
                 plan.set_function(pluginFunction)
             except Exception:
                 pass
@@ -308,9 +260,9 @@ class Plan(KernelFunctionBase):
             func_context = KernelContext(
                 variables=variables,
                 memory=context.memory,
-                plugin_collection=context.plugins,
+                plugins=context.plugins,
             )
-            result = await step.invoke_async(context=func_context)
+            result = await step.invoke(context=func_context)
             result_value = result.result
 
             if result.error_occurred:

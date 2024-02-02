@@ -86,7 +86,7 @@ class SequentialPlanner:
 
         self._context.variables.update(goal)
 
-        plan_result = await self._function_flow_function.invoke_async(context=self._context)
+        plan_result = await self._function_flow_function.invoke(context=self._context)
 
         if plan_result.error_occurred:
             raise PlanningException(

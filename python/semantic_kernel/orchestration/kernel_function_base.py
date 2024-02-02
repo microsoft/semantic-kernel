@@ -14,9 +14,6 @@ from semantic_kernel.plugin_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
-    from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-        ReadOnlyPluginCollectionBase,
-    )
 
 
 class KernelFunctionBase(KernelBaseModel):
@@ -93,30 +90,7 @@ class KernelFunctionBase(KernelBaseModel):
         pass
 
     @abstractmethod
-    def invoke(
-        self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[PromptExecutionSettings] = None,
-    ) -> "KernelContext":
-        """
-        Invokes the function with an explicit string input
-        Keyword Arguments:
-            input {str} -- The explicit string input (default: {None})
-            variables {ContextVariables} -- The custom input
-            context {KernelContext} -- The context to use
-            memory: {SemanticTextMemoryBase} -- The memory to use
-            settings {PromptExecutionSettings} -- LLM completion settings
-        Returns:
-            KernelContext -- The updated context, potentially a new one if
-            context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    async def invoke_async(
+    async def invoke(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
@@ -136,24 +110,6 @@ class KernelFunctionBase(KernelBaseModel):
         Returns:
             KernelContext -- The updated context, potentially a new one if
             context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    def set_default_plugin_collection(
-        self,
-        plugins: "ReadOnlyPluginCollectionBase",
-    ) -> "KernelFunctionBase":
-        """
-        Sets the plugin collection to use when the function is
-        invoked without a context or with a context that doesn't have
-        a plugin collection
-
-        Arguments:
-            plugins {ReadOnlyPluginCollectionBase} -- Kernel's plugin collection
-
-        Returns:
-            KernelFunctionBase -- The function instance
         """
         pass
 

@@ -88,7 +88,7 @@ class ActionPlanner:
 
         self._context.variables.update(goal)
 
-        generated_plan_raw = await self._planner_function.invoke_async(context=self._context)
+        generated_plan_raw = await self._planner_function.invoke(context=self._context)
         generated_plan_raw_str = str(generated_plan_raw)
 
         if not generated_plan_raw or not generated_plan_raw_str:
@@ -140,14 +140,15 @@ class ActionPlanner:
             plan = Plan(description=goal)
         elif "." in generated_plan["plan"]["function"]:
             plugin, fun = generated_plan["plan"]["function"].split(".")
-            function_ref = self._context.plugins.get_function(plugin, fun)
+            function_ref = self._context.plugins[plugin][fun]
             logger.info(
                 f"ActionPlanner has picked {plugin}.{fun}. Reference to this function"
                 f" found in context: {function_ref}"
             )
             plan = Plan(description=goal, function=function_ref)
         else:
-            function_ref = self._context.plugins.get_function(generated_plan["plan"]["function"])
+            plugin, func = generated_plan["plan"]["function"]
+            function_ref = self._context.plugins[plugin][func]
             logger.info(
                 f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
                 "              Reference to this function found in context:"

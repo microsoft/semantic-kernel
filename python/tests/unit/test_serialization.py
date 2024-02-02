@@ -27,17 +27,10 @@ from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
-from semantic_kernel.plugin_definition.plugin_collection_base import (
-    PluginCollectionBase,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -115,10 +108,10 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             variables={"foo": "bar"},
         )
 
-    def create_plugin_collection() -> PluginCollection:
+    def create_plugin_collection() -> KernelPluginCollection:
         """Return a plugin collection."""
         # TODO: Add a few plugins to this collection.
-        return PluginCollection()
+        return KernelPluginCollection()
 
     cls_obj_map = {
         Block: Block(content="foo"),
@@ -146,16 +139,15 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             False,
         ),
         FunctionsView: create_functions_view(),
-        ReadOnlyPluginCollection: create_plugin_collection().read_only_plugin_collection,
+        KernelPluginCollection: create_plugin_collection(),
         DelegateHandlers: DelegateHandlers(),
         DelegateInference: DelegateInference(),
         ContextVariables: create_context_variables(),
-        PluginCollection: create_plugin_collection(),
         KernelContext[NullMemory]: KernelContext[NullMemory](
             # TODO: Test serialization with different types of memories.
             variables=create_context_variables(),
             memory=NullMemory(),
-            plugin_collection=create_plugin_collection().read_only_plugin_collection,
+            plugins=create_plugin_collection(),
         ),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
@@ -184,15 +176,8 @@ PROTOCOLS = [
 ]
 
 BASE_CLASSES = [
-    ReadOnlyPluginCollectionBase,
-    PluginCollectionBase,
     SemanticTextMemoryBase,
     KernelFunctionBase,
-]
-
-# Classes that don't need serialization
-UNSERIALIZED_CLASSES = [
-    ReadOnlyPluginCollection,
 ]
 
 STATELESS_CLASSES = [
@@ -219,8 +204,7 @@ PYDANTIC_MODELS = [
     ParameterView,
     FunctionView,
     FunctionsView,
-    ReadOnlyPluginCollection,
-    PluginCollection,
+    KernelPluginCollection,
     ContextVariables,
     KernelContext[NullMemory],
     pytest.param(
@@ -233,7 +217,7 @@ PYDANTIC_MODELS = [
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
         "kernel_type",
-        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES + UNSERIALIZED_CLASSES,
+        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES,
     )
     def test_usage_as_optional_field(
         self,
