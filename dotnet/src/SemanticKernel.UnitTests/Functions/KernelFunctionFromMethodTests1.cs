@@ -1314,8 +1314,7 @@ public sealed class KernelFunctionFromMethodTests1
     private sealed class CustomTypeForJsonTests
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        //[JsonPropertyName("id")]
-        [JsonRequired]
+        [JsonPropertyName("id")]
         public int Id { get; set; }
     }
 
