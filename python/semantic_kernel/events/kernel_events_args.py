@@ -2,9 +2,9 @@
 
 from pydantic import Field
 
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.orchestration.kernel_arguments import KernelArguments
-from semantic_kernel.plugin_definition.function_view import FunctionView
 
 
 class KernelEventArgs(KernelBaseModel):
@@ -29,7 +29,7 @@ class KernelEventArgs(KernelBaseModel):
 
     """
 
-    function_view: FunctionView
+    function_view: KernelFunctionMetadata
     arguments: KernelArguments
     updated_arguments: bool = Field(default=False, init_var=False)
     is_cancel_requested: bool = Field(default=False, init_var=False)

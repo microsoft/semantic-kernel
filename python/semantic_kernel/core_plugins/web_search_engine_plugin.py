@@ -4,7 +4,7 @@ from semantic_kernel.connectors.search_engine.connector import ConnectorBase
 from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.functions.old.kernel_context import KernelContext
 
 
 class WebSearchEnginePlugin:

@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import Field
 
 from semantic_kernel.events.kernel_events_args import KernelEventArgs
-from semantic_kernel.orchestration.function_result import FunctionResult
+from semantic_kernel.functions.function_result import FunctionResult
 
 
 class FunctionInvokedEventArgs(KernelEventArgs):

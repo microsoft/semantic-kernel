@@ -1,4 +1,4 @@
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 
 
 def test_context_vars_contain_single_var_by_default():

@@ -6,14 +6,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel import Kernel, KernelContext
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
 

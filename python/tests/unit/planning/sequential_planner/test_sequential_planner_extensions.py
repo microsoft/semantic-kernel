@@ -4,21 +4,21 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.functions_view import FunctionsView
+from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_extensions import (
     SequentialPlannerFunctionViewExtension,
     SequentialPlannerKernelContextExtension,
-)
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.kernel_plugin_collection import (
-    KernelPluginCollection,
 )
 
 
@@ -64,7 +64,7 @@ async def test_can_call_get_available_functions_with_functions():
     variables = ContextVariables()
 
     functions_view = FunctionsView()
-    function_view = FunctionView(
+    function_view = KernelFunctionMetadata(
         "functionName",
         "pluginName",
         "description",
@@ -72,7 +72,7 @@ async def test_can_call_get_available_functions_with_functions():
         is_semantic=True,
         is_asynchronous=False,
     )
-    native_function_view = FunctionView(
+    native_function_view = KernelFunctionMetadata(
         "nativeFunctionName",
         "pluginName",
         "description",
@@ -134,7 +134,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
 
     # Arrange FunctionView
     functions_view = FunctionsView()
-    function_view = FunctionView(
+    function_view = KernelFunctionMetadata(
         "functionName",
         "pluginName",
         "description",
@@ -142,7 +142,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         is_semantic=True,
         is_asynchronous=False,
     )
-    native_function_view = FunctionView(
+    native_function_view = KernelFunctionMetadata(
         "nativeFunctionName",
         "pluginName",
         "description",

@@ -5,7 +5,7 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
-from semantic_kernel.models.contents import StreamingChatMessageContent
+from semantic_kernel.contents import StreamingChatMessageContent
 
 
 class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):

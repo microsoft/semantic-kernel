@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.functions.old.kernel_context import KernelContext
 
 
 class ConversationSummaryPlugin:

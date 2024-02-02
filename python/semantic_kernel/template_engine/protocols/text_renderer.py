@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
-    from semantic_kernel.orchestration.kernel_arguments import KernelArguments
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 @runtime_checkable

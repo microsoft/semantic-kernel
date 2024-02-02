@@ -3,7 +3,7 @@ import json
 from typing import Dict, Optional, Tuple
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 
 
 class FunctionCall(KernelBaseModel):

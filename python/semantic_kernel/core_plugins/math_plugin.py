@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+from typing import Annotated, AsyncIterable, Optional
+
+from semantic_kernel.plugin_definition import kernel_function
 
 
-class MathPlugin(KernelBaseModel):
+class MathPlugin:
     """
     Description: MathPlugin provides a set of functions to make Math calculations.
 
@@ -15,41 +16,29 @@ class MathPlugin(KernelBaseModel):
         {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the KernelContext)
     """
 
-    @kernel_function(
-        description="Adds value to a value",
-        name="Add",
-        input_description="The value to add",
-    )
-    @kernel_function_context_parameter(
-        name="amount",
-        description="Amount to add",
-        type="number",
-        required=True,
-    )
-    @staticmethod
-    def add(input: int, amount: int) -> int:
-        """
-        Returns the Addition result of initial and amount values provided.
-
-        :param initial_value_text: Initial value as string to add the specified amount
-        :param context: Contains the context to get the numbers from
-        :return: The resulting sum as a string
-        """
+    @kernel_function()
+    def add(
+        self,
+        input: Annotated[int, "the first number to add"],
+        amount: Annotated[int, "the second number to add"],
+    ) -> Annotated[int, "the output is a number"]:
+        """Returns the Addition result of the values provided."""
         return MathPlugin.add_or_subtract(input, amount, add=True)
+
+    @kernel_function()
+    async def stream_add(
+        self,
+        input: Annotated[int, "the first number to add"],
+        amount: Annotated[Optional[int], "the second number to add, default is 5"] = 5,
+    ) -> Annotated[AsyncIterable[int], "the output is stream of numbers"]:
+        """Streams the Addition result of the values provided."""
+        yield MathPlugin.add_or_subtract(input, amount, add=True)
 
     @kernel_function(
         description="Subtracts value to a value",
         name="Subtract",
-        input_description="The value to subtract",
     )
-    @kernel_function_context_parameter(
-        name="amount",
-        description="Amount to subtract",
-        type="number",
-        required=True,
-    )
-    @staticmethod
-    def subtract(input: int, amount: int) -> int:
+    def subtract(self, input: int, amount: int) -> int:
         """
         Returns the difference of numbers provided.
 

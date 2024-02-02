@@ -4,25 +4,24 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.functions_view import FunctionsView
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner import (
     SequentialPlanner,
 )
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
-from semantic_kernel.plugin_definition.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 
 
-def create_mock_function(function_view: FunctionView):
+def create_mock_function(function_view: KernelFunctionMetadata):
     mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
@@ -53,7 +52,7 @@ async def test_it_can_create_plan(goal):
     plugins = KernelPluginCollection()
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
-        function_view = FunctionView(name, pluginName, description, [], isSemantic, True)
+        function_view = KernelFunctionMetadata(name, pluginName, description, [], isSemantic, True)
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 

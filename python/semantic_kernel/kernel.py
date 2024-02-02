@@ -22,20 +22,20 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.orchestration.function_result import FunctionResult
-from semantic_kernel.orchestration.kernel_arguments import KernelArguments
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
-from semantic_kernel.plugin_definition.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
@@ -419,7 +419,7 @@ class Kernel(KernelBaseModel):
     #     )
 
     def on_function_invoking(
-        self, function_view: FunctionView, arguments: KernelArguments
+        self, function_view: KernelFunctionMetadata, arguments: KernelArguments
     ) -> FunctionInvokingEventArgs:
         args = FunctionInvokingEventArgs(function_view=function_view, arguments=arguments)
         if self.function_invoking_handlers:
@@ -429,7 +429,7 @@ class Kernel(KernelBaseModel):
 
     def on_function_invoked(
         self,
-        function_view: FunctionView,
+        function_view: KernelFunctionMetadata,
         arguments: KernelArguments,
         function_result: Optional[FunctionResult] = None,
         exception: Optional[Exception] = None,
@@ -864,12 +864,12 @@ class Kernel(KernelBaseModel):
         return self.register_semantic_function(plugin_name, function_name, function_config)
 
     def add_function_invoking_handler(
-        self, handler: Callable[[FunctionView, KernelArguments], FunctionInvokingEventArgs]
+        self, handler: Callable[[KernelFunctionMetadata, KernelArguments], FunctionInvokingEventArgs]
     ) -> None:
         self.function_invoking_handlers[id(handler)] = handler
 
     def add_function_invoked_handler(
-        self, handler: Callable[[FunctionView, KernelArguments, FunctionResult], FunctionInvokedEventArgs]
+        self, handler: Callable[[KernelFunctionMetadata, KernelArguments, FunctionResult], FunctionInvokedEventArgs]
     ) -> None:
         self.function_invoked_handlers[id(handler)] = handler
 

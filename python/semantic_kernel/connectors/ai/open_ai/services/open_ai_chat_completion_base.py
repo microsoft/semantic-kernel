@@ -26,8 +26,8 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.models.chat.chat_role import ChatRole
-from semantic_kernel.models.chat.finish_reason import FinishReason
+from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
+from semantic_kernel.models.ai.chat_completion.finish_reason import FinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 

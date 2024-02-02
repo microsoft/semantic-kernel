@@ -10,16 +10,15 @@ from typing import List, Optional
 import regex
 
 from semantic_kernel import Kernel
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.parameter_view import ParameterView
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -243,7 +242,7 @@ class ActionPlanner:
 
         functions_view = context.plugins.get_functions_view()
 
-        available_functions: List[FunctionView] = [
+        available_functions: List[KernelFunctionMetadata] = [
             *functions_view.semantic_functions.values(),
             *functions_view.native_functions.values(),
         ]
@@ -265,7 +264,7 @@ class ActionPlanner:
 
         return available_functions_str
 
-    def _create_function_string(self, function: FunctionView) -> str:
+    def _create_function_string(self, function: KernelFunctionMetadata) -> str:
         """
         Takes an instance of FunctionView and returns a string that consists of
         function name, function description and parameters in the following format
@@ -303,7 +302,7 @@ class ActionPlanner:
 
         return func_str
 
-    def _create_parameter_string(self, parameter: ParameterView) -> str:
+    def _create_parameter_string(self, parameter: KernelParameterMetadata) -> str:
         """
         Takes an instance of ParameterView and returns a string that consists of
         parameter name, parameter description and default value for the parameter

@@ -2,11 +2,11 @@
 
 from typing import TYPE_CHECKING
 
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.functions.old.kernel_context import KernelContext
 
 
 def test_init_native_function_with_input_description():

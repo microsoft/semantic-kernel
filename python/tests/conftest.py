@@ -10,11 +10,11 @@ import pytest
 
 import semantic_kernel as sk
 from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
-from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 
 
 @pytest.fixture(autouse=True)

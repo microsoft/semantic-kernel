@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.semantic_functions.semantic_function_config import SemanticFunctionConfig
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.functions.old.kernel_context import KernelContext
 
 
 def test_throws_for_missing_name():

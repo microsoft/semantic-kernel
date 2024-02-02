@@ -4,19 +4,18 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.functions_view import FunctionsView
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
-def create_mock_function(function_view: FunctionView) -> KernelFunction:
+def create_mock_function(function_view: KernelFunctionMetadata) -> KernelFunction:
     mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
@@ -31,7 +30,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
     kernel = Kernel()
     functions_view = FunctionsView()
     for name, plugin_name, description, is_semantic, result_string in functions:
-        function_view = FunctionView(name, plugin_name, description, [], is_semantic, True)
+        function_view = KernelFunctionMetadata(name, plugin_name, description, [], is_semantic, True)
         functions_view.add_function(function_view)
         mock_function = create_mock_function(function_view)
 

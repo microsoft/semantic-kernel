@@ -2,7 +2,7 @@
 
 import semantic_kernel as sk
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 from semantic_kernel.planning import Plan
 
 

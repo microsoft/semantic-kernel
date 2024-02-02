@@ -3,7 +3,7 @@
 
 from pytest import raises
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 

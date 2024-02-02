@@ -4,25 +4,24 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.functions_view import FunctionsView
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning import ActionPlanner
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
-from semantic_kernel.plugin_definition.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 
 
-def create_mock_function(function_view: FunctionView):
+def create_mock_function(function_view: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
     mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
@@ -62,7 +61,7 @@ async def test_plan_creation():
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = KernelPluginCollection()
 
-    function_view = FunctionView(
+    function_view = KernelFunctionMetadata(
         name="Translate",
         description="Translate something",
         plugin_name="WriterPlugin",
@@ -115,7 +114,7 @@ def mock_context(plugins_input):
     mock_plugins = {}
 
     for name, plugin_name, description, is_semantic in plugins_input:
-        function_view = FunctionView(name, plugin_name, description, [], is_semantic, True)
+        function_view = KernelFunctionMetadata(name, plugin_name, description, [], is_semantic, True)
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
@@ -193,7 +192,7 @@ async def test_empty_goal_throw():
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = MagicMock(spec=KernelPluginCollection)
 
-    function_view = FunctionView(
+    function_view = KernelFunctionMetadata(
         name="Translate",
         description="Translate something",
         plugin_name="WriterPlugin",
@@ -225,7 +224,7 @@ async def test_invalid_json_throw():
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = MagicMock(spec=KernelPluginCollection)
 
-    function_view = FunctionView(
+    function_view = KernelFunctionMetadata(
         name="Translate",
         plugin_name="WriterPlugin",
         description="Translate something",

@@ -13,7 +13,7 @@ from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.orchestration.kernel_arguments import KernelArguments
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 logger: logging.Logger = logging.getLogger(__name__)
 

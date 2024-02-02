@@ -6,7 +6,7 @@ import json
 import regex
 
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 
 
 class Plan:

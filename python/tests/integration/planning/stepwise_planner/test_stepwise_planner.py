@@ -11,7 +11,7 @@ from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.planning import StepwisePlanner
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,

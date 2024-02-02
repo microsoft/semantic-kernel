@@ -8,19 +8,19 @@ import os
 import re
 from typing import TYPE_CHECKING, Dict, List
 
+from semantic_kernel.functions.kernel_function_context_parameter_decorator import (
+    kernel_function_context_parameter,
+)
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
 from semantic_kernel.planning.stepwise_planner.system_step import SystemStep
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.kernel_function_context_parameter_decorator import (
-    kernel_function_context_parameter,
-)
-from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -30,7 +30,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_function import KernelFunction
+    from semantic_kernel.functions.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -341,13 +341,13 @@ class StepwisePlanner:
 
         return action_context
 
-    def get_available_functions(self) -> List[FunctionView]:
+    def get_available_functions(self) -> List[KernelFunctionMetadata]:
         functions_view = self._context.plugins.get_functions_view()
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []
 
-        available_functions: List[FunctionView] = [
+        available_functions: List[KernelFunctionMetadata] = [
             *functions_view.semantic_functions.values(),
             *functions_view.native_functions.values(),
         ]
@@ -379,7 +379,7 @@ class StepwisePlanner:
 
         return kernel.register_semantic_function(RESTRICTED_PLUGIN_NAME, function_name, function_config)
 
-    def to_manual_string(self, function: FunctionView) -> str:
+    def to_manual_string(self, function: KernelFunctionMetadata) -> str:
         inputs = [
             f"    - {parameter.name}: {parameter.description}"
             + (f" (default value={parameter.default_value})" if parameter.default_value else "")
@@ -394,5 +394,5 @@ class StepwisePlanner:
 
         return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs:\n{inputs}\n"
 
-    def to_fully_qualified_name(self, function: FunctionView):
+    def to_fully_qualified_name(self, function: KernelFunctionMetadata):
         return f"{function.plugin_name}.{function.name}"

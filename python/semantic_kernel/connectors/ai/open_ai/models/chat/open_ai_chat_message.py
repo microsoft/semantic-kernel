@@ -5,7 +5,7 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import (
     FunctionCall,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
-from semantic_kernel.models.chat.chat_message import ChatMessage
+from semantic_kernel.models.ai.chat_completion.chat_message import ChatMessage
 
 
 class OpenAIChatMessage(ChatMessage):

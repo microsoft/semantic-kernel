@@ -10,13 +10,13 @@ from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
-from semantic_kernel import Kernel, KernelContext
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 logger: logging.Logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins import HttpPlugin
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 
 
 @pytest.mark.asyncio

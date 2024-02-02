@@ -3,6 +3,7 @@
 import logging
 import re
 import threading
+from copy import copy
 from typing import Any, Callable, ClassVar, List, Optional, Union
 
 from pydantic import PrivateAttr
@@ -12,25 +13,20 @@ from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Plan:
-    _state: ContextVariables = PrivateAttr()
+class Plan(KernelFunctionBase):
+    _state: KernelArguments = PrivateAttr()
     _steps: List["Plan"] = PrivateAttr()
-    _function: KernelFunction = PrivateAttr()
-    _parameters: ContextVariables = PrivateAttr()
+    _function: KernelFunctionBase = PrivateAttr()
+    _parameters: KernelArguments = PrivateAttr()
     _outputs: List[str] = PrivateAttr()
     _has_next_step: bool = PrivateAttr()
     _next_step_index: int = PrivateAttr()
@@ -46,8 +42,12 @@ class Plan:
         return self._name
 
     @property
-    def state(self) -> ContextVariables:
+    def state(self) -> KernelArguments:
         return self._state
+
+    @property
+    def steps(self) -> List["Plan"]:
+        return self._steps
 
     @property
     def plugin_name(self) -> str:
@@ -62,7 +62,7 @@ class Plan:
         return self._function
 
     @property
-    def parameters(self) -> ContextVariables:
+    def parameters(self) -> KernelArguments:
         return self._parameters
 
     @property
@@ -94,8 +94,8 @@ class Plan:
         plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         next_step_index: Optional[int] = None,
-        state: Optional[ContextVariables] = None,
-        parameters: Optional[ContextVariables] = None,
+        state: Optional[KernelArguments] = None,
+        parameters: Optional[KernelArguments] = None,
         outputs: Optional[List[str]] = None,
         steps: Optional[List["Plan"]] = None,
         function: Optional[KernelFunction] = None,
@@ -105,8 +105,8 @@ class Plan:
         self._plugin_name = "" if plugin_name is None else plugin_name
         self._description = "" if description is None else description
         self._next_step_index = 0 if next_step_index is None else next_step_index
-        self._state = ContextVariables() if state is None else state
-        self._parameters = ContextVariables() if parameters is None else parameters
+        self._state = KernelArguments() if state is None else state
+        self._parameters = KernelArguments() if parameters is None else parameters
         self._outputs = [] if outputs is None else outputs
         self._steps = [] if steps is None else steps
         self._has_next_step = len(self._steps) > 0
@@ -129,13 +129,10 @@ class Plan:
 
     async def invoke(
         self,
-        input: Optional[str] = None,
-        context: Optional[KernelContext] = None,
-        settings: Optional[PromptExecutionSettings] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        **kwargs,
+        kernel: Kernel,
+        arguments: Optional[KernelArguments] = None,
         # TODO: cancellation_token: CancellationToken,
-    ) -> KernelContext:
+    ) -> FunctionResult:
         """
         Invoke the plan asynchronously.
 
@@ -149,69 +146,60 @@ class Plan:
         Returns:
             KernelContext: The updated context.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        if input is not None and input != "":
-            self._state.update(input)
-
-        if context is None:
-            context = KernelContext(
-                variables=self._state,
-                memory=memory or NullMemory(),
-                plugins=KernelPluginCollection(),
-            )
-
         if self._function is not None:
-            result = await self._function.invoke(context=context, settings=settings)
-            if result.error_occurred:
+            try:
+                result = await self._function.invoke(kernel=kernel, arguments=arguments)
+            except Exception as exc:
                 logger.error(
-                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self._plugin_name, self._name, result.last_error_description
-                    )
+                    "Something went wrong in plan step {0}.{1}:'{2}'".format(self._plugin_name, self._name, exc)
                 )
-                return result
-            context.variables.update(result.result)
+                raise KernelException(
+                    KernelException.ErrorCodes.FunctionInvokeError,
+                    "Error occurred while running plan step: " + str(exc),
+                    exc,
+                ) from exc
+            return result
         else:
             # loop through steps until completion
             while self.has_next_step:
-                function_context = context
-                self.add_variables_to_context(self._state, function_context)
-                await self.invoke_next_step(function_context)
-                self.update_context_with_outputs(context)
+                function_arguments = copy(arguments)
+                self.add_variables_to_state(self._state, function_arguments)
+                await self.invoke_next_step(kernel, function_arguments)
+                self.update_arguments_with_outputs(arguments)
 
-        return context
+        return FunctionResult(function=self.describe(), value=arguments)
 
     def set_ai_configuration(
         self,
         settings: PromptExecutionSettings,
-    ) -> KernelFunction:
+    ) -> None:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
-    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> KernelFunction:
+    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> None:
         if self._function is not None:
             self._function.set_ai_service(service)
 
-    def describe(self) -> Optional[FunctionView]:
+    def describe(self) -> Optional[KernelFunctionMetadata]:
         if self._function is not None:
             return self._function.describe()
         return None
 
-    def set_available_functions(self, plan: "Plan", context: KernelContext) -> "Plan":
+    def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
         if len(plan.steps) == 0:
-            if context.plugins is None:
+            if kernel.plugins is None:
                 raise KernelException(
                     KernelException.ErrorCodes.PluginCollectionNotSet,
                     "Plugin collection not found in the context",
                 )
             try:
-                pluginFunction = context.plugins[plan.plugin_name][plan.name]
+                pluginFunction = kernel.plugins[plan.plugin_name][plan.name]
                 plan.set_function(pluginFunction)
             except Exception:
                 pass
         else:
             for step in plan.steps:
-                step = self.set_available_functions(step, context)
+                step = self.set_available_functions(step, kernel, arguments)
 
         return plan
 
@@ -225,8 +213,8 @@ class Plan:
                     plugin_name=step.plugin_name,
                     description=step.description,
                     next_step_index=0,
-                    state=ContextVariables(),
-                    parameters=ContextVariables(),
+                    state=KernelArguments(),
+                    parameters=KernelArguments(),
                     outputs=[],
                     steps=[],
                 )
@@ -244,79 +232,68 @@ class Plan:
     async def run_next_step(
         self,
         kernel: Kernel,
-        variables: ContextVariables,
+        arguments: KernelArguments,
     ) -> "Plan":
-        context = kernel.create_new_context(variables)
-        return await self.invoke_next_step(context)
+        return await self.invoke_next_step(kernel, arguments)
 
-    async def invoke_next_step(self, context: KernelContext) -> "Plan":
+    async def invoke_next_step(self, kernel: Kernel, arguments: KernelArguments) -> "Plan":
         if self.has_next_step:
             step = self._steps[self._next_step_index]
 
             # merge the state with the current context variables for step execution
-            variables = self.get_next_step_variables(context.variables, step)
+            arguments = self.get_next_step_arguments(arguments, step)
 
-            # Invoke the step
-            func_context = KernelContext(
-                variables=variables,
-                memory=context.memory,
-                plugins=context.plugins,
-            )
-            result = await step.invoke(context=func_context)
-            result_value = result.result
-
-            if result.error_occurred:
+            try:
+                result = await step.invoke(kernel, arguments)
+            except Exception as exc:
                 raise KernelException(
                     KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occurred while running plan step: " + result.last_error_description,
-                    result.last_exception,
-                )
+                    "Error occurred while running plan step: " + str(exc),
+                    exc,
+                ) from exc
 
             # Update state with result
-            self.state.update(result_value)
+            self._state["input"] = str(result)
 
             # Update plan result in state with matching outputs (if any)
             if set(self._outputs).intersection(set(step._outputs)):
                 current_plan_result = ""
-                if Plan.DEFAULT_RESULT_KEY in self._state.variables:
+                if Plan.DEFAULT_RESULT_KEY in self._state:
                     current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
-                self._state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
+                self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + result_value
 
             # Update state with outputs (if any)
-            for output in step._outputs:
-                if output in result.variables.variables:
-                    self._state.set(output, result.variables[output])
-                else:
-                    self._state.set(output, result_value)
+            # for output in step._outputs:
+            #     if output in result.variables.variables:
+            #         self._state.set(output, result.variables[output])
+            #     else:
+            #         self._state.set(output, result_value)
 
             # Increment the step
             self._next_step_index += 1
 
         return self
 
-    def add_variables_to_context(self, variables: ContextVariables, context: KernelContext) -> None:
-        for key in variables.variables:
-            if key not in context.variables:
-                context.variables.set(key, variables[key])
+    def add_variables_to_state(self, state: KernelArguments, variables: KernelArguments) -> None:
+        for key in variables.keys():
+            if key not in state.keys():
+                state[key] = variables[key]
 
-    def update_context_with_outputs(self, context: KernelContext) -> None:
-        result_string = ""
-        if Plan.DEFAULT_RESULT_KEY in self._state.variables:
+    def update_arguments_with_outputs(self, arguments: KernelArguments) -> None:
+        if Plan.DEFAULT_RESULT_KEY in self._state:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
         else:
             result_string = str(self._state)
 
-        context.variables.update(result_string)
+        arguments["input"] = result_string
 
         for item in self._steps[self._next_step_index - 1]._outputs:
             if item in self._state:
-                context.variables.set(item, self._state[item])
+                arguments[item] = self._state[item]
             else:
-                context.variables.set(item, result_string)
+                arguments[item] = result_string
 
-        return context
-
-    def get_next_step_variables(self, variables: ContextVariables, step: "Plan") -> ContextVariables:
+    def get_next_step_arguments(self, arguments: KernelArguments, step: "Plan") -> KernelArguments:
         # Priority for Input
         # - Parameters (expand from variables if needed)
         # - KernelContext.Variables
@@ -325,10 +302,10 @@ class Plan:
         # - Plan.Description
         input_string = ""
         step_input_value = step._parameters.get("input")
-        variables_input_value = variables.get("input")
+        variables_input_value = arguments.get("input")
         state_input_value = self._state.get("input")
         if step_input_value and step_input_value != "":
-            input_string = self.expand_from_variables(variables, step_input_value)
+            input_string = self.expand_from_arguments(arguments, step_input_value)
         elif variables_input_value and variables_input_value != "":
             input_string = variables_input_value
         elif state_input_value and state_input_value != "":
@@ -338,7 +315,7 @@ class Plan:
         elif self._description is not None and self._description != "":
             input_string = self._description
 
-        step_variables = ContextVariables(input_string)
+        step_variables = KernelArguments(input=input_string)
 
         # Priority for remaining stepVariables is:
         # - Function Parameters (pull from variables or state by a key value)
@@ -346,33 +323,30 @@ class Plan:
         # - All other variables. These are carried over in case the function wants access to the ambient content.
         function_params = step.describe()
         for param in function_params.parameters:
-            if param.name.lower() == variables._main_key.lower():
-                continue
-
-            if param.name in variables:
-                step_variables.set(param.name, variables[param.name])
+            if param.name in arguments:
+                step_variables[param.name] = arguments[param.name]
             elif param.name in self._state and (self._state[param.name] is not None and self._state[param.name] != ""):
-                step_variables.set(param.name, self._state[param.name])
+                step_variables[param.name] = self._state[param.name]
 
-        for param_name, param_val in step.parameters.variables.items():
+        for param_name, param_val in step.parameters.items():
             if param_name in step_variables:
                 continue
 
-            if param_name in variables:
-                step_variables.set(param_name, param_val)
+            if param_name in arguments:
+                step_variables[param_name] = param_val
             elif param_name in self._state:
-                step_variables.set(param_name, self._state[param_name])
+                step_variables[param_name] = self._state[param_name]
             else:
-                expanded_value = self.expand_from_variables(variables, param_val)
-                step_variables.set(param_name, expanded_value)
+                expanded_value = self.expand_from_arguments(arguments, param_val)
+                step_variables[param_name] = expanded_value
 
-        for item in variables.variables:
+        for item in arguments:
             if item not in step_variables:
-                step_variables.set(item, variables[item])
+                step_variables[item] = arguments[item]
 
         return step_variables
 
-    def expand_from_variables(self, variables: ContextVariables, input_string: str) -> str:
+    def expand_from_arguments(self, arguments: KernelArguments, input_string: str) -> str:
         result = input_string
         variables_regex = r"\$(?P<var>\w+)"
         matches = [m for m in re.finditer(variables_regex, input_string)]
@@ -380,8 +354,8 @@ class Plan:
 
         for match in ordered_matches:
             var_name = match.group("var")
-            if var_name in variables:
-                result = result.replace(f"${var_name}", variables[var_name])
+            if var_name in arguments:
+                result = result.replace(f"${var_name}", arguments[var_name])
 
         return result
 

@@ -4,21 +4,21 @@ import itertools
 import logging
 from typing import AsyncIterable, List
 
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
-from semantic_kernel.plugin_definition.function_view import FunctionView
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SequentialPlannerFunctionViewExtension:
     @staticmethod
-    def to_manual_string(function: FunctionView):
+    def to_manual_string(function: KernelFunctionMetadata):
         inputs = [
             f"  - {parameter.name}: {parameter.description}"
             + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
@@ -31,11 +31,11 @@ class SequentialPlannerFunctionViewExtension:
         return f"{qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
 
     @staticmethod
-    def to_fully_qualified_name(function: FunctionView):
+    def to_fully_qualified_name(function: KernelFunctionMetadata):
         return f"{function.plugin_name}.{function.name}"
 
     @staticmethod
-    def to_embedding_string(function: FunctionView):
+    def to_embedding_string(function: KernelFunctionMetadata):
         inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
         return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
 
@@ -79,7 +79,7 @@ class SequentialPlannerKernelContextExtension:
 
         functions_view = context.plugins.get_functions_view()
 
-        available_functions: List[FunctionView] = [
+        available_functions: List[KernelFunctionMetadata] = [
             *functions_view.semantic_functions.values(),
             *functions_view.native_functions.values(),
         ]
@@ -124,9 +124,9 @@ class SequentialPlannerKernelContextExtension:
     @staticmethod
     async def get_relevant_functions(
         context: KernelContext,
-        available_functions: List[FunctionView],
+        available_functions: List[KernelFunctionMetadata],
         memories: AsyncIterable[MemoryQueryResult],
-    ) -> List[FunctionView]:
+    ) -> List[KernelFunctionMetadata]:
         relevant_functions = []
         # TODO: cancellation
         async for memory_entry in memories:
@@ -150,7 +150,7 @@ class SequentialPlannerKernelContextExtension:
         return relevant_functions
 
     @staticmethod
-    async def remember_functions(context: KernelContext, available_functions: List[FunctionView]):
+    async def remember_functions(context: KernelContext, available_functions: List[KernelFunctionMetadata]):
         # Check if the functions have already been saved to memory.
         if SequentialPlannerKernelContextExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED in context.variables:
             return

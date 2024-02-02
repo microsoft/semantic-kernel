@@ -4,7 +4,7 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins import MathPlugin
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.old.context_variables import ContextVariables
 
 
 def test_can_be_instantiated():

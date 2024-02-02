@@ -4,10 +4,10 @@ import re
 from typing import Callable, Optional, Tuple
 from xml.etree import ElementTree as ET
 
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 
