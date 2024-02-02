@@ -28,6 +28,8 @@ class KernelException(Exception):
         FunctionInvokeError = 8
         # Ambiguous implementation.
         AmbiguousImplementation = 9
+        # Invalid plugin name
+        InvalidPluginName = 10
 
     # The error code.
     _error_code: ErrorCodes
