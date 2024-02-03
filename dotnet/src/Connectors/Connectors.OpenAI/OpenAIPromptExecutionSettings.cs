@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -264,7 +263,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         if (this._stopSequences is not null)
         {
-            this._stopSequences = ImmutableList.CreateRange(this._stopSequences);
+            this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
         }
         if (this._tokenSelectionBiases is not null)
         {

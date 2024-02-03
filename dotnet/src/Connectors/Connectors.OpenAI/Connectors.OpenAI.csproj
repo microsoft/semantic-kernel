@@ -30,6 +30,5 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
-    <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 </Project>
