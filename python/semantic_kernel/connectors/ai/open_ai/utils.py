@@ -17,8 +17,8 @@ from semantic_kernel.orchestration.kernel_function import KernelFunction
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _describe_function(function: KernelFunction) -> Dict[str, str]:
-    """Create the object used for function_calling.
+def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
+    """Create the object used for the tool call.
 
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
@@ -44,8 +44,28 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     }
 
 
+def _describe_function(function: KernelFunction) -> Dict[str, str]:
+    """Create the object used for function_calling.
+    Assumes that arguments for semantic functions are optional, for native functions required.
+    """
+    func_view = function.describe()
+    return {
+        "name": f"{func_view.plugin_name}-{func_view.name}",
+        "description": func_view.description,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                param.name: {"description": param.description, "type": param.type_} for param in func_view.parameters
+            },
+            "required": [p.name for p in func_view.parameters if p.required],
+        },
+    }
+
+
 def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
     """Create the object used for a tool call.
+
+    This is the preferred method to create the tool call object.
 
     args:
         kernel: the kernel.
@@ -66,7 +86,39 @@ def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[D
                     "exclude_function": ["plugin1-function1", "plugin2-function2"],
                     }
                 will return all functions except plugin1-function1 and plugin2-function2.
-        caller_function_name: the name of the function that is calling the other functions.
+    returns:
+        a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
+    """
+    return get_function_calling_object(kernel, filter, form_tool_call=True)
+
+
+def get_function_calling_object(
+    kernel: Kernel, filter: Dict[str, List[str]], form_tool_call: Optional[bool] = False
+) -> List[Dict[str, str]]:
+    """Create the object used for a function call.
+
+    Note: although Azure has deprecated function calling, SK still supports it for the time being.
+
+    args:
+        kernel: the kernel.
+        filter: a dictionary with keys
+            exclude_plugin, include_plugin, exclude_function, include_function
+            and lists of the required filter.
+            The function name should be in the format "plugin_name-function_name".
+            Using exclude_plugin and include_plugin at the same time will raise an error.
+            Using exclude_function and include_function at the same time will raise an error.
+            If using include_* implies that all other function will be excluded.
+            Example:
+                filter = {
+                    "exclude_plugin": ["plugin1", "plugin2"],
+                    "include_function": ["plugin3-function1", "plugin4-function2"],
+                    }
+                will return only plugin3-function1 and plugin4-function2.
+                filter = {
+                    "exclude_function": ["plugin1-function1", "plugin2-function2"],
+                    }
+                will return all functions except plugin1-function1 and plugin2-function2.
+        form_tool_call: if True, the function will return a list of tool calls, otherwise a list of functions.
     returns:
         a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
     """
@@ -97,7 +149,7 @@ def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[D
             current_name = f"{plugin_name}-{function_name}"
             if current_name in exclude_function or (include_function and current_name not in include_function):
                 continue
-            result.append(_describe_function(function))
+            result.append(_describe_tool_call(function) if form_tool_call else _describe_function(function))
     return result
 
 
@@ -120,8 +172,6 @@ async def chat_completion_with_function_call(
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[KernelFunction] = None,
-    *,
-    log: Optional[Any] = None,
     **kwargs: Dict[str, Any],
 ) -> KernelContext:
     """Perform a chat completion with auto-executing function calling.
@@ -151,8 +201,6 @@ async def chat_completion_with_function_call(
     returns:
         the context with the result of the chat completion, just like a regular invoke/run_async.
     """
-    if log:
-        logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
