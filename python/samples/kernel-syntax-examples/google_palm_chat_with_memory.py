@@ -13,7 +13,7 @@ kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
 palm_chat_completion = sk_gp.GooglePalmChatCompletion("models/chat-bison-001", apikey)
 kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-kernel.import_plugin(sk.core_plugins.TextMemoryPlugin())
+kernel.import_plugin(sk.core_plugins.TextMemoryPlugin(), "TextMemoryPlugin")
 
 
 async def populate_memory(kernel: sk.Kernel) -> None:

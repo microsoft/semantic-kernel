@@ -19,14 +19,11 @@ def test_plugin_can_be_imported():
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins")
     # path to plugins directory
-    plugin_config_dict = kernel.import_semantic_plugin_from_directory(plugins_directory, "TestPlugin")
+    plugin = kernel.import_semantic_plugin_from_directory(plugins_directory, "TestPlugin")
 
-    assert plugin_config_dict is not None
-    assert len(plugin_config_dict) == 1
-    assert "TestFunction" in plugin_config_dict
-    plugin_config = plugin_config_dict["TestFunction"]
-    assert plugin_config.name == "TestFunction"
-    assert plugin_config.description == "Test Description"
+    assert plugin is not None
+    assert len(plugin.functions) == 1
+    assert plugin.functions.get("TestFunction") is not None
 
 
 def test_native_plugin_can_be_imported():
@@ -36,11 +33,11 @@ def test_native_plugin_can_be_imported():
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_native_plugins")
     # path to plugins directory
-    plugin_config_dict = kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePlugin")
+    plugin = kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePlugin")
 
-    assert plugin_config_dict is not None
-    assert len(plugin_config_dict) == 1
-    assert "echoAsync" in plugin_config_dict
-    plugin_config = plugin_config_dict["echoAsync"]
+    assert plugin is not None
+    assert len(plugin.functions) == 1
+    assert plugin.functions.get("echoAsync") is not None
+    plugin_config = plugin.functions["echoAsync"]
     assert plugin_config.name == "echoAsync"
     assert plugin_config.description == "Echo for input text"
