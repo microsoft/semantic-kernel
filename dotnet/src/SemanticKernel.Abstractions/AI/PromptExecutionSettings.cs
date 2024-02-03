@@ -38,10 +38,7 @@ public class PromptExecutionSettings
 
         set
         {
-            if (this._isFrozen)
-            {
-                throw new InvalidOperationException("PromptExecutionSettings are frozen and ModelId cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._modelId = value;
         }
     }
@@ -59,10 +56,7 @@ public class PromptExecutionSettings
 
         set
         {
-            if (this._isFrozen)
-            {
-                throw new InvalidOperationException("PromptExecutionSettings are frozen and ExtensionData cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._extensionData = value;
         }
     }
@@ -98,6 +92,18 @@ public class PromptExecutionSettings
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
+    }
+
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="PromptExecutionSettings"/> are frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    protected void ThrowIfFrozen()
+    {
+        if (this._isFrozen)
+        {
+            throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
+        }
     }
 
     #region private ================================================================================

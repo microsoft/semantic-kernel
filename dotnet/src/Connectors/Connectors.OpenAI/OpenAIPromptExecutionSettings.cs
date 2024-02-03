@@ -30,10 +30,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and Temperature cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._temperature = value;
         }
     }
@@ -50,10 +47,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and TopP cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._topP = value;
         }
     }
@@ -70,10 +64,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and PresencePenalty cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._presencePenalty = value;
         }
     }
@@ -90,10 +81,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and FrequencyPenalty cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._frequencyPenalty = value;
         }
     }
@@ -108,10 +96,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and MaxTokens cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._maxTokens = value;
         }
     }
@@ -126,10 +111,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and StopSequences cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._stopSequences = value;
         }
     }
@@ -146,10 +128,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and ResultsPerPrompt cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._resultsPerPrompt = value;
         }
     }
@@ -166,10 +145,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and Seed cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._seed = value;
         }
     }
@@ -185,10 +161,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and ResponseFormat cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._responseFormat = value;
         }
     }
@@ -204,10 +177,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and ChatSystemPrompt cannot be modified.");
-            }
+            this.ThrowIfFrozen();
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -227,10 +197,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and TokenSelectionBiases cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._tokenSelectionBiases = value;
         }
     }
@@ -271,10 +238,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and ToolCallBehavior cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._toolCallBehavior = value;
         }
     }
@@ -288,10 +252,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         set
         {
-            if (this.IsFrozen)
-            {
-                throw new InvalidOperationException("OpenAIPromptExecutionSettings are frozen and User cannot be modified.");
-            }
+            this.ThrowIfFrozen();
             this._user = value;
         }
     }
