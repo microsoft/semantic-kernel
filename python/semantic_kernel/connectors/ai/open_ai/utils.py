@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCal
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
+from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -89,11 +90,11 @@ def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[D
     returns:
         a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
     """
-    return get_function_calling_object(kernel, filter, form_tool_call=True)
+    return get_function_calling_object(kernel, filter, is_tool_call=True)
 
 
 def get_function_calling_object(
-    kernel: Kernel, filter: Dict[str, List[str]], form_tool_call: Optional[bool] = False
+    kernel: Kernel, filter: Dict[str, List[str]], is_tool_call: Optional[bool] = False
 ) -> List[Dict[str, str]]:
     """Create the object used for a function call.
 
@@ -118,7 +119,7 @@ def get_function_calling_object(
                     "exclude_function": ["plugin1-function1", "plugin2-function2"],
                     }
                 will return all functions except plugin1-function1 and plugin2-function2.
-        form_tool_call: if True, the function will return a list of tool calls, otherwise a list of functions.
+        is_tool_call: if True, the function will return a list of tool calls, otherwise a list of functions.
     returns:
         a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
     """
@@ -149,21 +150,38 @@ def get_function_calling_object(
             current_name = f"{plugin_name}-{function_name}"
             if current_name in exclude_function or (include_function and current_name not in include_function):
                 continue
-            result.append(_describe_tool_call(function) if form_tool_call else _describe_function(function))
+            result.append(_describe_tool_call(function) if is_tool_call else _describe_function(function))
     return result
 
 
-async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> str:
-    result = await kernel.run(
-        kernel.func(**function_call.split_name_dict()),
-        input_vars=function_call.to_context_variables(),
-    )
-    logger.info(f"Function call result: {result}")
+async def execute(kernel: Kernel, func: KernelFunction, input_vars: ContextVariables) -> str:
+    """Execute a function and return the result.
+
+    Args:
+        kernel (Kernel): the kernel to use.
+        func (KernelFunction): the function to execute.
+        input_vars (ContextVariables): the input variables.
+
+    Returns:
+        str: the result of the execution.
+    """
+    result = await kernel.run(func, input_vars=input_vars)
+    logger.info(f"Execution result: {result}")
     return str(result)
 
 
+async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> str:
+    """Execute a function call and return the result."""
+    func = kernel.func(**function_call.split_name_dict())
+    input_vars = function_call.to_context_variables()
+    return await execute(kernel, func, input_vars)
+
+
 async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> str:
-    return await execute_function_call(kernel, tool_call.function)
+    """Execute a tool call and return the result."""
+    func = kernel.func(**tool_call.function.split_name_dict())
+    input_vars = tool_call.function.to_context_variables()
+    return await execute(kernel, func, input_vars)
 
 
 async def chat_completion_with_function_call(
