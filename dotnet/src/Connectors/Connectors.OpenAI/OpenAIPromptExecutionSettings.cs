@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -292,6 +294,44 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             }
             this._user = value;
         }
+    }
+
+    /// <inheritdoc/>
+    public override void Freeze()
+    {
+        base.Freeze();
+
+        if (this._stopSequences is not null)
+        {
+            this._stopSequences = ImmutableList.CreateRange(this._stopSequences);
+        }
+        if (this._tokenSelectionBiases is not null)
+        {
+            this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OpenAIPromptExecutionSettings()
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            PresencePenalty = this.PresencePenalty,
+            FrequencyPenalty = this.FrequencyPenalty,
+            MaxTokens = this.MaxTokens,
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            ResultsPerPrompt = this.ResultsPerPrompt,
+            Seed = this.Seed,
+            ResponseFormat = this.ResponseFormat,
+            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
+            ToolCallBehavior = this.ToolCallBehavior,
+            User = this.User,
+            ChatSystemPrompt = this.ChatSystemPrompt
+        };
     }
 
     /// <summary>

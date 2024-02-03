@@ -104,7 +104,9 @@ public abstract class KernelFunction
 
         if (executionSettings is not null)
         {
-            this.ExecutionSettings = executionSettings.ToDictionary(entry => entry.Key, entry => entry.Value.Freeze());
+            this.ExecutionSettings = executionSettings.ToDictionary(
+                entry => entry.Key,
+                entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
         }
     }
 

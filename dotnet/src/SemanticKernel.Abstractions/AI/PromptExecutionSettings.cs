@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -77,11 +78,26 @@ public class PromptExecutionSettings
     /// <summary>
     /// Makes the current <see cref="PromptExecutionSettings"/> unmodifiable and sets its IsFrozen property to true.
     /// </summary>
-    public PromptExecutionSettings Freeze()
+    public virtual void Freeze()
     {
         this._isFrozen = true;
 
-        return this;
+        if (this._extensionData is not null)
+        {
+            this._extensionData = new ReadOnlyDictionary<string, object>(this._extensionData);
+        }
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="PromptExecutionSettings"/> object that is a copy of the current instance.
+    /// </summary>
+    public virtual PromptExecutionSettings Clone()
+    {
+        return new()
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
+        };
     }
 
     #region private ================================================================================
