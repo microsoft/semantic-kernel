@@ -290,16 +290,16 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldCallCreatePostRequestAsync()
     {
         // Arrange
-        var rquestFactoryMock = new Mock<IHttpRequestFactory>();
-        rquestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
+        var requestFactoryMock = new Mock<IHttpRequestFactory>();
+        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
             .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
-        var sut = this.CreateChatCompletionClient(httpRequestFactory: rquestFactoryMock.Object);
+        var sut = this.CreateChatCompletionClient(httpRequestFactory: requestFactoryMock.Object);
 
         // Act
         await sut.StreamGenerateChatMessageAsync(CreateSampleChatHistory()).ToListAsync();
 
         // Assert
-        rquestFactoryMock.VerifyAll();
+        requestFactoryMock.VerifyAll();
     }
 
     private static ChatHistory CreateSampleChatHistory()

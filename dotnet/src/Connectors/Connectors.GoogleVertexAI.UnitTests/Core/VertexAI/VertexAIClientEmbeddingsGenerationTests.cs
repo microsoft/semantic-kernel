@@ -50,16 +50,16 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
     public async Task ShouldCallCreatePostRequestAsync()
     {
         // Arrange
-        var rquestFactoryMock = new Mock<IHttpRequestFactory>();
-        rquestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
+        var requestFactoryMock = new Mock<IHttpRequestFactory>();
+        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
             .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
-        var sut = this.CreateEmbeddingsClient(httpRequestFactory: rquestFactoryMock.Object);
+        var sut = this.CreateEmbeddingsClient(httpRequestFactory: requestFactoryMock.Object);
 
         // Act
         await sut.GenerateEmbeddingsAsync(["text1", "text2"]);
 
         // Assert
-        rquestFactoryMock.VerifyAll();
+        requestFactoryMock.VerifyAll();
     }
 
     [Fact]
