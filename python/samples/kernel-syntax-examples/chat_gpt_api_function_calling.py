@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
-    get_function_calling_object,
+    get_tool_call_object,
 )
 from semantic_kernel.core_plugins import MathPlugin
 
@@ -63,7 +63,7 @@ prompt_config = sk.PromptTemplateConfig(
         temperature=0.7,
         top_p=0.8,
         tool_choice="auto",
-        tools=get_function_calling_object(kernel, {"exclude_plugin": ["ChatBot"]}),
+        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     )
 )
 

@@ -44,8 +44,8 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     }
 
 
-def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
-    """Create the object used for function_calling.
+def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
+    """Create the object used for a tool call.
 
     args:
         kernel: the kernel.
@@ -111,12 +111,7 @@ async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> 
 
 
 async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> str:
-    result = await kernel.run(
-        kernel.func(**tool_call.split_name_dict()),
-        input_vars=tool_call.to_context_variables(),
-    )
-    logger.info(f"Function call result: {result}")
-    return str(result)
+    return await execute_function_call(kernel, tool_call.function)
 
 
 async def chat_completion_with_function_call(
@@ -143,7 +138,7 @@ async def chat_completion_with_function_call(
         kernel: the kernel to use.
         context: the context to use.
         functions: the function calling object,
-            make sure to use get_function_calling_object method to create it.
+            make sure to use get_tool_call_object method to create it.
         Optional arguments:
             chat_plugin_name: the plugin name of the chat function.
             chat_function_name: the function name of the chat function.

@@ -13,7 +13,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIChatPromptTemplate(ChatPromptTemplate[OpenAIChatMessage]):
-    def add_function_response_message(self, name: str, content: Any, tool_call_id: Optional[str]) -> None:
+    def add_function_response_message(self, name: str, content: Any, tool_call_id: Optional[str] = None) -> None:
         """Add a function response message to the chat template."""
         self.messages.append(
             OpenAIChatMessage(role="function", name=name, fixed_content=str(content), tool_call_id=tool_call_id)
