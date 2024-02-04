@@ -23,7 +23,7 @@ internal sealed class GeminiTool
     /// a [FunctionResponse][content.part.function_response] with the [content.role] "function" generation context for the next model turn.
     /// </remarks>
     [JsonPropertyName("functionDeclarations")]
-    public IList<GeminiToolFunctionDeclaration> Functions { get; set; }
+    public IList<GeminiFunctionDeclaration> Functions { get; set; }
 }
 
 /// <summary>
@@ -31,7 +31,7 @@ internal sealed class GeminiTool
 /// Included in this declaration are the function name and parameters.
 /// This FunctionDeclaration is a representation of a block of code that can be used as a Tool by the model and executed by the client.
 /// </summary>
-internal sealed class GeminiToolFunctionDeclaration
+internal sealed class GeminiFunctionDeclaration
 {
     /// <summary>
     /// Required. Name of function.<br />
@@ -53,7 +53,7 @@ internal sealed class GeminiToolFunctionDeclaration
     /// </summary>
     [JsonPropertyName("schema")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiToolFunctionSchema? Schema { get; set; }
+    public GeminiFunctionSchema? Schema { get; set; }
 }
 
 /// <summary>
@@ -61,14 +61,14 @@ internal sealed class GeminiToolFunctionDeclaration
 /// These types can be objects, but also primitives and arrays.
 /// Represents a select subset of an OpenAPI 3.0 schema object.
 /// </summary>
-internal sealed class GeminiToolFunctionSchema
+internal sealed class GeminiFunctionSchema
 {
     /// <summary>
     /// Required. Data type.
     /// </summary>
     [JsonPropertyName("type")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public GeminiToolFunctionType Type { get; set; }
+    public GeminiFunctionType Type { get; set; }
 
     /// <summary>
     /// Optional. The format of the data. This is used only for primitive datatypes.
@@ -104,7 +104,7 @@ internal sealed class GeminiToolFunctionSchema
     /// </summary>
     [JsonPropertyName("properties")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IDictionary<string, GeminiToolFunctionSchema>? Properties { get; set; }
+    public IDictionary<string, GeminiFunctionSchema>? Properties { get; set; }
 
     /// <summary>
     /// Optional. Required properties of Type.OBJECT.
@@ -118,14 +118,14 @@ internal sealed class GeminiToolFunctionSchema
     /// </summary>
     [JsonPropertyName("items")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiToolFunctionSchema? Items { get; set; }
+    public GeminiFunctionSchema? Items { get; set; }
 }
 
 /// <summary>
 /// Type contains the list of OpenAPI data types as defined by https://spec.openapis.org/oas/v3.0.3#data-types
 /// </summary>
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-internal enum GeminiToolFunctionType
+internal enum GeminiFunctionType
 {
     /// <summary>
     /// Not specified, should not be used.
