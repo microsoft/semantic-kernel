@@ -4,10 +4,11 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning import ActionPlanner
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
@@ -21,12 +22,14 @@ from semantic_kernel.plugin_definition.kernel_plugin_collection import (
 )
 
 
-def create_mock_function(function_view: FunctionView) -> Mock(spec=KernelFunctionBase):
-    mock_function = Mock(spec=KernelFunctionBase)
+def create_mock_function(function_view: FunctionView):
+    mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name
+    mock_function.is_semantic = function_view.is_semantic
     mock_function.description = function_view.description
+    mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
 
@@ -55,7 +58,7 @@ async def test_plan_creation():
     )
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=KernelFunctionBase)
+    mock_function = Mock(spec=KernelFunction)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = KernelPluginCollection()
 
@@ -186,7 +189,7 @@ async def test_empty_goal_throw():
     goal = ""
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=KernelFunctionBase)
+    mock_function = Mock(spec=KernelFunction)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = MagicMock(spec=KernelPluginCollection)
 
