@@ -17,7 +17,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
     KernelPluginCollection,
@@ -26,10 +26,10 @@ from semantic_kernel.plugin_definition.kernel_plugin_collection import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Plan(KernelFunctionBase):
+class Plan:
     _state: ContextVariables = PrivateAttr()
     _steps: List["Plan"] = PrivateAttr()
-    _function: KernelFunctionBase = PrivateAttr()
+    _function: KernelFunction = PrivateAttr()
     _parameters: ContextVariables = PrivateAttr()
     _outputs: List[str] = PrivateAttr()
     _has_next_step: bool = PrivateAttr()
@@ -98,7 +98,7 @@ class Plan(KernelFunctionBase):
         parameters: Optional[ContextVariables] = None,
         outputs: Optional[List[str]] = None,
         steps: Optional[List["Plan"]] = None,
-        function: Optional[KernelFunctionBase] = None,
+        function: Optional[KernelFunction] = None,
     ) -> None:
         super().__init__()
         self._name = "" if name is None else name
@@ -122,7 +122,7 @@ class Plan(KernelFunctionBase):
         return cls(description=goal, plugin_name=cls.__name__)
 
     @classmethod
-    def from_function(cls, function: KernelFunctionBase) -> "Plan":
+    def from_function(cls, function: KernelFunction) -> "Plan":
         plan = cls()
         plan.set_function(function)
         return plan
@@ -184,11 +184,11 @@ class Plan(KernelFunctionBase):
     def set_ai_configuration(
         self,
         settings: PromptExecutionSettings,
-    ) -> KernelFunctionBase:
+    ) -> KernelFunction:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
-    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> KernelFunctionBase:
+    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> KernelFunction:
         if self._function is not None:
             self._function.set_ai_service(service)
 
@@ -215,7 +215,7 @@ class Plan(KernelFunctionBase):
 
         return plan
 
-    def add_steps(self, steps: Union[List["Plan"], List[KernelFunctionBase]]) -> None:
+    def add_steps(self, steps: Union[List["Plan"], List[KernelFunction]]) -> None:
         for step in steps:
             if type(step) is Plan:
                 self._steps.append(step)
@@ -233,7 +233,7 @@ class Plan(KernelFunctionBase):
                 new_step.set_function(step)
                 self._steps.append(new_step)
 
-    def set_function(self, function: KernelFunctionBase) -> None:
+    def set_function(self, function: KernelFunction) -> None:
         self._function = function
         self._name = function.name
         self._plugin_name = function.plugin_name

@@ -4,7 +4,6 @@ from semantic_kernel import core_plugins, memory
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -50,7 +49,6 @@ __all__ = [
     "ChatPromptTemplate",
     "SemanticFunctionConfig",
     "ContextVariables",
-    "KernelFunctionBase",
     "KernelContext",
     "memory",
     "core_plugins",
