@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -30,13 +31,18 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
     kernel = Kernel()
     functions_view = FunctionsView()
     for name, plugin_name, description, is_semantic, result_string in functions:
-        function_view = KernelFunctionMetadata(name, plugin_name, description, [], is_semantic, True)
+        function_view = KernelFunctionMetadata(
+            name=name,
+            plugin_name=plugin_name,
+            description=description,
+            parameters=[],
+            is_semantic=is_semantic,
+            is_asynchronous=True,
+        )
         functions_view.add_function(function_view)
         mock_function = create_mock_function(function_view)
 
-        result = kernel.create_new_context()
-        result.variables.update(result_string)
-        mock_function.invoke.return_value = result
+        mock_function.invoke.return_value = FunctionResult(function=function_view, value=result_string, metadata={})
         kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 
     return kernel
@@ -75,7 +81,7 @@ def test_can_call_to_plan_from_xml():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_string,
         goal,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     assert plan is not None
@@ -109,7 +115,7 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
         SequentialPlanParser.to_plan_from_xml(
             "<someTag>",
             "Solve the equation x^2 = 2.",
-            SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+            SequentialPlanParser.get_plugin_function(kernel),
         )
 
 
@@ -131,7 +137,7 @@ def test_can_create_plan_with_text_nodes():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     # Assert
@@ -174,7 +180,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
         plan = SequentialPlanParser.to_plan_from_xml(
             plan_text,
             "",
-            SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+            SequentialPlanParser.get_plugin_function(kernel),
             allow_missing_functions,
         )
 
@@ -194,7 +200,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
             SequentialPlanParser.to_plan_from_xml(
                 plan_text,
                 "",
-                SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+                SequentialPlanParser.get_plugin_function(kernel),
                 allow_missing_functions,
             )
 
@@ -230,17 +236,17 @@ def test_can_create_plan_with_other_text():
     plan1 = SequentialPlanParser.to_plan_from_xml(
         plan_text1,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
     plan2 = SequentialPlanParser.to_plan_from_xml(
         plan_text2,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
     plan3 = SequentialPlanParser.to_plan_from_xml(
         plan_text3,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     # Assert
@@ -304,7 +310,7 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         "",
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     # Assert
@@ -331,7 +337,7 @@ def test_can_create_plan_with_ignored_nodes():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     # Assert

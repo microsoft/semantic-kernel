@@ -81,7 +81,7 @@ class ActionPlanner:
         :return: a Plan object
         """
 
-        if goal is None:
+        if not goal:
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "Goal cannot be `None`.")
 
         logger.info(f"Finding the best function for achieving the goal: {goal}")

@@ -6,14 +6,13 @@ import json
 import logging
 import os
 import re
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Annotated, Dict, List, Optional
 
-from semantic_kernel.functions.kernel_function_context_parameter_decorator import (
-    kernel_function_context_parameter,
-)
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
@@ -58,13 +57,13 @@ SCRATCH_PAD_PREFIX = (
 )
 
 
-def is_null_or_empty(value: str) -> bool:
+def is_null_or_empty(value: Optional[str] = None) -> bool:
     return value is None or value == ""
 
 
 class StepwisePlanner:
     config: StepwisePlannerConfig
-    _context: "KernelContext"
+    _arguments: "KernelArguments"
     _function_flow_function: "KernelFunction"
 
     def __init__(
@@ -93,7 +92,19 @@ class StepwisePlanner:
         )
         self._native_functions = self._kernel.import_plugin(self, RESTRICTED_PLUGIN_NAME)
 
-        self._context = kernel.create_new_context()
+        self._context = KernelArguments()
+
+    def describe(self) -> KernelFunctionMetadata:
+        return KernelFunctionMetadata(
+            name="StepwisePlanner",
+            plugin_name="planners",
+            description="",
+            parameters=[
+                KernelParameterMetadata(name="goal", description="The goal to achieve", default_value="", required=True)
+            ],
+            is_semantic=True,
+            is_asynchronous=True,
+        )
 
     def create_plan(self, goal: str) -> Plan:
         if is_null_or_empty(goal):
@@ -102,8 +113,8 @@ class StepwisePlanner:
         function_descriptions = self.get_function_descriptions()
 
         plan_step: Plan = Plan.from_function(self._native_functions["ExecutePlan"])
-        plan_step.parameters.set("function_descriptions", function_descriptions)
-        plan_step.parameters.set("question", goal)
+        plan_step.parameters["function_descriptions"] = function_descriptions
+        plan_step.parameters["question"] = goal
 
         plan_step._outputs.append("agent_scratch_pad")
         plan_step._outputs.append("step_count")
@@ -118,28 +129,28 @@ class StepwisePlanner:
 
     # TODO: sync C# with https://github.com/microsoft/semantic-kernel/pull/1195
     @kernel_function(name="ExecutePlan", description="Execute a plan")
-    @kernel_function_context_parameter(name="question", description="The question to answer")
-    @kernel_function_context_parameter(name="function_descriptions", description="List of tool descriptions")
-    async def execute_plan(self, context: KernelContext) -> KernelContext:
-        question = context["question"]
-
+    async def execute_plan(
+        self,
+        question: Annotated[str, "The question to answer"],
+        function_descriptions: Annotated[List[str], "List of tool descriptions"],
+    ) -> FunctionResult:
         steps_taken: List[SystemStep] = []
         if not is_null_or_empty(question):
             for i in range(self.config.max_iterations):
                 scratch_pad = self.create_scratch_pad(question, steps_taken)
 
-                context.variables.set("agent_scratch_pad", scratch_pad)
+                self._arguments["agent_scratch_pad"] = scratch_pad
 
-                llm_response = await self._system_step_function.invoke(context=context)
+                llm_response = await self._system_step_function.invoke(self._kernel, self._arguments)
 
-                if llm_response.error_occurred:
+                if isinstance(llm_response, FunctionResult) and "error" in llm_response.metadata:
                     raise PlanningException(
                         PlanningException.ErrorCodes.UnknownError,
-                        f"Error occurred while executing stepwise plan: {llm_response.last_exception}",
-                        llm_response.last_exception,
+                        f"Error occurred while executing stepwise plan: {llm_response.metadata['error']}",
+                        llm_response.metadata["error"],
                     )
 
-                action_text = llm_response.result.strip()
+                action_text = str(llm_response).strip()
                 logger.debug(f"Response: {action_text}")
 
                 next_step = self.parse_result(action_text)
@@ -148,14 +159,18 @@ class StepwisePlanner:
                 if not is_null_or_empty(next_step.final_answer):
                     logger.debug(f"Final Answer: {next_step.final_answer}")
 
-                    context.variables.update(next_step.final_answer)
+                    self._arguments["input"] = next_step.final_answer
                     updated_scratch_pad = self.create_scratch_pad(question, steps_taken)
-                    context.variables.set("agent_scratch_pad", updated_scratch_pad)
+                    self._arguments["agent_scratch_pad"] = updated_scratch_pad
 
                     # Add additional results to the context
-                    self.add_execution_stats_to_context(steps_taken, context)
+                    self.add_execution_stats_to_arguments(steps_taken, self._arguments)
 
-                    return context
+                    return FunctionResult(
+                        function=self.describe(),
+                        value=next_step.final_answer,
+                        metadata={"arguments": self._arguments},
+                    )
 
                 logger.debug(f"Thoughts: {next_step.thought}")
 
@@ -186,13 +201,17 @@ class StepwisePlanner:
                 await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
 
             steps_taken_str = json.dumps([s.__dict__ for s in steps_taken], indent=4)
-            context.variables.update(f"Result not found, review _steps_taken to see what happened.\n{steps_taken_str}")
+            self._arguments["input"] = f"Result not found, review _steps_taken to see what happened.\n{steps_taken_str}"
         else:
-            context.variables.update("Question not found.")
+            self._arguments["input"] = "Question not found."
 
-        return context
+        return FunctionResult(
+            function=self.describe(),
+            value=self._arguments["input"],
+            metadata={"arguments": self._arguments},
+        )
 
-    def parse_result(self, input: str):
+    def parse_result(self, input: str) -> SystemStep:
         result = SystemStep(original_response=input)
 
         # Extract final answer
@@ -239,9 +258,9 @@ class StepwisePlanner:
 
         return result
 
-    def add_execution_stats_to_context(self, steps_taken: List[SystemStep], context: KernelContext):
-        context.variables.set("step_count", str(len(steps_taken)))
-        context.variables.set("steps_taken", json.dumps([s.__dict__ for s in steps_taken], indent=4))
+    def add_execution_stats_to_arguments(self, steps_taken: List[SystemStep], arguments: KernelArguments):
+        arguments["step_count"] = str(len(steps_taken))
+        arguments["steps_taken"] = json.dumps([s.__dict__ for s in steps_taken], indent=4)
 
         action_counts: Dict[str, int] = {}
         for step in steps_taken:
@@ -255,7 +274,7 @@ class StepwisePlanner:
         plugin_call_list_with_counts = ", ".join(plugin_call_list_with_counts)
         plugin_call_count_str = str(sum(action_counts.values()))
 
-        context.variables.set("plugin_count", f"{plugin_call_count_str} ({plugin_call_list_with_counts})")
+        arguments["plugin_count"] = f"{plugin_call_count_str} ({plugin_call_list_with_counts})"
 
     def create_scratch_pad(self, question: str, steps_taken: List[SystemStep]) -> str:
         if len(steps_taken) == 0:
@@ -311,38 +330,40 @@ class StepwisePlanner:
 
         try:
             function = self._kernel.func(target_function.plugin_name, target_function.name)
-            action_context = self.create_action_context(action_variables)
+            action_arguments = self.create_action_arguments(action_variables)
 
-            result = await function.invoke(context=action_context)
+            result = await function.invoke(self._kernel, action_arguments)
 
-            if result.error_occurred:
-                logger.error(f"Error occurred: {result.last_exception}")
-                return f"Error occurred: {result.last_exception}"
+            if isinstance(result, FunctionResult) and "error" in result.metadata:
+                logger.error(f"Error occurred: {result.metadata['error']}")
+                return f"Error occurred: {result.metadata['error']}"
 
-            logger.debug(f"Invoked {target_function.name}. Result: {result.result}")
+            logger.debug(f"Invoked {target_function.name}. Result: {result}")
 
-            return result.result
+            return str(result)
 
         except Exception as e:
-            logger.error(
-                e,
-                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}",  # noqa: E501
+            error_msg = (
+                f"Something went wrong in system step: {target_function.plugin_name}.{target_function.name}. Error: {e}"
             )
-            return (
-                "Something went wrong in system step: ",
-                f"{target_function.plugin_name}.{target_function.name}. Error: {e}",
-            )
+            logger.error(error_msg)
+            return error_msg
 
-    def create_action_context(self, action_variables: Dict[str, str]) -> KernelContext:
-        action_context = self._kernel.create_new_context()
+    def create_action_arguments(self, action_variables: Dict[str, str]) -> KernelArguments:
+        action_arguments = KernelArguments()
         if action_variables is not None:
             for k, v in action_variables.items():
-                action_context.variables.set(k, v)
+                action_arguments[k] = v
 
-        return action_context
+        return action_arguments
 
     def get_available_functions(self) -> List[KernelFunctionMetadata]:
-        functions_view = self._context.plugins.get_functions_view()
+        if self._kernel.plugins is None:
+            raise PlanningException(
+                PlanningException.ErrorCodes.CreatePlanError,
+                "Plugin collection not found in the kernel",
+            )
+        functions_view = self._kernel.plugins.get_functions_view()
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []

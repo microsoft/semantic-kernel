@@ -4,9 +4,9 @@ import re
 from typing import Callable, Optional, Tuple
 from xml.etree import ElementTree as ET
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
@@ -22,11 +22,13 @@ APPEND_TO_RESULT_TAG = "appendToResult"
 class SequentialPlanParser:
     @staticmethod
     def get_plugin_function(
-        context: KernelContext,
+        kernel: Kernel,
     ) -> Callable[[str, str], Optional[KernelFunction]]:
         def function(plugin_name: str, function_name: str) -> Optional[KernelFunction]:
+            if not kernel.plugins:
+                return None
             try:
-                return context.plugins[plugin_name][function_name]
+                return kernel.plugins[plugin_name][function_name]
             except KeyError:
                 return None
             except KernelException:
@@ -85,13 +87,13 @@ class SequentialPlanParser:
                         if plugin_function is not None:
                             plan_step = Plan.from_function(plugin_function)
 
-                            function_variables = ContextVariables()
+                            function_variables = KernelArguments()
                             function_outputs = []
                             function_results = []
 
                             view = plugin_function.describe()
                             for p in view.parameters:
-                                function_variables.set(p.name, p.default_value)
+                                function_variables[p.name] = p.default_value
 
                             for attr in child_node.attrib:
                                 if attr == SET_CONTEXT_VARIABLE_TAG:
@@ -100,7 +102,7 @@ class SequentialPlanParser:
                                     function_outputs.append(child_node.attrib[attr])
                                     function_results.append(child_node.attrib[attr])
                                 else:
-                                    function_variables.set(attr, child_node.attrib[attr])
+                                    function_variables[attr] = child_node.attrib[attr]
 
                             plan_step._outputs = function_outputs
                             plan_step._parameters = function_variables

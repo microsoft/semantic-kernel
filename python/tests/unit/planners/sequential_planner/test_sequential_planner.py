@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -11,8 +12,6 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.planners.planning_exception import PlanningException
@@ -40,6 +39,7 @@ async def test_it_can_create_plan(goal):
     kernel.prompt_template_engine = Mock()
 
     memory = Mock(spec=SemanticTextMemoryBase)
+    kernel.memory = memory
 
     input = [
         ("SendEmail", "email", "Send an e-mail", False),
@@ -49,27 +49,24 @@ async def test_it_can_create_plan(goal):
     ]
 
     functionsView = FunctionsView()
-    plugins = KernelPluginCollection()
+    kernel.plugins = KernelPluginCollection()
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
         function_view = KernelFunctionMetadata(name, pluginName, description, [], isSemantic, True)
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
-
-        context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-        context.variables.update("MOCK FUNCTION CALLED")
-        mock_function.invoke.return_value = context
+        mock_function.invoke.return_value = FunctionResult(
+            function=function_view, value="MOCK FUNCTION CALLED", metadata={}
+        )
         mock_functions.append(mock_function)
 
-        if pluginName not in plugins.plugins:
-            plugins.add(KernelPlugin(name=pluginName, description="Mock plugin"))
-        plugins.add_functions_to_plugin([mock_function], pluginName)
+        if pluginName not in kernel.plugins.plugins:
+            kernel.plugins.add(KernelPlugin(name=pluginName, description="Mock plugin"))
+        kernel.plugins.add_functions_to_plugin([mock_function], pluginName)
 
     expected_functions = [x[0] for x in input]
     expected_plugins = [x[1] for x in input]
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
     plan_string = """
 <plan>
     <function.SummarizePlugin.Summarize/>
@@ -78,13 +75,8 @@ async def test_it_can_create_plan(goal):
     <function.email.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
 
-    return_context.variables.update(plan_string)
-
     mock_function_flow_function = Mock(spec=KernelFunction)
-    mock_function_flow_function.invoke.return_value = return_context
-
-    kernel.plugins = plugins
-    kernel.create_new_context.return_value = context
+    mock_function_flow_function.invoke.return_value = FunctionResult(function=None, value=plan_string, metadata={})
     kernel.register_semantic_function.return_value = mock_function_flow_function
 
     planner = SequentialPlanner(kernel)
@@ -119,25 +111,19 @@ async def test_invalid_xml_throws():
     kernel = Mock(spec=Kernel)
     kernel.prompt_template_engine = Mock()
     memory = Mock(spec=SemanticTextMemoryBase)
+    kernel.memory = memory
     plugins = Mock(spec=KernelPluginCollection)
 
     functionsView = FunctionsView()
     plugins.get_functions_view.return_value = functionsView
 
     plan_string = "<plan>notvalid<</plan>"
-    return_context = KernelContext.model_construct(
-        variables=ContextVariables(plan_string),
-        memory=memory,
-        plugins=plugins,
-    )
-
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    function_result = FunctionResult(function=None, value=plan_string, metadata={})
 
     mock_function_flow_function = Mock(spec=KernelFunction)
-    mock_function_flow_function.invoke.return_value = return_context
+    mock_function_flow_function.invoke.return_value = function_result
 
     kernel.plugins = plugins
-    kernel.create_new_context.return_value = context
     kernel.register_semantic_function.return_value = mock_function_flow_function
 
     planner = SequentialPlanner(kernel)

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -11,8 +12,6 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.planners import ActionPlanner
 from semantic_kernel.planners.action_planner.action_planner_config import (
@@ -44,6 +43,41 @@ def test_throw_without_completion_service():
         ActionPlanner(kernel)
 
 
+@pytest.fixture
+def mock_kernel(plugins_input):
+    kernel = Mock(spec=Kernel)
+    plugins = MagicMock(spec=KernelPluginCollection)
+    functionsView = FunctionsView()
+
+    mock_plugins = {}
+
+    for name, plugin_name, description, is_semantic in plugins_input:
+        function_view = KernelFunctionMetadata(
+            name=name,
+            plugin_name=plugin_name,
+            description=description,
+            parameters=[],
+            is_semantic=is_semantic,
+            is_asynchronous=True,
+        )
+        mock_function = create_mock_function(function_view)
+        functionsView.add_function(function_view)
+
+        if plugin_name not in mock_plugins:
+            mock_plugins[plugin_name] = {}
+        mock_plugins[plugin_name][name] = mock_function
+
+        mock_function.invoke.return_value = FunctionResult(
+            function=function_view, value="MOCK FUNCTION CALLED", metadata={"arguments": {}}
+        )
+
+    plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
+
+    kernel.plugins = plugins
+    kernel.plugins.get_functions_view.return_value = functionsView
+    return kernel
+
+
 @pytest.mark.asyncio
 async def test_plan_creation():
     goal = "Translate Happy birthday to German."
@@ -60,6 +94,8 @@ async def test_plan_creation():
     mock_function = Mock(spec=KernelFunction)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = KernelPluginCollection()
+    kernel.plugins = plugins
+    kernel.register_memory(memory)
 
     function_view = KernelFunctionMetadata(
         name="Translate",
@@ -70,17 +106,12 @@ async def test_plan_creation():
     )
     mock_function = create_mock_function(function_view)
 
-    plugins.add(plugin=KernelPlugin(name=function_view.plugin_name, functions=[mock_function]))
+    kernel.plugins.add(plugin=KernelPlugin(name=function_view.plugin_name, functions=[mock_function]))
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-
-    return_context.variables.update(plan_str)
-
-    mock_function.invoke.return_value = return_context
+    function_result = FunctionResult(function=function_view, value=plan_str, metadata={})
+    mock_function.invoke.return_value = function_result
 
     kernel.create_semantic_function.return_value = mock_function
-    kernel.create_new_context.return_value = context
 
     planner = ActionPlanner(kernel)
     plan = await planner.create_plan(goal)
@@ -102,60 +133,26 @@ def plugins_input():
     ]
 
 
-@pytest.fixture
-def mock_context(plugins_input):
-    memory = Mock(spec=Kernel)
-    context = Mock(spec=KernelContext)
-
-    functionsView = FunctionsView()
-
-    plugins = MagicMock(spec=KernelPluginCollection)
-
-    mock_plugins = {}
-
-    for name, plugin_name, description, is_semantic in plugins_input:
-        function_view = KernelFunctionMetadata(name, plugin_name, description, [], is_semantic, True)
-        mock_function = create_mock_function(function_view)
-        functionsView.add_function(function_view)
-
-        if plugin_name not in mock_plugins:
-            mock_plugins[plugin_name] = {}
-        mock_plugins[plugin_name][name] = mock_function
-
-        _context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-        _context.variables.update("MOCK FUNCTION CALLED")
-        mock_function.invoke.return_value = _context
-
-    plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
-
-    context.plugins = plugins
-    context.plugins.get_functions_view.return_value = functionsView
-
-    return context
-
-
-def test_available_functions(plugins_input, mock_context):
+def test_available_functions(plugins_input, mock_kernel):
     goal = "Translate Happy birthday to German."
-    kernel = Mock(spec=Kernel)
 
-    planner = ActionPlanner(kernel)
-    result = planner.list_of_functions(goal=goal, context=mock_context)
+    planner = ActionPlanner(mock_kernel)
+    result = planner.list_of_functions(goal=goal)
 
     expected_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input[1:]]
 
     assert all(plugin in result for plugin in expected_plugins)
 
 
-def test_exclude_plugins(plugins_input, mock_context):
+def test_exclude_plugins(plugins_input, mock_kernel):
     goal = "Translate Happy birthday to German."
-    kernel = Mock(spec=Kernel)
 
     # Exclude the first and second in plugins_input
     excluded_plugin_name = "email"
 
     planner_config = ActionPlannerConfig(excluded_plugins=[excluded_plugin_name])
-    planner = ActionPlanner(kernel, config=planner_config)
-    result = planner.list_of_functions(goal=goal, context=mock_context)
+    planner = ActionPlanner(mock_kernel, config=planner_config)
+    result = planner.list_of_functions(goal=goal)
 
     all_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input]
     excluded_plugins = all_plugins[:2]
@@ -165,15 +162,14 @@ def test_exclude_plugins(plugins_input, mock_context):
     assert all(plugin not in result for plugin in excluded_plugins)
 
 
-def test_exclude_functions(plugins_input, mock_context):
+def test_exclude_functions(plugins_input, mock_kernel):
     goal = "Translate Happy birthday to German."
-    kernel = Mock(spec=Kernel)
 
     excluded_function_name = "SendEmail"
 
     planner_config = ActionPlannerConfig(excluded_functions=[excluded_function_name])
-    planner = ActionPlanner(kernel, config=planner_config)
-    result = planner.list_of_functions(goal=goal, context=mock_context)
+    planner = ActionPlanner(mock_kernel, config=planner_config)
+    result = planner.list_of_functions(goal=goal)
 
     all_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input]
     excluded_plugins = all_plugins[:1]
@@ -189,8 +185,8 @@ async def test_empty_goal_throw():
 
     kernel = Mock(spec=Kernel)
     mock_function = Mock(spec=KernelFunction)
-    memory = Mock(spec=SemanticTextMemoryBase)
     plugins = MagicMock(spec=KernelPluginCollection)
+    kernel.plugins = plugins
 
     function_view = KernelFunctionMetadata(
         name="Translate",
@@ -200,14 +196,7 @@ async def test_empty_goal_throw():
         parameters=[],
     )
     mock_function = create_mock_function(function_view)
-    plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
-
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-    mock_function.invoke.return_value = return_context
-
-    kernel.create_semantic_function.return_value = mock_function
-    kernel.create_new_context.return_value = context
+    kernel.plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
 
     planner = ActionPlanner(kernel)
 
@@ -223,6 +212,8 @@ async def test_invalid_json_throw():
     kernel = Mock(spec=Kernel)
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = MagicMock(spec=KernelPluginCollection)
+    kernel.plugins = plugins
+    kernel.register_memory(memory)
 
     function_view = KernelFunctionMetadata(
         name="Translate",
@@ -235,14 +226,10 @@ async def test_invalid_json_throw():
 
     plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
 
-    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
-
-    return_context.variables.update(plan_str)
-    mock_function.invoke.return_value = return_context
+    function_result = FunctionResult(function=function_view, value=plan_str, metadata={})
+    mock_function.invoke.return_value = function_result
 
     kernel.create_semantic_function.return_value = mock_function
-    kernel.create_new_context.return_value = context
 
     planner = ActionPlanner(kernel)
 

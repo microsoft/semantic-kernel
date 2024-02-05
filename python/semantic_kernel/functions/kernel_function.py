@@ -4,7 +4,6 @@ import asyncio
 import logging
 import platform
 import sys
-from enum import Enum
 from functools import wraps
 from inspect import isawaitable
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
@@ -405,55 +404,50 @@ class KernelFunction(KernelBaseModel):
     ) -> "FunctionResult":
         return await self.invoke(kernel, arguments)
 
-    # def invoke(
-    #     self,
-    #     settings: Optional[AIRequestSettings] = None,
-    #     **kwargs: Dict[str, Any],
-    # ) -> "FunctionResult":
-    #     # if context is None:
-    #     #     context = KernelContext(
-    #     #         variables=ContextVariables("") if variables is None else variables,
-    #     #         plugin_collection=self._plugin_collection,
-    #     #         memory=memory if memory is not None else NullMemory.instance,
-    #     #     )
-    #     # else:
-    #     #     # If context is passed, we need to merge the variables
-    #     #     if variables is not None:
-    #     #         context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-    #     #     if memory is not None:
-    #     #         context.memory = memory
-
-    #     # if input is not None:
-    #     #     context.variables.update(input)
-
-    #     try:
-    #         loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
-    #     except RuntimeError:
-    #         loop = None
-
-    #     if loop and loop.is_running():
-
-    #         def run_coroutine():
-    #             if self.is_semantic:
-    #                 return self._invoke_semantic(context, settings)
-    #             else:
-    #                 return self._invoke_native(context)
-
-    #         return self.run_async_in_executor(run_coroutine)
-    #     else:
-    #         if self.is_semantic:
-    #             return asyncio.run(self._invoke_semantic(context, settings))
-    #         else:
-    #             return asyncio.run(self._invoke_native(context))
-
     async def invoke(
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
     ) -> "FunctionResult":
+        function_arguments = self.gather_function_parameters(kernel, arguments)
+        try:
+            result = self._function(**function_arguments)
+            if isawaitable(result):
+                result = await result
+        except Exception as e:
+            logger.error(f"Error occurred while invoking function {self.name}: {e}")
+            return FunctionResult(
+                function=self.describe(), value=None, metadata={"error": str(e), "arguments": function_arguments}
+            )
+        logger.debug("Function result: %s", result)
+        logger.debug("Function result type %s", type(result))
+        if self._return_parameter and self._return_parameter.type_ == "FunctionResult":
+            return result
+        return FunctionResult(function=self.describe(), value=result)
+
+    async def invoke_stream(
+        self,
+        kernel: "Kernel",
+        arguments: KernelArguments,
+    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+        """
+        Yields:
+            StreamingKernelContent or FunctionResult -- The results of the function, if there is an error a FunctionResult is yielded.
+        """
+        if not self._stream_function:
+            raise ValueError("Function does not support streaming")
+        function_arguments = self.gather_function_parameters(kernel, arguments)
+        try:
+            async for stream_msg in self._stream_function(**function_arguments):
+                yield stream_msg
+        except Exception as e:
+            logger.error(f"Error occurred while invoking function {self.name}: {e}")
+            yield FunctionResult(
+                function=self.describe(), value=None, metadata={"error": str(e), "arguments": function_arguments}
+            )
+
+    def gather_function_parameters(self, kernel, arguments):
         # TODO: replace with service selector
-        print(self._parameters)
-        print(self._return_parameter)
         if arguments.execution_settings and len(arguments.execution_settings) > 1:
             exec_settings = (
                 arguments.execution_settings[self._ai_service.ai_model_id]
@@ -488,150 +482,4 @@ class KernelFunction(KernelBaseModel):
             if param.required:
                 raise ValueError(f"Parameter {param.name} is required but not provided in the arguments.")
             logger.debug(f"Parameter {param.name} is not provided, using default value {param.default_value}")
-
-        result = self._function(**function_arguments)
-        if isawaitable(result):
-            result = await result
-        logger.debug("Function result: %s", result)
-        logger.debug("Function result type %s", type(result))
-        if self._return_parameter and self._return_parameter.type_ == "FunctionResult":
-            return result
-        return FunctionResult(function=self.describe(), value=result)
-        # try:
-        #     if self.is_semantic:
-        #         return await self._invoke_semantic(settings, **kwargs)
-        #     else:
-        #         return await self._invoke_native(settings, **kwargs)
-        # except Exception as e:
-        #     logger.error(f"Error occurred while invoking function {self.name}: {e}")
-        #     raise e
-
-    # async def _invoke_semantic(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
-    #     self._verify_is_semantic()
-    #     return await self._function(self._ai_service, settings or self._ai_request_settings, **kwargs)
-
-    # async def _invoke_native(self, settings: AIRequestSettings, **kwargs) -> FunctionResult:
-    #     self._verify_is_native()
-
-    #     delegate = DelegateHandlers.get_handler(self._delegate_type)
-    #     # for python3.9 compatibility (staticmethod is not callable)
-    #     if not hasattr(delegate, "__call__"):
-    #         delegate = delegate.__func__
-    #     new_context = await delegate(self._function, context)
-
-    # return new_context
-
-    # def _verify_is_semantic(self) -> None:
-    #     if self._is_semantic:
-    #         return
-
-    #     logger.error("The function is not semantic")
-    #     raise KernelException(
-    #         KernelException.ErrorCodes.InvalidFunctionType,
-    #         "Invalid operation, the method requires a semantic function",
-    #     )
-
-    # def _verify_is_native(self) -> None:
-    #     if not self._is_semantic:
-    #         return
-
-    #     logger.error("The function is not native")
-    #     raise KernelException(
-    #         KernelException.ErrorCodes.InvalidFunctionType,
-    #         "Invalid operation, the method requires a native function",
-    #     )
-
-    async def invoke_stream(
-        self,
-        kernel: "Kernel",
-        arguments: KernelArguments,
-        # input: Optional[str] = None,
-        # variables: ContextVariables = None,
-        # context: Optional["KernelContext"] = None,
-        # memory: Optional[SemanticTextMemoryBase] = None,
-    ) -> AsyncIterable[List[Union[StreamingKernelContent, Any]]]:
-        # from semantic_kernel.orchestration.kernel_context import KernelContext
-
-        # if context is None:
-        #     context = KernelContext(
-        #         variables=ContextVariables("") if variables is None else variables,
-        #         plugin_collection=self._plugin_collection,
-        #         memory=memory if memory is not None else NullMemory.instance,
-        #     )
-        # else:
-        #     # If context is passed, we need to merge the variables
-        #     if variables is not None:
-        #         context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-        #     if memory is not None:
-        #         context._memory = memory
-        """
-        Returns:
-            KernelContext -- The context for the function
-        """
-        # try:
-        if self.is_native:
-            async for message in self._function(arguments=arguments):
-                yield message
-        if arguments.execution_settings and len(arguments.execution_settings) > 1:
-            exec_settings = (
-                arguments.execution_settings[self._ai_service.ai_model_id]
-                if self._ai_service.ai_model_id in arguments.execution_settings
-                else self._ai_prompt_execution_settings
-            )
-        elif arguments.execution_settings and len(arguments.execution_settings) == 1:
-            exec_settings = list(arguments.execution_settings.values())[0]
-        else:
-            exec_settings = self._ai_prompt_execution_settings
-        async for stream_msg in self._stream_function(
-            function=self.describe(),
-            kernel=kernel,
-            client=self._ai_service,
-            request_settings=exec_settings,
-            arguments=arguments,
-        ):
-            yield stream_msg
-        #     if self.is_semantic:
-        #         async for stream_msg in self._invoke_semantic_stream(context, settings):
-        #             yield stream_msg
-        #     else:
-        #         async for stream_msg in self._invoke_native_stream(context):
-        #             yield stream_msg
-        # except Exception as e:
-        #     logger.error(f"Error occurred while invoking stream function: {str(e)}")
-        #     context.fail(str(e), e)
-        #     raise KernelException(
-        #         KernelException.ErrorCodes.FunctionInvokeError,
-        #         "Error occurred while invoking stream function",
-        #     )
-
-    # async def _invoke_semantic_stream(self, arguments: KernelArguments):
-    #     self._verify_is_semantic()
-    #     # TODO: add kernel to function call for plugins
-    #     async for stream_msg in self._stream_function(
-    #         self._ai_service, arguments.execution_settings[self._ai_service] or self._ai_request_settings, arguments
-    #     ):
-    #         yield stream_msg
-
-    # async def _invoke_native_stream(self, settings, **kwargs):
-    #     self._verify_is_native()
-
-    #     delegate = DelegateHandlers.get_handler(self._delegate_type)
-    #     # for python3.9 compatibility (staticmethod is not callable)
-    #     if not hasattr(delegate, "__call__"):
-    #         delegate = delegate.__func__
-
-    #     completion = ""
-    #     async for partial in delegate(self._function, context):
-    #         completion += partial
-    #         yield partial
-
-    #     context.variables.update(completion)
-
-    # def _ensure_context_has_plugins(self, context) -> None:
-    #     if context.plugins is not None:
-    #         return
-
-    #     context.plugins = self._plugin_collection
-
-    def _trace_function_type_Call(self, type: Enum) -> None:
-        logger.debug(f"Executing function type {type}: {type.name}")
+        return function_arguments

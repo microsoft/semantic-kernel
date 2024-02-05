@@ -4,13 +4,13 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.functions_view import FunctionsView
-from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
@@ -18,7 +18,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
     SequentialPlannerFunctionViewExtension,
-    SequentialPlannerKernelContextExtension,
+    SequentialPlannerKernelExtension,
 )
 
 
@@ -28,8 +28,8 @@ async def _async_generator(query_result):
 
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_no_functions():
-    variables = ContextVariables()
-    plugins = KernelPluginCollection()
+    arguments = KernelArguments()
+    kernel = Kernel()
 
     memory = Mock(spec=SemanticTextMemoryBase)
     memory_query_result = MemoryQueryResult(
@@ -47,12 +47,11 @@ async def test_can_call_get_available_functions_with_no_functions():
     memory.search.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = KernelContext(variables=variables, memory=memory, plugins=plugins)
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -61,8 +60,8 @@ async def test_can_call_get_available_functions_with_no_functions():
 
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions():
-    variables = ContextVariables()
-
+    arguments = KernelArguments()
+    kernel = Kernel()
     functions_view = FunctionsView()
     function_view = KernelFunctionMetadata(
         "functionName",
@@ -86,6 +85,8 @@ async def test_can_call_get_available_functions_with_functions():
     mock_plugins = Mock(spec=KernelPluginCollection)
     mock_plugins.get_functions_view.return_value = functions_view
 
+    kernel.plugins = mock_plugins
+
     memory_query_result = MemoryQueryResult(
         is_reference=False,
         id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function_view),
@@ -102,12 +103,11 @@ async def test_can_call_get_available_functions_with_functions():
     memory.search.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = KernelContext.model_construct(variables=variables, memory=memory, plugins=mock_plugins)
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -118,7 +118,7 @@ async def test_can_call_get_available_functions_with_functions():
     config.included_functions.append(["nativeFunctionName"])
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -129,9 +129,6 @@ async def test_can_call_get_available_functions_with_functions():
 
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions_and_relevancy():
-    # Arrange
-    variables = ContextVariables()
-
     # Arrange FunctionView
     functions_view = FunctionsView()
     function_view = KernelFunctionMetadata(
@@ -165,22 +162,21 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         embedding=None,
     )
     memory = Mock(spec=SemanticTextMemoryBase)
-    memory.search.return_value = _async_generator(memory_query_result)
+    memory.search.return_value = [memory_query_result]
 
     mock_plugins = Mock(spec=KernelPluginCollection)
     mock_plugins.get_functions_view.return_value = functions_view
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = KernelContext.model_construct(
-        variables=variables,
-        memory=memory,
-        plugins=mock_plugins,
-    )
+    kernel = Kernel()
+    kernel.plugins = mock_plugins
+    kernel.memory = memory
+    arguments = KernelArguments()
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -189,10 +185,11 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
 
     # Arrange update IncludedFunctions
     config.included_functions.append("nativeFunctionName")
-    memory.search.return_value = _async_generator(memory_query_result)
+    memory.search.return_value = [memory_query_result]
 
+    arguments = KernelArguments()
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
     # Assert
     assert result is not None
@@ -204,8 +201,10 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_default_relevancy():
     # Arrange
-    variables = ContextVariables()
     plugins = KernelPluginCollection()
+    kernel = Kernel()
+    kernel.plugins = plugins
+    arguments = KernelArguments()
 
     # Arrange Mock Memory and Result
     memory_query_result = MemoryQueryResult(
@@ -218,17 +217,16 @@ async def test_can_call_get_available_functions_with_default_relevancy():
         relevance=0.8,
         embedding=None,
     )
-    async_enumerable = _async_generator(memory_query_result)
     memory = Mock(spec=SemanticTextMemoryBase)
-    memory.search.return_value = async_enumerable
+    memory.search.return_value = [memory_query_result]
+    kernel.memory = memory
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = KernelContext.model_construct(variables=variables, memory=memory, plugins=plugins)
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 
     # Act
-    result = await SequentialPlannerKernelContextExtension.get_available_functions(context, config, semantic_query)
+    result = await SequentialPlannerKernelExtension.get_available_functions(kernel, arguments, config, semantic_query)
 
     # Assert
     assert result is not None

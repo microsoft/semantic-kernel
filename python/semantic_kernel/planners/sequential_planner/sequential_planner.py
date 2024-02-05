@@ -3,6 +3,7 @@
 import os
 from typing import TYPE_CHECKING
 
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
@@ -11,7 +12,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
     SequentialPlannerConfig,
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerKernelContextExtension as KernelContextExtension,
+    SequentialPlannerKernelExtension as KernelContextExtension,
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -61,24 +62,23 @@ class SequentialPlanner:
 
         self.config.excluded_plugins.append(self.RESTRICTED_PLUGIN_NAME)
 
-        self._function_flow_function = self._init_flow_function(prompt, kernel)
-
         self._kernel = kernel
         self._arguments = KernelArguments()
+        self._function_flow_function = self._init_flow_function(prompt)
 
-    def _init_flow_function(self, prompt: str, kernel: Kernel):
+    def _init_flow_function(self, prompt: str):
         prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
         prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
 
         prompt_template = PromptTemplate(
             template=prompt_template,
-            template_engine=kernel.prompt_template_engine,
+            template_engine=self._kernel.prompt_template_engine,
             prompt_config=prompt_config,
         )
         function_config = SemanticFunctionConfig(prompt_config, prompt_template)
 
-        return kernel.register_semantic_function(
+        return self._kernel.register_semantic_function(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
             function_name=self.RESTRICTED_PLUGIN_NAME,
             function_config=function_config,
@@ -88,24 +88,26 @@ class SequentialPlanner:
         if len(goal) == 0:
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
-        relevant_function_manual = await KernelContextExtension.get_functions_manual(self._context, goal, self.config)
+        relevant_function_manual = await KernelContextExtension.get_functions_manual(
+            self._kernel, self._arguments, goal, self.config
+        )
         self._arguments["available_functions"] = relevant_function_manual
         self._arguments["input"] = goal
 
         plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
-        if plan_result.error_occurred:
+        if isinstance(plan_result, FunctionResult) and "error" in plan_result.metadata:
             raise PlanningException(
                 PlanningException.ErrorCodes.CreatePlanError,
-                f"Error creating plan for goal: {plan_result.last_error_description}",
-                plan_result.last_exception,
+                f"Error creating plan for goal: {plan_result.metadata['error']}",
+                plan_result.metadata["error"],
             )
 
         plan_result_string = str(plan_result).strip()
 
         try:
             get_plugin_function = self.config.get_plugin_function or SequentialPlanParser.get_plugin_function(
-                self._context
+                self._kernel
             )
             plan = SequentialPlanParser.to_plan_from_xml(
                 plan_result_string,

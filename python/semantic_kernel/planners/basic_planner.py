@@ -134,6 +134,8 @@ class BasicPlanner:
         string for the prompt.
         """
         # Get a dictionary of plugin names to all native and semantic functions
+        if not kernel.plugins:
+            return ""
         native_functions = kernel.plugins.get_functions_view().native_functions
         semantic_functions = kernel.plugins.get_functions_view().semantic_functions
         native_functions.update(semantic_functions)

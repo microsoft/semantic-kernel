@@ -58,14 +58,10 @@ def test_create_plan_with_name_and_description():
 
 
 def test_create_plan_with_state_and_parameters():
-    plan = Plan(
-        name="test",
-        state=KernelArguments(),
-        parameters={"test_param": "test_param_val"},
-    )
+    plan = Plan(name="test", state=KernelArguments(), parameters=KernelArguments(**{"test_param": "test_param_val"}))
     assert plan is not None
     assert plan.name == "test"
-    assert plan.state["input"] == ""
+    assert plan.state.get("input", "") == ""
     assert plan.plugin_name == ""
     assert plan.description == ""
     assert plan.function is None

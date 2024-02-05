@@ -2,10 +2,11 @@
 
 import itertools
 import logging
-from typing import AsyncIterable, List
+from typing import List, Optional
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.null_memory import NullMemory
@@ -40,21 +41,22 @@ class SequentialPlannerFunctionViewExtension:
         return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
 
 
-class SequentialPlannerKernelContextExtension:
+class SequentialPlannerKernelExtension:
     PLANNER_MEMORY_COLLECTION_NAME = " Planning.KernelFunctionManual"
     PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED = "Planning.KernelFunctionsAreRemembered"
 
     @staticmethod
     async def get_functions_manual(
-        context: KernelContext,
+        kernel: "Kernel",
+        arguments: KernelArguments,
         semantic_query: str = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
         config = config or SequentialPlannerConfig()
 
         if config.get_available_functions is None:
-            functions = await SequentialPlannerKernelContextExtension.get_available_functions(
-                context, config, semantic_query
+            functions = await SequentialPlannerKernelExtension.get_available_functions(
+                kernel, arguments, config, semantic_query
             )
         else:
             functions = await config.get_available_functions(config, semantic_query)
@@ -63,21 +65,22 @@ class SequentialPlannerKernelContextExtension:
 
     @staticmethod
     async def get_available_functions(
-        context: KernelContext,
+        kernel: Kernel,
+        arguments: KernelArguments,
         config: SequentialPlannerConfig,
-        semantic_query: str = None,
+        semantic_query: Optional[str] = None,
     ):
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
         included_functions = config.included_functions or []
 
-        if context.plugins is None:
+        if kernel.plugins is None:
             raise KernelException(
                 KernelException.ErrorCodes.PluginCollectionNotSet,
                 "Plugin collection not found in the context",
             )
 
-        functions_view = context.plugins.get_functions_view()
+        functions_view = kernel.plugins.get_functions_view()
 
         available_functions: List[KernelFunctionMetadata] = [
             *functions_view.semantic_functions.values(),
@@ -91,25 +94,30 @@ class SequentialPlannerKernelContextExtension:
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
 
-        if semantic_query is None or isinstance(context.memory, NullMemory) or config.relevancy_threshold is None:
+        if (
+            semantic_query is None
+            or not kernel.memory
+            or isinstance(kernel.memory, NullMemory)
+            or config.relevancy_threshold is None
+        ):
             # If no semantic query is provided, return all available functions.
             # If a Memory provider has not been registered, return all available functions.
             return available_functions
 
         # Remember functions in memory so that they can be searched.
-        await SequentialPlannerKernelContextExtension.remember_functions(context, available_functions)
+        await SequentialPlannerKernelExtension.remember_functions(kernel, arguments, available_functions)
 
         # Search for functions that match the semantic query.
-        memories = await context.memory.search(
-            SequentialPlannerKernelContextExtension.PLANNER_MEMORY_COLLECTION_NAME,
+        memories = await kernel.memory.search(
+            SequentialPlannerKernelExtension.PLANNER_MEMORY_COLLECTION_NAME,
             semantic_query,
             config.max_relevant_functions,
             config.relevancy_threshold,
         )
 
         # Add functions that were found in the search results.
-        relevant_functions = await SequentialPlannerKernelContextExtension.get_relevant_functions(
-            context, available_functions, memories
+        relevant_functions = await SequentialPlannerKernelExtension.get_relevant_functions(
+            kernel, available_functions, memories
         )
 
         # Add any missing functions that were included but not found in the search results.
@@ -123,13 +131,13 @@ class SequentialPlannerKernelContextExtension:
 
     @staticmethod
     async def get_relevant_functions(
-        context: KernelContext,
+        kernel: Kernel,
         available_functions: List[KernelFunctionMetadata],
-        memories: AsyncIterable[MemoryQueryResult],
+        memories: List[MemoryQueryResult],
     ) -> List[KernelFunctionMetadata]:
         relevant_functions = []
         # TODO: cancellation
-        async for memory_entry in memories:
+        for memory_entry in memories:
             function = next(
                 (
                     func
@@ -150,10 +158,18 @@ class SequentialPlannerKernelContextExtension:
         return relevant_functions
 
     @staticmethod
-    async def remember_functions(context: KernelContext, available_functions: List[KernelFunctionMetadata]):
+    async def remember_functions(
+        kernel: Kernel, arguments: KernelArguments, available_functions: List[KernelFunctionMetadata]
+    ):
         # Check if the functions have already been saved to memory.
-        if SequentialPlannerKernelContextExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED in context.variables:
+        if arguments.get(SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED, False):
             return
+
+        if not kernel.memory or isinstance(kernel.memory, NullMemory):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionNotAvailable,
+                "No memory registered in the kernel. Cannot remember functions.",
+            )
 
         for function in available_functions:
             function_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
@@ -162,8 +178,8 @@ class SequentialPlannerKernelContextExtension:
             text_to_embed = SequentialPlannerFunctionViewExtension.to_embedding_string(function)
 
             # It'd be nice if there were a saveIfNotExists method on the memory interface
-            memory_entry = await context.memory.get(
-                collection=SequentialPlannerKernelContextExtension.PLANNER_MEMORY_COLLECTION_NAME,
+            memory_entry = await kernel.memory.get(
+                collection=SequentialPlannerKernelExtension.PLANNER_MEMORY_COLLECTION_NAME,
                 key=key,
                 with_embedding=False,
             )
@@ -171,8 +187,8 @@ class SequentialPlannerKernelContextExtension:
                 # TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 # As folks may want to tune their functions to be more or less relevant.
                 # Memory now supports these such strategies.
-                await context.memory.save_information(
-                    collection=SequentialPlannerKernelContextExtension.PLANNER_MEMORY_COLLECTION_NAME,
+                await kernel.memory.save_information(
+                    collection=SequentialPlannerKernelExtension.PLANNER_MEMORY_COLLECTION_NAME,
                     text=text_to_embed,
                     id=key,
                     description=description,
@@ -180,4 +196,4 @@ class SequentialPlannerKernelContextExtension:
                 )
 
         # Set a flag to indicate that the functions have been saved to memory.
-        context.variables.set(SequentialPlannerKernelContextExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED, "true")
+        arguments[SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED] = True
