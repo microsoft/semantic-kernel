@@ -3786,23 +3786,25 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymilvus"
-version = "2.2.16"
+version = "2.3.6"
 description = "Python Sdk for Milvus"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "pymilvus-2.2.16-py3-none-any.whl", hash = "sha256:874c68a361a71badaa880fa32000983d2d716dd8ee5daf2c53e9d928dbe932e3"},
-    {file = "pymilvus-2.2.16.tar.gz", hash = "sha256:2921454762c79713e7cc48490c88847734c8d84cf0801dfc57cc224ee84b17ab"},
+    {file = "pymilvus-2.3.6-py3-none-any.whl", hash = "sha256:eebeab9a43827bb90ceb7ff658eeb25a0383980d75be3b2aa3dd151a42f60c9a"},
+    {file = "pymilvus-2.3.6.tar.gz", hash = "sha256:61ab05d77728ddca79793abec50cf7d441c902790b0f70d2a3dd74ec76ec2cd2"},
 ]
 
 [package.dependencies]
 environs = "<=9.5.0"
-grpcio = ">=1.49.1,<=1.58.0"
-minio = "*"
+grpcio = ">=1.49.1,<=1.60.0"
+minio = ">=7.0.0"
 numpy = {version = "<1.25.0", markers = "python_version <= \"3.8\""}
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
+pyarrow = ">=12.0.0"
 requests = "*"
+setuptools = ">=67"
 ujson = ">=2.0.0"
 
 [[package]]
@@ -6090,4 +6092,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "489766110a381848922f87649c03f4c65302345361a5068712c3d8e387e94e66"
+content-hash = "b32dc2a9022950fadec41deea6f2c1dc5c9a32abfc333bb6803949d27de055b7"
