@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Specialization of <see cref="FileReference"/> used in association <see cref="OpenAIFileService"/>.
+/// References an uploaded file by id.
 /// </summary>
 public sealed class OpenAIFileReference
 {
