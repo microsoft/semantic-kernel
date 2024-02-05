@@ -36,6 +36,11 @@ public abstract class ToolCallBehavior
     private const int DefaultMaximumAutoInvokeAttempts = 5;
 
     /// <summary>
+    /// Gets the collection of filters that will be applied to tool calls.
+    /// </summary>
+    public IList<IToolFilter> Filters { get; } = new List<IToolFilter>();
+
+    /// <summary>
     /// Gets an instance that will provide all of the <see cref="Kernel"/>'s plugins' function information.
     /// Function call requests from the model will be propagated back to the caller.
     /// </summary>
@@ -236,4 +241,40 @@ public abstract class ToolCallBehavior
         /// </remarks>
         internal override int MaximumUseAttempts => 1;
     }
+
+    #region Filters
+    internal ToolInvokingContext? OnToolInvokingFilter(/*KernelFunction function, KernelArguments arguments*/)
+    {
+        ToolInvokingContext? context = null;
+
+        if (this.Filters is { Count: > 0 })
+        {
+            context = new(/*function, arguments*/); // TODO
+
+            for (int i = 0; i < this.Filters.Count; i++)
+            {
+                this.Filters[i].OnToolInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    internal ToolInvokedContext? OnToolInvokedFilter(/*KernelArguments arguments, FunctionResult result*/)
+    {
+        ToolInvokedContext? context = null;
+
+        if (this.Filters is { Count: > 0 })
+        {
+            context = new(/*arguments, result*/); // TODO
+
+            for (int i = 0; i < this.Filters.Count; i++)
+            {
+                this.Filters[i].OnToolInvoked(context);
+            }
+        }
+
+        return context;
+    }
+    #endregion
 }

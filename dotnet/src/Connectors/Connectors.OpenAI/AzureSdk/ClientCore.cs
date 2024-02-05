@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
@@ -346,6 +347,8 @@ internal abstract class ClientCore
                     continue;
                 }
 
+                // TODO: call ToolInvoking
+
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 s_inflightAutoInvokes.Value++;
                 object? functionResult;
@@ -368,6 +371,8 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
                 AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, toolCall.Id, this.Logger);
+
+                // TODO: call ToolInvoked
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -407,6 +412,40 @@ internal abstract class ClientCore
                 }
             }
         }
+    }
+
+    internal ToolInvokingContext? OnToolInvokingFilter(/*KernelFunction function, KernelArguments arguments*/)
+    {
+        /*FunctionInvokingContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoking(context);
+            }
+        }
+
+        return context;*/
+    }
+
+    internal ToolInvokedContext? OnToolInvokedFilter(/*KernelArguments arguments, FunctionResult result*/)
+    {
+        /*FunctionInvokedContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(arguments, result);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoked(context);
+            }
+        }
+
+        return context;*/
     }
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
