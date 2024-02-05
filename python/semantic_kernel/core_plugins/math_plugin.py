@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 import sys
-from typing import AsyncIterable, Optional
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.plugin_definition import kernel_function
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class MathPlugin:
@@ -30,20 +29,15 @@ class MathPlugin:
         """Returns the Addition result of the values provided."""
         return MathPlugin.add_or_subtract(input, amount, add=True)
 
-    @kernel_function()
-    async def stream_add(
-        self,
-        input: Annotated[int, "the first number to add"],
-        amount: Annotated[Optional[int], "the second number to add, default is 5"] = 5,
-    ) -> Annotated[AsyncIterable[int], "the output is stream of numbers"]:
-        """Streams the Addition result of the values provided."""
-        yield MathPlugin.add_or_subtract(input, amount, add=True)
-
     @kernel_function(
         description="Subtracts value to a value",
         name="Subtract",
     )
-    def subtract(self, input: int, amount: int) -> int:
+    def subtract(
+        self,
+        input: Annotated[int, "the first number"],
+        amount: Annotated[int, "the number to subtract"],
+    ) -> int:
         """
         Returns the difference of numbers provided.
 

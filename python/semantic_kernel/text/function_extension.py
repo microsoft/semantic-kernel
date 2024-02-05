@@ -9,7 +9,7 @@ from semantic_kernel.kernel import Kernel
 
 async def aggregate_chunked_results(
     func: KernelFunction, chunked_results: List[str], kernel: Kernel, arguments: KernelArguments
-) -> KernelArguments:
+) -> str:
     """
     Aggregate the results from the chunked results.
     """
@@ -20,5 +20,4 @@ async def aggregate_chunked_results(
 
         results.append(str(result))
 
-    arguments["input"] = "\n".join(results)
-    return arguments
+    return "\n".join(results)

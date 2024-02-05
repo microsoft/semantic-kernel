@@ -1,15 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+import sys
 import typing as t
 
 import aiofiles
 
+if sys.version_info > (3, 8):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 if t.TYPE_CHECKING:
-    from semantic_kernel.functions.old.kernel_context import KernelContext
+    pass
 
 
 class FileIOPlugin(KernelBaseModel):
@@ -28,9 +34,8 @@ class FileIOPlugin(KernelBaseModel):
     @kernel_function(
         description="Read a file",
         name="readAsync",
-        input_description="Path of the source file",
     )
-    async def read(self, path: str) -> str:
+    async def read(self, path: Annotated[str, "Path of the source file"]) -> str:
         """
         Read a file
 
@@ -53,23 +58,15 @@ class FileIOPlugin(KernelBaseModel):
         description="Write a file",
         name="writeAsync",
     )
-    @kernel_function_context_parameter(name="path", description="Destination path")
-    @kernel_function_context_parameter(name="content", description="File content")
-    async def write(self, context: "KernelContext") -> None:
+    async def write(self, path: Annotated[str, "Destination path"], content: Annotated[str, "File content"]) -> None:
         """
         Write a file
 
         Example:
-            {{file.writeAsync}}
+            {{file.writeAsync path=$path content=$content}}
         Args:
             Contains the 'path' for the Destination file and
             the 'content' of the file to write.
         """
-        path = context.variables.get("path")
-        content = context.variables.get("content")
-
-        assert path, "Path is required"
-        assert content, "Content is required"
-
         async with aiofiles.open(path, "w") as fp:
             await fp.write(content)
