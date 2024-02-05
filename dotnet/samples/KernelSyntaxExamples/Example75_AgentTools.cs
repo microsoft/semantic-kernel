@@ -39,7 +39,6 @@ public sealed class Example75_AgentTools : BaseTest
             return;
         }
 
-
         var builder =
             new AgentBuilder()
                 .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
@@ -80,7 +79,6 @@ public sealed class Example75_AgentTools : BaseTest
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
-
 
         // REQUIRED:
         //
