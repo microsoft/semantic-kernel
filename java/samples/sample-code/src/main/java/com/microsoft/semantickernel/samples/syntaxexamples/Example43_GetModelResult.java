@@ -53,7 +53,7 @@ public class Example43_GetModelResult {
 
         // Create function
         String FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
-        KernelFunction myFunction = KernelFunctionFromPrompt.create(
+        KernelFunction<String> myFunction = KernelFunctionFromPrompt.create(
             FunctionDefinition);
 
         // Invoke function through kernel
@@ -61,8 +61,7 @@ public class Example43_GetModelResult {
                 myFunction,
                 KernelFunctionArguments.builder()
                     .withVariable("input", "travel")
-                    .build(),
-                String.class)
+                    .build())
             .block();
 
         // Display results

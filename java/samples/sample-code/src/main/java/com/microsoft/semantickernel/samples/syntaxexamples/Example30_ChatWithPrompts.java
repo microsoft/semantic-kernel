@@ -117,7 +117,7 @@ public class Example30_ChatWithPrompts {
 
         // Finally, get the response from AI
         var answer = chatCompletion
-            .getChatMessageContentsAsync(chatHistory, null, kernel)
+            .getChatMessageContentsAsync(chatHistory, kernel, null)
             .block()
             .stream()
             .findFirst()

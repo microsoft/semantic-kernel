@@ -30,6 +30,7 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 
 public class Example57_KernelHooks {
 
@@ -95,6 +96,7 @@ public class Example57_KernelHooks {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
+            .withOutputVariable(new OutputVariable("result", "java.lang.String"))
             .build();
 
         FunctionInvokingHook preHook = event -> {
@@ -134,8 +136,7 @@ public class Example57_KernelHooks {
                 KernelFunctionArguments
                     .builder()
                     .withVariable("input", input)
-                    .build(),
-                String.class)
+                    .build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -191,8 +192,7 @@ public class Example57_KernelHooks {
                 KernelFunctionArguments
                     .builder()
                     .withVariable("input", input)
-                    .build(),
-                String.class)
+                    .build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -237,8 +237,7 @@ public class Example57_KernelHooks {
         // Invoke prompt to trigger execution hooks.
         var result = kernel.invokeAsync(
                 writerFunction,
-                KernelFunctionArguments.builder().build(),
-                String.class)
+                KernelFunctionArguments.builder().build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -279,8 +278,7 @@ public class Example57_KernelHooks {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(
                     writerFunction,
-                    KernelFunctionArguments.builder().build(),
-                    String.class)
+                    KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -317,8 +315,7 @@ public class Example57_KernelHooks {
         try {
             var result = kernel.invokeAsync(
                     secondFunction,
-                    KernelFunctionArguments.builder().build(),
-                    String.class)
+                    KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -360,8 +357,7 @@ public class Example57_KernelHooks {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(
                     writerFunction,
-                    KernelFunctionArguments.builder().build(),
-                    String.class)
+                    KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -404,8 +400,6 @@ public class Example57_KernelHooks {
         });
 
         InvocationContext invocationContext = InvocationContext.builder()
-            .withKernelFunctionArguments(KernelFunctionArguments.builder().build())
-            .withFunctionReturnType(String.class)
             .withKernelHooks(kernelHooks)
             .build();
 
@@ -413,6 +407,8 @@ public class Example57_KernelHooks {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(
                     writerFunction,
+                    KernelFunctionArguments.builder().build(),
+                    null,
                     invocationContext)
                 .block();
             System.out.println("Function Result: " + result.getResult());

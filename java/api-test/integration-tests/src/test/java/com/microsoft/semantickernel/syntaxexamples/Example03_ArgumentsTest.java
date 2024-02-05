@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -30,9 +31,8 @@ public class Example03_ArgumentsTest {
             .build();
 
         FunctionResult<String> resultValue = kernel.invokeAsync(
-                functionCollection.get("AppendDay"),
-                arguments,
-                String.class)
+                (KernelFunction<String>)functionCollection.<String>get("AppendDay"),
+                arguments)
             .block();
 
         Assertions.assertEquals("Today is: Monday", resultValue.getResult());

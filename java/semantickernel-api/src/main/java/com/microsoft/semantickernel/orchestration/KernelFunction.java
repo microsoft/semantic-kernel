@@ -200,6 +200,9 @@ public abstract class KernelFunction<T> implements Buildable {
 
         FromPromptBuilder<T> withOutputVariable(@Nullable OutputVariable outputVariable);
 
+        FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type);
+
+
         FromPromptBuilder<T> withPromptTemplateFactory(
             @Nullable PromptTemplateFactory promptTemplateFactory);
     }

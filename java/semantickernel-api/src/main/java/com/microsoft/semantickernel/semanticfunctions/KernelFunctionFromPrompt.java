@@ -109,7 +109,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
     private Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType,
+        @Nullable ContextVariableType<T> contextVariableType,
         @Nullable InvocationContext invocationContext) {
 
         InvocationContext context = invocationContext != null ? invocationContext : InvocationContext.builder().build();
@@ -122,6 +122,13 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         PromptRenderingEvent preRenderingHookResult = kernelHooks
             .executeHooks(new PromptRenderingEvent(this, arguments));
+
+        // TOOD: put in method, add catch for classcastexception, fallback to noopconverter
+        ContextVariableType<T> variableType = contextVariableType != null
+            ? contextVariableType
+            : ContextVariableTypes.<T>getDefaultVariableTypeForClass(
+                (Class<T>) this.getMetadata().getReturnParameter().getParameterType()
+            );
 
         return this
             .template
@@ -336,8 +343,9 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                     return Mono.error(new SKException(e.getMessage(), e));
                 }
 
+                List<KernelParameterMetadata<?>> params = kernelFunction.getMetadata().getParameters();
                 Map<String, KernelParameterMetadata<?>> parameterMetaaData = 
-                    kernelFunction.getMetadata().getParameters().stream()
+                    params.stream()
                         .collect(Collectors.toMap(KernelParameterMetadata::getName, it -> it));
 
                 Map<String, ContextVariable<?>> variables = new HashMap<>();
@@ -513,6 +521,11 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         public FromPromptBuilder<T>  withOutputVariable(@Nullable OutputVariable outputVariable) {
             this.outputVariable = outputVariable;
             return this;
+        }
+
+        @Override
+        public FromPromptBuilder<T>  withOutputVariable(@Nullable String description, String type) {
+            return this.withOutputVariable(new OutputVariable(description, type));
         }
 
         @Override

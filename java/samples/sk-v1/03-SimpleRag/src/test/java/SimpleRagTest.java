@@ -59,7 +59,7 @@ public class SimpleRagTest {
         );
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+        KernelFunction<String> chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/GroundedChat.prompt.yaml"));
 
         ChatCompletionService gpt35Turbo = mockService(messages);
@@ -90,8 +90,7 @@ public class SimpleRagTest {
                         .withVariable("messages", chatHistory)
                         .withVariable("persona",
                             "You are a snarky (yet helpful) teenage assistant. Make sure to use hip slang in every response.")
-                        .build(),
-                    String.class
+                        .build()
                 )
                 .block();
 

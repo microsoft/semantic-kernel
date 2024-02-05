@@ -82,16 +82,14 @@ public class Example05_InlineFunctionDefinition {
         var result = kernel.invokeAsync(excuseFunction,
                 KernelFunctionArguments.builder()
                     .withInput("I missed the F1 final race")
-                    .build(),
-                String.class)
+                    .build())
             .block();
         System.out.println(result.getResult());
 
         result = kernel.invokeAsync(excuseFunction,
                 KernelFunctionArguments.builder()
                     .withInput("sorry I forgot your birthday")
-                    .build(),
-                String.class)
+                    .build())
             .block();
         System.out.println(result.getResult());
 
@@ -109,8 +107,8 @@ public class Example05_InlineFunctionDefinition {
             null,
             null);
 
-        FunctionResult<String> fixedFunctionResult = kernel
-            .invokeAsync(fixedFunction, null, String.class)
+        FunctionResult<?> fixedFunctionResult = kernel
+            .invokeAsync(fixedFunction, null)
             .block();
         System.out.println(fixedFunctionResult.getResult());
 

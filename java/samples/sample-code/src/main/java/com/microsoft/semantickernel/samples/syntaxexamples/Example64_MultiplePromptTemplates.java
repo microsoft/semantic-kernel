@@ -71,7 +71,7 @@ public class Example64_MultiplePromptTemplates {
 
     public static void runPrompt(Kernel kernel, String templateFormat, String prompt,
         PromptTemplateFactory templateFactory) {
-        var function = new KernelFunctionFromPrompt.Builder()
+        var function = new KernelFunctionFromPrompt.Builder<>()
             .withTemplate(prompt)
             .withTemplateFormat(templateFormat)
             .withPromptTemplateFactory(templateFactory)
@@ -81,7 +81,7 @@ public class Example64_MultiplePromptTemplates {
             .withVariable("name", "Bob")
             .build();
 
-        var result = kernel.invokeAsync(function, arguments, String.class).block();
+        var result = kernel.invokeAsync(function, arguments).block();
         System.out.println(result.getResult());
     }
 }

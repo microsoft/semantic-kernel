@@ -67,7 +67,7 @@ public class Example62_CustomAIServiceSelector {
 
         KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
-        KernelFunction func = KernelFunctionFromPrompt
+        KernelFunction<?> func = KernelFunctionFromPrompt
             .builder()
             .withTemplate(prompt)
             .withDefaultExecutionSettings(
@@ -75,9 +75,10 @@ public class Example62_CustomAIServiceSelector {
                     .withTopP(1.0)
                     .build()
             )
+            .withOutputVariable("result", "java.lang.String")
             .build();
 
-        var result = kernel.invokeAsync(func, arguments, String.class).block();
+        var result = kernel.invokeAsync(func, arguments).block();
         System.out.println(result.getResult());
     }
 
@@ -90,25 +91,28 @@ public class Example62_CustomAIServiceSelector {
 
         @Nullable
         @Override
+        @SuppressWarnings("unchecked")
         public <T extends AIService> AIServiceSelection<T> trySelectAIService(
             Class<T> serviceType,
-
+    
             @Nullable
-            KernelFunction function,
-
+            KernelFunction<?> function,
+    
             @Nullable
             KernelFunctionArguments arguments,
-            Map<Class<? extends AIService>, AIService> services) {
+            Map<Class<? extends AIService>, AIService> services) { 
 
             // Just get the first one
             PromptExecutionSettings executionSettings = function.getExecutionSettings()
                 .values().stream().findFirst().get();
-            AIService service = services.values().stream().findFirst().get();
+            // unchecked cast
+            T service = (T)services.values().stream().findFirst().get();
 
-            return new AIServiceSelection(
+            return new AIServiceSelection<>(
                 service,
                 executionSettings
             );
         }
+
     }
 }

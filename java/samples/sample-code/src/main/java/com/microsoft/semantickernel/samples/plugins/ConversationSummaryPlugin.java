@@ -25,9 +25,9 @@ public class ConversationSummaryPlugin {
     /// </summary>
     private static final int MaxTokens = 1024;
 
-    private KernelFunction summarizeConversationFunction;
-    private KernelFunction conversationActionItemsFunction;
-    private KernelFunction conversationTopicsFunction;
+    private KernelFunction<String> summarizeConversationFunction;
+    private KernelFunction<String> conversationActionItemsFunction;
+    private KernelFunction<String> conversationTopicsFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
@@ -125,7 +125,7 @@ public class ConversationSummaryPlugin {
         return processAsync(this.conversationTopicsFunction, input, kernel);
     }
 
-    private static Mono<String> processAsync(KernelFunction func, String input, Kernel kernel) {
+    private static Mono<String> processAsync(KernelFunction<String> func, String input, Kernel kernel) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 

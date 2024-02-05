@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 
-public class KernelFunctionMetadata {
+public class KernelFunctionMetadata<T> {
 
     /// <summary>The name of the function.</summary>
     private final String name;
@@ -21,7 +21,7 @@ public class KernelFunctionMetadata {
 
 
     /// <summary>The function's return parameter.</summary>
-    private final KernelReturnParameterMetadata<?> returnParameter;
+    private final KernelReturnParameterMetadata<T> returnParameter;
 
 
     public KernelFunctionMetadata(
@@ -30,7 +30,7 @@ public class KernelFunctionMetadata {
         String description,
         @Nullable
         List<KernelParameterMetadata<?>> parameters,
-        KernelReturnParameterMetadata<?> returnParameter) {
+        KernelReturnParameterMetadata<T> returnParameter) {
         this.name = name;
         this.description = description;
         if (parameters == null) {
@@ -55,7 +55,7 @@ public class KernelFunctionMetadata {
         return description;
     }
 
-    public KernelReturnParameterMetadata<?> getReturnParameter() {
+    public KernelReturnParameterMetadata<T> getReturnParameter() {
         return returnParameter;
     }
 }

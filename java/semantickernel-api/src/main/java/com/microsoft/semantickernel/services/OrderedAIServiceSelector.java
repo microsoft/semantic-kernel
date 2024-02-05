@@ -35,8 +35,10 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
+
         @Nullable
-        KernelFunction function,
+        KernelFunction<?> function,
+
         @Nullable
         KernelFunctionArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {

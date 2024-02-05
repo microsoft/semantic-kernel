@@ -57,10 +57,9 @@ public class Example03_Arguments {
             .withVariable("day", "Monday")
             .build();
 
-        FunctionResult<String> resultValue = kernel.invokeAsync(
+        FunctionResult<?> resultValue = kernel.invokeAsync(
                 functionCollection.get("AppendDay"),
-                arguments,
-                String.class)
+                arguments)
             .block();
 
         System.out.println(resultValue.getResult());

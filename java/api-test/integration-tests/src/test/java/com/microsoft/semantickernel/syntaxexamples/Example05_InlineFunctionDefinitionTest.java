@@ -9,6 +9,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
@@ -54,7 +55,7 @@ public class Example05_InlineFunctionDefinitionTest {
                 Event: {{$input}}
             """.stripIndent();
 
-        var excuseFunction = new KernelFunctionFromPrompt.Builder()
+        var excuseFunction = new KernelFunctionFromPrompt.Builder<String>()
             .withName("Excuse")
             .withTemplate(promptTemplate)
             .withDefaultExecutionSettings(
@@ -71,8 +72,7 @@ public class Example05_InlineFunctionDefinitionTest {
         var result = kernel.invokeAsync(excuseFunction,
                 KernelFunctionArguments.builder()
                     .withInput("I missed the F1 final race")
-                    .build(),
-                String.class)
+                    .build())
             .block();
 
         Assertions.assertEquals("a-response", result.getResult());
@@ -82,15 +82,14 @@ public class Example05_InlineFunctionDefinitionTest {
         result = kernel.invokeAsync(excuseFunction,
                 KernelFunctionArguments.builder()
                     .withInput("sorry I forgot your birthday")
-                    .build(),
-                String.class)
+                    .build())
             .block();
 
         Assertions.assertEquals("a-response-2", result.getResult());
 
         WireMockUtil.mockCompletionResponse("Translate this date ", "a-response-3");
 
-        var fixedFunction = KernelFunctionFactory.createFromPrompt(
+        var fixedFunction = KernelFunctionFactory.<String>createFromPrompt(
             "Translate this date " + DateTimeFormatter
                 .ISO_LOCAL_DATE
                 .withZone(ZoneOffset.UTC)
@@ -105,7 +104,7 @@ public class Example05_InlineFunctionDefinitionTest {
             null);
 
         FunctionResult<String> fixedFunctionResult = kernel
-            .invokeAsync(fixedFunction, null, String.class)
+            .invokeAsync(fixedFunction, null)
             .block();
 
         Assertions.assertEquals("a-response-3", fixedFunctionResult.getResult());

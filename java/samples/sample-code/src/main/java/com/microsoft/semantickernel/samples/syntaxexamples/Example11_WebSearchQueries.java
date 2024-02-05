@@ -21,7 +21,7 @@ public class Example11_WebSearchQueries {
             .withVariable("query", ask)
             .build();
 
-        var result = kernel.invokeAsync(bingSearchFunction, kernelArguments, String.class).block();
+        var result = kernel.invokeAsync(bingSearchFunction, kernelArguments).block();
 
         System.out.println(ask);
         System.out.println(result.getResult());

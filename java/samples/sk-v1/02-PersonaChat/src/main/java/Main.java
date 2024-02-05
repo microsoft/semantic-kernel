@@ -31,7 +31,7 @@ public class Main {
             .buildAsyncClient();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+        KernelFunction<String> chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/PersonaChat.prompt.yaml"));
 
         ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
@@ -62,8 +62,7 @@ public class Main {
                         .withVariable("messages", chatHistory)
                         .withVariable("persona",
                             "You are a snarky (yet helpful) teenage assistant. Make sure to use hip slang in every response.")
-                        .build(),
-                    String.class
+                        .build()
                 )
                 .block();
 

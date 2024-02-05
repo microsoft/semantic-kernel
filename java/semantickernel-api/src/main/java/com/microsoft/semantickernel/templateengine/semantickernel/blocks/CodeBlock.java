@@ -154,7 +154,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         Block firstArg = this.tokens.get(1);
 
         // Get the function metadata
-        KernelFunctionMetadata functionMetadata = kernel.getPlugins()
+        KernelFunctionMetadata<?> functionMetadata = kernel.getPlugins()
             .getFunction(fBlock.getPluginName(), fBlock.getFunctionName()).getMetadata();
 
         // Check if the function has parameters to be set

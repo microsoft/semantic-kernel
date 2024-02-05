@@ -30,7 +30,7 @@ public interface AIServiceSelector {
     <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable
-        KernelFunction function,
+        KernelFunction<?> function,
 
         @Nullable
         KernelFunctionArguments arguments

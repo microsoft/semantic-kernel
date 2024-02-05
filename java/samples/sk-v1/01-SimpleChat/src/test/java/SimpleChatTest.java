@@ -68,7 +68,7 @@ public class SimpleChatTest {
             .build();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+        KernelFunction<String> chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
         ChatHistory chatHistory = new ChatHistory();
@@ -82,8 +82,7 @@ public class SimpleChatTest {
                     KernelFunctionArguments
                         .builder()
                         .withVariable("messages", chatHistory)
-                        .build(),
-                    String.class
+                        .build()
                 )
                 .block();
 
