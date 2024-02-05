@@ -20,6 +20,7 @@ import com.microsoft.semantickernel.samples.syntaxexamples.Example55_TextChunker
 import com.microsoft.semantickernel.samples.syntaxexamples.Example56_TemplateMethodFunctionsWithMultipleArguments;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example57_KernelHooks;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example58_ConfigureExecutionSettings;
+import com.microsoft.semantickernel.samples.syntaxexamples.Example60_AdvancedMethodFunctions;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example61_MultipleLLMs;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example62_CustomAIServiceSelector;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example63_ChatCompletionPrompts;
@@ -61,6 +62,7 @@ public class WiremockExamplesIT {
         Example56_TemplateMethodFunctionsWithMultipleArguments.class,
         Example57_KernelHooks.class,
         Example58_ConfigureExecutionSettings.class,
+        Example60_AdvancedMethodFunctions.class,
         Example61_MultipleLLMs.class,
         Example62_CustomAIServiceSelector.class,
         Example63_ChatCompletionPrompts.class,
