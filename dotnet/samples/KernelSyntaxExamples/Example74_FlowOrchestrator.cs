@@ -71,7 +71,7 @@ provides:
 
         FlowOrchestrator orchestrator = new(
             GetKernelBuilder(LoggerFactory),
-            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false),
+            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()),
             plugins,
             config: GetOrchestratorConfig());
         var sessionId = Guid.NewGuid().ToString();
@@ -82,7 +82,7 @@ provides:
         sw.Start();
         WriteLine("Flow: " + s_flow.Name);
         var question = s_flow.Steps.First().Goal;
-        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question).ConfigureAwait(false);
+        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question);
 
         WriteLine("Question: " + question);
         WriteLine("Answer: " + result.Metadata!["answer"]);
@@ -100,7 +100,7 @@ provides:
         foreach (var t in userInputs)
         {
             WriteLine($"User: {t}");
-            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
+            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t);
             var responses = result.GetValue<List<string>>()!;
             foreach (var response in responses)
             {
