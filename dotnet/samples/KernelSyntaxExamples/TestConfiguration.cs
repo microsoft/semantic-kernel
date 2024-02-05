@@ -180,28 +180,28 @@ public sealed class TestConfiguration
 
     public class GoogleAIConfig
     {
+        public string ApiKey { get; set; }
+        public string EmbeddingModelId { get; set; }
         public GoogleAIGeminiConfig Gemini { get; set; }
     }
 
     public class VertexAIConfig
     {
+        public string ApiKey { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public string Location { get; set; }
+        public string ProjectId { get; set; }
         public VertexAIGeminiConfig Gemini { get; set; }
     }
 
     public class GoogleAIGeminiConfig
     {
-        public string ApiKey { get; set; }
         public string ModelId { get; set; }
-        public string EmbeddingModelId { get; set; }
     }
 
     public class VertexAIGeminiConfig
     {
-        public string ApiKey { get; set; }
         public string ModelId { get; set; }
-        public string EmbeddingModelId { get; set; }
-        public string Location { get; set; }
-        public string ProjectId { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
