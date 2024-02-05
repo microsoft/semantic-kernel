@@ -5,8 +5,8 @@ import json
 
 import regex
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.functions.old.context_variables import ContextVariables
 
 
 class Plan:
@@ -187,12 +187,9 @@ class BasicPlanner:
 
         available_functions_string = self._create_available_functions_string(kernel)
 
-        # Create the context for the planner
-        context = ContextVariables()
-        # Add the goal to the context
-        context["goal"] = goal
-        context["available_functions"] = available_functions_string
-        generated_plan = await planner.invoke(variables=context)
+        generated_plan = await planner.invoke(
+            kernel, KernelArguments(goal=goal, available_functions=available_functions_string)
+        )
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
     async def execute_plan(self, plan: Plan, kernel: Kernel) -> str:
@@ -206,8 +203,7 @@ class BasicPlanner:
         generated_plan_string = regex.search(json_regex, plan.generated_plan.result).group()
         generated_plan = json.loads(generated_plan_string)
 
-        context = ContextVariables()
-        context["input"] = generated_plan["input"]
+        arguments = KernelArguments(input=generated_plan["input"])
         subtasks = generated_plan["subtasks"]
 
         for subtask in subtasks:
@@ -218,14 +214,14 @@ class BasicPlanner:
             args = subtask.get("args", None)
             if args:
                 for key, value in args.items():
-                    context[key] = value
-                output = await kernel_function.invoke(variables=context)
+                    arguments[key] = value
+                output = await kernel_function.invoke(kernel, arguments)
 
             else:
-                output = await kernel_function.invoke(variables=context)
+                output = await kernel_function.invoke(kernel, arguments)
 
             # Override the input context variable with the output of the function
-            context["input"] = output.result
+            arguments["input"] = str(output)
 
         # At the very end, return the output of the last function
-        return output.result
+        return str(output)

@@ -3,6 +3,7 @@
 import os
 from typing import TYPE_CHECKING
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
@@ -25,7 +26,6 @@ from semantic_kernel.prompt_template.semantic_function_config import (
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
-    from semantic_kernel.functions.old.kernel_context import KernelContext
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
@@ -46,8 +46,14 @@ class SequentialPlanner:
     RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
     config: SequentialPlannerConfig
+<<<<<<< HEAD
     _context: "KernelContext"
     _function_flow_function: "KernelFunction"
+=======
+    _kernel: "Kernel"
+    _arguments: "KernelArguments"
+    _function_flow_function: "KernelFunctionBase"
+>>>>>>> bc222ed61 (WIP on planners)
 
     def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
         assert isinstance(kernel, Kernel)
@@ -57,7 +63,8 @@ class SequentialPlanner:
 
         self._function_flow_function = self._init_flow_function(prompt, kernel)
 
-        self._context = kernel.create_new_context()
+        self._kernel = kernel
+        self._arguments = KernelArguments()
 
     def _init_flow_function(self, prompt: str, kernel: Kernel):
         prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
@@ -82,11 +89,10 @@ class SequentialPlanner:
             raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
         relevant_function_manual = await KernelContextExtension.get_functions_manual(self._context, goal, self.config)
-        self._context.variables.set("available_functions", relevant_function_manual)
+        self._arguments["available_functions"] = relevant_function_manual
+        self._arguments["input"] = goal
 
-        self._context.variables.update(goal)
-
-        plan_result = await self._function_flow_function.invoke(context=self._context)
+        plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
         if plan_result.error_occurred:
             raise PlanningException(
@@ -95,7 +101,7 @@ class SequentialPlanner:
                 plan_result.last_exception,
             )
 
-        plan_result_string = plan_result.result.strip()
+        plan_result_string = str(plan_result).strip()
 
         try:
             get_plugin_function = self.config.get_plugin_function or SequentialPlanParser.get_plugin_function(

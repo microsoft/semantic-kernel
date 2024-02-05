@@ -1,7 +1,7 @@
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 def test_function_call():
@@ -13,18 +13,16 @@ def test_function_call():
 
 
 @pytest.mark.asyncio
-async def test_function_call_to_content_variables(create_kernel):
+async def test_function_call_to_kernel_arguments():
     # Test parsing arguments to variables
-    kernel = create_kernel
-
+    arguments = KernelArguments()
     func_call = FunctionCall(
         name="Test-Function",
         arguments="""{"input": "world", "input2": "world2"}""",
         id="1234",
     )
-    context = kernel.create_new_context()
-    assert isinstance(func_call.to_context_variables(), ContextVariables)
+    assert isinstance(func_call.to_kernel_arguments(), KernelArguments)
 
-    context.variables.merge_or_overwrite(func_call.to_context_variables())
-    assert context.variables.input == "world"
-    assert context.variables["input2"] == "world2"
+    arguments.update(func_call.to_kernel_arguments())
+    assert arguments["input"] == "world"
+    assert arguments["input2"] == "world2"

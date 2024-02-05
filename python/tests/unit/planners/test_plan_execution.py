@@ -5,21 +5,16 @@ import pytest
 import semantic_kernel as sk
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_plugin import TextPlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.planners import Plan
 
 
 @pytest.mark.asyncio
 async def test_invoke_empty_plan():
+    kernel = sk.Kernel()
     plan = Plan()
-    result = await plan.invoke()
-    assert result.result == ""
-
-
-@pytest.mark.asyncio
-async def test_invoke_empty_plan_async():
-    plan = Plan()
-    result = await plan.invoke()
-    assert result.result == ""
+    result = await plan.invoke(kernel)
+    assert result == ""
 
 
 @pytest.mark.asyncio
@@ -32,13 +27,9 @@ async def test_invoke_plan_constructed_with_function():
     plugin = kernel.import_plugin(plugin, "text")
     test_function = plugin["uppercase"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test", function=test_function)
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD "
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD "
 
 
 @pytest.mark.asyncio
@@ -51,13 +42,9 @@ async def test_invoke_plan_constructed_with_function_async():
     plugin = kernel.import_plugin(plugin, "text")
     test_function = plugin["uppercase"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test", function=test_function)
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD "
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD "
 
 
 @pytest.mark.asyncio
@@ -70,14 +57,10 @@ async def test_invoke_empty_plan_with_added_function_step():
     plugin = kernel.import_plugin(plugin, "text")
     test_function = plugin["uppercase"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test")
     plan.add_steps([test_function])
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD "
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD "
 
 
 @pytest.mark.asyncio
@@ -90,14 +73,10 @@ async def test_invoke_empty_plan_with_added_function_step_async():
     plugin = kernel.import_plugin(plugin, "text")
     test_function = plugin["uppercase"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test")
     plan.add_steps([test_function])
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD "
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD "
 
 
 @pytest.mark.asyncio
@@ -110,15 +89,11 @@ async def test_invoke_empty_plan_with_added_plan_step():
     plugin = kernel.import_plugin(plugin, "text")
     test_function = plugin["uppercase"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
     plan.add_steps([new_step])
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD "
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD "
 
 
 @pytest.mark.asyncio
@@ -131,15 +106,11 @@ async def test_invoke_empty_plan_with_added_plan_step_async():
     plugin = kernel.import_plugin(plugin, "text")
     test_function = plugin["uppercase"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
     plan.add_steps([new_step])
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD "
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD "
 
 
 @pytest.mark.asyncio
@@ -153,16 +124,12 @@ async def test_invoke_multi_step_plan():
     test_function = plugin["uppercase"]
     test_function2 = plugin["trim_end"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
     new_step2 = Plan(name="test", function=test_function2)
     plan.add_steps([new_step, new_step2])
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD"
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD"
 
 
 @pytest.mark.asyncio
@@ -176,16 +143,12 @@ async def test_invoke_multi_step_plan_async():
     test_function = plugin["uppercase"]
     test_function2 = plugin["trim_end"]
 
-    # setup context
-    context = kernel.create_new_context()
-    context["input"] = "hello world "
-
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
     new_step2 = Plan(name="test", function=test_function2)
     plan.add_steps([new_step, new_step2])
-    result = await plan.invoke(context=context)
-    assert result.result == "HELLO WORLD"
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    assert result == "HELLO WORLD"
 
 
 @pytest.mark.asyncio
@@ -201,16 +164,10 @@ async def test_invoke_multi_step_plan_async_with_variables():
 
     plan = Plan(name="test")
 
-    # setup context for step 1
-    context1 = kernel.create_new_context()
-    context1["amount"] = "10"
-    new_step = Plan(name="test", function=test_function, parameters=context1.variables)
+    new_step = Plan(name="test", function=test_function, parameters=KernelArguments(amount=10))
 
-    # setup context for step 2
-    context2 = kernel.create_new_context()
-    context2["amount"] = "5"
-    new_step2 = Plan(name="test", function=test_function2, parameters=context2.variables)
+    new_step2 = Plan(name="test", function=test_function2, parameters=KernelArguments(amount=5)
 
     plan.add_steps([new_step, new_step2])
-    result = await plan.invoke(input="2")
-    assert result.result == "7"
+    result = await plan.invoke(kernel, KernelArguments(input=2))
+    assert result == 7

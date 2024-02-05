@@ -8,7 +8,7 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import (
     OllamaTextCompletion,
 )
-from tests.unit.ai.ollama.utils import MockResponse
+from tests.unit.connectors.ollama.utils import MockResponse
 
 
 def test_settings():

@@ -2,7 +2,7 @@
 
 import semantic_kernel as sk
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.planners import Plan
 
 
@@ -10,11 +10,11 @@ def test_create_empty_plan():
     plan = Plan()
     assert plan is not None
     assert plan.name == ""
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == ""
     assert plan.description == ""
     assert plan.function is None
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
@@ -27,11 +27,11 @@ def test_create_plan_with_name():
     plan = Plan(name="test")
     assert plan is not None
     assert plan.name == "test"
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == ""
     assert plan.description == ""
     assert plan.function is None
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
@@ -44,11 +44,11 @@ def test_create_plan_with_name_and_description():
     plan = Plan(name="test", description="test description")
     assert plan is not None
     assert plan.name == "test"
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == ""
     assert plan.description == "test description"
     assert plan.function is None
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
@@ -60,7 +60,7 @@ def test_create_plan_with_name_and_description():
 def test_create_plan_with_state_and_parameters():
     plan = Plan(
         name="test",
-        state=ContextVariables(),
+        state=KernelArguments(),
         parameters={"test_param": "test_param_val"},
     )
     assert plan is not None
@@ -91,11 +91,11 @@ def test_create_plan_with_name_and_function():
     plan = Plan(name="test", function=test_function)
     assert plan is not None
     assert plan.name == "Add"
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == "math"
     assert plan.description == test_function.description
     assert plan.function is test_function
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is test_function.is_semantic
     assert plan.is_native is not test_function.is_semantic
     assert plan.prompt_execution_settings == test_function.prompt_execution_settings
@@ -120,11 +120,11 @@ def test_create_multistep_plan_with_functions():
 
     assert plan is not None
     assert plan.name == "multistep_test"
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == ""
     assert plan.description == ""
     assert plan.function is None
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
@@ -151,11 +151,11 @@ def test_create_multistep_plan_with_plans():
 
     assert plan is not None
     assert plan.name == "multistep_test"
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == ""
     assert plan.description == ""
     assert plan.function is None
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
@@ -179,11 +179,11 @@ def test_add_step_to_plan():
     plan.add_steps([test_function2])
     assert plan is not None
     assert plan.name == "Add"
-    assert type(plan.state) is ContextVariables
+    assert type(plan.state) is KernelArguments
     assert plan.plugin_name == "math"
     assert plan.description == test_function1.description
     assert plan.function is test_function1
-    assert type(plan.parameters) is ContextVariables
+    assert type(plan.parameters) is KernelArguments
     assert plan.is_semantic is test_function1.is_semantic
     assert plan.is_native is not test_function1.is_semantic
     assert plan.prompt_execution_settings == test_function1.prompt_execution_settings
