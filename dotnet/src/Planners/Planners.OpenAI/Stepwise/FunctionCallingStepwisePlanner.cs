@@ -70,82 +70,56 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
-        clonedKernel.ImportPluginFromType<UserInteraction>();
+
+        // The final answer variables are set when the UserInteraction plugin is invoked
+        bool finalAnswerFound = false;
+        string finalAnswer = string.Empty;
+
+        // Import the UserInteraction plugin to the kernel
+        var userInteraction = new UserInteraction((answer) => { finalAnswerFound = true; finalAnswer = answer; });
+        clonedKernel.ImportPluginFromObject(userInteraction);
 
         // Create and invoke a kernel function to generate the initial plan
         var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
 
-        for (int i = 0; i < this.Config.MaxIterations; i++)
+        for (int iteration = 0; iteration < this.Config.MaxIterations; /* iteration is incremented within the loop */)
         {
             // sleep for a bit to avoid rate limiting
-            if (i > 0)
+            if (iteration > 0)
             {
                 await Task.Delay(this.Config.MinIterationTimeMs, cancellationToken).ConfigureAwait(false);
             }
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
+            var chatResult = await this.GetCompletionWithFunctionsAsync(iteration, chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.Add(chatResult);
 
-            // Check for function response
-            if (!this.TryGetFunctionResponse(chatResult, out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? functionResponseError))
+            // Increment iteration based on the number of model round trips that occurred as a result of the request
+            object? value = null;
+            chatResult.Metadata?.TryGetValue("ModelIterations", out value); // TODO: implement this, and also ToolInvocations?
+            if (value is not null and int)
             {
-                // No function response found. Either AI returned a chat message, or something went wrong when parsing the function.
-                // Log the error (if applicable), then let the planner continue.
-                if (functionResponseError is not null)
-                {
-                    chatHistoryForSteps.AddUserMessage(functionResponseError);
-                }
-                continue;
+                iteration += (int)value;
+            }
+            else
+            {
+                // Could not find iterations in metadata, so assume just one
+                iteration++;
             }
 
-            // Check for final answer in the function response
-            foreach (OpenAIFunctionToolCall functionResponse in functionResponses)
+            // Check for final answer
+            if (finalAnswerFound)
             {
-                if (this.TryFindFinalAnswer(functionResponse, out string finalAnswer, out string? finalAnswerError))
+                // Success! we found a final answer, so return the planner result
+                return new FunctionCallingStepwisePlannerResult
                 {
-                    if (finalAnswerError is not null)
-                    {
-                        // We found a final answer, but failed to parse it properly.
-                        // Log the error message in chat history and let the planner try again.
-                        chatHistoryForSteps.AddUserMessage(finalAnswerError);
-                        continue;
-                    }
-
-                    // Success! We found a final answer, so return the planner result.
-                    return new FunctionCallingStepwisePlannerResult
-                    {
-                        FinalAnswer = finalAnswer,
-                        ChatHistory = chatHistoryForSteps,
-                        Iterations = i + 1,
-                    };
-                }
-            }
-
-            // Look up function in kernel
-            foreach (OpenAIFunctionToolCall functionResponse in functionResponses)
-            {
-                if (clonedKernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? pluginFunction, out KernelArguments? arguments))
-                {
-                    try
-                    {
-                        // Execute function and add to result to chat history
-                        var result = (await clonedKernel.InvokeAsync(pluginFunction, arguments, cancellationToken).ConfigureAwait(false)).GetValue<object>();
-                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
-                    }
-                    catch (Exception ex) when (!ex.IsCriticalException())
-                    {
-                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ex.Message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
-                        chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
-                    }
-                }
-                else
-                {
-                    chatHistoryForSteps.AddUserMessage($"Function {functionResponse.FullyQualifiedName} does not exist in the kernel. Try something else!");
-                }
+                    FinalAnswer = finalAnswer,
+                    ChatHistory = chatHistoryForSteps,
+                    Iterations = iteration,
+                };
             }
         }
 
@@ -159,6 +133,7 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
+        int iterationsCompleted,
         ChatHistory chatHistory,
         Kernel kernel,
         IChatCompletionService chatCompletion,
@@ -166,7 +141,12 @@ public sealed class FunctionCallingStepwisePlanner
         ILogger logger,
         CancellationToken cancellationToken)
     {
-        openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions;
+        openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
+
+        // TODO: set filters
+        // int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
+        // openAIExecutionSettings.ToolCallBehavior.PreInvokeCallback = (iteration, _, _) => { return (iteration < iterationsRemaining); };
+        // openAIExecutionSettings.ToolCallBehavior.Filters.Add(new FinalAnswerFilter());
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -211,76 +191,6 @@ public sealed class FunctionCallingStepwisePlanner
         chatHistory.AddSystemMessage(systemMessage);
 
         return chatHistory;
-    }
-
-    private bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? errorMessage)
-    {
-        OpenAIChatMessageContent? openAiChatMessage = chatMessage as OpenAIChatMessageContent;
-        Verify.NotNull(openAiChatMessage, nameof(openAiChatMessage));
-
-        functionResponses = null;
-        errorMessage = null;
-        try
-        {
-            functionResponses = openAiChatMessage.GetOpenAIFunctionToolCalls();
-        }
-        catch (JsonException)
-        {
-            errorMessage = "That function call is invalid. Try something else!";
-        }
-
-        return functionResponses is { Count: > 0 };
-    }
-
-    private bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, out string finalAnswer, out string? errorMessage)
-    {
-        finalAnswer = string.Empty;
-        errorMessage = null;
-
-        if (functionResponse.PluginName == "UserInteraction" && functionResponse.FunctionName == "SendFinalAnswer")
-        {
-            if (functionResponse.Arguments is { Count: > 0 } arguments && arguments.TryGetValue("answer", out object? valueObj))
-            {
-                finalAnswer = ParseObjectAsString(valueObj);
-            }
-            else
-            {
-                errorMessage = "Returned answer in incorrect format. Try again!";
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private static string ParseObjectAsString(object? valueObj)
-    {
-        string resultStr = string.Empty;
-
-        if (valueObj is RestApiOperationResponse apiResponse)
-        {
-            resultStr = apiResponse.Content as string ?? string.Empty;
-        }
-        else if (valueObj is string valueStr)
-        {
-            resultStr = valueStr;
-        }
-        else if (valueObj is JsonElement valueElement)
-        {
-            if (valueElement.ValueKind == JsonValueKind.String)
-            {
-                resultStr = valueElement.GetString() ?? "";
-            }
-            else
-            {
-                resultStr = valueElement.ToJsonString();
-            }
-        }
-        else
-        {
-            resultStr = JsonSerializer.Serialize(valueObj);
-        }
-
-        return resultStr;
     }
 
     private async Task ValidateTokenCountAsync(
@@ -342,17 +252,40 @@ public sealed class FunctionCallingStepwisePlanner
     /// </summary>
     public sealed class UserInteraction
     {
+        private readonly Action<string> _setCompleted;
+
+        /// <summary>
+        /// Constructs the <see cref="UserInteraction"/> object with a specified callback to indicate the plan completion.
+        /// </summary>
+        /// <param name="setCompleted">Delegate to tell the planner that the plan is completed and a final answer has been found.</param>
+        public UserInteraction(Action<string> setCompleted)
+        {
+            this._setCompleted = setCompleted;
+        }
+
         /// <summary>
         /// This function is used by the <see cref="FunctionCallingStepwisePlanner"/> to indicate when the final answer has been found.
         /// </summary>
         /// <param name="answer">The final answer for the plan.</param>
         [KernelFunction]
         [Description("This function is used to send the final answer of a plan to the user.")]
-#pragma warning disable IDE0060 // Remove unused parameter. The parameter is purely an indication to the LLM and is not intended to be used.
         public string SendFinalAnswer([Description("The final answer")] string answer)
-#pragma warning restore IDE0060
         {
+            this._setCompleted(answer);
             return "Thanks";
+        }
+    }
+
+    public sealed class FinalAnswerFilter : IToolFilter
+    {
+        public void OnToolInvoked(ToolInvokedContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnToolInvoking(ToolInvokingContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 }

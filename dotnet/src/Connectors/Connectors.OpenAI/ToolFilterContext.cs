@@ -1,30 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public abstract class ToolFilterContext // TODO: make experimental?
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionFilterContext"/> class.
+    /// Initializes a new instance of the <see cref="ToolFilterContext"/> class.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
-    internal ToolFilterContext(/*KernelFunction function, KernelArguments arguments, IReadOnlyDictionary<string, object?>? metadata*/)
+    internal ToolFilterContext(KernelFunction function, KernelArguments arguments, int iteration, IReadOnlyDictionary<string, object?>? metadata)
     {
-        //Verify.NotNull(function);
-        //Verify.NotNull(arguments);
+        Verify.NotNull(function);
+        Verify.NotNull(arguments);
 
-        //this.Function = function;n
-        //this.Arguments = arguments;
-        //this.Metadata = metadata;
+        this.Function = function;
+        this.Arguments = arguments;
+        this.ModelIterations = iteration;
+        this.Metadata = metadata;
     }
 
     /// <summary>
-    /// Gets the <see cref="OpenAIFunctionToolCall"/> with which this filter is associated.
+    /// Gets the <see cref="KernelFunction"/> associated with the tool call.
     /// </summary>
-    public OpenAIFunctionToolCall ToolCall { get; } // TODO: how to support other types of tool calls in the future?
+    public KernelFunction Function { get; }
+
+    /// <summary>
+    /// Gets the arguments associated with the tool call.
+    /// </summary>
+    public KernelArguments Arguments { get; }
 
     /// <summary>
     /// Gets the chat history associated with the operation.
@@ -34,7 +41,7 @@ public abstract class ToolFilterContext // TODO: make experimental?
     /// <summary>
     /// Gets a dictionary of metadata associated with the operation.
     /// </summary>
-    //public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with
@@ -48,6 +55,15 @@ public abstract class ToolFilterContext // TODO: make experimental?
     /// </remarks>
     public bool Cancel { get; set; }
 
+    public bool AutoInvoke { get; set; } = true;
+
+    public bool UseTools { get; set; } = true;
     // invoke subsequent tools / request subsequent tools
     // ToolCallBehavior?
+    
+    public int ModelIterations { get; } // ?
+    public int ToolInvocations { get; } // ?
+
+    // ModelIterations
+    // ToolInvocations
 }

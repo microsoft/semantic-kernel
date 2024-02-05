@@ -347,17 +347,41 @@ internal abstract class ClientCore
                     continue;
                 }
 
-                // TODO: call ToolInvoking
-
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 s_inflightAutoInvokes.Value++;
                 object? functionResult;
                 try
                 {
+                    // TODO: should this go inside or outside of try/catch block?
+                    var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(/* iteration, function, functionArgs */ );
+                    if (invokingContext?.Cancel is true)
+                    {
+                        throw new OperationCanceledException("A tool filter requested cancellation before tool invocation.");
+
+                        // cancel and stop tool calls
+                        // cancel and continue tool calls? need to set tool call behavior for next round
+                    }
+
                     // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                     // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                     // as the called function could in turn telling the model about itself as a possible candidate for invocation.
                     functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+
+                    // Invoke the post-invocation filter. If it requests cancellation, throw.
+                    var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(/* functionResult */);
+                    if (invokedContext?.Cancel is true)
+                    {
+                        //throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
+                    }
+                    if (invokedContext?.AutoInvoke is false)
+                    {
+                        autoInvoke = false;
+                    }
+                    if (invokedContext?.UseTools is false)
+                    {
+                        chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    }
+
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -371,8 +395,6 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
                 AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, toolCall.Id, this.Logger);
-
-                // TODO: call ToolInvoked
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -412,40 +434,6 @@ internal abstract class ClientCore
                 }
             }
         }
-    }
-
-    internal ToolInvokingContext? OnToolInvokingFilter(/*KernelFunction function, KernelArguments arguments*/)
-    {
-        /*FunctionInvokingContext? context = null;
-
-        if (this._functionFilters is { Count: > 0 })
-        {
-            context = new(function, arguments);
-
-            for (int i = 0; i < this._functionFilters.Count; i++)
-            {
-                this._functionFilters[i].OnFunctionInvoking(context);
-            }
-        }
-
-        return context;*/
-    }
-
-    internal ToolInvokedContext? OnToolInvokedFilter(/*KernelArguments arguments, FunctionResult result*/)
-    {
-        /*FunctionInvokedContext? context = null;
-
-        if (this._functionFilters is { Count: > 0 })
-        {
-            context = new(arguments, result);
-
-            for (int i = 0; i < this._functionFilters.Count; i++)
-            {
-                this._functionFilters[i].OnFunctionInvoked(context);
-            }
-        }
-
-        return context;*/
     }
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
