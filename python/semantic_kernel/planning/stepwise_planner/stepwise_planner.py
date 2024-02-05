@@ -30,7 +30,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+    from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ def is_null_or_empty(value: str) -> bool:
 class StepwisePlanner:
     config: StepwisePlannerConfig
     _context: "KernelContext"
-    _function_flow_function: "KernelFunctionBase"
+    _function_flow_function: "KernelFunction"
 
     def __init__(
         self,
@@ -373,7 +373,7 @@ class StepwisePlanner:
         function_name: str,
         prompt_template: str,
         config: PromptTemplateConfig = None,
-    ) -> "KernelFunctionBase":
+    ) -> "KernelFunction":
         template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)
 

@@ -11,7 +11,7 @@ else:
 from pydantic import Field, StringConstraints
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 
 class KernelPlugin(KernelBaseModel):
@@ -22,24 +22,22 @@ class KernelPlugin(KernelBaseModel):
         name (str): The name of the plugin. The name can be upper/lower
             case letters and underscores.
         description (str): The description of the plugin.
-        functions (Dict[str, KernelFunctionBase]): The functions in the plugin,
+        functions (Dict[str, KernelFunction]): The functions in the plugin,
             indexed by their name.
     """
 
     name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
     description: Optional[str] = Field(default=None)
-    functions: Optional[Dict[str, "KernelFunctionBase"]] = Field(default_factory=dict)
+    functions: Optional[Dict[str, KernelFunction]] = Field(default_factory=dict)
 
-    def __init__(
-        self, name: str, description: Optional[str] = None, functions: Optional[List[KernelFunctionBase]] = None
-    ):
+    def __init__(self, name: str, description: Optional[str] = None, functions: Optional[List[KernelFunction]] = None):
         """
         Initialize a new instance of the KernelPlugin class
 
         Args:
             name (str): The name of the plugin.
             description (Optional[str]): The description of the plugin.
-            functions (List[KernelFunctionBase]): The functions in the plugin.
+            functions (List[KernelFunction]): The functions in the plugin.
 
         Raises:
             ValueError: If the functions list contains duplicate function names.
@@ -74,7 +72,7 @@ class KernelPlugin(KernelBaseModel):
         """
         return function_name in self.functions.keys()
 
-    def __getitem__(self, name: str) -> "KernelFunctionBase":
+    def __getitem__(self, name: str) -> "KernelFunction":
         """Define the [] operator for the plugin
 
         Args:
@@ -92,13 +90,13 @@ class KernelPlugin(KernelBaseModel):
 
     @classmethod
     def from_functions(
-        cls, functions: List["KernelFunctionBase"], plugin_name: str, description: Optional[str] = None
+        cls, functions: List["KernelFunction"], plugin_name: str, description: Optional[str] = None
     ) -> "KernelPlugin":
         """
-        Creates a KernelPlugin from a KernelFunctionBase instance.
+        Creates a KernelPlugin from a KernelFunction instance.
 
         Args:
-            functions (List[KernelFunctionBase]): The functions to create the plugin from.
+            functions (List[KernelFunction]): The functions to create the plugin from.
             plugin_name (Optional[str]): The name of the plugin. If not specified,
                 the name of the function will be used.
             description (Optional[str]): The description of the plugin.

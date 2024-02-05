@@ -11,7 +11,7 @@ import regex
 
 from semantic_kernel import Kernel
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
@@ -37,7 +37,7 @@ class ActionPlanner:
     config: ActionPlannerConfig
     _stop_sequence: str = "#END-OF-PLAN"
 
-    _planner_function: KernelFunctionBase
+    _planner_function: KernelFunction
 
     _kernel: Kernel
     _prompt_template: str

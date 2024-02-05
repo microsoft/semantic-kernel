@@ -30,7 +30,6 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 from semantic_kernel.plugin_definition.kernel_plugin_collection import (
@@ -122,7 +121,7 @@ class Kernel(KernelBaseModel):
         super().__init__(plugins=plugins, prompt_template_engine=prompt_template_engine, memory=memory, **kwargs)
 
     def add_plugin(
-        self, plugin_name: str, functions: List[KernelFunctionBase], plugin: Optional[KernelPlugin] = None
+        self, plugin_name: str, functions: List[KernelFunction], plugin: Optional[KernelPlugin] = None
     ) -> None:
         """
         Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
@@ -130,7 +129,7 @@ class Kernel(KernelBaseModel):
 
         Args:
             plugin_name (str): The name of the plugin
-            functions (List[KernelFunctionBase]): The functions to add to the plugin
+            functions (List[KernelFunction]): The functions to add to the plugin
             plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
         """
         if plugin is None:
@@ -147,7 +146,7 @@ class Kernel(KernelBaseModel):
         plugin_name: Optional[str],
         function_name: str,
         function_config: SemanticFunctionConfig,
-    ) -> KernelFunctionBase:
+    ) -> KernelFunction:
         """
         Creates a semantic function from the plugin name, function name and function config
 
@@ -157,7 +156,7 @@ class Kernel(KernelBaseModel):
             function_config (SemanticFunctionConfig): The function config
 
         Returns:
-            KernelFunctionBase: The created semantic function
+            KernelFunction: The created semantic function
 
         Raises:
             ValueError: If the plugin name or function name are invalid
@@ -178,7 +177,7 @@ class Kernel(KernelBaseModel):
         self,
         plugin_name: Optional[str],
         kernel_function: Callable,
-    ) -> KernelFunctionBase:
+    ) -> KernelFunction:
         """
         Creates a native function from the plugin name and kernel function
 
@@ -187,7 +186,7 @@ class Kernel(KernelBaseModel):
             kernel_function (Callable): The kernel function
 
         Returns:
-            KernelFunctionBase: The created native function
+            KernelFunction: The created native function
         """
         if not hasattr(kernel_function, "__kernel_function__"):
             raise KernelException(
@@ -211,6 +210,7 @@ class Kernel(KernelBaseModel):
 
         function = KernelFunction.from_native_method(kernel_function, plugin_name)
         self.add_plugin(plugin_name, [function])
+        function.set_default_plugin_collection(self.plugins)
 
         return function
 
@@ -319,9 +319,8 @@ class Kernel(KernelBaseModel):
         pipeline_step = 0
         for func in functions:
             while True:
-                assert isinstance(func, KernelFunctionBase), (
-                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
-                    "must be KernelFunctionBase instances"
+                assert isinstance(func, KernelFunction), (
+                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) " "must be KernelFunction instances"
                 )
 
                 if context.error_occurred:
@@ -393,7 +392,7 @@ class Kernel(KernelBaseModel):
 
         return context
 
-    def func(self, plugin_name: str, function_name: str) -> KernelFunctionBase:
+    def func(self, plugin_name: str, function_name: str) -> KernelFunction:
         if plugin_name not in self.plugins:
             raise ValueError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:
@@ -711,7 +710,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
-    ) -> KernelFunctionBase:
+    ) -> KernelFunction:
         function_type = function_config.prompt_template_config.type
         if not function_type == "completion":
             raise AIException(
@@ -854,7 +853,7 @@ class Kernel(KernelBaseModel):
         plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         **kwargs: Any,
-    ) -> "KernelFunctionBase":
+    ) -> "KernelFunction":
         function_name = function_name if function_name is not None else f"f_{generate_random_ascii_name()}"
 
         config = PromptTemplateConfig(

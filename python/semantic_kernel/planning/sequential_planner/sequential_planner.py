@@ -25,7 +25,7 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
-    from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+    from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
@@ -47,7 +47,7 @@ class SequentialPlanner:
 
     config: SequentialPlannerConfig
     _context: "KernelContext"
-    _function_flow_function: "KernelFunctionBase"
+    _function_flow_function: "KernelFunction"
 
     def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
         assert isinstance(kernel, Kernel)

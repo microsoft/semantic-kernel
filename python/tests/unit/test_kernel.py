@@ -5,14 +5,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
-def create_mock_function(name) -> KernelFunctionBase:
+def create_mock_function(name) -> KernelFunction:
     function_view = FunctionView(name, "SummarizePlugin", "Summarize an input", [], True, True)
-    mock_function = Mock(spec=KernelFunctionBase)
+    mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name

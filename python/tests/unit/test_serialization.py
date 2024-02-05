@@ -4,7 +4,6 @@ import pytest
 import typing_extensions as te
 from pydantic import Field, Json
 
-from semantic_kernel import KernelFunctionBase
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
@@ -99,7 +98,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         def my_function(cx: KernelContext) -> str:
             return f"F({cx.variables.input})"
 
-        return KernelFunction.from_native_method(my_function)
+        return KernelFunction.from_native_method(my_function, "plugin")
 
     def create_context_variables() -> ContextVariables:
         """Return a context variables object."""
@@ -177,7 +176,6 @@ PROTOCOLS = [
 
 BASE_CLASSES = [
     SemanticTextMemoryBase,
-    KernelFunctionBase,
 ]
 
 STATELESS_CLASSES = [

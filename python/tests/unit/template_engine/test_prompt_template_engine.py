@@ -126,7 +126,7 @@ async def test_it_renders_code_using_input(
     def my_function(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = KernelFunction.from_native_method(my_function)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.update("INPUT-BAR")
@@ -146,7 +146,7 @@ async def test_it_renders_code_using_variables(
     def my_function(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = KernelFunction.from_native_method(my_function)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.set("myVar", "BAR")
@@ -166,7 +166,7 @@ async def test_it_renders_code_using_variables_async(
     async def my_function(cx: KernelContext) -> str:
         return cx.variables.input
 
-    func = KernelFunction.from_native_method(my_function)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.set("myVar", "BAR")
