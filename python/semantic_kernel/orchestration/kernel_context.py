@@ -152,7 +152,7 @@ class KernelContext(KernelBaseModel, Generic[SemanticTextMemoryT]):
             function_name {str} -- The function name.
 
         Returns:
-            KernelFunctionBase -- The function.
+            KernelFunction -- The function.
         """
         if self.plugins is None:
             raise ValueError("The plugin collection hasn't been set")
