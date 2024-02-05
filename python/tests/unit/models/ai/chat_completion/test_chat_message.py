@@ -1,5 +1,6 @@
 import pytest
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.models.ai.chat_completion.chat_message import ChatMessage
 from semantic_kernel.prompt_template.prompt_template import PromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import (
@@ -28,9 +29,8 @@ async def test_chat_message_rendering(create_kernel):
         role="user",
         content_template=content_template,
     )
-    context = kernel.create_new_context()
-    context.variables["input"] = "world"
-    await message.render_message(context)
+    arguments = KernelArguments(input="world")
+    await message.render_message(kernel, arguments)
     assert message.role == "user"
     assert message.fixed_content == expected_content
     assert message.content_template == content_template

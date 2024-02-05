@@ -4,14 +4,13 @@ from unittest.mock import Mock
 
 from pytest import fixture, mark
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.old.kernel_context import KernelContext
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.plugin_definition import kernel_function
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
@@ -22,25 +21,18 @@ def target():
 
 
 @fixture
-def variables():
-    return ContextVariables("X")
-
-
-@fixture
 def plugins():
     return Mock(spec=KernelPluginCollection)
 
 
-@fixture
-def context(variables, plugins):
-    return KernelContext(variables=variables, memory=NullMemory(), plugins=plugins)
+def test_it_renders_variables(target: PromptTemplateEngine, plugins):
+    kernel = Kernel(plugins=plugins)
+    arguments = KernelArguments()
 
-
-def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVariables):
     template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}"
 
     blocks = target.extract_blocks(template)
-    updated_blocks = target.render_variables(blocks, variables)
+    updated_blocks = target.render_variables(blocks, kernel, arguments)
 
     assert len(blocks) == 9
     assert len(updated_blocks) == 9
@@ -75,12 +67,10 @@ def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVa
     assert blocks[8].type == BlockTypes.CODE
     assert updated_blocks[8].type == BlockTypes.CODE
 
-    variables.set("x11", "x11 value")
-    variables.set("a", "a value")
-    variables.set("_a", "_a value")
+    arguments = KernelArguments(x11="x11 value", a="a value", _a="_a value")
 
     blocks = target.extract_blocks(template)
-    updated_blocks = target.render_variables(blocks, variables)
+    updated_blocks = target.render_variables(blocks, kernel, arguments)
 
     assert len(blocks) == 9
     assert len(updated_blocks) == 9
@@ -117,21 +107,21 @@ def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVa
 
 
 @mark.asyncio
-async def test_it_renders_code_using_input(
-    target: PromptTemplateEngine,
-    variables: ContextVariables,
-    context_factory,
-):
+async def test_it_renders_code_using_input(target: PromptTemplateEngine):
+    kernel = Kernel()
+    arguments = KernelArguments()
+
     @kernel_function(name="function")
-    def my_function(cx: KernelContext) -> str:
-        return f"F({cx.variables.input})"
+    def my_function(arguments: KernelArguments) -> str:
+        return f"F({arguments.get('input')})"
 
     func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
+    kernel.plugins.add_plugin_from_functions("test", [func])
 
-    variables.update("INPUT-BAR")
-    template = "foo-{{function}}-baz"
-    result = await target.render(template, context_factory(variables, func))
+    arguments["input"] = "INPUT-BAR"
+    template = "foo-{{test.function}}-baz"
+    result = await target.render(template, kernel, arguments)
 
     assert result == "foo-F(INPUT-BAR)-baz"
 
@@ -139,19 +129,21 @@ async def test_it_renders_code_using_input(
 @mark.asyncio
 async def test_it_renders_code_using_variables(
     target: PromptTemplateEngine,
-    variables: ContextVariables,
-    context_factory,
 ):
+    kernel = Kernel()
+    arguments = KernelArguments()
+
     @kernel_function(name="function")
-    def my_function(cx: KernelContext) -> str:
-        return f"F({cx.variables.input})"
+    def my_function(myVar: str) -> str:
+        return f"F({myVar})"
 
     func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
+    kernel.plugins.add_plugin_from_functions("test", [func])
 
-    variables.set("myVar", "BAR")
-    template = "foo-{{function $myVar}}-baz"
-    result = await target.render(template, context_factory(variables, func))
+    arguments["myVar"] = "BAR"
+    template = "foo-{{test.function $myVar}}-baz"
+    result = await target.render(template, kernel, arguments)
 
     assert result == "foo-F(BAR)-baz"
 
@@ -159,20 +151,22 @@ async def test_it_renders_code_using_variables(
 @mark.asyncio
 async def test_it_renders_code_using_variables_async(
     target: PromptTemplateEngine,
-    variables: ContextVariables,
-    context_factory,
 ):
+    kernel = Kernel()
+    arguments = KernelArguments()
+
     @kernel_function(name="function")
-    async def my_function(cx: KernelContext) -> str:
-        return cx.variables.input
+    async def my_function(myVar: str) -> str:
+        return myVar
 
     func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
+    kernel.plugins.add_plugin_from_functions("test", [func])
 
-    variables.set("myVar", "BAR")
+    arguments["myVar"] = "BAR"
 
-    template = "foo-{{function $myVar}}-baz"
+    template = "foo-{{test.function $myVar}}-baz"
 
-    result = await target.render(template, context_factory(variables, func))
+    result = await target.render(template, kernel, arguments)
 
     assert result == "foo-BAR-baz"

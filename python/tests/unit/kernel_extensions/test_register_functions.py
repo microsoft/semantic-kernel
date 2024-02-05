@@ -4,6 +4,7 @@
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_exception import KernelException
@@ -26,8 +27,8 @@ async def test_register_valid_native_function():
 
     assert isinstance(registered_func, KernelFunction)
     assert kernel.plugins["TestPlugin"]["getLightStatus"] == registered_func
-    func_result = await registered_func.invoke("testtest")
-    assert func_result.result == "test"
+    func_result = await registered_func.invoke(kernel, KernelArguments(arg1="testtest"))
+    assert str(func_result) == "test"
 
 
 def test_register_undecorated_native_function():

@@ -33,7 +33,8 @@ class ConversationSummaryPlugin:
         " or tags.\n\nBEGIN SUMMARY:\n"
     )
 
-    def __init__(self, kernel: "Kernel"):
+    def __init__(self, kernel: "Kernel", return_key: str = "summary"):
+        self.return_key = return_key
         self._summarizeConversationFunction = kernel.create_semantic_function(
             ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
@@ -52,14 +53,16 @@ class ConversationSummaryPlugin:
         input: Annotated[str, "A long conversation transcript."],
         kernel: Annotated["Kernel", "The kernel instance."],
         arguments: Annotated["KernelArguments", "Arguments used by the kernel."],
-    ) -> Annotated["KernelArguments", "KernelArguments with the summarized conversation result in key 'summary'."]:
+    ) -> Annotated[
+        "KernelArguments", "KernelArguments with the summarized conversation result in key self.return_key."
+    ]:
         """
         Given a long conversation transcript, summarize the conversation.
 
         :param input: A long conversation transcript.
         :param kernel: The kernel for function execution.
         :param arguments: Arguments used by the kernel.
-        :return: KernelArguments with the summarized conversation result in key 'summary'.
+        :return: KernelArguments with the summarized conversation result in key self.return_key.
         """
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import (
@@ -69,7 +72,7 @@ class ConversationSummaryPlugin:
         lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
         paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)
 
-        arguments["summary"] = await aggregate_chunked_results(
+        arguments[self.return_key] = await aggregate_chunked_results(
             self._summarizeConversationFunction, paragraphs, kernel, arguments
         )
         return arguments

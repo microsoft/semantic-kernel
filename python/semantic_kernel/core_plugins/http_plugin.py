@@ -2,7 +2,7 @@
 
 import json
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import aiohttp
 
@@ -51,7 +51,7 @@ class HttpPlugin(KernelBaseModel):
     async def post(
         self,
         url: Annotated[str, "The URI to send the request to."],
-        body: Annotated[Dict[str, Any], "The body of the request"],
+        body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
     ) -> str:
         """
         Sends an HTTP POST request to the specified URI and returns
@@ -75,7 +75,7 @@ class HttpPlugin(KernelBaseModel):
     async def put(
         self,
         url: Annotated[str, "The URI to send the request to."],
-        body: Annotated[Dict[str, Any], "The body of the request"],
+        body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
     ) -> str:
         """
         Sends an HTTP PUT request to the specified URI and returns

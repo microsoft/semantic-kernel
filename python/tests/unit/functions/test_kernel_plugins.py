@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -10,9 +9,6 @@ from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTempl
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.prompt_template.semantic_function_config import SemanticFunctionConfig
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-
-if TYPE_CHECKING:
-    from semantic_kernel.functions.old.kernel_context import KernelContext
 
 
 def test_throws_for_missing_name():
@@ -32,7 +28,7 @@ def test_default_kernel_plugin_construction_with_native_functions():
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    def mock_function(input: str, context: "KernelContext") -> None:
+    def mock_function(input: str) -> None:
         pass
 
     mock_function.__kernel_function__ = True
@@ -42,7 +38,7 @@ def test_default_kernel_plugin_construction_with_native_functions():
     mock_function.__kernel_function_input_default_value__ = "default_input_value"
     mock_function.__kernel_function_context_parameters__ = [
         {
-            "name": "param1",
+            "name": "input",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
         }
@@ -65,7 +61,7 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
 
-    def mock_function(input: str, context: "KernelContext") -> None:
+    def mock_function(input: str) -> None:
         pass
 
     mock_function.__kernel_function__ = True
@@ -134,7 +130,7 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     )
 
     # Construct a nativate function
-    def mock_function(input: str, context: "KernelContext") -> None:
+    def mock_function(input: str) -> None:
         pass
 
     mock_function.__kernel_function__ = True
@@ -185,7 +181,7 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     )
 
     # Construct a nativate function
-    def mock_function(input: str, context: "KernelContext") -> None:
+    def mock_function(input: str) -> None:
         pass
 
     mock_function.__kernel_function__ = True

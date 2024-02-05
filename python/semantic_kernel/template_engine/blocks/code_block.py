@@ -103,7 +103,7 @@ class CodeBlock(Block):
             arguments_clone[arg_name] = input_value
 
         result = await function.invoke(kernel, arguments_clone)
-        return str(result)
+        return str(result) if result else ""
 
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, f_block: FunctionIdBlock

@@ -2,7 +2,7 @@
 
 
 from inspect import Parameter, signature
-from typing import Callable, Tuple
+from typing import Callable, ForwardRef, Tuple
 
 
 def kernel_function(
@@ -62,6 +62,8 @@ def _parse_annotation(annotation) -> Tuple[str, str, bool, bool]:
     else:
         description = ""
         type_annotation = annotation
+    if isinstance(type_annotation, ForwardRef):
+        return description, type_annotation.__forward_arg__, True, False
     if type_annotation.__name__ == "Optional":
         type_annotation = type_annotation.__args__[0]
         required = False

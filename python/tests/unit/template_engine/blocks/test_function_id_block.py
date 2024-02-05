@@ -3,7 +3,8 @@
 
 from pytest import mark, raises
 
-from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 
@@ -33,8 +34,10 @@ def test_is_valid_empty_identifier():
 
 
 def test_render():
+    kernel = Kernel()
+
     function_id_block = FunctionIdBlock(content="plugin.function")
-    rendered_value = function_id_block.render(ContextVariables())
+    rendered_value = function_id_block.render(kernel, KernelArguments())
     assert rendered_value == "plugin.function"
 
 

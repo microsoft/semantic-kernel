@@ -5,7 +5,7 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.file_io_plugin import FileIOPlugin
-from semantic_kernel.functions.old.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 def test_can_be_instantiated():
@@ -50,19 +50,14 @@ async def test_cannot_read():
 
 
 @pytest.mark.asyncio
-async def test_can_write(context_factory):
+async def test_can_write():
     plugin = FileIOPlugin()
     fp = None
     try:
         with tempfile.NamedTemporaryFile(mode="r", delete=False) as fp:
-            context_variables = ContextVariables()
+            arguments = KernelArguments(path=fp.name, content="Hello, world!")
 
-            context_variables.set("path", fp.name)
-            context_variables.set("content", "Hello, world!")
-
-            context = context_factory(context_variables)
-
-            await plugin.write(context)
+            await plugin.write(**arguments)
 
             content = fp.read()
 
@@ -73,22 +68,17 @@ async def test_can_write(context_factory):
 
 
 @pytest.mark.asyncio
-async def test_cannot_write(context_factory):
+async def test_cannot_write():
     plugin = FileIOPlugin()
     fp = None
     try:
         with tempfile.NamedTemporaryFile(mode="r", delete=False) as fp:
             os.chmod(fp.name, 0o500)
 
-            context_variables = ContextVariables()
-
-            context_variables.set("path", fp.name)
-            context_variables.set("content", "Hello, world!")
-
-            context = context_factory(context_variables)
+            arguments = KernelArguments(path=fp.name, content="Hello, world!")
 
             with pytest.raises(PermissionError):
-                await plugin.write(context)
+                await plugin.write(**arguments)
 
             os.chmod(fp.name, 0o777)
     finally:

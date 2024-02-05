@@ -2,6 +2,7 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel import Kernel
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.text import aggregate_chunked_results
 
 
@@ -13,8 +14,6 @@ async def test_aggregate_results():
         {{$input}}
         How is that ?
     """
-
-    context = kernel.create_new_context()
 
     func = kernel.create_semantic_function(
         sk_prompt,
@@ -31,6 +30,6 @@ async def test_aggregate_results():
         "Seriously, this is the end.",
         "We're finished. All set. Bye. Done",
     ]
-    context = await aggregate_chunked_results(func, chunked, context)
-
-    assert context.variables.input == "\n".join(chunked)
+    result = await aggregate_chunked_results(func, chunked, kernel, KernelArguments())
+    print(result)
+    assert result == "\n".join(chunked)

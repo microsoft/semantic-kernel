@@ -14,7 +14,7 @@ class FunctionResult(KernelBaseModel):
     value: Any
     metadata: Mapping[str, Any] = Field(default_factory=dict)
 
-    def __str__(self) -> Optional[str]:
+    def __str__(self) -> str:
         if self.value:
             try:
                 if isinstance(self.value, list):
@@ -24,7 +24,7 @@ class FunctionResult(KernelBaseModel):
                 logger.warning(f"Failed to convert value to string: {e}")
                 raise e
         else:
-            return None
+            return ""
 
     def get_inner_content(self, index: int = 0) -> Optional[Any]:
         """Get the inner content of the function result.

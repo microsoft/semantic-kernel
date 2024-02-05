@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+import sys
+from typing import TYPE_CHECKING, Optional
 
-from typing import TYPE_CHECKING, Annotated, Optional
+if sys.version_info > (3, 8):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -11,7 +16,7 @@ if TYPE_CHECKING:
 
 def test_init_native_function_with_input_description():
     @kernel_function(description="Mock description", name="mock_function")
-    def mock_function(input: str, arguments: "KernelArguments") -> None:
+    def mock_function(input: Annotated[str, "input"], arguments: "KernelArguments") -> None:
         pass
 
     mock_method = mock_function
@@ -20,13 +25,13 @@ def test_init_native_function_with_input_description():
 
     assert native_function._function == mock_method
     assert native_function._parameters[0].name == "input"
-    assert native_function._parameters[0].description == ""
-    assert native_function._parameters[0].default_value == ""
+    assert native_function._parameters[0].description == "input"
+    assert not native_function._parameters[0].default_value
     assert native_function._parameters[0].type_ == "str"
     assert native_function._parameters[0].required is True
     assert native_function._parameters[1].name == "arguments"
     assert native_function._parameters[1].description == ""
-    assert native_function._parameters[1].default_value == ""
+    assert not native_function._parameters[1].default_value
     assert native_function._parameters[1].type_ == "KernelArguments"
     assert native_function._parameters[1].required is True
 
@@ -56,7 +61,7 @@ def test_init_native_function_without_input_description():
     assert native_function._parameters[0].name == "arguments"
     assert native_function._parameters[0].description == "Param 1 description"
     assert native_function._parameters[0].default_value == "default_param1_value"
-    assert native_function._parameters[0].type_ == "KernelArguments"
+    assert native_function._parameters[0].type_ == "str"
     assert native_function._parameters[0].required is True
 
 

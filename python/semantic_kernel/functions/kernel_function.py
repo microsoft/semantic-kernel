@@ -162,16 +162,22 @@ class KernelFunction(KernelBaseModel):
                         name=param["name"],
                         description=param["description"],
                         default_value=param["default_value"],
-                        type=param.get("type", "string"),
+                        type=param.get("type", "str"),
                         required=param.get("required", False),
                     )
                 )
         return_param = KernelParameterMetadata(
             name="return",
-            description=method.__kernel_function_return_description__,
+            description=method.__kernel_function_return_description__
+            if hasattr(method, "__kernel_function_return_description__")
+            else "",
             default_value=None,
-            type=method.__kernel_function_return_type__,
-            required=method.__kernel_function_return_required__,
+            type=method.__kernel_function_return_type__
+            if hasattr(method, "__kernel_function_return_type__")
+            else "None",
+            required=method.__kernel_function_return_required__
+            if hasattr(method, "__kernel_function_return_required__")
+            else False,
         )
 
         if hasattr(method, "__kernel_function_streaming__") and method.__kernel_function_streaming__:
@@ -221,6 +227,7 @@ class KernelFunction(KernelBaseModel):
             client: Union[TextCompletionClientBase, ChatCompletionClientBase],
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
+            **kwargs: Dict[str, Any],
         ) -> "FunctionResult":
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
@@ -247,6 +254,7 @@ class KernelFunction(KernelBaseModel):
             client: AIServiceClientBase,
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
+            **kwargs: Dict[str, Any],
         ):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
@@ -484,7 +492,9 @@ class KernelFunction(KernelBaseModel):
         result = self._function(**function_arguments)
         if isawaitable(result):
             result = await result
-        if self._return_parameter.type_ == "FunctionResult":
+        logger.debug("Function result: %s", result)
+        logger.debug("Function result type %s", type(result))
+        if self._return_parameter and self._return_parameter.type_ == "FunctionResult":
             return result
         return FunctionResult(function=self.describe(), value=result)
         # try:

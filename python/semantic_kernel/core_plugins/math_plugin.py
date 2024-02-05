@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import sys
+from typing import TYPE_CHECKING
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -7,6 +8,9 @@ else:
     from typing_extensions import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 class MathPlugin:
@@ -21,12 +25,20 @@ class MathPlugin:
     """
 
     @kernel_function()
+    def test(self, arguments: "KernelArguments") -> str:
+        return "test"
+
+    @kernel_function(name="Add")
     def add(
         self,
         input: Annotated[int, "the first number to add"],
         amount: Annotated[int, "the second number to add"],
     ) -> Annotated[int, "the output is a number"]:
         """Returns the Addition result of the values provided."""
+        if isinstance(input, str):
+            input = int(input)
+        if isinstance(amount, str):
+            amount = int(amount)
         return MathPlugin.add_or_subtract(input, amount, add=True)
 
     @kernel_function(
@@ -45,6 +57,10 @@ class MathPlugin:
         :param context: Contains the context to get the numbers from
         :return: The resulting subtraction as a string
         """
+        if isinstance(input, str):
+            input = int(input)
+        if isinstance(amount, str):
+            amount = int(amount)
         return MathPlugin.add_or_subtract(input, amount, add=False)
 
     @staticmethod
