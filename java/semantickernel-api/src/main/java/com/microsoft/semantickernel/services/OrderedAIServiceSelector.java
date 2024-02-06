@@ -1,20 +1,23 @@
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.AIService;
-import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.microsoft.semantickernel.AIService;
+import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
 public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
@@ -32,23 +35,25 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
+
         @Nullable
-        KernelFunction function,
+        KernelFunction<?> function,
+
         @Nullable
-        KernelArguments arguments,
+        KernelFunctionArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
 
         // Allow the execution settings from the kernel arguments to take precedence
-        Map<String, PromptExecutionSettings> executionSettings = settingsFromArguments(arguments);
-        executionSettings = settingsFromFunctionSettings(function, executionSettings);
+        Map<String, PromptExecutionSettings> executionSettings = 
+            settingsFromFunctionSettings(function);
 
         if (executionSettings == null || executionSettings.isEmpty()) {
             AIService service = getAnyService(serviceType);
             if (service != null) {
-                return new AIServiceSelection(service, null);
+                return castServiceSelection(new AIServiceSelection<>(service, null));
             }
         } else {
-            AIServiceSelection selection = executionSettings
+            AIServiceSelection<?> selection = executionSettings
                 .entrySet()
                 .stream()
                 .map(keyValue -> {
@@ -59,7 +64,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
                     if (!Verify.isNullOrEmpty(serviceId)) {
                         AIService service = getService(serviceId);
                         if (service != null) {
-                            return new AIServiceSelection(service, settings);
+                            return castServiceSelection(new AIServiceSelection<>(service, settings));
                         }
                     }
 
@@ -70,7 +75,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
                 .orElseGet(() -> null);
 
             if (selection != null) {
-                return selection;
+                return castServiceSelection(selection);
             }
 
             selection = executionSettings
@@ -82,7 +87,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
                     if (!Verify.isNullOrEmpty(settings.getModelId())) {
                         AIService service = getServiceByModelId(settings.getModelId());
                         if (service != null) {
-                            return new AIServiceSelection(service, settings);
+                            return castServiceSelection(new AIServiceSelection<>(service, settings));
                         }
                     }
 
@@ -93,14 +98,14 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
                 .orElseGet(() -> null);
 
             if (selection != null) {
-                return selection;
+                return castServiceSelection(selection);
             }
         }
 
         AIService defaultService = getService(PromptExecutionSettings.DEFAULT_SERVICE_ID);
 
         if (defaultService != null && serviceType.isAssignableFrom(defaultService.getClass())) {
-            return new AIServiceSelection(defaultService, null);
+            return castServiceSelection(new AIServiceSelection<>(defaultService, null));
         }
 
         AIService service = getAnyService(serviceType);
@@ -115,33 +120,30 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         }
 
         if (service != null) {
-            return new AIServiceSelection(service, settings);
+            return castServiceSelection(new AIServiceSelection<>(service, settings));
         }
 
         LOGGER.warn("No service found meeting requirements");
         return null;
     }
 
-    @Nullable
-    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
-        @Nullable
-        KernelFunction function,
-        @Nullable
-        Map<String, PromptExecutionSettings> executionSettings) {
-        if (executionSettings == null || executionSettings.isEmpty()) {
-            if (function != null) {
-                executionSettings = function.getExecutionSettings();
-            }
+    @SuppressWarnings("unchecked")
+    private static <T extends AIService> AIServiceSelection<T> castServiceSelection(AIServiceSelection<?> selection) {
+        try {
+            // unchecked cast
+            return (AIServiceSelection<T>) selection;
+        } catch (ClassCastException e) {
+            LOGGER.debug("%s", e.getMessage());
+            return null;
         }
-        return executionSettings;
     }
 
     @Nullable
-    private static Map<String, PromptExecutionSettings> settingsFromArguments(
+    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
         @Nullable
-        KernelArguments arguments) {
-        if (arguments != null) {
-            return arguments.getExecutionSettings();
+        KernelFunction function) {
+        if (function != null) {
+            return function.getExecutionSettings();
         }
         return null;
     }

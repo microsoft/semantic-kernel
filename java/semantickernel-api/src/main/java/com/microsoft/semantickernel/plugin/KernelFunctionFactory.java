@@ -1,5 +1,12 @@
 package com.microsoft.semantickernel.plugin;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
@@ -8,11 +15,6 @@ import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactor
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 public class KernelFunctionFactory {
 
@@ -29,7 +31,7 @@ public class KernelFunctionFactory {
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    public static KernelFunction createFromMethod(
+    public static <T> KernelFunction<T> createFromMethod(
         Method method,
         Object target,
         @Nullable String functionName,
@@ -47,7 +49,7 @@ public class KernelFunctionFactory {
      * @param promptTemplate Prompt template for the function.
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
-    public static KernelFunction createFromPrompt(String promptTemplate) {
+    public static <T> KernelFunction<T> createFromPrompt(String promptTemplate) {
         return createFromPrompt(promptTemplate, null, null, null, null, null);
     }
 
@@ -67,7 +69,7 @@ public class KernelFunctionFactory {
      *                              default factory will be used.
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
-    public static KernelFunction createFromPrompt(
+    public static <T> KernelFunction<T> createFromPrompt(
         String promptTemplate,
         @Nullable PromptExecutionSettings executionSettings,
         @Nullable String functionName,
@@ -83,7 +85,7 @@ public class KernelFunctionFactory {
             promptTemplateFactory);
     }
 
-    public static KernelFunction createFromPrompt(
+    public static <T> KernelFunction<T> createFromPrompt(
         PromptTemplateConfig promptConfig,
         @Nullable PromptTemplateFactory promptTemplateFactory) {
 
@@ -95,10 +97,10 @@ public class KernelFunctionFactory {
             promptConfig);
     }
 
-    public static KernelFunction create(
+    public static <T> KernelFunction<T> create(
         PromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig) {
-        return new KernelFunctionFromPrompt(
+        return new KernelFunctionFromPrompt<>(
             promptTemplate,
             promptConfig,
             null);

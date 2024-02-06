@@ -7,6 +7,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 
 public class Example44_MultiChatCompletion {
@@ -65,7 +66,10 @@ public class Example44_MultiChatCompletion {
 
     private static void GPTReply(ChatCompletionService chatGPT, ChatHistory chatHistory,
                                  PromptExecutionSettings settings) {
-        var reply = chatGPT.getChatMessageContentsAsync(chatHistory, settings, null)
+        
+        var invocationContext = InvocationContext.builder().withPromptExecutionSettings(settings).build();
+
+        var reply = chatGPT.getChatMessageContentsAsync(chatHistory, null, invocationContext)
                 .block();
 
         reply.forEach(chatMessageContent -> {

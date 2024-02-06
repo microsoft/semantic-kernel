@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 
 public class Example43_GetModelResult {
@@ -53,16 +53,15 @@ public class Example43_GetModelResult {
 
         // Create function
         String FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
-        KernelFunction myFunction = KernelFunctionFromPrompt.create(
+        KernelFunction<String> myFunction = KernelFunctionFromPrompt.create(
             FunctionDefinition);
 
         // Invoke function through kernel
         FunctionResult<String> result = kernel.invokeAsync(
                 myFunction,
-                KernelArguments.builder()
+                KernelFunctionArguments.builder()
                     .withVariable("input", "travel")
-                    .build(),
-                String.class)
+                    .build())
             .block();
 
         // Display results

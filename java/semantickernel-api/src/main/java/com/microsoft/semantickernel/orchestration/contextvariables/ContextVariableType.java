@@ -39,4 +39,5 @@ public class ContextVariableType<T> {
         ContextVariableTypeConverter<T> converter = getConverter();
         return ContextVariable.of(converter.getType(), converter.fromObject(it));
     }
+   
 }

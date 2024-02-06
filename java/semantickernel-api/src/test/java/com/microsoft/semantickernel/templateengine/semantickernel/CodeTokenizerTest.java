@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Block;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.FunctionIdBlock;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.NamedArgBlock;
-import java.util.List;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 public class CodeTokenizerTest {
 
@@ -25,19 +27,19 @@ public class CodeTokenizerTest {
         NamedArgBlock namedArgBlock = (NamedArgBlock) tokens.get(1);
         Assertions.assertEquals("street", namedArgBlock.getName());
         Assertions.assertEquals("123 Main St", namedArgBlock.getValue(
-            new DefaultKernelArguments.Builder()
+            new KernelFunctionArguments.Builder()
                 .withVariable("street", "123 Main St")
                 .build()));
 
         namedArgBlock = (NamedArgBlock) tokens.get(2);
         Assertions.assertEquals("zip", namedArgBlock.getName());
         Assertions.assertEquals("98123", namedArgBlock.getValue(
-            new DefaultKernelArguments.Builder().build()));
+            new KernelFunctionArguments.Builder().build()));
 
         namedArgBlock = (NamedArgBlock) tokens.get(3);
         Assertions.assertEquals("city", namedArgBlock.getName());
         Assertions.assertEquals("Seattle", namedArgBlock.getValue(
-            new DefaultKernelArguments.Builder().build()));
+            new KernelFunctionArguments.Builder().build()));
     }
 
     @Test
@@ -54,7 +56,7 @@ public class CodeTokenizerTest {
         NamedArgBlock namedArgBlock = (NamedArgBlock) tokens.get(1);
         Assertions.assertEquals("recall", namedArgBlock.getName());
         Assertions.assertEquals("where did I grow up?", namedArgBlock.getValue(
-            new DefaultKernelArguments.Builder()
+            new KernelFunctionArguments.Builder()
                 .build()));
     }
 }

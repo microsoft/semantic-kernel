@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import reactor.core.publisher.Mono;
@@ -71,7 +71,7 @@ public class Example60_AdvancedMethodFunctions {
             .invokeAsync(
                 FunctionsChainingPlugin.PluginName,
                 "Function1",
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .build(),
                 ContextVariableTypes.getDefaultVariableTypeForClass(MyCustomType.class)
@@ -123,7 +123,7 @@ public class Example60_AdvancedMethodFunctions {
                 .invokeAsync(
                     PluginName,
                     "Function2",
-                    KernelArguments.builder().build(),
+                    KernelFunctionArguments.builder().build(),
                     ContextVariableTypes.getDefaultVariableTypeForClass(
                         Example60_AdvancedMethodFunctions.MyCustomType.class))
                 .flatMap(value -> {

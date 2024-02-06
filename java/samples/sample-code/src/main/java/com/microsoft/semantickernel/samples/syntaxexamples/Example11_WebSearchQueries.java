@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugins.web.SearchUrlPlugin;
 
@@ -17,11 +17,11 @@ public class Example11_WebSearchQueries {
 
          // Run
         var ask = "What's the largest building in Europe?";
-        var kernelArguments = KernelArguments.builder()
+        var kernelArguments = KernelFunctionArguments.builder()
             .withVariable("query", ask)
             .build();
 
-        var result = kernel.invokeAsync(bingSearchFunction, kernelArguments, String.class).block();
+        var result = kernel.invokeAsync(bingSearchFunction, kernelArguments).block();
 
         System.out.println(ask);
         System.out.println(result.getResult());

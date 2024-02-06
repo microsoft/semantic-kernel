@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.templateengine.semantickernel;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -96,7 +96,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments) {
+        @Nullable KernelFunctionArguments arguments) {
 
         List<Block> blocks = this.extractBlocks();
         addMissingInputVariables(blocks);

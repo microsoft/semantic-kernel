@@ -92,7 +92,7 @@ public class Example06_TemplateLanguage {
         System.out.println(renderedPrompt);
 
         var kindOfDay = KernelFunctionFactory
-            .createFromPrompt(
+            .<String>createFromPrompt(
                 functionDefinition,
                 new Builder()
                     .withMaxTokens(100)
@@ -104,7 +104,7 @@ public class Example06_TemplateLanguage {
 
         // Show the result
         System.out.println("--- Prompt Function result");
-        var result = kernel.invokeAsync(kindOfDay, null, String.class).block();
+        var result = kernel.invokeAsync(kindOfDay, null).block();
         System.out.println(result.getResult());
     }
 }

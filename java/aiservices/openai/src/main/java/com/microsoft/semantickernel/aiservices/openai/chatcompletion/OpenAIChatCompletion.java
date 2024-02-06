@@ -16,9 +16,11 @@ import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
 import com.azure.ai.openai.models.FunctionCall;
 import com.azure.ai.openai.models.FunctionDefinition;
+import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
@@ -31,13 +33,16 @@ import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,61 +95,29 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
-        @Nullable
-        PromptExecutionSettings promptExecutionSettings,
-        @Nullable
-        Kernel kernel,
-        @Nullable
-        KernelHooks kernelHooks) {
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions = Collections.emptyList();
-
-        if (kernelHooks == null) {
-            kernelHooks = new KernelHooks();
-        }
+        List<FunctionDefinition> functions = kernel != null ? getFunctions(kernel) : Collections.emptyList();
 
         return internalChatMessageContentsAsync(
             chatRequestMessages,
             functions,
-            promptExecutionSettings,
-            kernelHooks);
+            invocationContext);
     }
-
-    @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        @Nullable PromptExecutionSettings promptExecutionSettings,
-        @Nullable Kernel kernel) {
-        return getChatMessageContentsAsync(chatHistory, promptExecutionSettings, kernel, null);
-    }
-
 
     @Override
     public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         String prompt,
-        @Nullable
-        PromptExecutionSettings promptExecutionSettings,
-        Kernel kernel,
-        @Nullable
-        KernelHooks kernelHooks) {
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
         ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
-
-        if (kernelHooks == null) {
-            kernelHooks = new KernelHooks();
-        }
 
         return internalChatMessageContentsAsync(
             parsedPrompt.getChatRequestMessages(),
             parsedPrompt.getFunctions(),
-            promptExecutionSettings,
-            kernelHooks);
-    }
-
-    @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
-        PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
-        return getChatMessageContentsAsync(prompt, promptExecutionSettings, kernel, null);
+            invocationContext);
     }
 
 
@@ -152,14 +125,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         List<ChatRequestMessage> chatRequestMessages,
         @Nullable
         List<FunctionDefinition> functions,
-        @Nullable
-        PromptExecutionSettings promptExecutionSettings,
-        KernelHooks kernelHooks) {
+        @Nullable InvocationContext invocationContext) {
 
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
-            promptExecutionSettings);
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions, invocationContext);
         Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(kernelHooks, options);
+            internalChatMessageContentsAsync(options, invocationContext);
 
         return results
             .flatMap(list -> {
@@ -175,15 +145,20 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     }
                 }
                 if (makeSecondCall) {
-                    return internalChatMessageContentsAsync(kernelHooks, options);
+                    return internalChatMessageContentsAsync(options, invocationContext);
                 }
                 return Mono.just(list);
             });
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
-        KernelHooks kernelHooks,
-        ChatCompletionsOptions options) {
+        ChatCompletionsOptions options,
+        @Nullable InvocationContext invocationContext) {
+
+        KernelHooks kernelHooks = 
+            invocationContext != null && invocationContext.getKernelHooks() != null
+                ? invocationContext.getKernelHooks()
+                : new KernelHooks();
 
         options = kernelHooks
             .executeHooks(new PreChatCompletionEvent(options))
@@ -297,7 +272,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return Mono.empty();
         }
 
-        KernelArguments arguments = null;
+        KernelFunctionArguments arguments = null;
         if (parameters != null) {
             Map<String, ContextVariable<?>> variables = new HashMap<>();
             parameters.fields().forEachRemaining(entry -> {
@@ -306,7 +281,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 ContextVariable<?> contextVariable = ContextVariable.of(paramValue);
                 variables.put(paramName, contextVariable);
             });
-            arguments = KernelArguments.builder().withVariables(variables).build();
+            arguments = KernelFunctionArguments.builder().withVariables(variables).build();
         }
         ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
             String.class);
@@ -319,10 +294,14 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable
         List<FunctionDefinition> functions,
         @Nullable
-        PromptExecutionSettings promptExecutionSettings) {
+        InvocationContext invocationContext) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
+
+        PromptExecutionSettings promptExecutionSettings = invocationContext != null
+            ? invocationContext.getPromptExecutionSettings()
+            : null;
 
         if (promptExecutionSettings == null) {
             return options;
@@ -335,9 +314,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     MAX_RESULTS_PER_PROMPT));
         }
 
+        ToolCallBehavior toolCallBehavior = invocationContext != null 
+            ? invocationContext.getToolCallBehavior()
+            : null;
         List<ChatCompletionsToolDefinition> toolDefinitions =
-            chatCompletionsToolDefinitions(promptExecutionSettings.getToolCallBehavior(),
-                functions);
+            chatCompletionsToolDefinitions(toolCallBehavior,functions);
+            
         if (toolDefinitions != null && !toolDefinitions.isEmpty()) {
             options.setTools(toolDefinitions);
             // TODO: options.setToolChoices(toolChoices);
@@ -387,6 +369,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         if (toolCallBehavior == null || !(toolCallBehavior.kernelFunctionsEnabled()
             || toolCallBehavior.autoInvokeEnabled())) {
+            // If tool calls are not explicitly enabled, then we don't need to send any tool definitions
             return Collections.emptyList();
         }
 
@@ -438,6 +421,76 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 throw new SKException("Unexpected author role: " + authorRole);
         }
 
+    }
+
+    private static List<FunctionDefinition> getFunctions(Kernel kernel) {
+        List<FunctionDefinition> functions = new ArrayList<>();
+        kernel.getPlugins().iterator().forEachRemaining(plugin -> {
+            plugin.iterator().forEachRemaining(function -> {
+                FunctionDefinition functionDefinition = toFunctionDefinition(function);
+                functions.add(functionDefinition);
+            });
+        });
+        return functions;
+    }   
+
+    private static FunctionDefinition toFunctionDefinition(KernelFunction function) {
+        String name = String.format("%s-%s", function.getSkillName(), function.getName());
+        FunctionDefinition functionDefinition = new FunctionDefinition(name);
+        functionDefinition.setDescription(function.getDescription());
+        // Example JSON Schema:
+        // {
+        //    "type": "function",
+        //    "function": {
+        //        "name": "get_current_weather",
+        //        "description": "Get the current weather in a given location",
+        //        "parameters": {
+        //            "type": "object",
+        //            "properties": {
+        //                "location": {
+        //                    "type": "string",
+        //                    "description": "The city and state, e.g. San Francisco, CA",
+        //                },
+        //               "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+        //            },
+        //            "required": ["location"],
+        //        },
+        //    },
+        //}
+        List<KernelParameterMetadata<?>> parameters = function.getMetadata().getParameters();
+        if (!parameters.isEmpty()) {
+            List<String> requiredParmeters = new ArrayList<>();
+            StringBuilder sb = new StringBuilder(
+                "{\"type\": \"object\", \"properties\": {");
+            parameters.forEach(parameter -> {
+                // make "param": {"type": "string", "description": "desc"},
+                sb.append(String.format("\"%s\": %s,", parameter.getName(), parameter.getDescription()));
+                if (parameter.isRequired()) {
+                    requiredParmeters.add(parameter.getName());
+                }
+            });
+            // strip off trailing comma and close the properties object
+            sb.replace(sb.length() - 1, sb.length(), "}");
+            if (!requiredParmeters.isEmpty()) {
+                sb.append(", \"required\": [");
+                requiredParmeters.forEach(it -> {
+                    sb.append(String.format("\"%s\",", it));
+                });
+                // strip off trailing comma and close the required array
+                sb.replace(sb.length() - 1, sb.length(), "]");
+            }
+            // close the object
+            sb.append("}");
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(sb.toString());
+                BinaryData binaryData = BinaryData.fromObject(jsonNode);
+                functionDefinition.setParameters(binaryData);
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Failed to parse json", e);
+            }
+        }
+        return functionDefinition;
     }
 
     private interface ContentBuffer<T> {

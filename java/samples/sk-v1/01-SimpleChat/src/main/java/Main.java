@@ -5,9 +5,9 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class Main {
             .build();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+        KernelFunction<String> chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/SimpleChat.prompt.yaml"));
 
         ChatHistory chatHistory = new ChatHistory();
@@ -60,11 +60,10 @@ public class Main {
             FunctionResult<String> message = kernel
                 .invokeAsync(
                     chatFunction,
-                    KernelArguments
+                    KernelFunctionArguments
                         .builder()
                         .withVariable("messages", chatHistory)
-                        .build(),
-                    String.class
+                        .build()
                 )
                 .block();
 

@@ -1,51 +1,87 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.Todo;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /**
  * Semantic Kernel callable function interface
- *
- * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
+ * @param <T> The type of the result of the function
  */
-public interface KernelFunction extends Buildable {
+// TODO: add example of using ContextVariableType to class documentation
+public abstract class KernelFunction<T> implements Buildable {
 
+        /// <summary>
+    /// Gets the metadata describing the function.
+    /// </summary>
+    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    private final KernelFunctionMetadata metadata;
+
+    /// <summary>
+    /// Gets the prompt execution settings.
+    /// </summary>
+    @Nullable
+    private final Map<String, PromptExecutionSettings> executionSettings;
+
+    protected KernelFunction(
+        KernelFunctionMetadata metadata,
+        @Nullable
+        Map<String, PromptExecutionSettings> executionSettings) {
+        this.metadata = metadata;
+        this.executionSettings = new HashMap<>();
+        if (executionSettings != null) {
+            this.executionSettings.putAll(executionSettings);
+        }
+    }
 
     /**
      * @return The name of the skill that this function is within
      */
-    String getSkillName();
+    public String getSkillName() {
+            return metadata.getName();
+    }
 
     /**
      * @return The name of this function
      */
-    String getName();
+    public String getName() {
+        return metadata.getName();
+    }
 
     /**
      * @return A description of the function
      */
-
     @Nullable
-    String getDescription();
+    public String getDescription() {
+        return metadata.getDescription();
+    }
 
     /**
      * Create a string for generating an embedding for a function.
      *
      * @return A string for generating an embedding for a function.
      */
-    String toEmbeddingString();
+    public String toEmbeddingString() {
+        throw new Todo();
+    }
 
     /**
      * Create a manual-friendly string for a function.
@@ -53,68 +89,121 @@ public interface KernelFunction extends Buildable {
      * @param includeOutputs Whether to include function outputs in the string.
      * @return A manual-friendly string for a function.
      */
-    String toManualString(boolean includeOutputs);
+    public String toManualString(boolean includeOutputs) {
+        throw new Todo();
+    }
+    
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
+        return Collections.unmodifiableMap(executionSettings);
+    }
 
-    KernelFunctionMetadata getMetadata();
+    public KernelFunctionMetadata getMetadata() {
+        return metadata;
+    }
 
-    @Deprecated
-    default Class<?> getType() {
-        throw new UnsupportedOperationException("Deprecated");
+
+    /**
+     * Invokes this KernelFunction. This is the most typical use case.
+     *
+     * @param kernel    The Kernel containing services, plugins, and other state for
+     *                  use throughout the operation.
+     * @param arguments The arguments to pass to the function's invocation
+     * @return The result of the function's execution.
+     * @see FunctionResult#getResultVariable()
+     */
+    public Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments) {
+        return invokeAsync(kernel, arguments, null);
+    }
+    
+    /**
+     * Invokes this KernelFunction. If the {@code variableType} parameter is provided, 
+     * the {@link ContextVarialbeType} is used to convert the result of the function to the
+     * the appropriate {@link FunctionResultType}. The {@code variableType} is
+     * not required for converting well-known types such as {@link String} and {@link Integer}
+     * which have pre-defined {@code ContextVariableType}s. 
+     *
+     * @param kernel    The Kernel containing services, plugins, and other state for
+     *                  use throughout the operation.
+     * @param arguments The arguments to pass to the function's invocation
+     * @param variableType The type of the {@link ContextVariable} returned in the {@link FunctionResult}
+     * @return The result of the function's execution.
+     * @see FunctionResult#getResultVariable()
+     * @see ContextVariableTypes#getDefaultVariableTypeForClass(Class)
+     */
+    public Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType) {
+        return invokeAsync(kernel, arguments, variableType, null);
     }
 
     /**
-     * Invokes the <see cref="KernelFunction"/>.
+     * Invokes this KernelFunction. 
+     * <p>
+     * If the {@code variableType} parameter is provided, 
+     * the {@link ContextVarialbeType} is used to convert the result of the function to the
+     * the appropriate {@link FunctionResultType}. The {@code variableType} is
+     * not required for converting well-known types such as {@link String} and {@link Integer}
+     * which have pre-defined {@code ContextVariableType}s. 
+     * <p> 
+     * The {@link InvocationContext} allows for customization of the 
+     * behavior of function, including the ability to pass in {@link KernelHooks}
+     * {@link PromptExecutionSettings}, and {@link ToolCallBehavior}.
+     * <p> 
+     * The difference between calling the {@code KernelFunction.invokeAsync} method
+     * directly and calling the {@code Kernel.invokeAsync} method is that the latter
+     * adds the {@link KernelHooks#getGlobalHooks() global KernelHooks} (if any)
+     * to the {@link InvocationContext}. Calling {@code KernelFunction.invokeAsync} 
+     * directly does not add the global hooks.
      *
-     * @param kernel    The <see cref="Kernel"/> containing services, plugins, and other state for
+     * @param kernel    The Kernel containing services, plugins, and other state for
      *                  use throughout the operation.
-     * @param arguments The arguments to pass to the function's invocation, including any
-     *                  {@link PromptExecutionSettings}.
-     * @param <T>       The type of the context variable
+     * @param arguments The arguments to pass to the function's invocation
+     * @param variableType The type of the {@link ContextVariable} returned in the {@link FunctionResult}
+     * @param invocationContext The arguments to pass to the function's invocation
      * @return The result of the function's execution.
-     */
-    <T> Mono<FunctionResult<T>> invokeAsync(
+     * @see FunctionResult#getResultVariable()
+     */        
+    public abstract Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments,
-        @Nullable ContextVariableType<T> variableType);
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext);
 
-    <T> Mono<FunctionResult<T>> invokeAsync(
-        Kernel kernel,
-        @Nullable KernelArguments arguments,
-        KernelHooks kernelHooks,
-        @Nullable ContextVariableType<T> variableType);
+    public static interface FromPromptBuilder<T> {
 
-    @Nullable
-    Map<String, PromptExecutionSettings> getExecutionSettings();
+        FromPromptBuilder<T> withName(@Nullable String name);
 
-    interface FromPromptBuilder {
-
-        FromPromptBuilder withName(@Nullable String name);
-
-        FromPromptBuilder withInputParameters(
+        FromPromptBuilder<T> withInputParameters(
             @Nullable List<InputVariable> inputVariables);
 
-        FromPromptBuilder withPromptTemplate(
+        FromPromptBuilder<T> withPromptTemplate(
             @Nullable PromptTemplate promptTemplate);
 
-        FromPromptBuilder withExecutionSettings(
+        FromPromptBuilder<T> withExecutionSettings(
             @Nullable
             Map<String, PromptExecutionSettings> executionSettings);
 
-        FromPromptBuilder withDefaultExecutionSettings(
+        FromPromptBuilder<T> withDefaultExecutionSettings(
             @Nullable
             PromptExecutionSettings executionSettings);
 
-        FromPromptBuilder withDescription(@Nullable String description);
+        FromPromptBuilder<T> withDescription(@Nullable String description);
 
-        FromPromptBuilder withTemplate(@Nullable String template);
+        FromPromptBuilder<T> withTemplate(@Nullable String template);
 
-        KernelFunction build();
+        KernelFunction<T> build();
 
-        FromPromptBuilder withTemplateFormat(String templateFormat);
+        FromPromptBuilder<T> withTemplateFormat(String templateFormat);
 
-        FromPromptBuilder withOutputVariable(@Nullable OutputVariable outputVariable);
+        FromPromptBuilder<T> withOutputVariable(@Nullable OutputVariable outputVariable);
 
-        FromPromptBuilder withPromptTemplateFactory(
+        FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type);
+
+
+        FromPromptBuilder<T> withPromptTemplateFactory(
             @Nullable PromptTemplateFactory promptTemplateFactory);
     }
 }

@@ -4,9 +4,9 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -62,7 +62,7 @@ public class PersonaChatTest {
             .build();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+        KernelFunction<String> chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/PersonaChat.prompt.yaml"));
 
         ChatHistory chatHistory = new ChatHistory();
@@ -73,13 +73,12 @@ public class PersonaChatTest {
             FunctionResult<String> result = kernel
                 .invokeAsync(
                     chatFunction,
-                    KernelArguments
+                    KernelFunctionArguments
                         .builder()
                         .withVariable("messages", chatHistory)
                         .withVariable("persona",
                             "You are a snarky (yet helpful) teenage assistant. Make sure to use hip slang in every response.")
-                        .build(),
-                    String.class
+                        .build()
                 )
                 .block();
 

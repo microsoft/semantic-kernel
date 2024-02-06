@@ -8,8 +8,10 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugins.web.WebSearchEnginePlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -82,12 +84,12 @@ public class Example07_BingAndGooglePlugins {
 
         // Run
         var question = "What's the largest building in the world?";
-        var kernelArguments = KernelArguments.builder()
+        var kernelArguments = KernelFunctionArguments.builder()
             .withVariable("query", question)
             .build();
         
         var function = kernel.getPlugins().getFunction(searchPluginName, "search");
-        var result = kernel.invokeAsync(function, kernelArguments, String.class).block();
+        var result = kernel.invokeAsync(function, kernelArguments).block();
 
         System.out.println(question);
         System.out.printf("----%s----%n", searchPluginName);
@@ -155,17 +157,17 @@ public class Example07_BingAndGooglePlugins {
             .withTopP(1)
             .build();
 
-        var oracle = KernelFunctionFromPrompt.builder()
+        KernelFunction<String> oracle = KernelFunctionFromPrompt.<String>builder()
             .withTemplate(semanticFunction)
             .withDefaultExecutionSettings(promptExecutionSettings)
             .build();
 
-        var kernelArguments = KernelArguments.builder()
+        var kernelArguments = KernelFunctionArguments.builder()
             .withVariable("question", question)
             .withVariable("externalInformation", "")
             .build();
 
-        var answer = kernel.invokeAsync(oracle, kernelArguments, String.class).block();
+        FunctionResult<String> answer = kernel.invokeAsync(oracle, kernelArguments).block();
 
         var result = answer.getResult();
 
@@ -181,13 +183,13 @@ public class Example07_BingAndGooglePlugins {
             System.out.println("Information found:");
             System.out.println(information);
 
-            kernelArguments = KernelArguments.builder()
+            kernelArguments = KernelFunctionArguments.builder()
                 .withVariable("question", question)
                 .withVariable("externalInformation", information)
                 .build();
 
             // Run the prompt function again, now including information from Bing
-            answer = kernel.invokeAsync(oracle, kernelArguments, String.class).block();
+            answer = kernel.invokeAsync(oracle, kernelArguments).block();
         }
         else
         {

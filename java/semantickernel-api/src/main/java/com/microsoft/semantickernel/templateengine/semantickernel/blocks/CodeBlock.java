@@ -1,24 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public final class CodeBlock extends Block implements CodeRendering {
@@ -78,7 +79,7 @@ public final class CodeBlock extends Block implements CodeRendering {
     }
 
     @Override
-    public Mono<String> renderCodeAsync(Kernel kernel, @Nullable KernelArguments arguments) {
+    public Mono<String> renderCodeAsync(Kernel kernel, @Nullable KernelFunctionArguments arguments) {
         if (!this.isValid()) {
             throw new TemplateException(ErrorCodes.SYNTAX_ERROR);
         }
@@ -113,7 +114,7 @@ public final class CodeBlock extends Block implements CodeRendering {
     private <T> Mono<ContextVariable<T>> renderFunctionCallAsync(
         FunctionIdBlock fBlock,
         Kernel kernel,
-        @Nullable KernelArguments arguments,
+        @Nullable KernelFunctionArguments arguments,
         ContextVariableType<T> resultType) {
 
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
@@ -121,11 +122,9 @@ public final class CodeBlock extends Block implements CodeRendering {
         if (this.tokens.size() > 1) {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.enrichFunctionArguments(kernel, fBlock,
-                arguments ==
-                    null ? new DefaultKernelArguments()
-                    : new DefaultKernelArguments(
-                        arguments,
-                        new HashMap<>()));
+                arguments == null 
+                    ? new KernelFunctionArguments()
+                    : new KernelFunctionArguments(arguments));
         }
 
         return kernel
@@ -148,14 +147,14 @@ public final class CodeBlock extends Block implements CodeRendering {
     /// <param name="arguments">The prompt rendering arguments.</param>
     /// <returns>The function arguments.</returns>
     /// <exception cref="KernelException">Occurs when any argument other than the first is not a named argument.</exception>
-    private KernelArguments enrichFunctionArguments(
+    private KernelFunctionArguments enrichFunctionArguments(
         Kernel kernel,
         FunctionIdBlock fBlock,
-        KernelArguments arguments) {
+        KernelFunctionArguments arguments) {
         Block firstArg = this.tokens.get(1);
 
         // Get the function metadata
-        KernelFunctionMetadata functionMetadata = kernel.getPlugins()
+        KernelFunctionMetadata<?> functionMetadata = kernel.getPlugins()
             .getFunction(fBlock.getPluginName(), fBlock.getFunctionName()).getMetadata();
 
         // Check if the function has parameters to be set

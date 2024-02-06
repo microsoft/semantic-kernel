@@ -1,0 +1,249 @@
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.orchestration;
+
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+
+import reactor.util.annotation.NonNull;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+/**
+ * Context Variables is a data structure that holds temporary data while a task is being performed.
+ * It is accessed by functions in the pipeline.
+ */
+public class KernelFunctionArguments implements Buildable, Map<String, ContextVariable<?>> {
+
+    /**
+     * Default key for the main input.
+     */
+    public static final String MAIN_KEY = "input";
+
+    private final CaseInsensitiveMap<ContextVariable<?>> variables;
+
+    public KernelFunctionArguments(
+        Map<String, ContextVariable<?>> variables) {
+        this.variables = new CaseInsensitiveMap<>(variables);
+    }
+
+    public KernelFunctionArguments(@NonNull ContextVariable<?> content) {
+        this.variables = new CaseInsensitiveMap<>();
+        this.variables.put(MAIN_KEY, content);
+    }
+
+
+    public KernelFunctionArguments() {
+        this.variables = new CaseInsensitiveMap<>();
+    }
+
+    /**
+     * Get the input (entry in the MAIN_KEY slot)
+     *
+     * @return input
+     */
+    @Nullable
+    public ContextVariable<?> getInput() {
+        return get(MAIN_KEY);
+    }
+
+    /**
+     * Create formatted string of the variables
+     *
+     * @return formatted string
+     */
+    public String prettyPrint() {
+        return variables.entrySet().stream()
+            .reduce(
+                "",
+                (str, entry) ->
+                    str
+                        + System.lineSeparator()
+                        + entry.getKey()
+                        + ": "
+                        + entry.getValue(),
+                (a, b) -> a + b);
+    }
+
+
+    /**
+     * Return the variable with the given name
+     *
+     * @param key variable name
+     * @return content of the variable
+     */
+    @Nullable
+    public ContextVariable<?> get(String key) {
+        return variables.get(key);
+    }
+
+    /**
+     * Return the variable with the given name
+     *
+     * @param key variable name
+     * @return content of the variable
+     */
+    @Nullable
+    <T> ContextVariable<T> get(String key, Class<T> clazz) {
+        ContextVariable<?> value = variables.get(key);
+        if (value == null) {
+            return null;
+        } else if (clazz.isAssignableFrom(value.getType().getClazz())) {
+            return (ContextVariable<T>) value;
+        }
+
+        throw new IllegalArgumentException(
+            String.format(
+                "Variable %s is of type %s, but requested type is %s",
+                key, value.getType().getClazz(), clazz));
+    }
+
+    public boolean isNullOrEmpty(String key) {
+        return get(key) == null || get(key).isEmpty();
+    }
+
+    @Override
+    public int size() {
+        return variables.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return variables.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return variables.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return variables.containsValue(value);
+    }
+
+    @Override
+    public ContextVariable<?> get(Object key) {
+        return variables.get(key);
+    }
+
+    @Override
+    public ContextVariable<?> put(String key, ContextVariable<?> value) {
+        return variables.put(key, value);
+    }
+
+    @Override
+    public ContextVariable<?> remove(Object key) {
+        return variables.remove(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ? extends ContextVariable<?>> m) {
+        variables.putAll(m);
+    }
+
+    @Override
+    public void clear() {
+        variables.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return variables.keySet();
+    }
+
+    @Override
+    public Collection<ContextVariable<?>> values() {
+        return variables.values();
+    }
+
+    @Override
+    public Set<Entry<String, ContextVariable<?>>> entrySet() {
+        return variables.entrySet();
+    }
+    
+    public static Builder builder() {
+        return new KernelFunctionArguments.Builder();
+    }
+
+    /**
+     * Builder for ContextVariables
+     */
+    public static class Builder implements SemanticKernelBuilder<KernelFunctionArguments> {
+
+        private final Map<String,ContextVariable<?>> variables;
+
+        public Builder() {
+            variables = new HashMap<>();
+            this.variables.put(MAIN_KEY, ContextVariable.of(""));
+        }
+
+        /**
+         * Builds an instance with the given content in the default main key
+         *
+         * @param content Entry to place in the "input" slot
+         * @return {$code this} Builder for fluent coding
+         */
+        public <T> Builder withInput(ContextVariable<T> content) {
+            return withVariable(MAIN_KEY, content);
+        }
+
+        /**
+         * Builds an instance with the given content in the default main key
+         *
+         * @param content Entry to place in the "input" slot
+         * @return {$code this} Builder for fluent coding
+         * @throws SKException if the content cannot be converted to a ContextVariable
+         */
+        public Builder withInput(Object content) {
+            return withInput(ContextVariable.of(content));
+        }
+
+        /**
+         * Builds an instance with the given variables
+         *
+         * @param map Existing variables
+         * @return {$code this} Builder for fluent coding
+         */
+        public Builder withVariables(Map<String, ContextVariable<?>> map) {
+            variables.putAll(map);
+            return this;
+        }
+
+        /**
+         * Set variable
+         *
+         * @param key   variable name
+         * @param value variable value
+         * @return {$code this} Builder for fluent coding
+         */
+        public <T> Builder withVariable(String key, ContextVariable<T> value) {
+            variables.put(key, value);
+            return this;
+        }
+
+        /**
+         * Set variable
+         *
+         * @param key   variable name
+         * @param value variable value
+         * @return {$code this} Builder for fluent coding
+         * @throws SKException if the value cannot be converted to a ContextVariable
+         */
+        public Builder withVariable(String key, Object value) {
+            return withVariable(key, ContextVariable.of(value));
+        }
+
+        @Override
+        public KernelFunctionArguments build() {
+            return new KernelFunctionArguments(variables);
+        }
+    }
+}

@@ -12,12 +12,10 @@ public class ToolCallBehavior {
 
     private static class FunctionCallBehavior {
 
-        private final String key;
         private final boolean required;
         private final boolean enabled;
 
         FunctionCallBehavior(KernelFunction function, boolean required, boolean enabled) {
-            this.key = getKey(function);
             this.required = required;
             this.enabled = enabled;
         }
@@ -50,6 +48,10 @@ public class ToolCallBehavior {
         flags.putAll(toolCallBehavior.flags);
         functionSettings.putAll(toolCallBehavior.functionSettings);
         settings.putAll(toolCallBehavior.settings);
+    }
+
+    public UnmodifiableToolCallBehavior unmodifiableClone() {
+        return new UnmodifiableToolCallBehavior(this);
     }
 
     public ToolCallBehavior kernelFunctions(boolean enable) {
@@ -160,5 +162,43 @@ public class ToolCallBehavior {
     protected int getSetting(String key, int defaultValue) {
         return settings.getOrDefault(key, defaultValue);
     }
+
+    public static class UnmodifiableToolCallBehavior extends ToolCallBehavior {
+
+        protected UnmodifiableToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+            super(toolCallBehavior);
+        }
+
+        @Override
+        public final ToolCallBehavior kernelFunctions(boolean enable) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        public final ToolCallBehavior autoInvoke(boolean enable) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        public final ToolCallBehavior requireFunction(KernelFunction function, boolean require) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        public final ToolCallBehavior enableFunction(KernelFunction function, boolean enable) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override 
+        protected final void setFlag(String key, boolean value) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        protected final void setSetting(String key, int value) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }   
+
+    }    
 
 }

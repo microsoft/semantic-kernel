@@ -1,26 +1,29 @@
 package com.microsoft.semantickernel.hooks;
 
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class FunctionInvokingEvent implements KernelHookEvent {
 
     private final KernelFunction function;
-    @Nullable
-    private final KernelArguments arguments;
+    private final KernelFunctionArguments arguments;
 
-    public FunctionInvokingEvent(KernelFunction function, @Nullable KernelArguments arguments) {
+    public FunctionInvokingEvent(KernelFunction function, 
+        @Nullable KernelFunctionArguments arguments) {
         this.function = function;
-        this.arguments = arguments;
+        this.arguments = arguments != null ? new KernelFunctionArguments(arguments) : new KernelFunctionArguments();
     }
 
     public KernelFunction getFunction() {
         return function;
     }
 
-    @Nullable
-    public KernelArguments getArguments() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public KernelFunctionArguments getArguments() {
         return arguments;
     }
 }

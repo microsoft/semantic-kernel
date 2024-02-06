@@ -53,7 +53,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-ai-openai</artifactId>
+            <artifactId>semantickernel-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

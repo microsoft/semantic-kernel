@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 
 public final class FunctionIdBlock extends Block implements TextRendering {
     private final String skillName;
@@ -31,7 +32,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(@Nullable KernelArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         return this.getContent();
     }
 

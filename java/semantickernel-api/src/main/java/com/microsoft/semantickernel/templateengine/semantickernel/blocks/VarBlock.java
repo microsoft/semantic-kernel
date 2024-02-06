@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 
 public final class VarBlock extends Block implements TextRendering {
 
@@ -24,7 +26,7 @@ public final class VarBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(@Nullable KernelArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         if (variables == null) {
             return "";
         }

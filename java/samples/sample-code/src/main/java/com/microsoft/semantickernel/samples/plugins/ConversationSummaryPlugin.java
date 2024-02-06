@@ -1,15 +1,17 @@
 package com.microsoft.semantickernel.samples.plugins;
 
+import java.util.List;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.text.TextChunker;
-import java.util.List;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,9 +25,9 @@ public class ConversationSummaryPlugin {
     /// </summary>
     private static final int MaxTokens = 1024;
 
-    private KernelFunction summarizeConversationFunction;
-    private KernelFunction conversationActionItemsFunction;
-    private KernelFunction conversationTopicsFunction;
+    private KernelFunction<String> summarizeConversationFunction;
+    private KernelFunction<String> conversationActionItemsFunction;
+    private KernelFunction<String> conversationTopicsFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
@@ -123,19 +125,18 @@ public class ConversationSummaryPlugin {
         return processAsync(this.conversationTopicsFunction, input, kernel);
     }
 
-    private static Mono<String> processAsync(KernelFunction func, String input, Kernel kernel) {
+    private static Mono<String> processAsync(KernelFunction<String> func, String input, Kernel kernel) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
         return Flux.fromIterable(paragraphs)
             .concatMap(paragraph -> {
                 // The first parameter is the input text.
-                return func
-                    .invokeAsync(kernel,
-                        new DefaultKernelArguments.Builder()
-                            .withInput(paragraph)
-                            .build(),
-                        ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
+                return func.invokeAsync(kernel,
+                    new KernelFunctionArguments.Builder()
+                        .withInput(paragraph)
+                        .build(),
+                    ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
             })
             .reduce("", (acc, next) -> {
                 return acc + "\n" + next.getResult();

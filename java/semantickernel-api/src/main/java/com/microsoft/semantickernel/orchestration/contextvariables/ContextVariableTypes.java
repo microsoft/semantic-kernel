@@ -1,5 +1,15 @@
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
@@ -9,11 +19,6 @@ import com.microsoft.semantickernel.orchestration.contextvariables.converters.In
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.NumberVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.StringVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.VoidVariableContextVariableTypeConverter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 public class ContextVariableTypes {
 
@@ -82,11 +87,11 @@ public class ContextVariableTypes {
         }
     }
 
-
     public static <T> ContextVariableType<T> getDefaultVariableTypeForClass(Class<T> aClass) {
         return DEFAULT_TYPES.getVariableTypeForClass(aClass);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> ContextVariableType<T> getVariableTypeForClass(Class<T> aClass) {
         ContextVariableType<?> contextVariableType = variableTypes.get(aClass);
 
@@ -102,9 +107,10 @@ public class ContextVariableTypes {
             })
             .findFirst()
             .orElseThrow(
-                () -> new RuntimeException("Unknown context variable type: " + aClass.getName()));
+                () -> new SKException("Unknown context variable type: " + aClass.getName()));
     }
 
+    @SuppressWarnings("unchecked")
     public <T> ContextVariableType<T> getVariableTypeForSuperClass(Class<T> aClass) {
         ContextVariableType<?> contextVariableType = variableTypes.get(aClass);
 
@@ -120,6 +126,6 @@ public class ContextVariableTypes {
             })
             .findFirst()
             .orElseThrow(
-                () -> new RuntimeException("Unknown context variable type: " + aClass.getName()));
+                () -> new SKException("Unknown context variable type: " + aClass.getName()));
     }
 }

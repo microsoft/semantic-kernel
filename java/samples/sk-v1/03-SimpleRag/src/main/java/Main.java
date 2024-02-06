@@ -1,18 +1,19 @@
+import java.io.IOException;
+import java.nio.file.Path;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
-import java.io.IOException;
-import java.nio.file.Path;
+
 import plugins.searchplugin.Search;
 
 public class Main {
@@ -33,7 +34,7 @@ public class Main {
             .buildAsyncClient();
 
         // Initialize the required functions and services for the kernel
-        KernelFunction chatFunction = KernelFunctionYaml.fromYaml(
+        KernelFunction<String> chatFunction = KernelFunctionYaml.fromYaml(
             Path.of("Plugins/ChatPlugin/GroundedChat.prompt.yaml"));
 
         ChatCompletionService gpt35Turbo = ChatCompletionService.builder()
@@ -63,12 +64,11 @@ public class Main {
             FunctionResult<String> message = kernel
                 .invokeAsync(
                     chatFunction,
-                    KernelArguments.builder()
+                    KernelFunctionArguments.builder()
                         .withVariable("messages", chatHistory)
                         .withVariable("persona",
                             "You are a snarky (yet helpful) teenage assistant. Make sure to use hip slang in every response.")
-                        .build(),
-                    String.class
+                        .build()
                 )
                 .block();
 

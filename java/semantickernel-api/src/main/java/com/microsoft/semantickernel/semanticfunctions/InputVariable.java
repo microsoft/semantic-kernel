@@ -7,21 +7,12 @@ import javax.annotation.Nullable;
 
 public class InputVariable {
 
-    @JsonProperty("name")
     private String name;
-
-    @JsonProperty("type")
     private String type;
-
     @Nullable
-    @JsonProperty("description")
     private String description;
-
-    @JsonProperty("default")
     @Nullable
     private String defaultValue;
-
-    @JsonProperty("is_required")
     private boolean isRequired;
 
     public InputVariable(String name) {
@@ -44,7 +35,7 @@ public class InputVariable {
         @JsonProperty("default")
         @Nullable
         String defaultValue,
-        @JsonProperty("isRequired")
+        @JsonProperty("is_required")
         boolean isRequired) {
         this.name = name;
 

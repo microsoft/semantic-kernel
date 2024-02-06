@@ -8,7 +8,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ServiceNotFoundException;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.TimePlugin;
@@ -78,7 +78,7 @@ public class Example30_ChatWithPrompts {
 
         // Adding required arguments referenced by the prompt templates.
 
-        var arguments = KernelArguments
+        var arguments = KernelFunctionArguments
             .builder()
             .withVariable("selectedText", selectedText)
             .withVariable("startTime", DateTimeFormatter.ofPattern("hh:mm:ss a zz").format(
@@ -117,7 +117,7 @@ public class Example30_ChatWithPrompts {
 
         // Finally, get the response from AI
         var answer = chatCompletion
-            .getChatMessageContentsAsync(chatHistory, null, kernel)
+            .getChatMessageContentsAsync(chatHistory, kernel, null)
             .block();
         System.out.println(
             "------------------------------------\n" + answer.stream().findFirst().get()

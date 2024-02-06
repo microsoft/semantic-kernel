@@ -4,7 +4,8 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
@@ -21,6 +22,6 @@ public interface PromptTemplate extends Buildable {
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Prompt rendered to string</returns>
     Mono<String> renderAsync(Kernel kernel,
-        @Nullable KernelArguments arguments);
+        @Nullable KernelFunctionArguments arguments);
 
 }

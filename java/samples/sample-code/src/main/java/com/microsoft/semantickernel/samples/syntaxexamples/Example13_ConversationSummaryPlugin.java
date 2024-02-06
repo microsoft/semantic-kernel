@@ -8,12 +8,15 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments.Builder;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments.Builder;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.sun.jna.StringArray;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -34,7 +37,7 @@ public class Example13_ConversationSummaryPlugin {
         .getOrDefault("MODEL_ID", "text-davinci-003");
 
 
-    private static final String ChatTranscript =
+    private static final String chatTranscript =
         """
             John: Hello, how are you?
             Jane: I'm fine, thanks. How are you?
@@ -161,12 +164,10 @@ public class Example13_ConversationSummaryPlugin {
         Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
-                    .getFunctions()
-                    .get("GetConversationActionItems"),
+                    .<String>get("GetConversationActionItems"),
                 new Builder()
-                    .withInput(ChatTranscript)
-                    .build(),
-                String.class
+                    .withInput(chatTranscript)
+                    .build()
             );
 
         System.out.println("Generated Action Items:");
@@ -182,12 +183,10 @@ public class Example13_ConversationSummaryPlugin {
         Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
-                    .getFunctions()
-                    .get("GetConversationTopics"),
+                    .<String>get("GetConversationTopics"),
                 new Builder()
-                    .withInput(ChatTranscript)
-                    .build(),
-                String.class
+                    .withInput(chatTranscript)
+                    .build()
             );
 
         System.out.println("Generated Topics:");
@@ -203,15 +202,14 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        FunctionResult<String> summary = kernel
+        FunctionResult<?> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
                     .get("SummarizeConversation"),
                 new Builder()
-                    .withInput(ChatTranscript)
-                    .build(),
-                String.class
+                    .withInput(chatTranscript)
+                    .build()
             ).block();
 
         System.out.println("Generated Summary (This may take some time):");

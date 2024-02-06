@@ -1,5 +1,9 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
@@ -12,22 +16,21 @@ import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
-import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 
 public class Example57_KernelHooks {
 
@@ -93,6 +96,7 @@ public class Example57_KernelHooks {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
+            .withOutputVariable(new OutputVariable("result", "java.lang.String"))
             .build();
 
         FunctionInvokingHook preHook = event -> {
@@ -117,23 +121,22 @@ public class Example57_KernelHooks {
             return event;
         };
 
-        kernel.getHookService().addHook(preHook);
+        kernel.getGlobalKernelHooks().addHook(preHook);
 
         // Demonstrate pattern for removing a handler.
-        kernel.getHookService().addHook("pre-invoke-removed", removedPreExecutionHandler);
-        kernel.getHookService().removeHook("pre-invoke-removed");
+        kernel.getGlobalKernelHooks().addHook("pre-invoke-removed", removedPreExecutionHandler);
+        kernel.getGlobalKernelHooks().removeHook("pre-invoke-removed");
 
-        kernel.getHookService().addHook(postExecutionHandler);
+        kernel.getGlobalKernelHooks().addHook(postExecutionHandler);
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
         var result = kernel.invokeAsync(
                 excuseFunction,
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable("input", input)
-                    .build(),
-                String.class)
+                    .build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -180,17 +183,16 @@ public class Example57_KernelHooks {
                 prompt
             );
         };
-        kernel.getHookService().addHook(myRenderingHandler);
-        kernel.getHookService().addHook(myRenderedHandler);
+        kernel.getGlobalKernelHooks().addHook(myRenderingHandler);
+        kernel.getGlobalKernelHooks().addHook(myRenderedHandler);
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
         var result = kernel.invokeAsync(excuseFunction,
-                KernelArguments
+                KernelFunctionArguments
                     .builder()
                     .withVariable("input", input)
-                    .build(),
-                String.class)
+                    .build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -230,13 +232,12 @@ public class Example57_KernelHooks {
                 )
             );
         };
-        kernel.getHookService().addHook(hook);
+        kernel.getGlobalKernelHooks().addHook(hook);
 
         // Invoke prompt to trigger execution hooks.
         var result = kernel.invokeAsync(
                 writerFunction,
-                KernelArguments.builder().build(),
-                String.class)
+                KernelFunctionArguments.builder().build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -271,14 +272,13 @@ public class Example57_KernelHooks {
             throw new RuntimeException("Cancelled");
         };
 
-        kernel.getHookService().addHook(hook);
+        kernel.getGlobalKernelHooks().addHook(hook);
 
         try {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(
                     writerFunction,
-                    KernelArguments.builder().build(),
-                    String.class)
+                    KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -300,13 +300,13 @@ public class Example57_KernelHooks {
         var secondFunction = KernelFunctionFromPrompt.create("Write a phrase with Cancellation.");
 
         AtomicInteger invokingCounter = new AtomicInteger(0);
-        kernel.getHookService().addHook((FunctionInvokingHook) event -> {
+        kernel.getGlobalKernelHooks().addHook((FunctionInvokingHook) event -> {
             invokingCounter.incrementAndGet();
             return event;
         });
 
         AtomicInteger invokedCounter = new AtomicInteger(0);
-        kernel.getHookService().addHook((FunctionInvokedHook) event -> {
+        kernel.getGlobalKernelHooks().addHook((FunctionInvokedHook) event -> {
             invokedCounter.incrementAndGet();
             throw new RuntimeException("Cancelled");
         });
@@ -315,8 +315,7 @@ public class Example57_KernelHooks {
         try {
             var result = kernel.invokeAsync(
                     secondFunction,
-                    KernelArguments.builder().build(),
-                    String.class)
+                    KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -341,7 +340,7 @@ public class Example57_KernelHooks {
                 .build())
             .build();
 
-        kernel.getHookService().addPreChatCompletionHook(event -> {
+        kernel.getGlobalKernelHooks().addPreChatCompletionHook(event -> {
             ChatCompletionsOptions options = event.getOptions();
             List<ChatRequestMessage> messages = options.getMessages();
 
@@ -358,8 +357,7 @@ public class Example57_KernelHooks {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(
                     writerFunction,
-                    KernelArguments.builder().build(),
-                    String.class)
+                    KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -401,13 +399,17 @@ public class Example57_KernelHooks {
             );
         });
 
+        InvocationContext invocationContext = InvocationContext.builder()
+            .withKernelHooks(kernelHooks)
+            .build();
+
         try {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(
                     writerFunction,
-                    KernelArguments.builder().build(),
-                    kernelHooks,
-                    String.class)
+                    KernelFunctionArguments.builder().build(),
+                    null,
+                    invocationContext)
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {

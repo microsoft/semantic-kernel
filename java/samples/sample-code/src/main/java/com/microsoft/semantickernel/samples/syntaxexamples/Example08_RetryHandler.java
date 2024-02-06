@@ -39,11 +39,11 @@ public class Example08_RetryHandler {
 
         String question = "How popular is the Polly library?";
 
-        KernelFunction fuction = KernelFunctionFromPrompt.create(question);
+        KernelFunction<String> fuction = KernelFunctionFromPrompt.create(question);
 
         try {
             // Will retry 3 times with exponential backoff
-            kernel.invokeAsync(fuction, null, String.class).block();
+            kernel.invokeAsync(fuction, null).block();
         } catch (Exception e) {
             System.out.println("Hit max retries");
         }

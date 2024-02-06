@@ -32,7 +32,7 @@ public class Example69_MutableKernelPlugin {
         kernel.getPlugins().add(plugin);
 
         var result = kernel.invokeAsync(kernel.getPlugins().getFunction("Plugin", "dateFunction"),
-            null, String.class).block();
+            null).block();
 
         System.out.println("Result: " + result.getResult());
     }

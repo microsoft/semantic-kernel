@@ -7,9 +7,10 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.Arrays;
@@ -72,9 +73,9 @@ public class Example61_MultipleLLMs {
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelArguments arguments = KernelArguments.builder().build();
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
-        KernelFunction func = KernelFunctionFromPrompt
+        KernelFunction<?> func = KernelFunctionFromPrompt
             .builder()
             .withTemplate(prompt)
             .withDefaultExecutionSettings(
@@ -82,9 +83,10 @@ public class Example61_MultipleLLMs {
                     .withServiceId(serviceId)
                     .build()
             )
+            .withOutputVariable("result", "java.lang.String")
             .build();
 
-        var result = kernel.invokeAsync(func, arguments, String.class).block();
+        var result = kernel.invokeAsync(func, arguments).block();
         System.out.println(result.getResult());
     }
 
@@ -103,9 +105,9 @@ public class Example61_MultipleLLMs {
                         .withModelId(modelId)
                         .build()
                 )
+                .withOutputVariable("result", "java.lang.String")
                 .build(),
-            KernelArguments.builder().build(),
-            String.class
+            KernelFunctionArguments.builder().build()
         ).block();
 
         System.out.println(result.getResult());
@@ -137,8 +139,7 @@ public class Example61_MultipleLLMs {
 
         var result = kernel.invokeAsync(
                 function,
-                KernelArguments.builder().build(),
-                String.class)
+                KernelFunctionArguments.builder().build())
             .block();
 
         System.out.println(result.getResult());

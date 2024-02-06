@@ -1,23 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Options;
-import com.github.jknack.handlebars.ValueResolver;
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelPluginCollection;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +11,27 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Options;
+import com.github.jknack.handlebars.ValueResolver;
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginCollection;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 
 public class HandlebarsPromptTemplate implements PromptTemplate {
@@ -45,12 +47,12 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments) {
+        @Nullable KernelFunctionArguments arguments) {
         HandleBarsPromptTemplateHandler handler =
             new HandleBarsPromptTemplateHandler(kernel, promptTemplate.getTemplate());
 
         if (arguments == null) {
-            arguments = new DefaultKernelArguments();
+            arguments = new KernelFunctionArguments();
         }
         return handler.render(arguments);
     }
@@ -128,8 +130,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @Override
         public Object resolve(Object context, String name) {
             Object value = null;
-            if (context instanceof KernelArguments) {
-                ContextVariable<?> variable = ((KernelArguments) context).get(name);
+            if (context instanceof KernelFunctionArguments) {
+                ContextVariable<?> variable = ((KernelFunctionArguments) context).get(name);
                 value = variable != null ? variable.getValue() : null;
             }
             if (context instanceof ContextVariable) {
@@ -153,9 +155,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         @Override
         public Set<Entry<String, Object>> propertySet(Object context) {
-            if (context instanceof KernelArguments) {
+            if (context instanceof KernelFunctionArguments) {
                 HashMap<String, Object> result = new HashMap<>();
-                result.putAll((KernelArguments) context);
+                result.putAll((KernelFunctionArguments) context);
                 return result.entrySet();
             } else if (context instanceof ContextVariable) {
                 HashMap<String, Object> result = new HashMap<>();
@@ -232,9 +234,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 Iterator<KernelPlugin> plugins = ((KernelPluginCollection) context).iterator();
                 while (plugins.hasNext()) {
                     KernelPlugin plugin = plugins.next();
-                    Iterator<KernelFunction> functions = plugin.iterator();
+                    Iterator<KernelFunction<?>> functions = plugin.iterator();
                     while (functions.hasNext()) {
-                        KernelFunction function = functions.next();
+                        KernelFunction<?> function = functions.next();
                         sb.append(options.fn(function));
                     }
                 }
@@ -268,7 +270,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         }
 
 
-        public Mono<String> render(KernelArguments variables) {
+        public Mono<String> render(KernelFunctionArguments variables) {
             try {
                 ArrayList<ValueResolver> resolvers = new ArrayList<>();
                 resolvers.add(new MessageResolver());

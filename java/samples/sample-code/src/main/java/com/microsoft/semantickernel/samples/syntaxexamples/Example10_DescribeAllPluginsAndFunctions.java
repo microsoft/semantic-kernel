@@ -9,13 +9,16 @@ import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextG
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.plugins.text.TextPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 
 public class Example10_DescribeAllPluginsAndFunctions {
@@ -154,7 +157,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
             });
     }
 
-    private static void printFunction(KernelFunctionMetadata func) {
+    private static void printFunction(KernelFunctionMetadata<?> func) {
         System.out.println("   " + func.getName() + ": " + func.getDescription());
 
         if (!func.getParameters().isEmpty()) {

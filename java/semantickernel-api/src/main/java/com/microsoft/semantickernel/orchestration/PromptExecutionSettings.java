@@ -1,7 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,8 +55,6 @@ public class PromptExecutionSettings {
     private final String user;
     @Nullable
     private final List<String> stopSequences;
-    @Nullable
-    private final ToolCallBehavior toolCallBehavior;
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
@@ -81,36 +78,6 @@ public class PromptExecutionSettings {
         @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
         @Nullable
         @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
-        this(
-            serviceId,
-            modelId,
-            temperature,
-            topP,
-            presencePenalty,
-            frequencyPenalty,
-            maxTokens,
-            resultsPerPrompt,
-            bestOf,
-            user,
-            stopSequences,
-            tokenSelectionBiases,
-            null);
-    }
-
-    public PromptExecutionSettings(
-        String serviceId,
-        String modelId,
-        double temperature,
-        double topP,
-        double presencePenalty,
-        double frequencyPenalty,
-        int maxTokens,
-        int resultsPerPrompt,
-        int bestOf,
-        String user,
-        @Nullable List<String> stopSequences,
-        @Nullable Map<Integer, Integer> tokenSelectionBiases,
-        @Nullable ToolCallBehavior toolCallBehavior) {
         this.serviceId = serviceId;
         this.modelId = modelId;
         this.temperature = temperature;
@@ -126,8 +93,6 @@ public class PromptExecutionSettings {
         this.tokenSelectionBiases =
             tokenSelectionBiases != null ? new HashMap<>(tokenSelectionBiases)
                 : Collections.emptyMap();
-        this.toolCallBehavior =
-            toolCallBehavior != null ? new ToolCallBehavior(toolCallBehavior) : null;
     }
 
     @JsonProperty(SERVICE_ID)
@@ -199,15 +164,6 @@ public class PromptExecutionSettings {
         return null;
     }
 
-    @JsonIgnore
-    @Nullable
-    public ToolCallBehavior getToolCallBehavior() {
-        if (toolCallBehavior != null) {
-            return new ToolCallBehavior(toolCallBehavior);
-        }
-        return null;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -275,11 +231,6 @@ public class PromptExecutionSettings {
             return this;
         }
 
-        public Builder withToolCallBehavior(ToolCallBehavior toolCallBehavior) {
-            settings.put("toolCallBehavior", toolCallBehavior);
-            return this;
-        }
-
         @SuppressWarnings("unchecked")
         public Builder withStopSequences(List<String> stopSequences) {
             if (stopSequences != null) {
@@ -313,8 +264,7 @@ public class PromptExecutionSettings {
                 (String) settings.getOrDefault(USER, ""),
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
-                    Collections.emptyMap()),
-                (ToolCallBehavior) settings.getOrDefault("toolCallBehavior", new ToolCallBehavior())
+                    Collections.emptyMap())
             );
         }
     }

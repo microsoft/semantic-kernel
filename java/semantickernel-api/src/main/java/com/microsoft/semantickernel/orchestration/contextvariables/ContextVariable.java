@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import javax.annotation.Nullable;
 
 public class ContextVariable<T> {
 
@@ -28,6 +31,7 @@ public class ContextVariable<T> {
         return of(t);
     }
 
+    @SuppressWarnings("rawtypes")
     public static ContextVariable<?> untypedOf(
         @Nullable Object value,
         Class<?> clazz) {
@@ -141,10 +145,10 @@ public class ContextVariable<T> {
 
     @Nullable
     public <U> U getValue(Class<U> clazz) {
-        if (value == null || clazz.isAssignableFrom(value.getClass())) {
+        try {
             return clazz.cast(value);
-        } else {
-            throw new RuntimeException("Cannot cast " + value.getClass() + " to " + clazz);
+        } catch (ClassCastException e) {
+            throw new SKException("Cannot cast " + (value != null ? value.getClass() : "null") + " to " + clazz, e);
         }
     }
 
@@ -171,12 +175,20 @@ public class ContextVariable<T> {
 
     @SuppressWarnings("unchecked")
     public static <T> ContextVariable<T> of(T value) {
+        Objects.requireNonNull(value, "value cannot be null");
+
+        if (value instanceof ContextVariable) {
+            return (ContextVariable<T>) value;
+        }
+
         ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(
             (Class<T>) value.getClass());
         return new ContextVariable<>(type, value);
     }
 
     public static <T> ContextVariable<T> of(T value, ContextVariableTypeConverter<T> converter) {
+        Objects.requireNonNull(value, "value cannot be null");
+        Objects.requireNonNull(converter, "converter cannot be null");
         ContextVariableType<T> type = new ContextVariableType<>(converter, converter.getType());
         return new ContextVariable<>(type, value);
     }

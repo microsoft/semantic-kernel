@@ -7,6 +7,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -75,6 +76,8 @@ public class Example49_LogitBias {
             .withTokenSelectionBiases(biases)
             .build();
 
+        var invocationContext = InvocationContext.builder().withPromptExecutionSettings(settings).build();
+
         System.out.println("Chat content:");
         System.out.println("------------------------");
 
@@ -85,7 +88,7 @@ public class Example49_LogitBias {
         messageOutputAsync(chatHistory);
 
         var replyMessage = openAIChatCompletion.getChatMessageContentsAsync(chatHistory,
-            settings, kernel).block();
+            kernel, invocationContext).block();
         replyMessage.forEach(message -> chatHistory.addAssistantMessage(message.getContent()));
         messageOutputAsync(chatHistory);
 
@@ -94,7 +97,7 @@ public class Example49_LogitBias {
         messageOutputAsync(chatHistory);
 
         replyMessage = openAIChatCompletion.getChatMessageContentsAsync(chatHistory,
-            settings, kernel).block();
+            kernel, invocationContext).block();
         replyMessage.forEach(message -> chatHistory.addAssistantMessage(message.getContent()));
         messageOutputAsync(chatHistory);
 

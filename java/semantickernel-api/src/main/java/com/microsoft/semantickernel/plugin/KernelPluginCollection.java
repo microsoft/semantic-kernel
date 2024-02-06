@@ -26,12 +26,12 @@ public class KernelPluginCollection implements Iterable<KernelPlugin> {
         plugins.forEach(plugin -> this.plugins.put(plugin.getName(), plugin));
     }
 
-    public KernelFunction getFunction(String pluginName, String functionName) {
+    public KernelFunction<?> getFunction(String pluginName, String functionName) {
         KernelPlugin plugin = plugins.get(pluginName);
         if (plugin == null) {
             throw new IllegalArgumentException("Failed to find plugin " + pluginName);
         }
-        KernelFunction function = plugin.get(functionName);
+        KernelFunction<?> function = plugin.get(functionName);
 
         if (function == null) {
             throw new IllegalArgumentException(

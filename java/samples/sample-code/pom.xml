@@ -89,7 +89,6 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>${maven.spotbugs-plugin.version}</version>
                         <configuration>
                             <skip>true</skip>
                         </configuration>
@@ -113,7 +112,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>run-sample</id>

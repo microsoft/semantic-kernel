@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 
 public final class TextBlock extends Block implements TextRendering {
 
@@ -16,7 +17,7 @@ public final class TextBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(@Nullable KernelArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         return super.getContent();
     }
 
