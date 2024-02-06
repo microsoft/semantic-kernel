@@ -48,9 +48,9 @@ public class RedisMemoryRecord extends JsonMemoryRecord {
         ZonedDateTime time = null;
         ObjectMapper mapper = new ObjectMapper();
         try {
-//            if (map.get(TIME) != null) {
-//                time = mapper.readValue(map.get(TIME), ZonedDateTime.class);
-//            }
+            if (map.get(TIME) != null) {
+                time = mapper.readValue(map.getOrDefault(TIME, ZonedDateTime.now().toString()), ZonedDateTime.class);
+            }
             if (withEmbedding) {
                 List<Float> embeddings = mapper.readValue(map.get(EMBEDDING), List.class);
                 embedding = new Embedding(embeddings);

@@ -35,24 +35,30 @@ public class RedisMemoryStore implements MemoryStore {
     private static final VectorAlgorithm DefaultIndexAlgorithm = VectorAlgorithm.HNSW; // FLAT or HNSW
     private static final String DefaultVectorType = RedisVectorType.FLOAT32; // prefer better accuracy
     private static final String DefaultDistanceMetric = RedisVectorDistanceMetric.L2;
-    private static final int DefaultQueryDialect = 2; // this has to be >= 2 for vector functionality
+    private static final Integer DefaultQueryDialect = 2; // this has to be >= 2 for vector functionality
     private static final Integer DefaultVectorSize = 1536; // framework model dependent - ada-002
     private static final String SUFFIX = "sk";
     private static final String INDEX = "idx";
     private static final String OK = "OK";
 
     private final JedisPooled client;
-    private int vectorSize = DefaultVectorSize;
+    private Integer vectorSize = DefaultVectorSize;
     private VectorAlgorithm vectorIndexAlgorithm = DefaultIndexAlgorithm;
     private String vectorDistanceMetric = DefaultDistanceMetric;
     private String vectorType = DefaultVectorType;
-    private int queryDialect;
+    private Integer queryDialect;
+
+    public static void isXinRange(Integer x, Integer lower, Integer upper, String message) {
+        if (lower > x || x > upper) {
+            throw new IllegalArgumentException(MessageFormat.format(message, x));
+        }
+    }
 
     /**
      * Create a new instance of semantic memory using Redis.
      *
      * @param client A Redis Database client connection.
-     * @param vectorSize Embedding vector size, defaults to 1536.
+     * @param vectorSize Embedding vector size, defaults to 1536 - framework model dependent - ada-002.
      * @param vectorIndexAlgorithm Indexing algorithm for vectors, defaults to "HNSW"
      * @param vectorDistanceMetric Metric for measuring vector distances, defaults to "COSINE"
      * @param queryDialect Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
@@ -62,15 +68,13 @@ public class RedisMemoryStore implements MemoryStore {
         Integer vectorSize,
         VectorAlgorithm vectorIndexAlgorithm,
         String vectorDistanceMetric,
-        int queryDialect
+        Integer queryDialect
         ) {
 
-        if (vectorSize <= 0) {
-            throw new InvalidParameterException(
-                    MessageFormat.format(
-                    "Invalid vector size: {vectorSize}. Vector size must be a positive integer.",
-                    vectorSize.toString()));
-        }
+        isXinRange(vectorSize, 0, 8192,
+                "Invalid vector size: {x}. Vector size must be in the range 0-8192.");
+        isXinRange(queryDialect, 2, 4,
+                "Invalid query dialect: {x}. Query dialect must be in the range 2-4.");
 
         this.client = client;
 
@@ -91,17 +95,16 @@ public class RedisMemoryStore implements MemoryStore {
    */
     public RedisMemoryStore(
         String connectionString,
-        int vectorSize,
+        Integer vectorSize,
         VectorAlgorithm vectorIndexAlgorithm,
         String vectorDistanceMetric,
-        int queryDialect) {
+        Integer queryDialect) {
 
-        if (vectorSize <= 0) {
-            throw new InvalidParameterException(
-                MessageFormat.format(
-                        "Invalid vector size: {vectorSize}. Vector size must be a positive integer.",
-                        vectorSize));
-        }
+        isXinRange(vectorSize, 0, 8192,
+                "Invalid vector size: {x}. Vector size must be in the range 0-8192.");
+        isXinRange(queryDialect, 2, 4,
+                "Invalid query dialect: {x}. Query dialect must be in the range 2-4.");
+
         this.client = new JedisPooled(connectionString);
 
         this.vectorSize = vectorSize;
@@ -171,7 +174,7 @@ public class RedisMemoryStore implements MemoryStore {
 
     @Override
     public Mono<Void> createCollectionAsync(@Nonnull String collectionName) {
-        // Indexes are created when sending a record. The creation requires the size of the
+        // Indexes are created when sending a record; creation requires the size of the embedding vector
         return Mono.empty();
     }
 
@@ -373,12 +376,11 @@ public class RedisMemoryStore implements MemoryStore {
                 RedisException.ErrorCodes.INVALID_EMBEDDING_SIZE, "the value must be greater than zero");
         }
 
-        Map<String, Object> attributes = new HashMap<String, Object>() {
-            {
-                put(RedisIndexSchemaParams.TYPE, vectorType);
-                put(RedisIndexSchemaParams.DIM, embeddingSize);
-                put(RedisIndexSchemaParams.DIST, vectorDistanceMetric); }
-        };
+        Map<String, Object> attributes = Map.ofEntries(
+                new AbstractMap.SimpleEntry<String, Object>(RedisIndexSchemaParams.TYPE, vectorType),
+                new AbstractMap.SimpleEntry<String, Object>(RedisIndexSchemaParams.DIM, embeddingSize),
+                new AbstractMap.SimpleEntry<String, Object>(RedisIndexSchemaParams.DIST, vectorDistanceMetric));
+
         Schema schema = new Schema()
                 .addVectorField("Embedding", Schema.VectorField.VectorAlgo.FLAT, attributes).as("Embedding")
                 .addTextField("Id", 1.0).as("Id")
@@ -547,7 +549,7 @@ public class RedisMemoryStore implements MemoryStore {
                 vectorSize,
                 vectorIndexAlgorithm,
                 vectorDistanceMetric,
-                (queryDialect >= 2 ? queryDialect : 2)
+                queryDialect
             );
         }
 

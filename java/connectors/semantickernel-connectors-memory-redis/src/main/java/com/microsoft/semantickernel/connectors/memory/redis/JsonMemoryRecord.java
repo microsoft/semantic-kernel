@@ -21,6 +21,7 @@ public class JsonMemoryRecord {
     static final String EMBEDDING = "Embedding";
     static final String EXTERNAL_SOURCE_NAME = "ExternalSourceName";
     static final String IS_REFERENCE = "Reference";
+    static final String TIME = "Timestamp";
 
     private final String id;
     private final String text;
