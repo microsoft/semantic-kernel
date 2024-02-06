@@ -326,7 +326,7 @@ class Kernel(KernelBaseModel):
             break
 
     async def invoke(
-        self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments
+        self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments = KernelArguments()
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """Execute one or more functions.
 
@@ -896,12 +896,12 @@ class Kernel(KernelBaseModel):
         return self.register_semantic_function(plugin_name, function_name, function_config)
 
     def add_function_invoking_handler(
-        self, handler: Callable[[KernelFunctionMetadata, KernelArguments], FunctionInvokingEventArgs]
+        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
     ) -> None:
         self.function_invoking_handlers[id(handler)] = handler
 
     def add_function_invoked_handler(
-        self, handler: Callable[[KernelFunctionMetadata, KernelArguments, FunctionResult], FunctionInvokedEventArgs]
+        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokedEventArgs]
     ) -> None:
         self.function_invoked_handlers[id(handler)] = handler
 

@@ -16,6 +16,7 @@ from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
 from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
 from semantic_kernel.functions.functions_view import FunctionsView
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -23,10 +24,6 @@ from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterM
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
-from semantic_kernel.functions.old.context_variables import ContextVariables
-from semantic_kernel.functions.old.delegate_handlers import DelegateHandlers
-from semantic_kernel.functions.old.delegate_inference import DelegateInference
-from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -95,17 +92,10 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         """Return an KernelFunction."""
 
         @kernel_function(name="function")
-        def my_function(cx: KernelContext) -> str:
-            return f"F({cx.variables.input})"
+        def my_function(arguments: KernelArguments) -> str:
+            return f"F({arguments['input']})"
 
         return KernelFunction.from_native_method(my_function, "plugin")
-
-    def create_context_variables() -> ContextVariables:
-        """Return a context variables object."""
-        return ContextVariables(
-            content="content",
-            variables={"foo": "bar"},
-        )
 
     def create_plugin_collection() -> KernelPluginCollection:
         """Return a plugin collection."""
@@ -130,24 +120,15 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             required=True,
         ),
         KernelFunctionMetadata: KernelFunctionMetadata(
-            "foo",
-            "bar",
-            "baz",
-            [KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
-            True,
-            False,
+            name="foo",
+            plugin_name="bar",
+            description="baz",
+            parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
+            is_semantic=True,
+            is_asynchronous=False,
         ),
         FunctionsView: create_functions_view(),
         KernelPluginCollection: create_plugin_collection(),
-        DelegateHandlers: DelegateHandlers(),
-        DelegateInference: DelegateInference(),
-        ContextVariables: create_context_variables(),
-        KernelContext[NullMemory]: KernelContext[NullMemory](
-            # TODO: Test serialization with different types of memories.
-            variables=create_context_variables(),
-            memory=NullMemory(),
-            plugins=create_plugin_collection(),
-        ),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
     }
@@ -182,14 +163,11 @@ STATELESS_CLASSES = [
     CodeTokenizer,
     PromptTemplateEngine,
     TemplateTokenizer,
-    DelegateHandlers,
-    DelegateInference,
     NullMemory,
 ]
 
 ENUMS = [
     BlockTypes,
-    DelegateInference,
 ]
 
 PYDANTIC_MODELS = [
@@ -203,8 +181,6 @@ PYDANTIC_MODELS = [
     KernelFunctionMetadata,
     FunctionsView,
     KernelPluginCollection,
-    ContextVariables,
-    KernelContext[NullMemory],
     pytest.param(
         KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),

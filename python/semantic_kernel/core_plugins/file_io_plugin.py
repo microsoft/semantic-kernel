@@ -2,7 +2,6 @@
 
 import os
 import sys
-import typing as t
 
 import aiofiles
 
@@ -13,9 +12,6 @@ else:
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-
-if t.TYPE_CHECKING:
-    pass
 
 
 class FileIOPlugin(KernelBaseModel):

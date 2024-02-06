@@ -279,7 +279,7 @@ class KernelFunction(KernelBaseModel):
                 name="function",
                 description="The function to execute",
                 default_value=None,
-                type="FunctionView",
+                type="KernelFunctionMetadata",
                 required=True,
             ),
             KernelParameterMetadata(
@@ -461,6 +461,9 @@ class KernelFunction(KernelBaseModel):
 
         function_arguments = {}
         for param in self._parameters:
+            if param.name == "function":
+                function_arguments[param.name] = self.describe()
+                continue
             if param.name == "kernel":
                 function_arguments[param.name] = kernel
                 continue
@@ -473,8 +476,8 @@ class KernelFunction(KernelBaseModel):
             if param.name == "arguments":
                 function_arguments[param.name] = arguments
                 continue
-            if param.name == "function":
-                function_arguments[param.name] = self.describe()
+            if self.is_semantic:
+                # a semantic function will receive and use the arguments instead of named arguments
                 continue
             if param.name in arguments:
                 function_arguments[param.name] = arguments[param.name]

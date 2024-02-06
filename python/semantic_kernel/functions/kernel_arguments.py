@@ -1,14 +1,15 @@
-from collections import UserDict
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-class KernelArguments(UserDict):
+class KernelArguments(dict):
     def __init__(
         self,
-        settings: Optional[Union["AIRequestSettings", List["AIRequestSettings"]]] = None,
+        settings: Optional[Union["PromptExecutionSettings", List["PromptExecutionSettings"]]] = None,
         **kwargs: Dict[str, Any],
     ):
         """Initializes a new instance of the KernelArguments class,
@@ -18,7 +19,7 @@ class KernelArguments(UserDict):
         just adds the execution_settings as a dict, with service_id and the settings.
 
         Arguments:
-            settings {Optional[Union[AIRequestSettings, List[AIRequestSettings]]]} -- The settings for the execution.
+            settings {Optional[Union[PromptExecutionSettings, List[PromptExecutionSettings]]]} -- The settings for the execution.
                 If a list is given, make sure all items in the list have a unique service_id
                 as that is used as the key for the dict.
             **kwargs {Dict[str, Any]} -- The arguments for the function invocation, works similar to a regular dict.
@@ -30,4 +31,4 @@ class KernelArguments(UserDict):
                 settings_dict = {s.service_id: s for s in settings}
             else:
                 settings_dict = {settings.service_id: settings}
-        self.execution_settings: Optional[Dict[str, "AIRequestSettings"]] = settings_dict
+        self.execution_settings: Optional[Dict[str, "PromptExecutionSettings"]] = settings_dict

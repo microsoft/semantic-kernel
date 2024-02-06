@@ -20,7 +20,7 @@ class FunctionIdBlock(Block):
     plugin_name: str = Field("", init_var=False)
     function_name: str = Field("", init_var=False)
 
-    def __init__(self, content: Optional[str] = None):
+    def __init__(self, content: Optional[str] = None, **kwargs):
         super().__init__(content=content and content.strip())
 
         function_name_parts = self.content.split(".")

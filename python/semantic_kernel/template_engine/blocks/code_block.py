@@ -28,6 +28,7 @@ class CodeBlock(Block):
         self,
         content: str,
         tokens: Optional[List[Block]] = None,
+        **kwargs,
     ):
         super().__init__(content=content and content.strip())
         self.tokens = tokens or CodeTokenizer.tokenize(content)
