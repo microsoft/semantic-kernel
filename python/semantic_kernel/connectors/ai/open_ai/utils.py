@@ -8,17 +8,45 @@ from openai.types.chat import ChatCompletion
 
 from semantic_kernel import Kernel, KernelContext
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _describe_function(function: KernelFunctionBase) -> Dict[str, str]:
-    """Create the object used for function_calling.
+def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
+    """Create the object used for the tool call.
 
+    Assumes that arguments for semantic functions are optional, for native functions required.
+    """
+    func_view = function.describe()
+    return {
+        "type": "function",
+        "function": {
+            "name": f"{func_view.plugin_name}-{func_view.name}",
+            "description": func_view.description,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    param.name: {
+                        "description": param.description,
+                        "type": param.type_ if param.type_ else "string",
+                        **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
+                    }
+                    for param in func_view.parameters
+                },
+                "required": [p.name for p in func_view.parameters if p.required],
+            },
+        },
+    }
+
+
+def _describe_function(function: KernelFunction) -> Dict[str, str]:
+    """Create the object used for function_calling.
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
     func_view = function.describe()
@@ -35,8 +63,10 @@ def _describe_function(function: KernelFunctionBase) -> Dict[str, str]:
     }
 
 
-def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
-    """Create the object used for function_calling.
+def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
+    """Create the object used for a tool call.
+
+    This is the preferred method to create the tool call object.
 
     args:
         kernel: the kernel.
@@ -57,7 +87,39 @@ def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) ->
                     "exclude_function": ["plugin1-function1", "plugin2-function2"],
                     }
                 will return all functions except plugin1-function1 and plugin2-function2.
-        caller_function_name: the name of the function that is calling the other functions.
+    returns:
+        a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
+    """
+    return get_function_calling_object(kernel, filter, is_tool_call=True)
+
+
+def get_function_calling_object(
+    kernel: Kernel, filter: Dict[str, List[str]], is_tool_call: Optional[bool] = False
+) -> List[Dict[str, str]]:
+    """Create the object used for a function call.
+
+    Note: although Azure has deprecated function calling, SK still supports it for the time being.
+
+    args:
+        kernel: the kernel.
+        filter: a dictionary with keys
+            exclude_plugin, include_plugin, exclude_function, include_function
+            and lists of the required filter.
+            The function name should be in the format "plugin_name-function_name".
+            Using exclude_plugin and include_plugin at the same time will raise an error.
+            Using exclude_function and include_function at the same time will raise an error.
+            If using include_* implies that all other function will be excluded.
+            Example:
+                filter = {
+                    "exclude_plugin": ["plugin1", "plugin2"],
+                    "include_function": ["plugin3-function1", "plugin4-function2"],
+                    }
+                will return only plugin3-function1 and plugin4-function2.
+                filter = {
+                    "exclude_function": ["plugin1-function1", "plugin2-function2"],
+                    }
+                will return all functions except plugin1-function1 and plugin2-function2.
+        is_tool_call: if True, the function will return a list of tool calls, otherwise a list of functions.
     returns:
         a filtered list of dictionaries of the functions in the kernel that can be passed to the function calling api.
     """
@@ -81,26 +143,45 @@ def get_function_calling_object(kernel: Kernel, filter: Dict[str, List[str]]) ->
     for (
         plugin_name,
         plugin,
-    ) in kernel.plugins.data.items():
+    ) in kernel.plugins.plugins.items():
         if plugin_name in exclude_plugin or (include_plugin and plugin_name not in include_plugin):
             continue
-        for function_name, function in plugin.items():
+        for function_name, function in plugin.functions.items():
             current_name = f"{plugin_name}-{function_name}"
             if current_name in exclude_function or (include_function and current_name not in include_function):
                 continue
-            result.append(_describe_function(function))
+            result.append(_describe_tool_call(function) if is_tool_call else _describe_function(function))
     return result
 
 
-async def execute_function_call(kernel: Kernel, function_call: FunctionCall, log: Optional[Any] = None) -> str:
-    if log:
-        logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-    result = await kernel.run(
-        kernel.func(**function_call.split_name_dict()),
-        input_vars=function_call.to_context_variables(),
-    )
-    logger.info(f"Function call result: {result}")
+async def execute(kernel: Kernel, func: KernelFunction, input_vars: ContextVariables) -> str:
+    """Execute a function and return the result.
+
+    Args:
+        kernel (Kernel): the kernel to use.
+        func (KernelFunction): the function to execute.
+        input_vars (ContextVariables): the input variables.
+
+    Returns:
+        str: the result of the execution.
+    """
+    result = await kernel.run(func, input_vars=input_vars)
+    logger.info(f"Execution result: {result}")
     return str(result)
+
+
+async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> str:
+    """Execute a function call and return the result."""
+    func = kernel.func(**function_call.split_name_dict())
+    input_vars = function_call.to_context_variables()
+    return await execute(kernel, func, input_vars)
+
+
+async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> str:
+    """Execute a tool call and return the result."""
+    func = kernel.func(**tool_call.function.split_name_dict())
+    input_vars = tool_call.function.to_context_variables()
+    return await execute(kernel, func, input_vars)
 
 
 async def chat_completion_with_function_call(
@@ -108,9 +189,7 @@ async def chat_completion_with_function_call(
     context: KernelContext,
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
-    chat_function: Optional[KernelFunctionBase] = None,
-    *,
-    log: Optional[Any] = None,
+    chat_function: Optional[KernelFunction] = None,
     **kwargs: Dict[str, Any],
 ) -> KernelContext:
     """Perform a chat completion with auto-executing function calling.
@@ -127,7 +206,7 @@ async def chat_completion_with_function_call(
         kernel: the kernel to use.
         context: the context to use.
         functions: the function calling object,
-            make sure to use get_function_calling_object method to create it.
+            make sure to use get_tool_call_object method to create it.
         Optional arguments:
             chat_plugin_name: the plugin name of the chat function.
             chat_function_name: the function name of the chat function.
@@ -140,8 +219,6 @@ async def chat_completion_with_function_call(
     returns:
         the context with the result of the chat completion, just like a regular invoke/run_async.
     """
-    if log:
-        logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
@@ -149,9 +226,9 @@ async def chat_completion_with_function_call(
     if chat_function is None:
         chat_function = kernel.func(plugin_name=chat_plugin_name, function_name=chat_function_name)
     assert isinstance(
-        chat_function._chat_prompt_template, OpenAIChatPromptTemplate
+        chat_function.chat_prompt_template, OpenAIChatPromptTemplate
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
-    settings = chat_function._chat_prompt_template.prompt_config.execution_settings
+    settings = chat_function.chat_prompt_template.prompt_config.execution_settings
     if current_call_count >= max_function_calls:
         settings.functions = []
     context = await chat_function.invoke(
@@ -159,13 +236,26 @@ async def chat_completion_with_function_call(
         # when the maximum number of function calls is reached, execute the chat function without Functions.
         settings=settings,
     )
-    function_call = context.objects.pop("function_call", None)
-    # if there is no function_call or if the content is not a FunctionCall object, return the context
-    if function_call is None or not isinstance(function_call, FunctionCall):
+    if not (results := context.objects.pop("results", None)):
         return context
-    result = await execute_function_call(kernel, function_call)
+    function_call = next(
+        (
+            fc
+            for fc in (results[0].function_call or results[0].tool_calls or [None])
+            if isinstance(fc, (FunctionCall, ToolCall))
+        ),
+        None,
+    )
+    if function_call:
+        execute_call = execute_tool_call if isinstance(function_call, ToolCall) else execute_function_call
+        result = await execute_call(kernel, function_call)
+        tool_call_id = function_call.id
+    else:
+        return context
     # add the result to the chat prompt template
-    chat_function._chat_prompt_template.add_function_response_message(name=function_call.name, content=str(result))
+    chat_function.chat_prompt_template.add_function_response_message(
+        name=function_call.function.name, content=str(result), tool_call_id=tool_call_id
+    )
     # request another completion
     return await chat_completion_with_function_call(
         kernel,
