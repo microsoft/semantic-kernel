@@ -44,7 +44,7 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
         // Act
-        var result = await service.GetTextContentAsync(audio, new OpenAIAudioToTextExecutionSettings { Filename = Filename });
+        var result = await service.GetTextContentAsync(audio, new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
@@ -67,7 +67,7 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
         // Act
-        var result = await service.GetTextContentAsync(audio, new OpenAIAudioToTextExecutionSettings { Filename = Filename });
+        var result = await service.GetTextContentAsync(audio, new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
     [JsonPropertyName("filename")]
-    public string? Filename { get; set; }
+    public string Filename { get; set; }
 
     [JsonPropertyName("language")]
     public string? Language { get; set; }
@@ -27,11 +27,16 @@ public class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("temperature")]
     public float? Temperature { get; set; }
 
-    public static OpenAIAudioToTextExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public OpenAIAudioToTextExecutionSettings(string filename)
+    {
+        this.Filename = filename;
+    }
+
+    public static OpenAIAudioToTextExecutionSettings? FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)
         {
-            return new OpenAIAudioToTextExecutionSettings();
+            return null;
         }
 
         if (executionSettings is OpenAIAudioToTextExecutionSettings settings)
