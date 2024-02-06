@@ -167,11 +167,11 @@ GoogleAI__EmbeddingModelId
 GoogleAI__Gemini__ModelId
 
 # VertexAI
-GoogleAI__ApiKey
-GoogleAI__EmbeddingModelId
-GoogleAI__Location
-GoogleAI__ProjectId
-GoogleAI__Gemini__ModelId
+VertexAI__ApiKey
+VertexAI__EmbeddingModelId
+VertexAI__Location
+VertexAI__ProjectId
+VertexAI__Gemini__ModelId
 
 # Pinecone
 Pinecone__ApiKey
