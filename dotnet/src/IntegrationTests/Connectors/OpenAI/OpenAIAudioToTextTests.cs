@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SemanticKernel.IntegrationTests.TestSettings;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
