@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os, random
+import os
+import random
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function
+
 
 def test_plugin_can_be_imported():
     # create a kernel
@@ -41,6 +43,7 @@ def test_native_plugin_can_be_imported():
     plugin_config = plugin.functions["echoAsync"]
     assert plugin_config.name == "echoAsync"
     assert plugin_config.description == "Echo for input text"
+
 
 def test_create_semantic_function_succeeds():
     # create a kernel
