@@ -4,8 +4,9 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -15,12 +16,14 @@ from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
-def create_mock_function(function_view: FunctionView) -> KernelFunctionBase:
-    mock_function = Mock(spec=KernelFunctionBase)
+def create_mock_function(function_view: FunctionView) -> KernelFunction:
+    mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name
     mock_function.description = function_view.description
+    mock_function.is_semantic = function_view.is_semantic
+    mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
 

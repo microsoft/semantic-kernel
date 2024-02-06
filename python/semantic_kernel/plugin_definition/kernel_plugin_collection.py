@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
 from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
@@ -76,13 +76,13 @@ class KernelPluginCollection(KernelBaseModel):
             raise ValueError(f"Plugin with name {plugin.name} already exists")
         self.plugins[plugin.name] = plugin
 
-    def add_plugin_from_functions(self, plugin_name: str, functions: List["KernelFunctionBase"]) -> None:
+    def add_plugin_from_functions(self, plugin_name: str, functions: List[KernelFunction]) -> None:
         """
         Add a function to a new plugin in the collection
 
         Args:
             plugin_name (str): The name of the plugin to create.
-            functions (List[KernelFunctionBase]): The functions to add to the plugin.
+            functions (List[KernelFunction]): The functions to add to the plugin.
 
         Raises:
             ValueError: If the function or plugin_name is None or invalid.
@@ -95,12 +95,12 @@ class KernelPluginCollection(KernelBaseModel):
         plugin = KernelPlugin.from_functions(plugin_name=plugin_name, functions=functions)
         self.plugins[plugin_name] = plugin
 
-    def add_functions_to_plugin(self, functions: List["KernelFunctionBase"], plugin_name: str) -> None:
+    def add_functions_to_plugin(self, functions: List[KernelFunction], plugin_name: str) -> None:
         """
         Add functions to a plugin in the collection
 
         Args:
-            functions (List[KernelFunctionBase]): The function to add to the plugin.
+            functions (List[KernelFunction]): The function to add to the plugin.
             plugin_name (str): The name of the plugin to add the function to.
 
         Raises:
@@ -201,7 +201,7 @@ class KernelPluginCollection(KernelBaseModel):
             for _, function in plugin.functions.items():
                 if include_semantic and function.is_semantic:
                     result.add_function(function.describe())
-                elif include_native and function.is_native:
+                elif include_native and not function.is_semantic:
                     result.add_function(function.describe())
 
         return result

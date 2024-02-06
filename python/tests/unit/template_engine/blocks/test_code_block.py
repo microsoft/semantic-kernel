@@ -45,7 +45,7 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
@@ -240,7 +240,7 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
@@ -302,7 +302,7 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
@@ -354,7 +354,7 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
