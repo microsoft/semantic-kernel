@@ -38,7 +38,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
+        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -57,7 +57,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
+        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
