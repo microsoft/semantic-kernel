@@ -331,7 +331,7 @@
     },
     "/keys/{key-name}/decrypt": {
       "post": {
-        "description": "Decrypts a single block of encrypted data.  For details, see: https://docs.microsoft.com/rest/api/keyvault/decrypt/decrypt.",
+        "description": "Decrypts a single block of encrypted data.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/decrypt/decrypt?view=rest-keyvault-keys-7.4&tabs=HTTP.",
         "operationId": "Decrypt",
         "parameters": [
           {
@@ -547,7 +547,7 @@
     },
     "/secrets/{secret-name}": {
       "get": {
-        "description": "Get a specified secret from a given key vault. For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecret/getsecret.",
+        "description": "Get a specified secret from a given key vault. For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/get-secret?view=rest-keyvault-secrets-7.4.",
         "operationId": "GetSecret",
         "parameters": [
           {
