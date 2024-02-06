@@ -22,7 +22,8 @@ Other providers may also offer some type of file-service, such as Gemini.
 
 ## Decision Outcome
 
-> Option 2. **Add a file service abstraction and implement support for OpenAI**
+> Option 3. **Add OpenAI file service support without abstraction**
+> Mark code as experimental using label: `SKEXP0015`
 
 Defining a generalized file service interface provides an extensibility point for other vendors, in addition to *OpenAI*.
 
@@ -58,6 +59,8 @@ Defining a generalized file service interface provides an extensibility point fo
 
 ### Signature of BinaryContent
 
+> Note: `BinaryContent` object able to provide either `BinaryData` or `Stream` regardless of which constructor is invoked.
+
 #### `Microsoft.SemanticKernel.Abstractions`
 
 ```csharp
@@ -68,114 +71,23 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class BinaryContent : KernelContent
 {
-    private readonly Func<Stream> _streamProvider;
+    public BinaryContent(
+        BinaryData content,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null);
 
     public BinaryContent(
         Func<Stream> streamProvider,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this._streamProvider = streamProvider;
-    }
+        IReadOnlyDictionary<string, object?>? metadata = null);
 
-    /// <summary>
-    /// The content stream
-    /// </summary>
-    public Stream GetStream() => this._streamProvider.Invoke();
+    public Task<BinaryData> GetContentAsync();
+
+    public Task<Stream> GetStreamAsync();
 }
 ```
-
-### Signatures for Option 2:
-
-#### `Microsoft.SemanticKernel.Abstractions`
-```csharp
-namespace Microsoft.SemanticKernel.Files;
-
-public abstract class FileService : IAIService
-{
-    public abstract Task<FileReference> GetFileAsync(
-        string id,
-        CancellationToken cancellationToken = default);
-
-    public abstract Task<IEnumerable<FileReference>> GetFilesAsync(CancellationToken cancellationToken = default);
-
-    public abstract Task<BinaryContent> GetFileContentAsync(
-        string id,
-        CancellationToken cancellationToken = default);
-
-    public abstract Task DeleteFileAsync(
-        string id,
-        CancellationToken cancellationToken = default);
-
-    public abstract Task<FileReference> UploadContentAsync(
-        FileUploadRequest request,
-        CancellationToken cancellationToken = default);
-}
-
-
-public abstract class FileService<TFile, TRequest> : FileService
-    where TFile : FileReference
-    where TRequest : FileUploadRequest
-{
-    new Task<TFile> GetFileAsync(
-        string id,
-        CancellationToken cancellationToken = default);
-
-    new Task<IEnumerable<TFile>> GetFilesAsync(
-        CancellationToken cancellationToken = default);
-
-    Task<TFile> UploadContentAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
-}
-
-public abstract class FileUploadRequest
-{
-    string FileName { get; }
- 
-    BinaryContent GetContent();
-}
-
-public class FileReference
-{
-    public string Id { get; set; }
-
-    public DateTime CreatedTimestamp { get; set; }
-
-    public string FileName { get; set; }
-
-    public int SizeInBytes { get; set; }
-}
-```
-
-#### `Microsoft.SemanticKernel.Connectors.OpenAI`
-```csharp
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
-
-public sealed class OpenAIFileService : FileService<OpenAIFileReference, OpenAIFileUploadRequest>
-{
-    ...
-}
-
-public sealed class OpenAIFileUploadRequest : FileUploadRequest
-{
-    public OpenAIFilePurpose Purpose { get; }
-}
-
-public sealed class OpenAIFileReference : FileReference
-{
-    public OpenAIFilePurpose Purpose { get; set; }
-}
-
-public enum OpenAIFilePurpose
-{
-    Assistants,
-    Finetuning,
-}
-```
-
 ### Signatures for Option 3:
 
 #### `Microsoft.SemanticKernel.Connectors.OpenAI`
@@ -186,21 +98,22 @@ public sealed class OpenAIFileService
 {
     public async Task<OpenAIFileReference> GetFileAsync(
         string id,
-        CancellationToken cancellationToken = default) { }
+        CancellationToken cancellationToken = default);
 
-    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default) { }
+    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default);
 
     public async Task<BinaryContent> GetFileContentAsync(
         string id,
-        CancellationToken cancellationToken = default) { }
+        CancellationToken cancellationToken = default);
 
     public async Task DeleteFileAsync(
         string id,
-        CancellationToken cancellationToken = default) { }
+        CancellationToken cancellationToken = default);
 
     public async Task<OpenAIFileReference> UploadContentAsync(
-        OpenAIFileUploadRequest request,
-        CancellationToken cancellationToken = default) { }
+        BinaryContent content,
+        OpenAIFileUploadExecutionSettings settings,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class OpenAIFileUploadRequest
@@ -208,8 +121,6 @@ public sealed class OpenAIFileUploadRequest
     public string FileName { get; }
  
     public OpenAIFilePurpose Purpose { get; }
-
-    public BinaryContent GetContent();
 }
 
 public sealed class OpenAIFileReference
