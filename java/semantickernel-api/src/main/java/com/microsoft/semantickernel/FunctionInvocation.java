@@ -77,23 +77,28 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             .withToolCallBehavior(toolCallBehavior);
     }
 
-    public FunctionInvocation<T> withKernelHooks(KernelHooks hooks) {
+    public FunctionInvocation<T> withKernelHooks(
+        @Nullable
+        KernelHooks hooks) {
         this.hooks = unmodifiableClone(hooks);
         return this;
     }
 
     public FunctionInvocation<T> withPromptExecutionSettings(
+        @Nullable
         PromptExecutionSettings promptExecutionSettings) {
         this.promptExecutionSettings = promptExecutionSettings;
         return this;
     }
 
-    public FunctionInvocation<T> withToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+    public FunctionInvocation<T> withToolCallBehavior(@Nullable ToolCallBehavior toolCallBehavior) {
         this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
         return this;
     }
 
+    @Nullable
     private static UnmodifiableToolCallBehavior unmodifiableClone(
+        @Nullable
         ToolCallBehavior toolCallBehavior) {
         if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
             return (UnmodifiableToolCallBehavior) toolCallBehavior;
@@ -104,7 +109,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         }
     }
 
-    private static UnmodifiableKernelHooks unmodifiableClone(KernelHooks kernelHooks) {
+    @Nullable
+    private static UnmodifiableKernelHooks unmodifiableClone(
+        @Nullable KernelHooks kernelHooks) {
         if (kernelHooks instanceof UnmodifiableKernelHooks) {
             return (UnmodifiableKernelHooks) kernelHooks;
         } else if (kernelHooks != null) {

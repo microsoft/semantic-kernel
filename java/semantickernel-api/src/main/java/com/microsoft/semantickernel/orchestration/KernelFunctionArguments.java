@@ -130,6 +130,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
     }
 
     @Override
+    @Nullable
     public ContextVariable<?> get(Object key) {
         return variables.get(key);
     }

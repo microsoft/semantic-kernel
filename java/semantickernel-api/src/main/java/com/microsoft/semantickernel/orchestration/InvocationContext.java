@@ -13,8 +13,11 @@ import javax.annotation.Nullable;
  */
 public class InvocationContext implements Buildable {
 
+    @Nullable
     private final UnmodifiableKernelHooks hooks;
+    @Nullable
     private final PromptExecutionSettings promptExecutionSettings;
+    @Nullable
     private final UnmodifiableToolCallBehavior toolCallBehavior;
 
     public InvocationContext(
@@ -53,7 +56,9 @@ public class InvocationContext implements Buildable {
         return new Builder();
     }
 
+    @Nullable
     private static UnmodifiableToolCallBehavior unmodifiableClone(
+        @Nullable
         ToolCallBehavior toolCallBehavior) {
         if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
             return (UnmodifiableToolCallBehavior) toolCallBehavior;
@@ -64,7 +69,10 @@ public class InvocationContext implements Buildable {
         }
     }
 
-    private static UnmodifiableKernelHooks unmodifiableClone(KernelHooks kernelHooks) {
+    @Nullable
+    private static UnmodifiableKernelHooks unmodifiableClone(
+        @Nullable
+        KernelHooks kernelHooks) {
         if (kernelHooks instanceof UnmodifiableKernelHooks) {
             return (UnmodifiableKernelHooks) kernelHooks;
         } else if (kernelHooks != null) {
@@ -76,22 +84,31 @@ public class InvocationContext implements Buildable {
 
     public static class Builder implements SemanticKernelBuilder<InvocationContext> {
 
+        @Nullable
         private UnmodifiableKernelHooks hooks;
+
+        @Nullable
         private PromptExecutionSettings promptExecutionSettings;
+
+        @Nullable
         private UnmodifiableToolCallBehavior toolCallBehavior;
 
-        public Builder withKernelHooks(KernelHooks hooks) {
+        public Builder withKernelHooks(
+            @Nullable KernelHooks hooks) {
             this.hooks = unmodifiableClone(hooks);
             return this;
         }
 
         public Builder withPromptExecutionSettings(
+            @Nullable
             PromptExecutionSettings promptExecutionSettings) {
             this.promptExecutionSettings = promptExecutionSettings;
             return this;
         }
 
-        public Builder withToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+        public Builder withToolCallBehavior(
+            @Nullable
+            ToolCallBehavior toolCallBehavior) {
             this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
             return this;
         }

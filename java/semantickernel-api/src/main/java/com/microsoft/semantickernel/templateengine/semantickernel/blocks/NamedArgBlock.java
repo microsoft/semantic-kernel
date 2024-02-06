@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 import javax.annotation.Nullable;
 
+import com.microsoft.semantickernel.exceptions.SKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +14,6 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NamedArgBlock.class);
 
-    @Nullable
     private final String name;
     @Nullable
     private final String value;
@@ -41,7 +41,6 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     protected NamedArgBlock(
         String content,
-        @Nullable
         String name,
         @Nullable
         String value,
@@ -59,13 +58,15 @@ public class NamedArgBlock extends Block implements TextRendering {
     }
 
     public static NamedArgBlock from(String content) {
-
         String name = tryGetName(content);
+        if(name == null) {
+            throw new SKException("Unable to extract name from: " + content);
+        }
         String value = tryGetValue(content);
         VarBlock argNameAsVarBlock = new VarBlock(Symbols.VarPrefix + name);
 
         if (value == null) {
-            throw new IllegalArgumentException("Unable to extract value from: " + content);
+            throw new SKException("Unable to extract value from: " + content);
         }
 
         VarBlock varBlock;
@@ -115,7 +116,6 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     }
 
-    @Nullable
     public String getName() {
         return name;
     }

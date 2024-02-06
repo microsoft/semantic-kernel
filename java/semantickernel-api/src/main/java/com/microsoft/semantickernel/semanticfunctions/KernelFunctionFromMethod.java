@@ -78,8 +78,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     }
 
     @Override
-    public Mono<FunctionResult<T>> invokeAsync(Kernel kernel, KernelFunctionArguments arguments,
-        ContextVariableType<T> variableType) {
+    public Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType) {
         return super.invokeAsync(kernel, arguments, variableType);
     }
 
@@ -104,6 +106,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         String description,
         @Nullable
         List<KernelParameterMetadata<?>> parameters,
+        @Nullable
         KernelReturnParameterMetadata<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
