@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Execution settings for an OpenAI speect-to-text request.
+/// Execution settings for an OpenAI audio-to-text request.
 /// </summary>
 public class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
@@ -22,7 +22,7 @@ public class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     public string? Prompt { get; set; }
 
     [JsonPropertyName("response_format")]
-    public string? ResponseFormat { get; set; }
+    public string ResponseFormat { get; set; } = "text";
 
     [JsonPropertyName("temperature")]
     public float? Temperature { get; set; }

@@ -246,9 +246,11 @@ internal abstract class ClientCore
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
-        var audioData = await BinaryData.FromStreamAsync(audio, cancellationToken).ConfigureAwait(false);
+        OpenAIAudioToTextExecutionSettings audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
-        var audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
+        Verify.ValidFilename(audioExecutionSettings.Filename);
+
+        var audioData = await BinaryData.FromStreamAsync(audio, cancellationToken).ConfigureAwait(false);
 
         var audioOptions = new AudioTranscriptionOptions
         {
