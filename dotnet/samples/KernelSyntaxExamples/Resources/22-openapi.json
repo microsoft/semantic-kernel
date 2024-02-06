@@ -186,7 +186,7 @@
     },
     "/keys/{key-name}/create": {
       "post": {
-        "description": "Creates a new key, stores it, then returns key parameters and attributes.  For details, see: https://docs.microsoft.com/rest/api/keyvault/createkey/createkey.",
+        "description": "Creates a new key, stores it, then returns key parameters and attributes.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/create-key?view=rest-keyvault-keys-7.4.",
         "operationId": "CreateKey",
         "parameters": [
           {
