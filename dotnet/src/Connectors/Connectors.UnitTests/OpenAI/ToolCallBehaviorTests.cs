@@ -148,7 +148,7 @@ public sealed class ToolCallBehaviorTests
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions));
-        Assert.Equal($"The specified {nameof(EnabledFunctions)} function MyPlugin_MyFunction is not available in the kernel.", exception.Message);
+        Assert.Equal($"The specified {nameof(EnabledFunctions)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
     }
 
     [Theory]
@@ -211,7 +211,7 @@ public sealed class ToolCallBehaviorTests
 
         Assert.NotNull(tool);
 
-        Assert.Equal("MyPlugin_MyFunction", tool.Name);
+        Assert.Equal("MyPlugin-MyFunction", tool.Name);
         Assert.Equal("Test Function", tool.Description);
         Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{\"parameter1\":{\"type\":\"string\"},\"parameter2\":{\"type\":\"string\"}}}", tool.Parameters.ToString());
     }
