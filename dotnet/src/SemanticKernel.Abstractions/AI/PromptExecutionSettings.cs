@@ -50,7 +50,9 @@ public class PromptExecutionSettings
     /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="PromptExecutionSettings"/>.
     /// </remarks>
     [JsonExtensionData]
+#pragma warning disable CP0002 // Changed the property type from Dictionary<string, object> to IDictionary<string, object>
     public IDictionary<string, object>? ExtensionData
+#pragma warning restore CP0002 
     {
         get => this._extensionData;
 
