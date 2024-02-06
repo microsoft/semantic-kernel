@@ -99,7 +99,7 @@ public class Example05_InlineFunctionDefinition {
             "Translate this date " + DateTimeFormatter
                 .ISO_LOCAL_DATE
                 .withZone(ZoneOffset.UTC)
-                .format(Instant.now())
+                .format(Instant.ofEpochSecond(1))
                 + " to French format",
             PromptExecutionSettings.builder()
                 .withMaxTokens(100)

@@ -1,0 +1,21 @@
+{
+  "id" : "bfa8b606-15ca-4096-ac0d-adbce5b0cbfd",
+  "insertionIndex" : 34,
+  "name" : "deployments_text-davinci-003_completions",
+  "persistent" : true,
+  "request" : {
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"prompt\":[\"Today is: 2021-09-01\\nCurrent time is: 12:00:00\\n\\nAnswer to the following questions using JSON syntax, including the data used.\\n    Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?\\n    Is it weekend time (weekend/not weekend)?\\n\"],\"max_tokens\":100,\"temperature\":1.0,\"top_p\":1.0,\"logit_bias\":{},\"user\":\"\",\"n\":1,\"presence_penalty\":0.0,\"frequency_penalty\":0.0,\"best_of\":1,\"model\":\"text-davinci-003\"}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ],
+    "method" : "POST",
+    "url" : "//openai/deployments/text-davinci-003/completions?api-version=2023-12-01-preview"
+  },
+  "response" : {
+    "body" : "{\"id\":\"cmpl-xxx\",\"object\":\"text_completion\",\"created\":1706834100,\"model\":\"text-davinci-003\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"text\":\"874ed76a-5ecd-4832-a556-bb256fe6e833\",\"index\":0,\"finish_reason\":\"stop\",\"logprobs\":null,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":71,\"completion_tokens\":48,\"total_tokens\":119}}",
+    "headers" : { },
+    "status" : 200
+  },
+  "uuid" : "bfa8b606-15ca-4096-ac0d-adbce5b0cbfd"
+}

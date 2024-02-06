@@ -21,6 +21,8 @@ import java.util.Locale;
 public class Example10_DescribeAllPluginsAndFunctions {
 
 
+    private static final String PLUGIN_DIR =
+        System.getenv("PLUGIN_DIR") == null ? "." : System.getenv("PLUGIN_DIR");
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -108,7 +110,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
         kernel.getPlugins().add(
             KernelPluginFactory
                 .importPluginFromDirectory(
-                    Path.of("java/samples/sample-code/src/main/resources/Plugins"),
+                    Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
                     "SummarizePlugin",
                     null)
         );
@@ -155,7 +157,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
     private static void printFunction(KernelFunctionMetadata func) {
         System.out.println("   " + func.getName() + ": " + func.getDescription());
 
-        if (func.getParameters().size() > 0) {
+        if (!func.getParameters().isEmpty()) {
             System.out.println("      Params:");
 
             func.getParameters()
