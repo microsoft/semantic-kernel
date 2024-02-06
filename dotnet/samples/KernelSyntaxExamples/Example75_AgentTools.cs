@@ -26,29 +26,18 @@ public sealed class Example75_AgentTools : BaseTest
     private readonly List<IAgent> _agents = new();
 
     /// <summary>
-    /// Show how to utilize code_interpreter and retrieval tools.
+    /// Show how to utilize code_interpreter tool.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task RunCodeInterpreterToolAsync()
     {
-        this.WriteLine("======== Example75_AgentTools ========");
+        this.WriteLine("======== Using CodeInterpreter tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
-
-        // Run agent with 'code_interpreter' tool
-        await RunCodeInterpreterToolAsync();
-
-        // Run agent with 'retrieval' tool
-        await RunRetrievalToolAsync();
-    }
-
-    private async Task RunCodeInterpreterToolAsync()
-    {
-        this.WriteLine("======== Run:CodeInterpreterTool ========");
 
         var builder =
             new AgentBuilder()
@@ -77,9 +66,19 @@ public sealed class Example75_AgentTools : BaseTest
         }
     }
 
-    private async Task RunRetrievalToolAsync()
+    /// <summary>
+    /// Show how to utilize retrieval tool.
+    /// </summary>
+    [Fact]
+    public async Task RunRetrievalToolAsync()
     {
-        this.WriteLine("======== Run:RunRetrievalTool ========");
+        this.WriteLine("======== Using Retrieval tool ========");
+
+        if (TestConfiguration.OpenAI.ApiKey == null)
+        {
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
+            return;
+        }
 
         // REQUIRED:
         //
