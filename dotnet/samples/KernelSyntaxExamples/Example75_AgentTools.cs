@@ -28,10 +28,13 @@ public sealed class Example75_AgentTools : BaseTest
     // Track agents for clean-up
     private readonly List<IAgent> _agents = new();
 
+    /// <summary>
+    /// Show how to utilize code_interpreter tool.
+    /// </summary>
     [Fact]
     public async Task RunCodeInterpreterToolAsync()
     {
-        this.WriteLine("======== Example75_AgentTools:CodeInterpreterTool ========");
+        this.WriteLine("======== Using CodeInterpreter tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
@@ -66,10 +69,13 @@ public sealed class Example75_AgentTools : BaseTest
         }
     }
 
+    /// <summary>
+    /// Show how to utilize retrieval tool.
+    /// </summary>
     [Fact]
     public async Task RunRetrievalToolAsync()
     {
-        this.WriteLine("======== Example75_AgentTools:RunRetrievalTool ========");
+        this.WriteLine("======== Using Retrieval tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {

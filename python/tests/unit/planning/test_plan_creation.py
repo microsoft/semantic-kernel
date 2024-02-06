@@ -97,7 +97,7 @@ def test_create_plan_with_name_and_function():
     assert plan.function is test_function
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is test_function.is_semantic
-    assert plan.is_native is test_function.is_native
+    assert plan.is_native is not test_function.is_semantic
     assert plan.prompt_execution_settings == test_function.prompt_execution_settings
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
@@ -185,7 +185,7 @@ def test_add_step_to_plan():
     assert plan.function is test_function1
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is test_function1.is_semantic
-    assert plan.is_native is test_function1.is_native
+    assert plan.is_native is not test_function1.is_semantic
     assert plan.prompt_execution_settings == test_function1.prompt_execution_settings
     assert plan.has_next_step is True
     assert plan.next_step_index == 0

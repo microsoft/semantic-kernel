@@ -7,7 +7,7 @@ from xml.etree import ElementTree as ET
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 
@@ -23,8 +23,8 @@ class SequentialPlanParser:
     @staticmethod
     def get_plugin_function(
         context: KernelContext,
-    ) -> Callable[[str, str], Optional[KernelFunctionBase]]:
-        def function(plugin_name: str, function_name: str) -> Optional[KernelFunctionBase]:
+    ) -> Callable[[str, str], Optional[KernelFunction]]:
+        def function(plugin_name: str, function_name: str) -> Optional[KernelFunction]:
             try:
                 return context.plugins[plugin_name][function_name]
             except KeyError:
@@ -38,7 +38,7 @@ class SequentialPlanParser:
     def to_plan_from_xml(
         xml_string: str,
         goal: str,
-        get_plugin_function: Callable[[str, str], Optional[KernelFunctionBase]],
+        get_plugin_function: Callable[[str, str], Optional[KernelFunction]],
         allow_missing_functions: bool = False,
     ):
         xml_string = "<xml>" + xml_string + "</xml>"
