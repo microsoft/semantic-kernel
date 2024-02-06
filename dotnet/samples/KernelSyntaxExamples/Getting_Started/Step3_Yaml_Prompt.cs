@@ -10,8 +10,10 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-// This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
-public class Step3_Yaml_Prompt : BaseTest
+/// <summary>
+/// This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
+/// </summary>
+public sealed class Step3_Yaml_Prompt : BaseTest
 {
     /// <summary>
     /// Show how to create a prompt <see cref="KernelFunction"/> from a YAML resource.

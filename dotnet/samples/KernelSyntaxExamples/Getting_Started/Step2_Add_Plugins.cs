@@ -11,8 +11,10 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-// This example shows how to load a <see cref="KernelPlugin"/> instances.
-public class Step2_Add_Plugins : BaseTest
+/// <summary>
+/// This example shows how to load a <see cref="KernelPlugin"/> instances.
+/// </summary>
+public sealed class Step2_Add_Plugins : BaseTest
 {
     /// <summary>
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
@@ -28,7 +30,7 @@ public class Step2_Add_Plugins : BaseTest
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
         Kernel kernel = kernelBuilder.Build();
 
-        // Example 1. Invoke the kernel with a prompt that asks the AI for inromation it cannot provide and may hallucinate
+        // Example 1. Invoke the kernel with a prompt that asks the AI for information it cannot provide and may hallucinate
         WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
 
         // Example 2. Invoke the kernel with a templated prompt that invokes a plugin and display the result

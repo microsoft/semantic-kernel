@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public class Step6_Responsible_AI : BaseTest
+public sealed class Step6_Responsible_AI : BaseTest
 {
     /// <summary>
     /// Show how to use prompt filters to ensure that prompts are rendered in a responsible manner.
@@ -51,7 +51,7 @@ public class Step6_Responsible_AI : BaseTest
         }
 
         /// <summary>
-        /// Method which is called before a prompt is rendered.
+        /// Method which is called after a prompt is rendered.
         /// </summary>
         public void OnPromptRendered(PromptRenderedContext context)
         {
@@ -61,7 +61,7 @@ public class Step6_Responsible_AI : BaseTest
         }
 
         /// <summary>
-        /// Method which is called after a prompt is rendered.
+        /// Method which is called before a prompt is rendered.
         /// </summary>
         public void OnPromptRendering(PromptRenderingContext context)
         {

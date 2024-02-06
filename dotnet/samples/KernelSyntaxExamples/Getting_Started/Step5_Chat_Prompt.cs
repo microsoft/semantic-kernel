@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public class Step5_Chat_Prompt : BaseTest
+public sealed class Step5_Chat_Prompt : BaseTest
 {
     /// <summary>
     /// Show how to construct a chat prompt and invoke it.
