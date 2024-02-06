@@ -86,7 +86,7 @@
     },
     "/keys/{key-name}": {
       "get": {
-        "description": "Gets the public part of a stored key. If the requested key is symmetric, then no key material is released in the response.  For more details, refer: https://docs.microsoft.com/rest/api/keyvault/getkey/getkey.",
+        "description": "Gets the public part of a stored key. If the requested key is symmetric, then no key material is released in the response.  For more details, refer: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-key/get-key?view=rest-keyvault-keys-7.4&tabs=HTTP.",
         "operationId": "GetKey",
         "parameters": [
           {
