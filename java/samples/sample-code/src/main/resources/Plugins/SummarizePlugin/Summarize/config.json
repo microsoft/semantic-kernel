@@ -13,6 +13,7 @@
   "input_variables": [
     {
       "name": "input",
+      "type": "java.lang.String",
       "description": "Text to summarize",
       "default": "",
       "is_required": true

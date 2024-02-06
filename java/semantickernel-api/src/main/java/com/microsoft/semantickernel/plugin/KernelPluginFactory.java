@@ -84,6 +84,11 @@ public class KernelPluginFactory {
                         + ", this is an async method, It is required to add an annotation to specify the return type");
             }
         } else {
+            String className = annotation.returnType(); 
+            if (method.getReturnType().getName().equals(className)) {
+                // primarily meant to handle void
+                return method.getReturnType();
+            }   
             try {
                 returnType = Thread.currentThread().getContextClassLoader()
                     .loadClass(annotation.returnType());

@@ -10,8 +10,10 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.DefaultConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -96,7 +98,7 @@ public class Example09_FunctionTypes {
 
         KernelPlugin summarize = KernelPluginFactory
             .importPluginFromDirectory(
-                Path.of("java/samples/sample-code/src/main/resources/Plugins"),
+               Path.of("java/samples/sample-code/src/main/resources/Plugins"),
                 "SummarizePlugin",
                 null);
 
@@ -117,11 +119,13 @@ public class Example09_FunctionTypes {
             .build();
 
         // Different ways to invoke a function (not limited to these examples)
-        FunctionResult<String> result = kernel.invokeAsync(plugin.<String>get("NoInputWithVoidResult"), null).block();
-        System.out.println(result.getResult());
-        result = kernel.invokeAsync(plugin.<String>get("NoInputTaskWithVoidResult"), null)
+        FunctionResult<?> result = kernel.invokeAsync(plugin.get("NoInputWithVoidResult"), null).block();
+        assert result == null;
+        System.out.println(result != null ? result.getResult() : "null");
+        result = kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"), null)
             .block();
-        System.out.println(result.getResult());
+        assert result == null;
+        System.out.println(result != null ? result.getResult() : "null");
 
         result = kernel
             .invokeAsync(
@@ -189,7 +193,8 @@ public class Example09_FunctionTypes {
                     .build()
                     )
             .block();
-        System.out.println(result.getResult());
+        assert result == null;
+        System.out.println(result != null ? result.getResult() : "null");
 
         result = kernel
             .invokeAsync(plugin.<String>get("noInputComplexReturnTypeAsync"),
@@ -245,13 +250,13 @@ public class Example09_FunctionTypes {
         System.out.println(result5.getResult());
 
         var result6 = kernel
-            .invokeAsync(plugin.<String>get("noInputComplexReturnType"),
+            .invokeAsync(plugin.get("noInputComplexReturnType"),
                 null)
             .block();
         System.out.println(result6.getResult());
 
         var result7 = kernel
-            .invokeAsync(plugin.<String>get("withDefaultValue"),
+            .invokeAsync(plugin.get("withDefaultValue"),
                 null)
             .block();
         System.out.println(result7.getResult());
@@ -300,7 +305,7 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a void function with no input
         /// </summary>
-        @DefineKernelFunction(name = "NoInputWithVoidResult")
+        @DefineKernelFunction(name = "NoInputWithVoidResult", returnType="void")
         public void NoInputWithVoidResult() {
             System.out.println("Running this.NoInputWithVoidResult) -> No input");
         }

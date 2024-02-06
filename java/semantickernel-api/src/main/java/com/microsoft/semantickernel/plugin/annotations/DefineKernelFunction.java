@@ -14,7 +14,7 @@ public @interface DefineKernelFunction {
 
     String name() default "";
 
-    String returnType() default "java.lang.String";
+    String returnType() default "";
 
     String returnDescription() default "";
 

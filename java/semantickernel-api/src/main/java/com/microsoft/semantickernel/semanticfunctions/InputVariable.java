@@ -1,26 +1,18 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.exceptions.SKException;
 import javax.annotation.Nullable;
 
 public class InputVariable {
 
-    @JsonProperty("name")
     private String name;
-
-    @JsonProperty("type")
     private String type;
-
     @Nullable
-    @JsonProperty("description")
     private String description;
-
-    @JsonProperty("default")
     @Nullable
     private String defaultValue;
-
-    @JsonProperty("is_required")
     private boolean isRequired;
 
     public InputVariable(String name) {
@@ -31,13 +23,19 @@ public class InputVariable {
         this.isRequired = true;
     }
 
+    @JsonCreator
     public InputVariable(
+        @JsonProperty("name")
         String name,
+        @JsonProperty("type")
         String type,
         @Nullable
+        @JsonProperty("description")
         String description,
         @Nullable
+        @JsonProperty("default")
         String defaultValue,
+        @JsonProperty("is_required")
         boolean isRequired) {
         this.name = name;
         this.type = type;
