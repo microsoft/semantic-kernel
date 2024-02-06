@@ -48,7 +48,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddSingleton(factory.Object);
         Kernel kernel = builder.Build();
 
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
+        kernel.ImportPluginFromFunctions("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") });
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
@@ -573,7 +573,7 @@ public class KernelFunctionFromPromptTests
         KernelFunction function1 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Name = "Prompt1", Template = "Prompt1", ExecutionSettings = new() { ["service1"] = new OpenAIPromptExecutionSettings { MaxTokens = 1000 } } });
         KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Name = "Prompt2", Template = "Prompt2 {{MyPrompts.Prompt1}}", ExecutionSettings = new() { ["service2"] = new OpenAIPromptExecutionSettings { MaxTokens = 2000 } } });
 
-        kernel.Plugins.AddFromFunctions("MyPrompts", "Prompt1 and Prompt2", new[] { function1, function2 });
+        kernel.ImportPluginFromFunctions("MyPrompts", new[] { function1, function2 });
 
         // Act
         var result = await kernel.InvokeAsync(function2);
@@ -592,6 +592,7 @@ public class KernelFunctionFromPromptTests
         var mockTextCompletion = new Mock<ITextGenerationService>();
         mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
 
+#pragma warning disable CS0618 // Events are deprecated
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
@@ -601,6 +602,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service", mockTextCompletion.Object);
         Kernel kernel = builder.Build();
         kernel.PromptRendered += MyRenderedHandler;
+#pragma warning restore CS0618 // Events are deprecated
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 

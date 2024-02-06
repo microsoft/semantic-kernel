@@ -25,7 +25,7 @@ public sealed class HandlebarsPlanner
     public static readonly HandlebarsPromptTemplateOptions PromptTemplateOptions = new()
     {
         // Options for built-in Handlebars helpers
-        Categories = new Category[] { Category.Math },
+        Categories = new Category[] { Category.DateTime },
         UseCategoryPrefix = false,
 
         // Custom helpers
@@ -40,6 +40,7 @@ public sealed class HandlebarsPlanner
     {
         this._options = options ?? new HandlebarsPlannerOptions();
         this._templateFactory = new HandlebarsPromptTemplateFactory(options: PromptTemplateOptions);
+        this._options.ExcludedPlugins.Add("Planner_Excluded");
     }
 
     /// <summary>Creates a plan for the specified goal.</summary>
@@ -66,7 +67,7 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPlannerOptions _options;
 
-    private HandlebarsPromptTemplateFactory _templateFactory { get; }
+    private readonly HandlebarsPromptTemplateFactory _templateFactory;
 
     /// <summary>
     /// Error message if kernel does not contain sufficient functions to create a plan.
@@ -76,16 +77,17 @@ public sealed class HandlebarsPlanner
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
         // Get CreatePlan prompt template
-        var availableFunctions = this.GetAvailableFunctionsManual(kernel, out var complexParameterTypes, out var complexParameterSchemas);
+        var functionsMetadata = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken).ConfigureAwait(false);
+        var availableFunctions = this.GetAvailableFunctionsManual(functionsMetadata, out var complexParameterTypes, out var complexParameterSchemas);
         var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
         ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
 
         // Get the chat completion results
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
-        if (completionResults.Content is not null && completionResults.Content.Contains(InsufficientFunctionsError))
+        if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
@@ -94,7 +96,7 @@ public sealed class HandlebarsPlanner
         Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
         if (!match.Success)
         {
-            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results");
+            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results\nPlanner output:\n{completionResults}");
         }
 
         var planTemplate = match.Groups[2].Value.Trim();
@@ -104,18 +106,12 @@ public sealed class HandlebarsPlanner
     }
 
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
-        Kernel kernel,
+        IEnumerable<KernelFunctionMetadata> availableFunctions,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas)
     {
         complexParameterTypes = new();
         complexParameterSchemas = new();
-
-        var availableFunctions = kernel.Plugins.GetFunctionsMetadata()
-            .Where(s => !this._options.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !this._options.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
-                && !s.Name.Contains("Planner_Excluded"))
-            .ToList();
 
         var functionsMetadata = new List<KernelFunctionMetadata>();
         foreach (var kernelFunction in availableFunctions)
