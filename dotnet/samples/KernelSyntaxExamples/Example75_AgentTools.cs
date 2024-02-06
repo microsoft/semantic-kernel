@@ -85,13 +85,10 @@ public sealed class Example75_AgentTools : BaseTest
 
         var kernel = Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build();
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
-        using var stream = EmbeddedResource.ReadStream("travelinfo.txt")!;
         var result =
             await fileService.UploadContentAsync(
-                new OpenAIFileUploadRequest(
-                    new BinaryContent(() => Task.FromResult(stream)),
-                    "travelinfo.txt",
-                    OpenAIFilePurpose.Assistants));
+                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         var fileId = result.Id;
 

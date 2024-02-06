@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// References an uploaded file by id.
 /// </summary>
+[Experimental("SKEXP0015")]
 public sealed class OpenAIFileReference
 {
     /// <summary>

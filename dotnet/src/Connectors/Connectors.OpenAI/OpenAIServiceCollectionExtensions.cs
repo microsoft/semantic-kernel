@@ -1189,7 +1189,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0099")]
+    [Experimental("SKEXP0015")]
     public static IKernelBuilder AddOpenAIFiles(
         this IKernelBuilder builder,
         string apiKey,
@@ -1218,7 +1218,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0099")]
+    [Experimental("SKEXP0015")]
     public static IServiceCollection AddOpenAIFiles(
         this IServiceCollection services,
         string apiKey,

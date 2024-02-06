@@ -17,9 +17,9 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Implementation of IFileService for OpenAI: https://api.openai.com/v1/files
+/// File service access for OpenAI: https://api.openai.com/v1/files
 /// </summary>
-[Experimental("SKEXP0099")]
+[Experimental("SKEXP0015")]
 public sealed class OpenAIFileService
 {
     private const string OpenAIApiEndpoint = "https://api.openai.com/v1/files";
@@ -57,7 +57,11 @@ public sealed class OpenAIFileService
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {this._apiKey}");
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Remove a previously uploaded file.
+    /// </summary>
+    /// <param name="id">The uploaded file identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task DeleteFileAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -65,7 +69,12 @@ public sealed class OpenAIFileService
         await this.ExecuteDeleteRequestAsync($"{OpenAIApiEndpoint}/{id}", cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Retrieve the file content from a previously uploaded file.
+    /// </summary>
+    /// <param name="id">The uploaded file identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The file content as <see cref="BinaryContent"/></returns>
     public BinaryContent GetFileContent(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -73,7 +82,12 @@ public sealed class OpenAIFileService
         return new BinaryContent(() => this.StreamGetRequestAsync($"{OpenAIApiEndpoint}/{id}/content", cancellationToken));
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Retrieve metadata for a previously uploaded file.
+    /// </summary>
+    /// <param name="id">The uploaded file identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>$$$</returns>
     public async Task<OpenAIFileReference> GetFileAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -83,7 +97,11 @@ public sealed class OpenAIFileService
         return this.Convert(result);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Retrieve metadata for all previously uploaded files.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>$$$</returns>
     public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
     {
         var result = await this.ExecuteGetRequestAsync<FileInfoList>(OpenAIApiEndpoint, cancellationToken).ConfigureAwait(false);
@@ -91,8 +109,14 @@ public sealed class OpenAIFileService
         return result.Data.Select(r => this.Convert(r)).ToArray();
     }
 
-    /// <inheritdoc/>
-    public async Task<OpenAIFileReference> UploadContentAsync(OpenAIFileUploadRequest request, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Upload a file.
+    /// </summary>
+    /// <param name="fileContent">The file content as <see cref="BinaryContent"/></param>
+    /// <param name="request">$$$</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The file metadata.</returns>
+    public async Task<OpenAIFileReference> UploadContentAsync(BinaryContent fileContent, OpenAIFileUploadExecutionSettings request, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(request, nameof(request));
 
@@ -100,7 +124,7 @@ public sealed class OpenAIFileService
 #pragma warning disable CA1308 // Normalize strings to uppercase - OpenAI requires lower case
         using var contentPurpose = new StringContent(request.Purpose.ToString().ToLowerInvariant());
 #pragma warning restore CA1308 // Normalize strings to uppercase
-        using var contentStream = await request.Content.GetStreamAsync().ConfigureAwait(false);
+        using var contentStream = await fileContent.GetStreamAsync().ConfigureAwait(false);
         using var contentFile = new StreamContent(contentStream);
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", request.FileName);
