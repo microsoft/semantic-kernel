@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public class Step8_Pipelining : BaseTest
+public sealed class Step8_Pipelining : BaseTest
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
