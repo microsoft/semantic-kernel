@@ -71,7 +71,6 @@ public class BinaryContent : KernelContent
             return await this._streamProvider.Invoke().ConfigureAwait(false);
         }
 
-
         if (this._content != null)
         {
             return this._content.ToStream();
@@ -90,7 +89,6 @@ public class BinaryContent : KernelContent
             using var stream = await this._streamProvider.Invoke().ConfigureAwait(false);
             return await BinaryData.FromStreamAsync(stream).ConfigureAwait(false);
         }
-
 
         if (this._content != null)
         {
