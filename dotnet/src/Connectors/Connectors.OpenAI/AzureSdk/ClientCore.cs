@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -197,6 +198,16 @@ internal abstract class ClientCore
         };
     }
 
+    private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
+    {
+        return new Dictionary<string, object?>(3)
+        {
+            { nameof(audioTranscription.Language), audioTranscription.Language },
+            { nameof(audioTranscription.Duration), audioTranscription.Duration },
+            { nameof(audioTranscription.Segments), audioTranscription.Segments }
+        };
+    }
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -228,6 +239,31 @@ internal abstract class ClientCore
         }
 
         return result;
+    }
+
+    internal async Task<TextContent> GetTextContentFromAudioAsync(
+        Stream audio,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken = default)
+    {
+        var audioData = await BinaryData.FromStreamAsync(audio, cancellationToken).ConfigureAwait(false);
+
+        var audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
+
+        var audioOptions = new AudioTranscriptionOptions
+        {
+            AudioData = audioData,
+            DeploymentName = this.DeploymentOrModelName,
+            Filename = audioExecutionSettings.Filename,
+            Language = audioExecutionSettings.Language,
+            Prompt = audioExecutionSettings.Prompt,
+            ResponseFormat = audioExecutionSettings.ResponseFormat,
+            Temperature = audioExecutionSettings.Temperature
+        };
+
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).ConfigureAwait(false)).Value;
+
+        return new TextContent(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData));
     }
 
     /// <summary>
