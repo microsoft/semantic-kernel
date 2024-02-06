@@ -115,7 +115,12 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         ]:
             self.add_user_message(message=self.template)
         await asyncio.gather(*[message.render_message(context) for message in self.messages])
-        return [message.as_dict() for message in self.messages]
+        # Don't resend the assistant + tool_calls message as it will error
+        return [
+            message.as_dict()
+            for message in self.messages
+            if not (message.role == "assistant" and hasattr(message, "tool_calls"))
+        ]
 
     def dump_messages(self) -> List[Dict[str, str]]:
         """Return the messages as a list of dicts with role, content, name and function_call."""

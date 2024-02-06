@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
@@ -152,6 +153,9 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Gets or sets the response format to use for the completion.
     /// </summary>
+    /// <remarks>
+    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
+    /// </remarks>
     [Experimental("SKEXP0013")]
     [JsonPropertyName("response_format")]
     public object? ResponseFormat
