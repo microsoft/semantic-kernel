@@ -9,13 +9,8 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Planner config with semantic memory
 /// </summary>
-public abstract class PlannerConfigBase
+public abstract class PlannerOptions
 {
-    /// <summary>
-    /// Delegate to get the prompt template string.
-    /// </summary>
-    public Func<string>? GetPromptTemplate { get; set; }
-
     /// <summary>
     /// A list of plugins to exclude from the plan creation request.
     /// </summary>
@@ -32,19 +27,7 @@ public abstract class PlannerConfigBase
     /// If set, this function takes precedence over <see cref="Memory"/>.
     /// Setting <see cref="ExcludedPlugins"/>, <see cref="ExcludedFunctions"/> will be used to filter the results.
     /// </summary>
-    public Func<PlannerConfigBase, string?, CancellationToken, Task<IEnumerable<KernelFunctionMetadata>>>? GetAvailableFunctionsAsync { get; set; }
-
-    /// <summary>
-    /// Callback to get a function by name (optional).
-    /// Use if you want to override the default function lookup behavior.
-    /// </summary>
-    public Func<string, string, KernelFunction?>? GetFunctionCallback { get; set; }
-
-    /// <summary>
-    /// The maximum total number of tokens to allow in a completion request,
-    /// which includes the tokens from the prompt and completion
-    /// </summary>
-    public int MaxTokens { get; set; }
+    public Func<PlannerOptions, string?, CancellationToken, Task<IEnumerable<KernelFunctionMetadata>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Semantic Memory configuration, used to enable function filtering during plan creation.

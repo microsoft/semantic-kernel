@@ -3,6 +3,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
@@ -101,7 +102,16 @@ Text:\n{GroundingText};
 
         kernel.ImportPluginFromType<TextPlugin>();
 
-        var planner = new HandlebarsPlanner();
+        var planner = new HandlebarsPlanner(
+            new HandlebarsPlannerOptions()
+            {
+                // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
+                ExecutionSettings = new OpenAIPromptExecutionSettings()
+                {
+                    Temperature = 0.0,
+                    TopP = 0.1,
+                }
+            });
         var plan = await planner.CreatePlanAsync(kernel, ask);
 
         WriteLine($"======== Goal: ========\n{ask}");

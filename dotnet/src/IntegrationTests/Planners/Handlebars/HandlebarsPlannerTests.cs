@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -40,7 +41,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         // Act
-        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, goal);
+        var plan = await new HandlebarsPlanner(s_defaultPlannerOptions).CreatePlanAsync(kernel, goal);
 
         // Assert expected function
         Assert.Contains(
@@ -59,7 +60,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
         // Act
-        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, goal);
+        var plan = await new HandlebarsPlanner(s_defaultPlannerOptions).CreatePlanAsync(kernel, goal);
 
         // Assert
         Assert.Contains(
@@ -90,7 +91,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         kernel.ImportPluginFromObject(new Foo());
 
         // Act
-        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, goal);
+        var plan = await new HandlebarsPlanner(s_defaultPlannerOptions).CreatePlanAsync(kernel, goal);
 
         // Assert expected section header for Complex Types in prompt
         Assert.Contains(
@@ -155,6 +156,15 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
+    private static readonly HandlebarsPlannerOptions s_defaultPlannerOptions = new()
+    {
+        ExecutionSettings = new OpenAIPromptExecutionSettings()
+        {
+            Temperature = 0.0,
+            TopP = 0.1,
+        }
+    };
 
     private sealed class Foo
     {

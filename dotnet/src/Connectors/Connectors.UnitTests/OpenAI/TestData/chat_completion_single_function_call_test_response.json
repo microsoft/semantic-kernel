@@ -14,7 +14,7 @@
             "id": "1",
             "type": "function",
             "function": {
-              "name": "MyPlugin_GetCurrentWeather",
+              "name": "MyPlugin-GetCurrentWeather",
               "arguments": "{\n\"location\": \"Boston, MA\"\n}"
             }
           }

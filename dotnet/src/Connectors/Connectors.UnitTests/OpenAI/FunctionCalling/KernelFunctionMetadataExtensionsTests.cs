@@ -35,7 +35,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(sut.Name, result.FunctionName);
         Assert.Equal(sut.PluginName, result.PluginName);
         Assert.Equal(sut.Description, result.Description);
-        Assert.Equal($"{sut.PluginName}_{sut.Name}", result.FullyQualifiedName);
+        Assert.Equal($"{sut.PluginName}-{sut.Name}", result.FullyQualifiedName);
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);

@@ -22,12 +22,12 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
 
         var kernel = InitializeKernel();
 
-        var config = new FunctionCallingStepwisePlannerConfig
+        var options = new FunctionCallingStepwisePlannerOptions
         {
             MaxIterations = 15,
             MaxTokens = 4000,
         };
-        var planner = new FunctionCallingStepwisePlanner(config);
+        var planner = new FunctionCallingStepwisePlanner(options);
 
         foreach (var question in questions)
         {

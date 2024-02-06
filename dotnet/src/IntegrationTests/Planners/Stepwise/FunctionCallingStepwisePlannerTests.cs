@@ -42,10 +42,10 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch_Search" })]
-    [InlineData("What is the weather in Seattle?", new string[] { "WebSearch_Search" })]
-    [InlineData("What is the current hour number, plus 5?", new string[] { "Time_HourNumber", "Math_Add" })]
-    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", new string[] { "Math_Subtract", "Email_GetEmailAddress", "Email_SendEmail" })]
+    [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch-Search" })]
+    [InlineData("What is the weather in Seattle?", new string[] { "WebSearch-Search" })]
+    [InlineData("What is the current hour number, plus 5?", new string[] { "Time-HourNumber", "Math-Add" })]
+    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", new string[] { "Math-Subtract", "Email-GetEmailAddress", "Email-SendEmail" })]
     public async Task CanExecuteStepwisePlanAsync(string prompt, string[] expectedFunctions)
     {
         // Arrange
@@ -58,7 +58,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         kernel.ImportPluginFromType<EmailPluginFake>("Email");
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 10 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 10 });
 
         // Act
         var planResult = await planner.ExecuteAsync(kernel, prompt);
@@ -93,7 +93,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             }));
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
 
         // Act
         var planResult = await planner.ExecuteAsync(kernel, "Email a poem about cats to test@example.com");
@@ -104,8 +104,8 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.True(planResult.Iterations <= 5);
 
         string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
-        Assert.Contains("Email_WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
-        Assert.Contains("Email_SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Email-WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Email-SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
     }
 
     [RetryFact(typeof(HttpOperationException))]
@@ -124,7 +124,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             }));
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
 
         // Act & Assert
         // Planner should call ThrowingEmailPluginFake.WriteJokeAsync, which throws InvalidProgramException
