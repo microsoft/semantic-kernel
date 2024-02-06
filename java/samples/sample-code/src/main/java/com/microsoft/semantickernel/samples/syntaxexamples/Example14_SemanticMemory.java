@@ -95,7 +95,7 @@ public class Example14_SemanticMemory {
                   Title    : README: Installation, getting started, and how to contribute
 
                 Result 2:
-                  URL:     : https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet-jupyter-notebooks/00-getting-started.ipynb
+                  URL:     : https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/00-getting-started.ipynb
                   Title    : Jupyter notebook describing how to get started with the Semantic Kernel
 
                 */
@@ -110,10 +110,6 @@ public class Example14_SemanticMemory {
         Result 1:
           URL:     : https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT
           Title    : Sample demonstrating how to create a chat skill interfacing with ChatGPT
-
-        Result 2:
-          URL:     : https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md
-          Title    : README: README associated with a sample chat summary react-based webapp
 
         */
     }
@@ -164,12 +160,11 @@ public class Example14_SemanticMemory {
     private static Map<String, String> sampleData() {
         return Arrays.stream(new String[][]{
                 {"https://github.com/microsoft/semantic-kernel/blob/main/README.md", "README: Installation, getting started, and how to contribute"},
-                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/02-running-prompts-from-file.ipynb", "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function"},
-                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/00-getting-started.ipynb", "Jupyter notebook describing how to get started with the Semantic Kernel"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/02-running-prompts-from-file.ipynb", "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/00-getting-started.ipynb", "Jupyter notebook describing how to get started with the Semantic Kernel"},
                 {"https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT", "Sample demonstrating how to create a chat skill interfacing with ChatGPT"},
-                {"https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs", "C# class that defines a volatile embedding store"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Plugins/Plugins.Memory/VolatileMemoryStore.cs", "C# class that defines a volatile embedding store"},
                 {"https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet/KernelHttpServer/README.md", "README: How to set up a Semantic Kernel Service API using Azure Function Runtime v4"},
-                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md", "README: README associated with a sample chat summary react-based webapp"},
         }).collect(Collectors.toMap(element -> element[0], element -> element[1]));
     }
 }
