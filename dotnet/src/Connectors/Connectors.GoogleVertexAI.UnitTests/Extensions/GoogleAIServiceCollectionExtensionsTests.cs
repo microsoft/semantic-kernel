@@ -109,13 +109,13 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void GoogleAIEmbeddingsGenerationServiceShouldBeRegisteredInKernelServices()
+    public void GoogleAIEmbeddingGenerationServiceShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddGoogleAIEmbeddingsGeneration("modelId", "apiKey");
+        kernelBuilder.AddGoogleAIEmbeddingGeneration("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -125,13 +125,13 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void GoogleAIEmbeddingsGenerationServiceShouldBeRegisteredInServiceCollection()
+    public void GoogleAIEmbeddingGenerationServiceShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddGoogleAIEmbeddingsGeneration("modelId", "apiKey");
+        services.AddGoogleAIEmbeddingGeneration("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert

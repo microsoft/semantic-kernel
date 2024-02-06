@@ -11,21 +11,21 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
-/// Represents a client for interacting with the embeddings models by Google AI.
+/// Represents a client for interacting with the embeddings models by Vertex AI.
 /// </summary>
-internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
+internal sealed class VertexAIEmbeddingClient : ClientBase, IEmbeddingClient
 {
     private readonly string _embeddingModelId;
 
     /// <summary>
-    /// Represents a client for interacting with the embeddings models by Google AI.
+    /// Represents a client for interacting with the embeddings models by Vertex AI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="embeddingModelId">Embeddings generation model id</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
     /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
-    public GoogleAIEmbeddingsClient(
+    public VertexAIEmbeddingClient(
         HttpClient httpClient,
         string embeddingModelId,
         IHttpRequestFactory httpRequestFactory,
@@ -50,7 +50,7 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
         Verify.NotNullOrEmpty(data);
 
         var endpoint = this.EndpointProvider.GetEmbeddingsEndpoint(this._embeddingModelId);
-        var geminiRequest = this.GetEmbeddingRequest(data);
+        var geminiRequest = GetEmbeddingRequest(data);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -59,12 +59,12 @@ internal sealed class GoogleAIEmbeddingsClient : ClientBase, IEmbeddingsClient
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
-        => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId);
+    private static VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
+        => VertexAIEmbeddingRequest.FromData(data);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
-        => ProcessEmbeddingsResponse(DeserializeResponse<GoogleAIEmbeddingResponse>(body));
+        => ProcessEmbeddingsResponse(DeserializeResponse<VertexAIEmbeddingResponse>(body));
 
-    private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GoogleAIEmbeddingResponse embeddingsResponse)
-        => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();
+    private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(VertexAIEmbeddingResponse embeddingsResponse)
+        => embeddingsResponse.Predictions.Select(prediction => prediction.Embeddings.Values).ToList();
 }

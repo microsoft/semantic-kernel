@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 public class TextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationService
 {
     private protected Dictionary<string, object?> AttributesInternal { get; } = new();
-    private protected IEmbeddingsClient EmbeddingsClient { get; init; } = null!;
+    private protected IEmbeddingClient EmbeddingClient { get; init; } = null!;
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -28,6 +28,6 @@ public class TextEmbeddingGenerationServiceBase : ITextEmbeddingGenerationServic
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.EmbeddingsClient.GenerateEmbeddingsAsync(data, cancellationToken);
+        return this.EmbeddingClient.GenerateEmbeddingsAsync(data, cancellationToken);
     }
 }

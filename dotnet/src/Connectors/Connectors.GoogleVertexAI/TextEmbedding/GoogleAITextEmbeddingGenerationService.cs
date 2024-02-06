@@ -28,7 +28,7 @@ public sealed class GoogleAITextEmbeddingGenerationService : TextEmbeddingGenera
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.EmbeddingsClient = new GoogleAIEmbeddingsClient(
+        this.EmbeddingClient = new GoogleAIEmbeddingClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
@@ -39,9 +39,9 @@ public sealed class GoogleAITextEmbeddingGenerationService : TextEmbeddingGenera
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal GoogleAITextEmbeddingGenerationService(IEmbeddingsClient client, string embeddingModelId)
+    internal GoogleAITextEmbeddingGenerationService(IEmbeddingClient client, string embeddingModelId)
     {
-        this.EmbeddingsClient = client;
+        this.EmbeddingClient = client;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, embeddingModelId);
     }
 }

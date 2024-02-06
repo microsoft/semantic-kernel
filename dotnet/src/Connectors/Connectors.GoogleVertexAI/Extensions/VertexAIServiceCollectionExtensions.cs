@@ -186,7 +186,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddVertexAIEmbeddingsGeneration(
+    public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
@@ -222,7 +222,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddVertexAIEmbeddingsGeneration(
+    public static IServiceCollection AddVertexAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
         string apiKey,

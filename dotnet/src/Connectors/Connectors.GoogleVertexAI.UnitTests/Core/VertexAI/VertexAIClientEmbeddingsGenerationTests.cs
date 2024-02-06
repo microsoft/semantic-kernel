@@ -51,9 +51,9 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             values => Assert.Equal(testDataResponse.Predictions[1].Embeddings.Values, values));
     }
 
-    private VertexAIEmbeddingsClient CreateEmbeddingsClient(string modelId, string apiKey)
+    private VertexAIEmbeddingClient CreateEmbeddingsClient(string modelId, string apiKey)
     {
-        var client = new VertexAIEmbeddingsClient(
+        var client = new VertexAIEmbeddingClient(
             httpClient: this._httpClient,
             embeddingModelId: modelId,
             httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),

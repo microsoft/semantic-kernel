@@ -32,7 +32,7 @@ public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenera
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.EmbeddingsClient = new VertexAIEmbeddingsClient(
+        this.EmbeddingClient = new VertexAIEmbeddingClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
@@ -43,9 +43,9 @@ public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenera
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal VertexAITextEmbeddingGenerationService(IEmbeddingsClient client, string embeddingModelId)
+    internal VertexAITextEmbeddingGenerationService(IEmbeddingClient client, string embeddingModelId)
     {
-        this.EmbeddingsClient = client;
+        this.EmbeddingClient = client;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, embeddingModelId);
     }
 }

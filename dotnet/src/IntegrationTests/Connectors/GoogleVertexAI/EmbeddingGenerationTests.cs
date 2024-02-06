@@ -17,7 +17,7 @@ public sealed class EmbeddingGenerationTests
         .Build();
 
     [Fact(Skip = "This test is for manual verification.")]
-    public async Task GoogleAIEmbeddingsGenerationAsync()
+    public async Task GoogleAIEmbeddingGenerationAsync()
     {
         // Arrange
         const string Input = "LLM is Large Language Model.";
@@ -31,7 +31,7 @@ public sealed class EmbeddingGenerationTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
-    public async Task VertexAIEmbeddingsGenerationAsync()
+    public async Task VertexAIEmbeddingGenerationAsync()
     {
         // Arrange
         const string Input = "LLM is Large Language Model.";

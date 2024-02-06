@@ -109,13 +109,13 @@ public sealed class VertexAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void VertexAIEmbeddingsGenerationServiceShouldBeRegisteredInKernelServices()
+    public void VertexAIEmbeddingGenerationServiceShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddVertexAIEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        kernelBuilder.AddVertexAIEmbeddingGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -125,13 +125,13 @@ public sealed class VertexAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void VertexAIEmbeddingsGenerationServiceShouldBeRegisteredInServiceCollection()
+    public void VertexAIEmbeddingGenerationServiceShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        services.AddVertexAIEmbeddingsGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
+        services.AddVertexAIEmbeddingGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
