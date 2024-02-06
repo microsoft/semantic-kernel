@@ -29,15 +29,19 @@ public class InputVariable {
         String name,
         @JsonProperty("type")
         String type,
-        @Nullable
         @JsonProperty("description")
-        String description,
         @Nullable
+        String description,
         @JsonProperty("default")
+        @Nullable
         String defaultValue,
         @JsonProperty("is_required")
         boolean isRequired) {
         this.name = name;
+
+        if (type == null) {
+            type = "java.lang.String";
+        }
         this.type = type;
         this.description = description;
         this.defaultValue = defaultValue;

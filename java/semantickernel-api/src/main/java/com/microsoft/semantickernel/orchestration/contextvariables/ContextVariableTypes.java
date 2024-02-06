@@ -66,7 +66,7 @@ public class ContextVariableTypes {
         converters.forEach(this::putConverter);
     }
 
-    private <T> void putConverter(
+    public <T> void putConverter(
         ContextVariableTypeConverter<T> contextVariableTypeConverter) {
         variableTypes.put(contextVariableTypeConverter.getType(),
             new ContextVariableType<>(contextVariableTypeConverter,

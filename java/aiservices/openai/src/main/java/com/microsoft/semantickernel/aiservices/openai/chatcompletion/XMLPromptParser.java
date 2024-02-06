@@ -63,7 +63,7 @@ class XMLPromptParser {
         // In this way, we can avoid parsing the whole prompt twice and easily extend the parsing logic.
         List<ChatRequestMessage> messages = new ArrayList<>();
         try (InputStream is = new ByteArrayInputStream(prompt.getBytes(StandardCharsets.UTF_8))) {
-            XMLInputFactory factory = XMLInputFactory.newFactory();
+            XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLEventReader reader = factory.createXMLEventReader(is);
             while (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();

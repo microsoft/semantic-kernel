@@ -10,10 +10,8 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.DefaultConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -23,6 +21,7 @@ import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
@@ -32,6 +31,8 @@ import reactor.core.publisher.Mono;
 
 public class Example09_FunctionTypes {
 
+    private static final String PLUGIN_DIR =
+        System.getenv("PLUGIN_DIR") == null ? "." : System.getenv("PLUGIN_DIR");
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -98,7 +99,7 @@ public class Example09_FunctionTypes {
 
         KernelPlugin summarize = KernelPluginFactory
             .importPluginFromDirectory(
-               Path.of("java/samples/sample-code/src/main/resources/Plugins"),
+                Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
                 "SummarizePlugin",
                 null);
 
@@ -134,7 +135,7 @@ public class Example09_FunctionTypes {
                     .builder()
                     .withVariable("currentDate",
                         ContextVariable.of(
-                            ZonedDateTime.now(),
+                            ZonedDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC),
                             new DateTimeContextVariableTypeConverter()
                         )
                     )
@@ -451,7 +452,7 @@ public class Example09_FunctionTypes {
         )
         public Mono<OffsetDateTime> noInputComplexReturnTypeAsync() {
             return Mono.just(
-                OffsetDateTime.now()
+                OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC)
             );
         }
 
@@ -460,7 +461,7 @@ public class Example09_FunctionTypes {
             returnType = "java.time.temporal.Temporal"
         )
         public OffsetDateTime noInputComplexReturnType() {
-            return OffsetDateTime.now();
+            return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
         @DefineKernelFunction(
@@ -488,7 +489,7 @@ public class Example09_FunctionTypes {
             returnType = "java.time.OffsetDateTime"
         )
         public OffsetDateTime conversionScenarioA() {
-            return OffsetDateTime.now();
+            return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
         @DefineKernelFunction(
@@ -496,7 +497,7 @@ public class Example09_FunctionTypes {
             returnType = "java.time.temporal.Temporal"
         )
         public OffsetDateTime conversionScenarioB() {
-            return OffsetDateTime.now();
+            return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
         /*
