@@ -69,17 +69,6 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPromptTemplateFactory _templateFactory;
 
-    private static readonly PromptExecutionSettings s_defaultPromptExecutionSettings = new()
-    {
-        ExtensionData = new Dictionary<string, object>()
-        {
-            { "temperature", 0.0 },
-            { "top_p", 0.0 },
-            { "presence_penalty", 0.0 },
-            { "frequency_penalty", 0.0 },
-        }
-    };
-
     /// <summary>
     /// Error message if kernel does not contain sufficient functions to create a plan.
     /// </summary>
@@ -87,8 +76,6 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
-        var executionSettings = this._options.ExecutionSettings ?? s_defaultPromptExecutionSettings;
-
         // Get CreatePlan prompt template
         var functionsMetadata = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken).ConfigureAwait(false);
         var availableFunctions = this.GetAvailableFunctionsManual(functionsMetadata, out var complexParameterTypes, out var complexParameterSchemas);
@@ -97,7 +84,7 @@ public sealed class HandlebarsPlanner
 
         // Get the chat completion results
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: executionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
         if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
