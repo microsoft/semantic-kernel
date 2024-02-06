@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.IO;
 using System.Threading.Tasks;
 using Examples;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
 using Xunit.Abstractions;
@@ -35,12 +37,21 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             return;
         }
 
+        if (openAIModelId == null)
+        {
+            this.WriteLine("openAIModelId credentials not found. Skipping example.");
+            return;
+        }
+
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
 
+
+        // Important:  The comments below are intended so you can change the prompt so it generates a string with bullet points
+        // or a JSON array. The JSON array is not working at the moment, but it is a good example of how to use the Handlebars syntax
         KernelFunction kernelFunctionGenerateProductNames =
             KernelFunctionFactory.CreateFromPrompt(
                 "Given the company description, generate five different product names in name and function " +
@@ -82,7 +93,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
 
         kernel.Plugins.Add(productMagicianPlugin);
 
-        string companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel techonlogies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
+        string companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
             "Also it is able to self plan and execute complex tasks and use the power of AI agents which" +
             "enables to divide-and-conquer complex problems between different entities that specialize in " +
             "concrete tasks like for example project management, coding and creating tests as well as other" +
@@ -90,24 +101,24 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             " - this means creating feedback loops until the quality levels are met. The company is thinking of using AI Agent programming on coding, writing and project planning, and anything where AI Agents" +
             " can be applied and revolutionize a process or market niche.";
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        //// Testing a the 5 product name generation
-        //var productsResult =
-        //    await kernel.InvokeAsync(kernelFunctionGenerateProductNames,
-        //    new() {
-        //      { "input", companyDescription }
-        //    });
-        //This.WriteLine($"Result: {productsResult}");
+        // Testing a the 5 product name generation
+        var productsResult =
+            await kernel.InvokeAsync(kernelFunctionGenerateProductNames,
+            new() {
+              { "input", companyDescription }
+            });
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        WriteLine($"Result: {productsResult}");
+
         // Testing the product description generation
-        //string ProductDescription = "Product name: Skynet SDK Product description:A powerful .NET SDK destined to empower developers with advanced AI orchestration capabilities, capable of handling complex task automation.";
-        //var productDescriptionResult =
-        //    await kernel.InvokeAsync(kernelFunctionGenerateProductDescription,
-        //    new() {
-        //      { "input", ProductDescription }
-        //    });
-        //This.WriteLine($"Result: {productDescriptionResult}");
+        string ProductDescription = "Product name: Skynet SDK Product description:A powerful .NET SDK destined to empower developers with advanced AI orchestration capabilities, capable of handling complex task automation.";
+        var productDescriptionResult =
+            await kernel.InvokeAsync(kernelFunctionGenerateProductDescription,
+            new() {
+              { "input", ProductDescription }
+            });
+
+        WriteLine($"Result: {productDescriptionResult}");
 
         // Using the planner to generate a plan for the user
         string userPrompt =
@@ -127,44 +138,22 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             "Finally output all the product names and engaging descriptions preceded by PRODUCT 1: for the first" +
             "PRODUCT 2: for the second, and so on.";
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
         // Create the plan
-        //var planner = new HandlebarsPlanner(new HandlebarsPlannerOptions() { AllowLoops = true });
-        //var plan = await planner.CreatePlanAsync(kernel, userPrompt);
-        //var planName = "plan4ProductsGeneration.txt";
+        var planner = new HandlebarsPlanner(new HandlebarsPlannerOptions() { AllowLoops = true });
+        var plan = await planner.CreatePlanAsync(kernel, userPrompt);
+        var planName = "plan4ProductsGeneration.txt";
 
-        //// Print the plan to the console
-        //This.WriteLine($"Plan: {plan}");
+        // Print the plan to the console
+        WriteLine($"Plan: {plan}");
 
-        //var serializedPlan = plan.ToString();
-        //await File.WriteAllTextAsync(planName, serializedPlan);
-        //string retrievedPlan = await File.ReadAllTextAsync(planName);
-        //plan = new HandlebarsPlan(serializedPlan);
+        // Serialize the plan to a string and save it to a file
+        var serializedPlan = plan.ToString();
+        await File.WriteAllTextAsync(planName, serializedPlan);
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// One of the generated plans of the code above:
-        // Plan: {{!-- Step 1: Save the input company description to a variable --}}
-        //{{set "companyDescription" input}}
+        // Deserialize the plan from the file and create a new plan
+        string retrievedPlan = await File.ReadAllTextAsync(planName);
+        plan = new HandlebarsPlan(serializedPlan);
 
-        //{{!-- Step 2: Generate product names based on the company description --}}
-        //{{set "productNames" (productMagician-GenerateProductNames input=companyDescription)}}
-
-        //{{!-- Step 3: Loop over the generated product names to generate product descriptions--}}
-        //{{set "products" (array)}}
-        //{{#each productNames}}
-        //  {{set "productName" this}}
-        //  {{set "roughDescription" (concat "Product related to " companyName)}}
-        //  {{set "productDescription" (productMagician-GenerateProductCompellingDescription input=roughDescription)}}
-        //  {{set "products" (array.push products (concat "Product name: " productName " Description: " productDescription))}}
-        //{{/each}}
-
-        //{{!-- Step 4: Loop over the final products array to print --}}
-        //{{#each products}}
-        //  {{set "index" (Add @index 1)}}
-        //  {{json (concat "PRODUCT " index ": " this)}}
-        //{{/each}}       
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
         // We will use one of the generated HandlebarsTemplate plan by the above code, with some modifications,
         // to highlight better the HandlebarsTemplate syntax usage.
         // And invoke it as a Prompt Function
@@ -214,7 +203,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         /// what fails on the each loop, when I use it I set generateEngagingDescriptions and make the prompt function output
         /// JSON to iterate through it. Technically it is the proper syntax but somehow it fails. some returns from the LLM are
         /// absolute hallucinations :/P
-        var HandlebarsSPromptFunction = kernel.CreateFunctionFromPrompt(
+        var HandlebarsPromptFunction = kernel.CreateFunctionFromPrompt(
             new()
             {
                 Template = handlebarsTemplate,
@@ -225,7 +214,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
 
         // Invoke prompt
         var result = await kernel.InvokeAsync(
-                    HandlebarsSPromptFunction,
+                    HandlebarsPromptFunction,
                     new() {
                         { "input", companyDescription },
                         { "generateEngagingDescriptions", false }
