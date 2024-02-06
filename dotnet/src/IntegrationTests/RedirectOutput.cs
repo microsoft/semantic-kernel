@@ -44,9 +44,16 @@ public class RedirectOutput : TextWriter, ILogger, ILoggerFactory
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        var message = formatter(state, exception);
-        this._output?.WriteLine(message);
-        this._logs.AppendLine(message);
+        try
+        {
+            var message = formatter(state, exception);
+            this._logs.AppendLine(message);
+            this._output?.WriteLine(message);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            Console.WriteLine($"RedirectOutput failed, reason: {ioe}");
+        }
     }
 
     public ILogger CreateLogger(string categoryName) => this;

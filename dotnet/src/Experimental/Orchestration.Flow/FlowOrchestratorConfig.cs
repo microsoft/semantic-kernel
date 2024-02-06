@@ -47,11 +47,6 @@ public sealed class FlowOrchestratorConfig
     public int MinIterationTimeMs { get; set; } = 0;
 
     /// <summary>
-    /// Optional. The prompt template override for ReAct engine.
-    /// </summary>
-    public string? ReActPromptTemplate { get; set; } = null;
-
-    /// <summary>
     /// Optional. The prompt template configuration override for the ReAct engine.
     /// </summary>
     public PromptTemplateConfig? ReActPromptTemplateConfig { get; set; } = null;
@@ -62,11 +57,16 @@ public sealed class FlowOrchestratorConfig
     public bool EnableAutoTermination { get; set; } = false;
 
     /// <summary>
+    /// Optional. The allowed AI service id for the React engine.
+    /// </summary>
+    public HashSet<string> AIServiceIds { get; set; } = new();
+
+    /// <summary>
     /// Optional. The AI request settings for the ReAct engine.
     /// </summary>
     /// <remarks>
     /// Prompt used for reasoning may be different for different models, the prompt selection would be based on the PromptExecutionSettings.
-    /// if the built in prompt template does not work for your model, suggest to override it with <see cref="ReActPromptTemplate"/>.
+    /// if the built in prompt template does not work for your model, suggest to override it with <see cref="ReActPromptTemplateConfig"/>.
     /// </remarks>
     public PromptExecutionSettings? AIRequestSettings { get; set; } = null;
 }
