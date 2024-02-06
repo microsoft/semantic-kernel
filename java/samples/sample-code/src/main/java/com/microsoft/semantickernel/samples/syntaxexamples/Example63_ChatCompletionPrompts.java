@@ -50,7 +50,7 @@ public class Example63_ChatCompletionPrompts {
             """.stripIndent();
 
         var chatSemanticFunction = KernelFunctionFromPrompt.create(chatPrompt);
-        var chatPromptResult = kernel.invokeAsync(chatSemanticFunction, null).block();
+        var chatPromptResult = kernel.invokeAsync(chatSemanticFunction).block();
 
         System.out.println("Chat Prompt:");
         System.out.println(chatPrompt);
@@ -60,7 +60,7 @@ public class Example63_ChatCompletionPrompts {
         CountDownLatch cdl = new CountDownLatch(1);
         System.out.println("Chat Prompt Result:");
         kernel
-            .invokeAsync(chatSemanticFunction, null)
+            .invokeAsync(chatSemanticFunction)
             .doFinally(x -> cdl.countDown())
             .subscribe(result -> System.out.println(result.getResult()));
 

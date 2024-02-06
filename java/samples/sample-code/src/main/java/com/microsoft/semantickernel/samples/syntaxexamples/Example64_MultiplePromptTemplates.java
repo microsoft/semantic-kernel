@@ -81,7 +81,7 @@ public class Example64_MultiplePromptTemplates {
             .withVariable("name", "Bob")
             .build();
 
-        var result = kernel.invokeAsync(function, arguments).block();
+        var result = kernel.invokeAsync(function).withArguments(arguments).block();
         System.out.println(result.getResult());
     }
 }

@@ -9,7 +9,6 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments.Builder;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -164,7 +163,8 @@ public class Example13_ConversationSummaryPlugin {
         Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
-                    .<String>get("GetConversationActionItems"),
+                    .<String>get("GetConversationActionItems"))
+            .withArguments(
                 new Builder()
                     .withInput(chatTranscript)
                     .build()
@@ -181,9 +181,8 @@ public class Example13_ConversationSummaryPlugin {
             new ConversationSummaryPlugin(), null);
 
         Mono<FunctionResult<String>> summary = kernel
-            .invokeAsync(
-                conversationSummaryPlugin
-                    .<String>get("GetConversationTopics"),
+            .invokeAsync(conversationSummaryPlugin.<String>get("GetConversationTopics"))
+            .withArguments(
                 new Builder()
                     .withInput(chatTranscript)
                     .build()
@@ -206,7 +205,8 @@ public class Example13_ConversationSummaryPlugin {
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
-                    .get("SummarizeConversation"),
+                    .get("SummarizeConversation"))
+            .withArguments(
                 new Builder()
                     .withInput(chatTranscript)
                     .build()

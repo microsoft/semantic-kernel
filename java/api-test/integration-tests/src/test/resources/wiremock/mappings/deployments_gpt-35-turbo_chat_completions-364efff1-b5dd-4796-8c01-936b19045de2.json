@@ -1,0 +1,26 @@
+{
+   "id" : "364efff1-b5dd-4796-8c01-936b19045de2",
+   "insertionIndex" : 11,
+   "name" : "deployments_gpt-35-turbo_chat_completions",
+   "newScenarioState" : "scenario-5-deployments-gpt-35-turbo-chat-completions-2",
+   "persistent" : true,
+   "request" : {
+      "bodyPatterns" : [
+         {
+            "equalToJson" : "{\"messages\":[{\"role\":\"user\",\"content\":\"Hello AI, what can you do for me?\"}],\"model\":\"gpt-35-turbo\"}",
+            "ignoreArrayOrder" : true,
+            "ignoreExtraElements" : true
+         }
+      ],
+      "method" : "POST",
+      "url" : "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
+   },
+   "requiredScenarioState" : "Started",
+   "response" : {
+      "body" : "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253042,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"2fb33955-441a-429d-bbf6-603e449d21b6\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":17,\"completion_tokens\":197,\"total_tokens\":214}}",
+      "headers" : {},
+      "status" : 200
+   },
+   "scenarioName" : "scenario-5-deployments-gpt-35-turbo-chat-completions",
+   "uuid" : "364efff1-b5dd-4796-8c01-936b19045de2"
+}

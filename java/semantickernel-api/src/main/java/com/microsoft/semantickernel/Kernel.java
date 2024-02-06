@@ -31,6 +31,16 @@ import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /**
@@ -59,6 +69,7 @@ public class Kernel implements Buildable {
         this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
 
+    /*
     public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction<T> function,
         @Nullable KernelFunctionArguments arguments) {
@@ -73,11 +84,44 @@ public class Kernel implements Buildable {
     }
 
     public <T> Mono<FunctionResult<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelFunctionArguments arguments) {
+        return invokeAsync(pluginName, functionName, arguments, null);
+    }
+
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> resultType) {
+        return invokeAsync(pluginName, functionName, arguments, resultType, null);
+    }
+
+    public <T> Mono<FunctionResult<T>> invokeAsync(
+        String pluginName,
+        String functionName,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext) {
+        KernelFunction function = plugins.getFunction(pluginName, functionName);
+        return invokeAsync(function, arguments, variableType, invocationContext);
+    }
+*/
+
+    public <T> FunctionInvocation<T> invokeAsync(
+        String pluginName,
+        String functionName) {
+        KernelFunction function = plugins.getFunction(pluginName, functionName);
+        return invokeAsync(function);
+    }
+
+    public <T> Mono<FunctionResult<T>> invokeAsync(
         KernelFunction<T> function,
         @Nullable KernelFunctionArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
-       
+
         Objects.requireNonNull(function, "function");
 
         // Ever other invokeAsync call should end up here... 
@@ -92,43 +136,22 @@ public class Kernel implements Buildable {
 
             InvocationContext.Builder builder = InvocationContext.builder()
                 .withKernelHooks(hooks);
-            
+
             if (invocationContext != null) {
                 builder = builder
                     .withPromptExecutionSettings(invocationContext.getPromptExecutionSettings())
                     .withToolCallBehavior(invocationContext.getToolCallBehavior());
-            } 
-                
+            }
+
             invocationContext = builder.build();
         }
 
         return function.invokeAsync(this, arguments, variableType, invocationContext);
     }
 
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        @Nullable KernelFunctionArguments arguments) {
-        return invokeAsync(pluginName, functionName, arguments, null);
+    public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
+        return new FunctionInvocation<>(this, function);
     }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> resultType) {
-            return invokeAsync(pluginName, functionName, arguments, resultType, null);
-        }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType,
-        @Nullable InvocationContext invocationContext) {
-        KernelFunction function = plugins.getFunction(pluginName, functionName);
-        return invokeAsync(function, arguments, variableType, invocationContext);
-     }
 
 
     public List<KernelFunction<?>> getFunctions() {

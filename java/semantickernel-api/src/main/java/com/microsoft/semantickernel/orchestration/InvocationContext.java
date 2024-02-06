@@ -1,14 +1,12 @@
 package com.microsoft.semantickernel.orchestration;
 
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import javax.annotation.Nullable;
 
 /**
  * Context passed to a Kernel or KernelFunction invoke
@@ -28,7 +26,13 @@ public class InvocationContext implements Buildable {
         this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
     }
 
-    @SuppressFBWarnings(value="EI_EXPOSE_REP", justification="returns UnmodifiableKernelHooks")
+    public InvocationContext(InvocationContext context) {
+        this.hooks = context.hooks;
+        this.promptExecutionSettings = context.promptExecutionSettings;
+        this.toolCallBehavior = context.toolCallBehavior;
+    }
+
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableKernelHooks")
     @Nullable
     public UnmodifiableKernelHooks getKernelHooks() {
         return hooks;
@@ -39,7 +43,7 @@ public class InvocationContext implements Buildable {
         return promptExecutionSettings;
     }
 
-    @SuppressFBWarnings(value="EI_EXPOSE_REP", justification="returns UnmodifiableToolCallBehavior")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableToolCallBehavior")
     @Nullable
     public UnmodifiableToolCallBehavior getToolCallBehavior() {
         return toolCallBehavior;
@@ -49,7 +53,8 @@ public class InvocationContext implements Buildable {
         return new Builder();
     }
 
-    private static UnmodifiableToolCallBehavior unmodifiableClone(ToolCallBehavior toolCallBehavior) {
+    private static UnmodifiableToolCallBehavior unmodifiableClone(
+        ToolCallBehavior toolCallBehavior) {
         if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
             return (UnmodifiableToolCallBehavior) toolCallBehavior;
         } else if (toolCallBehavior != null) {
@@ -80,7 +85,8 @@ public class InvocationContext implements Buildable {
             return this;
         }
 
-        public Builder withPromptExecutionSettings(PromptExecutionSettings promptExecutionSettings) {
+        public Builder withPromptExecutionSettings(
+            PromptExecutionSettings promptExecutionSettings) {
             this.promptExecutionSettings = promptExecutionSettings;
             return this;
         }
@@ -95,5 +101,5 @@ public class InvocationContext implements Buildable {
             return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior);
         }
     }
-    
+
 }

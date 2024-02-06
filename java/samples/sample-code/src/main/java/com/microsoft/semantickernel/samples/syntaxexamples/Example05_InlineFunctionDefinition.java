@@ -8,9 +8,9 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
@@ -79,14 +79,17 @@ public class Example05_InlineFunctionDefinition {
             )
             .build();
 
-        var result = kernel.invokeAsync(excuseFunction,
+        var result = kernel
+            .invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withInput("I missed the F1 final race")
                     .build())
             .block();
         System.out.println(result.getResult());
 
-        result = kernel.invokeAsync(excuseFunction,
+        result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withInput("sorry I forgot your birthday")
                     .build())
@@ -108,7 +111,7 @@ public class Example05_InlineFunctionDefinition {
             null);
 
         FunctionResult<?> fixedFunctionResult = kernel
-            .invokeAsync(fixedFunction, null)
+            .invokeAsync(fixedFunction)
             .block();
         System.out.println(fixedFunctionResult.getResult());
 

@@ -7,9 +7,9 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import reactor.core.publisher.Mono;
@@ -68,14 +68,12 @@ public class Example60_AdvancedMethodFunctions {
         ContextVariableTypes.DEFAULT_TYPES.putConverter(type);
 
         var result = kernel
-            .invokeAsync(
-                FunctionsChainingPlugin.PluginName,
-                "Function1",
+            .invokeAsync(FunctionsChainingPlugin.PluginName, "Function1")
+            .withArguments(
                 KernelFunctionArguments
                     .builder()
-                    .build(),
-                ContextVariableTypes.getDefaultVariableTypeForClass(MyCustomType.class)
-            )
+                    .build())
+            .withResultType(ContextVariableTypes.getDefaultVariableTypeForClass(MyCustomType.class))
             .block();
 
         System.out.println("CustomType.Number: " + result.getResult().number); // 2
@@ -120,12 +118,10 @@ public class Example60_AdvancedMethodFunctions {
         public Mono<MyCustomType> function1Async(Kernel kernel) {
             // Execute another function
             return kernel
-                .invokeAsync(
-                    PluginName,
-                    "Function2",
-                    KernelFunctionArguments.builder().build(),
-                    ContextVariableTypes.getDefaultVariableTypeForClass(
-                        Example60_AdvancedMethodFunctions.MyCustomType.class))
+                .invokeAsync(PluginName, "Function2")
+                .withArguments(KernelFunctionArguments.builder().build())
+                .withResultType(ContextVariableTypes.getDefaultVariableTypeForClass(
+                    Example60_AdvancedMethodFunctions.MyCustomType.class))
                 .flatMap(value -> {
                     // Process the result
                     return Mono.just(

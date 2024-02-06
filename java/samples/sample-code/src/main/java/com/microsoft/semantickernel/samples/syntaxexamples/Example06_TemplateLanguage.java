@@ -104,7 +104,7 @@ public class Example06_TemplateLanguage {
 
         // Show the result
         System.out.println("--- Prompt Function result");
-        var result = kernel.invokeAsync(kindOfDay, null).block();
+        var result = kernel.invokeAsync(kindOfDay).block();
         System.out.println(result.getResult());
     }
 }

@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
@@ -86,7 +85,8 @@ public class Example05_InlineFunctionDefinitionTest {
 
         WireMockUtil.mockCompletionResponse("I missed the F1 final race", "a-response");
 
-        var result = kernel.invokeAsync(excuseFunction,
+        var result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withInput("I missed the F1 final race")
                     .build())
@@ -96,7 +96,8 @@ public class Example05_InlineFunctionDefinitionTest {
 
         WireMockUtil.mockCompletionResponse("sorry I forgot your birthday", "a-response-2");
 
-        result = kernel.invokeAsync(excuseFunction,
+        result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withInput("sorry I forgot your birthday")
                     .build())
@@ -121,7 +122,7 @@ public class Example05_InlineFunctionDefinitionTest {
             null);
 
         FunctionResult<String> fixedFunctionResult = kernel
-            .invokeAsync(fixedFunction, null)
+            .invokeAsync(fixedFunction)
             .block();
 
         Assertions.assertEquals("a-response-3", fixedFunctionResult.getResult());

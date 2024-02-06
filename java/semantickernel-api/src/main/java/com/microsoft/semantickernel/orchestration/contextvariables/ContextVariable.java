@@ -7,6 +7,9 @@ import javax.annotation.Nullable;
 
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
+import java.util.Arrays;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class ContextVariable<T> {
 
@@ -44,6 +47,28 @@ public class ContextVariable<T> {
         ContextVariableTypeConverter<?> converter) {
         ContextVariableType<?> type = new ContextVariableType(converter, converter.getType());
         return new ContextVariable(type, value);
+    }
+
+    public static <T, U> ContextVariable<T> convert(
+        @Nullable
+        U it,
+        ContextVariableType<T> requestedResultType) {
+        try {
+            return convert(
+                it,
+                requestedResultType.getClazz(),
+                new ContextVariableTypes(
+                    Arrays.asList(requestedResultType.getConverter()))
+            );
+
+        } catch (Exception e) {
+            return convert(
+                it,
+                requestedResultType.getClazz(),
+                ContextVariableTypes.DEFAULT_TYPES
+            );
+        }
+
     }
 
     public static <T, U> ContextVariable<T> convert(
@@ -91,15 +116,19 @@ public class ContextVariable<T> {
             throw new SKException("Unable to find variable type for " + requestedResultType, e);
         }
 
-        ContextVariableType<U> typeOfActualReturnedType;
+        ContextVariableType<U> typeOfActualReturnedType = null;
 
         try {
             // First try to convert from type ? to T using the converter of ? and see if it can convert it to T.
-            typeOfActualReturnedType = contextVariableTypes.getVariableTypeForClass(
-                (Class<U>) it.getClass());
+            typeOfActualReturnedType = contextVariableTypes
+                .getVariableTypeForClass((Class<U>) it.getClass());
         } catch (Exception e) {
-            typeOfActualReturnedType = contextVariableTypes.getVariableTypeForSuperClass(
-                (Class<U>) it.getClass());
+            try {
+                typeOfActualReturnedType = contextVariableTypes
+                    .getVariableTypeForSuperClass((Class<U>) it.getClass());
+            } catch (Exception e2) {
+                // ignore
+            }
         }
 
         if (typeOfActualReturnedType != null) {
@@ -148,7 +177,8 @@ public class ContextVariable<T> {
         try {
             return clazz.cast(value);
         } catch (ClassCastException e) {
-            throw new SKException("Cannot cast " + (value != null ? value.getClass() : "null") + " to " + clazz, e);
+            throw new SKException(
+                "Cannot cast " + (value != null ? value.getClass() : "null") + " to " + clazz, e);
         }
     }
 

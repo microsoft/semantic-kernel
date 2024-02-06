@@ -130,9 +130,9 @@ public final class CodeBlock extends Block implements CodeRendering {
         return kernel
             .invokeAsync(
                 fBlock.getPluginName(),
-                fBlock.getFunctionName(),
-                arguments,
-                resultType)
+                fBlock.getFunctionName())
+            .withArguments(arguments)
+            .withResultType(resultType)
             .map(FunctionResult::getResultVariable);
     }
 
