@@ -7,8 +7,8 @@ import pytest
 from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
     OpenAIChatMessage,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -51,7 +51,7 @@ def test_custom_prompt_template_config():
         schema_=2,
         type="completion2",
         description="Custom description.",
-        execution_settings=OpenAIChatRequestSettings(
+        execution_settings=OpenAIChatPromptExecutionSettings(
             temperature=0.5,
             top_p=0.5,
             presence_penalty=0.5,
@@ -127,7 +127,7 @@ def test_custom_prompt_template_config_from_json():
         }
     }
     """
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_json(prompt_template_json)
+    prompt_template_config = PromptTemplateConfig[OpenAIChatPromptExecutionSettings].from_json(prompt_template_json)
     assert prompt_template_config.schema_ == 2
     assert prompt_template_config.type == "completion2"
     assert prompt_template_config.description == "Custom description."
@@ -151,15 +151,31 @@ def test_chat_prompt_template():
     assert chat_prompt_template.messages == []
 
 
-def test_chat_prompt_template_with_system_prompt():
-    prompt_template_config = PromptTemplateConfig[OpenAIChatRequestSettings].from_execution_settings(
+def test_chat_prompt_template_with_messages():
+    prompt_template_config = PromptTemplateConfig[OpenAIChatPromptExecutionSettings].from_execution_settings(
         messages=[{"role": "system", "content": "Custom system prompt."}],
     )
-
     chat_prompt_template = ChatPromptTemplate[OpenAIChatMessage](
         "{{$user_input}}",
         PromptTemplateEngine(),
         prompt_config=prompt_template_config,
+        parse_messages=True,
+    )
+    print(chat_prompt_template.messages)
+    assert len(chat_prompt_template.messages) == 1
+    assert chat_prompt_template.messages[0].role == "system"
+    assert chat_prompt_template.messages[0].content_template.template == "Custom system prompt."
+
+
+def test_chat_prompt_template_with_system_prompt():
+    prompt_template_config = PromptTemplateConfig[OpenAIChatPromptExecutionSettings].from_execution_settings(
+        chat_system_prompt="Custom system prompt.",
+    )
+    chat_prompt_template = ChatPromptTemplate[OpenAIChatMessage](
+        "{{$user_input}}",
+        PromptTemplateEngine(),
+        prompt_config=prompt_template_config,
+        parse_chat_system_prompt=True,
     )
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1

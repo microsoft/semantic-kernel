@@ -2,12 +2,12 @@
 
 from typing import List
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.utils.validation import validate_function_name
 
 
-class FunctionView(SKBaseModel):
+class FunctionView(KernelBaseModel):
     name: str
     plugin_name: str
     description: str
@@ -32,4 +32,26 @@ class FunctionView(SKBaseModel):
             parameters=parameters,
             is_semantic=is_semantic,
             is_asynchronous=is_asynchronous,
+        )
+
+    def __eq__(self, other):
+        """
+        Compare to another FunctionView instance.
+
+        Args:
+            other (FunctionView): The other FunctionView instance.
+
+        Returns:
+            True if the two instances are equal, False otherwise.
+        """
+        if not isinstance(other, FunctionView):
+            return False
+
+        return (
+            self.name == other.name
+            and self.plugin_name == other.plugin_name
+            and self.description == other.description
+            and self.parameters == other.parameters
+            and self.is_semantic == other.is_semantic
+            and self.is_asynchronous == other.is_asynchronous
         )

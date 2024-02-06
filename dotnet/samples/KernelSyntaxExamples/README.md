@@ -1,42 +1,13 @@
 #Semantic Kernel syntax examples
 
-This project contains a collection of semi-random examples about various scenarios
-using SK components.
+This project contains a collection of semi-random examples about various scenarios using SK components.
 
-The examples are ordered by number, starting with very basic examples.
+The examples can be run as integration tests but their code can also be copied to stand-alone programs.
 
 ## Running Examples with Filters
 
-You can run individual examples in the KernelSyntaxExamples project using various methods to specify a filter. This allows you to execute specific examples without running all of them. Choose one of the following options to apply a filter:
-
-### Option 1: Set the Default Filter in Program.cs
-
-In your code, you can set a default filter by modifying the appropriate variable or parameter. Look for the section in your code where the filter is applied or where the examples are defined, and change the filter value accordingly.
-
-```csharp
-// Example of setting a default filter in code
-string defaultFilter = "Example0"; // will run all examples that contain 'example0' in the name
-```
-
-### Option 2: Set Command-Line Arguments
-
-Right-click on your console application project in the Solution Explorer.
-
-Choose "Properties" from the context menu.
-
-In the project properties window, navigate to the "Debug" tab on the left.
-
-Supply Command-Line Arguments:
-
-In the "Command line arguments" field, enter the command-line arguments that your console application expects. Separate multiple arguments with spaces.
-
-### Option 3: Use Visual Studio Code Filters
-
-If you are using Visual Studio Code, you can specify a filter using the built-in filter options provided by the IDE. These options can be helpful when running your code in a debugging environment. Consult the documentation for Visual Studio Code or the specific extension you're using for information on applying filters.
-
-### Option 4: Modify launch.json
-
-If you are using Visual Studio or a similar IDE that utilizes launch configurations, you can specify the filter in your launch.json configuration file. Edit the configuration for your project to include the filter parameter.
+You can run specific examples in the KernelSyntaxExamples project by using test filters (dotnet test --filter).
+Type "dotnet test --help" at the command line for more details.
 
 ## Configuring Secrets
 
@@ -177,7 +148,8 @@ Redis__Configuration
 
 # Authentication for the OpenAPI Functions
 
-The Semantic Kernel OpenAPI Function enables developers to take any REST API that follows the OpenAPI specification and import it as a plugin to the Semantic Kernel. However, the Kernel needs to be able to authenticate outgoing requests per the requirements of the target API. This document outlines the authentication model for the OpenAPI plugin.
+The Semantic Kernel OpenAPI Function enables developers to take any REST API that follows the OpenAPI specification and import it as a plugin to the Semantic Kernel.
+However, the Kernel needs to be able to authenticate outgoing requests per the requirements of the target API. This document outlines the authentication model for the OpenAPI plugin.
 
 ## The `AuthenticateRequestAsyncCallback` delegate
 
@@ -187,7 +159,9 @@ The Semantic Kernel OpenAPI Function enables developers to take any REST API tha
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
 
-Developers may optionally provide an implementation of this delegate when importing an OpenAPI plugin to the Kernel. The delegate is then passed through to the `RestApiOperationRunner`, which is responsible for building the HTTP payload and sending the request for each REST API operation. Before the API request is sent, the delegate is executed with the HTTP request message as the parameter, allowing the request message to be updated with any necessary authentication information.
+Developers may optionally provide an implementation of this delegate when importing an OpenAPI plugin to the Kernel.
+The delegate is then passed through to the `RestApiOperationRunner`, which is responsible for building the HTTP payload and sending the request for each REST API operation.
+Before the API request is sent, the delegate is executed with the HTTP request message as the parameter, allowing the request message to be updated with any necessary authentication information.
 
 This pattern was designed to be flexible enough to support a wide variety of authentication frameworks.
 
@@ -195,7 +169,8 @@ This pattern was designed to be flexible enough to support a wide variety of aut
 
 ### BasicAuthenticationProvider
 
-This class implements the HTTP "basic" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the user's credentials. When the `AuthenticateRequestAsync` method is called, it retrieves the credentials, encodes them as a UTF-8 encoded Base64 string, and adds them to the `HttpRequestMessage`'s authorization header.
+This class implements the HTTP "basic" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the user's credentials.
+When the `AuthenticateRequestAsync` method is called, it retrieves the credentials, encodes them as a UTF-8 encoded Base64 string, and adds them to the `HttpRequestMessage`'s authorization header.
 
 The following code demonstrates how to use this provider:
 
@@ -212,7 +187,8 @@ var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.Jira, ne
 
 ### BearerAuthenticationProvider
 
-This class implements the HTTP "bearer" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the bearer token. When the `AuthenticateRequestAsync` method is called, it retrieves the token and adds it to the `HttpRequestMessage`'s authorization header.
+This class implements the HTTP "bearer" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the bearer token.
+When the `AuthenticateRequestAsync` method is called, it retrieves the token and adds it to the `HttpRequestMessage`'s authorization header.
 
 The following code demonstrates how to use this provider:
 
@@ -226,7 +202,9 @@ var plugin = kernel.ImportOpenApiPluginFromResource(PluginResourceNames.AzureKey
 
 ### InteractiveMsalAuthenticationProvider
 
-This class uses the [Microsoft Authentication Library (MSAL)](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-overview)'s .NET library to authenticate the user and acquire an OAuth token. It follows the interactive [authorization code flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow), requiring the user to sign in with a Microsoft or Azure identity. This is particularly useful for authenticating requests to the Microsoft Graph or Azure APIs.
+This class uses the [Microsoft Authentication Library (MSAL)](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-overview)'s .NET library to authenticate the user and acquire an OAuth token.
+It follows the interactive [authorization code flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow), requiring the user to sign in with a Microsoft or Azure identity.
+This is particularly useful for authenticating requests to the Microsoft Graph or Azure APIs.
 
 Once the token is acquired, it is added to the HTTP authentication header via the `AuthenticateRequestAsync` method, which is inherited from `BearerAuthenticationProvider`.
 

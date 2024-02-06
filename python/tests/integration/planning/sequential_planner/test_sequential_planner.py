@@ -71,29 +71,27 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
             False,
             "Write a joke and send it in an e-mail to Kai.",
             "SendEmail",
-            "_GLOBAL_FUNCTIONS_",
+            "email_plugin_fake",
         ),
         (
             True,
             "Write a joke and send it in an e-mail to Kai.",
             "SendEmail",
-            "_GLOBAL_FUNCTIONS_",
+            "email_plugin_fake",
         ),
     ],
 )
 @pytest.mark.asyncio
-async def test_create_plan_function_flow_async(
-    get_aoai_config, use_chat_model, prompt, expected_function, expected_plugin
-):
+async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt, expected_function, expected_plugin):
     # Arrange
     kernel = initialize_kernel(get_aoai_config, False, use_chat_model)
-    kernel.import_plugin(EmailPluginFake())
-    kernel.import_plugin(FunPluginFake())
+    kernel.import_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.import_plugin(FunPluginFake(), "fun_plugin_fake")
 
     planner = SequentialPlanner(kernel)
 
     # Act
-    plan = await planner.create_plan_async(prompt)
+    plan = await planner.create_plan(prompt)
 
     # Assert
     assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)
@@ -115,18 +113,16 @@ async def test_create_plan_function_flow_async(
     raises=semantic_kernel.planning.planning_exception.PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_with_defaults_async(
-    get_aoai_config, prompt, expected_function, expected_plugin, expected_default
-):
+async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_function, expected_plugin, expected_default):
     # Arrange
     kernel = initialize_kernel(get_aoai_config)
-    kernel.import_plugin(EmailPluginFake())
+    kernel.import_plugin(EmailPluginFake(), "email_plugin_fake")
     kernel.import_plugin(WriterPluginFake(), "WriterPlugin")
 
     planner = SequentialPlanner(kernel)
 
     # Act
-    plan = await retry(lambda: planner.create_plan_async(prompt))
+    plan = await retry(lambda: planner.create_plan(prompt))
 
     # Assert
     assert any(
@@ -143,7 +139,7 @@ async def test_create_plan_with_defaults_async(
         (
             "Write a poem or joke and send it in an e-mail to Kai.",
             "SendEmail",
-            "_GLOBAL_FUNCTIONS_",
+            "email_plugin_fake",
         )
     ],
 )
@@ -152,12 +148,12 @@ async def test_create_plan_with_defaults_async(
     raises=semantic_kernel.planning.planning_exception.PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_goal_relevant_async(get_aoai_config, prompt, expected_function, expected_plugin):
+async def test_create_plan_goal_relevant(get_aoai_config, prompt, expected_function, expected_plugin):
     # Arrange
     kernel = initialize_kernel(get_aoai_config, use_embeddings=True)
-    kernel.import_plugin(EmailPluginFake())
-    kernel.import_plugin(FunPluginFake())
-    kernel.import_plugin(WriterPluginFake())
+    kernel.import_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.import_plugin(FunPluginFake(), "fun_plugin_fake")
+    kernel.import_plugin(WriterPluginFake(), "writer_plugin_fake")
 
     planner = SequentialPlanner(
         kernel,
@@ -165,7 +161,7 @@ async def test_create_plan_goal_relevant_async(get_aoai_config, prompt, expected
     )
 
     # Act
-    plan = await retry(lambda: planner.create_plan_async(prompt))
+    plan = await retry(lambda: planner.create_plan(prompt))
 
     # Assert
     assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)

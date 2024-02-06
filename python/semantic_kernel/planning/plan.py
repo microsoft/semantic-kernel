@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 import re
 import threading
@@ -9,7 +8,7 @@ from typing import Any, Callable, ClassVar, List, Optional, Union
 from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai import AIRequestSettings
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -17,23 +16,20 @@ from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Plan(SKFunctionBase):
+class Plan:
     _state: ContextVariables = PrivateAttr()
     _steps: List["Plan"] = PrivateAttr()
-    _function: SKFunctionBase = PrivateAttr()
+    _function: KernelFunction = PrivateAttr()
     _parameters: ContextVariables = PrivateAttr()
     _outputs: List[str] = PrivateAttr()
     _has_next_step: bool = PrivateAttr()
@@ -42,7 +38,7 @@ class Plan(SKFunctionBase):
     _plugin_name: str = PrivateAttr()
     _description: str = PrivateAttr()
     _is_semantic: bool = PrivateAttr()
-    _request_settings: AIRequestSettings = PrivateAttr()
+    _prompt_execution_settings: PromptExecutionSettings = PrivateAttr()
     DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
     @property
@@ -81,8 +77,8 @@ class Plan(SKFunctionBase):
             return not self._is_semantic
 
     @property
-    def request_settings(self) -> AIRequestSettings:
-        return self._request_settings
+    def prompt_execution_settings(self) -> PromptExecutionSettings:
+        return self._prompt_execution_settings
 
     @property
     def has_next_step(self) -> bool:
@@ -102,7 +98,7 @@ class Plan(SKFunctionBase):
         parameters: Optional[ContextVariables] = None,
         outputs: Optional[List[str]] = None,
         steps: Optional[List["Plan"]] = None,
-        function: Optional[SKFunctionBase] = None,
+        function: Optional[KernelFunction] = None,
     ) -> None:
         super().__init__()
         self._name = "" if name is None else name
@@ -116,7 +112,7 @@ class Plan(SKFunctionBase):
         self._has_next_step = len(self._steps) > 0
         self._is_semantic = None
         self._function = None if function is None else function
-        self._request_settings = None
+        self._prompt_execution_settings = None
 
         if function is not None:
             self.set_function(function)
@@ -126,34 +122,47 @@ class Plan(SKFunctionBase):
         return cls(description=goal, plugin_name=cls.__name__)
 
     @classmethod
-    def from_function(cls, function: SKFunctionBase) -> "Plan":
+    def from_function(cls, function: KernelFunction) -> "Plan":
         plan = cls()
         plan.set_function(function)
         return plan
 
-    async def invoke_async(
+    async def invoke(
         self,
         input: Optional[str] = None,
-        context: Optional[SKContext] = None,
-        settings: Optional[AIRequestSettings] = None,
+        context: Optional[KernelContext] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs,
         # TODO: cancellation_token: CancellationToken,
-    ) -> SKContext:
+    ) -> KernelContext:
+        """
+        Invoke the plan asynchronously.
+
+        Args:
+            input (str, optional): The input to the plan. Defaults to None.
+            context (KernelContext, optional): The context to use. Defaults to None.
+            settings (PromptExecutionSettings, optional): The AI request settings to use. Defaults to None.
+            memory (SemanticTextMemoryBase, optional): The memory to use. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            KernelContext: The updated context.
+        """
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
-            context = SKContext(
+            context = KernelContext(
                 variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
                 memory=memory or NullMemory(),
+                plugins=KernelPluginCollection(),
             )
 
         if self._function is not None:
-            result = await self._function.invoke_async(context=context, settings=settings)
+            result = await self._function.invoke(context=context, settings=settings)
             if result.error_occurred:
                 logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(
@@ -172,80 +181,23 @@ class Plan(SKFunctionBase):
 
         return context
 
-    def invoke(
-        self,
-        input: Optional[str] = None,
-        context: Optional[SKContext] = None,
-        settings: Optional[AIRequestSettings] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        **kwargs,
-    ) -> SKContext:
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        if input is not None and input != "":
-            self._state.update(input)
-
-        if context is None:
-            context = SKContext(
-                variables=self._state,
-                plugin_collection=ReadOnlyPluginCollection(),
-                memory=memory or NullMemory(),
-            )
-
-        if self._function is not None:
-            result = self._function.invoke(context=context, settings=settings)
-            if result.error_occurred:
-                logger.error(
-                    result.last_exception,
-                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self.plugin_name, self.name, context.last_error_description
-                    ),
-                )
-                return result
-            context.variables.update(result.result)
-        else:
-            # loop through steps until completion
-            while self.has_next_step:
-                # Check if there is an event loop
-                try:
-                    loop = asyncio.get_running_loop()
-                except RuntimeError:
-                    loop = None
-                function_context = context
-                self.add_variables_to_context(self._state, function_context)
-
-                # Handle "asyncio.run() cannot be called from a running event loop"
-                if loop and loop.is_running():
-                    self._runThread(self.invoke_next_step(function_context))
-                else:
-                    asyncio.run(self.invoke_next_step(function_context))
-                self.update_context_with_outputs(context)
-        return context
-
     def set_ai_configuration(
         self,
-        settings: AIRequestSettings,
-    ) -> SKFunctionBase:
+        settings: PromptExecutionSettings,
+    ) -> KernelFunction:
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
-    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> SKFunctionBase:
+    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> KernelFunction:
         if self._function is not None:
             self._function.set_ai_service(service)
-
-    def set_default_plugin_collection(
-        self,
-        plugins: ReadOnlyPluginCollectionBase,
-    ) -> SKFunctionBase:
-        if self._function is not None:
-            self._function.set_default_plugin_collection(plugins)
 
     def describe(self) -> Optional[FunctionView]:
         if self._function is not None:
             return self._function.describe()
         return None
 
-    def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
+    def set_available_functions(self, plan: "Plan", context: KernelContext) -> "Plan":
         if len(plan.steps) == 0:
             if context.plugins is None:
                 raise KernelException(
@@ -253,7 +205,7 @@ class Plan(SKFunctionBase):
                     "Plugin collection not found in the context",
                 )
             try:
-                pluginFunction = context.plugins.get_function(plan.plugin_name, plan.name)
+                pluginFunction = context.plugins[plan.plugin_name][plan.name]
                 plan.set_function(pluginFunction)
             except Exception:
                 pass
@@ -263,7 +215,7 @@ class Plan(SKFunctionBase):
 
         return plan
 
-    def add_steps(self, steps: Union[List["Plan"], List[SKFunctionBase]]) -> None:
+    def add_steps(self, steps: Union[List["Plan"], List[KernelFunction]]) -> None:
         for step in steps:
             if type(step) is Plan:
                 self._steps.append(step)
@@ -281,15 +233,15 @@ class Plan(SKFunctionBase):
                 new_step.set_function(step)
                 self._steps.append(new_step)
 
-    def set_function(self, function: SKFunctionBase) -> None:
+    def set_function(self, function: KernelFunction) -> None:
         self._function = function
         self._name = function.name
         self._plugin_name = function.plugin_name
         self._description = function.description
         self._is_semantic = function.is_semantic
-        self._request_settings = function.request_settings
+        self._prompt_execution_settings = function.prompt_execution_settings
 
-    async def run_next_step_async(
+    async def run_next_step(
         self,
         kernel: Kernel,
         variables: ContextVariables,
@@ -297,7 +249,7 @@ class Plan(SKFunctionBase):
         context = kernel.create_new_context(variables)
         return await self.invoke_next_step(context)
 
-    async def invoke_next_step(self, context: SKContext) -> "Plan":
+    async def invoke_next_step(self, context: KernelContext) -> "Plan":
         if self.has_next_step:
             step = self._steps[self._next_step_index]
 
@@ -305,12 +257,12 @@ class Plan(SKFunctionBase):
             variables = self.get_next_step_variables(context.variables, step)
 
             # Invoke the step
-            func_context = SKContext(
+            func_context = KernelContext(
                 variables=variables,
                 memory=context.memory,
-                plugin_collection=context.plugins,
+                plugins=context.plugins,
             )
-            result = await step.invoke_async(context=func_context)
+            result = await step.invoke(context=func_context)
             result_value = result.result
 
             if result.error_occurred:
@@ -342,12 +294,12 @@ class Plan(SKFunctionBase):
 
         return self
 
-    def add_variables_to_context(self, variables: ContextVariables, context: SKContext) -> None:
+    def add_variables_to_context(self, variables: ContextVariables, context: KernelContext) -> None:
         for key in variables.variables:
             if key not in context.variables:
                 context.variables.set(key, variables[key])
 
-    def update_context_with_outputs(self, context: SKContext) -> None:
+    def update_context_with_outputs(self, context: KernelContext) -> None:
         result_string = ""
         if Plan.DEFAULT_RESULT_KEY in self._state.variables:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
@@ -367,7 +319,7 @@ class Plan(SKFunctionBase):
     def get_next_step_variables(self, variables: ContextVariables, step: "Plan") -> ContextVariables:
         # Priority for Input
         # - Parameters (expand from variables if needed)
-        # - SKContext.Variables
+        # - KernelContext.Variables
         # - Plan.State
         # - Empty if sending to another plan
         # - Plan.Description

@@ -4,22 +4,26 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
 
 
-def create_mock_function(function_view: FunctionView) -> SKFunctionBase:
-    mock_function = Mock(spec=SKFunctionBase)
+def create_mock_function(function_view: FunctionView) -> KernelFunction:
+    mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name
     mock_function.description = function_view.description
+    mock_function.is_semantic = function_view.is_semantic
+    mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
 
@@ -33,8 +37,8 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
 
         result = kernel.create_new_context()
         result.variables.update(result_string)
-        mock_function.invoke_async.return_value = result
-        kernel._plugin_collection.add_semantic_function(mock_function)
+        mock_function.invoke.return_value = result
+        kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 
     return kernel
 
@@ -51,21 +55,21 @@ def test_can_call_to_plan_from_xml():
         ("Translate", "WriterPlugin", "Translate to french", True, "Bonjour!"),
         (
             "GetEmailAddressAsync",
-            "email",
+            "get_email",
             "Get email address",
             False,
             "johndoe@email.com",
         ),
-        ("SendEmailAsync", "email", "Send email", False, "Email sent."),
+        ("SendEmailAsync", "send_email", "Send email", False, "Email sent."),
     ]
     kernel = create_kernel_and_functions_mock(functions)
 
     plan_string = """<plan>
     <function.SummarizePlugin.Summarize/>
     <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
+    <function.get_email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
         appendToResult="PLAN_RESULT"/>
-    <function.email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.send_email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
@@ -86,12 +90,12 @@ def test_can_call_to_plan_from_xml():
     assert plan._steps[1].parameters["language"] == "French"
     assert "TRANSLATED_SUMMARY" in plan._steps[1]._outputs
 
-    assert plan._steps[2].plugin_name == "email"
+    assert plan._steps[2].plugin_name == "get_email"
     assert plan._steps[2].name == "GetEmailAddressAsync"
     assert plan._steps[2].parameters["input"] == "John Doe"
     assert "EMAIL_ADDRESS" in plan._steps[2]._outputs
 
-    assert plan._steps[3].plugin_name == "email"
+    assert plan._steps[3].plugin_name == "send_email"
     assert plan._steps[3].name == "SendEmailAsync"
     assert "$TRANSLATED_SUMMARY" in plan._steps[3].parameters["input"]
     assert "$EMAIL_ADDRESS" in plan._steps[3].parameters["email_address"]

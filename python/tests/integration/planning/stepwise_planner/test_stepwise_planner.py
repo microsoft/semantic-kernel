@@ -11,19 +11,19 @@ from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.planning import StepwisePlanner
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
-from semantic_kernel.plugin_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 
 class TempWebSearchEnginePlugin:
     """
     TODO: replace this class with semantic_kernel.core_plugins.web_search_engine_plugin.WebSearchEnginePlugin
 
-    SKFunction.describe() does not contains info for arguments.
+    KernelFunction.describe() does not contains info for arguments.
 
     so that `query: str` is not shown in the function description,
     BUT this argument must be passed to planner to work appropriately.
@@ -35,14 +35,14 @@ class TempWebSearchEnginePlugin:
     def __init__(self, connector) -> None:
         self._connector = connector
 
-    @sk_function(description="Performs a web search for a given query", name="searchAsync")
-    @sk_function_context_parameter(
+    @kernel_function(description="Performs a web search for a given query", name="searchAsync")
+    @kernel_function_context_parameter(
         name="query",
         description="The search query",
     )
-    async def search_async(self, query: str, context: SKContext) -> str:
+    async def search(self, query: str, context: KernelContext) -> str:
         query = query or context.variables.get("query")
-        result = await self._connector.search_async(query, num_results=5, offset=0)
+        result = await self._connector.search(query, num_results=5, offset=0)
         return str(result)
 
 
@@ -163,7 +163,7 @@ async def test_can_execute_stepwise_plan(
 
     # Act
     plan = planner.create_plan(prompt)
-    result = await plan.invoke_async()
+    result = await plan.invoke()
 
     steps_taken_string = result.variables["steps_taken"]
     assert steps_taken_string is not None
