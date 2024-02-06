@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public class Step7_Observability : BaseTest
+public sealed class Step7_Observability : BaseTest
 {
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
@@ -75,7 +75,7 @@ public class Step7_Observability : BaseTest
         // Handler which is called after a prompt is rendered
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            WriteLine($"Prompt sent to model: {e.RenderedPrompt}");
+            WriteLine($"Rendered prompt: {e.RenderedPrompt}");
         }
 
         // Handler which is called after a function is invoked
@@ -150,7 +150,7 @@ public class Step7_Observability : BaseTest
 
         public void OnPromptRendered(PromptRenderedContext context)
         {
-            this._output.WriteLine($"Prompt sent to model: {context.RenderedPrompt}");
+            this._output.WriteLine($"Rendered prompt: {context.RenderedPrompt}");
         }
 
         public void OnPromptRendering(PromptRenderingContext context)
