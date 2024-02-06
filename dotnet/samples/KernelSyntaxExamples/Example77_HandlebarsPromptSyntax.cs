@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Examples;
@@ -49,25 +50,28 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 apiKey: openAIApiKey)
             .Build();
 
-
-        // Important:  The comments below are intended so you can change the prompt so it generates a string with bullet points
-        // or a JSON array. The JSON array is not working at the moment, but it is a good example of how to use the Handlebars syntax
         KernelFunction kernelFunctionGenerateProductNames =
             KernelFunctionFactory.CreateFromPrompt(
-                "Given the company description, generate five different product names in name and function " +
+                "Given the company description, generate five different product names in name and with a function " +
                 "that match the company description. " +
                 "Ensure that they match the company and are aligned to it. " +
                 "Think of products this company would really make and also have market potential. " +
                 "Be original and do not make too long names or use more than 3-4 words for them." +
                 "Also, the product name should be catchy and easy to remember. " +
-                // JSON or NOT JSON, that is the question...                                
-                "Output the product names and short descriptions as a bullet point list. " +
-                //"Output the product names in a JSON array inside a JSON object named products. " +
-                //"On them use the name and description as keys." +
-                //"Ensure the JSON is well formed and is valid" +
-                "The company description: {{$input}}",
-                functionName: "GenerateProductNames",
-                description: "Generate five product names to match a company.");
+                "Output the product names in a JSON array inside a JSON object named products. " +
+                "On them use the name and description as keys." +
+                "Ensure the JSON is well formed and is valid" +
+                "The company description: {{$input}} " +
+                "AGAIN ENSURE YOU FOLLOW THE DESCRIBED JSON FORMAT " +
+                "IF YOU FOLLOW IT WELL I WILL PRAISE YOU " +
+                "AND GIVE YOU A BONUS!!!" +
+                "The JSON format should look like this:" +
+                "---" +
+                "{\r\n\"products\": [\r\n    {\r\n        \"name\": \"SmartCode SK\",\r\n        \"description\": \"An AI solution that utilizes AI agent programming to automate code writing and assess the quality of code, reducing the need for manual review and increasing code efficiency\"\r\n    },\r\n    {\r\n        \"name\": \"ProjectMind SK\",\r\n        \"description\": \"An AI-powered project management tool that utilizes Semantic Kernel to automate project planning, task scheduling, and enable more effective communication within teams\"\r\n    },\r\n    {\r\n        \"name\": \"SK WriterPlus\",\r\n        \"description\": \"An AI-driven writing solution that uses AI Agents and Semantic Kernel technology to automate content creation, editing, and proofreading tasks\"\r\n    },\r\n    {\r\n        \"name\": \"SQA Tester SK\",\r\n        \"description\": \"A software product that utilizes AI agents to execute tests, assess the code delivered and iterate. It uses a divide-and-conquer approach to simplify complex testing problems\"\r\n    },\r\n    {\r\n        \"name\": \"SK CloudMaster\",\r\n        \"description\": \"An AI solution that intelligently manages and orchestrates cloud resources using the power of AI agents and Semantic Kernel technology, ready for enterprise and production environments\"\r\n    }\r\n]\r\n}" +
+                 "---",
+                functionName: "GenerateJSONProductNames",
+                description: "Generate a JSON with five product names to match a company.");
+
 
         KernelFunction kernelFunctionGenerateProductDescription =
             KernelFunctionFactory.CreateFromPrompt(
@@ -108,6 +112,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
               { "input", companyDescription }
             });
 
+        WriteLine($"Testing Products generation prompt");
         WriteLine($"Result: {productsResult}");
 
         // Testing the product description generation
@@ -118,6 +123,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
               { "input", ProductDescription }
             });
 
+        WriteLine($"Testing Products Description Generation Prompt");
         WriteLine($"Result: {productDescriptionResult}");
 
         // Using the planner to generate a plan for the user
@@ -129,7 +135,11 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             "I want to generate five product names and engaging descriptions for a company." +
             "For this, I suggest the following process:" +
             "1. Please create first the product names given the company description" +
-            "2. Then, for each of the 5 provided product names and descriptions, provided as a bullet point list, " +
+            "2. Then, for each of the 5 provided product names and descriptions, provided as a JSON array, " +
+            "as for example:" +
+            "---" +
+            "{\r\n\"products\": [\r\n    {\r\n        \"name\": \"SmartCode SK\",\r\n        \"description\": \"An AI solution that utilizes AI agent programming to automate code writing and assess the quality of code, reducing the need for manual review and increasing code efficiency\"\r\n    },\r\n    {\r\n        \"name\": \"ProjectMind SK\",\r\n        \"description\": \"An AI-powered project management tool that utilizes Semantic Kernel to automate project planning, task scheduling, and enable more effective communication within teams\"\r\n    },\r\n    {\r\n        \"name\": \"SK WriterPlus\",\r\n        \"description\": \"An AI-driven writing solution that uses AI Agents and Semantic Kernel technology to automate content creation, editing, and proofreading tasks\"\r\n    },\r\n    {\r\n        \"name\": \"SQA Tester SK\",\r\n        \"description\": \"A software product that utilizes AI agents to execute tests, assess the code delivered and iterate. It uses a divide-and-conquer approach to simplify complex testing problems\"\r\n    },\r\n    {\r\n        \"name\": \"SK CloudMaster\",\r\n        \"description\": \"An AI solution that intelligently manages and orchestrates cloud resources using the power of AI agents and Semantic Kernel technology, ready for enterprise and production environments\"\r\n    }\r\n]\r\n}" +
+            "---" +
             "generate the compelling, engaging, description" +
             "Please while doing this provide all the information as input:" +
             "For point 2, concatenate the product name to the rough description." +
@@ -154,39 +164,82 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         string retrievedPlan = await File.ReadAllTextAsync(planName);
         plan = new HandlebarsPlan(serializedPlan);
 
+        // Execute the plan
+        // Commented due to issues on the generation and execution of the Handlebars Plan
+        // Generated the following issues:
+        // https://github.com/microsoft/semantic-kernel/issues/4893
+        // https://github.com/microsoft/semantic-kernel/issues/4894
+        // https://github.com/microsoft/semantic-kernel/issues/4895
+        //var result = await plan.InvokeAsync(kernel);
+        //WriteLine($"\nResult:\n{result}\n");
+
         // We will use one of the generated HandlebarsTemplate plan by the above code, with some modifications,
         // to highlight better the HandlebarsTemplate syntax usage.
         // And invoke it as a Prompt Function
-        string handlebarsTemplate = @"
+        string handlebarsTemplate01 = @"
             {{!-- example of set with input and function calling with two syntax types --}}
             {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateProductNames companyDescription)}}
-            {{set ""productNames2"" (productMagician-GenerateProductNames input=companyDescription)}}
+            {{set ""productNames"" (productMagician-GenerateJSONProductNames companyDescription)}}
+
+            {{set ""output"" (concat ""Company description: "" companyDescription "" product Names: "" productNames)}}
+            {{json output}}";
+        await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate01);
+
+        string handlebarsTemplate2 = @"
+            {{!-- example of set with input and function calling with two syntax types --}}
+            {{set ""companyDescription"" input}}
+            {{set ""productNames"" (productMagician-GenerateJSONProductNames companyDescription)}}
+            {{json productNames}}
+
+            {{set ""finalDescriptionsV2"" ""- PRODUCTS AND ENGAGING DESCRIPTIONS -""}}
+
+            {{!-- Step 3: Iterate over each generated product name --}}
+            {{#each productNames}}
+                {{#each this}}
+                    {{!-- Step 3.1: Concatenating productName to initial company description --}}
+                    {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
+                    {{json productDescription}}
+
+                    {{!-- Step 3.4: Add output description to the list --}}
+                    {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" productDescription)}}
+                {{/each}}
+            {{/each}}
+
+            {{!-- Step 4: Print all product names and compelling descriptions --}}
+            OUTPUT The folowing product descriptions as is, do not modify anything:
+            {{json finalDescriptionsV2}}
+         ";
+        await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate2);
+
+        string handlebarsTemplate3 = @"
+            {{!-- example of set with input and function calling with two syntax types --}}
+            {{set ""companyDescription"" input}}
+            {{set ""productNames"" (productMagician-GenerateJSONProductNames companyDescription)}}
 
             {{#if generateEngagingDescriptions}} 
-
                 {{!-- Step 2: Create array for storing final descriptions --}}
                 {{set ""finalDescriptions"" (array)}}
-                {{set ""finalDescriptionsV2"" ""- PRODUCTS AND ENGAGING DESCRIPTIONS -""}}
 
                 {{!-- Step 3: Iterate over each generated product name --}}
                 {{#each productNames}}
-                  {{!-- Step 3.1: Concatenating productName to initial company description --}}
-                  {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
+                    {{#each this}}
+                      {{!-- Step 3.1: Concatenating productName to initial company description --}}
+                      {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
 
-                  {{!-- Step 3.2: Generate compelling description for each productName --}}
-                  {{set ""compellingDescription"" (productMagician-GenerateProductCompellingDescription productDescription)}}
+                      {{!-- Step 3.2: Generate compelling description for each productName --}}
+                      {{set ""compellingDescription"" (productMagician-GenerateProductCompellingDescription productDescription)}}
 
-                  {{!-- Step 3.3: Concatenate compelling description and product number --}}                  
-                  {{set ""outputDescription"" (concat ""PRODUCT :"" this.name "" Engaging Description: "" compellingDescription)}}
+                      {{!-- Step 3.3: Concatenate compelling description and product number --}}                  
+                      {{set ""outputDescription"" (concat ""PRODUCT :"" this.name "" Engaging Description: "" compellingDescription)}}
 
-                  {{!-- Step 3.4: Add output description to the list --}}
-                  {{set ""finalDescriptions"" (array finalDescriptions outputDescription)}}
-                  {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" outputDescription)}}
-
+                      {{!-- Step 3.4: Add output description to the list --}}
+                      {{set ""finalDescriptions"" (array finalDescriptions outputDescription)}}
+                      {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" outputDescription)}}
+                    {{/each}}
                 {{/each}}
 
                 {{!-- Step 4: Print all product names and compelling descriptions --}}
+                OUTPUT The folowing product descriptions as is, do not modify anything:
                 {{json finalDescriptionsV2}}
     
             {{else}} 
@@ -195,15 +248,12 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 {{json finalOutput}}
             {{/if}}";
 
-        /// did not work:
-        /// {{set ""outputDescription"" (concat ""PRODUCT "" (Add @index 1) "": "" compellingDescription)}}
-        /// Reason: helper add not found
-        /// Also the array thing doesn't seem to work
-        ///     {{set ""finalDescriptions"" (array)}}
-        /// what fails on the each loop, when I use it I set generateEngagingDescriptions and make the prompt function output
-        /// JSON to iterate through it. Technically it is the proper syntax but somehow it fails. some returns from the LLM are
-        /// absolute hallucinations :/P
-        var HandlebarsPromptFunction = kernel.CreateFunctionFromPrompt(
+        await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate3);
+    }
+
+    private async Task ExecuteHanldebarsPromptAsync(Kernel kernel, string companyDescription, string handlebarsTemplate)
+    {
+        var HandlebarsSPromptFunction = kernel.CreateFunctionFromPrompt(
             new()
             {
                 Template = handlebarsTemplate,
@@ -213,15 +263,15 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         );
 
         // Invoke prompt
-        var result = await kernel.InvokeAsync(
-                    HandlebarsPromptFunction,
+        var customHandlebarsPromptResult = await kernel.InvokeAsync(
+                    HandlebarsSPromptFunction,
                     new() {
                         { "input", companyDescription },
-                        { "generateEngagingDescriptions", false }
+                        { "generateEngagingDescriptions", true }
                     }
                 );
 
-        this.WriteLine($"Result:  {result}");
+        Console.WriteLine($"Result:  {customHandlebarsPromptResult}");
     }
 
     public Example77_HandlebarsPromptSyntax(ITestOutputHelper output) : base(output)
