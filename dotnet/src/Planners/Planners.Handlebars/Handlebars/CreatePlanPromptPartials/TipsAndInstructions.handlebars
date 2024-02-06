@@ -8,9 +8,11 @@
 
 ## Start
 Follow these steps to create one Handlebars template to achieve the goal:
-0. Identify Key Values:
-  - Read the goal carefully and note any strings, numbers, or conditions that you'll need. Do not truncate or modify any data.
+0. Extract Key Values:
+  - Read the goal carefully and identify any relevant strings, numbers, or conditions that you'll need. Do not truncate or modify any data.
+  - When generating variables or helper inputs, only use content that the user has explicitly provided or confirmed. If the user did not explicitly provide specific information, you should not invent or assume this information.
   - Use the `\{{set}}` helper to create a variable for each key value.
+  - Omit this step if no values are needed from the initial context.
 1. Choose the Right Helpers:
   - Use the provided helpers to manipulate the variables you've created. Start with the basic helpers and only use custom helpers if necessary to accomplish the goal.
   - Always reference a custom helper by its full name.

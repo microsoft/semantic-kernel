@@ -1,19 +1,17 @@
 {{#*inline "UserGoal"}}
-{{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
-
-## Goal
+{{#message role="user"}}## Goal
 {{goal}}
 
 {{#if predefinedArguments}}
 ### Predefined Variables
-Here is a list of predefined variables that can be used within the Handlebars template. These variables may or may not be crucial for the execution of the template and achieving the stated goal.
-You can access these variables using the `@root` object (e.g., `@root.variableName`):
+You have these predefined variables that can be used within the template. You can access these variables using `@root` (e.g., `@root.variableName`).
+> Only use the `@root` object when referencing values from this initial context.
 
 {{#each predefinedArguments}}
 - "{{@key}}" ({{Type}}): {{Value}}
 {{/each}}
 
-Important: this is not a comprehensive list of relevant data. Remember to create variables for key values from the goal as well.
+Please note that these variables are not necessarily relevant to your goal. Before you use a predefined variable in the template, ensure it makes sense in the context of the goal and helpers available. Remember to extract key values from the goal as well.
 {{/if}}
 {{/message}}
 {{/inline}}

@@ -5,29 +5,33 @@ I want you to generate 10 random numbers and send them to another helper.
 
 {{#message role="assistant"}}Here's a Handlebars template that achieves the goal:
 ```handlebars
-\{{!-- Step 0: Identify key values --}}
+\{{!-- Step 0: Extract key values --}}
 \{{set
-  "num1"
-  5
-}}
-\{{set
-  "num2"
+  "count"
   10
 }}
-\{{set
-  "num3"
-  15
-}}
-\{{!-- Step 1: Call the Example helper with the variables and store the result --}}
-\{{set
-  "sum"
-  (Example{{nameDelimiter}}AddNums
-    num1=num1
-    num2=num2
-    num3=num3
+\{{!-- Step 1: Loop using the count --}}
+\{{#each
+  (range
+    1
+    count
   )
 }}
-\{{!-- Step 2: Print the result using the json helper --}}
-\{{json (concat "The sum of " num1 "+" num2 "+" num3 " " "is" " " sum)}}
+  \{{!-- Step 2: Create random number --}}
+  \{{set
+    "randomNumber"
+    (Example{{nameDelimiter}}Random
+      seed=this
+    )
+  }}
+  \{{!-- Step 3: Call example helper with random number and print the result to the screen --}}
+  \{{set
+    "result"
+    (Example{{nameDelimiter}}Helper
+      input=randomNumber
+    )
+  }}
+  \{{json (concat "The result" " " "is:" " " result)}}
+\{{/each}}
 ```{{/message}}
 {{/inline}}
