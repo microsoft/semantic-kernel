@@ -4,8 +4,8 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
@@ -18,32 +18,14 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-
-/*
-Run this test with the following JVM arguments:
-    -Djavax.net.ssl.trustStore=scripts/client.truststore
-    -Djavax.net.ssl.trustStorePassword=password
- */
+@WireMockTest
 public class Example05_InlineFunctionDefinitionTest {
 
-    @RegisterExtension
-    static WireMockExtension wm1 = WireMockExtension.newInstance()
-        .options(WireMockConfiguration.wireMockConfig()
-            .httpsPort(8443)
-            .trustStorePath("scripts/client.truststore")
-            .trustStorePassword("password")
-            .trustStoreType("jks")
-            .keystorePath("scripts/server.keystore")
-            .keystorePassword("password")
-            .keystoreType("jks"))
-        .build();
-
     @Test
-    public void main() {
+    public void main(WireMockRuntimeInfo wmRuntimeInfo) {
         final OpenAIAsyncClient client = new OpenAIClientBuilder()
-            .endpoint("https://localhost:8443")
+            .endpoint("http://localhost:" + wmRuntimeInfo.getHttpPort())
             .buildAsyncClient();
 
         TextGenerationService textGenerationService = TextGenerationService.builder()

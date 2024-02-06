@@ -1,22 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -29,7 +15,6 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,46 +53,6 @@ public class Kernel implements Buildable {
 
         this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
-
-    /*
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction<T> function,
-        @Nullable KernelFunctionArguments arguments) {
-        return invokeAsync(function, arguments, null);
-    }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction<T> function,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType) {
-        return invokeAsync(function, arguments, variableType, null);
-    }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        @Nullable KernelFunctionArguments arguments) {
-        return invokeAsync(pluginName, functionName, arguments, null);
-    }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> resultType) {
-        return invokeAsync(pluginName, functionName, arguments, resultType, null);
-    }
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        String pluginName,
-        String functionName,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType,
-        @Nullable InvocationContext invocationContext) {
-        KernelFunction function = plugins.getFunction(pluginName, functionName);
-        return invokeAsync(function, arguments, variableType, invocationContext);
-    }
-*/
 
     public <T> FunctionInvocation<T> invokeAsync(
         String pluginName,

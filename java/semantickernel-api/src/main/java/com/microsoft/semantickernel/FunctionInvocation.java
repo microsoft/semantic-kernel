@@ -1,10 +1,15 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import java.util.function.BiConsumer;
@@ -26,7 +31,12 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     @Nullable
     private ContextVariableType<T> resultType;
     @Nullable
-    private InvocationContext context;
+    private UnmodifiableKernelHooks hooks;
+    @Nullable
+    private PromptExecutionSettings promptExecutionSettings;
+    @Nullable
+    private UnmodifiableToolCallBehavior toolCallBehavior;
+
 
     public FunctionInvocation(
         Kernel kernel,
@@ -62,18 +72,47 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             function,
             resultType)
             .withArguments(arguments)
-            .withContext(context);
+            .withResultType(resultType)
+            .withKernelHooks(hooks)
+            .withPromptExecutionSettings(promptExecutionSettings)
+            .withToolCallBehavior(toolCallBehavior);
     }
 
-    public FunctionInvocation<T> withContext(
-        @Nullable
-        InvocationContext context) {
-        if (context == null) {
-            this.context = null;
-        } else {
-            this.context = new InvocationContext(context);
-        }
+    public FunctionInvocation<T> withKernelHooks(KernelHooks hooks) {
+        this.hooks = unmodifiableClone(hooks);
         return this;
+    }
+
+    public FunctionInvocation<T> withPromptExecutionSettings(
+        PromptExecutionSettings promptExecutionSettings) {
+        this.promptExecutionSettings = promptExecutionSettings;
+        return this;
+    }
+
+    public FunctionInvocation<T> withToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+        return this;
+    }
+
+    private static UnmodifiableToolCallBehavior unmodifiableClone(
+        ToolCallBehavior toolCallBehavior) {
+        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
+            return (UnmodifiableToolCallBehavior) toolCallBehavior;
+        } else if (toolCallBehavior != null) {
+            return toolCallBehavior.unmodifiableClone();
+        } else {
+            return null;
+        }
+    }
+
+    private static UnmodifiableKernelHooks unmodifiableClone(KernelHooks kernelHooks) {
+        if (kernelHooks instanceof UnmodifiableKernelHooks) {
+            return (UnmodifiableKernelHooks) kernelHooks;
+        } else if (kernelHooks != null) {
+            return kernelHooks.unmodifiableClone();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -84,7 +123,11 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             function,
             arguments,
             resultType,
-            context);
+            new InvocationContext(
+                hooks,
+                promptExecutionSettings,
+                toolCallBehavior
+            ));
     }
 
     // Extracted to static to ensure mutable state is not used
