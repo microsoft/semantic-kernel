@@ -20,6 +20,11 @@ public sealed class HandlebarsPlannerOptions
     public Func<string>? GetPromptTemplate { get; set; }
 
     /// <summary>
+    /// Delegate to get additional context for the prompt.
+    /// </summary>
+    public Func<string>? GetAdditionalPromptContext { get; set; }
+
+    /// <summary>
     /// A list of plugins to exclude from the plan creation request.
     /// </summary>
     public HashSet<string> ExcludedPlugins { get; } = new();

@@ -8,24 +8,23 @@
 
 ## Start
 Follow these steps to create one Handlebars template to achieve the goal:
-1. Identify Key Values:
-  - Read the goal carefully and note any numbers, strings, or conditions that you'll need. Do not truncate or modify any data.
+0. Identify Key Values:
+  - Read the goal carefully and note any strings, numbers, or conditions that you'll need. Do not truncate or modify any data.
   - Use the `\{{set}}` helper to create a variable for each key value.
-  - Omit this step if you don't need to create any initial variables.
-2. Choose the Right Helpers:
+1. Choose the Right Helpers:
   - Use the provided helpers to manipulate the variables you've created. Start with the basic helpers and only use custom helpers if necessary to accomplish the goal.
   - Always reference a custom helper by its full name.
-3. Don't Create or Assume Unlisted Helpers:
+2. Don't Create or Assume Unlisted Helpers:
   - Only use the helpers provided. Any helper not listed is considered hallucinated and must not be used.
   - Do not invent or assume the existence of any functions not explicitly defined above.
-4. What if I Need More Helpers?
-  - If the goal cannot be fully achieved with the provided helpers or you reference a hallucinated helper, print the following message: "{{insufficientFunctionsErrorMessage}}".
-5. Keep It Simple:
-  - Your template should be intelligent and efficient, avoiding unnecessary complexity or redundant steps.
+3. What if I Need More Helpers?
+  - If the goal cannot be fully achieved with the provided helpers or you need a helper not defined, print the following message: "{{insufficientFunctionsErrorMessage}}".
+4. Keep It Simple:
 {{#if allowLoops}}  - Avoid using loops or block expressions. They are allowed but not always necessary, so try to find a solution that does not use them.{{/if}}
-6. No Nested Helpers:
+  - Your template should be intelligent and efficient, avoiding unnecessary complexity or redundant steps.
+5. No Nested Helpers:
   - Do not nest helpers or conditionals inside other helpers. This can cause errors in the template.
-7. Output the Result:
+6. Output the Result:
   - Once you have completed the necessary steps to reach the goal, use the `\{{json}}` helper to output the final result.
   - Ensure your template and all steps are enclosed in a ``` handlebars block.
 
