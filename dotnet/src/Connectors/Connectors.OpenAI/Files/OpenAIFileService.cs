@@ -149,15 +149,12 @@ public sealed class OpenAIFileService
 
         var model = JsonSerializer.Deserialize<TModel>(body);
 
-        if (model is null)
-        {
+        return
+            model ??
             throw new KernelException($"Unexpected response from {url}")
             {
                 Data = { { "ResponseData", body } },
             };
-        }
-
-        return model;
     }
 
     private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
@@ -176,15 +173,12 @@ public sealed class OpenAIFileService
 
         var model = JsonSerializer.Deserialize<TModel>(body);
 
-        if (model is null)
-        {
+        return
+            model ??
             throw new KernelException($"Unexpected response from {url}")
             {
                 Data = { { "ResponseData", body } },
             };
-        }
-
-        return model;
     }
 
     private OpenAIFileReference Convert(FileInfo result)
