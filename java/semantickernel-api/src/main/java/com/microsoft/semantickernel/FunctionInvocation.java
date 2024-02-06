@@ -72,7 +72,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             function,
             resultType)
             .withArguments(arguments)
-            .withResultType(resultType)
             .withKernelHooks(hooks)
             .withPromptExecutionSettings(promptExecutionSettings)
             .withToolCallBehavior(toolCallBehavior);
