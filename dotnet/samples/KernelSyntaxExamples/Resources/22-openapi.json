@@ -703,7 +703,7 @@
     },
     "/secrets/{secret-name}/versions": {
       "get": {
-        "description": "List all versions of the specified secret.  For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecretversions/getsecretversions.",
+        "description": "List all versions of the specified secret.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/get-secret-versions/get-secret-versions?view=rest-keyvault-secrets-7.4&tabs=HTTP.",
         "operationId": "ListSecretVersions",
         "parameters": [
           {
