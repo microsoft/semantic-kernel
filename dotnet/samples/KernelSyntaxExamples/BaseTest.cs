@@ -16,7 +16,7 @@ public abstract class BaseTest
     protected BaseTest(ITestOutputHelper output)
     {
         this.Output = output;
-        this.LoggerFactory = new XunitLogger<object>(output);
+        this.LoggerFactory = new XunitLogger(output);
 
         LoadUserSecrets();
     }
