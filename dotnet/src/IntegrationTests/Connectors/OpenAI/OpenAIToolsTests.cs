@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -101,7 +100,7 @@ public sealed class OpenAIToolsTests : IDisposable
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        var result = await kernel.InvokePromptAsync("What is the current temperature in Dublin, Ireland?", new(settings));
+        var result = await kernel.InvokePromptAsync("What is the current temperature in Dublin, Ireland, in Fahrenheit?", new(settings));
 
         // Assert
         Assert.NotNull(result);
