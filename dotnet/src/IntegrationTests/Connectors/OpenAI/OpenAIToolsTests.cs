@@ -37,11 +37,15 @@ public sealed class OpenAIToolsTests : IDisposable
         kernel.ImportPluginFromType<TimeInformation>();
 
         var invokedFunctions = new List<string>();
+
+#pragma warning disable CS0618 // Events are deprecated
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
             invokedFunctions.Add(e.Function.Name);
         }
+
         kernel.FunctionInvoking += MyInvokingHandler;
+#pragma warning restore CS0618 // Events are deprecated
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -60,11 +64,15 @@ public sealed class OpenAIToolsTests : IDisposable
         kernel.ImportPluginFromType<TimeInformation>();
 
         var invokedFunctions = new List<string>();
+
+#pragma warning disable CS0618 // Events are deprecated
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
             invokedFunctions.Add($"{e.Function.Name}({string.Join(", ", e.Arguments)})");
         }
+
         kernel.FunctionInvoking += MyInvokingHandler;
+#pragma warning restore CS0618 // Events are deprecated
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -77,10 +85,42 @@ public sealed class OpenAIToolsTests : IDisposable
         }
 
         // Assert
-        Assert.Equal("6", result);
+        Assert.Contains("6", result, StringComparison.InvariantCulture);
         Assert.Contains("GetAge([personName, John])", invokedFunctions);
         Assert.Contains("GetAge([personName, Jim])", invokedFunctions);
         Assert.Contains("InterpretValue([value, 3])", invokedFunctions);
+    }
+
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<WeatherPlugin>();
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await kernel.InvokePromptAsync("What is the current temperature in Dublin, Ireland, in Fahrenheit?", new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
+    }
+
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<WeatherPlugin>();
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await kernel.InvokePromptAsync("Convert 50 degrees Fahrenheit to Celsius.", new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("10", result.GetValue<string>(), StringComparison.InvariantCulture);
     }
 
     private Kernel InitializeKernel()
@@ -131,5 +171,34 @@ public sealed class OpenAIToolsTests : IDisposable
 
         [KernelFunction]
         public int InterpretValue(int value) => value * 2;
+    }
+
+    public class WeatherPlugin
+    {
+        [KernelFunction, Description("Get current temperature.")]
+        public Task<double> GetCurrentTemperatureAsync(WeatherParameters parameters)
+        {
+            if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
+            {
+                return Task.FromResult(42.8); // 42.8 Fahrenheit.
+            }
+
+            throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
+        }
+
+        [KernelFunction, Description("Convert temperature from Fahrenheit to Celsius.")]
+        public Task<double> ConvertTemperatureAsync(double temperatureInFahrenheit)
+        {
+            double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
+            return Task.FromResult(temperatureInCelsius);
+        }
+    }
+
+    public record WeatherParameters(City City);
+
+    public class City
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
     }
 }

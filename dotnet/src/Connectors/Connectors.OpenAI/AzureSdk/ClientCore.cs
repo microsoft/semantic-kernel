@@ -210,17 +210,21 @@ internal abstract class ClientCore
         CancellationToken cancellationToken)
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
-        foreach (string text in data)
-        {
-            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
-            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
-            if (response.Value.Data.Count == 0)
+        if (data.Count > 0)
+        {
+            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+            var embeddings = response.Value.Data;
+
+            if (embeddings.Count != data.Count)
             {
-                throw new KernelException("Text embedding not found");
+                throw new KernelException($"Expected {data.Count} text embedding(s), but received {embeddings.Count}");
             }
 
-            result.Add(response.Value.Data[0].Embedding.ToArray());
+            for (var i = 0; i < embeddings.Count; i++)
+            {
+                result.Add(embeddings[i].Embedding);
+            }
         }
 
         return result;
@@ -274,9 +278,12 @@ internal abstract class ClientCore
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
+            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
+            // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
             OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
-            if (resultChoice.FinishReason != CompletionsFinishReason.ToolCalls)
+            if (result.ToolCalls.Count == 0)
             {
                 return new[] { result };
             }
@@ -383,7 +390,7 @@ internal abstract class ClientCore
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                chatOptions.Tools.Clear();
+                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -458,9 +465,11 @@ internal abstract class ClientCore
                 yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
-            // If we don't have a function call to invoke, we're done.
+            // If we don't have a function to invoke, we're done.
+            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
+            // is specified.
             if (!autoInvoke ||
-                finishReason != CompletionsFinishReason.ToolCalls ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -572,7 +581,7 @@ internal abstract class ClientCore
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                chatOptions.Tools.Clear();
+                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -709,7 +718,7 @@ internal abstract class ClientCore
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
-            User = null,
+            User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
 
@@ -753,6 +762,7 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
+            User = executionSettings.User
         };
 
         switch (executionSettings.ResponseFormat)
@@ -775,6 +785,25 @@ internal abstract class ClientCore
                         break;
                 }
                 break;
+
+            case JsonElement formatElement:
+                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
+                // Handling only string formatElement.
+                if (formatElement.ValueKind == JsonValueKind.String)
+                {
+                    string formatString = formatElement.GetString() ?? "";
+                    switch (formatString)
+                    {
+                        case "json_object":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                            break;
+
+                        case "text":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                            break;
+                    }
+                }
+                break;
         }
 
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
@@ -792,6 +821,11 @@ internal abstract class ClientCore
             {
                 options.StopSequences.Add(s);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
+        {
+            options.Messages.Add(GetRequestMessage(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt)));
         }
 
         foreach (var message in chatHistory)
@@ -880,7 +914,7 @@ internal abstract class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(OpenAIFunctionToolCall.CreateChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(new ChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
                         }
                     }
                     tools = ftcs;
