@@ -15,7 +15,7 @@ This ADR aims to simplify the usage of custom types by allowing developers to us
 
 Standardizing on a JSON-serializable type is necessary to allow functions to be described using a JSON Schema within a planner's function manual. Using a JSON Schema to describe a function's input and output types will allow the planner to validate that the function is being used correctly.
 
-Today, use of custom types within Semantic Kernel requires developers to implement a custom `TypeConverter` to convert to/from the string representation of the type. This is demonstrated in [Example60_AdvancedNativeFunctions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/KernelSyntaxExamples/Example60_AdvancedNativeFunctions.cs#L202C44-L202C44) as seen below:
+Today, use of custom types within Semantic Kernel requires developers to implement a custom `TypeConverter` to convert to/from the string representation of the type. This is demonstrated in [Example60_AdvancedNativeFunctions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/KernelSyntaxExamples/Example60_AdvancedMethodFunctions.cs) as seen below:
 
 ```csharp
     [TypeConverter(typeof(MyCustomTypeConverter))]
