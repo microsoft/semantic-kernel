@@ -44,7 +44,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     [Theory]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch-Search" })]
     [InlineData("What is the weather in Seattle?", new string[] { "WebSearch-Search" })]
-    [InlineData("What is the current hour number, plus 5?", new string[] { "Time_HourNumber", "Math-Add" })]
+    [InlineData("What is the current hour number, plus 5?", new string[] { "Time-HourNumber", "Math-Add" })]
     [InlineData("What is 387 minus 22? Email the solution to John and Mary.", new string[] { "Math-Subtract", "Email-GetEmailAddress", "Email-SendEmail" })]
     public async Task CanExecuteStepwisePlanAsync(string prompt, string[] expectedFunctions)
     {
