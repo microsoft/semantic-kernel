@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -13,6 +14,10 @@ using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/// <summary>
+/// Azure OpenAI audio-to-text service.
+/// </summary>
+[Experimental("SKEXP0005")]
 public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 {
     /// <summary>Core implementation shared by Azure OpenAI services.</summary>
