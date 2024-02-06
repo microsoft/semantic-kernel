@@ -170,6 +170,7 @@ class Kernel(KernelBaseModel):
 
         function = self._create_semantic_function(plugin_name, function_name, function_config)
         self.add_plugin(plugin_name, [function])
+        function.set_default_plugin_collection(self.plugins)
 
         return function
 
