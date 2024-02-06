@@ -116,15 +116,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
-		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
-		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
-		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"
-	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\src\Type\TypeExtensions.cs = src\InternalUtilities\src\Type\TypeExtensions.cs
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Core", "src\Plugins\Plugins.Core\Plugins.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
 EndProject
@@ -196,6 +190,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.IntegrationTests", "src\Experimental\Orchestration.Flow.IntegrationTests\Experimental.Orchestration.Flow.IntegrationTests.csproj", "{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{731CC542-8BE9-42D4-967D-99206EC2B310}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentationExamples", "samples\DocumentationExamples\DocumentationExamples.csproj", "{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateChatGptPlugin", "samples\CreateChatGptPlugin\Solution\CreateChatGptPlugin.csproj", "{87AB5AF5-5783-4372-9789-664895E0A2FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -460,6 +458,18 @@ Global
 		{731CC542-8BE9-42D4-967D-99206EC2B310}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{731CC542-8BE9-42D4-967D-99206EC2B310}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{731CC542-8BE9-42D4-967D-99206EC2B310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -528,6 +538,8 @@ Global
 		{B0CE8C69-EC56-4825-94AB-01CA7E8BA55B} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{3A4B8F90-3E74-43E0-800C-84F8AA9B5BF3} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{731CC542-8BE9-42D4-967D-99206EC2B310} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
+		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{87AB5AF5-5783-4372-9789-664895E0A2FF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

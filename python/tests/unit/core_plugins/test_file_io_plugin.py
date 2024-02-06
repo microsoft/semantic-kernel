@@ -16,7 +16,9 @@ def test_can_be_instantiated():
 def test_can_be_imported():
     kernel = Kernel()
     assert kernel.import_plugin(FileIOPlugin(), "file")
-    assert kernel.plugins.has_native_function("file", "readAsync")
+    assert kernel.plugins["file"] is not None
+    assert kernel.plugins["file"].name == "file"
+    assert kernel.plugins["file"]["readAsync"] is not None
 
 
 @pytest.mark.asyncio

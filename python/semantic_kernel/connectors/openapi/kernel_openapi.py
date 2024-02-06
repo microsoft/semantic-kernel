@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -251,7 +251,7 @@ def register_openapi_plugin(
     kernel: Kernel,
     plugin_name: str,
     openapi_document: str,
-) -> Dict[str, KernelFunctionBase]:
+) -> Dict[str, KernelFunction]:
     parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
