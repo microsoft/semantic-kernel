@@ -773,7 +773,7 @@
     },
     "/secrets/{secret-name}/{secret-version}": {
       "get": {
-        "description": "Get the value of a specified secret version from a given key vault.  For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecret/getsecret.",
+        "description": "Get the value of a specified secret version from a given key vault.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/get-secret/get-secret?view=rest-keyvault-secrets-7.4&tabs=HTTP.",
         "operationId": "GetSecretVersion",
         "parameters": [
           {
