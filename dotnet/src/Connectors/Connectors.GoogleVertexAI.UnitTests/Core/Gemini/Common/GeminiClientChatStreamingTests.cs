@@ -241,6 +241,29 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
 
+    [Fact]
+    public async Task ShouldPassConvertedSystemMessageToUserMessageToRequestAsync()
+    {
+        // Arrange
+        string modelId = "fake-model";
+        string apiKey = "fake-api-key";
+        var client = this.CreateChatCompletionClient(modelId, apiKey);
+        string message = "System message";
+        var chatHistory = new ChatHistory(message);
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        var systemMessage = request.Contents[0].Parts[0].Text;
+        var messageRole = request.Contents[0].Role;
+        Assert.Equal(AuthorRole.User, messageRole);
+        Assert.Equal(message, systemMessage);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-15)]
