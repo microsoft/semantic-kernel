@@ -1179,7 +1179,7 @@ public static class OpenAIServiceCollectionExtensions
 
     #endregion
 
-    #region Audio
+    #region Audio-to-Text
 
     /// <summary>
     /// Adds the Azure OpenAI audio-to-text service to the list.
