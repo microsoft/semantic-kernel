@@ -184,7 +184,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{873281
 		src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs
 		src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs
 		src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs
-		src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.Handlebars.UnitTests", "src\Planners\Planners.Handlebars.UnitTests\Planners.Handlebars.UnitTests.csproj", "{3FC4A81B-8ABE-473F-BC7C-6F4885775534}"
@@ -211,6 +210,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-A
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
 		src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs = src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-FA0D-45E6-80BA-22A373609E89}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\test\Linq\AsyncEnumerable.cs = src\InternalUtilities\test\Linq\AsyncEnumerable.cs
 	EndProjectSection
 EndProject
 Global
@@ -559,6 +563,7 @@ Global
 		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{87AB5AF5-5783-4372-9789-664895E0A2FF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{EB2C141A-AE5F-4080-8790-13EB16323CEF} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{607DD6FA-FA0D-45E6-80BA-22A373609E89} = {5C246969-D794-4EC3-8E8F-F90D4D166420}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
