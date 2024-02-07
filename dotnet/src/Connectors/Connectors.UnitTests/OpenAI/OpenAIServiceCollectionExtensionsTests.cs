@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using Xunit;
 
@@ -465,6 +466,70 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToImageService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddAzureOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder = builder.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToAudioService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddAzureOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.Services.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToAudioService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder = builder.AddOpenAITextToAudio("model-id", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is OpenAITextToAudioService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.Services.AddOpenAITextToAudio("model-id", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is OpenAITextToAudioService);
     }
 
     public void Dispose()

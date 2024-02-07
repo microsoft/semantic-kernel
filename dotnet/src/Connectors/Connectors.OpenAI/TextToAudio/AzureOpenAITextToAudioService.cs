@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,10 @@ using Microsoft.SemanticKernel.TextToAudio;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/// <summary>
+/// Azure OpenAI text-to-audio service.
+/// </summary>
+[Experimental("SKEXP0005")]
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
     private const string DefaultApiVersion = "2024-02-15-preview";
