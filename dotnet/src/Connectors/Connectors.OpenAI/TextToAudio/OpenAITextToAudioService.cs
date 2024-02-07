@@ -62,6 +62,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
 
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this.AddAttribute(OrganizationKey, organization);
     }
 
