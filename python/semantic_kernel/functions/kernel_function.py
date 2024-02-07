@@ -49,7 +49,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
-    """Stores specific results in the context and chat prompt."""
+    """Stores specific results in the chat prompt template."""
     if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
         chat_prompt.add_message(role="tool", message=results[0].tool_message)
     chat_prompt.add_message(

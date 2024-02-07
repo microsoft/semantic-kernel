@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from textwrap import dedent
 from unittest.mock import MagicMock, Mock
 
@@ -21,13 +23,13 @@ from semantic_kernel.planners.action_planner.action_planner_config import (
 from semantic_kernel.planners.planning_exception import PlanningException
 
 
-def create_mock_function(function_view: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
+def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = function_view
-    mock_function.name = function_view.name
-    mock_function.plugin_name = function_view.plugin_name
-    mock_function.is_semantic = function_view.is_semantic
-    mock_function.description = function_view.description
+    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.name = kernel_function_metadata.name
+    mock_function.plugin_name = kernel_function_metadata.plugin_name
+    mock_function.is_semantic = kernel_function_metadata.is_semantic
+    mock_function.description = kernel_function_metadata.description
     mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
@@ -53,7 +55,7 @@ def mock_kernel(plugins_input):
     mock_plugins = {}
 
     for name, plugin_name, description, is_semantic in plugins_input:
-        function_view = KernelFunctionMetadata(
+        kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=plugin_name,
             description=description,
@@ -61,15 +63,15 @@ def mock_kernel(plugins_input):
             is_semantic=is_semantic,
             is_asynchronous=True,
         )
-        mock_function = create_mock_function(function_view)
-        functionsView.add_function(function_view)
+        mock_function = create_mock_function(kernel_function_metadata)
+        functionsView.add_function(kernel_function_metadata)
 
         if plugin_name not in mock_plugins:
             mock_plugins[plugin_name] = {}
         mock_plugins[plugin_name][name] = mock_function
 
         mock_function.invoke.return_value = FunctionResult(
-            function=function_view, value="MOCK FUNCTION CALLED", metadata={"arguments": {}}
+            function=kernel_function_metadata, value="MOCK FUNCTION CALLED", metadata={"arguments": {}}
         )
 
     plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
@@ -98,18 +100,18 @@ async def test_plan_creation():
     kernel.plugins = plugins
     kernel.register_memory(memory)
 
-    function_view = KernelFunctionMetadata(
+    kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
         description="Translate something",
         plugin_name="WriterPlugin",
         is_semantic=False,
         parameters=[],
     )
-    mock_function = create_mock_function(function_view)
+    mock_function = create_mock_function(kernel_function_metadata)
 
-    kernel.plugins.add(plugin=KernelPlugin(name=function_view.plugin_name, functions=[mock_function]))
+    kernel.plugins.add(plugin=KernelPlugin(name=kernel_function_metadata.plugin_name, functions=[mock_function]))
 
-    function_result = FunctionResult(function=function_view, value=plan_str, metadata={})
+    function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
     mock_function.invoke.return_value = function_result
 
     kernel.create_semantic_function.return_value = mock_function
@@ -189,14 +191,14 @@ async def test_empty_goal_throw():
     plugins = MagicMock(spec=KernelPluginCollection)
     kernel.plugins = plugins
 
-    function_view = KernelFunctionMetadata(
+    kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
         description="Translate something",
         plugin_name="WriterPlugin",
         is_semantic=False,
         parameters=[],
     )
-    mock_function = create_mock_function(function_view)
+    mock_function = create_mock_function(kernel_function_metadata)
     kernel.plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
 
     planner = ActionPlanner(kernel)
@@ -216,18 +218,18 @@ async def test_invalid_json_throw():
     kernel.plugins = plugins
     kernel.register_memory(memory)
 
-    function_view = KernelFunctionMetadata(
+    kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
         plugin_name="WriterPlugin",
         description="Translate something",
         is_semantic=False,
         parameters=[],
     )
-    mock_function = create_mock_function(function_view)
+    mock_function = create_mock_function(kernel_function_metadata)
 
     plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
 
-    function_result = FunctionResult(function=function_view, value=plan_str, metadata={})
+    function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
     mock_function.invoke.return_value = function_result
 
     kernel.create_semantic_function.return_value = mock_function

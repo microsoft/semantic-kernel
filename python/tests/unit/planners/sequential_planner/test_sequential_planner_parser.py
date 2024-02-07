@@ -17,13 +17,13 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_parser impor
 )
 
 
-def create_mock_function(function_view: KernelFunctionMetadata) -> KernelFunction:
+def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> KernelFunction:
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = function_view
-    mock_function.name = function_view.name
-    mock_function.plugin_name = function_view.plugin_name
-    mock_function.description = function_view.description
-    mock_function.is_semantic = function_view.is_semantic
+    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.name = kernel_function_metadata.name
+    mock_function.plugin_name = kernel_function_metadata.plugin_name
+    mock_function.description = kernel_function_metadata.description
+    mock_function.is_semantic = kernel_function_metadata.is_semantic
     mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
@@ -32,7 +32,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
     kernel = Kernel()
     functions_view = FunctionsView()
     for name, plugin_name, description, is_semantic, result_string in functions:
-        function_view = KernelFunctionMetadata(
+        kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=plugin_name,
             description=description,
@@ -40,10 +40,12 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
             is_semantic=is_semantic,
             is_asynchronous=True,
         )
-        functions_view.add_function(function_view)
-        mock_function = create_mock_function(function_view)
+        functions_view.add_function(kernel_function_metadata)
+        mock_function = create_mock_function(kernel_function_metadata)
 
-        mock_function.invoke.return_value = FunctionResult(function=function_view, value=result_string, metadata={})
+        mock_function.invoke.return_value = FunctionResult(
+            function=kernel_function_metadata, value=result_string, metadata={}
+        )
         kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 
     return kernel

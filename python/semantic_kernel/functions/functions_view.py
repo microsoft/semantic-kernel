@@ -10,6 +10,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class FunctionsView(KernelBaseModel):
+    """TODO: remove and replace with List[KernelFunctionMetadata]."""
+
     semantic_functions: Dict[str, List[KernelFunctionMetadata]] = Field(default_factory=dict)
     native_functions: Dict[str, List[KernelFunctionMetadata]] = Field(default_factory=dict)
 

@@ -63,7 +63,7 @@ async def test_can_call_get_available_functions_with_functions():
     arguments = KernelArguments()
     kernel = Kernel()
     functions_view = FunctionsView()
-    function_view = KernelFunctionMetadata(
+    kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
         plugin_name="pluginName",
         description="description",
@@ -71,7 +71,7 @@ async def test_can_call_get_available_functions_with_functions():
         is_semantic=True,
         is_asynchronous=False,
     )
-    native_function_view = KernelFunctionMetadata(
+    native_kernel_function_metadata = KernelFunctionMetadata(
         name="nativeFunctionName",
         plugin_name="pluginName",
         description="description",
@@ -79,8 +79,8 @@ async def test_can_call_get_available_functions_with_functions():
         is_semantic=False,
         is_asynchronous=False,
     )
-    functions_view.add_function(function_view)
-    functions_view.add_function(native_function_view)
+    functions_view.add_function(kernel_function_metadata)
+    functions_view.add_function(native_kernel_function_metadata)
 
     mock_plugins = Mock(spec=KernelPluginCollection)
     mock_plugins.get_functions_view.return_value = functions_view
@@ -89,7 +89,7 @@ async def test_can_call_get_available_functions_with_functions():
 
     memory_query_result = MemoryQueryResult(
         is_reference=False,
-        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function_view),
+        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(kernel_function_metadata),
         text="text",
         description="description",
         external_source_name="sourceName",
@@ -112,7 +112,7 @@ async def test_can_call_get_available_functions_with_functions():
     # Assert
     assert result is not None
     assert len(result) == 2
-    assert result[0] == function_view
+    assert result[0] == kernel_function_metadata
 
     # Arrange update IncludedFunctions
     config.included_functions.append(["nativeFunctionName"])
@@ -123,15 +123,15 @@ async def test_can_call_get_available_functions_with_functions():
     # Assert
     assert result is not None
     assert len(result) == 2  # IncludedFunctions should be added to the result
-    assert result[0] == function_view
-    assert result[1] == native_function_view
+    assert result[0] == kernel_function_metadata
+    assert result[1] == native_kernel_function_metadata
 
 
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Arrange FunctionView
     functions_view = FunctionsView()
-    function_view = KernelFunctionMetadata(
+    kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
         plugin_name="pluginName",
         description="description",
@@ -139,7 +139,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         is_semantic=True,
         is_asynchronous=False,
     )
-    native_function_view = KernelFunctionMetadata(
+    native_kernel_function_metadata = KernelFunctionMetadata(
         name="nativeFunctionName",
         plugin_name="pluginName",
         description="description",
@@ -147,13 +147,13 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         is_semantic=False,
         is_asynchronous=False,
     )
-    functions_view.add_function(function_view)
-    functions_view.add_function(native_function_view)
+    functions_view.add_function(kernel_function_metadata)
+    functions_view.add_function(native_kernel_function_metadata)
 
     # Arrange Mock Memory and Result
     memory_query_result = MemoryQueryResult(
         is_reference=False,
-        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function_view),
+        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(kernel_function_metadata),
         text="text",
         description="description",
         external_source_name="sourceName",
@@ -181,7 +181,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Assert
     assert result is not None
     assert len(result) == 1
-    assert result[0] == function_view
+    assert result[0] == kernel_function_metadata
 
     # Arrange update IncludedFunctions
     config.included_functions.append("nativeFunctionName")
@@ -194,8 +194,8 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Assert
     assert result is not None
     assert len(result) == 2  # IncludedFunctions should be added to the result
-    assert result[0] == function_view
-    assert result[1] == native_function_view
+    assert result[0] == kernel_function_metadata
+    assert result[1] == native_kernel_function_metadata
 
 
 @pytest.mark.asyncio

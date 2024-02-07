@@ -15,7 +15,7 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 
 
 def create_mock_function(name) -> KernelFunction:
-    function_view = KernelFunctionMetadata(
+    kernel_function_metadata = KernelFunctionMetadata(
         name=name,
         plugin_name="SummarizePlugin",
         description="Summarize an input",
@@ -24,10 +24,10 @@ def create_mock_function(name) -> KernelFunction:
         is_asynchronous=True,
     )
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = function_view
-    mock_function.name = function_view.name
-    mock_function.plugin_name = function_view.plugin_name
-    mock_function.description = function_view.description
+    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.name = kernel_function_metadata.name
+    mock_function.plugin_name = kernel_function_metadata.plugin_name
+    mock_function.description = kernel_function_metadata.description
 
     return mock_function
 
@@ -79,12 +79,12 @@ async def test_invoke_pre_invocation_skip_dont_trigger_invoked_handler():
     def invoking_handler(sender, e):
         nonlocal invoking
         invoking += 1
-        if e.function_view.name == "SkipMe":
+        if e.kernel_function_metadata.name == "SkipMe":
             e.skip()
 
     def invoked_handler(sender, e):
         nonlocal invoked_function_name, invoked
-        invoked_function_name = e.function_view.name
+        invoked_function_name = e.kernel_function_metadata.name
         invoked += 1
         return e
 

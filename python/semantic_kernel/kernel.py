@@ -451,9 +451,9 @@ class Kernel(KernelBaseModel):
         self.use_memory(memory_store)
 
     def on_function_invoking(
-        self, function_view: KernelFunctionMetadata, arguments: KernelArguments
+        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
     ) -> FunctionInvokingEventArgs:
-        args = FunctionInvokingEventArgs(function_view=function_view, arguments=arguments)
+        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
         if self.function_invoking_handlers:
             for handler in self.function_invoking_handlers.values():
                 handler(self, args)
@@ -461,14 +461,17 @@ class Kernel(KernelBaseModel):
 
     def on_function_invoked(
         self,
-        function_view: KernelFunctionMetadata,
+        kernel_function_metadata: KernelFunctionMetadata,
         arguments: KernelArguments,
         function_result: Optional[FunctionResult] = None,
         exception: Optional[Exception] = None,
     ) -> FunctionInvokedEventArgs:
         # TODO: include logic that uses function_result
         args = FunctionInvokedEventArgs(
-            function_view=function_view, arguments=arguments, function_result=function_result, exception=exception
+            kernel_function_metadata=kernel_function_metadata,
+            arguments=arguments,
+            function_result=function_result,
+            exception=exception,
         )
         if self.function_invoked_handlers:
             for handler in self.function_invoked_handlers.values():

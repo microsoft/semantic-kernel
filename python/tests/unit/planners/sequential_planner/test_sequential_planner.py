@@ -21,13 +21,13 @@ from semantic_kernel.planners.sequential_planner.sequential_planner import (
 )
 
 
-def create_mock_function(function_view: KernelFunctionMetadata):
+def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = function_view
-    mock_function.name = function_view.name
-    mock_function.plugin_name = function_view.plugin_name
-    mock_function.is_semantic = function_view.is_semantic
-    mock_function.description = function_view.description
+    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.name = kernel_function_metadata.name
+    mock_function.plugin_name = kernel_function_metadata.plugin_name
+    mock_function.is_semantic = kernel_function_metadata.is_semantic
+    mock_function.description = kernel_function_metadata.description
     mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
@@ -53,7 +53,7 @@ async def test_it_can_create_plan(goal):
     kernel.plugins = KernelPluginCollection()
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
-        function_view = KernelFunctionMetadata(
+        kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=pluginName,
             description=description,
@@ -61,10 +61,10 @@ async def test_it_can_create_plan(goal):
             is_semantic=isSemantic,
             is_asynchronous=True,
         )
-        mock_function = create_mock_function(function_view)
-        functionsView.add_function(function_view)
+        mock_function = create_mock_function(kernel_function_metadata)
+        functionsView.add_function(kernel_function_metadata)
         mock_function.invoke.return_value = FunctionResult(
-            function=function_view, value="MOCK FUNCTION CALLED", metadata={}
+            function=kernel_function_metadata, value="MOCK FUNCTION CALLED", metadata={}
         )
         mock_functions.append(mock_function)
 

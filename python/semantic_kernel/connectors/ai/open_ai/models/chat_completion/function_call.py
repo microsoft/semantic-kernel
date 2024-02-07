@@ -34,7 +34,7 @@ class FunctionCall(KernelBaseModel):
             return None
 
     def to_kernel_arguments(self) -> KernelArguments:
-        """Return the arguments as a ContextVariables instance."""
+        """Return the arguments as a KernelArguments instance."""
         args = self.parse_arguments()
         if not args:
             return KernelArguments()

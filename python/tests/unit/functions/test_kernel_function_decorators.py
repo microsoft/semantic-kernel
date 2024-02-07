@@ -1,12 +1,14 @@
 import sys
-from typing import AsyncIterable, Optional
+from typing import AsyncIterable, Optional, Union
+
+import pytest
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
 
 
 class MiscClass:
@@ -152,3 +154,22 @@ def test_kernel_function_return_type_streaming():
     assert my_func.__kernel_function_return_description__ == "test return"
     assert my_func.__kernel_function_return_required__ == True
     assert my_func.__kernel_function_streaming__ == True
+
+
+@pytest.mark.parametrize(
+    ("annotation", "description", "type_", "required"),
+    [
+        (Annotated[str, "test"], "test", "str", True),
+        (Annotated[Optional[str], "test"], "test", "str", False),
+        (Annotated[AsyncIterable[str], "test"], "test", "str", True),
+        (Annotated[Optional[Union[str, int]], "test"], "test", "str, int", False),
+        (str, "", "str", True),
+        (Union[str, int, float, "KernelArguments"], "", "str, int, float, KernelArguments", True),
+    ],
+)
+def test_annotation_parsing(annotation, description, type_, required):
+    out_description, out_type_, out_required = _parse_annotation(annotation)
+
+    assert out_description == description
+    assert out_type_ == type_
+    assert out_required == required

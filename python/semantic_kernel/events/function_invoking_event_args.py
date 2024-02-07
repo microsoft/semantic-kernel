@@ -14,7 +14,7 @@ class FunctionInvokingEventArgs(KernelEventArgs):
     make sure to use the update_arguments function, since that also raises the flag that the arguments were updated.
 
     Args:
-        function_view (FunctionView): The function that is being executed.
+        kernel_function_metadata (FunctionView): The function that is being executed.
         arguments (KernelArguments): The arguments that are being passed to the function.
 
     Flags:
