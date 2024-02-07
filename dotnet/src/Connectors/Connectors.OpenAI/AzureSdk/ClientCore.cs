@@ -352,6 +352,7 @@ internal abstract class ClientCore
                 object? functionResultObj;
                 try
                 {
+                    // TODO: should this go before we lookup function/args in kernel?
                     var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(function, functionArgs, iteration, chat);
                     if (invokingContext is not null)
                     {
@@ -362,6 +363,7 @@ internal abstract class ClientCore
                     // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                     // as the called function could in turn telling the model about itself as a possible candidate for invocation.
                     var functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false));//.GetValue<object>() ?? string.Empty;
+                    functionResultObj = functionResult.GetValue<object>() ?? string.Empty;
 
                     // Invoke the post-invocation filter. - TODO: should this be before or after result is added to chat history?
                     var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(functionArgs, functionResult, iteration, chat);
@@ -373,8 +375,6 @@ internal abstract class ClientCore
 
                         this.HandleStopBehavior(invokedContext, chatOptions, ref autoInvoke);
                     }
-
-                    functionResultObj = functionResult.GetValue<object>() ?? string.Empty;
                 }
                 catch (OperationCanceledException oce)
                 {
@@ -448,6 +448,22 @@ internal abstract class ClientCore
                 break;
             case ToolFilterStopBehavior.Cancel:
                 throw new OperationCanceledException("A tool filter requested cancellation.");
+        }
+    }
+
+    private void UpdateChatHistory(ChatHistory chatHistory, ChatCompletionsOptions options, OpenAIPromptExecutionSettings executionSettings)
+    {
+        // Clear out messages, then copy over from chat history
+        options.Messages.Clear();
+
+        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
+        {
+            options.Messages.Add(GetRequestMessage(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt)));
+        }
+
+        foreach (var message in chatHistory)
+        {
+            options.Messages.Add(GetRequestMessage(message));
         }
     }
 
