@@ -4,7 +4,7 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
 from tests.integration.fakes.email_plugin_fake import EmailPluginFake

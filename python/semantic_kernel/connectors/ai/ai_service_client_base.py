@@ -17,7 +17,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class AIServiceClientBase(KernelBaseModel, ABC):
     """Base class for all AI Services.
 
-    Has a ai_model_id, any other fields have to be defined by the subclasses.
+    Has a ai_model_id and service_id, any other fields have to be defined by the subclasses.
+    The service_id is used in Semantic Kernel to identify the service.
 
     The ai_model_id can refer to a specific model, like 'gpt-35-turbo' for OpenAI,
     or can just be a string that is used to identify the service.

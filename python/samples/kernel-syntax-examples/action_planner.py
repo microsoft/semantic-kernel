@@ -5,12 +5,11 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
 )
 from semantic_kernel.core_plugins import (
-    FileIOPlugin,
     MathPlugin,
     TextPlugin,
     TimePlugin,
 )
-from semantic_kernel.planning import ActionPlanner
+from semantic_kernel.planners import ActionPlanner
 
 
 async def main():
@@ -19,7 +18,6 @@ async def main():
 
     kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
     kernel.import_plugin(MathPlugin(), "math")
-    kernel.import_plugin(FileIOPlugin(), "fileIO")
     kernel.import_plugin(TimePlugin(), "time")
     kernel.import_plugin(TextPlugin(), "text")
 

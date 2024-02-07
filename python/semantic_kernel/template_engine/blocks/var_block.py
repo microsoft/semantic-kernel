@@ -2,14 +2,17 @@
 
 import logging
 from re import match as re_match
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 import pydantic as pdt
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -69,8 +72,8 @@ class VarBlock(Block):
 
         return True, ""
 
-    def render(self, variables: Optional[ContextVariables] = None) -> str:
-        if variables is None:
+    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+        if arguments is None:
             return ""
 
         if not self.name:
@@ -78,7 +81,7 @@ class VarBlock(Block):
             logger.error(error_msg)
             raise ValueError(error_msg)
 
-        value = variables.get(self.name, None)
+        value = arguments.get(self.name, None)
         if not value:
             logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found")
 
