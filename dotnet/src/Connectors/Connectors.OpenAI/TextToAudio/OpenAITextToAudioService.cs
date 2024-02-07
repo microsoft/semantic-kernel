@@ -14,59 +14,50 @@ using Microsoft.SemanticKernel.TextToAudio;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-public sealed class AzureOpenAITextToAudioService : ITextToAudioService
+public sealed class OpenAITextToAudioService : ITextToAudioService
 {
-    private const string DefaultApiVersion = "2024-02-15-preview";
+    /// <summary>
+    /// Gets the attribute name used to store the organization in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public static string OrganizationKey => "Organization";
 
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
 
-    private readonly string _deploymentName;
-    private readonly string _endpoint;
+    private readonly string _modelId;
     private readonly string _apiKey;
-    private readonly string? _modelId;
+    private readonly string? _organization;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
     /// <summary>
-    /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Creates an instance of the <see cref="OpenAITextToAudioService"/> with API key auth.
     /// </summary>
-    public static string DeploymentNameKey => "DeploymentName";
-
-    /// <summary>
-    /// Creates an instance of the <see cref="AzureOpenAITextToAudioService"/> connector with API key auth.
-    /// </summary>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">Model name</param>
+    /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAITextToAudioService(
-        string deploymentName,
-        string endpoint,
+    public OpenAITextToAudioService(
+        string modelId,
         string apiKey,
-        string? modelId = null,
+        string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._deploymentName = deploymentName;
-        this._endpoint = endpoint;
-        this._apiKey = apiKey;
         this._modelId = modelId;
+        this._apiKey = apiKey;
+        this._organization = organization;
 
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
 
-        this.AddAttribute(DeploymentNameKey, deploymentName);
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
     /// <inheritdoc/>
@@ -81,15 +72,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 
         Verify.NotNullOrWhiteSpace(audioExecutionSettings?.Voice);
 
-        var modelId = this.GetModelId(audioExecutionSettings);
-
-        using var request = this.GetRequest(text, modelId, audioExecutionSettings);
+        using var request = this.GetRequest(text, audioExecutionSettings);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
 
         var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        return new AudioContent(binaryData, modelId);
+        return new AudioContent(binaryData, this._modelId);
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(
@@ -97,7 +86,12 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         CancellationToken cancellationToken = default)
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        request.Headers.Add("Api-Key", this._apiKey);
+        request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+
+        if (!string.IsNullOrWhiteSpace(this._organization))
+        {
+            request.Headers.Add("OpenAI-Organization", this._organization);
+        }
 
         try
         {
@@ -112,25 +106,17 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         }
     }
 
-    private HttpRequestMessage GetRequest(string text, string modelId, OpenAITextToAudioExecutionSettings executionSettings)
+    private HttpRequestMessage GetRequest(string text, OpenAITextToAudioExecutionSettings executionSettings)
     {
-        var requestUrl = $"{this._endpoint.TrimEnd('/')}/openai/deployments/{this._deploymentName}/audio/speech?api-version={DefaultApiVersion}";
+        var requestUrl = "https://api.openai.com/v1/audio/speech";
 
-        var payload = new TextToAudioRequest(modelId, text, executionSettings.Voice)
+        var payload = new TextToAudioRequest(this._modelId, text, executionSettings.Voice)
         {
             ResponseFormat = executionSettings.ResponseFormat,
             Speed = executionSettings.Speed
         };
 
         return HttpRequest.CreatePostRequest(requestUrl, payload);
-    }
-
-    private string GetModelId(OpenAITextToAudioExecutionSettings executionSettings)
-    {
-        return
-            !string.IsNullOrWhiteSpace(this._modelId) ? this._modelId! :
-            !string.IsNullOrWhiteSpace(executionSettings.ModelId) ? executionSettings.ModelId! :
-            this._deploymentName;
     }
 
     private void AddAttribute(string key, string? value)

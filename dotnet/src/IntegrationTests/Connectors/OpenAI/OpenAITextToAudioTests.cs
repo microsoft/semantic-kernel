@@ -29,8 +29,25 @@ public sealed class OpenAITextToAudioTests : IDisposable
             .Build();
     }
 
+    [Fact(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    public async Task OpenAITextToAudioTestAsync()
+    {
+        // Arrange
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToAudio").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        var service = new OpenAITextToAudioService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+
+        // Act
+        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.", new OpenAITextToAudioExecutionSettings("alloy"));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.AudioData.IsEmpty);
+    }
+
     [Fact]
-    public async Task AzureOpenAIAudioToTextTestAsync()
+    public async Task AzureOpenAITextToAudioTestAsync()
     {
         // Arrange
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAITextToAudio").Get<AzureOpenAIConfiguration>();
