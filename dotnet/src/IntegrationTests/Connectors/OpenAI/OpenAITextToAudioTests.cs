@@ -42,7 +42,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.", new OpenAITextToAudioExecutionSettings("alloy"));
 
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(result?.AudioData);
         Assert.False(result.AudioData.IsEmpty);
     }
 
@@ -62,7 +62,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.", new OpenAITextToAudioExecutionSettings("alloy"));
 
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(result?.AudioData);
         Assert.False(result.AudioData.IsEmpty);
     }
 

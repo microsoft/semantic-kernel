@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToAudioService"/> class.
 /// </summary>
-public sealed class OpenAITextToAudioServiceTests
+public sealed class OpenAITextToAudioServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
@@ -85,6 +85,12 @@ public sealed class OpenAITextToAudioServiceTests
         // Assert
         Assert.NotNull(result?.AudioData);
         Assert.True(result.AudioData.ToArray().SequenceEqual(expectedByteArray));
+    }
+
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
     }
 
     public static TheoryData<OpenAITextToAudioExecutionSettings?, Type> ExecutionSettings => new()

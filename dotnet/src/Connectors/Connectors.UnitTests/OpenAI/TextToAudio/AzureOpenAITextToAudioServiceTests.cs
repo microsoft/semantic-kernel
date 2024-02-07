@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -17,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextToAudioService"/> class.
 /// </summary>
-public sealed class AzureOpenAITextToAudioServiceTests
+public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
@@ -87,6 +86,12 @@ public sealed class AzureOpenAITextToAudioServiceTests
         // Assert
         Assert.NotNull(result?.AudioData);
         Assert.True(result.AudioData.ToArray().SequenceEqual(expectedByteArray));
+    }
+
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
     }
 
     public static TheoryData<OpenAITextToAudioExecutionSettings?, Type> ExecutionSettings => new()
