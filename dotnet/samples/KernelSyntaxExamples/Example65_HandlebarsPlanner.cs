@@ -360,8 +360,8 @@ public class Example65_HandlebarsPlanner : BaseTest
         static async Task<string> getDomainContext()
         {
             // For demonstration purposes only, beware of token count.
-            var respositoryUrl = "https://github.com/microsoft/semantic-kernel";
-            var readmeUrl = $"{respositoryUrl}/main/README.md".Replace("github.com", "raw.githubusercontent.com", StringComparison.CurrentCultureIgnoreCase);
+            var repositoryUrl = "https://github.com/microsoft/semantic-kernel";
+            var readmeUrl = $"{repositoryUrl}/main/README.md".Replace("github.com", "raw.githubusercontent.com", StringComparison.CurrentCultureIgnoreCase);
             try
             {
                 var httpClient = new HttpClient();
