@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, List, Optional
+from typing import List
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
@@ -23,13 +23,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer(KernelBaseModel):
-    def __init__(self, log: Optional[Any] = None):
-        super().__init__()
-
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
-    def tokenize(self, text: str) -> List[Block]:
+    @classmethod
+    def tokenize(cls, text: str) -> List[Block]:
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
 
@@ -88,7 +83,7 @@ class CodeTokenizer(KernelBaseModel):
                 #  - skip the current char (escape char)
                 #  - add the next char (special char)
                 #  - jump to the one after (to handle "\\" properly)
-                if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(next_char):
+                if current_char == Symbols.ESCAPE_CHAR and cls._can_be_escaped(next_char):
                     current_token_content.append(next_char)
                     skip_next_char = True
                     continue
@@ -106,7 +101,7 @@ class CodeTokenizer(KernelBaseModel):
 
             # If we're not between quotes, a space signals the end of the current token
             # Note: there might be multiple consecutive spaces
-            if self._is_blank_space(current_char):
+            if cls._is_blank_space(current_char):
                 if current_token_type == BlockTypes.VARIABLE:
                     blocks.append(VarBlock("".join(current_token_content)))
                     current_token_content.clear()
@@ -151,7 +146,8 @@ class CodeTokenizer(KernelBaseModel):
 
         return blocks
 
-    def _is_blank_space(self, c: str) -> bool:
+    @staticmethod
+    def _is_blank_space(c: str) -> bool:
         return c in (
             Symbols.SPACE,
             Symbols.NEW_LINE,
@@ -159,7 +155,8 @@ class CodeTokenizer(KernelBaseModel):
             Symbols.TAB,
         )
 
-    def _can_be_escaped(self, c: str) -> bool:
+    @staticmethod
+    def _can_be_escaped(c: str) -> bool:
         return c in (
             Symbols.DBL_QUOTE,
             Symbols.SGL_QUOTE,

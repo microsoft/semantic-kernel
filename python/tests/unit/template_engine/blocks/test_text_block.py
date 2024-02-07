@@ -3,7 +3,8 @@
 
 from pytest import raises
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 
@@ -57,7 +58,7 @@ def test_is_valid():
 
 def test_render():
     text_block = TextBlock.from_text(text="test text")
-    rendered_value = text_block.render(ContextVariables())
+    rendered_value = text_block.render(Kernel(), KernelArguments())
     assert rendered_value == "test text"
 
 

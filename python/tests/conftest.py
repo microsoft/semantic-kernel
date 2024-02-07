@@ -9,12 +9,7 @@ import warnings
 import pytest
 
 import semantic_kernel as sk
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
-from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 
 
 @pytest.fixture(autouse=True)
@@ -56,8 +51,10 @@ def enable_debug_mode():
 
 
 @pytest.fixture(scope="module")
-def create_kernel():
+def create_kernel(plugin: t.Optional[KernelPlugin] = None):
     kernel = sk.Kernel()
+    if plugin:
+        kernel.add_plugin(plugin)
     return kernel
 
 
@@ -85,26 +82,6 @@ def get_oai_config():
         api_key, org_id = sk.openai_settings_from_dot_env()
 
     return api_key, org_id
-
-
-@pytest.fixture()
-def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
-    """Return a factory for KernelContext objects."""
-
-    def create_context(context_variables: ContextVariables, *functions: KernelFunction) -> KernelContext:
-        """Return a KernelContext object."""
-
-        plugin = KernelPlugin(name="test_plugin", functions=functions)
-
-        return KernelContext(
-            context_variables,
-            NullMemory(),
-            plugins=KernelPluginCollection(
-                plugins=[plugin],
-            ),
-        )
-
-    return create_context
 
 
 @pytest.fixture(scope="session")

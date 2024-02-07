@@ -18,10 +18,10 @@ from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.models.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.models.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.models.contents.text_content import TextContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
