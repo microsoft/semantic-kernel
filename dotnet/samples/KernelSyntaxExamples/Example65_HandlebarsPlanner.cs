@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -25,7 +26,8 @@ public class Example65_HandlebarsPlanner : BaseTest
     {
         WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
-    private async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
+
+    private async Task<Kernel?> SetupKernelAsync(params string[] pluginDirectoryNames)
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -35,7 +37,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
             WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
-            return;
+            return null;
         }
 
         var kernel = Kernel.CreateBuilder()
@@ -75,9 +77,20 @@ public class Example65_HandlebarsPlanner : BaseTest
             }
         }
 
+        return kernel;
+    }
+
+    private async Task RunSampleAsync(string goal, KernelArguments? initialContext = null, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
+    {
+        var kernel = await SetupKernelAsync(pluginDirectoryNames);
+        if (kernel is null)
+        {
+            return;
+        }
+
         // Use gpt-4 or newer models if you want to test with loops. 
         // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
-        var allowLoopsInPlan = chatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
+        var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
@@ -88,7 +101,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         WriteLine($"Goal: {goal}");
 
         // Create the plan
-        var plan = await planner.CreatePlanAsync(kernel, goal);
+        var plan = await planner.CreatePlanAsync(kernel, goal, initialContext);
 
         // Print the prompt template
         if (shouldPrintPrompt && plan.Prompt is not null)
@@ -99,7 +112,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
-        var result = await plan.InvokeAsync(kernel);
+        var result = await plan.InvokeAsync(kernel, initialContext);
         WriteLine($"\nResult:\n{result}\n");
     }
 
@@ -112,7 +125,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         try
         {
             // Load additional plugins to enable planner but not enough for the given goal.
-            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", shouldPrintPrompt, "SummarizePlugin");
+            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, shouldPrintPrompt, "SummarizePlugin");
         }
         catch (KernelException ex) when (
             ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
@@ -120,13 +133,12 @@ public class Example65_HandlebarsPlanner : BaseTest
             || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InvalidTemplate), StringComparison.CurrentCultureIgnoreCase))
         {
             /*
-                Unable to create plan for goal with available functions.
-                Goal: Email me a list of meetings I have scheduled today.
-                Available Functions: SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Topics
+                [InsufficientFunctionsForGoal] Unable to create plan for goal with available functions.
+                Goal: Send Mary an email with the list of meetings I have scheduled today.
+                Available Functions: SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-Topics
                 Planner output:
-                I'm sorry, but it seems that the provided helpers do not include any helper to fetch or filter meetings scheduled for today. 
-                Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
-                Additional helpers may be required.
+                As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
+                Additional helpers or information may be required.
             */
             WriteLine($"\n{ex.Message}\n");
         }
@@ -138,7 +150,30 @@ public class Example65_HandlebarsPlanner : BaseTest
     public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
         this.WriteSampleHeading("Coursera OpenAPI Plugin");
-        return RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
+        return RunSampleAsync("Show me courses about Artificial Intelligence.", null, shouldPrintPrompt, CourseraPluginName);
+        /*
+            Original plan:
+            {{!-- Step 0: Extract key values --}}
+            {{set "query" "Artificial Intelligence"}}
+
+            {{!-- Step 1: Use CourseraPlugin-search helper to search courses related to the query --}}
+            {{set "searchResults" (CourseraPlugin-search query=query)}}
+
+            {{!-- Step 2: Display the list of courses using the #each loop --}}
+            {{#each searchResults.hits}}
+            {{json (concat "Course: " this.name ", URL: " this.objectUrl)}}
+            {{/each}}
+
+            Result:
+            Course: Introduction to Artificial Intelligence (AI), URL: https://www.coursera.org/learn/introduction-to-ai?utm_source=rest_api
+            Course: IBM Applied AI, URL: https://www.coursera.org/professional-certificates/applied-artifical-intelligence-ibm-watson-ai?utm_source=rest_api
+            Course: Python for Data Science, AI & Development, URL: https://www.coursera.org/learn/python-for-applied-data-science-ai?utm_source=rest_api
+            Course: AI For Everyone, URL: https://www.coursera.org/learn/ai-for-everyone?utm_source=rest_api
+            Course: Introduction to Generative AI, URL: https://www.coursera.org/learn/introduction-to-generative-ai?utm_source=rest_api
+            Course: Deep Learning, URL: https://www.coursera.org/specializations/deep-learning?utm_source=rest_api
+            Course: Machine Learning, URL: https://www.coursera.org/specializations/machine-learning-introduction?utm_source=rest_api
+            Course: AI For Business, URL: https://www.coursera.org/specializations/ai-for-business-wharton?utm_source=rest_api
+        */
     }
 
     [RetryTheory(typeof(HttpOperationException))]
@@ -146,7 +181,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         this.WriteSampleHeading("Basic Types using Local Dictionary Plugin");
-        return RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
+        return RunSampleAsync("Get a random word and its definition.", null, shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -168,7 +203,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         this.WriteSampleHeading("Complex Types using Local Dictionary Plugin");
-        return RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
+        return RunSampleAsync("Teach me two random words and their definition.", null, shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
             {{!-- Step 1: Get two random dictionary entries --}}
@@ -204,7 +239,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
         this.WriteSampleHeading("Multiple Plugins");
-        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
+        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -233,7 +268,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
         this.WriteSampleHeading("Loops and Conditionals");
-        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}
@@ -255,6 +290,138 @@ public class Example65_HandlebarsPlanner : BaseTest
                 {{!-- Step 5: Output the chapter content --}}
                 {{json (get "chapterContent")}}
             {{/each}}
+        */
+    }
+
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData]
+    public async Task RunPromptWithPredefinedVariablesSampleAsync()
+    {
+        this.WriteSampleHeading("CreatePlan Prompt With Predefined Variables");
+        var kernel = await SetupKernelAsync("SummarizePlugin", "WriterPlugin");
+        if (kernel is null)
+        {
+            return;
+        }
+
+        // Use gpt-4 or newer models if you want to test with loops. 
+        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
+        var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
+        var planner = new HandlebarsPlanner(
+            new HandlebarsPlannerOptions()
+            {
+                // Change this if you want to test with loops regardless of model selection.
+                AllowLoops = allowLoopsInPlan
+            });
+
+        // When using predefined variables, you must pass these arguments to both the CreatePlanAsync and InvokeAsync methods.
+        var initialArguments = new KernelArguments()
+        {
+            { "greetings", new List<string>(){ "hey", "bye" } },
+            { "someNumber", 1 },
+            { "person", new Dictionary<string, string>()
+            {
+                {"name", "John Doe" },
+                { "language", "Italian" },
+            } }
+        };
+
+        // Create the plan
+        var goal = "Write a poem about the given person, then translate it into French.";
+        var plan = await planner.CreatePlanAsync(kernel, goal, initialArguments);
+
+        // Print the prompt template and proposed plan
+        WriteLine($"\nPrompt template:\n{plan.Prompt}");
+        WriteLine($"\nOriginal plan:\n{plan}");
+
+        // Execute the plan
+        var result = await plan.InvokeAsync(kernel, initialArguments);
+        WriteLine($"\nResult:\n{result}\n");
+        /*
+            Original plan:
+            {{!-- Step 0: Set the given person --}}
+            {{set "person" "John Doe"}}
+
+            {{!-- Step 1: Generate a short poem about the person --}}
+            {{set "poem" (WriterPlugin-ShortPoem input=person)}}
+
+            {{!-- Step 2: Translate the poem into French --}}
+            {{set "translatedPoem" (WriterPlugin-Translate input=poem language="French")}}
+
+            {{!-- Step 3: Output the translated poem --}}
+            {{json translatedPoem}}
+
+            Result:
+            Il était une fois un gars nommé Doe,
+            Dont la vie était un spectacle comique,
+            Il trébuchait et tombait,
+            Mais riait à travers tout cela,
+            Alors qu'il dansait dans la vie, de-ci de-là.
+        */
+    }
+
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData]
+    public async Task RunBookWithAdditionalContextSampleAsync()
+    {
+        var domainContext = @" The company observed the following trends and data in regards to the sales team this month:  
+- The sales team has exceeded the quarterly target by 15%.  
+- The top-performing product category was 'Home Appliances'.  
+- The most improved salesperson is Jane Doe, with a 20% increase in sales compared to the previous quarter.  
+- A new sales strategy implemented in the last month has resulted in a 10% increase in lead conversion rate.";
+
+        this.WriteSampleHeading("Prompt With Additional Context");
+        var goal = "As the sales manager, I want to generate a report summarizing the performance of our sales team this quarter. I want the report to congratulate the team appropriately, highlight anyone or any category that excelled, and analyze the impact of the new sales strategy.";
+
+        var kernel = await SetupKernelAsync("WriterPlugin");
+        if (kernel is null)
+        {
+            return;
+        }
+
+        // Use gpt-4 or newer models if you want to test with loops. 
+        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
+        var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
+        var planner = new HandlebarsPlanner(
+            new HandlebarsPlannerOptions()
+            {
+                // Context to be used in the prompt template.
+                GetAdditionalPromptContext = () => domainContext,
+                AllowLoops = false
+            });
+
+        // Create the plan
+        var plan = await planner.CreatePlanAsync(kernel, goal);
+
+        // Print the prompt template and proposed plan
+        WriteLine($"\nPrompt template:\n{plan.Prompt}");
+        WriteLine($"\nOriginal plan:\n{plan}");
+
+        // Execute the plan
+        var result = await plan.InvokeAsync(kernel);
+        WriteLine($"\nResult:\n{result}\n");
+
+        /*
+            Original plan:
+            {{!-- Step 0: Extract Key Values --}}
+            {{set "quarterlyOverachievement" 15}}
+            {{set "topCategory" "Home Appliances"}}
+            {{set "mostImproved" "Jane Doe"}}
+            {{set "salesImprovement" 20}}
+            {{set "strategyImpact" 10}}
+
+            {{!-- Step 1: Build the Sales Report Message --}}
+            {{set "report" (concat "Dear Sales Team," "\n\nCongratulations on a fantastic quarter! You have exceeded our quarterly target by " quarterlyOverachievement "%! The top-performing product category was '" topCategory "', which significantly contributed to our success. A special shout-out goes to " mostImproved ", who showed a " salesImprovement "% increase in sales compared to the last quarter." "\n\nOur new sales strategy has proved to be effective, with a " strategyImpact "% increase in lead conversion rate. Keep up the good work as we continue to implement and improve on our sales strategies." "\n\nBest Regards," "\n[Your Name]")}}
+
+            {{!-- Step 2: Output the sales report message--}}
+            {{json report}}
+
+            Result:
+            Dear Sales Team,
+            Congratulations on a fantastic quarter! You have exceeded our quarterly target by 15%! The top-performing product category was 'Home Appliances', which significantly contributed to our success. A special shout-out goes to Jane Doe, who showed a 20% increase in sales compared to the last quarter.
+            Our new sales strategy has proved to be effective, with a 10% increase in lead conversion rate. Keep up the good work as we continue to implement and improve on our sales strategies.
+            Best Regards,
+            [Your Name]
         */
     }
 
