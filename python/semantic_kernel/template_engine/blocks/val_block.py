@@ -1,14 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 import pydantic as pdt
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -58,7 +61,7 @@ class ValBlock(Block):
 
         return True, ""
 
-    def render(self, _: Optional[ContextVariables] = None) -> str:
+    def render(self, kernel: "Kernel", _: Optional["KernelArguments"] = None) -> str:
         return self._value
 
     @staticmethod

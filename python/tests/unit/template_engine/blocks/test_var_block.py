@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 
 from pytest import mark, raises
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
+
+logger = logging.getLogger(__name__)
 
 
 def test_init():
@@ -45,16 +49,13 @@ def test_is_valid_invalid_characters():
 
 def test_render():
     var_block = VarBlock(content="$test_var")
-    context_variables = ContextVariables()
-    context_variables.set("test_var", "test_value")
-    rendered_value = var_block.render(context_variables)
+    rendered_value = var_block.render(Kernel(), KernelArguments(test_var="test_value"))
     assert rendered_value == "test_value"
 
 
 def test_render_variable_not_found():
     var_block = VarBlock(content="$test_var")
-    context_variables = ContextVariables()
-    rendered_value = var_block.render(context_variables)
+    rendered_value = var_block.render(Kernel(), KernelArguments())
     assert rendered_value == ""
 
 
@@ -81,24 +82,20 @@ def test_it_renders_to_empty_string_without_variables():
 
 def test_it_renders_to_empty_string_if_variable_is_missing():
     target = VarBlock(content="  $var \n ")
-    variables = ContextVariables(variables={"foo": "bar"})
-    result = target.render(variables)
+    result = target.render(Kernel(), KernelArguments(foo="bar"))
     assert result == ""
 
 
 def test_it_renders_to_variable_value_when_available():
     target = VarBlock(content="  $var \n ")
-    variables = ContextVariables(variables={"foo": "bar", "var": "able"})
-    result = target.render(variables)
+    result = target.render(Kernel(), KernelArguments(foo="bar", var="able"))
     assert result == "able"
 
 
 def test_it_throws_if_the_var_name_is_empty():
-    variables = ContextVariables(variables={"foo": "bar", "var": "able"})
-
     with raises(ValueError):
         target = VarBlock(content=" $ ")
-        target.render(variables)
+        target.render(Kernel(), KernelArguments(foo="bar", var="able"))
 
 
 @mark.parametrize(
@@ -152,8 +149,7 @@ def test_it_throws_if_the_var_name_is_empty():
 )
 def test_it_allows_underscore_letters_and_digits(name, is_valid):
     target = VarBlock(content=f" ${name} ")
-    variables = ContextVariables(variables={name: "value"})
-    result = target.render(variables)
+    result = target.render(Kernel(), KernelArguments(**{name: "value"}))
 
     assert target.is_valid()[0] == is_valid
     if is_valid:
