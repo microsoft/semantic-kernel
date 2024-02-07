@@ -86,6 +86,8 @@ async def test_can_call_get_available_functions_with_functions():
 
     kernel.plugins = mock_plugins
 
+    kernel.plugins = mock_plugins
+
     memory_query_result = MemoryQueryResult(
         is_reference=False,
         id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(kernel_function_metadata),
