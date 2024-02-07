@@ -1,14 +1,10 @@
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
@@ -25,20 +21,21 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FunctionInvocation.class);
 
-    private final KernelFunction<?> function;
-    private final Kernel kernel;
+    protected final KernelFunction<?> function;
+
+    protected final Kernel kernel;
     @Nullable
-    private final ContextVariableType<T> resultType;
+    protected final ContextVariableType<T> resultType;
 
     @Nullable
-    private KernelFunctionArguments arguments;
+    protected KernelFunctionArguments arguments;
     @Nullable
-    private UnmodifiableKernelHooks hooks;
+    protected UnmodifiableKernelHooks hooks;
     @Nullable
-    private PromptExecutionSettings promptExecutionSettings;
+    protected PromptExecutionSettings promptExecutionSettings;
     @Nullable
-    private UnmodifiableToolCallBehavior toolCallBehavior;
-    private final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
+    protected UnmodifiableToolCallBehavior toolCallBehavior;
+    protected final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
 
 
     public FunctionInvocation(
@@ -47,6 +44,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         this.function = function;
         this.kernel = kernel;
         this.resultType = null;
+        this.addKernelHooks(kernel.getGlobalKernelHooks());
     }
 
     public FunctionInvocation(
@@ -60,6 +58,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         if (resultType != null) {
             contextVariableTypes.putConverter(resultType.getConverter());
         }
+        this.addKernelHooks(kernel.getGlobalKernelHooks());
     }
 
     public FunctionInvocation<T> withArguments(
@@ -79,15 +78,25 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             function,
             resultType)
             .withArguments(arguments)
-            .withKernelHooks(hooks)
+            .addKernelHooks(hooks)
             .withPromptExecutionSettings(promptExecutionSettings)
             .withToolCallBehavior(toolCallBehavior);
     }
 
-    public FunctionInvocation<T> withKernelHooks(
+    public FunctionInvocation<T> addKernelHook(@Nullable KernelHook hook) {
+        KernelHooks clone = new KernelHooks(this.hooks);
+        clone.addHook(hook);
+        this.hooks = unmodifiableClone(clone);
+        return this;
+    }
+
+    public FunctionInvocation<T> addKernelHooks(
         @Nullable
         KernelHooks hooks) {
-        this.hooks = unmodifiableClone(hooks);
+        if (hooks == null) {
+            return this;
+        }
+        this.hooks = unmodifiableClone(new KernelHooks(this.hooks).addHooks(hooks));
         return this;
     }
 
@@ -108,6 +117,25 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         return this;
     }
 
+
+    public FunctionInvocation<T> withTypes(ContextVariableTypes contextVariableTypes) {
+        this.contextVariableTypes.putConverters(contextVariableTypes);
+        return this;
+    }
+
+    public FunctionInvocation<T> withInvocationContext(
+        @Nullable InvocationContext invocationContext) {
+        if (invocationContext == null) {
+            return this;
+        }
+        withTypes(invocationContext.getContextVariableTypes());
+        withToolCallBehavior(invocationContext.getToolCallBehavior());
+        withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
+        addKernelHooks(invocationContext.getKernelHooks());
+        return this;
+    }
+
+
     @Override
     public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
         performSubscribe(
@@ -124,32 +152,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             ));
     }
 
-    @Nullable
-    private static UnmodifiableToolCallBehavior unmodifiableClone(
-        @Nullable
-        ToolCallBehavior toolCallBehavior) {
-        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
-            return (UnmodifiableToolCallBehavior) toolCallBehavior;
-        } else if (toolCallBehavior != null) {
-            return toolCallBehavior.unmodifiableClone();
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    private static UnmodifiableKernelHooks unmodifiableClone(
-        @Nullable KernelHooks kernelHooks) {
-        if (kernelHooks instanceof UnmodifiableKernelHooks) {
-            return (UnmodifiableKernelHooks) kernelHooks;
-        } else if (kernelHooks != null) {
-            return kernelHooks.unmodifiableClone();
-        } else {
-            return null;
-        }
-    }
-
-
     // Extracted to static to ensure mutable state is not used
     private static <T> void performSubscribe(
         CoreSubscriber<? super FunctionResult<T>> coreSubscriber,
@@ -162,7 +164,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         @Nullable
         InvocationContext context
     ) {
-
         if (variableType == null) {
             LOGGER.debug(
                 "No variable type explicitly specified by calling 'withResultType' for function invocation: "
@@ -176,7 +177,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 new KernelFunctionArguments(arguments),
                 null,
                 new InvocationContext(context))
-            .handle(FunctionInvocation.convertToType(variableType))
+            .handle(convertToType(variableType))
             .subscribe(coreSubscriber);
     }
 
@@ -202,6 +203,31 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 sink.next((FunctionResult<T>) result);
             }
         };
+    }
+
+    @Nullable
+    private static UnmodifiableToolCallBehavior unmodifiableClone(
+        @Nullable
+        ToolCallBehavior toolCallBehavior) {
+        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
+            return (UnmodifiableToolCallBehavior) toolCallBehavior;
+        } else if (toolCallBehavior != null) {
+            return toolCallBehavior.unmodifiableClone();
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static UnmodifiableKernelHooks unmodifiableClone(
+        @Nullable KernelHooks kernelHooks) {
+        if (kernelHooks instanceof UnmodifiableKernelHooks) {
+            return (UnmodifiableKernelHooks) kernelHooks;
+        } else if (kernelHooks != null) {
+            return kernelHooks.unmodifiableClone();
+        } else {
+            return null;
+        }
     }
 
 }

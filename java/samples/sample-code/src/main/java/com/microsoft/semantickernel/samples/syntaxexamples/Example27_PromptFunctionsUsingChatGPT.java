@@ -50,13 +50,12 @@ public class Example27_PromptFunctionsUsingChatGPT {
         var func = KernelFunctionFactory.<String>createFromPrompt(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
-        var result = func.invokeAsync(
-                kernel,
+        var result = func.invokeAsync(kernel)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withVariable("input", "Jupiter")
-                    .build(),
-                ContextVariableTypes.getGlobalVariableTypeForClass(String.class)
-            )
+                    .build())
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
             .block();
         System.out.println(result.getResult());
 

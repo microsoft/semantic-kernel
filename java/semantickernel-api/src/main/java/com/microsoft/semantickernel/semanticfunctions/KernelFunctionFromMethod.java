@@ -76,16 +76,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         return function.invoke(kernel, this, arguments, variableType, invocationContext);
     }
 
-    @Override
-    public Mono<FunctionResult<T>> invokeAsync(
-        Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType) {
-        return super.invokeAsync(kernel, arguments, variableType);
-    }
-
     public interface ImplementationFunc<T> {
-
         Mono<FunctionResult<T>> invoke(
             Kernel kernel,
             KernelFunction<T> function,

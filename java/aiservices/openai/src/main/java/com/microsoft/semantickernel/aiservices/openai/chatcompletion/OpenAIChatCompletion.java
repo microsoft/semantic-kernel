@@ -267,7 +267,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         String pluginName = parts.length > 0 ? parts[0] : "";
         String fnName = parts.length > 1 ? parts[1] : "";
         JsonNode parameters = jsonNode.get("parameters");
-        KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
+        KernelFunction<?> kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
         if (kernelFunction == null) {
             return Mono.empty();
         }
@@ -285,7 +285,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
         ContextVariableType<String> variableType = ContextVariableTypes.getGlobalVariableTypeForClass(
             String.class);
-        return kernelFunction.invokeAsync(kernel, arguments, variableType);
+        return kernelFunction
+            .invokeAsync(kernel)
+            .withArguments(arguments)
+            .withResultType(variableType);
     }
 
     private static ChatCompletionsOptions getCompletionsOptions(

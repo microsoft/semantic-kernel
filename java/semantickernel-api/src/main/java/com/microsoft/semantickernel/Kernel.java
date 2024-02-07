@@ -4,11 +4,8 @@ package com.microsoft.semantickernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.FunctionInvocation;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -20,20 +17,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
 /**
  * Interface for the semantic kernel.
  */
 public class Kernel implements Buildable {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Kernel.class);
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
@@ -61,41 +52,8 @@ public class Kernel implements Buildable {
         return invokeAsync(function);
     }
 
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction<T> function,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType,
-        @Nullable InvocationContext invocationContext) {
-
-        Objects.requireNonNull(function, "function");
-
-        // Ever other invokeAsync call should end up here... 
-
-        // If there are hooks added to the global kernel hooks, create a new invocation context
-        // with the global hooks and the invocation context hooks merged together.
-        KernelHooks hooks = new KernelHooks(getGlobalKernelHooks());
-        if (!hooks.isEmpty()) {
-            if (invocationContext != null) {
-                hooks.append(invocationContext.getKernelHooks());
-            }
-
-            InvocationContext.Builder builder = InvocationContext.builder()
-                .withKernelHooks(hooks);
-
-            if (invocationContext != null) {
-                builder = builder
-                    .withPromptExecutionSettings(invocationContext.getPromptExecutionSettings())
-                    .withToolCallBehavior(invocationContext.getToolCallBehavior());
-            }
-
-            invocationContext = builder.build();
-        }
-
-        return function.invokeAsync(this, arguments, variableType, invocationContext);
-    }
-
     public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
-        return new FunctionInvocation<>(this, function);
+        return function.invokeAsync(this);
     }
 
 

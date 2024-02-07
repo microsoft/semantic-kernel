@@ -32,26 +32,35 @@ public class ContextVariableTypes {
             new InstantContextVariableTypeConverter(),
             new CompletionUsageContextVariableTypeConverter(),
 
-            new NumberVariableContextVariableTypeConverter<>(Byte.class, Byte::parseByte),
-            new NumberVariableContextVariableTypeConverter<>(byte.class, Byte::parseByte),
+            new NumberVariableContextVariableTypeConverter<>(Byte.class, Byte::parseByte,
+                Number::byteValue),
+            new NumberVariableContextVariableTypeConverter<>(byte.class, Byte::parseByte,
+                Number::byteValue),
 
-            new NumberVariableContextVariableTypeConverter<>(Integer.class, Integer::parseInt),
+            new NumberVariableContextVariableTypeConverter<>(Integer.class, Integer::parseInt,
+                Number::intValue),
+            new NumberVariableContextVariableTypeConverter<>(int.class, Integer::parseInt,
+                Number::intValue),
 
-            new NumberVariableContextVariableTypeConverter<>(int.class, Integer::parseInt),
-            new NumberVariableContextVariableTypeConverter<>(Long.class, Long::parseLong),
-            new NumberVariableContextVariableTypeConverter<>(long.class, Long::parseLong),
+            new NumberVariableContextVariableTypeConverter<>(Long.class, Long::parseLong,
+                Number::longValue),
+            new NumberVariableContextVariableTypeConverter<>(long.class, Long::parseLong,
+                Number::longValue),
 
-            new NumberVariableContextVariableTypeConverter<>(Double.class, Double::parseDouble),
+            new NumberVariableContextVariableTypeConverter<>(Double.class, Double::parseDouble,
+                Number::doubleValue),
+            new NumberVariableContextVariableTypeConverter<>(double.class, Double::parseDouble,
+                Number::doubleValue),
 
-            new NumberVariableContextVariableTypeConverter<>(double.class, Double::parseDouble),
+            new NumberVariableContextVariableTypeConverter<>(Float.class, Float::parseFloat,
+                Number::floatValue),
+            new NumberVariableContextVariableTypeConverter<>(float.class, Float::parseFloat,
+                Number::floatValue),
 
-            new NumberVariableContextVariableTypeConverter<>(Float.class, Float::parseFloat),
-
-            new NumberVariableContextVariableTypeConverter<>(float.class, Float::parseFloat),
-
-            new NumberVariableContextVariableTypeConverter<>(Short.class, Short::parseShort),
-
-            new NumberVariableContextVariableTypeConverter<>(short.class, Short::parseShort));
+            new NumberVariableContextVariableTypeConverter<>(Short.class, Short::parseShort,
+                Number::shortValue),
+            new NumberVariableContextVariableTypeConverter<>(short.class, Short::parseShort,
+                Number::shortValue));
         DEFAULT_TYPES = new ContextVariableTypes(types);
     }
 
@@ -159,4 +168,7 @@ public class ContextVariableTypes {
                 () -> new SKException("Unknown context variable type: " + aClass.getName()));
     }
 
+    public void putConverters(ContextVariableTypes contextVariableTypes) {
+        this.variableTypes.putAll(contextVariableTypes.variableTypes);
+    }
 }

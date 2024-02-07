@@ -9,13 +9,19 @@ import javax.annotation.Nullable;
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends
     ContextVariableTypeConverter<T> {
 
-    public NumberVariableContextVariableTypeConverter(Class<T> clazz,
-        Function<String, T> fromPromptString) {
+    private final Function<Number, T> fromNumber;
+
+    public NumberVariableContextVariableTypeConverter(
+        Class<T> clazz,
+        Function<String, T> fromPromptString,
+        Function<Number, T> fromNumber
+    ) {
         super(
             clazz,
             s -> convert(s, clazz),
             Number::toString,
             fromPromptString);
+        this.fromNumber = fromNumber;
     }
 
     @Override
@@ -46,6 +52,11 @@ public class NumberVariableContextVariableTypeConverter<T extends Number> extend
         if (obj != null) {
             return obj;
         }
+
+        if (s instanceof Number) {
+            return fromNumber.apply((Number) s);
+        }
+
         if (s instanceof String) {
             return fromPromptString((String) s);
         }

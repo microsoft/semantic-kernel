@@ -1,9 +1,5 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
@@ -25,7 +21,6 @@ import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -402,17 +397,11 @@ public class Example57_KernelHooks {
             );
         });
 
-        InvocationContext invocationContext = InvocationContext.builder()
-            .withKernelHooks(kernelHooks)
-            .build();
-
         try {
             // Invoke prompt to trigger execution hooks.
-            var result = kernel.invokeAsync(
-                    writerFunction,
-                    KernelFunctionArguments.builder().build(),
-                    null,
-                    invocationContext)
+            var result = kernel.invokeAsync(writerFunction)
+                .withArguments(KernelFunctionArguments.builder().build())
+                .addKernelHooks(kernelHooks)
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {

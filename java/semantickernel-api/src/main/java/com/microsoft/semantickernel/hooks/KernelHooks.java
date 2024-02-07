@@ -104,6 +104,11 @@ public class KernelHooks {
         return hooks.isEmpty();
     }
 
+    public KernelHooks addHooks(KernelHooks hooks) {
+        this.hooks.putAll(hooks.getHooks());
+        return this;
+    }
+
     public static class UnmodifiableKernelHooks extends KernelHooks {
             
         private UnmodifiableKernelHooks(KernelHooks kernelHooks) {

@@ -340,7 +340,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         JsonNode parameters = jsonNode.get("parameters");
         if (parameters != null) {
             try {
-                KernelFunction<T> kernelFunction = null;
+                KernelFunction<T> kernelFunction;
                 try {
                     // unchecked cast
                     kernelFunction = (KernelFunction<T>) kernel.getPlugins()
@@ -379,7 +379,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 KernelFunctionArguments arguments = KernelFunctionArguments.builder()
                     .withVariables(variables)
                     .build();
-                return kernelFunction.invokeAsync(kernel, arguments);
+                return kernelFunction.invokeAsync(kernel).withArguments(arguments);
             } catch (Exception e) {
                 return Mono.error(e);
             }
