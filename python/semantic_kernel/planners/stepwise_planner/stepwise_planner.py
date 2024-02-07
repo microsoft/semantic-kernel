@@ -385,7 +385,7 @@ class StepwisePlanner:
         kernel: Kernel,
         function_name: str,
         prompt_template: str,
-        config: PromptTemplateConfig = None,
+        config: "PromptTemplateConfig" = None,
     ) -> "KernelFunction":
         template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)
