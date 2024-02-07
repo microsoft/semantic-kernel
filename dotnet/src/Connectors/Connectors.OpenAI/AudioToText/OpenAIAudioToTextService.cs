@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,6 +63,6 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <inheritdoc/>
-    public Task<TextContent> GetTextContentAsync(Stream audio, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetTextContentFromAudioAsync(audio, executionSettings, cancellationToken);
+    public Task<TextContent> GetTextContentAsync(BinaryData audioData, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetTextContentFromAudioAsync(audioData, executionSettings, cancellationToken);
 }

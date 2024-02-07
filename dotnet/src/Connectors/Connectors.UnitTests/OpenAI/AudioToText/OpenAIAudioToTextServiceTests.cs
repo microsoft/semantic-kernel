@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
@@ -70,7 +69,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentAsync(new MemoryStream(), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentAsync(new BinaryData("data"), new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);

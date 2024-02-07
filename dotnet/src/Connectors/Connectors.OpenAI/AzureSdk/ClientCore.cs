@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -242,15 +241,13 @@ internal abstract class ClientCore
     }
 
     internal async Task<TextContent> GetTextContentFromAudioAsync(
-        Stream audio,
+        BinaryData audioData,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken = default)
     {
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
         Verify.ValidFilename(audioExecutionSettings?.Filename);
-
-        var audioData = await BinaryData.FromStreamAsync(audio, cancellationToken).ConfigureAwait(false);
 
         var audioOptions = new AudioTranscriptionOptions
         {
