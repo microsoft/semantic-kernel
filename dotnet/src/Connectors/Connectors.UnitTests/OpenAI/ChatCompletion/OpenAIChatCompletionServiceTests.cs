@@ -99,8 +99,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("TimePlugin_Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
-        Assert.Equal("TimePlugin_Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("TimePlugin_Now", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
     }
 
     [Fact]

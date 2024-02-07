@@ -4,11 +4,12 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.planning.sequential_planner.sequential_planner import (
     SequentialPlanner,
@@ -22,10 +23,13 @@ from semantic_kernel.plugin_definition.kernel_plugin_collection import (
 
 
 def create_mock_function(function_view: FunctionView):
-    mock_function = Mock(spec=KernelFunctionBase)
+    mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
     mock_function.plugin_name = function_view.plugin_name
+    mock_function.is_semantic = function_view.is_semantic
+    mock_function.description = function_view.description
+    mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
 
@@ -34,6 +38,7 @@ def create_mock_function(function_view: FunctionView):
 async def test_it_can_create_plan(goal):
     # Arrange
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
 
     memory = Mock(spec=SemanticTextMemoryBase)
 
@@ -76,7 +81,7 @@ async def test_it_can_create_plan(goal):
 
     return_context.variables.update(plan_string)
 
-    mock_function_flow_function = Mock(spec=KernelFunctionBase)
+    mock_function_flow_function = Mock(spec=KernelFunction)
     mock_function_flow_function.invoke.return_value = return_context
 
     kernel.plugins = plugins
@@ -101,6 +106,7 @@ async def test_it_can_create_plan(goal):
 async def test_empty_goal_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     planner = SequentialPlanner(kernel)
 
     # Act & Assert
@@ -112,6 +118,7 @@ async def test_empty_goal_throws():
 async def test_invalid_xml_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     memory = Mock(spec=SemanticTextMemoryBase)
     plugins = Mock(spec=KernelPluginCollection)
 
@@ -127,7 +134,7 @@ async def test_invalid_xml_throws():
 
     context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
 
-    mock_function_flow_function = Mock(spec=KernelFunctionBase)
+    mock_function_flow_function = Mock(spec=KernelFunction)
     mock_function_flow_function.invoke.return_value = return_context
 
     kernel.plugins = plugins
