@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 from textwrap import dedent
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
