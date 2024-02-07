@@ -15,7 +15,6 @@ public sealed class ChatCompletionAgent
     private readonly Kernel _kernel;
     private readonly string _instructions;
     private readonly PromptExecutionSettings? _promptExecutionSettings;
-    private readonly IChatCompletionService _chatCompletionService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
@@ -23,8 +22,7 @@ public sealed class ChatCompletionAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="instructions">The instructions for the agent.</param>
     /// <param name="executionSettings">The optional execution settings for the agent. If not provided, default settings will be used.</param>
-    /// <param name="chatCompletionService">The optional chat completion service. If not provided, it'll be resolved from the services registered on kernel.</param>
-    public ChatCompletionAgent(Kernel kernel, string instructions, PromptExecutionSettings? executionSettings = null, IChatCompletionService? chatCompletionService = null)
+    public ChatCompletionAgent(Kernel kernel, string instructions, PromptExecutionSettings? executionSettings = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         this._kernel = kernel;
@@ -33,8 +31,6 @@ public sealed class ChatCompletionAgent
         this._instructions = instructions;
 
         this._promptExecutionSettings = executionSettings;
-
-        this._chatCompletionService = chatCompletionService ?? kernel.GetRequiredService<IChatCompletionService>();
     }
 
     /// <summary>
@@ -48,12 +44,23 @@ public sealed class ChatCompletionAgent
         var chat = new ChatHistory(this._instructions);
         chat.AddRange(messages);
 
-        var chatMessageContent = await this._chatCompletionService.GetChatMessageContentsAsync(
+        var chatCompletionService = this.GetChatCompletionService();
+
+        var chatMessageContent = await chatCompletionService.GetChatMessageContentsAsync(
             chat,
             this._promptExecutionSettings,
             this._kernel,
             cancellationToken).ConfigureAwait(false);
 
         return chatMessageContent;
+    }
+
+    /// <summary>
+    /// Resolves and returns the chat completion service.
+    /// </summary>
+    /// <returns>An instance of the chat completion service.</returns>
+    private IChatCompletionService GetChatCompletionService()
+    {
+        return this._kernel.GetRequiredService<IChatCompletionService>();
     }
 }

@@ -50,7 +50,9 @@ public class ChatCompletionAgentTests
         // Arrange
         var mockChatCompletionService = new Mock<IChatCompletionService>();
 
-        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", chatCompletionService: mockChatCompletionService.Object);
+        this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(mockChatCompletionService.Object);
+
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
         var result = await agent.InvokeAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "fake-user-message") });
@@ -79,7 +81,9 @@ public class ChatCompletionAgentTests
                 new(AuthorRole.Assistant, "fake-assistant-message-2")
             });
 
-        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", chatCompletionService: mockChatCompletionService.Object);
+        this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(mockChatCompletionService.Object);
+
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
         var result = await agent.InvokeAsync(new List<ChatMessageContent>());
