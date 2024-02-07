@@ -73,7 +73,8 @@ class KernelFunction(KernelBaseModel):
             underscores with a minimum length of 1.
         is_semantic (bool): Whether the function is semantic.
         stream_function (Optional[Callable[..., Any]]): The stream function for the function.
-        parameters (List[ParameterView]): The parameters for the function.
+        parameters (List[KernelParameterMetadata]): The parameters for the function.
+        return_parameter (Optional[KernelParameterMetadata]): The return parameter for the function.
         delegate_type (DelegateTypes): The delegate type for the function.
         function (Callable[..., Any]): The function to call.
         plugins (Optional[KernelPluginCollection]): The collection of plugins.
@@ -153,7 +154,6 @@ class KernelFunction(KernelBaseModel):
             raise ValueError("Method is not a Kernel function")
 
         parameters = []
-        # kernel_function_context_parameters are optionals
         if hasattr(method, "__kernel_function_context_parameters__"):
             for param in method.__kernel_function_context_parameters__:
                 assert "name" in param, "Parameter name is empty"
@@ -183,6 +183,9 @@ class KernelFunction(KernelBaseModel):
             else False,
         )
 
+        function_name = method.__kernel_function_name__
+        description = method.__kernel_function_description__
+
         if hasattr(method, "__kernel_function_streaming__") and method.__kernel_function_streaming__:
             streaming_method = method
 
@@ -193,11 +196,12 @@ class KernelFunction(KernelBaseModel):
             method = _non_streaming_function
         else:
             streaming_method = None
+
         return KernelFunction(
-            function_name=method.__kernel_function_name__,
-            plugin_name=plugin_name,
-            description=method.__kernel_function_description__,
             function=method,
+            function_name=function_name,
+            plugin_name=plugin_name,
+            description=description,
             parameters=parameters,
             return_parameter=return_param,
             stream_function=streaming_method,
@@ -258,7 +262,7 @@ class KernelFunction(KernelBaseModel):
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
             **kwargs: Dict[str, Any],
-        ):
+        ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -285,6 +289,7 @@ class KernelFunction(KernelBaseModel):
                 default_value=None,
                 type="KernelFunctionMetadata",
                 required=True,
+                expose=False,
             ),
             KernelParameterMetadata(
                 name="kernel",
@@ -292,6 +297,7 @@ class KernelFunction(KernelBaseModel):
                 default_value=None,
                 type="Kernel",
                 required=True,
+                expose=False,
             ),
             KernelParameterMetadata(
                 name="client",
@@ -299,6 +305,7 @@ class KernelFunction(KernelBaseModel):
                 default_value=None,
                 type="AIServiceClientBase",
                 required=True,
+                expose=False,
             ),
             KernelParameterMetadata(
                 name="request_settings",
@@ -306,6 +313,7 @@ class KernelFunction(KernelBaseModel):
                 default_value=None,
                 type="PromptExecutionSettings",
                 required=True,
+                expose=False,
             ),
             KernelParameterMetadata(
                 name="arguments",
@@ -313,6 +321,7 @@ class KernelFunction(KernelBaseModel):
                 default_value=None,
                 type="KernelArguments",
                 required=True,
+                expose=False,
             ),
         ]
         semantic_function_params.extend(function_config.prompt_template.get_parameters())
@@ -386,20 +395,21 @@ class KernelFunction(KernelBaseModel):
         arguments: KernelArguments,
     ) -> "FunctionResult":
         function_arguments = self.gather_function_parameters(kernel, arguments)
+        logger.debug("Invoking %s with arguments: %s", self.name, function_arguments)
         try:
             result = self.function(**function_arguments)
             if isawaitable(result):
                 result = await result
-        except Exception as e:
-            logger.error(f"Error occurred while invoking function {self.name}: {e}")
+        except Exception as exc:
+            logger.error(f"Error occurred while invoking function {self.name}: {exc}")
             return FunctionResult(
-                function=self.describe(), value=None, metadata={"error": str(e), "arguments": function_arguments}
+                function=self.describe(), value=None, metadata={"error": exc, "arguments": function_arguments}
             )
         logger.debug("Function result: %s", result)
         logger.debug("Function result type %s", type(result))
-        if self.return_parameter and self.return_parameter.type_ == "FunctionResult":
+        if self.return_parameter and self.return_parameter.type_ and "FunctionResult" in self.return_parameter.type_:
             return result
-        return FunctionResult(function=self.describe(), value=result)
+        return FunctionResult(function=self.describe(), value=result, metadata={"arguments": function_arguments})
 
     async def invoke_stream(
         self,
@@ -413,6 +423,7 @@ class KernelFunction(KernelBaseModel):
         if not self.stream_function:
             raise ValueError("Function does not support streaming")
         function_arguments = self.gather_function_parameters(kernel, arguments)
+        logger.debug("Invoking %s with arguments: %s", self.name, function_arguments)
         try:
             async for stream_msg in self.stream_function(**function_arguments):
                 yield stream_msg
@@ -422,7 +433,7 @@ class KernelFunction(KernelBaseModel):
                 function=self.describe(), value=None, metadata={"error": str(e), "arguments": function_arguments}
             )
 
-    def gather_function_parameters(self, kernel, arguments):
+    def gather_function_parameters(self, kernel: "Kernel", arguments: "KernelArguments") -> Dict[str, Any]:
         # TODO: replace with service selector
         if arguments.execution_settings and len(arguments.execution_settings) > 1:
             exec_settings = (
@@ -453,7 +464,7 @@ class KernelFunction(KernelBaseModel):
                 function_arguments[param.name] = arguments
                 continue
             if self.is_semantic:
-                # a semantic function will receive and use the arguments instead of named arguments
+                # a semantic function will use the arguments (KernelArguments) instead of named arguments
                 continue
             if param.name in arguments:
                 function_arguments[param.name] = arguments[param.name]

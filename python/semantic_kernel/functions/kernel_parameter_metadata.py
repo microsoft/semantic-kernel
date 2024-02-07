@@ -3,21 +3,17 @@
 
 from typing import Any, Optional
 
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.validation import validate_function_param_name
+from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
 
 class KernelParameterMetadata(KernelBaseModel):
-    name: str
+    name: str = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
     description: str
     default_value: Any
     type_: Optional[str] = Field(default="str", alias="type")
     required: Optional[bool] = False
-
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, name: str):
-        validate_function_param_name(name)
-        return name
+    # expose is used to distinguish between parameters that should be exposed to tool calling and those that should not
+    expose: Optional[bool] = Field(default=True, exclude=True)

@@ -241,7 +241,7 @@ class Kernel(KernelBaseModel):
             if len(functions) > 1:
                 pipeline_functions = functions[:-1]
                 # run pipeline functions
-                results = await self.run(pipeline_functions, arguments)
+                results = await self.invoke(pipeline_functions, arguments)
             else:
                 raise ValueError("No functions passed to run")
             if not results:
@@ -273,6 +273,8 @@ class Kernel(KernelBaseModel):
             exception = None
             try:
                 async for stream_message in stream_function.invoke_stream(self, arguments):
+                    if isinstance(stream_message, FunctionResult):
+                        raise stream_message.metadata.get("error", Exception("Error occurred in stream function"))
                     function_result.append(stream_message)
                     yield stream_message
             except Exception as exc:
