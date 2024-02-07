@@ -5,45 +5,56 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/// <summary>
+/// 
+/// </summary>
 public enum ToolFilterStopBehavior
 {
+    /// <summary>
+    /// Continue using tools
+    /// </summary>
     None,
+
+    /// <summary>
+    /// Cancel the current tool call, and don't invoke or request any more tools
+    /// </summary>
     Cancel,
+
+    /// <summary>
+    /// Invoke the curent tool call(s) but don't request any more tools
+    /// </summary>
     StopTools,
+
+    /// <summary>
+    /// Continue requesting tools, but turn off auto-invoke
+    /// </summary>
     StopAutoInvoke
 };
 
+/// <summary>
+/// 
+/// </summary>
 public abstract class ToolFilterContext // TODO: make experimental?
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ToolFilterContext"/> class.
     /// </summary>
-    /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
-    /// <param name="arguments">The arguments associated with the operation.</param>
-    /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
-    internal ToolFilterContext(ToolCallBehavior toolCallBehavior, int modelIteration, KernelFunction function, KernelArguments? arguments, IReadOnlyDictionary<string, object?>? metadata, ChatHistory chatHistory)
+    /// <param name="toolCall">The <see cref="OpenAIFunctionToolCall"/> with which this filter is associated.</param>
+    /// <param name="chatHistory">The chat history associated with the operation.</param>
+    /// <param name="modelIterations">The number of model iterations completed thus far for the request.</param>
+    internal ToolFilterContext(OpenAIFunctionToolCall toolCall, ChatHistory chatHistory, int modelIterations)
     {
-        Verify.NotNull(function);
-        Verify.NotNull(arguments);
+        Verify.NotNull(toolCall);
 
-        this.Function = function;
-        this.Arguments = arguments;
-        this.ModelIterations = modelIteration;
-        this.Metadata = metadata;
-
+        this.ToolCall = toolCall;
         this.ChatHistory = chatHistory;
-        this.ToolCallBehavior = toolCallBehavior;
+        this.ModelIterations = modelIterations;
     }
 
     /// <summary>
-    /// Gets the <see cref="KernelFunction"/> associated with the tool call.
+    /// Gets the tool call associated with this filter.
     /// </summary>
-    public KernelFunction Function { get; }
-
-    /// <summary>
-    /// Gets the arguments associated with the tool call.
-    /// </summary>
-    public KernelArguments Arguments { get; }
+    public OpenAIFunctionToolCall ToolCall { get; }
 
     /// <summary>
     /// Gets the chat history associated with the operation.
@@ -51,9 +62,9 @@ public abstract class ToolFilterContext // TODO: make experimental?
     public ChatHistory ChatHistory { get; }
 
     /// <summary>
-    /// Gets a dictionary of metadata associated with the operation.
+    /// Gets the number of model iterations that have been completed for the request so far.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public int ModelIterations { get; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with
@@ -67,26 +78,10 @@ public abstract class ToolFilterContext // TODO: make experimental?
     /// </remarks>
     public bool Cancel { get; set; }
 
-    //public bool AutoInvoke { get; set; } = true;
-
-    //public bool UseTools { get; set; } = true;
-
-    /// <summary>
-    /// Gets the number of model iterations that have been completed for the request so far.
-    /// </summary>
-    public int ModelIterations { get; } // ?
-
     //public int ToolInvocations { get; } // ?
 
     /// <summary>
-    /// Gets the tool call behavior associated with the operation.
+    /// 
     /// </summary>
-    public ToolCallBehavior? ToolCallBehavior { get; set; }
-
-
-
     public ToolFilterStopBehavior StopBehavior { get; set; } = ToolFilterStopBehavior.None;
-
-
 }
-

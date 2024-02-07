@@ -330,6 +330,27 @@ internal abstract class ClientCore
                     continue;
                 }
 
+                try
+                {
+                    // Invoke the pre-invocation filter.
+                    var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(openAIFunctionToolCall, chat, iteration);
+                    if (invokingContext is not null)
+                    {
+                        // Need to update the chat options in case chat history has changed
+                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
+
+                        // Check if filter has requested a stop
+                        this.HandleStopBehavior(invokingContext, chatOptions, ref autoInvoke);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
+                    AddResponseMessage(chatOptions, chat, null, "A tool filter requested cancellation before tool invocation.", toolCall.Id, this.Logger);
+                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    break;
+                }
+
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
@@ -349,39 +370,13 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 s_inflightAutoInvokes.Value++;
-                object? functionResultObj;
+                object? functionResult;
                 try
                 {
-                    // TODO: should this go before we lookup function/args in kernel?
-                    var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(function, functionArgs, iteration, chat);
-                    if (invokingContext is not null)
-                    {
-                        this.HandleStopBehavior(invokingContext, chatOptions, ref autoInvoke);
-                    }
-
                     // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                     // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                     // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    var functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false));//.GetValue<object>() ?? string.Empty;
-                    functionResultObj = functionResult.GetValue<object>() ?? string.Empty;
-
-                    // Invoke the post-invocation filter. - TODO: should this be before or after result is added to chat history?
-                    var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(functionArgs, functionResult, iteration, chat);
-                    if (invokedContext is not null)
-                    {
-                        // Need to update the chat options in case chat history has changed (before or after new message)?
-                        // TODO: if tools were turned off in invoking filter, that might get overwritten here
-                        chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
-
-                        this.HandleStopBehavior(invokedContext, chatOptions, ref autoInvoke);
-                    }
-                }
-                catch (OperationCanceledException oce)
-                {
-                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
-                    AddResponseMessage(chatOptions, chat, null, $"{oce.Message}", toolCall.Id, this.Logger);
-                    // TODO: include result in chat history, if canceled after invoke?
-                    break;
+                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -394,7 +389,28 @@ internal abstract class ClientCore
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, functionResultObj as string ?? JsonSerializer.Serialize(functionResultObj), errorMessage: null, toolCall.Id, this.Logger);
+                AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, toolCall.Id, this.Logger);
+
+                try
+                {
+                    // Invoke the post-invocation filter.
+                    var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(openAIFunctionToolCall, functionResult, chat, iteration);
+                    if (invokedContext is not null)
+                    {
+                        // Need to update the chat options in case chat history has changed
+                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
+
+                        // Check if filter has requested a stop
+                        this.HandleStopBehavior(invokedContext, chatOptions, ref autoInvoke);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
+                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    AddResponseMessage(chatOptions, chat, null, "A tool filter requested cancellation after tool invocation.", toolCall.Id, this.Logger);
+                    break;
+                }
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -447,7 +463,7 @@ internal abstract class ClientCore
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 break;
             case ToolFilterStopBehavior.Cancel:
-                throw new OperationCanceledException("A tool filter requested cancellation.");
+                throw new OperationCanceledException();
         }
     }
 

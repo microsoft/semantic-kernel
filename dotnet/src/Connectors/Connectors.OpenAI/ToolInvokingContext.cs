@@ -1,15 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+/// <summary>
+/// Class with data related to tool before invocation.
+/// </summary>
 public sealed class ToolInvokingContext : ToolFilterContext
 {
-    public ToolInvokingContext(ToolCallBehavior toolCallBehavior, int modelIteration, KernelFunction function, KernelArguments? arguments, ChatHistory chatHistory)
-    : base(toolCallBehavior, modelIteration, function, arguments, metadata: null, chatHistory)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ToolInvokingContext"/> class.
+    /// </summary>
+    /// <param name="toolCall">The <see cref="OpenAIFunctionToolCall"/> with which this filter is associated.</param>
+    /// <param name="chatHistory">The chat history associated with the operation.</param>
+    /// <param name="modelIterations">The number of model iterations completed thus far for the request.</param>
+    public ToolInvokingContext(OpenAIFunctionToolCall toolCall, ChatHistory chatHistory, int modelIterations)
+    : base(toolCall, chatHistory, modelIterations)
     {
     }
 }

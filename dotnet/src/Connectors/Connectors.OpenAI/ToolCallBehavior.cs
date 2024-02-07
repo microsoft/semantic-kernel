@@ -244,13 +244,13 @@ public abstract class ToolCallBehavior
     }
 
     #region Filters
-    internal ToolInvokingContext? OnToolInvokingFilter(KernelFunction function, KernelArguments? arguments, int iteration, ChatHistory chatHistory)
+    internal ToolInvokingContext? OnToolInvokingFilter(OpenAIFunctionToolCall toolCall, ChatHistory chatHistory, int iteration)
     {
         ToolInvokingContext? context = null;
 
         if (this.Filters is { Count: > 0 })
         {
-            context = new(this, iteration, function, arguments, chatHistory); // TODO
+            context = new(toolCall, chatHistory, iteration);
 
             for (int i = 0; i < this.Filters.Count; i++)
             {
@@ -261,13 +261,13 @@ public abstract class ToolCallBehavior
         return context;
     }
 
-    internal ToolInvokedContext? OnToolInvokedFilter(KernelArguments? arguments, FunctionResult result, int iteration, ChatHistory chatHistory)
+    internal ToolInvokedContext? OnToolInvokedFilter(OpenAIFunctionToolCall toolCall, object? result, ChatHistory chatHistory, int iteration)
     {
         ToolInvokedContext? context = null;
 
         if (this.Filters is { Count: > 0 })
         {
-            context = new(this, iteration, arguments, result, chatHistory); // TODO
+            context = new(toolCall, result, chatHistory, iteration);
 
             for (int i = 0; i < this.Filters.Count; i++)
             {

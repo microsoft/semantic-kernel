@@ -144,10 +144,11 @@ public sealed class FunctionCallingStepwisePlanner
         openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
 
         // TODO: set filters
-        // int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
+        int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
+        openAIExecutionSettings.ToolCallBehavior.Filters.Add(new TestFilter((iteration) => { return iteration < iterationsRemaining; }));
         // openAIExecutionSettings.ToolCallBehavior.PreInvokeCallback = (iteration, _, _) => { return (iteration < iterationsRemaining); };
         // openAIExecutionSettings.ToolCallBehavior.Filters.Add(new FinalAnswerFilter());
-        openAIExecutionSettings.ToolCallBehavior.Filters.Add(new TestFilter());
+
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -291,6 +292,14 @@ public sealed class FunctionCallingStepwisePlanner
 
     public sealed class TestFilter : IToolFilter
     {
+        private readonly Func<int, bool> _shouldContinue;
+        //private int modelIterations = 0;
+
+        public TestFilter(Func<int, bool> shouldContinue)
+        {
+            this._shouldContinue = shouldContinue;
+        }
+
         public void OnToolInvoking(ToolInvokingContext context)
         {
         }
@@ -300,7 +309,12 @@ public sealed class FunctionCallingStepwisePlanner
             //context.Cancel = true;
             //context.Arguments["foo"] = "bar";
             //context.ChatHistory.AddSystemMessage("TestFilter was here");
-            context.ToolCallBehavior = null; // turn off subsequent tool calls
+            //context.ToolCallBehavior = null; // turn off subsequent tool calls
+
+            if (!this._shouldContinue(context.ModelIterations))
+            {
+                context.StopBehavior = ToolFilterStopBehavior.StopTools;
+            }
         }
     }
 }

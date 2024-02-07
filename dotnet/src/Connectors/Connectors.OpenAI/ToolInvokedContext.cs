@@ -1,26 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+/// <summary>
+/// Class with data related to tool after invocation.
+/// </summary>
 public sealed class ToolInvokedContext : ToolFilterContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ToolInvokedContext"/> class.
     /// </summary>
-    /// <param name="arguments">The arguments associated with the operation.</param>
-    /// <param name="result">The result of the function's invocation.</param>
-    public ToolInvokedContext(ToolCallBehavior toolCallBehavior, int modelIteration, KernelArguments? arguments, FunctionResult result, ChatHistory chatHistory)
-        : base(toolCallBehavior, modelIteration, result.Function, arguments, (result ?? throw new ArgumentNullException(nameof(result))).Metadata, chatHistory)
+    /// <param name="toolCall">The <see cref="OpenAIFunctionToolCall"/> with which this filter is associated.</param>
+    /// <param name="result">The result of the tool's invocation.</param>
+    /// <param name="chatHistory">The chat history associated with the operation.</param>
+    /// <param name="modelIterations">The number of model iterations completed thus far for the request.</param>
+    public ToolInvokedContext(OpenAIFunctionToolCall toolCall, object? result, ChatHistory chatHistory, int modelIterations)
+        : base(toolCall, chatHistory, modelIterations)
     {
         this.Result = result;
     }
 
     /// <summary>
-    /// Gets the result of the function's invocation.
+    /// Gets the result of the tool's invocation.
     /// </summary>
-    public FunctionResult Result { get; }
+    public object? Result { get; }
 }
