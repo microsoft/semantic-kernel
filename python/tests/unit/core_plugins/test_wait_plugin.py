@@ -3,6 +3,9 @@ import pytest
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
 
 test_data_good = [
+    0,
+    1.0,
+    -10,
     "0",
     "1",
     "2.1",
@@ -11,7 +14,6 @@ test_data_good = [
     "0.001",
     "0.0001",
     "-0.0001",
-    "-10000",
 ]
 
 test_data_bad = [

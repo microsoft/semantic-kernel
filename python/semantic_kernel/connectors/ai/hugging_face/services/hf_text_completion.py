@@ -15,8 +15,8 @@ from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.models.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.models.contents.text_content import TextContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings

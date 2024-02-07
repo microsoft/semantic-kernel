@@ -6,14 +6,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel import Kernel, KernelContext
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -38,6 +37,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                         **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
                     }
                     for param in func_view.parameters
+                    if param.expose
                 },
                 "required": [p.name for p in func_view.parameters if p.required],
             },
@@ -56,7 +56,9 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
         "parameters": {
             "type": "object",
             "properties": {
-                param.name: {"description": param.description, "type": param.type_} for param in func_view.parameters
+                param.name: {"description": param.description, "type": param.type_}
+                for param in func_view.parameters
+                if param.expose
             },
             "required": [p.name for p in func_view.parameters if p.required],
         },

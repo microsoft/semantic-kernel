@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 
@@ -46,7 +47,7 @@ def test_is_valid_wrong_quotes():
 
 def test_render():
     val_block = ValBlock(content="'test value'")
-    rendered_value = val_block.render(ContextVariables())
+    rendered_value = val_block.render(Kernel(), KernelArguments())
     assert rendered_value == "test value"
 
 
