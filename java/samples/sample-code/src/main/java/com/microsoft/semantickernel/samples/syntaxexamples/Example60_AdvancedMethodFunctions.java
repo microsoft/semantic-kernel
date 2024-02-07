@@ -30,7 +30,7 @@ public class Example60_AdvancedMethodFunctions {
             s -> null
         );
 
-        ContextVariableTypes.DEFAULT_TYPES.putConverter(type);
+        ContextVariableTypes.addGlobalConverter(type);
 
         var result = kernel
             .invokeAsync(FunctionsChainingPlugin.PluginName, "Function1")
@@ -38,7 +38,7 @@ public class Example60_AdvancedMethodFunctions {
                 KernelFunctionArguments
                     .builder()
                     .build())
-            .withResultType(ContextVariableTypes.getDefaultVariableTypeForClass(MyCustomType.class))
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(MyCustomType.class))
             .block();
 
         System.out.println("CustomType.Number: " + result.getResult().number); // 2
@@ -85,7 +85,7 @@ public class Example60_AdvancedMethodFunctions {
             return kernel
                 .invokeAsync(PluginName, "Function2")
                 .withArguments(KernelFunctionArguments.builder().build())
-                .withResultType(ContextVariableTypes.getDefaultVariableTypeForClass(
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
                     Example60_AdvancedMethodFunctions.MyCustomType.class))
                 .flatMap(value -> {
                     // Process the result

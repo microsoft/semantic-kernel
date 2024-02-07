@@ -8,7 +8,6 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -29,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import reactor.core.publisher.Mono;
 
 public class Example09_FunctionTypes {
@@ -78,7 +78,7 @@ public class Example09_FunctionTypes {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         System.out.println("======== Method Function types ========");
 
@@ -130,6 +130,18 @@ public class Example09_FunctionTypes {
         FunctionResult<?> result = kernel.invokeAsync(plugin.get("NoInputWithVoidResult"))
             .block();
         assert result == null;
+
+        CountDownLatch cdl = new CountDownLatch(1);
+
+        kernel
+            .invokeAsync(plugin.get("NoInputWithVoidResult"))
+            .doFinally(ignore -> cdl.countDown())
+            .subscribe(ignore -> {
+                throw new RuntimeException("No return expected");
+            });
+
+        cdl.await();
+
         System.out.println(result != null ? result.getResult() : "null");
         result = kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"))
             .block();

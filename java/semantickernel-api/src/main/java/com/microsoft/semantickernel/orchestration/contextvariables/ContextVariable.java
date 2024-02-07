@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import java.util.Arrays;
+import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -18,67 +16,21 @@ public class ContextVariable<T> {
     @Nullable
     private final T value;
 
-    public ContextVariable(ContextVariableType<T> type,
+    public ContextVariable(
+        ContextVariableType<T> type,
         @Nullable T value) {
         this.type = type;
         this.value = value;
-    }
-
-    public static <T> ContextVariable<T> of(Class<T> type, @Nullable T t) {
-        if (t == null) {
-            return new ContextVariable<>(
-                ContextVariableTypes.getDefaultVariableTypeForClass(type),
-                null);
-        }
-
-        return of(t);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static ContextVariable<?> untypedOf(
-        @Nullable Object value,
-        Class<?> clazz) {
-        ContextVariableType<?> type = ContextVariableTypes.getDefaultVariableTypeForClass(clazz);
-        return new ContextVariable(type, value);
-    }
-
-    public static ContextVariable<?> untypedOf(
-        @Nullable Object value,
-        ContextVariableTypeConverter<?> converter) {
-        ContextVariableType<?> type = new ContextVariableType(converter, converter.getType());
-        return new ContextVariable(type, value);
     }
 
     public static <T, U> ContextVariable<T> convert(
         @Nullable
         U it,
         ContextVariableType<T> requestedResultType) {
-        try {
-            return convert(
-                it,
-                requestedResultType.getClazz(),
-                new ContextVariableTypes(
-                    Arrays.asList(requestedResultType.getConverter()))
-            );
-
-        } catch (Exception e) {
-            return convert(
-                it,
-                requestedResultType.getClazz(),
-                ContextVariableTypes.DEFAULT_TYPES
-            );
-        }
-
-    }
-
-    public static <T, U> ContextVariable<T> convert(
-        @Nullable
-        U it,
-        Class<T> requestedResultType) {
         return convert(
             it,
-            requestedResultType,
-            ContextVariableTypes.DEFAULT_TYPES
+            requestedResultType.getClazz(),
+            new ContextVariableTypes(Collections.singletonList(requestedResultType.getConverter()))
         );
     }
 
@@ -86,7 +38,12 @@ public class ContextVariable<T> {
         @Nullable
         U it,
         Class<T> requestedResultType,
+        @Nullable
         ContextVariableTypes contextVariableTypes) {
+        if (contextVariableTypes == null) {
+            contextVariableTypes = new ContextVariableTypes();
+        }
+
         if (it == null) {
             return new ContextVariable<>(
                 contextVariableTypes.getVariableTypeForClass(requestedResultType),
@@ -95,7 +52,9 @@ public class ContextVariable<T> {
 
         if (requestedResultType.isAssignableFrom(it.getClass())) {
             try {
-                return ContextVariable.of(requestedResultType, requestedResultType.cast(it));
+                return contextVariableTypes
+                    .getVariableTypeForClass(requestedResultType)
+                    .of(requestedResultType.cast(it));
             } catch (Exception e) {
                 return new ContextVariable<>(
                     new ContextVariableType<>(
@@ -167,6 +126,31 @@ public class ContextVariable<T> {
         throw new SKException("Unable to convert " + it.getClass() + " to " + requestedResultType);
     }
 
+    public static ContextVariable<?> untypedOf(
+        @Nullable Object value,
+        Class<?> clazz,
+        ContextVariableTypes types) {
+        ContextVariableType<?> type = types.getVariableTypeForClass(clazz);
+
+        return new ContextVariable(type, value);
+    }
+
+    public static ContextVariable<CompletionsUsage> of(CompletionsUsage x) {
+        return ofValue(x);
+    }
+
+    public static ContextVariable<OffsetDateTime> of(OffsetDateTime x) {
+        return ofValue(x);
+    }
+
+    public static ContextVariable<String> of(String value) {
+        return ofValue(value);
+    }
+
+    public static ContextVariable<Object> ofGlobalType(Object x) {
+        return ofValue(x);
+    }
+
     @Nullable
     public T getValue() {
         return value;
@@ -181,7 +165,6 @@ public class ContextVariable<T> {
                 "Cannot cast " + (value != null ? value.getClass() : "null") + " to " + clazz, e);
         }
     }
-
 
     public ContextVariableType<T> getType() {
         return type;
@@ -199,19 +182,15 @@ public class ContextVariable<T> {
         return value == null || value.toString().isEmpty();
     }
 
-    public ContextVariable<T> cloneVariable() {
-        return new ContextVariable<>(type, value);
-    }
-
     @SuppressWarnings("unchecked")
-    public static <T> ContextVariable<T> of(T value) {
+    private static <T> ContextVariable<T> ofValue(T value) {
         Objects.requireNonNull(value, "value cannot be null");
 
         if (value instanceof ContextVariable) {
             return (ContextVariable<T>) value;
         }
 
-        ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(
+        ContextVariableType<T> type = ContextVariableTypes.getGlobalVariableTypeForClass(
             (Class<T>) value.getClass());
         return new ContextVariable<>(type, value);
     }

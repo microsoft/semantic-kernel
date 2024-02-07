@@ -68,7 +68,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.tryCreate(
             new PromptTemplateConfig(functionDefinition));
-        var renderedPrompt = promptTemplate.renderAsync(kernel, arguments).block();
+        var renderedPrompt = promptTemplate.renderAsync(kernel, arguments, null).block();
         System.out.println(renderedPrompt);
 
         // Run the prompt / prompt function

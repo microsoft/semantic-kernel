@@ -1,17 +1,5 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.core.exception.HttpResponseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,11 +23,18 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -112,11 +107,12 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable ContextVariableType<T> contextVariableType,
         @Nullable InvocationContext invocationContext) {
 
-        InvocationContext context = invocationContext != null ? invocationContext : InvocationContext.builder().build();
+        InvocationContext context =
+            invocationContext != null ? invocationContext : InvocationContext.builder().build();
 
         // must be effectively final for lambda
-        KernelHooks kernelHooks = context.getKernelHooks() != null 
-            ? context.getKernelHooks() 
+        KernelHooks kernelHooks = context.getKernelHooks() != null
+            ? context.getKernelHooks()
             : kernel.getGlobalKernelHooks();
         assert kernelHooks != null : "getGlobalKernelHooks() should never return null";
 
@@ -126,13 +122,13 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         // TOOD: put in method, add catch for classcastexception, fallback to noopconverter
         ContextVariableType<T> variableType = contextVariableType != null
             ? contextVariableType
-            : ContextVariableTypes.<T>getDefaultVariableTypeForClass(
+            : context.getContextVariableTypes().getVariableTypeForClass(
                 (Class<T>) this.getMetadata().getReturnParameter().getParameterType()
             );
 
         return this
             .template
-            .renderAsync(kernel, preRenderingHookResult.getArguments())
+            .renderAsync(kernel, preRenderingHookResult.getArguments(), context)
             .flatMapMany(prompt -> {
                 PromptRenderedEvent promptHookResult = kernelHooks
                     .executeHooks(new PromptRenderedEvent(this, arguments, prompt));
@@ -153,7 +149,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                         args
                     );
 
-                AIService client = aiServiceSelection != null ? aiServiceSelection.getService() : null;
+                AIService client =
+                    aiServiceSelection != null ? aiServiceSelection.getService() : null;
                 if (aiServiceSelection == null) {
                     throw new IllegalStateException(
                         "Failed to initialise aiService, could not find any TextAIService implementations");
@@ -199,7 +196,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                     return Flux.error(new IllegalStateException(
                                         "Tool message content is empty"));
                                 }
-                                Mono<FunctionResult<T>> toolResult = invokeTool(kernel,content);
+                                Mono<FunctionResult<T>> toolResult = invokeTool(kernel, content,
+                                    context);
                                 return toolResult.flux();
                             }
                             return Flux.empty();
@@ -307,13 +305,16 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
      * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
      * where 'name' is <plugin name '-' function name>.
      */
-    private Mono<FunctionResult<T>> invokeTool(Kernel kernel, String json) {
+    private Mono<FunctionResult<T>> invokeTool(
+        Kernel kernel,
+        String json,
+        InvocationContext invocationContext) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(json);
             jsonNode = jsonNode.get("function");
             if (jsonNode != null) {
-                return invokeFunction(kernel, jsonNode);
+                return invokeFunction(kernel, jsonNode, invocationContext);
             }
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to parse json", e);
@@ -327,7 +328,11 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
      * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
      */
     @SuppressWarnings({"StringSplitter", "unchecked"})
-    private Mono<FunctionResult<T>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
+    private Mono<FunctionResult<T>> invokeFunction(
+        Kernel kernel,
+        JsonNode jsonNode,
+        InvocationContext invocationContext
+    ) {
         String name = jsonNode.get("name").asText();
         String[] parts = name.split("-");
         String pluginName = parts.length > 0 ? parts[0] : "";
@@ -338,13 +343,15 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 KernelFunction<T> kernelFunction = null;
                 try {
                     // unchecked cast
-                    kernelFunction = (KernelFunction<T>)kernel.getPlugins().getFunction(pluginName, fnName);
+                    kernelFunction = (KernelFunction<T>) kernel.getPlugins()
+                        .getFunction(pluginName, fnName);
                 } catch (IllegalArgumentException | ClassCastException e) {
                     return Mono.error(new SKException(e.getMessage(), e));
                 }
 
-                List<KernelParameterMetadata<?>> params = kernelFunction.getMetadata().getParameters();
-                Map<String, KernelParameterMetadata<?>> parameterMetaaData = 
+                List<KernelParameterMetadata<?>> params = kernelFunction.getMetadata()
+                    .getParameters();
+                Map<String, KernelParameterMetadata<?>> parameterMetaaData =
                     params.stream()
                         .collect(Collectors.toMap(KernelParameterMetadata::getName, it -> it));
 
@@ -353,7 +360,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                     String paramName = entry.getKey();
                     String paramValue = entry.getValue().asText();
 
-                    KernelParameterMetadata<?> parameterMetadata = parameterMetaaData.get(paramName);
+                    KernelParameterMetadata<?> parameterMetadata = parameterMetaaData.get(
+                        paramName);
                     if (parameterMetadata == null) {
                         // parameter in json not found in function metadata
                         // TODO: this shouldn't happen, so log it. 
@@ -361,10 +369,15 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                     }
 
                     Class<?> parameterType = parameterMetadata.getType();
-                    ContextVariable<?> contextVariable = ContextVariable.untypedOf(paramValue, parameterType);
+                    ContextVariable<?> contextVariable = ContextVariable.untypedOf(
+                        paramValue,
+                        parameterType,
+                        invocationContext.getContextVariableTypes()
+                    );
                     variables.put(paramName, contextVariable);
                 });
-                KernelFunctionArguments arguments = KernelFunctionArguments.builder().withVariables(variables)
+                KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+                    .withVariables(variables)
                     .build();
                 return kernelFunction.invokeAsync(kernel, arguments);
             } catch (Exception e) {
@@ -443,13 +456,14 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
 
         @Override
-        public FromPromptBuilder<T>  withName(@Nullable String name) {
+        public FromPromptBuilder<T> withName(@Nullable String name) {
             this.name = name;
             return this;
         }
 
         @Override
-        public FromPromptBuilder<T>  withInputParameters(@Nullable List<InputVariable> inputVariables) {
+        public FromPromptBuilder<T> withInputParameters(
+            @Nullable List<InputVariable> inputVariables) {
             if (inputVariables != null) {
                 this.inputVariables = new ArrayList<>(inputVariables);
             } else {
@@ -459,13 +473,13 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
 
         @Override
-        public FromPromptBuilder<T>  withPromptTemplate(@Nullable PromptTemplate promptTemplate) {
+        public FromPromptBuilder<T> withPromptTemplate(@Nullable PromptTemplate promptTemplate) {
             this.promptTemplate = promptTemplate;
             return this;
         }
 
         @Override
-        public FromPromptBuilder<T>  withExecutionSettings(
+        public FromPromptBuilder<T> withExecutionSettings(
             @Nullable
             Map<String, PromptExecutionSettings> executionSettings) {
             if (this.executionSettings == null) {
@@ -479,7 +493,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
 
         @Override
-        public FromPromptBuilder<T>  withDefaultExecutionSettings(
+        public FromPromptBuilder<T> withDefaultExecutionSettings(
             @Nullable PromptExecutionSettings executionSettings) {
             if (executionSettings == null) {
                 return this;
@@ -499,37 +513,37 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
 
         @Override
-        public FromPromptBuilder<T>  withDescription(@Nullable String description) {
+        public FromPromptBuilder<T> withDescription(@Nullable String description) {
             this.description = description;
             return this;
         }
 
         @Override
-        public FromPromptBuilder<T>  withTemplate(@Nullable String template) {
+        public FromPromptBuilder<T> withTemplate(@Nullable String template) {
             this.template = template;
             return this;
         }
 
 
         @Override
-        public FromPromptBuilder<T>  withTemplateFormat(String templateFormat) {
+        public FromPromptBuilder<T> withTemplateFormat(String templateFormat) {
             this.templateFormat = templateFormat;
             return this;
         }
 
         @Override
-        public FromPromptBuilder<T>  withOutputVariable(@Nullable OutputVariable outputVariable) {
+        public FromPromptBuilder<T> withOutputVariable(@Nullable OutputVariable outputVariable) {
             this.outputVariable = outputVariable;
             return this;
         }
 
         @Override
-        public FromPromptBuilder<T>  withOutputVariable(@Nullable String description, String type) {
+        public FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type) {
             return this.withOutputVariable(new OutputVariable(description, type));
         }
 
         @Override
-        public FromPromptBuilder<T>  withPromptTemplateFactory(
+        public FromPromptBuilder<T> withPromptTemplateFactory(
             @Nullable
             PromptTemplateFactory promptTemplateFactory) {
             this.promptTemplateFactory = promptTemplateFactory;

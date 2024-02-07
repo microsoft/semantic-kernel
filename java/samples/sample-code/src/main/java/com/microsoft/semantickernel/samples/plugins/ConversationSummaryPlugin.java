@@ -136,7 +136,7 @@ public class ConversationSummaryPlugin {
                     new KernelFunctionArguments.Builder()
                         .withInput(paragraph)
                         .build(),
-                    ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
+                    ContextVariableTypes.getGlobalVariableTypeForClass(String.class));
             })
             .reduce("", (acc, next) -> {
                 return acc + "\n" + next.getResult();

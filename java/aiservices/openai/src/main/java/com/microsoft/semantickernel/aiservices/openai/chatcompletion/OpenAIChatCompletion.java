@@ -20,7 +20,6 @@ import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
@@ -42,7 +41,6 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,7 +97,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable InvocationContext invocationContext) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions = kernel != null ? getFunctions(kernel) : Collections.emptyList();
+        List<FunctionDefinition> functions =
+            kernel != null ? getFunctions(kernel) : Collections.emptyList();
 
         return internalChatMessageContentsAsync(
             chatRequestMessages,
@@ -127,7 +126,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         List<FunctionDefinition> functions,
         @Nullable InvocationContext invocationContext) {
 
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions, invocationContext);
+        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
+            invocationContext);
         Mono<List<ChatMessageContent>> results =
             internalChatMessageContentsAsync(options, invocationContext);
 
@@ -155,7 +155,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ChatCompletionsOptions options,
         @Nullable InvocationContext invocationContext) {
 
-        KernelHooks kernelHooks = 
+        KernelHooks kernelHooks =
             invocationContext != null && invocationContext.getKernelHooks() != null
                 ? invocationContext.getKernelHooks()
                 : new KernelHooks();
@@ -283,7 +283,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             });
             arguments = KernelFunctionArguments.builder().withVariables(variables).build();
         }
-        ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
+        ContextVariableType<String> variableType = ContextVariableTypes.getGlobalVariableTypeForClass(
             String.class);
         return kernelFunction.invokeAsync(kernel, arguments, variableType);
     }
@@ -314,12 +314,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     MAX_RESULTS_PER_PROMPT));
         }
 
-        ToolCallBehavior toolCallBehavior = invocationContext != null 
+        ToolCallBehavior toolCallBehavior = invocationContext != null
             ? invocationContext.getToolCallBehavior()
             : null;
         List<ChatCompletionsToolDefinition> toolDefinitions =
-            chatCompletionsToolDefinitions(toolCallBehavior,functions);
-            
+            chatCompletionsToolDefinitions(toolCallBehavior, functions);
+
         if (toolDefinitions != null && !toolDefinitions.isEmpty()) {
             options.setTools(toolDefinitions);
             // TODO: options.setToolChoices(toolChoices);
@@ -432,7 +432,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             });
         });
         return functions;
-    }   
+    }
 
     private static FunctionDefinition toFunctionDefinition(KernelFunction function) {
         String name = String.format("%s-%s", function.getSkillName(), function.getName());
@@ -464,7 +464,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 "{\"type\": \"object\", \"properties\": {");
             parameters.forEach(parameter -> {
                 // make "param": {"type": "string", "description": "desc"},
-                sb.append(String.format("\"%s\": %s,", parameter.getName(), parameter.getDescription()));
+                sb.append(
+                    String.format("\"%s\": %s,", parameter.getName(), parameter.getDescription()));
                 if (parameter.isRequired()) {
                     requiredParmeters.add(parameter.getName());
                 }

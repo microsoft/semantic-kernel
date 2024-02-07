@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.templateengine.semantickernel;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -96,7 +97,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments) {
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable InvocationContext context) {
 
         List<Block> blocks = this.extractBlocks();
         addMissingInputVariables(blocks);
@@ -109,7 +111,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
                         ((TextRendering) block).render(arguments)
                     );
                 } else if (block instanceof CodeRendering) {
-                    return ((CodeRendering) block).renderCodeAsync(kernel, arguments);
+                    return ((CodeRendering) block).renderCodeAsync(kernel, arguments, context);
                 } else {
                     return Mono.error(new TemplateException(ErrorCodes.UNEXPECTED_BLOCK_TYPE));
                 }

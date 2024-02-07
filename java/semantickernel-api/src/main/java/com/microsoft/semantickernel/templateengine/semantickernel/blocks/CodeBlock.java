@@ -1,18 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -20,6 +12,12 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public final class CodeBlock extends Block implements CodeRendering {
@@ -79,9 +77,16 @@ public final class CodeBlock extends Block implements CodeRendering {
     }
 
     @Override
-    public Mono<String> renderCodeAsync(Kernel kernel, @Nullable KernelFunctionArguments arguments) {
+    public Mono<String> renderCodeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable InvocationContext context) {
         if (!this.isValid()) {
             throw new TemplateException(ErrorCodes.SYNTAX_ERROR);
+        }
+
+        if (context == null) {
+            context = new InvocationContext();
         }
 
         // this.Log.LogTrace("Rendering code: `{0}`", this.Content);
@@ -98,7 +103,8 @@ public final class CodeBlock extends Block implements CodeRendering {
                         (FunctionIdBlock) this.tokens.get(0),
                         kernel,
                         arguments,
-                        ContextVariableTypes.getDefaultVariableTypeForClass(String.class))
+                        context,
+                        ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
                     .map(it -> {
                         return it.getValue();
                     });
@@ -115,6 +121,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         FunctionIdBlock fBlock,
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
+        InvocationContext context,
         ContextVariableType<T> resultType) {
 
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
@@ -122,9 +129,10 @@ public final class CodeBlock extends Block implements CodeRendering {
         if (this.tokens.size() > 1) {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.enrichFunctionArguments(kernel, fBlock,
-                arguments == null 
+                arguments == null
                     ? new KernelFunctionArguments()
-                    : new KernelFunctionArguments(arguments));
+                    : new KernelFunctionArguments(arguments),
+                context);
         }
 
         return kernel
@@ -150,7 +158,9 @@ public final class CodeBlock extends Block implements CodeRendering {
     private KernelFunctionArguments enrichFunctionArguments(
         Kernel kernel,
         FunctionIdBlock fBlock,
-        KernelFunctionArguments arguments) {
+        KernelFunctionArguments arguments,
+        @Nullable
+        InvocationContext context) {
         Block firstArg = this.tokens.get(1);
 
         // Get the function metadata
@@ -182,8 +192,15 @@ public final class CodeBlock extends Block implements CodeRendering {
             }
 
             // Keep previous trust information when updating the input
-            arguments.put(firstPositionalParameterName,
-                ContextVariable.of(firstPositionalInputValue));
+            arguments.put(
+                firstPositionalParameterName,
+                ContextVariable
+                    .convert(
+                        firstPositionalInputValue,
+                        functionMetadata.getParameters().get(0).getType(),
+                        context == null ? null : context.getContextVariableTypes()
+                    )
+            );
             namedArgsStartIndex++;
         }
 

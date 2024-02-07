@@ -19,7 +19,6 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
@@ -168,13 +167,16 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     @SuppressWarnings("unchecked")
     private static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
         return (kernel, function, arguments, variableType, invocationContext) -> {
+            InvocationContext context;
             if (invocationContext == null) {
-                invocationContext = InvocationContext.builder().build();
+                context = InvocationContext.builder().build();
+            } else {
+                context = invocationContext;
             }
 
             // kernelHooks must be effectively final for lambda
-            KernelHooks kernelHooks = invocationContext.getKernelHooks() != null
-                ? invocationContext.getKernelHooks()
+            KernelHooks kernelHooks = context.getKernelHooks() != null
+                ? context.getKernelHooks()
                 : kernel.getGlobalKernelHooks();
             assert kernelHooks != null : "getGlobalKernelHooks() should never return null!";
 
@@ -187,7 +189,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             try {
                 List<Object> args =
                     Arrays.stream(method.getParameters())
-                        .map(getParameters(method, updatedArguments, kernel))
+                        .map(getParameters(method, updatedArguments, kernel, context))
                         .collect(Collectors.toList());
 
                 Mono<?> mono;
@@ -231,6 +233,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
                         // If the function has a return type that has a ContextVariableType<T>, use it.
                         ContextVariableType<T> contextVariableType = getContextVariableType(
+                            invocationContext,
                             returnParameterType);
                         if (contextVariableType == null) {
                             // If getting the context variable type from the function fails, default to
@@ -267,14 +270,15 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     @Nullable
     @SuppressWarnings("unchecked")
-    private static <T> ContextVariableType<T> getContextVariableType(Class<?> clazz) {
+    private static <T> ContextVariableType<T> getContextVariableType(
+        InvocationContext invocationContext, Class<?> clazz) {
 
         if (clazz != null) {
             try {
                 // unchecked cast
                 Class<T> tClazz = (Class<T>) clazz;
-                ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(
-                    tClazz);
+                ContextVariableType<T> type = invocationContext.getContextVariableTypes()
+                    .getVariableTypeForClass(tClazz);
                 return type;
             } catch (ClassCastException | SKException e) {
                 // SKException is thrown from ContextVariableTypes.getDefaultVariableTypeForClass
@@ -341,12 +345,13 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         Method method,
         @Nullable
         KernelFunctionArguments context,
-        Kernel kernel) {
+        Kernel kernel,
+        InvocationContext invocationContext) {
         return parameter -> {
             if (KernelFunctionArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
             } else {
-                return getArgumentValue(method, context, parameter, kernel);
+                return getArgumentValue(method, context, parameter, kernel, invocationContext);
             }
         };
     }
@@ -356,7 +361,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         Method method,
         @Nullable KernelFunctionArguments context,
         Parameter parameter,
-        Kernel kernel) {
+        Kernel kernel,
+        InvocationContext invocationContext) {
         String variableName = getGetVariableName(parameter);
 
         ContextVariable<?> arg = context == null ? null : context.get(variableName);
@@ -367,12 +373,17 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                 // Convert from the defaultValue, which is a String to the argument type
                 // Expectation here is that the fromPromptString method will be able to handle a null or empty string
                 Class<?> type = annotation.type();
-                ContextVariableType<?> cvType = ContextVariableTypes.getDefaultVariableTypeForClass(
-                    type);
+
+                ContextVariableType<?> cvType = invocationContext
+                    .getContextVariableTypes()
+                    .getVariableTypeForClass(type);
+
                 if (cvType != null) {
                     String defaultValue = annotation.defaultValue();
                     Object value = cvType.getConverter().fromPromptString(defaultValue);
-                    arg = ContextVariable.untypedOf(value, cvType.getConverter());
+
+                    arg = ContextVariable.convert(value, type,
+                        invocationContext.getContextVariableTypes());
                 }
 
                 if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
@@ -450,8 +461,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         }
 
         // Well-known types only
-        ContextVariableType<?> converter = ContextVariableTypes.getDefaultVariableTypeForClass(
-            type);
+        ContextVariableType<?> converter = invocationContext.getContextVariableTypes()
+            .getVariableTypeForClass(type);
         if (converter != null) {
             try {
                 value = converter.getConverter().fromObject(arg);

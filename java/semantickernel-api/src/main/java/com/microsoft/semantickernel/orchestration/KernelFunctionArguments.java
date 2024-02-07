@@ -6,15 +6,14 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-
-import reactor.util.annotation.NonNull;
-
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
+import reactor.util.annotation.NonNull;
 
 /**
  * Context Variables is a data structure that holds temporary data while a task is being performed.
@@ -30,8 +29,13 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
     private final CaseInsensitiveMap<ContextVariable<?>> variables;
 
     public KernelFunctionArguments(
+        @Nullable
         Map<String, ContextVariable<?>> variables) {
-        this.variables = new CaseInsensitiveMap<>(variables);
+        if (variables == null) {
+            this.variables = new CaseInsensitiveMap<>();
+        } else {
+            this.variables = new CaseInsensitiveMap<>(variables);
+        }
     }
 
     public KernelFunctionArguments(@NonNull ContextVariable<?> content) {
@@ -169,7 +173,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
     public Set<Entry<String, ContextVariable<?>>> entrySet() {
         return variables.entrySet();
     }
-    
+
     public static Builder builder() {
         return new KernelFunctionArguments.Builder();
     }
@@ -179,7 +183,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
      */
     public static class Builder implements SemanticKernelBuilder<KernelFunctionArguments> {
 
-        private final Map<String,ContextVariable<?>> variables;
+        private final Map<String, ContextVariable<?>> variables;
 
         public Builder() {
             variables = new HashMap<>();
@@ -204,7 +208,25 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @throws SKException if the content cannot be converted to a ContextVariable
          */
         public Builder withInput(Object content) {
-            return withInput(ContextVariable.of(content));
+            return withInput(ContextVariable.ofGlobalType(content));
+        }
+
+        /**
+         * Builds an instance with the given content in the default main key
+         *
+         * @param content       Entry to place in the "input" slot
+         * @param typeConverter Type converter for the content
+         * @return {$code this} Builder for fluent coding
+         * @throws SKException if the content cannot be converted to a ContextVariable
+         */
+        public <T> Builder withInput(T content, ContextVariableTypeConverter<T> typeConverter) {
+            return withInput(new ContextVariable<>(
+                new ContextVariableType<>(
+                    typeConverter,
+                    typeConverter.getType()
+                ),
+                content)
+            );
         }
 
         /**
@@ -231,7 +253,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
         }
 
         /**
-         * Set variable
+         * Set variable, uses the default type converters
          *
          * @param key   variable name
          * @param value variable value
@@ -239,7 +261,27 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @throws SKException if the value cannot be converted to a ContextVariable
          */
         public Builder withVariable(String key, Object value) {
-            return withVariable(key, ContextVariable.of(value));
+            return withVariable(key, ContextVariable.ofGlobalType(value));
+        }
+
+        /**
+         * Set variable
+         *
+         * @param key           variable name
+         * @param value         variable value
+         * @param typeConverter Type converter for the value
+         * @return {$code this} Builder for fluent coding
+         * @throws SKException if the value cannot be converted to a ContextVariable
+         */
+        public <T> Builder withVariable(String key, T value,
+            ContextVariableTypeConverter<T> typeConverter) {
+            return withVariable(key, new ContextVariable<>(
+                new ContextVariableType<>(
+                    typeConverter,
+                    typeConverter.getType()
+                ),
+                value
+            ));
         }
 
         @Override

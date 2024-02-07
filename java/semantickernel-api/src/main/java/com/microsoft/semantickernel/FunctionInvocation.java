@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -27,15 +28,17 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     private final KernelFunction<?> function;
     private final Kernel kernel;
     @Nullable
-    private KernelFunctionArguments arguments;
+    private final ContextVariableType<T> resultType;
+
     @Nullable
-    private ContextVariableType<T> resultType;
+    private KernelFunctionArguments arguments;
     @Nullable
     private UnmodifiableKernelHooks hooks;
     @Nullable
     private PromptExecutionSettings promptExecutionSettings;
     @Nullable
     private UnmodifiableToolCallBehavior toolCallBehavior;
+    private final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
 
 
     public FunctionInvocation(
@@ -43,6 +46,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         KernelFunction<T> function) {
         this.function = function;
         this.kernel = kernel;
+        this.resultType = null;
     }
 
     public FunctionInvocation(
@@ -53,6 +57,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         this.function = function;
         this.kernel = kernel;
         this.resultType = resultType;
+        if (resultType != null) {
+            contextVariableTypes.putConverter(resultType.getConverter());
+        }
     }
 
     public FunctionInvocation<T> withArguments(
@@ -96,6 +103,27 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         return this;
     }
 
+    public FunctionInvocation<T> withTypeConverter(ContextVariableType<?> typeConverter) {
+        contextVariableTypes.putConverter(typeConverter.getConverter());
+        return this;
+    }
+
+    @Override
+    public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
+        performSubscribe(
+            coreSubscriber,
+            kernel,
+            function,
+            arguments,
+            resultType,
+            new InvocationContext(
+                hooks,
+                promptExecutionSettings,
+                toolCallBehavior,
+                contextVariableTypes
+            ));
+    }
+
     @Nullable
     private static UnmodifiableToolCallBehavior unmodifiableClone(
         @Nullable
@@ -121,20 +149,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         }
     }
 
-    @Override
-    public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
-        performSubscribe(
-            coreSubscriber,
-            kernel,
-            function,
-            arguments,
-            resultType,
-            new InvocationContext(
-                hooks,
-                promptExecutionSettings,
-                toolCallBehavior
-            ));
-    }
 
     // Extracted to static to ensure mutable state is not used
     private static <T> void performSubscribe(
@@ -148,6 +162,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         @Nullable
         InvocationContext context
     ) {
+
         if (variableType == null) {
             LOGGER.debug(
                 "No variable type explicitly specified by calling 'withResultType' for function invocation: "
@@ -155,11 +170,12 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                     + " This may cause a runtime error (probably a ClassCastException) if the result type is not compatible with the expected type.");
         }
 
-        function.invokeAsync(
+        function
+            .invokeAsync(
                 kernel,
-                arguments,
+                new KernelFunctionArguments(arguments),
                 null,
-                context)
+                new InvocationContext(context))
             .handle(FunctionInvocation.convertToType(variableType))
             .subscribe(coreSubscriber);
     }

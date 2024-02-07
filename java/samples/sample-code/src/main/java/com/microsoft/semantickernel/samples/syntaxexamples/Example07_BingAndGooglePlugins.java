@@ -177,7 +177,7 @@ public class Example07_BingAndGooglePlugins {
                 .tryCreate(new PromptTemplateConfig(result));
 
             System.out.println("---- Fetching information from Bing...");
-            var information = promptTemplate.renderAsync(kernel, null).block();
+            var information = promptTemplate.renderAsync(kernel, null, null).block();
 
             System.out.println("Information found:");
             System.out.println(information);

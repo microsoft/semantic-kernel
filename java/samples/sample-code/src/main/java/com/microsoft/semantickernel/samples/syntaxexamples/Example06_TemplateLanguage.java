@@ -88,7 +88,7 @@ public class Example06_TemplateLanguage {
         var promptTemplate = new KernelPromptTemplateFactory()
             .tryCreate(new PromptTemplateConfig(functionDefinition));
 
-        var renderedPrompt = promptTemplate.renderAsync(kernel, null).block();
+        var renderedPrompt = promptTemplate.renderAsync(kernel, null, null).block();
         System.out.println(renderedPrompt);
 
         var kindOfDay = KernelFunctionFactory

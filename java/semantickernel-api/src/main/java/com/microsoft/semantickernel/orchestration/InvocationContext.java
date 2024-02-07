@@ -5,6 +5,8 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -19,20 +21,42 @@ public class InvocationContext implements Buildable {
     private final PromptExecutionSettings promptExecutionSettings;
     @Nullable
     private final UnmodifiableToolCallBehavior toolCallBehavior;
+    private final ContextVariableTypes contextVariableTypes;
 
     public InvocationContext(
         @Nullable KernelHooks hooks,
         @Nullable PromptExecutionSettings promptExecutionSettings,
-        @Nullable ToolCallBehavior toolCallBehavior) {
+        @Nullable ToolCallBehavior toolCallBehavior,
+        @Nullable ContextVariableTypes contextVariableTypes) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
         this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+        if (contextVariableTypes == null) {
+            this.contextVariableTypes = new ContextVariableTypes();
+        } else {
+            this.contextVariableTypes = new ContextVariableTypes(contextVariableTypes);
+        }
     }
 
-    public InvocationContext(InvocationContext context) {
-        this.hooks = context.hooks;
-        this.promptExecutionSettings = context.promptExecutionSettings;
-        this.toolCallBehavior = context.toolCallBehavior;
+    public InvocationContext() {
+        this.hooks = null;
+        this.promptExecutionSettings = null;
+        this.toolCallBehavior = null;
+        this.contextVariableTypes = new ContextVariableTypes();
+    }
+
+    public InvocationContext(@Nullable InvocationContext context) {
+        if (context == null) {
+            this.hooks = null;
+            this.promptExecutionSettings = null;
+            this.toolCallBehavior = null;
+            this.contextVariableTypes = new ContextVariableTypes();
+        } else {
+            this.hooks = context.hooks;
+            this.promptExecutionSettings = context.promptExecutionSettings;
+            this.toolCallBehavior = context.toolCallBehavior;
+            this.contextVariableTypes = context.contextVariableTypes;
+        }
     }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableKernelHooks")
@@ -50,6 +74,10 @@ public class InvocationContext implements Buildable {
     @Nullable
     public UnmodifiableToolCallBehavior getToolCallBehavior() {
         return toolCallBehavior;
+    }
+
+    public ContextVariableTypes getContextVariableTypes() {
+        return new ContextVariableTypes(contextVariableTypes);
     }
 
     public static Builder builder() {
@@ -93,6 +121,8 @@ public class InvocationContext implements Buildable {
         @Nullable
         private UnmodifiableToolCallBehavior toolCallBehavior;
 
+        private final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
+
         public Builder withKernelHooks(
             @Nullable KernelHooks hooks) {
             this.hooks = unmodifiableClone(hooks);
@@ -113,9 +143,17 @@ public class InvocationContext implements Buildable {
             return this;
         }
 
+        public Builder withContextVariableConverter(ContextVariableTypeConverter<?> converter) {
+            this.contextVariableTypes.putConverter(
+                converter
+            );
+            return this;
+        }
+
         @Override
         public InvocationContext build() {
-            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior);
+            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
+                contextVariableTypes);
         }
     }
 
