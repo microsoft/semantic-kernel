@@ -147,6 +147,7 @@ public sealed class FunctionCallingStepwisePlanner
         // int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
         // openAIExecutionSettings.ToolCallBehavior.PreInvokeCallback = (iteration, _, _) => { return (iteration < iterationsRemaining); };
         // openAIExecutionSettings.ToolCallBehavior.Filters.Add(new FinalAnswerFilter());
+        openAIExecutionSettings.ToolCallBehavior.Filters.Add(new TestFilter());
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -278,14 +279,28 @@ public sealed class FunctionCallingStepwisePlanner
 
     public sealed class FinalAnswerFilter : IToolFilter
     {
+        public void OnToolInvoking(ToolInvokingContext context)
+        {
+            throw new NotImplementedException();
+        }
         public void OnToolInvoked(ToolInvokedContext context)
         {
             throw new NotImplementedException();
         }
+    }
 
+    public sealed class TestFilter : IToolFilter
+    {
         public void OnToolInvoking(ToolInvokingContext context)
         {
-            throw new NotImplementedException();
+        }
+        
+        public void OnToolInvoked(ToolInvokedContext context)
+        {
+            //context.Cancel = true;
+            //context.Arguments["foo"] = "bar";
+            //context.ChatHistory.AddSystemMessage("TestFilter was here");
+            context.ToolCallBehavior = null; // turn off subsequent tool calls
         }
     }
 }

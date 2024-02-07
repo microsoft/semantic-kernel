@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -243,13 +244,13 @@ public abstract class ToolCallBehavior
     }
 
     #region Filters
-    internal ToolInvokingContext? OnToolInvokingFilter(/*KernelFunction function, KernelArguments arguments*/)
+    internal ToolInvokingContext? OnToolInvokingFilter(KernelFunction function, KernelArguments? arguments, int iteration, ChatHistory chatHistory)
     {
         ToolInvokingContext? context = null;
 
         if (this.Filters is { Count: > 0 })
         {
-            context = new(/*function, arguments*/); // TODO
+            context = new(this, iteration, function, arguments, chatHistory); // TODO
 
             for (int i = 0; i < this.Filters.Count; i++)
             {
@@ -260,13 +261,13 @@ public abstract class ToolCallBehavior
         return context;
     }
 
-    internal ToolInvokedContext? OnToolInvokedFilter(/*KernelArguments arguments, FunctionResult result*/)
+    internal ToolInvokedContext? OnToolInvokedFilter(KernelArguments? arguments, FunctionResult result, int iteration, ChatHistory chatHistory)
     {
         ToolInvokedContext? context = null;
 
         if (this.Filters is { Count: > 0 })
         {
-            context = new(/*arguments, result*/); // TODO
+            context = new(this, iteration, arguments, result, chatHistory); // TODO
 
             for (int i = 0; i < this.Filters.Count; i++)
             {

@@ -4,6 +4,15 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+public enum ToolFilterStopBehavior
+{
+    None,
+    Cancel,
+    StopTools,
+    StopAutoInvoke
+};
+
 public abstract class ToolFilterContext // TODO: make experimental?
 {
     /// <summary>
@@ -12,15 +21,18 @@ public abstract class ToolFilterContext // TODO: make experimental?
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
-    internal ToolFilterContext(KernelFunction function, KernelArguments arguments, int iteration, IReadOnlyDictionary<string, object?>? metadata)
+    internal ToolFilterContext(ToolCallBehavior toolCallBehavior, int modelIteration, KernelFunction function, KernelArguments? arguments, IReadOnlyDictionary<string, object?>? metadata, ChatHistory chatHistory)
     {
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
         this.Function = function;
         this.Arguments = arguments;
-        this.ModelIterations = iteration;
+        this.ModelIterations = modelIteration;
         this.Metadata = metadata;
+
+        this.ChatHistory = chatHistory;
+        this.ToolCallBehavior = toolCallBehavior;
     }
 
     /// <summary>
@@ -55,15 +67,26 @@ public abstract class ToolFilterContext // TODO: make experimental?
     /// </remarks>
     public bool Cancel { get; set; }
 
-    public bool AutoInvoke { get; set; } = true;
+    //public bool AutoInvoke { get; set; } = true;
 
-    public bool UseTools { get; set; } = true;
-    // invoke subsequent tools / request subsequent tools
-    // ToolCallBehavior?
-    
+    //public bool UseTools { get; set; } = true;
+
+    /// <summary>
+    /// Gets the number of model iterations that have been completed for the request so far.
+    /// </summary>
     public int ModelIterations { get; } // ?
-    public int ToolInvocations { get; } // ?
 
-    // ModelIterations
-    // ToolInvocations
+    //public int ToolInvocations { get; } // ?
+
+    /// <summary>
+    /// Gets the tool call behavior associated with the operation.
+    /// </summary>
+    public ToolCallBehavior? ToolCallBehavior { get; set; }
+
+
+
+    public ToolFilterStopBehavior StopBehavior { get; set; } = ToolFilterStopBehavior.None;
+
+
 }
+
