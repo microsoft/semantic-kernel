@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -81,6 +82,20 @@ public class Example65_HandlebarsPlanner : BaseTest
         return kernel;
     }
 
+    private void PrintPlannerDetails(string goal, HandlebarsPlan plan, string result, bool shouldPrintPrompt = false)
+    {
+        WriteLine($"Goal: {goal}");
+        WriteLine($"\nOriginal plan:\n{plan}");
+        WriteLine($"\nResult:\n{result}\n");
+
+        // Print the prompt template
+        if (shouldPrintPrompt && plan.Prompt is not null)
+        {
+            WriteLine("\n======== Prompt Template ========");
+            WriteLine(plan.Prompt);
+        }
+    }
+
     private async Task RunSampleAsync(string goal, KernelArguments? initialContext = null, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
         var kernel = await SetupKernelAsync(pluginDirectoryNames);
@@ -106,22 +121,13 @@ public class Example65_HandlebarsPlanner : BaseTest
                 AllowLoops = allowLoopsInPlan
             });
 
-        WriteLine($"Goal: {goal}");
-
         // Create the plan
         var plan = await planner.CreatePlanAsync(kernel, goal, initialContext);
 
-        // Print the prompt template
-        if (shouldPrintPrompt && plan.Prompt is not null)
-        {
-            WriteLine($"\nPrompt template:\n{plan.Prompt}");
-        }
-
-        WriteLine($"\nOriginal plan:\n{plan}");
-
         // Execute the plan
         var result = await plan.InvokeAsync(kernel, initialContext);
-        WriteLine($"\nResult:\n{result}\n");
+
+        PrintPlannerDetails(goal, plan, result, shouldPrintPrompt);
     }
 
     [RetryTheory(typeof(HttpOperationException))]
@@ -157,30 +163,31 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
-        this.WriteSampleHeading("Coursera OpenAPI Plugin");
+        WriteSampleHeading("Coursera OpenAPI Plugin");
         return RunSampleAsync("Show me courses about Artificial Intelligence.", null, shouldPrintPrompt, CourseraPluginName);
         /*
             Original plan:
             {{!-- Step 0: Extract key values --}}
             {{set "query" "Artificial Intelligence"}}
 
-            {{!-- Step 1: Use CourseraPlugin-search helper to search courses related to the query --}}
+            {{!-- Step 1: Call CourseraPlugin-search with the query --}}
             {{set "searchResults" (CourseraPlugin-search query=query)}}
 
-            {{!-- Step 2: Display the list of courses using the #each loop --}}
+            {{!-- Step 2: Loop through the search results and display course information --}}
             {{#each searchResults.hits}}
-            {{json (concat "Course: " this.name ", URL: " this.objectUrl)}}
+                {{json (concat "Course Name: " this.name ", URL: " this.objectUrl)}}
             {{/each}}
 
             Result:
-            Course: Introduction to Artificial Intelligence (AI), URL: https://www.coursera.org/learn/introduction-to-ai?utm_source=rest_api
-            Course: IBM Applied AI, URL: https://www.coursera.org/professional-certificates/applied-artifical-intelligence-ibm-watson-ai?utm_source=rest_api
-            Course: Python for Data Science, AI & Development, URL: https://www.coursera.org/learn/python-for-applied-data-science-ai?utm_source=rest_api
-            Course: AI For Everyone, URL: https://www.coursera.org/learn/ai-for-everyone?utm_source=rest_api
-            Course: Introduction to Generative AI, URL: https://www.coursera.org/learn/introduction-to-generative-ai?utm_source=rest_api
-            Course: Deep Learning, URL: https://www.coursera.org/specializations/deep-learning?utm_source=rest_api
-            Course: Machine Learning, URL: https://www.coursera.org/specializations/machine-learning-introduction?utm_source=rest_api
-            Course: AI For Business, URL: https://www.coursera.org/specializations/ai-for-business-wharton?utm_source=rest_api
+            Course Name: Introduction to Artificial Intelligence (AI), URL: https://www.coursera.org/learn/introduction-to-ai?utm_source=rest_api
+            Course Name: IBM Applied AI, URL: https://www.coursera.org/professional-certificates/applied-artifical-intelligence-ibm-watson-ai?utm_source=rest_api
+            Course Name: AI For Everyone, URL: https://www.coursera.org/learn/ai-for-everyone?utm_source=rest_api
+            Course Name: Python for Data Science, AI & Development, URL: https://www.coursera.org/learn/python-for-applied-data-science-ai?utm_source=rest_api
+            Course Name: Introduction to Generative AI, URL: https://www.coursera.org/learn/introduction-to-generative-ai?utm_source=rest_api
+            Course Name: Deep Learning, URL: https://www.coursera.org/specializations/deep-learning?utm_source=rest_api
+            Course Name: Machine Learning, URL: https://www.coursera.org/specializations/machine-learning-introduction?utm_source=rest_api
+            Course Name: IBM AI Engineering, URL: https://www.coursera.org/professional-certificates/ai-engineer?utm_source=rest_api
+
         */
     }
 
@@ -188,7 +195,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        this.WriteSampleHeading("Basic Types using Local Dictionary Plugin");
+        WriteSampleHeading("Basic Types using Local Dictionary Plugin");
         return RunSampleAsync("Get a random word and its definition.", null, shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
@@ -210,7 +217,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(true)]
     public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        this.WriteSampleHeading("Complex Types using Local Dictionary Plugin");
+        WriteSampleHeading("Complex Types using Local Dictionary Plugin");
         return RunSampleAsync("Teach me two random words and their definition.", null, shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
@@ -246,7 +253,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
-        this.WriteSampleHeading("Multiple Plugins");
+        WriteSampleHeading("Multiple Plugins");
         return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
@@ -275,7 +282,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
-        this.WriteSampleHeading("Loops and Conditionals");
+        WriteSampleHeading("Loops and Conditionals");
         return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
@@ -302,25 +309,10 @@ public class Example65_HandlebarsPlanner : BaseTest
     }
 
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData]
-    public async Task RunPromptWithPredefinedVariablesSampleAsync()
+    [InlineData(true)]
+    public Task RunPredefinedVariablesSample(bool shouldPrintPrompt = false)
     {
-        this.WriteSampleHeading("CreatePlan Prompt With Predefined Variables");
-        var kernel = await SetupKernelAsync("SummarizePlugin", "WriterPlugin");
-        if (kernel is null)
-        {
-            return;
-        }
-
-        // Use gpt-4 or newer models if you want to test with loops. 
-        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
-        var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
-        var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerOptions()
-            {
-                // Change this if you want to test with loops regardless of model selection.
-                AllowLoops = allowLoopsInPlan
-            });
+        WriteSampleHeading("CreatePlan Prompt With Predefined Variables");
 
         // When using predefined variables, you must pass these arguments to both the CreatePlanAsync and InvokeAsync methods.
         var initialArguments = new KernelArguments()
@@ -334,17 +326,7 @@ public class Example65_HandlebarsPlanner : BaseTest
             } }
         };
 
-        // Create the plan
-        var goal = "Write a poem about the given person, then translate it into French.";
-        var plan = await planner.CreatePlanAsync(kernel, goal, initialArguments);
-
-        // Print the prompt template and proposed plan
-        WriteLine($"\nPrompt template:\n{plan.Prompt}");
-        WriteLine($"\nOriginal plan:\n{plan}");
-
-        // Execute the plan
-        var result = await plan.InvokeAsync(kernel, initialArguments);
-        WriteLine($"\nResult:\n{result}\n");
+        return RunSampleAsync("Write a poem about the given person, then translate it into French.", initialArguments, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 0: Set the given person --}}
@@ -369,17 +351,38 @@ public class Example65_HandlebarsPlanner : BaseTest
     }
 
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData]
-    public async Task RunPromptWithAdditionalContextSampleAsync()
+    [InlineData(true)]
+    public async Task RunPromptWithAdditionalContextSampleAsync(bool shouldPrintPrompt = false)
     {
-        var domainContext = @" The company observed the following trends and data in regards to the sales team this month:  
-- The sales team has exceeded the quarterly target by 15%.  
-- The top-performing product category was 'Home Appliances'.  
-- The most improved salesperson is Jane Doe, with a 20% increase in sales compared to the previous quarter.  
-- A new sales strategy implemented in the last month has resulted in a 10% increase in lead conversion rate.";
+        WriteSampleHeading("Prompt With Additional Context");
 
-        this.WriteSampleHeading("Prompt With Additional Context");
-        var goal = "As the sales manager, I want to generate a report summarizing the performance of our sales team this quarter. I want the report to congratulate the team appropriately, highlight anyone or any category that excelled, and analyze the impact of the new sales strategy.";
+        // Pulling the raw content from SK's README file as domain context.
+        static async Task<string> getDomainContext()
+        {
+            // For demonstration purposes only, beware of token count.
+            var respositoryUrl = "https://github.com/microsoft/semantic-kernel";
+            var readmeUrl = $"{respositoryUrl}/main/README.md".Replace("github.com", "raw.githubusercontent.com", StringComparison.CurrentCultureIgnoreCase);
+            try
+            {
+                var httpClient = new HttpClient();
+                // Send a GET request to the specified URL  
+                var response = await httpClient.GetAsync(new Uri(readmeUrl));
+                response.EnsureSuccessStatusCode(); // Throw an exception if not successful  
+
+                // Read the response content as a string  
+                var content = await response.Content.ReadAsStringAsync();
+                httpClient.Dispose();
+                return "Content imported from the README of https://github.com/microsoft/semantic-kernel:\n" + content;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("\nException Caught!");
+                Console.WriteLine("Message :{0} ", e.Message);
+                return "";
+            }
+        }
+
+        var goal = "Help me onboard to the Semantic Kernel SDK by creating a quick guide that includes a brief overview of the SDK for C# developers and detailed set-up steps. Include relevant links where possible. Then, draft an email with this guide, so I can share it with my team.";
 
         var kernel = await SetupKernelAsync("WriterPlugin");
         if (kernel is null)
@@ -394,42 +397,50 @@ public class Example65_HandlebarsPlanner : BaseTest
             new HandlebarsPlannerOptions()
             {
                 // Context to be used in the prompt template.
-                GetAdditionalPromptContext = () => domainContext,
+                GetAdditionalPromptContext = getDomainContext,
                 AllowLoops = false
             });
 
         // Create the plan
         var plan = await planner.CreatePlanAsync(kernel, goal);
 
-        // Print the prompt template and proposed plan
-        WriteLine($"\nPrompt template:\n{plan.Prompt}");
-        WriteLine($"\nOriginal plan:\n{plan}");
-
         // Execute the plan
         var result = await plan.InvokeAsync(kernel);
-        WriteLine($"\nResult:\n{result}\n");
 
+        PrintPlannerDetails(goal, plan, result, shouldPrintPrompt);
         /*
-            Original plan:
             {{!-- Step 0: Extract Key Values --}}
-            {{set "quarterlyOverachievement" 15}}
-            {{set "topCategory" "Home Appliances"}}
-            {{set "mostImproved" "Jane Doe"}}
-            {{set "salesImprovement" 20}}
-            {{set "strategyImpact" 10}}
+            {{set "sdkLink" "https://learn.microsoft.com/en-us/semantic-kernel/overview/"}}
+            {{set "nugetPackageLink" "https://www.nuget.org/packages/Microsoft.SemanticKernel/"}}
+            {{set "csharpGetStartedLink" "dotnet/README.md"}}
+            {{set "emailSubject" "Semantic Kernel SDK: Quick Guide for C# Developers"}}
 
-            {{!-- Step 1: Build the Sales Report Message --}}
-            {{set "report" (concat "Dear Sales Team," "\n\nCongratulations on a fantastic quarter! You have exceeded our quarterly target by " quarterlyOverachievement "%! The top-performing product category was '" topCategory "', which significantly contributed to our success. A special shout-out goes to " mostImproved ", who showed a " salesImprovement "% increase in sales compared to the last quarter." "\n\nOur new sales strategy has proved to be effective, with a " strategyImpact "% increase in lead conversion rate. Keep up the good work as we continue to implement and improve on our sales strategies." "\n\nBest Regards," "\n[Your Name]")}}
+            {{!-- Step 1: Create a concise guide and store it in a variable --}}
+            {{set "guide" (concat "The Semantic Kernel SDK provides seamless integration between large language models (LLMs) and programming languages such as C#. " "To get started with the C# SDK, please follow these steps:\n\n" "1. Read the SDK Overview for a brief introduction here: " sdkLink "\n" "2. Install the Nuget package in your project: " nugetPackageLink "\n" "3. Follow the detailed set-up steps in the C# 'Getting Started' guide: " csharpGetStartedLink "\n\n" "Feel free to share this quick guide with your team members to help them onboard quickly with the Semantic Kernel SDK. ")}}
 
-            {{!-- Step 2: Output the sales report message--}}
-            {{json report}}
+            {{!-- Step 2: Generate a draft email with the guide --}}
+            {{set "emailBody" (concat "Hi Team,\n\n" "I have put together a quick guide to help you onboard to the Semantic Kernel SDK for C# developers. " "This guide includes a brief overview and detailed set-up steps:\n\n" guide "\n\n" "I have attached a more comprehensive guide as a document. Please review it and let me know if you have any questions. " "Let's start integrating the Semantic Kernel SDK into our projects!\n\n" "Best Regards,\n" "Your Name ")}}
+
+            {{json (concat "Subject: " emailSubject "\n\nBody:\n" emailBody)}}
 
             Result:
-            Dear Sales Team,
-            Congratulations on a fantastic quarter! You have exceeded our quarterly target by 15%! The top-performing product category was 'Home Appliances', which significantly contributed to our success. A special shout-out goes to Jane Doe, who showed a 20% increase in sales compared to the last quarter.
-            Our new sales strategy has proved to be effective, with a 10% increase in lead conversion rate. Keep up the good work as we continue to implement and improve on our sales strategies.
+            Subject: Semantic Kernel SDK: Quick Guide for C# Developers
+            
+            Body:
+            Hi Team,
+            I have put together a quick guide to help you onboard to the Semantic Kernel SDK for C# developers. This guide includes a brief overview and detailed set-up steps:
+
+            The Semantic Kernel SDK provides seamless integration between large language models (LLMs) and programming languages such as C#. To get started with the C# SDK, please follow these steps:
+            1. Read the SDK Overview for a brief introduction here: https://learn.microsoft.com/en-us/semantic-kernel/overview/
+            2. Install the Nuget package in your project: https://www.nuget.org/packages/Microsoft.SemanticKernel/
+            3. Follow the detailed set-up steps in the C# 'Getting Started' guide: dotnet/README.md
+            
+            Feel free to share this quick guide with your team members to help them onboard quickly with the Semantic Kernel SDK.
+            
+            I have attached a more comprehensive guide as a document. Please review it and let me know if you have any questions. Let's start integrating the Semantic Kernel SDK into our projects!
+            
             Best Regards,
-            [Your Name]
+            Your Name
         */
     }
 

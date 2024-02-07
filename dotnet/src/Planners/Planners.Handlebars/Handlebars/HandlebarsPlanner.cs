@@ -75,7 +75,7 @@ public sealed class HandlebarsPlanner
     /// <summary>
     /// Error message if kernel does not contain sufficient functions to create a plan.
     /// </summary>
-    private const string InsufficientContextError = "Additional helpers or information may be required";
+    private const string InsufficientFunctionsError = "Additional helpers or information may be required";
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
@@ -90,7 +90,7 @@ public sealed class HandlebarsPlanner
         var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Check if plan could not be created due to insufficient functions
-        if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientContextError, StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults.Content is not null && completionResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
             throw new KernelException($"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
@@ -216,7 +216,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas,
         CancellationToken cancellationToken)
     {
-        var createPlanPrompt = this.ConstructHandlebarsPrompt("CreatePlanPrompt");
+        // Set-up prompt context
         var predefinedArgumentsWithTypes = predefinedArguments?.ToDictionary(
             kvp => kvp.Key,
             kvp => new
@@ -226,21 +226,29 @@ public sealed class HandlebarsPlanner
             }
         );
 
+        var additionalContext = this._options.GetAdditionalPromptContext is not null
+            ? await this._options.GetAdditionalPromptContext.Invoke().ConfigureAwait(false)
+            : null;
+
         var arguments = new KernelArguments()
             {
                 { "functions", availableFunctions},
                 { "goal", goal },
                 { "predefinedArguments", predefinedArgumentsWithTypes},
                 { "nameDelimiter", this._templateFactory.NameDelimiter},
-                { "insufficientFunctionsErrorMessage", InsufficientContextError},
+                { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
                 { "allowLoops", this._options.AllowLoops },
                 { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
                 { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
                 { "lastPlan", this._options.LastPlan },
                 { "lastError", this._options.LastError },
-                { "additionalContext", this._options.GetAdditionalPromptContext?.Invoke() },
+                { "additionalContext", !string.IsNullOrWhiteSpace(additionalContext) ? additionalContext : null },
             };
 
+        // Construct prompt from Partials and Prompt Template
+        var createPlanPrompt = this.ConstructHandlebarsPrompt("CreatePlanPrompt");
+
+        // Render the prompt
         var promptTemplateConfig = new PromptTemplateConfig()
         {
             Template = createPlanPrompt,

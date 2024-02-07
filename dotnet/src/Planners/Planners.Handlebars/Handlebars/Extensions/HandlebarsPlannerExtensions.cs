@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -75,8 +76,8 @@ internal static class HandlebarsPlannerExtensions
 
         var resourceNames = assembly.GetManifestResourceNames()
             .Where(name =>
-                name.StartsWith(targetNamespace, System.StringComparison.OrdinalIgnoreCase)
-                && name.EndsWith(".handlebars", System.StringComparison.OrdinalIgnoreCase))
+                name.StartsWith(targetNamespace, StringComparison.CurrentCulture)
+                && name.EndsWith(".handlebars", StringComparison.CurrentCulture))
             // Sort by the number of dots in the name (subdirectory depth), loading subdirectories first, as the outer partials have dependencies on the inner ones.
             .OrderByDescending(name => name.Count(c => c == '.'))
             // then by the name itself
