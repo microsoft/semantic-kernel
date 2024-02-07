@@ -18,16 +18,16 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.models.chat.chat_role import ChatRole
-from semantic_kernel.models.chat.finish_reason import FinishReason
+from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
+from semantic_kernel.models.ai.chat_completion.finish_reason import FinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 

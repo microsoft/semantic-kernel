@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import Field

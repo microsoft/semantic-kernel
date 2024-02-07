@@ -2,11 +2,11 @@
 
 from typing import TYPE_CHECKING, List, Optional, Protocol, runtime_checkable
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel import Kernel
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 @runtime_checkable
@@ -28,7 +28,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render(self, template_text: str, context: "KernelContext") -> str:
+    async def render(self, template_text: str, kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -40,7 +40,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_blocks(self, blocks: List[Block], context: "KernelContext") -> str:
+    async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -50,7 +50,9 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    def render_variables(self, blocks: List[Block], variables: Optional[ContextVariables] = None) -> List[Block]:
+    def render_variables(
+        self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
+    ) -> List[Block]:
         """
         Given a list of blocks, render the Variable Blocks, replacing
         placeholders with the actual value in memory.
@@ -62,7 +64,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_code(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
+    async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.

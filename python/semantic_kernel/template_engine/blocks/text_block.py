@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -17,10 +20,7 @@ class TextBlock(Block):
         text: Optional[str] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
-        log: Optional[Any] = None,
     ):
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:
@@ -45,5 +45,5 @@ class TextBlock(Block):
     def is_valid(self) -> Tuple[bool, str]:
         return True, ""
 
-    def render(self, _: Optional[ContextVariables] = None) -> str:
+    def render(self, kernel: Optional["Kernel"] = None, arguments: Optional["KernelArguments"] = None) -> str:
         return self.content
