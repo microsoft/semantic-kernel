@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
@@ -19,5 +19,8 @@ public interface CodeRendering {
      * @param arguments Optional arguments used to render the block
      * @return Rendered content
      */
-    Mono<String> renderCodeAsync(Kernel kernel, @Nullable KernelFunctionArguments arguments);
+    Mono<String> renderCodeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable InvocationContext context);
 }

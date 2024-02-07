@@ -13,7 +13,8 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-
+import java.io.IOException;
+import java.nio.file.Path;
 import plugins.searchplugin.Search;
 
 public class Main {
@@ -62,8 +63,8 @@ public class Main {
             // The grounded chat function uses the search plugin to perform a Bing search to ground the response
             // See Plugins/ChatPlugin/GroundedChat.prompt.yaml for the full prompt
             FunctionResult<String> message = kernel
-                .invokeAsync(
-                    chatFunction,
+                .invokeAsync(chatFunction)
+                .withArguments(
                     KernelFunctionArguments.builder()
                         .withVariable("messages", chatHistory)
                         .withVariable("persona",

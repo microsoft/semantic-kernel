@@ -30,14 +30,21 @@ public class ContextVariableType<T> {
      */
     public ContextVariable<T> of(@Nullable Object it) {
         if (it == null) {
-            return ContextVariable.of(clazz, clazz.cast(null));
+            return new ContextVariable<>(
+                this,
+                clazz.cast(null)
+            );
         }
 
         if (clazz.isAssignableFrom(it.getClass())) {
             return ContextVariable.of(clazz.cast(it), getConverter());
         }
         ContextVariableTypeConverter<T> converter = getConverter();
-        return ContextVariable.of(converter.getType(), converter.fromObject(it));
+
+        return new ContextVariable<>(
+            this,
+            converter.fromObject(it)
+        );
     }
-   
+
 }

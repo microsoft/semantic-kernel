@@ -34,7 +34,7 @@ public class Example07_BingAndGooglePlugins {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-3.5-turbo");
-    
+
     private static final String BING_API_KEY = System.getenv("BING_API_KEY");
     private static final String GOOGLE_API_KEY = System.getenv("GOOGLE_API_KEY");
     private static final String GOOGLE_SEARCH_ENGINE_ID = System.getenv("GOOGLE_SEARCH_ENGINE_ID");
@@ -57,12 +57,13 @@ public class Example07_BingAndGooglePlugins {
 
         // Load Bing plugin
         var bingConnector = new BingConnector(BING_API_KEY);
-        var bing = KernelPluginFactory.createFromObject(new WebSearchEnginePlugin(bingConnector), "bing");
+        var bing = KernelPluginFactory.createFromObject(new WebSearchEnginePlugin(bingConnector),
+            "bing");
 
         var chatCompletionService = ChatCompletionService.builder()
-        .withOpenAIAsyncClient(client)
-        .withModelId(MODEL_ID)
-        .build();
+            .withOpenAIAsyncClient(client)
+            .withModelId(MODEL_ID)
+            .build();
 
         var kernel = Kernel.builder()
             .withPlugin(bing)
@@ -78,8 +79,7 @@ public class Example07_BingAndGooglePlugins {
         // kernel.importPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
     }
 
-    private static void example1Async(Kernel kernel, String searchPluginName)
-    {
+    private static void example1Async(Kernel kernel, String searchPluginName) {
         System.out.println("======== Bing and Google Search Plugins ========");
 
         // Run
@@ -87,9 +87,9 @@ public class Example07_BingAndGooglePlugins {
         var kernelArguments = KernelFunctionArguments.builder()
             .withVariable("query", question)
             .build();
-        
+
         var function = kernel.getPlugins().getFunction(searchPluginName, "search");
-        var result = kernel.invokeAsync(function, kernelArguments).block();
+        var result = kernel.invokeAsync(function).withArguments(kernelArguments).block();
 
         System.out.println(question);
         System.out.printf("----%s----%n", searchPluginName);
@@ -108,45 +108,44 @@ public class Example07_BingAndGooglePlugins {
        */
     }
 
-    private static void example2Async(Kernel kernel)
-    {
+    private static void example2Async(Kernel kernel) {
         System.out.println("======== Use Search Plugin to answer user questions ========");
 
         var semanticFunction = """
-            Answer questions only when you know the facts or the information is provided.
-            When you don't have sufficient information you reply with a list of commands to find the information needed.
-            When answering multiple questions, use a bullet point list.
-            Note: make sure single and double quotes are escaped using a backslash char.
+                Answer questions only when you know the facts or the information is provided.
+                When you don't have sufficient information you reply with a list of commands to find the information needed.
+                When answering multiple questions, use a bullet point list.
+                Note: make sure single and double quotes are escaped using a backslash char.
 
-            [COMMANDS AVAILABLE]
-            - bing.search
+                [COMMANDS AVAILABLE]
+                - bing.search
 
-            [INFORMATION PROVIDED]
-            {{ $externalInformation }}
+                [INFORMATION PROVIDED]
+                {{ $externalInformation }}
 
-            [EXAMPLE 1]
-            Question: what's the biggest lake in Italy?
-            Answer: Lake Garda, also known as Lago di Garda.
+                [EXAMPLE 1]
+                Question: what's the biggest lake in Italy?
+                Answer: Lake Garda, also known as Lago di Garda.
 
-            [EXAMPLE 2]
-            Question: what's the biggest lake in Italy? What's the smallest positive number?
-            Answer:
-            * Lake Garda, also known as Lago di Garda.
-            * The smallest positive number is 1.
+                [EXAMPLE 2]
+                Question: what's the biggest lake in Italy? What's the smallest positive number?
+                Answer:
+                * Lake Garda, also known as Lago di Garda.
+                * The smallest positive number is 1.
 
-            [EXAMPLE 3]
-            Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
-            Answer:
-            {{ '{{' }} bing.search "what's Ferrari stock price?" {{ '}}' }}.
-            {{ '{{' }} bing.search "Who is the current number one female tennis player in the world?" {{ '}}' }}.
+                [EXAMPLE 3]
+                Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
+                Answer:
+                {{ '{{' }} bing.search "what's Ferrari stock price?" {{ '}}' }}.
+                {{ '{{' }} bing.search "Who is the current number one female tennis player in the world?" {{ '}}' }}.
 
-            [END OF EXAMPLES]
+                [END OF EXAMPLES]
 
-            [TASK]
-            Question: {{ $question }}.
-            Answer: 
-        """.stripIndent(); 
-        
+                [TASK]
+                Question: {{ $question }}.
+                Answer: 
+            """.stripIndent();
+
         // The prompt function will append the answer here
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         System.out.println(question);
@@ -167,18 +166,18 @@ public class Example07_BingAndGooglePlugins {
             .withVariable("externalInformation", "")
             .build();
 
-        FunctionResult<String> answer = kernel.invokeAsync(oracle, kernelArguments).block();
+        FunctionResult<String> answer = kernel.invokeAsync(oracle).withArguments(kernelArguments)
+            .block();
 
         var result = answer.getResult();
 
         // If the answer contains commands, execute them using the prompt renderer.
-        if (result.contains("bing.search"))
-        {
+        if (result.contains("bing.search")) {
             PromptTemplate promptTemplate = new KernelPromptTemplateFactory()
                 .tryCreate(new PromptTemplateConfig(result));
 
             System.out.println("---- Fetching information from Bing...");
-            var information = promptTemplate.renderAsync(kernel, null).block();
+            var information = promptTemplate.renderAsync(kernel, null, null).block();
 
             System.out.println("Information found:");
             System.out.println(information);
@@ -189,10 +188,8 @@ public class Example07_BingAndGooglePlugins {
                 .build();
 
             // Run the prompt function again, now including information from Bing
-            answer = kernel.invokeAsync(oracle, kernelArguments).block();
-        }
-        else
-        {
+            answer = kernel.invokeAsync(oracle).withArguments(kernelArguments).block();
+        } else {
             System.out.println("AI had all the information, no need to query Bing.");
         }
 

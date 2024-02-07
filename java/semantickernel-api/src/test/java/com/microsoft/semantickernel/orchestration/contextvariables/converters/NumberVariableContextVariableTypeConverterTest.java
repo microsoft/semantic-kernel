@@ -18,7 +18,7 @@ public class NumberVariableContextVariableTypeConverterTest {
      */
     @Test
     void testConvertIntegerToString() {
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         Object expResult = "1";
         Object result = instance.toObject(1, String.class);
@@ -31,7 +31,7 @@ public class NumberVariableContextVariableTypeConverterTest {
     @Test
     void  testFromStringToInteger() {
         Object s = "123";
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         Number expResult = Integer.valueOf((String)s);
         Number result = instance.fromObject(s);
@@ -41,7 +41,7 @@ public class NumberVariableContextVariableTypeConverterTest {
     @Test
     void testFromPromptStringToInteger() {
         String s = "123";
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         Number expResult = Integer.valueOf(s);
         Number result = instance.fromPromptString(s);
@@ -51,7 +51,7 @@ public class NumberVariableContextVariableTypeConverterTest {
     @Test
     void testFromPromptStringReturnsNullForEmptyString() {
         String s = "";
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         Number expResult = null;
         Number result = instance.fromPromptString(s);
@@ -61,7 +61,7 @@ public class NumberVariableContextVariableTypeConverterTest {
     @Test
     void testFromPromptStringReturnsNullForNullString() {
         String s = null;
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         Number expResult = null;
         Number result = instance.fromPromptString(s);
@@ -71,7 +71,7 @@ public class NumberVariableContextVariableTypeConverterTest {
     @Test
     void testToPromptString() {
         Integer num = 123;
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         String expResult = "123";
         String result = instance.toPromptString(num);
@@ -81,7 +81,7 @@ public class NumberVariableContextVariableTypeConverterTest {
     @Test
     void testToPromptStringReturnsEmptyStringForNull() {
         Integer num = null;
-        ContextVariableType<Integer> type = ContextVariableTypes.getDefaultVariableTypeForClass(Integer.class);
+        ContextVariableType<Integer> type = ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         String expResult = "";
         String result = instance.toPromptString(num);

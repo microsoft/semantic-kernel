@@ -172,7 +172,7 @@ public abstract class KernelFunction<T> implements Buildable {
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext);
 
-    public static interface FromPromptBuilder<T> {
+    public interface FromPromptBuilder<T> {
 
         FromPromptBuilder<T> withName(@Nullable String name);
 

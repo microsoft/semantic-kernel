@@ -1,0 +1,23 @@
+{
+   "id" : "bcdbf876-8b4c-4de1-99b4-deaad761fdbe",
+   "insertionIndex" : 14,
+   "name" : "deployments_gpt-35-turbo_chat_completions",
+   "persistent" : true,
+   "request" : {
+      "bodyPatterns" : [
+         {
+            "equalToJson" : "{\"messages\":[{\"role\":\"user\",\"content\":\"Write a phrase with Cancellation.\"}],\"model\":\"gpt-35-turbo\"}",
+            "ignoreArrayOrder" : true,
+            "ignoreExtraElements" : true
+         }
+      ],
+      "method" : "POST",
+      "url" : "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
+   },
+   "response" : {
+      "body" : "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253036,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"49ec813d-2f20-4424-9a3f-b6ead6b4894f\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":14,\"completion_tokens\":12,\"total_tokens\":26}}",
+      "headers" : {},
+      "status" : 200
+   },
+   "uuid" : "bcdbf876-8b4c-4de1-99b4-deaad761fdbe"
+}

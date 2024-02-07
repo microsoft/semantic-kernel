@@ -1,6 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Options;
+import com.github.jknack.handlebars.ValueResolver;
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginCollection;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,27 +28,8 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Options;
-import com.github.jknack.handlebars.ValueResolver;
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelPluginCollection;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 
 public class HandlebarsPromptTemplate implements PromptTemplate {
@@ -47,7 +45,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments) {
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable InvocationContext context) {
         HandleBarsPromptTemplateHandler handler =
             new HandleBarsPromptTemplateHandler(kernel, promptTemplate.getTemplate());
 

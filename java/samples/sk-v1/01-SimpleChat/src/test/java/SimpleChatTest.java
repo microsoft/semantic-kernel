@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -77,8 +76,8 @@ public class SimpleChatTest {
             chatHistory.addUserMessage(message.matcher);
 
             FunctionResult<String> result = kernel
-                .invokeAsync(
-                    chatFunction,
+                .invokeAsync(chatFunction)
+                .withArguments(
                     KernelFunctionArguments
                         .builder()
                         .withVariable("messages", chatHistory)

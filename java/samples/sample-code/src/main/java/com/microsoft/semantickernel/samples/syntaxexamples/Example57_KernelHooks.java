@@ -31,6 +31,9 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Example57_KernelHooks {
 
@@ -131,8 +134,8 @@ public class Example57_KernelHooks {
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
-        var result = kernel.invokeAsync(
-                excuseFunction,
+        var result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments
                     .builder()
                     .withVariable("input", input)
@@ -188,7 +191,8 @@ public class Example57_KernelHooks {
 
         // Invoke prompt to trigger execution hooks.
         String input = "I missed the F1 final race";
-        var result = kernel.invokeAsync(excuseFunction,
+        var result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments
                     .builder()
                     .withVariable("input", input)
@@ -235,8 +239,8 @@ public class Example57_KernelHooks {
         kernel.getGlobalKernelHooks().addHook(hook);
 
         // Invoke prompt to trigger execution hooks.
-        var result = kernel.invokeAsync(
-                writerFunction,
+        var result = kernel.invokeAsync(writerFunction)
+            .withArguments(
                 KernelFunctionArguments.builder().build())
             .block();
         System.out.println("Function Result: " + result.getResult());
@@ -276,8 +280,8 @@ public class Example57_KernelHooks {
 
         try {
             // Invoke prompt to trigger execution hooks.
-            var result = kernel.invokeAsync(
-                    writerFunction,
+            var result = kernel.invokeAsync(writerFunction)
+                .withArguments(
                     KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
@@ -313,9 +317,8 @@ public class Example57_KernelHooks {
 
         // Invoke prompt to trigger execution hooks.
         try {
-            var result = kernel.invokeAsync(
-                    secondFunction,
-                    KernelFunctionArguments.builder().build())
+            var result = kernel.invokeAsync(secondFunction)
+                .withArguments(KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -355,8 +358,8 @@ public class Example57_KernelHooks {
 
         try {
             // Invoke prompt to trigger execution hooks.
-            var result = kernel.invokeAsync(
-                    writerFunction,
+            var result = kernel.invokeAsync(writerFunction)
+                .withArguments(
                     KernelFunctionArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());

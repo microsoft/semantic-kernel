@@ -4,11 +4,10 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
@@ -19,32 +18,14 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-
-/*
-Run this test with the following JVM arguments:
-    -Djavax.net.ssl.trustStore=scripts/client.truststore
-    -Djavax.net.ssl.trustStorePassword=password
- */
+@WireMockTest
 public class Example05_InlineFunctionDefinitionTest {
 
-    @RegisterExtension
-    static WireMockExtension wm1 = WireMockExtension.newInstance()
-        .options(WireMockConfiguration.wireMockConfig()
-            .httpsPort(8443)
-            .trustStorePath("scripts/client.truststore")
-            .trustStorePassword("password")
-            .trustStoreType("jks")
-            .keystorePath("scripts/server.keystore")
-            .keystorePassword("password")
-            .keystoreType("jks"))
-        .build();
-
     @Test
-    public void main() {
+    public void main(WireMockRuntimeInfo wmRuntimeInfo) {
         final OpenAIAsyncClient client = new OpenAIClientBuilder()
-            .endpoint("https://localhost:8443")
+            .endpoint("http://localhost:" + wmRuntimeInfo.getHttpPort())
             .buildAsyncClient();
 
         TextGenerationService textGenerationService = TextGenerationService.builder()
@@ -86,7 +67,8 @@ public class Example05_InlineFunctionDefinitionTest {
 
         WireMockUtil.mockCompletionResponse("I missed the F1 final race", "a-response");
 
-        var result = kernel.invokeAsync(excuseFunction,
+        var result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withInput("I missed the F1 final race")
                     .build())
@@ -96,7 +78,8 @@ public class Example05_InlineFunctionDefinitionTest {
 
         WireMockUtil.mockCompletionResponse("sorry I forgot your birthday", "a-response-2");
 
-        result = kernel.invokeAsync(excuseFunction,
+        result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withInput("sorry I forgot your birthday")
                     .build())
@@ -121,7 +104,7 @@ public class Example05_InlineFunctionDefinitionTest {
             null);
 
         FunctionResult<String> fixedFunctionResult = kernel
-            .invokeAsync(fixedFunction, null)
+            .invokeAsync(fixedFunction)
             .block();
 
         Assertions.assertEquals("a-response-3", fixedFunctionResult.getResult());

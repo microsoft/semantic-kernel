@@ -58,7 +58,8 @@ public class Example43_GetModelResult {
 
         // Invoke function through kernel
         FunctionResult<String> result = kernel.invokeAsync(
-                myFunction,
+                myFunction)
+            .withArguments(
                 KernelFunctionArguments.builder()
                     .withVariable("input", "travel")
                     .build())

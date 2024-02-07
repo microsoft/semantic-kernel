@@ -19,6 +19,14 @@ public class FunctionResult<T> {
         this(of, FunctionResultMetadata.empty());
     }
 
+    /**
+     * Get the result of the function invocation.
+     * <p>
+     * NOTE: IF YOU GET ClassCastException FROM THIS TRY ADDING withResultType() TO THE FUNCTION
+     * INVOCATION
+     *
+     * @return The result of the function invocation.
+     */
     @Nullable
     public T getResult() {
         return result.getValue();

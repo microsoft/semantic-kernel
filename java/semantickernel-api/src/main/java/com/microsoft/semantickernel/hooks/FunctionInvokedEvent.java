@@ -29,6 +29,7 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP")
+    @Nullable
     public KernelFunctionArguments getArguments() {
         return arguments;
     }

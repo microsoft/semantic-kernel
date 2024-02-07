@@ -1,0 +1,23 @@
+{
+   "id" : "350fea53-3d73-4d59-b603-dba32fdc5af9",
+   "insertionIndex" : 37,
+   "name" : "deployments_text-davinci-003_completions",
+   "persistent" : true,
+   "request" : {
+      "bodyPatterns" : [
+         {
+            "equalToJson" : "{\"prompt\":[\"    Generate a creative reason or excuse for the given event.\\n    Be creative and be funny. Let your imagination run wild.\\n\\n    Event: I am running late.\\n    Excuse: I was being held ransom by giraffe gangsters.\\n\\n    Event: I haven't been to the gym for a year\\n    Excuse: I've been too busy training my pet dragon.\\n\\n    Event: I missed the F1 final race\\n\"],\"max_tokens\":100,\"temperature\":0.4,\"top_p\":1.0,\"logit_bias\":{},\"user\":\"\",\"n\":1,\"presence_penalty\":0.0,\"frequency_penalty\":0.0,\"best_of\":1,\"model\":\"text-davinci-003\"}",
+            "ignoreArrayOrder" : true,
+            "ignoreExtraElements" : true
+         }
+      ],
+      "method" : "POST",
+      "url" : "//openai/deployments/text-davinci-003/completions?api-version=2023-12-01-preview"
+   },
+   "response" : {
+      "body" : "{\"id\":\"cmpl-xxx\",\"object\":\"text_completion\",\"created\":1707252975,\"model\":\"text-davinci-003\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"text\":\"1ec9fb4c-eae2-44b4-9974-c87d452220ae\",\"index\":0,\"finish_reason\":\"stop\",\"logprobs\":null,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":93,\"completion_tokens\":15,\"total_tokens\":108}}",
+      "headers" : {},
+      "status" : 200
+   },
+   "uuid" : "350fea53-3d73-4d59-b603-dba32fdc5af9"
+}

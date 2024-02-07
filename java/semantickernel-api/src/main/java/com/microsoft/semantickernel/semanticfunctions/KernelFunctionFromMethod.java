@@ -1,24 +1,11 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -32,13 +19,22 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
-
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -68,9 +64,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         this.function = implementationFunc;
     }
 
-    /** 
-     * Concrete implementation of the abstract method in KernelFunction.
-     * {@inheritDoc}
+    /**
+     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
      */
     @Override
     public Mono<FunctionResult<T>> invokeAsync(
@@ -82,7 +77,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     }
 
     @Override
-    public Mono<FunctionResult<T>> invokeAsync(Kernel kernel, KernelFunctionArguments arguments, ContextVariableType<T> variableType) {
+    public Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType) {
         return super.invokeAsync(kernel, arguments, variableType);
     }
 
@@ -97,7 +95,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     }
 
 
-    @SuppressWarnings("unchecked") 
+    @SuppressWarnings("unchecked")
     public static <T> KernelFunction<T> create(
         Method method,
         Object target,
@@ -107,6 +105,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         String description,
         @Nullable
         List<KernelParameterMetadata<?>> parameters,
+        @Nullable
         KernelReturnParameterMetadata<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
@@ -167,100 +166,119 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     @SuppressWarnings("unchecked")
     private static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
-
         return (kernel, function, arguments, variableType, invocationContext) -> {
+            InvocationContext context;
             if (invocationContext == null) {
-                invocationContext = InvocationContext.builder().build();
+                context = InvocationContext.builder().build();
+            } else {
+                context = invocationContext;
             }
 
             // kernelHooks must be effectively final for lambda
-            KernelHooks kernelHooks = invocationContext.getKernelHooks() != null 
-                ? invocationContext.getKernelHooks() 
+            KernelHooks kernelHooks = context.getKernelHooks() != null
+                ? context.getKernelHooks()
                 : kernel.getGlobalKernelHooks();
             assert kernelHooks != null : "getGlobalKernelHooks() should never return null!";
 
-            FunctionInvokingEvent updatedState =  kernelHooks
-                        .executeHooks(
-                            new FunctionInvokingEvent(function, arguments));
-            KernelFunctionArguments updatedArguments = updatedState != null ? updatedState.getArguments() : arguments;
+            FunctionInvokingEvent updatedState = kernelHooks
+                .executeHooks(
+                    new FunctionInvokingEvent(function, arguments));
+            KernelFunctionArguments updatedArguments =
+                updatedState != null ? updatedState.getArguments() : arguments;
 
-                try {
-                    List<Object> args =
-                        Arrays.stream(method.getParameters())
-                            .map(getParameters(method, updatedArguments, kernel))
-                            .collect(Collectors.toList());
+            try {
+                List<Object> args =
+                    Arrays.stream(method.getParameters())
+                        .map(getParameters(method, updatedArguments, kernel, context))
+                        .collect(Collectors.toList());
 
-                    Mono<?> mono;
-                    if (method.getReturnType().isAssignableFrom(Mono.class)) {
-                        mono = (Mono<?>) method.invoke(instance, args.toArray());
-                    } else {
-                        mono = invokeAsyncFunction(method, instance, args);
-                    }
-
-                    Mono<T> r = mono
-                        .map(it -> {
-                            if (it instanceof Iterable) {
-                                // Handle return from things like Mono<List<?>>
-                                // from {{function 'input'}} as part of the prompt.
-                                return (T) ((Iterable<?>) it).iterator().next();
-                            } else {
-                                return (T) it;
-                            }
-                        });
-
-                    return r
-                        .map(it -> {
-                            // If given a variable type, use it. 
-                            // If it's wrong, then it's a programming error on the part of the caller.
-                            if (variableType != null) {
-                                return new FunctionResult<>(new ContextVariable<>(variableType, it));
-                            }
-
-                            Class<?> returnParameterType = function
-                                .getMetadata()
-                                .getReturnParameter()
-                                .getParameterType();
-
-                            // If the function has a return type that has a ContextVariableType<T>, use it.
-                            ContextVariableType<T> contextVariableType = getContextVariableType(returnParameterType);
-                            if (contextVariableType == null) {
-                                // If getting the context variable type from the function fails, default to
-                                // using the NoopConverter.
-                                contextVariableType = getDefaultContextVariableType(returnParameterType);
-                            }
-
-                            if (contextVariableType != null) {
-                                return new FunctionResult<>(new ContextVariable<>(contextVariableType, it));
-                            }
-
-                            // If we get here, then either the returnParameterType doesn't match T
-                            throw new SKException(String.format("Return parameter type from %s.%s does not match the expected type %s", function.getSkillName(), function.getName(), it.getClass().getName()));
-
-                        })
-                        .map(it -> {
-                            FunctionInvokedEvent<T> updatedResult = kernelHooks
-                                .executeHooks(
-                                    new FunctionInvokedEvent<>(
-                                        function,
-                                        updatedArguments,
-                                        it));
-                            return updatedResult.getResult();
-                        });
-                } catch (Exception e) {
-                    return Mono.error(e);
+                Mono<?> mono;
+                if (method.getReturnType().isAssignableFrom(Mono.class)) {
+                    mono = (Mono<?>) method.invoke(instance, args.toArray());
+                } else {
+                    mono = invokeAsyncFunction(method, instance, args);
                 }
-            };
+
+                Mono<T> r = mono
+                    .map(it -> {
+                        if (it instanceof Iterable) {
+                            // Handle return from things like Mono<List<?>>
+                            // from {{function 'input'}} as part of the prompt.
+                            return (T) ((Iterable<?>) it).iterator().next();
+                        } else {
+                            return (T) it;
+                        }
+                    });
+
+                return r
+                    .map(it -> {
+                        // If given a variable type, use it.
+                        // If it's wrong, then it's a programming error on the part of the caller.
+                        if (variableType != null) {
+                            if (!variableType.getClazz().isAssignableFrom(it.getClass())) {
+                                throw new SKException(String.format(
+                                    "Return parameter type from %s.%s does not match the expected type %s",
+                                    function.getSkillName(), function.getName(),
+                                    it.getClass().getName()));
+                            }
+                            return new FunctionResult<>(
+                                new ContextVariable<>(variableType, it)
+                            );
+                        }
+
+                        Class<?> returnParameterType = function
+                            .getMetadata()
+                            .getReturnParameter()
+                            .getParameterType();
+
+                        // If the function has a return type that has a ContextVariableType<T>, use it.
+                        ContextVariableType<T> contextVariableType = getContextVariableType(
+                            invocationContext,
+                            returnParameterType);
+                        if (contextVariableType == null) {
+                            // If getting the context variable type from the function fails, default to
+                            // using the NoopConverter.
+                            contextVariableType = getDefaultContextVariableType(
+                                returnParameterType);
+                        }
+
+                        if (contextVariableType != null) {
+                            return new FunctionResult<>(
+                                new ContextVariable<>(contextVariableType, it));
+                        }
+
+                        // If we get here, then either the returnParameterType doesn't match T
+                        throw new SKException(String.format(
+                            "Return parameter type from %s.%s does not match the expected type %s",
+                            function.getSkillName(), function.getName(), it.getClass().getName()));
+
+                    })
+                    .map(it -> {
+                        FunctionInvokedEvent<T> updatedResult = kernelHooks
+                            .executeHooks(
+                                new FunctionInvokedEvent<>(
+                                    function,
+                                    updatedArguments,
+                                    it));
+                        return updatedResult.getResult();
+                    });
+            } catch (Exception e) {
+                return Mono.error(e);
+            }
+        };
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    private static <T> ContextVariableType<T> getContextVariableType(Class<?> clazz) {
+    private static <T> ContextVariableType<T> getContextVariableType(
+        InvocationContext invocationContext, Class<?> clazz) {
 
         if (clazz != null) {
             try {
                 // unchecked cast
                 Class<T> tClazz = (Class<T>) clazz;
-                ContextVariableType<T> type = ContextVariableTypes.getDefaultVariableTypeForClass(tClazz);
+                ContextVariableType<T> type = invocationContext.getContextVariableTypes()
+                    .getVariableTypeForClass(tClazz);
                 return type;
             } catch (ClassCastException | SKException e) {
                 // SKException is thrown from ContextVariableTypes.getDefaultVariableTypeForClass
@@ -269,7 +287,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             }
         }
         return null;
-    }    
+    }
 
     @Nullable
     @SuppressWarnings("unchecked")
@@ -327,12 +345,13 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         Method method,
         @Nullable
         KernelFunctionArguments context,
-        Kernel kernel) {
+        Kernel kernel,
+        InvocationContext invocationContext) {
         return parameter -> {
             if (KernelFunctionArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
             } else {
-                return getArgumentValue(method, context, parameter, kernel);
+                return getArgumentValue(method, context, parameter, kernel, invocationContext);
             }
         };
     }
@@ -342,7 +361,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         Method method,
         @Nullable KernelFunctionArguments context,
         Parameter parameter,
-        Kernel kernel) {
+        Kernel kernel,
+        InvocationContext invocationContext) {
         String variableName = getGetVariableName(parameter);
 
         ContextVariable<?> arg = context == null ? null : context.get(variableName);
@@ -353,12 +373,17 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                 // Convert from the defaultValue, which is a String to the argument type
                 // Expectation here is that the fromPromptString method will be able to handle a null or empty string
                 Class<?> type = annotation.type();
-                ContextVariableType<?> cvType = ContextVariableTypes.getDefaultVariableTypeForClass(
-                    type);
+
+                ContextVariableType<?> cvType = invocationContext
+                    .getContextVariableTypes()
+                    .getVariableTypeForClass(type);
+
                 if (cvType != null) {
                     String defaultValue = annotation.defaultValue();
                     Object value = cvType.getConverter().fromPromptString(defaultValue);
-                    arg = ContextVariable.untypedOf(value, cvType.getConverter());
+
+                    arg = ContextVariable.convert(value, type,
+                        invocationContext.getContextVariableTypes());
                 }
 
                 if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
@@ -436,8 +461,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         }
 
         // Well-known types only
-        ContextVariableType<?> converter = ContextVariableTypes.getDefaultVariableTypeForClass(
-            type);
+        ContextVariableType<?> converter = invocationContext.getContextVariableTypes()
+            .getVariableTypeForClass(type);
         if (converter != null) {
             try {
                 value = converter.getConverter().fromObject(arg);

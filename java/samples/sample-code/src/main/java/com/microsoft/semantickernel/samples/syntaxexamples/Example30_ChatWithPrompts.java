@@ -90,7 +90,7 @@ public class Example30_ChatWithPrompts {
         // This contains the context, ie a piece of a wikipedia page selected by the user.
         String systemMessage = PromptTemplateFactory
             .build(new PromptTemplateConfig(systemPromptTemplate))
-            .renderAsync(kernel, arguments)
+            .renderAsync(kernel, arguments, null)
             .block();
 
         System.out.println("------------------------------------\n" + systemMessage);
@@ -99,7 +99,7 @@ public class Example30_ChatWithPrompts {
         // This contains the user request, ie "extract locations as a bullet point list"
         String userMessage = PromptTemplateFactory
             .build(new PromptTemplateConfig(userPromptTemplate))
-            .renderAsync(kernel, arguments)
+            .renderAsync(kernel, arguments, null)
             .block();
 
         System.out.println("------------------------------------\n" + userMessage);

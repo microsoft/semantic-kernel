@@ -4,11 +4,10 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.KernelFunctionYaml;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,7 +21,7 @@ public class Main {
     final static String AZURE_OPENAI_API_KEY = System.getenv("AZURE_OPENAI_API_KEY");
     final static String CURRENT_DIRECTORY = System.getProperty("user.dir");
 
- 
+
     public static void main(String[] args) throws IOException {
 
         OpenAIAsyncClient client = new OpenAIClientBuilder()
@@ -55,8 +54,8 @@ public class Main {
             // The persona chat function uses the persona variable to set the persona of the chat using a system message
             // See Plugins/ChatPlugin/PersonaChat.prompt.yaml for the full prompt
             FunctionResult<String> message = kernel
-                .invokeAsync(
-                    chatFunction,
+                .invokeAsync(chatFunction)
+                .withArguments(
                     KernelFunctionArguments
                         .builder()
                         .withVariable("messages", chatHistory)

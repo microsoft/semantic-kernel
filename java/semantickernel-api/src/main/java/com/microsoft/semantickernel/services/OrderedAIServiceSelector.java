@@ -128,6 +128,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     private static <T extends AIService> AIServiceSelection<T> castServiceSelection(AIServiceSelection<?> selection) {
         try {
             // unchecked cast

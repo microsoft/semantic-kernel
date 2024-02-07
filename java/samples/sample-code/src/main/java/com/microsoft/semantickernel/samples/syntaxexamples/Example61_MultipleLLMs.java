@@ -86,7 +86,7 @@ public class Example61_MultipleLLMs {
             .withOutputVariable("result", "java.lang.String")
             .build();
 
-        var result = kernel.invokeAsync(func, arguments).block();
+        var result = kernel.invokeAsync(func).withArguments(arguments).block();
         System.out.println(result.getResult());
     }
 
@@ -97,18 +97,18 @@ public class Example61_MultipleLLMs {
         var prompt = "Hello AI, what can you do for me?";
 
         var result = kernel.invokeAsync(
-            KernelFunctionFromPrompt
-                .builder()
-                .withTemplate(prompt)
-                .withDefaultExecutionSettings(
-                    PromptExecutionSettings.builder()
-                        .withModelId(modelId)
-                        .build()
-                )
-                .withOutputVariable("result", "java.lang.String")
-                .build(),
-            KernelFunctionArguments.builder().build()
-        ).block();
+                KernelFunctionFromPrompt
+                    .builder()
+                    .withTemplate(prompt)
+                    .withDefaultExecutionSettings(
+                        PromptExecutionSettings.builder()
+                            .withModelId(modelId)
+                            .build()
+                    )
+                    .withOutputVariable("result", "java.lang.String")
+                    .build())
+            .withArguments(KernelFunctionArguments.builder().build())
+            .block();
 
         System.out.println(result.getResult());
     }
@@ -137,9 +137,8 @@ public class Example61_MultipleLLMs {
 
         var function = KernelFunctionFromPrompt.create(promptConfig);
 
-        var result = kernel.invokeAsync(
-                function,
-                KernelFunctionArguments.builder().build())
+        var result = kernel.invokeAsync(function)
+            .withArguments(KernelFunctionArguments.builder().build())
             .block();
 
         System.out.println(result.getResult());

@@ -77,7 +77,7 @@ public class Example62_CustomAIServiceSelector {
             .withOutputVariable("result", "java.lang.String")
             .build();
 
-        var result = kernel.invokeAsync(func, arguments).block();
+        var result = kernel.invokeAsync(func).withArguments(arguments).block();
         System.out.println(result.getResult());
     }
 
@@ -96,16 +96,16 @@ public class Example62_CustomAIServiceSelector {
     
             @Nullable
             KernelFunction<?> function,
-    
+
             @Nullable
             KernelFunctionArguments arguments,
-            Map<Class<? extends AIService>, AIService> services) { 
+            Map<Class<? extends AIService>, AIService> services) {
 
             // Just get the first one
             PromptExecutionSettings executionSettings = function.getExecutionSettings()
                 .values().stream().findFirst().get();
             // unchecked cast
-            T service = (T)services.values().stream().findFirst().get();
+            T service = (T) services.values().stream().findFirst().get();
 
             return new AIServiceSelection<>(
                 service,

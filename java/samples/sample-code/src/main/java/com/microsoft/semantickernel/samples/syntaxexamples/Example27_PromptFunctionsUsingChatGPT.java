@@ -55,7 +55,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
                 KernelFunctionArguments.builder()
                     .withVariable("input", "Jupiter")
                     .build(),
-                ContextVariableTypes.getDefaultVariableTypeForClass(String.class)
+                ContextVariableTypes.getGlobalVariableTypeForClass(String.class)
             )
             .block();
         System.out.println(result.getResult());
