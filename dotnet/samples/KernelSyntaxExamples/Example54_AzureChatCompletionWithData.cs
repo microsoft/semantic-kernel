@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using xRetry;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to use Azure OpenAI Chat Completion with data.
@@ -24,17 +28,12 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <para> dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your Search service resource}"</para>
 /// <para> dotnet user-secrets set "AzureAISearch:IndexName" "..."</para>
 /// </value>
-public static class Example54_AzureChatCompletionWithData
+public class Example54_AzureChatCompletionWithData : BaseTest
 {
-    public static async Task RunAsync()
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task ExampleWithChatCompletionAsync()
     {
-        await ExampleWithChatCompletionAsync();
-        await ExampleWithKernelAsync();
-    }
-
-    private static async Task ExampleWithChatCompletionAsync()
-    {
-        Console.WriteLine("=== Example with Chat Completion ===");
+        WriteLine("=== Example with Chat Completion ===");
 
         var chatCompletion = new AzureOpenAIChatCompletionWithDataService(GetCompletionWithDataConfig());
         var chatHistory = new ChatHistory();
@@ -52,9 +51,9 @@ public static class Example54_AzureChatCompletionWithData
         // Output
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
-        Console.WriteLine();
+        WriteLine($"Ask: {ask}");
+        WriteLine($"Response: {response}");
+        WriteLine();
 
         // Chat history maintenance
         if (!string.IsNullOrEmpty(toolResponse))
@@ -69,20 +68,21 @@ public static class Example54_AzureChatCompletionWithData
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion Streaming example
-        Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine("Response: ");
+        WriteLine($"Ask: {ask}");
+        WriteLine("Response: ");
 
         await foreach (var word in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
-            Console.Write(word);
+            Write(word);
         }
 
-        Console.WriteLine(Environment.NewLine);
+        WriteLine(Environment.NewLine);
     }
 
-    private static async Task ExampleWithKernelAsync()
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task ExampleWithKernelAsync()
     {
-        Console.WriteLine("=== Example with Kernel ===");
+        WriteLine("=== Example with Kernel ===");
 
         var ask = "How did Emily and David meet?";
 
@@ -100,9 +100,9 @@ public static class Example54_AzureChatCompletionWithData
         // Output
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response.GetValue<string>()}");
-        Console.WriteLine();
+        WriteLine($"Ask: {ask}");
+        WriteLine($"Response: {response.GetValue<string>()}");
+        WriteLine();
 
         // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
@@ -112,9 +112,9 @@ public static class Example54_AzureChatCompletionWithData
         // Ask: What are Emily and David studying?
         // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
-        Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response.GetValue<string>()}");
-        Console.WriteLine();
+        WriteLine($"Ask: {ask}");
+        WriteLine($"Response: {response.GetValue<string>()}");
+        WriteLine();
     }
 
     /// <summary>
@@ -131,5 +131,9 @@ public static class Example54_AzureChatCompletionWithData
             DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
             DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
+    }
+
+    public Example54_AzureChatCompletionWithData(ITestOutputHelper output) : base(output)
+    {
     }
 }

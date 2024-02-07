@@ -4,44 +4,29 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
+using xRetry;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows how to use the Handlebars sequential planner.
-public static class Example65_HandlebarsPlanner
+public class Example65_HandlebarsPlanner : BaseTest
 {
     private static int s_sampleIndex;
 
     private const string CourseraPluginName = "CourseraPlugin";
 
-    /// <summary>
-    /// Show how to create a plan with Handlebars and execute it.
-    /// </summary>
-    public static async Task RunAsync()
+    private void WriteSampleHeading(string name)
     {
-        s_sampleIndex = 1;
-
-        // Plugin with primitive types as inputs and outputs
-        await RunDictionaryWithBasicTypesSampleAsync();
-        await RunPoetrySampleAsync();
-        await RunBookSampleAsync();
-        await PlanNotPossibleSampleAsync();
-
-        // Plugin with Complex Types as inputs and outputs
-        await RunLocalDictionaryWithComplexTypesSampleAsync();
-
-        // OpenAPI plugin
-        await RunCourseraSampleAsync(shouldPrintPrompt: true);
+        WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
-
-    private static void WriteSampleHeadingToConsole(string name)
-    {
-        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
-    }
-
-    private static async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
+    private async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
@@ -50,7 +35,7 @@ public static class Example65_HandlebarsPlanner
 
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
+            WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
             return;
         }
 
@@ -97,11 +82,18 @@ public static class Example65_HandlebarsPlanner
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
+                // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
+                ExecutionSettings = new OpenAIPromptExecutionSettings()
+                {
+                    Temperature = 0.0,
+                    TopP = 0.1,
+                },
+
                 // Change this if you want to test with loops regardless of model selection.
                 AllowLoops = allowLoopsInPlan
             });
 
-        Console.WriteLine($"Goal: {goal}");
+        WriteLine($"Goal: {goal}");
 
         // Create the plan
         var plan = await planner.CreatePlanAsync(kernel, goal);
@@ -109,19 +101,21 @@ public static class Example65_HandlebarsPlanner
         // Print the prompt template
         if (shouldPrintPrompt && plan.Prompt is not null)
         {
-            Console.WriteLine($"\nPrompt template:\n{plan.Prompt}");
+            WriteLine($"\nPrompt template:\n{plan.Prompt}");
         }
 
-        Console.WriteLine($"\nOriginal plan:\n{plan}");
+        WriteLine($"\nOriginal plan:\n{plan}");
 
         // Execute the plan
         var result = await plan.InvokeAsync(kernel);
-        Console.WriteLine($"\nResult:\n{result}\n");
+        WriteLine($"\nResult:\n{result}\n");
     }
 
-    private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Plan Not Possible");
+        WriteSampleHeading("Plan Not Possible");
 
         try
         {
@@ -142,20 +136,25 @@ public static class Example65_HandlebarsPlanner
                 Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
                 Additional helpers may be required.
             */
-            Console.WriteLine($"\n{ex.Message}\n");
+            WriteLine($"\n{ex.Message}\n");
         }
     }
 
-    private static async Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(true)]
+
+    public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Coursera OpenAPI Plugin");
-        await RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
+        this.WriteSampleHeading("Coursera OpenAPI Plugin");
+        return RunSampleAsync("Show me courses about Artificial Intelligence.", shouldPrintPrompt, CourseraPluginName);
     }
 
-    private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Basic Types using Local Dictionary Plugin");
-        await RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
+        this.WriteSampleHeading("Basic Types using Local Dictionary Plugin");
+        return RunSampleAsync("Get a random word and its definition.", shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -172,10 +171,12 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(true)]
+    public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Complex Types using Local Dictionary Plugin");
-        await RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
+        this.WriteSampleHeading("Complex Types using Local Dictionary Plugin");
+        return RunSampleAsync("Teach me two random words and their definition.", shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
             {{!-- Step 1: Get two random dictionary entries --}}
@@ -206,10 +207,12 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Multiple Plugins");
-        await RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
+        this.WriteSampleHeading("Multiple Plugins");
+        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -233,10 +236,12 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
-    private static async Task RunBookSampleAsync(bool shouldPrintPrompt = false)
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
-        WriteSampleHeadingToConsole("Loops and Conditionals");
-        await RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+        this.WriteSampleHeading("Loops and Conditionals");
+        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}
@@ -259,5 +264,9 @@ public static class Example65_HandlebarsPlanner
                 {{json (get "chapterContent")}}
             {{/each}}
         */
+    }
+
+    public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)
+    {
     }
 }

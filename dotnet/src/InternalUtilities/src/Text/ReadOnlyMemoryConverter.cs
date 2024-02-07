@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Text;
 // It should be removed once SK projects upgrade to System.Text.Json v8.0.0.
 
 /// <summary>Provides a converter for <see cref="ReadOnlyMemory{Single}"/>.</summary>
+[ExcludeFromCodeCoverage]
 internal sealed class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<float>>
 {
     /// <summary>An instance of a converter for float[] that all operations delegate to.</summary>

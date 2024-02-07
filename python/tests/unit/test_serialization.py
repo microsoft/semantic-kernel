@@ -4,38 +4,32 @@ import pytest
 import typing_extensions as te
 from pydantic import Field, Json
 
-from semantic_kernel import SKFunctionBase
-from semantic_kernel.core_skills.conversation_summary_skill import (
-    ConversationSummarySkill,
+from semantic_kernel.core_plugins.conversation_summary_plugin import (
+    ConversationSummaryPlugin,
 )
-from semantic_kernel.core_skills.file_io_skill import FileIOSkill
-from semantic_kernel.core_skills.http_skill import HttpSkill
-from semantic_kernel.core_skills.math_skill import MathSkill
-from semantic_kernel.core_skills.text_memory_skill import TextMemorySkill
-from semantic_kernel.core_skills.text_skill import TextSkill
-from semantic_kernel.core_skills.time_skill import TimeSkill
-from semantic_kernel.core_skills.wait_skill import WaitSkill
-from semantic_kernel.core_skills.web_search_engine_skill import WebSearchEngineSkill
+from semantic_kernel.core_plugins.file_io_plugin import FileIOPlugin
+from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
+from semantic_kernel.core_plugins.text_plugin import TextPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
+from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.sk_pydantic import SKBaseModel
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.functions_view import FunctionsView
-from semantic_kernel.skill_definition.parameter_view import ParameterView
-from semantic_kernel.skill_definition.read_only_skill_collection import (
-    ReadOnlySkillCollection,
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
-)
-from semantic_kernel.skill_definition.sk_function_decorator import sk_function
-from semantic_kernel.skill_definition.skill_collection import SkillCollection
-from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
+from semantic_kernel.plugin_definition.parameter_view import ParameterView
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -52,7 +46,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
-SKBaseModelFieldT = t.TypeVar("SKBaseModelFieldT", bound=SKBaseModel)
+KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
 
 class _Serializable(t.Protocol):
@@ -69,7 +63,7 @@ class _Serializable(t.Protocol):
 
 
 @pytest.fixture()
-def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
+def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     """Return a factory for various objects in semantic-kernel."""
 
     def create_functions_view() -> FunctionsView:
@@ -78,7 +72,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         result.add_function(
             FunctionView(
                 name="function1",
-                skill_name="skill1",
+                plugin_name="plugin1",
                 description="Native function",
                 parameters=[],
                 is_semantic=False,
@@ -88,7 +82,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         result.add_function(
             FunctionView(
                 name="function1",
-                skill_name="skill1",
+                plugin_name="plugin1",
                 description="Semantic function",
                 parameters=[],
                 is_semantic=True,
@@ -97,14 +91,14 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         )
         return result
 
-    def create_sk_function() -> SKFunction:
-        """Return an SKFunction."""
+    def create_kernel_function() -> KernelFunction:
+        """Return an KernelFunction."""
 
-        @sk_function(name="function")
-        def my_function_async(cx: SKContext) -> str:
+        @kernel_function(name="function")
+        def my_function(cx: KernelContext) -> str:
             return f"F({cx.variables.input})"
 
-        return SKFunction.from_native_method(my_function_async)
+        return KernelFunction.from_native_method(my_function, "plugin")
 
     def create_context_variables() -> ContextVariables:
         """Return a context variables object."""
@@ -113,10 +107,10 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             variables={"foo": "bar"},
         )
 
-    def create_skill_collection() -> SkillCollection:
-        """Return a skill collection."""
-        # TODO: Add a few skills to this collection.
-        return SkillCollection()
+    def create_plugin_collection() -> KernelPluginCollection:
+        """Return a plugin collection."""
+        # TODO: Add a few plugins to this collection.
+        return KernelPluginCollection()
 
     cls_obj_map = {
         Block: Block(content="foo"),
@@ -144,19 +138,18 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             False,
         ),
         FunctionsView: create_functions_view(),
-        ReadOnlySkillCollection: create_skill_collection().read_only_skill_collection,
+        KernelPluginCollection: create_plugin_collection(),
         DelegateHandlers: DelegateHandlers(),
         DelegateInference: DelegateInference(),
         ContextVariables: create_context_variables(),
-        SkillCollection: create_skill_collection(),
-        SKContext[NullMemory]: SKContext[NullMemory](
+        KernelContext[NullMemory]: KernelContext[NullMemory](
             # TODO: Test serialization with different types of memories.
             variables=create_context_variables(),
             memory=NullMemory(),
-            skill_collection=create_skill_collection().read_only_skill_collection,
+            plugins=create_plugin_collection(),
         ),
         NullMemory: NullMemory(),
-        SKFunction: create_sk_function(),
+        KernelFunction: create_kernel_function(),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -167,30 +160,22 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
-    pytest.param(ConversationSummarySkill, marks=pytest.mark.xfail(reason="Contains data")),
-    FileIOSkill,
-    HttpSkill,
-    MathSkill,
-    TextMemorySkill,
-    TextSkill,
-    TimeSkill,
-    WaitSkill,
-    pytest.param(WebSearchEngineSkill, marks=pytest.mark.xfail(reason="Contains data")),
+    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+    FileIOPlugin,
+    HttpPlugin,
+    MathPlugin,
+    TextMemoryPlugin,
+    TextPlugin,
+    TimePlugin,
+    WaitPlugin,
+    pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
     CodeRenderer,
     PromptTemplatingEngine,
     TextRenderer,
 ]
 
 BASE_CLASSES = [
-    ReadOnlySkillCollectionBase,
-    SkillCollectionBase,
     SemanticTextMemoryBase,
-    SKFunctionBase,
-]
-
-# Classes that don't need serialization
-UNSERIALIZED_CLASSES = [
-    ReadOnlySkillCollection,
 ]
 
 STATELESS_CLASSES = [
@@ -217,12 +202,11 @@ PYDANTIC_MODELS = [
     ParameterView,
     FunctionView,
     FunctionsView,
-    ReadOnlySkillCollection,
-    SkillCollection,
+    KernelPluginCollection,
     ContextVariables,
-    SKContext[NullMemory],
+    KernelContext[NullMemory],
     pytest.param(
-        SKFunction,
+        KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),
     ),
 ]
@@ -230,43 +214,43 @@ PYDANTIC_MODELS = [
 
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
-        "sk_type",
-        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES + UNSERIALIZED_CLASSES,
+        "kernel_type",
+        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES,
     )
     def test_usage_as_optional_field(
         self,
-        sk_type: t.Type[SKBaseModelFieldT],
+        kernel_type: t.Type[KernelBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
 
         Otherwise, they cannot be used in Pydantic models.
         """
 
-        class TestModel(SKBaseModel):
+        class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: t.Optional[sk_type] = None
+            field: t.Optional[kernel_type] = None
 
         assert_serializable(TestModel(), TestModel)
 
-    @pytest.mark.parametrize("sk_type", PYDANTIC_MODELS + STATELESS_CLASSES)
+    @pytest.mark.parametrize("kernel_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
-        sk_factory: t.Callable[[t.Type[SKBaseModelFieldT]], SKBaseModelFieldT],
-        sk_type: t.Type[SKBaseModelFieldT],
+        kernel_factory: t.Callable[[t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT],
+        kernel_type: t.Type[KernelBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
 
         Otherwise, they cannot be used in Pydantic models.
         """
 
-        class TestModel(SKBaseModel):
+        class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: sk_type = Field(default_factory=lambda: sk_factory(sk_type))
+            field: kernel_type = Field(default_factory=lambda: kernel_factory(kernel_type))
 
         assert_serializable(TestModel(), TestModel)
-        assert_serializable(TestModel(field=sk_factory(sk_type)), TestModel)
+        assert_serializable(TestModel(field=kernel_factory(kernel_type)), TestModel)
 
 
 def assert_serializable(obj: _Serializable, obj_type) -> None:
